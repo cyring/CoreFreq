@@ -269,12 +269,14 @@ typedef union {
 #define HWK	{.fg = WHITE,	.bg = BLACK,	.bf = 1}
 #define HKB	{.fg = BLACK,	.bg = BLUE,	.bf = 1}
 #define HWB	{.fg = WHITE,	.bg = BLUE,	.bf = 1}
+#define HKM	{.fg = BLACK,	.bg = MAGENTA,	.bf = 1}
 #define HWC	{.fg = WHITE,	.bg = CYAN,	.bf = 1}
 #define HKW	{.fg = BLACK,	.bg = WHITE,	.bf = 1}
 #define HRW	{.fg = RED,	.bg = WHITE,	.bf = 1}
 #define HYW	{.fg = YELLOW,	.bg = WHITE,	.bf = 1}
 #define HBW	{.fg = BLUE,	.bg = WHITE,	.bf = 1}
 #define HCW	{.fg = CYAN,	.bg = WHITE,	.bf = 1}
+#define HMW	{.fg = MAGENTA, .bg = WHITE,	.bf = 1}
 #define _HCK	{.fg = CYAN,	.bg = BLACK,	.un = 1,	.bf = 1}
 #define _HWK	{.fg = WHITE,	.bg = BLACK,	.un = 1,	.bf = 1}
 #define _HWB	{.fg = WHITE,	.bg = BLUE,	.un = 1,	.bf = 1}
@@ -289,26 +291,29 @@ typedef union {
 #define LCK	{.fg = CYAN,	.bg = BLACK}
 #define LWK	{.fg = WHITE,	.bg = BLACK}
 #define LWB	{.fg = WHITE,	.bg = BLUE}
+#define LKM	{.fg = BLACK,	.bg = MAGENTA}
 #define LKC	{.fg = BLACK,	.bg = CYAN}
 #define LKW	{.fg = BLACK,	.bg = WHITE}
 #define LRW	{.fg = RED,	.bg = WHITE}
 #define LGW	{.fg = GREEN,	.bg = WHITE}
 #define LBW	{.fg = BLUE,	.bg = WHITE}
 #define LCW	{.fg = CYAN,	.bg = WHITE}
+#define LMW	{.fg = MAGENTA, .bg = WHITE}
 #define _LCK	{.fg = CYAN,	.bg = BLACK,	.un = 1}
 #define _LWK	{.fg = WHITE,	.bg = BLACK,	.un = 1}
+#define _LKM	{.fg = BLACK,	.bg = MAGENTA,	.un = 1}
 #define _LKW	{.fg = BLACK,	.bg = WHITE,	.un = 1}
 #define _LBW	{.fg = BLUE,	.bg = WHITE,	.un = 1}
 
-#define MAKE_TITLE_UNFOCUS	MakeAttr(BLACK, 0, BLUE , 1)
-#define MAKE_TITLE_FOCUS	MakeAttr(WHITE, 0, CYAN , 1)
-#define MAKE_BORDER_UNFOCUS	MakeAttr(BLACK, 0, BLUE , 1)
-#define MAKE_BORDER_FOCUS	MakeAttr(WHITE, 0, BLUE , 1)
-#define MAKE_SELECT_UNFOCUS	MakeAttr(BLACK, 0, BLACK, 1)
-#define MAKE_SELECT_FOCUS	MakeAttr(BLACK, 0, CYAN , 0)
-#define MAKE_PRINT_UNFOCUS	MakeAttr(WHITE, 0, BLACK, 0)
-#define MAKE_PRINT_FOCUS	MakeAttr(WHITE, 0, BLACK, 1)
-#define MAKE_PRINT_DROP 	MakeAttr(BLACK, 0, WHITE, 0)
+#define MAKE_TITLE_UNFOCUS	RSC(UI).ATTR()[UI_MAKE_TITLE_UNFOCUS]
+#define MAKE_TITLE_FOCUS	RSC(UI).ATTR()[UI_MAKE_TITLE_FOCUS]
+#define MAKE_BORDER_UNFOCUS	RSC(UI).ATTR()[UI_MAKE_BORDER_UNFOCUS]
+#define MAKE_BORDER_FOCUS	RSC(UI).ATTR()[UI_MAKE_BORDER_FOCUS]
+#define MAKE_SELECT_UNFOCUS	RSC(UI).ATTR()[UI_MAKE_SELECT_UNFOCUS]
+#define MAKE_SELECT_FOCUS	RSC(UI).ATTR()[UI_MAKE_SELECT_FOCUS]
+#define MAKE_PRINT_UNFOCUS	RSC(UI).ATTR()[UI_MAKE_PRINT_UNFOCUS]
+#define MAKE_PRINT_FOCUS	RSC(UI).ATTR()[UI_MAKE_PRINT_FOCUS]
+#define MAKE_PRINT_DROP 	RSC(UI).ATTR()[UI_MAKE_PRINT_DROP]
 
 typedef unsigned char	ASCII;
 
@@ -604,9 +609,9 @@ extern void DestroyLayer(Layer *layer) ;
 
 extern void CreateLayer(Layer *layer, CoordSize size) ;
 
-#define ResetLayer(layer)						\
+#define ResetLayer(layer, attrib)					\
 ({									\
-	memset( layer->attr, 0x0, layer->size.wth * layer->size.hth );	\
+	memset(layer->attr, attrib.value, layer->size.wth * layer->size.hth); \
 	memset(layer->code, 0x0, layer->size.wth * layer->size.hth);	\
 })
 
@@ -704,7 +709,7 @@ extern void ForEachCellPrint(Window *win, WinList *list) ;
 extern void EraseWindowWithBorder(Window *win) ;
 
 extern void PrintLCD(	Layer *layer, CUINT col, CUINT row,
-			int len, char *pStr, enum PALETTE lcdColor) ;
+			int len, char *pStr, ATTRIBUTE lcdColor ) ;
 
 extern void MotionReset_Win(Window *win) ;
 
@@ -761,10 +766,10 @@ extern void WindowsUpdate(WinList *winList) ;
 		.row =	(win->matrix.origin.row + row)			\
 	};								\
 	memset(&LayerAt(win->layer, attr, cell.col, cell.row),		\
-		MakeAttr(BLACK,0,BLACK,0).value,			\
+		RSC(UI).ATTR()[UI_WIN_MENU_ERASE_CELL].value,		\
 		TCellAt(win, shift.horz, shift.vert).length);		\
 	memset(&LayerAt(win->layer, code, cell.col, cell.row),		\
-		MakeAttr(BLACK,0,BLACK,0).value,			\
+		RSC(UI).ATTR()[UI_WIN_MENU_ERASE_CELL].value,		\
 		TCellAt(win, shift.horz, shift.vert).length);		\
 })
 
@@ -896,7 +901,7 @@ extern __typeof__ (errno) LoadGeometries(char*) ;
   ({									\
 	char str[32];							\
 	size_t len = snprintf(str, 20+1, "%llu", UBENCH_METRIC(0));	\
-	LayerFillAt(layer, 0, 2, len, str, MakeAttr(MAGENTA, 0, BLACK, 1)); \
+	LayerFillAt(layer, 0, 2, len, str, RSC(UI).ATTR()[UI_LAYOUT_UBENCH]); \
   })
 #else
   #define UI_Draw_uBenchmark(layer) {}

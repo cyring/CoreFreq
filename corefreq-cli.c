@@ -5771,15 +5771,15 @@ int ByteReDim(unsigned long ival, int constraint, unsigned long *oval)
 
 #define Threshold(value, threshold1, threshold2, _low, _medium, _high)	\
 ({									\
-	enum PALETTE _ret;						\
+	ATTRIBUTE _retAttr;						\
 	if (value > threshold2) {					\
-		_ret = _high;						\
+		_retAttr = _high;					\
 	} else if (value > threshold1) {				\
-		_ret = _medium;						\
+		_retAttr = _medium;					\
 	} else {							\
-		_ret = _low;						\
+		_retAttr = _low;					\
 	}								\
-	_ret;								\
+	_retAttr;							\
 })
 
 #define frtostr(r, d, pStr)						\
@@ -5793,27 +5793,42 @@ int ByteReDim(unsigned long ival, int constraint, unsigned long *oval)
 ({									\
 	snprintf(Buffer, 4+1, "%04.0f", value1);			\
 	PrintLCD(layer, col, row, 4, Buffer,				\
-	    Threshold(value2,Ruler.Minimum,Ruler.Median,_GREEN,_YELLOW,_RED));\
+		Threshold(value2, Ruler.Minimum, Ruler.Median,		\
+			RSC(UI).ATTR()[UI_LAYOUT_LCD_CLOCK_LOW],	\
+			RSC(UI).ATTR()[UI_LAYOUT_LCD_CLOCK_MEDIUM],	\
+			RSC(UI).ATTR()[UI_LAYOUT_LCD_CLOCK_HIGH]));	\
 })
 
 #define Counter2LCD(layer, col, row, value)				\
 ({									\
 	snprintf(Buffer, 4+1, "%04.0f" , value);			\
 	PrintLCD(layer, col, row, 4, Buffer,				\
-		Threshold(value, 0.f, 1.f, _RED,_YELLOW,_WHITE));	\
+		Threshold(value, 0.f, 1.f,				\
+			RSC(UI).ATTR()[UI_LAYOUT_LCD_COUNTER_LOW],	\
+			RSC(UI).ATTR()[UI_LAYOUT_LCD_COUNTER_MEDIUM],	\
+			RSC(UI).ATTR()[UI_LAYOUT_LCD_COUNTER_HIGH]));	\
 })
 
 #define Load2LCD(layer, col, row, value)				\
-	PrintLCD(layer, col, row, 4, frtostr(value, 4, Buffer),		\
-		Threshold(value, 100.f/3.f, 100.f/1.5f, _WHITE,_YELLOW,_RED))
+	PrintLCD(layer, col, row, 4, frtostr(value, 4, Buffer) ,	\
+		Threshold(value, 100.f/3.f, 100.f/1.5f ,		\
+			RSC(UI).ATTR()[UI_LAYOUT_LCD_LOAD_LOW] ,	\
+			RSC(UI).ATTR()[UI_LAYOUT_LCD_LOAD_MEDIUM],	\
+			RSC(UI).ATTR()[UI_LAYOUT_LCD_LOAD_HIGH]))
 
 #define Idle2LCD(layer, col, row, value)				\
-	PrintLCD(layer, col, row, 4, frtostr(value, 4, Buffer),		\
-		Threshold(value, 100.f/3.f, 100.f/1.5f, _YELLOW,_WHITE,_GREEN))
+	PrintLCD(layer, col, row, 4, frtostr(value, 4, Buffer) ,	\
+		Threshold(value, 100.f/3.f, 100.f/1.5f ,		\
+			RSC(UI).ATTR()[UI_LAYOUT_LCD_IDLE_LOW] ,	\
+			RSC(UI).ATTR()[UI_LAYOUT_LCD_IDLE_MEDIUM],	\
+			RSC(UI).ATTR()[UI_LAYOUT_LCD_IDLE_HIGH]))
 
 #define Sys2LCD(layer, col, row, value) 				\
-	PrintLCD(layer, col, row, 4, frtostr(value, 4, Buffer),		\
-		Threshold(value, 100.f/6.6f, 50.0, _RED,_YELLOW,_WHITE))
+	PrintLCD(layer, col, row, 4, frtostr(value, 4, Buffer) ,	\
+		Threshold(value, 100.f/6.6f, 50.0,			\
+			RSC(UI).ATTR()[UI_LAYOUT_LCD_SYSTEM_LOW],	\
+			RSC(UI).ATTR()[UI_LAYOUT_LCD_SYSTEM_MEDIUM],	\
+			RSC(UI).ATTR()[UI_LAYOUT_LCD_SYSTEM_HIGH]))
 
 void ForEachCellPrint_Menu(Window *win, void *plist)
 {
@@ -6024,6 +6039,9 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 	StoreTCell(wMenu, SCANKEY_VOID, "", RSC(VOID).ATTR());
 /* Bottom Menu */
 	StoreWindow(wMenu, .color[0].select,
+				RSC(UI).ATTR()[UI_WIN_MENU_UNSELECT]);
+
+	StoreWindow(wMenu, .color[1].select,
 				RSC(UI).ATTR()[UI_WIN_MENU_SELECT]);
 
 	StoreWindow(wMenu, .color[0].title,
@@ -6034,7 +6052,7 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 
 	wMenu->matrix.select.col = matrixSelectCol;
 
-	StoreWindow(wMenu,	.Print,		ForEachCellPrint_Menu);
+	StoreWindow(wMenu,	.Print ,	ForEachCellPrint_Menu);
 	StoreWindow(wMenu,	.key.Enter,	MotionEnter_Cell);
 	StoreWindow(wMenu,	.key.Left,	MotionLeft_Menu);
 	StoreWindow(wMenu,	.key.Right,	MotionRight_Menu);
@@ -6349,7 +6367,7 @@ Window *CreateSettings(unsigned long long id)
 	StoreTCell(wSet, SCANKEY_NULL,  RSC(CREATE_SETTINGS_COND0).CODE(),
 					MAKE_PRINT_UNFOCUS);
 
-	StoreWindow(wSet, .title, (char*) RSC(SETTINGS_TITLE).CODE());
+	StoreWindow(wSet,	.title, (char*) RSC(SETTINGS_TITLE).CODE());
 
 	StoreWindow(wSet,	.key.WinLeft,	MotionOriginLeft_Win);
 	StoreWindow(wSet,	.key.WinRight,	MotionOriginRight_Win);
@@ -6450,9 +6468,9 @@ Window *CreateHelp(unsigned long long id)
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_BLANK).CODE(),
 					MAKE_PRINT_UNFOCUS);
 
-	StoreWindow(wHelp, .title, (char*) RSC(HELP_TITLE).CODE());
-	StoreWindow(wHelp, .color[0].select, MAKE_PRINT_UNFOCUS);
-	StoreWindow(wHelp, .color[1].select, MAKE_PRINT_FOCUS);
+	StoreWindow(wHelp,	.title, (char*) RSC(HELP_TITLE).CODE());
+	StoreWindow(wHelp,	.color[0].select, MAKE_PRINT_UNFOCUS);
+	StoreWindow(wHelp,	.color[1].select, MAKE_PRINT_FOCUS);
 
 	StoreWindow(wHelp,	.key.WinLeft,	MotionOriginLeft_Win);
 	StoreWindow(wHelp,	.key.WinRight,	MotionOriginRight_Win);
@@ -6521,7 +6539,7 @@ Window *CreateAdvHelp(unsigned long long id)
 				advHelp[idx].item,
 				attrib[advHelp[idx].theme] );
 	}
-	StoreWindow(wHelp, .title, (char*) RSC(ADV_HELP_TITLE).CODE());
+	StoreWindow(wHelp,	.title, (char*) RSC(ADV_HELP_TITLE).CODE());
 
 	StoreWindow(wHelp,	.key.WinLeft,	MotionOriginLeft_Win);
 	StoreWindow(wHelp,	.key.WinRight,	MotionOriginRight_Win);
@@ -6584,9 +6602,9 @@ Window *CreateAbout(unsigned long long id)
 
 		wAbout->matrix.select.row = wAbout->matrix.size.hth - 1;
 
-		StoreWindow(wAbout, .title, " CoreFreq ");
-		StoreWindow(wAbout, .color[0].select, MAKE_PRINT_UNFOCUS);
-		StoreWindow(wAbout, .color[1].select, MAKE_PRINT_FOCUS);
+		StoreWindow(wAbout,	.title, " CoreFreq ");
+		StoreWindow(wAbout,	.color[0].select, MAKE_PRINT_UNFOCUS);
+		StoreWindow(wAbout,	.color[1].select, MAKE_PRINT_FOCUS);
 
 		StoreWindow(wAbout,	.key.WinLeft,	MotionOriginLeft_Win);
 		StoreWindow(wAbout,	.key.WinRight,	MotionOriginRight_Win);
@@ -6738,7 +6756,7 @@ Window *CreateSysInfo(unsigned long long id)
 			break;
 		}
 		if (title != NULL) {
-			StoreWindow(wSysInfo, .title, (char*) title);
+			StoreWindow(wSysInfo,	.title, (char*) title);
 		}
 		StoreWindow(wSysInfo,	.key.Left,	MotionLeft_Win);
 		StoreWindow(wSysInfo,	.key.Right,	MotionRight_Win);
@@ -6896,7 +6914,7 @@ Window *CreateMemCtrl(unsigned long long id)
 	wIMC->matrix.select.col = 2;
 	wIMC->matrix.select.row = 1;
 
-	StoreWindow(wIMC, .title, (char*) RSC(MEM_CTRL_TITLE).CODE());
+	StoreWindow(wIMC,	.title, (char*) RSC(MEM_CTRL_TITLE).CODE());
 
 	StoreWindow(wIMC,	.key.Left,	MotionLeft_Win);
 	StoreWindow(wIMC,	.key.Right,	MotionRight_Win);
@@ -6950,9 +6968,12 @@ Window *CreateSortByField(unsigned long long id)
 
 		wSortBy->matrix.select.row = Shm->SysGate.sortByField;
 
-		StoreWindow(wSortBy, .color[0].select, MAKE_PRINT_DROP);
-		StoreWindow(wSortBy, .color[0].title, MAKE_PRINT_DROP);
-		StoreWindow(wSortBy, .color[1].title,
+		StoreWindow(wSortBy,	.color[0].select, MAKE_PRINT_DROP);
+		StoreWindow(wSortBy,	.color[1].select,
+					RSC(UI).ATTR()[UI_WIN_MENU_SELECT]);
+
+		StoreWindow(wSortBy,	.color[0].title, MAKE_PRINT_DROP);
+		StoreWindow(wSortBy,	.color[1].title,
 				RSC(UI).ATTR()[UI_WIN_SORT_BY_FIELD_TITLE]);
 
 		StoreWindow(wSortBy,	.Print,		ForEachCellPrint_Drop);
@@ -7102,9 +7123,9 @@ Window *CreateTracking(unsigned long long id)
 		GridCall(StoreTCell(wTrack,SCANKEY_NULL,Buffer,MAKE_PRINT_DROP),
 			UpdateTracker, (pid_t) trackList[ti].pid);
 	    }
-		StoreWindow(wTrack, .color[0].select, MAKE_PRINT_DROP);
-		StoreWindow(wTrack, .color[0].title, MAKE_PRINT_DROP);
-		StoreWindow(wTrack, .color[1].title,
+		StoreWindow(wTrack,	.color[0].select, MAKE_PRINT_DROP);
+		StoreWindow(wTrack,	.color[0].title, MAKE_PRINT_DROP);
+		StoreWindow(wTrack,	.color[1].title,
 					RSC(UI).ATTR()[UI_WIN_TRACKING_TITLE]);
 
 		StoreWindow(wTrack,	.Print, 	ForEachCellPrint_Drop);
@@ -8889,7 +8910,7 @@ Window *CreateExit(unsigned long long id, IssueList *issue, CUINT wth,CUINT hth)
 	StoreWindow(wExit,	.key.Up,	MotionUp_Win);
 	StoreWindow(wExit,	.key.Home,	MotionReset_Win);
 	StoreWindow(wExit,	.key.End,	MotionEnd_Cell);
-	StoreWindow(wExit, .title, (char*) RSC(EXIT_TITLE).CODE());
+	StoreWindow(wExit,	.title, (char*) RSC(EXIT_TITLE).CODE());
     }
 	return (wExit);
 }
@@ -9402,10 +9423,14 @@ int Shortcut(SCANKEY *scan)
 				RSC(SETTINGS_ROUTE_MWAIT).CODE(),
 					MAKE_PRINT_DROP, OPS_ROUTE_MWAIT );
 	if (wDrop != NULL) {
-		StoreWindow(	wDrop, .color[0].select, MAKE_PRINT_DROP);
-		StoreWindow(	wDrop, .color[0].title, MAKE_PRINT_DROP);
-		StoreWindow(	wDrop, .color[1].title,
+		StoreWindow(wDrop, .color[0].select, MAKE_PRINT_DROP);
+		StoreWindow(wDrop, .color[1].select,
+					RSC(UI).ATTR()[UI_WIN_MENU_SELECT]);
+
+		StoreWindow(wDrop, .color[0].title, MAKE_PRINT_DROP);
+		StoreWindow(wDrop, .color[1].title,
 					RSC(UI).ATTR()[UI_DROP_IDLE_ROUTE]);
+
 		StoreWindow(wDrop, .Print, ForEachCellPrint_Drop);
 
 		AppendWindow(wDrop, &winList);
@@ -13154,7 +13179,7 @@ void Layout_Header(Layer *layer, CUINT row)
 			lArch2 = RSZ(LAYOUT_HEADER_CACHES),
 			xArch2 = draw.Size.width-lArch2;
 
-	PrintLCD(layer, 0, row, 4, "::::", _CYAN);
+	PrintLCD(layer, 0, row, 4, "::::", RSC(UI).ATTR()[UI_LAYOUT_LCD_RESET]);
 
 	LayerDeclare(LAYOUT_HEADER_PROC, lProc0, xProc0, row, hProc0);
 	LayerDeclare(LAYOUT_HEADER_CPU , lProc1, xProc1, row, hProc1);
@@ -14103,9 +14128,9 @@ void Layout_CPU_To_String(const unsigned int cpu)
 
 void Layout_CPU_To_View(Layer *layer, const CUINT col, const CUINT row)
 {
-	LayerAt(layer,code, col + 0, row) = Buffer[0];
-	LayerAt(layer,code, col + 1, row) = Buffer[1];
-	LayerAt(layer,code, col + 2, row) = Buffer[2];
+	LayerAt(layer, code, col + 0, row) = Buffer[0];
+	LayerAt(layer, code, col + 1, row) = Buffer[1];
+	LayerAt(layer, code, col + 2, row) = Buffer[2];
 }
 
 void Layout_BCLK_To_View(Layer *layer, const CUINT col, const CUINT row)
@@ -14123,21 +14148,19 @@ CUINT Draw_Frequency_Load(	Layer *layer, CUINT row,
 	const CUINT	bar0 = ((ratio > Ruler.Maximum ? Ruler.Maximum : ratio)
 				* draw.Area.LoadWidth) / Ruler.Maximum,
 			bar1 = draw.Area.LoadWidth - bar0;
+	UNUSED(cpu);
 
+    if (bar0 > 0)
+    {
 	const ATTRIBUTE attr = ratio > Ruler.Median ?
 				RSC(UI).ATTR()[UI_DRAW_FREQUENCY_LOAD_HIGH]
 				: ratio > Ruler.Minimum ?
 				RSC(UI).ATTR()[UI_DRAW_FREQUENCY_LOAD_MEDIUM]
 				: RSC(UI).ATTR()[UI_DRAW_FREQUENCY_LOAD_LOW];
-	UNUSED(cpu);
-
 	LayerFillAt(layer, LOAD_LEAD, row, bar0, hBar, attr);
-
+    }
 	ClearGarbage(	layer, attr, (bar0 + LOAD_LEAD), row, bar1,
 			RSC(UI).ATTR()[UI_DRAW_FREQUENCY_LOAD_CLEAR].value );
-
-	ClearGarbage(layer, code, (bar0 + LOAD_LEAD), row, bar1, 0x0);
-
 	return (0);
 }
 
@@ -16219,7 +16242,7 @@ void Layout_Header_DualView_Footer(Layer *layer)
       if (cpu == Shm->Proc.Service.Core) {
 	Illuminates_CPU(layer, row, RSC(UI).ATTR()[UI_ILLUMINATES_CPU_SP]);
       } else if ((signed int) cpu == Shm->Proc.Service.Thread) {
-	Illuminates_CPU(layer, row, RSC(UI).ATTR()[UI_ILLUMINATES_CPU_ON]);
+	Illuminates_CPU(layer, row, RSC(UI).ATTR()[UI_ILLUMINATES_CPU_SP]);
       } else {
 	Illuminates_CPU(layer, row, RSC(UI).ATTR()[UI_ILLUMINATES_CPU_ON]);
 }
@@ -17012,11 +17035,11 @@ REASON_CODE Top(char option)
 	if (draw.Flag.clear) {
 		draw.Flag.clear  = 0;
 		draw.Flag.layout = 1;
-		ResetLayer(dLayer);
+		ResetLayer(dLayer, RSC(UI).ATTR()[UI_FUSE_RESET_LAYER]);
 	}
 	if (draw.Flag.layout) {
 		draw.Flag.layout = 0;
-		ResetLayer(sLayer);
+		ResetLayer(sLayer, RSC(UI).ATTR()[UI_FUSE_PAINT_LAYER]);
 		LayoutView[draw.Disposal](sLayer);
 	}
 	if (draw.Flag.daemon)

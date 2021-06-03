@@ -467,7 +467,7 @@ typedef void (*UPDATE_CALLBACK)(TGrid*, DATA_TYPE);
     if (draw.Flag.uBench) {						\
 	size_t len = snprintf(Buffer, 20+1, "%llu", UBENCH_METRIC(0));	\
 	LayerFillAt(	layer, 0, 0, len, Buffer,			\
-			MakeAttr(MAGENTA, 0, BLACK, 1) );		\
+			RSC(UI).ATTR()[UI_LAYOUT_UBENCH] );		\
     }									\
   })
 #else

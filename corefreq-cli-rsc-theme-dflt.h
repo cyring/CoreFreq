@@ -6,6 +6,90 @@
 
 #define RSC_UI_THM_DFLT_ATTR						\
 {									\
+	[UI_FUSE_RESET_LAYER] = {					\
+		.fg = BLACK, .un = 0, .bg = BLACK, .bf = 0		\
+	},								\
+	[UI_FUSE_PAINT_LAYER] = {					\
+		.fg = BLACK, .un = 0, .bg = BLACK, .bf = 0		\
+	},								\
+	[UI_MAKE_TITLE_UNFOCUS] = {					\
+		.fg = BLACK, .un = 0, .bg = BLUE, .bf = 1		\
+	},								\
+	[UI_MAKE_TITLE_FOCUS] = {					\
+		.fg = WHITE, .un = 0, .bg = CYAN, .bf = 1		\
+	},								\
+	[UI_MAKE_BORDER_UNFOCUS] = {					\
+		.fg = BLACK, .un = 0, .bg = BLUE, .bf = 1		\
+	},								\
+	[UI_MAKE_BORDER_FOCUS] = {					\
+		.fg = WHITE, .un = 0, .bg = BLUE, .bf = 1		\
+	},								\
+	[UI_MAKE_SELECT_UNFOCUS] = {					\
+		.fg = BLACK, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
+	[UI_MAKE_SELECT_FOCUS] = {					\
+		.fg = BLACK, .un = 0, .bg = CYAN, .bf = 0		\
+	},								\
+	[UI_MAKE_PRINT_UNFOCUS] = {					\
+		.fg = WHITE, .un = 0, .bg = BLACK, .bf = 0		\
+	},								\
+	[UI_MAKE_PRINT_FOCUS] = {					\
+		.fg = WHITE, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
+	[UI_MAKE_PRINT_DROP] = {					\
+		.fg = BLACK, .un = 0, .bg = WHITE, .bf = 0		\
+	},								\
+	[UI_LAYOUT_LCD_RESET] = {					\
+		.fg = CYAN, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
+	[UI_LAYOUT_LCD_CLOCK_LOW] = {					\
+		.fg = GREEN, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
+	[UI_LAYOUT_LCD_CLOCK_MEDIUM] = {				\
+		.fg = YELLOW, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
+	[UI_LAYOUT_LCD_CLOCK_HIGH] = {					\
+		.fg = RED, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
+	[UI_LAYOUT_LCD_COUNTER_LOW] =  {				\
+		.fg = RED, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
+	[UI_LAYOUT_LCD_COUNTER_MEDIUM] = {				\
+		.fg = YELLOW, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
+	[UI_LAYOUT_LCD_COUNTER_HIGH] = {				\
+		.fg = WHITE, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
+	[UI_LAYOUT_LCD_LOAD_LOW] = {					\
+		.fg = WHITE, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
+	[UI_LAYOUT_LCD_LOAD_MEDIUM] =  {				\
+		.fg = YELLOW, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
+	[UI_LAYOUT_LCD_LOAD_HIGH] = {					\
+		.fg = RED, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
+	[UI_LAYOUT_LCD_IDLE_LOW] = {					\
+		.fg = YELLOW, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
+	[UI_LAYOUT_LCD_IDLE_MEDIUM] =  {				\
+		.fg = WHITE, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
+	[UI_LAYOUT_LCD_IDLE_HIGH] = {					\
+		.fg = GREEN, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
+	[UI_LAYOUT_LCD_SYSTEM_LOW] = {					\
+		.fg = RED, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
+	[UI_LAYOUT_LCD_SYSTEM_MEDIUM] = {				\
+		.fg = YELLOW, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
+	[UI_LAYOUT_LCD_SYSTEM_HIGH] =  {				\
+		.fg = WHITE, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
+	[UI_LAYOUT_UBENCH] = {						\
+		.fg = MAGENTA, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
 	[UI_LAYOUT_HEADER_PROC_BRAND] = {				\
 		.fg = CYAN, .un = 0, .bg = BLACK, .bf = 1		\
 	},								\
@@ -177,14 +261,20 @@
 	[UI_DRAW_CARD_TASK_FILL] = {					\
 		.fg = WHITE, .un = 0, .bg = BLACK, .bf = 0		\
 	},								\
-	[UI_WIN_MENU_SELECT] = {					\
+	[UI_WIN_MENU_UNSELECT] = {					\
 		.fg = BLACK, .un = 0, .bg = WHITE, .bf = 0		\
+	},								\
+	[UI_WIN_MENU_SELECT] = {					\
+		.fg = BLACK, .un = 0, .bg = CYAN, .bf = 0		\
 	},								\
 	[UI_WIN_MENU_TITLE_UNFOCUS] =  {				\
 		.fg = BLACK, .un = 0, .bg = WHITE, .bf = 0		\
 	},								\
 	[UI_WIN_MENU_TITLE_FOCUS] = {					\
 		.fg = BLACK, .un = 0, .bg = WHITE, .bf = 1		\
+	},								\
+	[UI_WIN_MENU_ERASE_CELL] = {					\
+		.fg = BLACK, .un = 0, .bg = BLACK, .bf = 0		\
 	},								\
 	[UI_WIN_SORT_BY_FIELD_TITLE] = {				\
 		.fg = BLACK, .un = 0, .bg = WHITE, .bf = 1		\

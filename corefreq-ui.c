@@ -1195,7 +1195,7 @@ void EraseWindowWithBorder(Window *win)
 }
 
 void PrintLCD(	Layer *layer, CUINT col, CUINT row,
-		int len, char *pStr, enum PALETTE lcdColor)
+		int len, char *pStr, ATTRIBUTE lcdColor)
 {
 	register int j = len;
 	do {
@@ -1206,15 +1206,15 @@ void PrintLCD(	Layer *layer, CUINT col, CUINT row,
 
 		LayerFillAt(layer, offset, row,				\
 				3, LCD[hi][lo][0],			\
-				MakeAttr(lcdColor, 0, BLACK, 1));
+				lcdColor);
 
 		LayerFillAt(layer, offset, (row + 1),			\
 				3, LCD[hi][lo][1],			\
-				MakeAttr(lcdColor, 0, BLACK, 1));
+				lcdColor);
 
 		LayerFillAt(layer, offset, (row + 2),			\
 				3, LCD[hi][lo][2],			\
-				MakeAttr(lcdColor, 0, BLACK, 1));
+				lcdColor);
 		j--;
 	} while (j > 0) ;
 }
@@ -1418,7 +1418,7 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 		else
 			RemoveWindow(win, list);
 
-		ResetLayer(thisLayer);
+		ResetLayer(thisLayer, RSC(UI).ATTR()[UI_FUSE_RESET_LAYER]);
 		}
 		break;
 	case SCANKEY_TAB:
