@@ -7116,15 +7116,21 @@ Window *CreateTracking(unsigned long long id)
 			(TRACK_TASK | trackList[ti].pid),
 			Buffer,
 			(trackList[ti].pid == trackList[ti].tgid) ?
-			  MAKE_PRINT_DROP
+			  RSC(UI).ATTR()[UI_WIN_TRACKING_PARENT_PROCESS]
 			: RSC(UI).ATTR()[UI_WIN_TRACKING_CHILD_PROCESS]);
 
 		snprintf(Buffer, MAX_WIDTH-1, "%.*s", width, hSpace);
 
-		GridCall(StoreTCell(wTrack,SCANKEY_NULL,Buffer,MAKE_PRINT_DROP),
+		GridCall(StoreTCell(wTrack, SCANKEY_NULL, Buffer,
+				RSC(UI).ATTR()[UI_WIN_TRACKING_COUNTERS]),
 			UpdateTracker, (pid_t) trackList[ti].pid);
 	    }
-		StoreWindow(wTrack,	.color[0].select, MAKE_PRINT_DROP);
+		StoreWindow(wTrack,	.color[0].select,
+					RSC(UI).ATTR()[UI_MAKE_SELECT_UNFOCUS]);
+
+		StoreWindow(wTrack,	.color[1].select,
+					RSC(UI).ATTR()[UI_MAKE_SELECT_FOCUS]);
+
 		StoreWindow(wTrack,	.color[0].title, MAKE_PRINT_DROP);
 		StoreWindow(wTrack,	.color[1].title,
 					RSC(UI).ATTR()[UI_WIN_TRACKING_TITLE]);

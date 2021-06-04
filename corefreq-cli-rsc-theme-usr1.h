@@ -282,8 +282,14 @@
 	[UI_WIN_SORT_BY_FIELD_TITLE] = {				\
 		.fg = BLACK, .un = 0, .bg = WHITE, .bf = 1		\
 	},								\
+	[UI_WIN_TRACKING_PARENT_PROCESS] = {				\
+		.fg = WHITE, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
 	[UI_WIN_TRACKING_CHILD_PROCESS] = {				\
-		.fg = BLACK, .un = 0, .bg = WHITE, .bf = 1		\
+		.fg = WHITE, .un = 0, .bg = BLACK, .bf = 0		\
+	},								\
+	[UI_WIN_TRACKING_COUNTERS] = {					\
+		.fg = WHITE, .un = 0, .bg = BLACK, .bf = 0		\
 	},								\
 	[UI_WIN_TRACKING_TITLE] = {					\
 		.fg = BLACK, .un = 0, .bg = WHITE, .bf = 1		\
@@ -1758,9 +1764,9 @@
 
 #define RSC_BOX_EVENT_THM_USR1_ATTR					\
 {									\
-	LKW,								\
-	LMW,								\
-	HMW								\
+	LWK,								\
+	LMK,								\
+	HYK								\
 }
 
 #define RSC_CREATE_RECORDER_THM_USR1_ATTR				\

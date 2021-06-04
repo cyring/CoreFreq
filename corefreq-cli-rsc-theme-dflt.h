@@ -282,8 +282,14 @@
 	[UI_WIN_SORT_BY_FIELD_TITLE] = {				\
 		.fg = BLACK, .un = 0, .bg = WHITE, .bf = 1		\
 	},								\
+	[UI_WIN_TRACKING_PARENT_PROCESS] = {				\
+		.fg = BLACK, .un = 0, .bg = WHITE, .bf = 0		\
+	},								\
 	[UI_WIN_TRACKING_CHILD_PROCESS] = {				\
 		.fg = BLACK, .un = 0, .bg = WHITE, .bf = 1		\
+	},								\
+	[UI_WIN_TRACKING_COUNTERS] = {					\
+		.fg = BLACK, .un = 0, .bg = WHITE, .bf = 0		\
 	},								\
 	[UI_WIN_TRACKING_TITLE] = {					\
 		.fg = BLACK, .un = 0, .bg = WHITE, .bf = 1		\
