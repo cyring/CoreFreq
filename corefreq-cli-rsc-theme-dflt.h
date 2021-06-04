@@ -4,6 +4,9 @@
  * Licenses: GPL2
  */
 
+#define RSC_THEME_DFLT_CODE		/* 72 chars */			\
+"           Default theme by CyrIng.  Since 2015; updated 2021           "
+
 #define RSC_UI_THM_DFLT_ATTR						\
 {									\
 	[UI_FUSE_RESET_LAYER] = {					\
@@ -1796,3 +1799,6 @@
 	HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,			\
 	HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK				\
 }
+
+_Static_assert(strlen(RSC_THEME_DFLT_CODE) == strlen(RSC_BOX_THEME_BLANK_CODE),
+"Mandatory string length");

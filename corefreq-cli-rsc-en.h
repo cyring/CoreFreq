@@ -1433,6 +1433,11 @@
 #define RSC_BOX_LANG_TITLE_CODE_EN		" Languages "
 #define RSC_BOX_LANG_ENGLISH_CODE_EN		"     English     "
 #define RSC_BOX_LANG_FRENCH_CODE_EN		"     French      "
+#define RSC_BOX_LANG_BLANK_CODE 		"                 "
+
+#define RSC_BOX_THEME_TITLE_CODE_EN		" Themes "
+#define RSC_BOX_THEME_BLANK_CODE			\
+"                                                                        "
 
 #define RSC_BOX_SCOPE_THERMAL_TITLE_CODE_EN	" Thermal scope "
 #define RSC_BOX_SCOPE_VOLTAGE_TITLE_CODE_EN	" Voltage scope "
@@ -1462,17 +1467,20 @@
 #define RSC_ERROR_CMD_SYNTAX_CODE_EN					\
 		"CoreFreq."						\
 		"  Copyright (C) 2015-2021 CYRIL INGENIERIE\n\n"	\
-		"Usage:\t%s [-option <arguments>]\n"			\
+		"Usage:\t%s [-Option <argument>] [-Command <argument>]\n"\
 		"\n    Interface options\n"				\
-		"\t-0,1,2\tMemory unit in K,M,G Byte\n" 		\
-		"\t-F\tTemperature in Fahrenheit\n"			\
-		"\t-J  #\tSMBIOS string index number\n" 		\
-		"\t-Y\tShow Secret Data\n"				\
+		"\t-Ok\tMemory unit in kilobyte\n"			\
+		"\t-Om\tMemory unit in megabyte\n"			\
+		"\t-Og\tMemory unit in gigabyte\n"			\
+		"\t-OF\tTemperature in Fahrenheit\n"			\
+		"\t-OJ #\tSMBIOS string index number\n" 		\
+		"\t-OE #\tColor theme index number\n"			\
+		"\t-OY\tShow Secret Data\n"				\
+		"\n    Command options\n"				\
 		"\t-t <v>\tShow Top (default) with optional <v>iew:\n"	\
 		"\t\t{\tfrequency, instructions, core, idle, package,\n"\
 		"\t\t\ttasks, interrupts, sensors, voltage, power, slices  }\n"\
 		"\t-d\tShow Dashboard\n"				\
-		"\n    Command options\n"				\
 		"\t-C <#>\tMonitor Sensors\n"				\
 		"\t-V <#>\tMonitor Voltage\n"				\
 		"\t-W <#>\tMonitor Power\n"				\

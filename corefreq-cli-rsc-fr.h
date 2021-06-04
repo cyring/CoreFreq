@@ -1130,6 +1130,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_LANG_ENGLISH_CODE_FR		"     Anglais     "
 #define RSC_BOX_LANG_FRENCH_CODE_FR		"     Fran""\xa7""ais    "
 
+#define RSC_BOX_THEME_TITLE_CODE_FR		" Th""\xa8""mes "
+
 #define RSC_BOX_SCOPE_THERMAL_TITLE_CODE_FR	" Temp""\xa9""rature "
 #define RSC_BOX_SCOPE_VOLTAGE_TITLE_CODE_FR	" Tension "
 #define RSC_BOX_SCOPE_POWER_TITLE_CODE_FR	" Puissance "
@@ -1158,17 +1160,20 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_ERROR_CMD_SYNTAX_CODE_FR					\
 		"CoreFreq."						\
 		"  Copyright (C) 2015-2021 CYRIL INGENIERIE\n\n"	\
-		"Usage:\t%s [-option <arguments>]\n"			\
+		"Usage:\t%s [-Option <argument>] [-Commande <argument>]\n"\
 		"\n    Options de l'interface\n"			\
-		"\t-0,1,2\tUnité mémoire en K,M,G octet\n"		\
-		"\t-F\tTemperature en Fahrenheit\n"			\
-		"\t-J  #\tNuméro d'index de chaîne SMBIOS\n"		\
-		"\t-Y\tAfficher les données secrètes\n" 		\
+		"\t-Ok\tUnité mémoire en kilo-octet\n"			\
+		"\t-Om\tUnité mémoire en méga-octet\n"			\
+		"\t-Og\tUnité mémoire en giga-octet\n"			\
+		"\t-OF\tTemperature en Fahrenheit\n"			\
+		"\t-OJ #\tNuméro d'index de chaîne SMBIOS\n"		\
+		"\t-OE #\tNuméro d'index du thème de couleurs\n"	\
+		"\t-OY\tAfficher les données secrètes\n"		\
+		"\n    Options de commande\n"				\
 		"\t-t <v>\tAfficher Top (par défault); en option la <v>ue:\n"\
 		"\t\t{\tfrequency, instructions, core, idle, package,\n"\
 		"\t\t\ttasks, interrupts, sensors, voltage, power, slices  }\n"\
 		"\t-d\tAfficher le tableau de bord\n"			\
-		"\n    Options de commande\n"				\
 		"\t-C <#>\tMoniteur des Capteurs\n"			\
 		"\t-V <#>\tMoniteur de Voltage\n"			\
 		"\t-W <#>\tMoniteur de Puissance\n"			\

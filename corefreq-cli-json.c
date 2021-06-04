@@ -16,6 +16,7 @@
 #include "coretypes.h"
 #include "corefreq.h"
 #include "corefreq-ui.h"
+#include "corefreq-cli-rsc.h"
 #include "corefreq-cli.h"
 #include "corefreq-cli-json.h"
 #include "corefreq-cli-extra.h"

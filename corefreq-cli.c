@@ -26,8 +26,8 @@
 #include "coretypes.h"
 #include "corefreq.h"
 #include "corefreq-ui.h"
-#include "corefreq-cli.h"
 #include "corefreq-cli-rsc.h"
+#include "corefreq-cli.h"
 #include "corefreq-cli-json.h"
 #include "corefreq-cli-extra.h"
 
@@ -5744,7 +5744,8 @@ struct DRAW_ST draw = {
 	.cpuScroll	= 0,
 	.Load		= 0,
 	.Unit		= { .Memory = 0 },
-	.SmbIndex	= SMB_BOARD_NAME
+	.SmbIndex	= SMB_BOARD_NAME,
+	.Theme		= THM_DFLT
 };
 
 enum THERM_PWR_EVENTS processorEvents = EVENT_THERM_NONE;
@@ -9509,7 +9510,7 @@ int Shortcut(SCANKEY *scan)
 		break;
 	}
 	const Coordinate origin = {
-		.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 5
 	}, select = {
 		.col = 0,
@@ -9926,15 +9927,17 @@ int Shortcut(SCANKEY *scan)
 			.row = TOP_HEADER_ROW + 6
 		}, select = {
 			.col = 0,
-			.row = (GET_LOCALE() >= LOC_EN)
-				&& (GET_LOCALE() < LOC_CNT) ?
-					GET_LOCALE() : LOC_EN
+			.row = 1 + ((GET_LOCALE() >= LOC_EN)
+				 && (GET_LOCALE() < LOC_CNT) ?
+					GET_LOCALE() : LOC_EN)
 		};
 
 	Window *wBox = CreateBox(scan->key, origin, select,
 		(char*) RSC(BOX_LANG_TITLE).CODE(),
-		RSC(BOX_LANG_ENGLISH).CODE(), stateAttr[0], BOXKEY_LANG_ENGLISH,
-		RSC(BOX_LANG_FRENCH).CODE(), stateAttr[0], BOXKEY_LANG_FRENCH);
+		RSC(BOX_LANG_BLANK).CODE(), blankAttr	, SCANKEY_NULL,
+		RSC(BOX_LANG_ENGLISH).CODE(),stateAttr[0], BOXKEY_LANG_ENGLISH,
+		RSC(BOX_LANG_FRENCH).CODE(), stateAttr[0], BOXKEY_LANG_FRENCH,
+		RSC(BOX_LANG_BLANK).CODE(), blankAttr	, SCANKEY_NULL);
 
 		if (wBox != NULL) {
 			AppendWindow(wBox, &winList);
@@ -9966,7 +9969,43 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case SCANKEY_SHIFT_e:
-	SET_THEME(!GET_THEME());
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+			.col = (draw.Size.width - RSZ(BOX_THEME_BLANK)) / 2,
+			.row = TOP_HEADER_ROW + 11
+		}, select = {
+			.col = 0,
+			.row = 1 + GET_THEME()
+		};
+
+	Window *wBox = CreateBox(scan->key, origin, select,
+		(char*) RSC(BOX_THEME_TITLE).CODE(),
+		RSC(BOX_THEME_BLANK).CODE(), blankAttr, SCANKEY_NULL,
+		RSC(THEME_DFLT).CODE()	, stateAttr[0], BOXKEY_THEME_DFLT,
+		RSC(THEME_USR1).CODE()	, stateAttr[0], BOXKEY_THEME_USR1,
+		RSC(BOX_THEME_BLANK).CODE(), blankAttr, SCANKEY_NULL);
+
+		if (wBox != NULL) {
+			AppendWindow(wBox, &winList);
+		} else {
+			SetHead(&winList, win);
+		}
+	} else {
+		SetHead(&winList, win);
+	}
+    }
+    break;
+
+    case BOXKEY_THEME_DFLT:
+	SET_THEME(THM_DFLT);
+	draw.Flag.layout = 1;
+    break;
+
+    case BOXKEY_THEME_USR1:
+	SET_THEME(THM_USR1);
 	draw.Flag.layout = 1;
     break;
 
@@ -16981,6 +17020,8 @@ REASON_CODE Top(char option)
 
 	LoadGeometries(BuildConfigFQN("CoreFreq"));
 
+	SET_THEME(draw.Theme);
+
 	/* MAIN LOOP */
     while (!BITVAL(Shutdown, SYNC))
     {
@@ -17242,14 +17283,22 @@ int main(int argc, char *argv[])
 
 	do {
 	    switch (option) {
-	    case '0' ... '2':
-		draw.Unit.Memory = 10 * (option - '0');
-		break;
-	    case 'F':
-		Setting.fahrCels = 1;
-		break;
-	    case 'J':
-		if (++idx < argc) {
+	    case 'O':
+		switch (argv[idx][2]) {
+		case 'k':
+			draw.Unit.Memory = 10 * 0;
+			break;
+		case 'm':
+			draw.Unit.Memory = 10 * 1;
+			break;
+		case 'g':
+			draw.Unit.Memory = 10 * 2;
+			break;
+		case 'F':
+			Setting.fahrCels = 1;
+			break;
+		case 'J':
+		    if (++idx < argc) {
 			enum SMB_STRING usrIdx = SMB_BOARD_NAME;
 			if ((sscanf(argv[idx], "%u%c", &usrIdx, &trailing) != 1)
 			 || (usrIdx >= SMB_STRING_COUNT)) {
@@ -17257,10 +17306,26 @@ int main(int argc, char *argv[])
 			} else {
 				draw.SmbIndex = usrIdx;
 			}
+		    }
+			break;
+		case 'Y':
+			Setting.secret = 0;
+			break;
+		case 'E':
+		    if (++idx < argc) {
+			enum THEMES theme;
+			if ((sscanf(argv[idx], "%u%c", &theme, &trailing) != 1)
+			|| (theme >= THM_CNT)) {
+				goto SYNTAX_ERROR;
+			} else {
+				draw.Theme = theme;
+			}
+		    }
+			break;
+		default: /* `/0' */
+			goto SYNTAX_ERROR;
+			break;
 		}
-		break;
-	    case 'Y':
-		Setting.secret = 0;
 		break;
 	    case 'B':
 		reason = SysInfoSMBIOS(NULL, 80, NULL);

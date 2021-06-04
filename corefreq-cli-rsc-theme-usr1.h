@@ -4,6 +4,9 @@
  * Licenses: GPL2
  */
 
+#define RSC_THEME_USR1_CODE		/* 72 chars */			\
+"       Strawberry theme by CyIng.  Updated by <Nickname> June 2021      "
+
 #define RSC_UI_THM_USR1_ATTR						\
 {									\
 	[UI_FUSE_RESET_LAYER] = {					\
@@ -1796,3 +1799,6 @@
 	HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,			\
 	HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK				\
 }
+
+_Static_assert(strlen(RSC_THEME_USR1_CODE) == strlen(RSC_BOX_THEME_BLANK_CODE),
+"Mandatory string length");
