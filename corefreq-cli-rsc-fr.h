@@ -1165,12 +1165,12 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 		"\t-Ok\tUnité mémoire en kilo-octet\n"			\
 		"\t-Om\tUnité mémoire en méga-octet\n"			\
 		"\t-Og\tUnité mémoire en giga-octet\n"			\
-		"\t-OF\tTemperature en Fahrenheit\n"			\
+		"\t-OF\tTempérature en Fahrenheit\n"			\
 		"\t-OJ #\tNuméro d'index de chaîne SMBIOS\n"		\
 		"\t-OE #\tNuméro d'index du thème de couleurs\n"	\
 		"\t-OY\tAfficher les données secrètes\n"		\
 		"\n    Options de commande\n"				\
-		"\t-t <v>\tAfficher Top (par défault); en option la <v>ue:\n"\
+		"\t-t <v>\tAfficher Top (par défault); en option, la <v>ue:\n"\
 		"\t\t{\tfrequency, instructions, core, idle, package,\n"\
 		"\t\t\ttasks, interrupts, sensors, voltage, power, slices  }\n"\
 		"\t-d\tAfficher le tableau de bord\n"			\

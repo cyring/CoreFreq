@@ -1773,6 +1773,7 @@
 #define RSC_TOPOLOGY_ALT_ITEM1_CODE	"   ID     ID "
 #define RSC_TOPOLOGY_ALT_ITEM2_CODE	" CMP ID    ID"
 #define RSC_TOPOLOGY_ALT_ITEM3_CODE	"CCD CCX ID/ID"
+#define RSC_TOPOLOGY_BSP_COMM_CODE	" Boot Strap Processor "
 
 #define RSC_TECH_HYPERV_NONE_CODE	"          "
 #define RSC_TECH_BARE_METAL_CODE	"Bare-Metal"

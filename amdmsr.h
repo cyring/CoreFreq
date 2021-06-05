@@ -364,14 +364,17 @@ typedef union
 	IoCfgGpFault	: 21-20,
 	LockTscToCurrP0 : 22-21,/* RW:lock the TSC to the current P0 frequency*/
 	Reserved6	: 24-22,
-	TscFreqSel	: 25-24,
-	CpbDis		: 26-25,
-	EffFreqCntMwait : 27-26,
-	EffFreqROLock	: 28-27,
+	TscFreqSel	: 25-24, /* RO: 1=TSC increments at the P0 frequency */
+	CpbDis		: 26-25, /* RW: 1=Core Performance Boost disable */
+	EffFreqCntMwait : 27-26, /* RW: A-M-Perf increment during MWAIT */
+	EffFreqROLock	: 28-27, /* W1: Lock A-M-Perf & IR-Perf counters */
 	Reserved7	: 29-28,
 	CSEnable	: 30-29,
 	IRPerfEn	: 31-30, /* RW: enable instructions retired counter */
-	Reserved	: 64-31;
+	Reserved8	: 32-31,
+	Undefined	: 33-32, /* RW: enable by default		*/
+	SmmPgCfgLock	: 34-33,
+	Reserved9	: 64-34;
     } Family_17h;
     struct
     {

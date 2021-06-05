@@ -4797,48 +4797,53 @@ void Instructions(unsigned int iter)
 #define TOPO_MATX 13
 #define TOPO_MATY 6
 
-void Topology_Std(char *pStr, unsigned int cpu)
+ASCII* Topology_Std(char *pStr, unsigned int cpu)
 {
     if (Shm->Cpu[cpu].Topology.MP.BSP) {
 	snprintf(&pStr[ 0], 4+(2*11)+1, "%03u:BSP%5d\x20",
 			cpu,
 			Shm->Cpu[cpu].Topology.ApicID);
+	return (RSC(TOPOLOGY_BSP_COMM).CODE());
     } else {
 	snprintf(&pStr[ 0], 1+(3*11)+1, "%03u:%3d%5d\x20",
 			cpu,
 			Shm->Cpu[cpu].Topology.PackageID,
 			Shm->Cpu[cpu].Topology.ApicID);
+	return (NULL);
     }
 }
 
-void Topology_SMT(char *pStr, unsigned int cpu)
+ASCII* Topology_SMT(char *pStr, unsigned int cpu)
 {
-	Topology_Std(pStr, cpu);
+	ASCII *comment = Topology_Std(pStr, cpu);
 
 	snprintf(&pStr[TOPO_MATX+1], 1+(2*11)+1, "%5d\x20\x20%5d\x20",
 			Shm->Cpu[cpu].Topology.CoreID,
 			Shm->Cpu[cpu].Topology.ThreadID);
+	return (comment);
 }
 
-void Topology_CMP(char *pStr, unsigned int cpu)
+ASCII* Topology_CMP(char *pStr, unsigned int cpu)
 {
-	Topology_Std(pStr, cpu);
+	ASCII *comment = Topology_Std(pStr, cpu);
 
 	snprintf(&pStr[TOPO_MATX+1], (3*11)+1, "%3u%4d%6d",
 			Shm->Cpu[cpu].Topology.Cluster.CMP,
 			Shm->Cpu[cpu].Topology.CoreID,
 			Shm->Cpu[cpu].Topology.ThreadID);
+	return (comment);
 }
 
-void Topology_CCD(char *pStr, unsigned int cpu)
+ASCII* Topology_CCD(char *pStr, unsigned int cpu)
 {
-	Topology_Std(pStr, cpu);
+	ASCII *comment = Topology_Std(pStr, cpu);
 
 	snprintf(&pStr[TOPO_MATX+1], (4*11)+1, "%3u%3u%4d%3d",
 			Shm->Cpu[cpu].Topology.Cluster.CCD,
 			Shm->Cpu[cpu].Topology.Cluster.CCX,
 			Shm->Cpu[cpu].Topology.CoreID,
 			Shm->Cpu[cpu].Topology.ThreadID);
+	return (comment);
 }
 
 const char *TopologyStrOFF[] = {
@@ -4889,7 +4894,7 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 
   if (strID != NULL)
   {
-	void (*TopologyFunc)(char*, unsigned int) = Topology_SMT;
+	ASCII* (*TopologyFunc)(char*, unsigned int) = Topology_SMT;
 /* Row Mark */
 	PRT(MAP, attrib[2], TopologyHeader[0]);
 	PRT(MAP, attrib[2], TopologyHeader[1]);
@@ -4955,9 +4960,9 @@ void Topology(Window *win, CELL_FUNC OutFunc)
     {
 	if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
 	{
-		TopologyFunc(strID, cpu);
+		ASCII *comment = TopologyFunc(strID, cpu);
 
-		PRT(MAP, attrib[3], &strID[ 0]);
+		GridHover(PRT(MAP, attrib[3], &strID[ 0]), (char*) comment);
 		PRT(MAP, attrib[0], &strID[14]);
 
 	    for (level = 0; level < CACHE_MAX_LEVEL; level++)

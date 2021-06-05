@@ -5,7 +5,7 @@
  */
 
 #define RSC_THEME_USR1_CODE		/* 72 chars */			\
-"       Strawberry theme by CyIng.  Updated by <Nickname> June 2021      "
+"        Strawberry theme by CyrIng.  Updated by CyrIng, June 2021       "
 
 #define RSC_UI_THM_USR1_ATTR						\
 {									\
@@ -253,10 +253,10 @@
 		.fg = BLACK, .un = 0, .bg = WHITE, .bf = 0		\
 	},								\
 	[UI_DRAW_CARD_CORE_LOW] = {					\
-		.fg = BLUE, .un = 0, .bg = WHITE, .bf = 0		\
+		.fg = BLACK, .un = 0, .bg = WHITE, .bf = 1		\
 	},								\
 	[UI_DRAW_CARD_CORE_MEDIUM] = {					\
-		.fg = BLUE, .un = 0, .bg = WHITE, .bf = 0		\
+		.fg = RED, .un = 0, .bg = WHITE, .bf = 0		\
 	},								\
 	[UI_DRAW_CARD_CORE_HIGH] = {					\
 		.fg = RED, .un = 0, .bg = WHITE, .bf = 1		\
