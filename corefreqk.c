@@ -5915,8 +5915,6 @@ long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod)
   if (pClockMod != NULL) {
     if ((pClockMod->NC >= 1) && (pClockMod->NC <= 7))
     {
-      if (PUBLIC(RO(Proc))->Registration.Experimental)
-      {
 	CLOCK_ZEN_ARG ClockZen = {	/* P[1..7]-States allowed	*/
 		.pClockMod  = pClockMod,
 		.PstateAddr = MSR_AMD_PSTATE_DEF_BASE + pClockMod->NC,
@@ -5924,9 +5922,6 @@ long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod)
 		.rc = RC_SUCCESS
 	};
 	return (For_All_AMD_Zen_Clock(&ClockZen, TurboClock_AMD_Zen_PerCore));
-      } else {
-	return (-RC_EXPERIMENTAL);
-      }
     } else {
 	return (-RC_UNIMPLEMENTED);
     }
@@ -5940,7 +5935,6 @@ long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
   if (pClockMod != NULL) {
     switch (pClockMod->NC) {
     case CLOCK_MOD_MAX:
-      if (PUBLIC(RO(Proc))->Registration.Experimental)
       {
 	CLOCK_ZEN_ARG ClockZen = {	/* P[0]:Max non-boosted P-State */
 		.pClockMod  = pClockMod,
@@ -5949,8 +5943,6 @@ long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 		.rc = RC_SUCCESS
 	};
 	return(For_All_AMD_Zen_BaseClock(&ClockZen, BaseClock_AMD_Zen_PerCore));
-      } else {
-	return (-RC_EXPERIMENTAL);
       }
     case CLOCK_MOD_TGT:
       {
