@@ -4,19 +4,66 @@
  * Licenses: GPL2
  */
 
-#define RSC_COPY_R0_EN "      by CyrIng                                     "
-#define RSC_COPY_R1_EN "                                                    "
-#define RSC_COPY_R2_EN "            (C)2015-2021 CYRIL INGENIERIE           "
+#define RSC_COPY0_CODE_EN "      by CyrIng                                     "
+#define RSC_COPY1_CODE_EN "                                                    "
+#define RSC_COPY2_CODE_EN "            (C)2015-2021 CYRIL INGENIERIE           "
 
 #define RSC_LAYOUT_HEADER_PROC_CODE_EN					\
 {									\
 	' ','P','r','o','c','e','s','s','o','r',' ','[' 		\
 }
 
+#define RSC_LAYOUT_HEADER_CPU_CODE_EN					\
+{									\
+	']',' ',' ',' ',' ','/',' ',' ',' ',' ','C','P','U'		\
+}
+
+#define RSC_LAYOUT_HEADER_ARCH_CODE_EN					\
+{									\
+	' ','A','r','c','h','i','t','e','c','t','u','r','e',' ','['	\
+}
+
+#define RSC_LAYOUT_HEADER_CACHE_L1_CODE_EN				\
+{									\
+	']',' ','C','a','c','h','e','s',' ',				\
+	'L','1',' ','I','n','s','t','=',' ',' ',' ',			\
+	'D','a','t','a','=',' ',' ',' ','K','B' 			\
+}
+
 #define RSC_LAYOUT_HEADER_BCLK_CODE_EN					\
 {									\
 	' ','B','a','s','e',' ','C','l','o','c','k',' ',		\
 	'~',' ','0','0','0',',','0','0','0',',','0','0','0',' ','H','z' \
+}
+
+#define RSC_LAYOUT_HEADER_CACHES_CODE_EN				\
+{									\
+	'L','2','=',' ',' ',' ',' ',' ',' ',' ',			\
+	'L','3','=',' ',' ',' ',' ',' ',' ','K','B'			\
+}
+
+#define RSC_LAYOUT_RULER_LOAD_CODE_EN					\
+{									\
+	'-','-','-',' ', '!',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-' \
 }
 
 #define RSC_LAYOUT_RULER_REL_LOAD_CODE_EN				\
@@ -29,6 +76,67 @@
 {									\
 	'A','b','s','o','l','u','t','e',' ','f','r','e','q','u','e','n',\
 	'c','y' 							\
+}
+
+#define RSC_LAYOUT_MONITOR_FREQUENCY_CODE_EN				\
+{									\
+	' ',' ',' ',' ',' ',0x0,' ',' ',' ',0x0,' ',' ',0x0,' ',' ',0x0,\
+	' ',' ',' ',' ',0x0,' ',' ',0x0,' ',' ',' ',' ',0x0,' ',' ',0x0,\
+	' ',' ',' ',' ',0x0,' ',' ',0x0,' ',' ',' ',' ',0x0,' ',' ',0x0,\
+	' ',' ',' ',' ',0x0,' ',' ',0x0,' ',' ',' ',' ',0x0,' ',' ',0x0,\
+	' ',' ',' ',' ',' ',0x0,' ',' ',' ',0x0,' ',' ',' '		\
+}
+
+#define RSC_LAYOUT_MONITOR_INST_CODE_EN					\
+{									\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',0x0,' ',' ',' ',' ',\
+	' ',' ',0x0,0x0,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',0x0,' ',\
+	' ',' ',' ',' ',' ',0x0,0x0,' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',0x0,' ',' ',' ',' ',' ',' ',0x0,0x0,' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '		\
+}
+
+#define RSC_LAYOUT_MONITOR_COMMON_CODE_EN				\
+{									\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '		\
+}
+
+#define RSC_LAYOUT_MONITOR_TASKS_CODE_EN				\
+{									\
+	' ',' ',' ',' ',' ',0x0,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' \
+}
+
+#define RSC_LAYOUT_MONITOR_SLICE_CODE_EN				\
+{									\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '	\
 }
 
 #define RSC_LAYOUT_RULER_FREQUENCY_CODE_EN				\
@@ -79,6 +187,126 @@
 	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-' \
 }
 
+#define RSC_LAYOUT_RULER_FREQUENCY_PKG_CODE_EN				\
+{									\
+	'%',' ','P','k','g',' ','[',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',']',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-' \
+}
+
+#define RSC_LAYOUT_RULER_INST_CODE_EN					\
+{									\
+	'-','-','-','-','-','-','-','-','-','-','-','-',' ','I','P','S',\
+	' ','-','-','-','-','-','-','-','-','-','-','-','-','-','-',' ',\
+	'I','P','C',' ','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-',' ','C','P','I',' ','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-',' ','I','N','S','T',' ','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-' \
+}
+
+#define RSC_LAYOUT_RULER_CYCLES_CODE_EN 				\
+{									\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-',' ','C',\
+	'0',':','U','C','C',' ','-','-','-','-','-','-','-','-','-','-',\
+	' ','C','0',':','U','R','C',' ','-','-','-','-','-','-','-','-',\
+	'-','-','-','-',' ','C','1',' ','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-',' ','T','S','C',' ','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-' \
+}
+
+#define RSC_LAYOUT_RULER_CSTATES_CODE_EN				\
+{									\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	' ','C','1',' ','-','-','-','-','-','-','-','-','-','-','-','-',\
+	' ','C','2',':','C','3',' ','-','-','-','-','-','-','-','-','-',\
+	'-','-',' ','C','4',':','C','6',' ','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-',' ','C','7',' ','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-' \
+}
+
+#define RSC_LAYOUT_RULER_INTERRUPTS_CODE_EN				\
+{									\
+	'-','-','-','-','-','-','-','-','-','-',' ','S','M','I',' ','-',\
+	'-','-','-','-','-','-','-','-','-','-','-',' ','N','M','I','[',\
+	' ','L','O','C','A','L',' ',' ',' ','U','N','K','N','O','W','N',\
+	' ',' ','P','C','I','_','S','E','R','R','#',' ',' ','I','O','_',\
+	'C','H','E','C','K',']',' ','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-' \
+}
+
 #define RSC_LAYOUT_RULER_PACKAGE_CODE_EN				\
 	"------------ Cycles ---- State -------------------- TSC Rati"	\
 	"o ----------------------------------------------------------"	\
@@ -94,6 +322,64 @@
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"--------------------"
+
+#define RSC_LAYOUT_PACKAGE_PC_CODE_EN					\
+{									\
+	' ',' ','0','0',':',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' \
+}
+
+#define RSC_LAYOUT_PACKAGE_PC02_CODE_EN {'P', 'C', '0', '2'}
+#define RSC_LAYOUT_PACKAGE_PC03_CODE_EN {'P', 'C', '0', '3'}
+#define RSC_LAYOUT_PACKAGE_PC04_CODE_EN {'P', 'C', '0', '4'}
+#define RSC_LAYOUT_PACKAGE_PC06_CODE_EN {'P', 'C', '0', '6'}
+#define RSC_LAYOUT_PACKAGE_PC07_CODE_EN {'P', 'C', '0', '7'}
+#define RSC_LAYOUT_PACKAGE_PC08_CODE_EN {'P', 'C', '0', '8'}
+#define RSC_LAYOUT_PACKAGE_PC09_CODE_EN {'P', 'C', '0', '9'}
+#define RSC_LAYOUT_PACKAGE_PC10_CODE_EN {'P', 'C', '1', '0'}
+#define RSC_LAYOUT_PACKAGE_MC06_CODE_EN {'M', 'C', '0', '6'}
+
+#define RSC_LAYOUT_PACKAGE_UNCORE_CODE_EN				\
+{									\
+	' ','T','S','C',':',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ','U','N','C','O','R','E',':',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' \
+}
 
 #define RSC_LAYOUT_TASKS_STATE_SORTED_CODE_EN				\
 {									\
@@ -146,6 +432,16 @@
 	' ', 'V','a','l','u','e',' ','[',' ',' ',' ',']',' '		\
 }
 
+#define RSC_LAYOUT_TASKS_VALUE_OFF_CODE_EN				\
+{									\
+	'O','F','F'							\
+}
+
+#define RSC_LAYOUT_TASKS_VALUE_ON_CODE_EN				\
+{									\
+	' ','O','N'							\
+}
+
 #define RSC_LAYOUT_TASKS_TRACKING_CODE_EN				\
 {									\
 	' ','T','r','a','c','k','i', 'n','g',' ','P','I','D',' ','[',' ',\
@@ -176,7 +472,7 @@
 	"------------------------------------------------------------"	\
 	"--------------------"
 
-#define RSC_LAYOUT_RULER_PWR_PFM_CODE_EN				\
+#define RSC_LAYOUT_RULER_PWR_PLATFORM_CODE_EN				\
 	"-RAM:   .    ( ) Platform:   .    ( ) - Package:   .    ( ) "	\
 	"- Cores:   .    ( )-----------------------------------------"	\
 	"------------------------------------------------------------"	\
@@ -224,6 +520,30 @@
 	"------------------------------------------------------------"	\
 	"--------------------"
 
+#define RSC_LAYOUT_FOOTER_TECH_X86_CODE_EN				\
+{									\
+	'T','e','c','h',' ','[',' ',' ','T','S','C',' ',' ',',' 	\
+}
+
+#define RSC_LAYOUT_FOOTER_TECH_INTEL_CODE_EN				\
+{									\
+	'H','T','T',',','E','I','S','T',',','I','D','A',',',		\
+	'T','U','R','B','O',',','C','1','E',',',			\
+	' ','P','M',',','C','3','A',',','C','1','A',',',		\
+	'C','3','U',',','C','1','U',',',				\
+	'T','M',',','H','O','T',']',' ',				\
+	'V','[',' ','.',' ',' ',']',' ','T','[',' ',' ',' ',' ',']' 	\
+}
+
+#define RSC_LAYOUT_FOOTER_TECH_AMD_CODE_EN				\
+{									\
+	'S','M','T',',','C','n','Q',',','H','W','P',',',		\
+	'B','O','O','S','T',',','C','1','E',',','C','C','6',		\
+	',','P','C','6',',','C','C','x',',','D','T','S',',',		\
+	'T','T','P',',','H','O','T',']',' ',' ',' ',' ',' ',		\
+	'V','[',' ','.',' ',' ',']',' ','T','[',' ',' ',' ',' ',']' 	\
+}
+
 #define RSC_LAYOUT_FOOTER_SYSTEM_CODE_EN				\
 {									\
 	'T','a','s','k','s',' ','[',' ',' ',' ',' ',' ',' ',']',	\
@@ -231,10 +551,40 @@
 	' ','/',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','B',']' 	\
 }
 
-#define RSC_CREATE_HOTPLUG_CPU_ENABLE_CODE_EN	"<   ENABLE >"
-#define RSC_CREATE_HOTPLUG_CPU_DISABLE_CODE_EN	"<  DISABLE >"
-#define RSC_CREATE_HOTPLUG_CPU_ONLINE_CODE_EN	" %03u   On   "
-#define RSC_CREATE_HOTPLUG_CPU_OFFLINE_CODE_EN	" %03u  Off   "
+#define RSC_LAYOUT_CARD_CORE_ONLINE_COND0_CODE_EN			\
+{									\
+	'[',' ',' ',' ',' ',' ',' ',' ',' ','C',' ',']' 		\
+}
+
+#define RSC_LAYOUT_CARD_CORE_ONLINE_COND1_CODE_EN			\
+{									\
+	'[',' ',' ',' ',' ',' ',' ',' ',' ','F',' ',']' 		\
+}
+
+#define RSC_LAYOUT_CARD_CORE_OFFLINE_CODE_EN				\
+{									\
+	'[',' ',' ',' ',' ',' ',' ','O','F','F',' ',']' 		\
+}
+
+#define RSC_LAYOUT_CARD_CLK_CODE_EN					\
+{									\
+	'[',' ','0','0','0','.','0',' ','M','H','z',']' 		\
+}
+
+#define RSC_LAYOUT_CARD_UNCORE_CODE_EN					\
+{									\
+	'[','U','N','C','O','R','E',' ',' ',' ',' ',']' 		\
+}
+
+#define RSC_LAYOUT_CARD_BUS_CODE_EN					\
+{									\
+	'[','B','u','s',' ',' ',' ',' ',' ',' ',' ',']' 		\
+}
+
+#define RSC_LAYOUT_CARD_MC_CODE_EN					\
+{									\
+	'[',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',']' 		\
+}
 
 #define RSC_LAYOUT_CARD_LOAD_CODE_EN					\
 {									\
@@ -246,10 +596,20 @@
 	'[',' ',' ','%','I','D','L','E',' ',' ',' ',']' 		\
 }
 
+#define RSC_LAYOUT_CARD_RAM_CODE_EN					\
+{									\
+	'[',' ',' ',' ',' ',' ',' ','/',' ',' ',' ',']' 		\
+}
+
 #define RSC_LAYOUT_CARD_TASK_CODE_EN					\
 {									\
 	'[','T','a','s','k','s',' ',' ',' ',' ',' ',']' 		\
 }
+
+#define RSC_CREATE_HOTPLUG_CPU_ENABLE_CODE_EN	"<   ENABLE >"
+#define RSC_CREATE_HOTPLUG_CPU_DISABLE_CODE_EN	"<  DISABLE >"
+#define RSC_CREATE_HOTPLUG_CPU_ONLINE_CODE_EN	" %03u   On   "
+#define RSC_CREATE_HOTPLUG_CPU_OFFLINE_CODE_EN	" %03u  Off   "
 
 #define RSC_PROCESSOR_TITLE_CODE_EN	" Processor "
 #define RSC_PROCESSOR_CODE_EN		"Processor"
@@ -287,7 +647,7 @@
 #define RSC_SCOPE_CORE_CODE_EN		"Core"
 #define RSC_SCOPE_PACKAGE_CODE_EN	" Pkg"
 
-#define RSC_CPUID_TITLE_EN		\
+#define RSC_CPUID_TITLE_CODE_EN 	\
 	" function           EAX          EBX          ECX          EDX "
 
 #define RSC_LARGEST_STD_FUNC_CODE_EN	"Largest Standard Function"
@@ -506,6 +866,7 @@
 #define RSC_TECHNOLOGIES_EEO_CODE_EN	"Energy Efficiency Optimization"
 #define RSC_TECHNOLOGIES_R2H_CODE_EN	"Race To Halt Optimization"
 #define RSC_TECHNOLOGIES_HYPERV_CODE_EN "Hypervisor"
+#define RSC_TECHNOLOGIES_WDT_CODE_EN	"Watchdog Timer"
 
 #define RSC_PERF_MON_TITLE_CODE_EN	" Performance Monitoring "
 #define RSC_VERSION_CODE_EN		"Version"
@@ -818,6 +1179,7 @@
 #define RSC_MENU_ITEM_KERNEL_CODE_EN		" Kernel data        [k] "
 #define RSC_MENU_ITEM_HOTPLUG_CODE_EN		" HotPlug CPU        [#] "
 #define RSC_MENU_ITEM_TOOLS_CODE_EN		" Tools              [O] "
+#define RSC_MENU_ITEM_THEME_CODE_EN		" Theme              [E] "
 #define RSC_MENU_ITEM_ABOUT_CODE_EN		" About              [a] "
 #define RSC_MENU_ITEM_HELP_CODE_EN		" Help               [h] "
 #define RSC_MENU_ITEM_KEYS_CODE_EN		" Shortcuts         [F1] "
@@ -825,16 +1187,16 @@
 #define RSC_MENU_ITEM_QUIT_CODE_EN		" Quit        [Ctrl]+[x] "
 #define RSC_MENU_ITEM_DASHBOARD_CODE_EN 	" Dashboard          [d] "
 #define RSC_MENU_ITEM_FREQUENCY_CODE_EN 	" Frequency          [f] "
-#define RSC_MENU_ITEM_INST_CYCLE_CODE_EN	" Inst cycles        [i] "
-#define RSC_MENU_ITEM_CORE_CYCLE_CODE_EN	" Core cycles        [c] "
-#define RSC_MENU_ITEM_IDLE_STATE_CODE_EN	" Idle C-States      [l] "
-#define RSC_MENU_ITEM_PKG_CYCLE_CODE_EN 	" Package cycles     [g] "
+#define RSC_MENU_ITEM_INST_CYCLES_CODE_EN	" Inst cycles        [i] "
+#define RSC_MENU_ITEM_CORE_CYCLES_CODE_EN	" Core cycles        [c] "
+#define RSC_MENU_ITEM_IDLE_STATES_CODE_EN	" Idle C-States      [l] "
+#define RSC_MENU_ITEM_PKG_CYCLES_CODE_EN	" Package cycles     [g] "
 #define RSC_MENU_ITEM_TASKS_MON_CODE_EN 	" Tasks Monitoring   [x] "
 #define RSC_MENU_ITEM_SYS_INTER_CODE_EN 	" System Interrupts  [q] "
 #define RSC_MENU_ITEM_SENSORS_CODE_EN		" Sensors            [C] "
 #define RSC_MENU_ITEM_VOLTAGE_CODE_EN		"   Voltage          [V] "
 #define RSC_MENU_ITEM_POWER_CODE_EN		"   Power            [W] "
-#define RSC_MENU_ITEM_SLICE_CTR_CODE_EN 	" Slice counters     [T] "
+#define RSC_MENU_ITEM_SLICE_CTRS_CODE_EN	" Slice counters     [T] "
 #define RSC_MENU_ITEM_PROCESSOR_CODE_EN 	" Processor          [p] "
 #define RSC_MENU_ITEM_TOPOLOGY_CODE_EN		" Topology           [m] "
 #define RSC_MENU_ITEM_FEATURES_CODE_EN		" Features           [e] "
@@ -846,27 +1208,34 @@
 #define RSC_MENU_ITEM_SYS_REGS_CODE_EN		" System Registers   [R] "
 #define RSC_MENU_ITEM_MEM_CTRL_CODE_EN		" Memory Controller  [M] "
 
-#define RSC_SETTINGS_TITLE_CODE_EN	      " Settings "
-#define RSC_SETTINGS_DAEMON_CODE_EN	      " Daemon gate                    "
-#define RSC_SETTINGS_INTERVAL_CODE_EN	      " Interval(ms)            <    > "
-#define RSC_SETTINGS_SYS_TICK_CODE_EN	      " Sys. Tick(ms)                  "
-#define RSC_SETTINGS_POLL_WAIT_CODE_EN	      " Poll Wait(ms)                  "
-#define RSC_SETTINGS_RING_WAIT_CODE_EN	      " Ring Wait(ms)                  "
-#define RSC_SETTINGS_CHILD_WAIT_CODE_EN       " Child Wait(ms)                 "
-#define RSC_SETTINGS_SLICE_WAIT_CODE_EN       " Slice Wait(ms)                 "
-#define RSC_SETTINGS_RECORDER_CODE_EN	      " Recorder(sec)           <    > "
-#define RSC_SETTINGS_AUTO_CLOCK_CODE_EN       " Auto Clock               <   > "
-#define RSC_SETTINGS_EXPERIMENTAL_CODE_EN     " Experimental             <   > "
-#define RSC_SETTINGS_CPU_HOTPLUG_CODE_EN      " CPU Hot-Plug             [   ] "
-#define RSC_SETTINGS_PCI_ENABLED_CODE_EN      " PCI enablement           [   ] "
-#define RSC_SETTINGS_NMI_REGISTERED_CODE_EN   " NMI registered           <   > "
-#define RSC_SETTINGS_CPUIDLE_REGISTER_CODE_EN " CPU-IDLE driver          <   > "
-#define RSC_SETTINGS_CPUFREQ_REGISTER_CODE_EN " CPU-FREQ driver          <   > "
-#define RSC_SETTINGS_GOVERNOR_CPUFREQ_CODE_EN " Governor driver          <   > "
-#define RSC_SETTINGS_CLOCK_SOURCE_CODE_EN     " Clock Source             <   > "
-#define RSC_SETTINGS_THERMAL_SCOPE_CODE_EN    " Thermal scope           <    > "
-#define RSC_SETTINGS_VOLTAGE_SCOPE_CODE_EN    " Voltage scope           <    > "
-#define RSC_SETTINGS_POWER_SCOPE_CODE_EN      " Power scope             <    > "
+#define RSC_SETTINGS_TITLE_CODE_EN	    " Settings "
+#define RSC_SETTINGS_DAEMON_CODE_EN	    " Daemon gate                    "
+#define RSC_SETTINGS_INTERVAL_CODE_EN	    " Interval(ms)            <    > "
+#define RSC_SETTINGS_SYS_TICK_CODE_EN	    " Sys. Tick(ms)                  "
+#define RSC_SETTINGS_POLL_WAIT_CODE_EN	    " Poll Wait(ms)                  "
+#define RSC_SETTINGS_RING_WAIT_CODE_EN	    " Ring Wait(ms)                  "
+#define RSC_SETTINGS_CHILD_WAIT_CODE_EN     " Child Wait(ms)                 "
+#define RSC_SETTINGS_SLICE_WAIT_CODE_EN     " Slice Wait(ms)                 "
+#define RSC_SETTINGS_RECORDER_CODE_EN	    " Recorder(sec)           <    > "
+#define RSC_SETTINGS_AUTO_CLOCK_CODE_EN     " Auto Clock               <   > "
+#define RSC_SETTINGS_EXPERIMENTAL_CODE_EN   " Experimental             <   > "
+#define RSC_SETTINGS_CPU_HOTPLUG_CODE_EN    " CPU Hot-Plug             [   ] "
+#define RSC_SETTINGS_PCI_ENABLED_CODE_EN    " PCI enablement           [   ] "
+#define RSC_SETTINGS_NMI_REGISTERED_CODE_EN " NMI registered           <   > "
+#define RSC_SETTINGS_CPUIDLE_REGISTERED_CODE_EN \
+					    " CPU-IDLE driver          <   > "
+
+#define RSC_SETTINGS_CPUFREQ_REGISTERED_CODE_EN \
+					    " CPU-FREQ driver          <   > "
+
+#define RSC_SETTINGS_GOVERNOR_REGISTERED_CODE_EN \
+					    " Governor driver          <   > "
+
+#define RSC_SETTINGS_CS_REGISTERED_CODE_EN  " Clock Source             <   > "
+#define RSC_SETTINGS_THERMAL_SCOPE_CODE_EN  " Thermal scope           <    > "
+#define RSC_SETTINGS_VOLTAGE_SCOPE_CODE_EN  " Voltage scope           <    > "
+#define RSC_SETTINGS_POWER_SCOPE_CODE_EN    " Power scope             <    > "
+#define RSC_SETTINGS_IDLE_ROUTE_CODE_EN     " CPU-IDLE route                 "
 
 #define RSC_HELP_TITLE_CODE_EN		" Help "
 #define RSC_HELP_KEY_ESCAPE_CODE_EN	" [Escape]         "
@@ -918,12 +1287,23 @@
 #define RSC_ADV_HELP_ITEM_TOOLS_CODE_EN " F10            Stop tools processing "
 #define RSC_ADV_HELP_ITEM_GO_UP_CODE_EN "  Up  PgUp                     Scroll "
 #define RSC_ADV_HELP_ITEM_GO_DW_CODE_EN " Down PgDw                       CPU  "
-#define RSC_ADV_HELP_TERMINAL_CODE_EN	" Terminal:                            "
-#define RSC_ADV_HELP_PRT_SCR_CODE_EN	" [Ctrl]+[p]                      Copy "
-#define RSC_ADV_HELP_REC_SCR_CODE_EN	" [Alt]+[p]                     Record "
-#define RSC_ADV_HELP_FAHR_CELS_CODE_EN	" F              Fahrenheit or Celsius "
-#define RSC_ADV_HELP_PROC_EVENT_CODE_EN " H            Manage Processor Events "
-#define RSC_ADV_HELP_SECRET_CODE_EN	" Y            Show | Hide Secret Data "
+#define RSC_ADV_HELP_ITEM_TERMINAL_CODE_EN \
+					" Terminal:                            "
+
+#define RSC_ADV_HELP_ITEM_PRT_SCR_CODE_EN \
+					" [Ctrl]+[p]                      Copy "
+
+#define RSC_ADV_HELP_ITEM_REC_SCR_CODE_EN \
+					" [Alt]+[p]                     Record "
+
+#define RSC_ADV_HELP_ITEM_FAHR_CELS_CODE_EN \
+					" F              Fahrenheit or Celsius "
+
+#define RSC_ADV_HELP_ITEM_PROC_EVENT_CODE_EN \
+					" H            Manage Processor Events "
+
+#define RSC_ADV_HELP_ITEM_SECRET_CODE_EN \
+					" Y            Show | Hide Secret Data "
 
 #define RSC_TURBO_CLOCK_TITLE_CODE_EN	" Turbo Clock %1dC "
 #define RSC_RATIO_CLOCK_TITLE_CODE_EN	" %s Clock Ratio "
@@ -938,9 +1318,9 @@
 #define RSC_BOX_ENABLE_COND0_CODE_EN	"               Enable               "
 #define RSC_BOX_ENABLE_COND1_CODE_EN	"           <   Enable   >           "
 
-#define RSC_BOX_INTERVAL_TITLE_CODE_EN	" Interval "
-#define RSC_BOX_AUTOCLOCK_TITLE_CODE_EN " Auto Clock "
-#define RSC_BOX_MODE_TITLE_CODE_EN	" Experimental "
+#define RSC_BOX_INTERVAL_TITLE_CODE_EN	 " Interval "
+#define RSC_BOX_AUTO_CLOCK_TITLE_CODE_EN " Auto Clock "
+#define RSC_BOX_MODE_TITLE_CODE_EN	 " Experimental "
 
 #define RSC_BOX_MODE_DESC_CODE_EN	"       CoreFreq Operation Mode       "
 #define RSC_BOX_EIST_DESC_CODE_EN	"             SpeedStep              "
@@ -959,11 +1339,19 @@
 #define RSC_BOX_HDC_DESC_CODE_EN	"        Hardware Duty Cycling       "
 #define RSC_BOX_EEO_DESC_CODE_EN	"   Energy Efficiency Optimization   "
 #define RSC_BOX_R2H_DESC_CODE_EN	"      Race To Halt Optimization     "
+#define RSC_BOX_WDT_DESC_CODE_EN	"           Watchdog Timer           "
 
-#define RSC_BOX_NOM_MODE_COND0_CODE_EN    "       Nominal operating mode       "
-#define RSC_BOX_NOM_MODE_COND1_CODE_EN    "     < Nominal operating mode >     "
-#define RSC_BOX_EXP_MODE_COND0_CODE_EN    "     Experimental operating mode    "
-#define RSC_BOX_EXP_MODE_COND1_CODE_EN    "   < Experimental operating mode >  "
+#define RSC_BOX_NOMINAL_MODE_COND0_CODE_EN \
+					"       Nominal operating mode       "
+
+#define RSC_BOX_NOMINAL_MODE_COND1_CODE_EN \
+					"     < Nominal operating mode >     "
+
+#define RSC_BOX_EXPERIMENT_MODE_COND0_CODE_EN \
+					"     Experimental operating mode    "
+
+#define RSC_BOX_EXPERIMENT_MODE_COND1_CODE_EN \
+					"   < Experimental operating mode >  "
 
 #define RSC_BOX_INTERRUPT_TITLE_CODE_EN 	" NMI Interrupts "
 #define RSC_BOX_CPU_IDLE_TITLE_CODE_EN		" CPU-IDLE driver "
@@ -971,10 +1359,17 @@
 #define RSC_BOX_GOVERNOR_TITLE_CODE_EN		" Governor driver "
 #define RSC_BOX_CLOCK_SOURCE_TITLE_CODE_EN	" Clock Source "
 
-#define RSC_BOX_OPS_REGISTER_ST0_CODE_EN "              Register              "
-#define RSC_BOX_OPS_REGISTER_ST1_CODE_EN "            < Register >            "
-#define RSC_BOX_OPS_UNREGIST_ST0_CODE_EN "             Unregister             "
-#define RSC_BOX_OPS_UNREGIST_ST1_CODE_EN "           < Unregister >           "
+#define RSC_BOX_OPS_REGISTER_COND0_CODE_EN \
+					"              Register              "
+
+#define RSC_BOX_OPS_REGISTER_COND1_CODE_EN \
+					"            < Register >            "
+
+#define RSC_BOX_OPS_UNREGISTER_COND0_CODE_EN \
+					"             Unregister             "
+
+#define RSC_BOX_OPS_UNREGISTER_COND1_CODE_EN \
+					"           < Unregister >           "
 
 #define RSC_BOX_EVENT_TITLE_CODE_EN		" Clear Event "
 
@@ -988,7 +1383,7 @@
 
 #define RSC_BOX_STATE_UNSPECIFIED_CODE_EN	"        UNSPECIFIED        "
 
-#define RSC_BOX_PKG_STATE_TITLE_CODE_EN 	" Package C-State Limit "
+#define RSC_BOX_PKG_STATE_LIMIT_TITLE_CODE_EN	" Package C-State Limit "
 
 #define RSC_BOX_IO_MWAIT_TITLE_CODE_EN		" I/O MWAIT "
 #define RSC_BOX_IO_MWAIT_DESC_CODE_EN	"        I/O MWAIT Redirection       "
@@ -1019,13 +1414,13 @@
 #define RSC_BOX_HWP_POLICY_MAX_CODE_EN		"       Maximum:255      "
 
 #define RSC_BOX_TOOLS_TITLE_CODE_EN		" Tools "
-#define RSC_BOX_TOOLS_STOP_CODE_EN		"            STOP           "
-#define RSC_BOX_TOOLS_ATOMIC_CODE_EN		"        Atomic Burn        "
-#define RSC_BOX_TOOLS_CRC32_CODE_EN		"       CRC32 Compute       "
-#define RSC_BOX_TOOLS_CONIC_CODE_EN		"   <   Conic Compute   >   "
-#define RSC_BOX_TOOLS_RAND_CPU_CODE_EN		"      Turbo Random CPU     "
-#define RSC_BOX_TOOLS_RR_CPU_CODE_EN		"      Turbo Round Robin    "
-#define RSC_BOX_TOOLS_USR_CPU_CODE_EN		"    Turbo < Select CPU >   "
+#define RSC_BOX_TOOLS_STOP_BURN_CODE_EN 	"            STOP           "
+#define RSC_BOX_TOOLS_ATOMIC_BURN_CODE_EN	"        Atomic Burn        "
+#define RSC_BOX_TOOLS_CRC32_BURN_CODE_EN	"       CRC32 Compute       "
+#define RSC_BOX_TOOLS_CONIC_BURN_CODE_EN	"   <   Conic Compute   >   "
+#define RSC_BOX_TOOLS_RANDOM_CPU_CODE_EN	"      Turbo Random CPU     "
+#define RSC_BOX_TOOLS_ROUND_ROBIN_CPU_CODE_EN	"      Turbo Round Robin    "
+#define RSC_BOX_TOOLS_USER_CPU_CODE_EN		"    Turbo < Select CPU >   "
 
 #define RSC_BOX_CONIC_TITLE_CODE_EN		" Conic variations "
 #define RSC_BOX_CONIC_ITEM_1_CODE_EN		"         Ellipsoid         "
@@ -1038,6 +1433,11 @@
 #define RSC_BOX_LANG_TITLE_CODE_EN		" Languages "
 #define RSC_BOX_LANG_ENGLISH_CODE_EN		"     English     "
 #define RSC_BOX_LANG_FRENCH_CODE_EN		"     French      "
+#define RSC_BOX_LANG_BLANK_CODE 		"                 "
+
+#define RSC_BOX_THEME_TITLE_CODE_EN		" Themes "
+#define RSC_BOX_THEME_BLANK_CODE			\
+"                                                                        "
 
 #define RSC_BOX_SCOPE_THERMAL_TITLE_CODE_EN	" Thermal scope "
 #define RSC_BOX_SCOPE_VOLTAGE_TITLE_CODE_EN	" Voltage scope "
@@ -1053,28 +1453,34 @@
 #define RSC_BOX_CFG_TDP_LVL1_CODE_EN		"      Level 1      "
 #define RSC_BOX_CFG_TDP_LVL2_CODE_EN		"      Level 2      "
 
-#define RSC_BOX_TDP_PKG_TITLE_CODE_EN		" Package TDP "
-#define RSC_BOX_TDP_CORES_TITLE_CODE_EN 	" Core TDP "
-#define RSC_BOX_TDP_UNCORE_TITLE_CODE_EN	" Uncore TDP "
-#define RSC_BOX_TDP_RAM_TITLE_CODE_EN		" DRAM TDP "
-#define RSC_BOX_TDP_PLATFORM_TITLE_CODE_EN	" Platform TDP "
+#define RSC_BOX_TDP_PKG_TITLE_CODE_EN		" TDP Package "
+#define RSC_BOX_TDP_CORES_TITLE_CODE_EN 	" TDP Core "
+#define RSC_BOX_TDP_UNCORE_TITLE_CODE_EN	" TDP Uncore "
+#define RSC_BOX_TDP_RAM_TITLE_CODE_EN		" TDP DRAM "
+#define RSC_BOX_TDP_PLATFORM_TITLE_CODE_EN	" TDP Platform "
 #define RSC_BOX_PL1_DESC_CODE_EN	"          PL1 Power Limit           "
 #define RSC_BOX_PL2_DESC_CODE_EN	"          PL2 Power Limit           "
+
+#define RSC_BOX_TDC_TITLE_CODE_EN		" TDC Current "
+#define RSC_BOX_TDC_DESC_CODE_EN	"         TDC Current Limit          "
 
 #define RSC_ERROR_CMD_SYNTAX_CODE_EN					\
 		"CoreFreq."						\
 		"  Copyright (C) 2015-2021 CYRIL INGENIERIE\n\n"	\
-		"Usage:\t%s [-option <arguments>]\n"			\
+		"Usage:\t%s [-Option <argument>] [-Command <argument>]\n"\
 		"\n    Interface options\n"				\
-		"\t-0,1,2\tMemory unit in K,M,G Byte\n" 		\
-		"\t-F\tTemperature in Fahrenheit\n"			\
-		"\t-J  #\tSMBIOS string index number\n" 		\
-		"\t-Y\tShow Secret Data\n"				\
+		"\t-Ok\tMemory unit in kilobyte\n"			\
+		"\t-Om\tMemory unit in megabyte\n"			\
+		"\t-Og\tMemory unit in gigabyte\n"			\
+		"\t-OF\tTemperature in Fahrenheit\n"			\
+		"\t-OJ #\tSMBIOS string index number\n" 		\
+		"\t-OE #\tColor theme index number\n"			\
+		"\t-OY\tShow Secret Data\n"				\
+		"\n    Command options\n"				\
 		"\t-t <v>\tShow Top (default) with optional <v>iew:\n"	\
 		"\t\t{\tfrequency, instructions, core, idle, package,\n"\
 		"\t\t\ttasks, interrupts, sensors, voltage, power, slices  }\n"\
 		"\t-d\tShow Dashboard\n"				\
-		"\n    Command options\n"				\
 		"\t-C <#>\tMonitor Sensors\n"				\
 		"\t-V <#>\tMonitor Voltage\n"				\
 		"\t-W <#>\tMonitor Power\n"				\
@@ -1167,3 +1573,515 @@
 #define RSC_EXIT_HEADER_CODE_EN  " The following services are still running "
 #define RSC_EXIT_CONFIRM_CODE_EN "              < Force-Quit >              "
 #define RSC_EXIT_FOOTER_CODE_EN  "                          [ESC] to cancel "
+
+#define RSC_CREATE_SETTINGS_COND_CODE_EN	\
+					"                                "
+
+#define RSC_CREATE_SETTINGS_COND0_CODE_EN RSC_CREATE_SETTINGS_COND_CODE_EN
+#define RSC_CREATE_SETTINGS_COND1_CODE_EN RSC_CREATE_SETTINGS_COND_CODE_EN
+
+#define RSC_HELP_BLANK_CODE		"                  "
+
+#define RSC_CREATE_ADV_HELP_BLANK_CODE_EN	\
+					"                                      "
+
+#define RSC_CREATE_ADV_HELP_COND0_CODE_EN RSC_CREATE_ADV_HELP_BLANK_CODE_EN
+#define RSC_CREATE_ADV_HELP_COND1_CODE_EN RSC_CREATE_ADV_HELP_BLANK_CODE_EN
+
+#define RSC_BOX_BLANK_DESC_CODE 	"                                    "
+
+#define RSC_BOX_INTERVAL_STEP1_CODE	"    100   "
+#define RSC_BOX_INTERVAL_STEP2_CODE	"    150   "
+#define RSC_BOX_INTERVAL_STEP3_CODE	"    250   "
+#define RSC_BOX_INTERVAL_STEP4_CODE	"    500   "
+#define RSC_BOX_INTERVAL_STEP5_CODE	"    750   "
+#define RSC_BOX_INTERVAL_STEP6_CODE	"   1000   "
+#define RSC_BOX_INTERVAL_STEP7_CODE	"   1500   "
+#define RSC_BOX_INTERVAL_STEP8_CODE	"   2000   "
+#define RSC_BOX_INTERVAL_STEP9_CODE	"   2500   "
+#define RSC_BOX_INTERVAL_STEP10_CODE	"   3000   "
+
+#define RSC_SETTINGS_ROUTE_DFLT_CODE	"DEFAULT"
+#define RSC_SETTINGS_ROUTE_IO_CODE	"    I/O"
+#define RSC_SETTINGS_ROUTE_HALT_CODE	"   HALT"
+#define RSC_SETTINGS_ROUTE_MWAIT_CODE	"  MWAIT"
+
+#define RSC_BOX_DCU_L1_TITLE_CODE	" DCU L1 Prefetcher "
+#define RSC_BOX_DCU_L1_IP_TITLE_CODE	" DCU L1 IP Prefetcher "
+#define RSC_BOX_DCU_L2_TITLE_CODE	" DCU L2 Prefetcher "
+#define RSC_BOX_DCU_L2_CL_TITLE_CODE	" DCU L2 CL Prefetcher "
+
+#define RSC_BOX_EIST_TITLE_CODE 	" EIST "
+
+#define RSC_BOX_C1E_TITLE_CODE		" C1E "
+
+#define RSC_BOX_TURBO_TITLE_CODE	" Turbo "
+
+#define RSC_BOX_C1A_TITLE_CODE		" C1A "
+#define RSC_BOX_C3A_TITLE_CODE		" C3A "
+#define RSC_BOX_C1U_TITLE_CODE		" C1U "
+#define RSC_BOX_C2U_TITLE_CODE		" C2U "
+#define RSC_BOX_C3U_TITLE_CODE		" C3U "
+
+#define RSC_BOX_CC6_TITLE_CODE		" CC6 "
+#define RSC_BOX_C6D_TITLE_CODE		" C6D "
+
+#define RSC_BOX_MC6_TITLE_CODE		" MC6 "
+#define RSC_BOX_PC6_TITLE_CODE		" PC6 "
+
+#define RSC_BOX_STATE_C8_CODE		"             C8            "
+#define RSC_BOX_STATE_C7_CODE		"             C7            "
+#define RSC_BOX_STATE_C6_CODE		"             C6            "
+#define RSC_BOX_STATE_C4_CODE		"             C4            "
+#define RSC_BOX_STATE_C3_CODE		"             C3            "
+
+#define RSC_BOX_PKG_STATE_LIMIT_C10_CODE	"            C10            "
+#define RSC_BOX_PKG_STATE_LIMIT_C9_CODE 	"             C9            "
+#define RSC_BOX_PKG_STATE_LIMIT_C8_CODE 	"             C8            "
+#define RSC_BOX_PKG_STATE_LIMIT_C7S_CODE	"            C7S            "
+#define RSC_BOX_PKG_STATE_LIMIT_C7_CODE 	"             C7            "
+#define RSC_BOX_PKG_STATE_LIMIT_C6R_CODE	"            C6R            "
+#define RSC_BOX_PKG_STATE_LIMIT_C6_CODE 	"             C6            "
+#define RSC_BOX_PKG_STATE_LIMIT_C4_CODE 	"             C4            "
+#define RSC_BOX_PKG_STATE_LIMIT_C3_CODE 	"             C3            "
+#define RSC_BOX_PKG_STATE_LIMIT_C2_CODE 	"             C2            "
+#define RSC_BOX_PKG_STATE_LIMIT_C1_CODE 	"             C1            "
+#define RSC_BOX_PKG_STATE_LIMIT_C0_CODE 	"             C0            "
+
+#define RSC_BOX_DUTY_CYCLE_PCT1_CODE		"           12.50%          "
+#define RSC_BOX_DUTY_CYCLE_PCT2_CODE		"           25.00%          "
+#define RSC_BOX_DUTY_CYCLE_PCT3_CODE		"           37.50%          "
+#define RSC_BOX_DUTY_CYCLE_PCT4_CODE		"           50.00%          "
+#define RSC_BOX_DUTY_CYCLE_PCT5_CODE		"           62.50%          "
+#define RSC_BOX_DUTY_CYCLE_PCT6_CODE		"           75.00%          "
+#define RSC_BOX_DUTY_CYCLE_PCT7_CODE		"           87.50%          "
+#define RSC_BOX_EXT_DUTY_CYCLE_PCT1_CODE	"            6.25%          "
+#define RSC_BOX_EXT_DUTY_CYCLE_PCT2_CODE	"           12.50%          "
+#define RSC_BOX_EXT_DUTY_CYCLE_PCT3_CODE	"           18.75%          "
+#define RSC_BOX_EXT_DUTY_CYCLE_PCT4_CODE	"           25.00%          "
+#define RSC_BOX_EXT_DUTY_CYCLE_PCT5_CODE	"           31.25%          "
+#define RSC_BOX_EXT_DUTY_CYCLE_PCT6_CODE	"           37.50%          "
+#define RSC_BOX_EXT_DUTY_CYCLE_PCT7_CODE	"           43.75%          "
+#define RSC_BOX_EXT_DUTY_CYCLE_PCT8_CODE	"           50.00%          "
+#define RSC_BOX_EXT_DUTY_CYCLE_PCT9_CODE	"           56.25%          "
+#define RSC_BOX_EXT_DUTY_CYCLE_PCT10_CODE	"           62.50%          "
+#define RSC_BOX_EXT_DUTY_CYCLE_PCT11_CODE	"           68.75%          "
+#define RSC_BOX_EXT_DUTY_CYCLE_PCT12_CODE	"           75.00%          "
+#define RSC_BOX_EXT_DUTY_CYCLE_PCT13_CODE	"           81.25%          "
+#define RSC_BOX_EXT_DUTY_CYCLE_PCT14_CODE	"           87.50%          "
+
+#define RSC_BOX_HWP_TITLE_CODE		" HWP "
+
+#define RSC_BOX_HDC_TITLE_CODE		" HDC "
+
+#define RSC_BOX_EEO_TITLE_CODE		" EEO "
+
+#define RSC_BOX_R2H_TITLE_CODE		" R2H "
+
+#define RSC_BOX_WDT_TITLE_CODE		" WDT "
+
+#define RSC_BOX_POWER_POLICY_1_CODE	"            1           "
+#define RSC_BOX_POWER_POLICY_2_CODE	"            2           "
+#define RSC_BOX_POWER_POLICY_3_CODE	"            3           "
+#define RSC_BOX_POWER_POLICY_4_CODE	"            4           "
+#define RSC_BOX_POWER_POLICY_5_CODE	"            5           "
+#define RSC_BOX_POWER_POLICY_6_CODE	"            6           "
+#define RSC_BOX_POWER_POLICY_7_CODE	"            7           "
+#define RSC_BOX_POWER_POLICY_8_CODE	"            8           "
+#define RSC_BOX_POWER_POLICY_9_CODE	"            9           "
+#define RSC_BOX_POWER_POLICY_10_CODE	"           10           "
+#define RSC_BOX_POWER_POLICY_11_CODE	"           11           "
+#define RSC_BOX_POWER_POLICY_12_CODE	"           12           "
+#define RSC_BOX_POWER_POLICY_13_CODE	"           13           "
+#define RSC_BOX_POWER_POLICY_14_CODE	"           14           "
+
+#define RSC_BOX_CFG_TDP_BLANK_CODE	"                   "
+
+#define RSC_BOX_PWR_OFFSET_00_CODE	"              +50 watts             "
+#define RSC_BOX_PWR_OFFSET_01_CODE	"              +10 watts             "
+#define RSC_BOX_PWR_OFFSET_02_CODE	"               +5 watts             "
+#define RSC_BOX_PWR_OFFSET_03_CODE	"               +4 watts             "
+#define RSC_BOX_PWR_OFFSET_04_CODE	"               +3 watts             "
+#define RSC_BOX_PWR_OFFSET_05_CODE	"               +2 watts             "
+#define RSC_BOX_PWR_OFFSET_06_CODE	"               +1 watt              "
+#define RSC_BOX_PWR_OFFSET_07_CODE	"               -1 watt              "
+#define RSC_BOX_PWR_OFFSET_08_CODE	"               -2 watts             "
+#define RSC_BOX_PWR_OFFSET_09_CODE	"               -3 watts             "
+#define RSC_BOX_PWR_OFFSET_10_CODE	"               -4 watts             "
+#define RSC_BOX_PWR_OFFSET_11_CODE	"               -5 watts             "
+#define RSC_BOX_PWR_OFFSET_12_CODE	"              -10 watts             "
+#define RSC_BOX_PWR_OFFSET_13_CODE	"              -50 watts             "
+
+#define RSC_BOX_CLAMPING_OFF_COND0_CODE "            Clamping OFF            "
+#define RSC_BOX_CLAMPING_OFF_COND1_CODE "          < Clamping OFF >          "
+#define RSC_BOX_CLAMPING_ON_COND0_CODE	"            Clamping ON             "
+#define RSC_BOX_CLAMPING_ON_COND1_CODE	"          < Clamping ON  >          "
+
+#define RSC_BOX_AMP_OFFSET_00_CODE	"              +50 amps              "
+#define RSC_BOX_AMP_OFFSET_01_CODE	"              +10 amps              "
+#define RSC_BOX_AMP_OFFSET_02_CODE	"               +5 amps              "
+#define RSC_BOX_AMP_OFFSET_03_CODE	"               +4 amps              "
+#define RSC_BOX_AMP_OFFSET_04_CODE	"               +3 amps              "
+#define RSC_BOX_AMP_OFFSET_05_CODE	"               +2 amps              "
+#define RSC_BOX_AMP_OFFSET_06_CODE	"               +1 amp               "
+#define RSC_BOX_AMP_OFFSET_07_CODE	"               -1 amp               "
+#define RSC_BOX_AMP_OFFSET_08_CODE	"               -2 amp               "
+#define RSC_BOX_AMP_OFFSET_09_CODE	"               -3 amp               "
+#define RSC_BOX_AMP_OFFSET_10_CODE	"               -4 amp               "
+#define RSC_BOX_AMP_OFFSET_11_CODE	"               -5 amps              "
+#define RSC_BOX_AMP_OFFSET_12_CODE	"              -10 amps              "
+#define RSC_BOX_AMP_OFFSET_13_CODE	"              -50 amps              "
+
+#define RSC_BOX_IDLE_LIMIT_RESET_CODE	"            0     RESET "
+
+#define RSC_CF0_CODE "      ______                ______                  "
+#define RSC_CF1_CODE "     / ____/___  ________  / ____/_______  ____ _   "
+#define RSC_CF2_CODE "    / /   / __ \\/ ___/ _ \\/ /_  / ___/ _ \\/ __ `/   "
+#define RSC_CF3_CODE "   / /___/ /_/ / /  /  __/ __/ / /  /  __/ /_/ /    "
+#define RSC_CF4_CODE "   \\____/\\____/_/   \\___/_/   /_/   \\___/\\__, /     "
+#define RSC_CF5_CODE "                                           /_/      "
+
+#define RSC_FREQ_UNIT_MHZ_CODE		"(MHz)"
+#define RSC_PPIN_CODE			"PPIN#"
+#define RSC_PSTATE_CODE 		"P-State"
+#define RSC_UNCORE_CODE 		"Uncore"
+#define RSC_BOOST_CODE			"Turbo Boost"
+#define RSC_TURBO_CODE			"Turbo"
+#define RSC_MAX_CODE			"Max"
+#define RSC_MIN_CODE			"Min"
+#define RSC_TGT_CODE			"TGT"
+#define RSC_HWP_CODE			"HWP"
+#define RSC_XFR_CODE			"XFR"
+#define RSC_CPB_CODE			"CPB"
+#define RSC_TDP_CODE			"TDP"
+#define RSC_ACT_CODE			"Activ"
+#define RSC_XAPIC_CODE			"  xAPIC"
+#define RSC_X2APIC_CODE 		" x2APIC"
+#define RSC_FIRMWARE_CODE		"Firmware"
+
+#define RSC_TOPOLOGY_HDR_PKG_CODE	"CPU Pkg  Apic"
+#define RSC_TOPOLOGY_HDR_SMT_CODE	"  Core/Thread"
+#define RSC_TOPOLOGY_HDR_CACHE_CODE	"  Caches     "
+#define RSC_TOPOLOGY_HDR_WRBAK_CODE	" (w)rite-Back"
+#define RSC_TOPOLOGY_HDR_INCL_CODE	" (i)nclusive "
+#define RSC_TOPOLOGY_HDR_EMPTY_CODE	"             "
+#define RSC_TOPOLOGY_SUB_ITEM1_CODE	" #   ID   ID "
+#define RSC_TOPOLOGY_SUB_ITEM3_CODE	" L1-Inst Way "
+#define RSC_TOPOLOGY_SUB_ITEM4_CODE	" L1-Data Way "
+#define RSC_TOPOLOGY_SUB_ITEM5_CODE	"     L2  Way "
+#define RSC_TOPOLOGY_SUB_ITEM6_CODE	"     L3  Way "
+#define RSC_TOPOLOGY_ALT_ITEM1_CODE	"   ID     ID "
+#define RSC_TOPOLOGY_ALT_ITEM2_CODE	" CMP ID    ID"
+#define RSC_TOPOLOGY_ALT_ITEM3_CODE	"CCD CCX ID/ID"
+#define RSC_TOPOLOGY_BSP_COMM_CODE	" Boot Strap Processor "
+
+#define RSC_TECH_HYPERV_NONE_CODE	"          "
+#define RSC_TECH_BARE_METAL_CODE	"Bare-Metal"
+#define RSC_TECH_HYPERV_XEN_CODE	"       Xen"
+#define RSC_TECH_HYPERV_KVM_CODE	"       KVM"
+#define RSC_TECH_HYPERV_VBOX_CODE	"VirtualBox"
+#define RSC_TECH_HYPERV_KBOX_CODE	"  KVM/VBox"
+#define RSC_TECH_HYPERV_VMWARE_CODE	"    VMware"
+#define RSC_TECH_HYPERV_HYPERV_CODE	"MS Hyper-V"
+
+#define RSC_PERF_LABEL_VER_CODE 	"PM"
+#define RSC_PERF_LABEL_C1E_CODE 	"C1E"
+#define RSC_PERF_LABEL_C1A_CODE 	"C1A"
+#define RSC_PERF_LABEL_C3A_CODE 	"C3A"
+#define RSC_PERF_LABEL_C1U_CODE 	"C1U"
+#define RSC_PERF_LABEL_C2U_CODE 	"C2U"
+#define RSC_PERF_LABEL_C3U_CODE 	"C3U"
+#define RSC_PERF_LABEL_CC6_CODE 	"CC6"
+#define RSC_PERF_LABEL_PC6_CODE 	"PC6"
+#define RSC_PERF_LABEL_MC6_CODE 	"MC6"
+#define RSC_PERF_LABEL_FID_CODE 	"FID"
+#define RSC_PERF_LABEL_VID_CODE 	"VID"
+#define RSC_PERF_LABEL_HWCF_CODE	"MPERF/APERF"
+#define RSC_PERF_LABEL_HWP_CODE 	"HWP"
+#define RSC_PERF_LABEL_HDC_CODE 	"HDC"
+#define RSC_PERF_LABEL_CFG_CTRL_CODE	"CONFIG"
+#define RSC_PERF_LABEL_LOW_CST_CODE	"LIMIT"
+#define RSC_PERF_LABEL_IOMWAIT_CODE	"IOMWAIT"
+#define RSC_PERF_LABEL_MAX_CST_CODE	"RANGE"
+#define RSC_PERF_LABEL_CST_BAR_CODE	"BAR"
+#define RSC_PERF_LABEL_MWAIT_IDX_CODE	\
+				"#0    #1    #2    #3    #4    #5    #6    #7"
+
+#define RSC_PERF_ENCODING_C0_CODE	" C0"
+#define RSC_PERF_ENCODING_C1_CODE	" C1"
+#define RSC_PERF_ENCODING_C2_CODE	" C2"
+#define RSC_PERF_ENCODING_C3_CODE	" C3"
+#define RSC_PERF_ENCODING_C4_CODE	" C4"
+#define RSC_PERF_ENCODING_C6_CODE	" C6"
+#define RSC_PERF_ENCODING_C6R_CODE	"C6R"
+#define RSC_PERF_ENCODING_C7_CODE	" C7"
+#define RSC_PERF_ENCODING_C7S_CODE	"C7S"
+#define RSC_PERF_ENCODING_C8_CODE	" C8"
+#define RSC_PERF_ENCODING_C9_CODE	" C9"
+#define RSC_PERF_ENCODING_C10_CODE	"C10"
+#define RSC_PERF_ENCODING_UNS_CODE	"UNS"
+
+#define RSC_POWER_LABEL_ODCM_CODE	"ODCM"
+#define RSC_POWER_LABEL_PWM_CODE	"PWR MGMT"
+#define RSC_POWER_LABEL_BIAS_CODE	"Bias Hint"
+#define RSC_POWER_LABEL_EPP_CODE	"HWP EPP"
+#define RSC_POWER_LABEL_TJ_CODE 	"TjMax"
+#define RSC_POWER_LABEL_DTS_CODE	"DTS"
+#define RSC_POWER_LABEL_PLN_CODE	"PLN"
+#define RSC_POWER_LABEL_PTM_CODE	"PTM"
+#define RSC_POWER_LABEL_TM1_CODE	"TM1"
+#define RSC_POWER_LABEL_TM2_CODE	"TM2"
+#define RSC_POWER_LABEL_TTP_CODE	"TTP"
+#define RSC_POWER_LABEL_HTC_CODE	"HTC"
+#define RSC_POWER_LABEL_TDP_CODE	"TDP"
+#define RSC_POWER_LABEL_MIN_CODE	"Min"
+#define RSC_POWER_LABEL_MAX_CODE	"Max"
+#define RSC_POWER_LABEL_PPT_CODE	"PPT"
+#define RSC_POWER_LABEL_PL1_CODE	"PL1"
+#define RSC_POWER_LABEL_PL2_CODE	"PL2"
+#define RSC_POWER_LABEL_EDC_CODE	"EDC"
+#define RSC_POWER_LABEL_TDC_CODE	"TDC"
+#define RSC_POWER_LABEL_PKG_CODE	"Package"
+#define RSC_POWER_LABEL_CORE_CODE	"Core"
+#define RSC_POWER_LABEL_UNCORE_CODE	"Uncore"
+#define RSC_POWER_LABEL_DRAM_CODE	"DRAM"
+#define RSC_POWER_LABEL_PLATFORM_CODE	"Platform"
+
+#define RSC_MEM_CTRL_UNIT_MHZ_CODE	" MHz "
+#define RSC_MEM_CTRL_UNIT_MTS_CODE	" MT/s"
+#define RSC_MEM_CTRL_UNIT_MBS_CODE	" MB/s"
+
+#define RSC_MEM_CTRL_MTY_CELL_CODE	"     "
+#define RSC_MEM_CTRL_CHANNEL_CODE	" Cha "
+
+#define RSC_DDR3_CL_CODE		"   CL"
+#define RSC_DDR3_RCD_CODE		"  RCD"
+#define RSC_DDR3_RP_CODE		"   RP"
+#define RSC_DDR3_RAS_CODE		"  RAS"
+#define RSC_DDR3_RRD_CODE		"  RRD"
+#define RSC_DDR3_RFC_CODE		"  RFC"
+#define RSC_DDR3_WR_CODE		"   WR"
+#define RSC_DDR3_RTP_CODE		" RTPr"
+#define RSC_DDR3_WTP_CODE		" WTPr"
+#define RSC_DDR3_FAW_CODE		"  FAW"
+#define RSC_DDR3_B2B_CODE		"  B2B"
+#define RSC_DDR3_CWL_CODE		"  CWL"
+#define RSC_DDR3_CMD_CODE		" CMD "
+#define RSC_DDR3_REFI_CODE		" REFI"
+#define RSC_DDR3_DDWRTRD_CODE		" ddWR"
+#define RSC_DDR3_DRWRTRD_CODE		" drWR"
+#define RSC_DDR3_SRWRTRD_CODE		" srWR"
+#define RSC_DDR3_DDRDTWR_CODE		" ddRW"
+#define RSC_DDR3_DRRDTWR_CODE		" drRW"
+#define RSC_DDR3_SRRDTWR_CODE		" srRW"
+#define RSC_DDR3_DDRDTRD_CODE		" ddRR"
+#define RSC_DDR3_DRRDTRD_CODE		" drRR"
+#define RSC_DDR3_SRRDTRD_CODE		" srRR"
+#define RSC_DDR3_DDWRTWR_CODE		" ddWW"
+#define RSC_DDR3_DRWRTWR_CODE		" drWW"
+#define RSC_DDR3_SRWRTWR_CODE		" srWW"
+#define RSC_DDR3_CKE_CODE		" CKE "
+#define RSC_DDR3_ECC_CODE		"  ECC"
+
+#define RSC_DDR4_CL_CODE		"   CL"
+#define RSC_DDR4_RCD_CODE		"  RCD"
+#define RSC_DDR4_RP_CODE		"   RP"
+#define RSC_DDR4_RAS_CODE		"  RAS"
+#define RSC_DDR4_RRD_CODE		"  RRD"
+#define RSC_DDR4_RFC_CODE		"  RFC"
+#define RSC_DDR4_WR_CODE		"   WR"
+#define RSC_DDR4_RTP_CODE		" RTPr"
+#define RSC_DDR4_WTP_CODE		" WTPr"
+#define RSC_DDR4_FAW_CODE		"  FAW"
+#define RSC_DDR4_B2B_CODE		"  B2B"
+#define RSC_DDR4_CWL_CODE		"  CWL"
+#define RSC_DDR4_CMD_CODE		" CMD "
+#define RSC_DDR4_REFI_CODE		" REFI"
+#define RSC_DDR4_RDRD_SCL_CODE		" sgRR"
+#define RSC_DDR4_RDRD_SC_CODE		" dgRR"
+#define RSC_DDR4_RDRD_SD_CODE		" drRR"
+#define RSC_DDR4_RDRD_DD_CODE		" ddRR"
+#define RSC_DDR4_RDWR_SCL_CODE		" sgRW"
+#define RSC_DDR4_RDWR_SC_CODE		" dgRW"
+#define RSC_DDR4_RDWR_SD_CODE		" drRW"
+#define RSC_DDR4_RDWR_DD_CODE		" ddRW"
+#define RSC_DDR4_WRRD_SCL_CODE		" sgWR"
+#define RSC_DDR4_WRRD_SC_CODE		" dgWR"
+#define RSC_DDR4_WRRD_SD_CODE		" drWR"
+#define RSC_DDR4_WRRD_DD_CODE		" ddWR"
+#define RSC_DDR4_WRWR_SCL_CODE		" sgWW"
+#define RSC_DDR4_WRWR_SC_CODE		" dgWW"
+#define RSC_DDR4_WRWR_SD_CODE		" drWW"
+#define RSC_DDR4_WRWR_DD_CODE		" ddWW"
+#define RSC_DDR4_CKE_CODE		" CKE "
+#define RSC_DDR4_ECC_CODE		"  ECC"
+
+#define RSC_DDR4_ZEN_CL_CODE		"  CL "
+#define RSC_DDR4_ZEN_RCD_R_CODE 	" RCDR"
+#define RSC_DDR4_ZEN_RCD_W_CODE 	" RCDW"
+#define RSC_DDR4_ZEN_RP_CODE		"  RP "
+#define RSC_DDR4_ZEN_RAS_CODE		" RAS "
+#define RSC_DDR4_ZEN_RC_CODE		"  RC "
+#define RSC_DDR4_ZEN_RRD_S_CODE 	" RRDS"
+#define RSC_DDR4_ZEN_RRD_L_CODE 	" RRDL"
+#define RSC_DDR4_ZEN_FAW_CODE		" FAW "
+#define RSC_DDR4_ZEN_WTR_S_CODE 	" WTRS"
+#define RSC_DDR4_ZEN_WTR_L_CODE 	" WTRL"
+#define RSC_DDR4_ZEN_WR_CODE		"  WR "
+#define RSC_DDR4_ZEN_RDRD_SCL_CODE	" clRR"
+#define RSC_DDR4_ZEN_WRWR_SCL_CODE	" clWW"
+#define RSC_DDR4_ZEN_CWL_CODE		" CWL "
+#define RSC_DDR4_ZEN_RTP_CODE		" RTP "
+#define RSC_DDR4_ZEN_RDWR_CODE		"RdWr "
+#define RSC_DDR4_ZEN_WRRD_CODE		"WrRd "
+#define RSC_DDR4_ZEN_WRWR_SC_CODE	"scWW "
+#define RSC_DDR4_ZEN_WRWR_SD_CODE	"sdWW "
+#define RSC_DDR4_ZEN_WRWR_DD_CODE	"ddWW "
+#define RSC_DDR4_ZEN_RDRD_SC_CODE	"scRR "
+#define RSC_DDR4_ZEN_RDRD_SD_CODE	"sdRR "
+#define RSC_DDR4_ZEN_RDRD_DD_CODE	"ddRR "
+#define RSC_DDR4_ZEN_RTR_DLR_CODE	"drRR "
+#define RSC_DDR4_ZEN_WTW_DLR_CODE	"drWW "
+#define RSC_DDR4_ZEN_WTR_DLR_CODE	"drWR "
+#define RSC_DDR4_ZEN_RRD_DLR_CODE	"drRRD"
+#define RSC_DDR4_ZEN_REFI_CODE		" REFI"
+#define RSC_DDR4_ZEN_RFC1_CODE		" RFC1"
+#define RSC_DDR4_ZEN_RFC2_CODE		" RFC2"
+#define RSC_DDR4_ZEN_RFC4_CODE		" RFC4"
+#define RSC_DDR4_ZEN_RCPB_CODE		" RCPB"
+#define RSC_DDR4_ZEN_RPPB_CODE		" RPPB"
+#define RSC_DDR4_ZEN_BGS_CODE		"  BGS"
+#define RSC_DDR4_ZEN_BGS_ALT_CODE	":Alt "
+#define RSC_DDR4_ZEN_BAN_CODE		" Ban "
+#define RSC_DDR4_ZEN_RCPAGE_CODE	" Page"
+#define RSC_DDR4_ZEN_CKE_CODE		"  CKE"
+#define RSC_DDR4_ZEN_CMD_CODE		"  CMD"
+#define RSC_DDR4_ZEN_GDM_CODE		"  GDM"
+#define RSC_DDR4_ZEN_ECC_CODE		"  ECC"
+
+#define RSC_SYS_REGS_SPACE_CODE 	"    "
+#define RSC_SYS_REGS_NA_CODE		"  - "
+#define RSC_SYS_REGS_HDR_CPU_CODE	"CPU "
+#define RSC_SYS_REG_HDR_FLAGS_CODE	"FLAG"
+#define RSC_SYS_REG_HDR_TF_CODE 	" TF "
+#define RSC_SYS_REG_HDR_IF_CODE 	" IF "
+#define RSC_SYS_REG_HDR_IOPL_CODE	"IOPL"
+#define RSC_SYS_REG_HDR_NT_CODE 	" NT "
+#define RSC_SYS_REG_HDR_RF_CODE 	" RF "
+#define RSC_SYS_REG_HDR_VM_CODE 	" VM "
+#define RSC_SYS_REG_HDR_AC_CODE 	" AC "
+#define RSC_SYS_REG_HDR_VIF_CODE	" VIF"
+#define RSC_SYS_REG_HDR_VIP_CODE	" VIP"
+#define RSC_SYS_REG_HDR_ID_CODE 	" ID "
+#define RSC_SYS_REG_HDR_CR0_CODE	"CR0:"
+#define RSC_SYS_REG_HDR_CR0_PE_CODE	" PE "
+#define RSC_SYS_REG_HDR_CR0_MP_CODE	" MP "
+#define RSC_SYS_REG_HDR_CR0_EM_CODE	" EM "
+#define RSC_SYS_REG_HDR_CR0_TS_CODE	" TS "
+#define RSC_SYS_REG_HDR_CR0_ET_CODE	" ET "
+#define RSC_SYS_REG_HDR_CR0_NE_CODE	" NE "
+#define RSC_SYS_REG_HDR_CR0_WP_CODE	" WP "
+#define RSC_SYS_REG_HDR_CR0_AM_CODE	" AM "
+#define RSC_SYS_REG_HDR_CR0_NW_CODE	" NW "
+#define RSC_SYS_REG_HDR_CR0_CD_CODE	" CD "
+#define RSC_SYS_REG_HDR_CR0_PG_CODE	" PG "
+#define RSC_SYS_REG_HDR_CR3_CODE	"CR3:"
+#define RSC_SYS_REG_HDR_CR3_PWT_CODE	" PWT"
+#define RSC_SYS_REG_HDR_CR3_PCD_CODE	" PCD"
+#define RSC_SYS_REG_HDR_CR4_CODE	"CR4:"
+#define RSC_SYS_REG_HDR_CR4_VME_CODE	" VME"
+#define RSC_SYS_REG_HDR_CR4_PVI_CODE	" PVI"
+#define RSC_SYS_REG_HDR_CR4_TSD_CODE	" TSD"
+#define RSC_SYS_REG_HDR_CR4_DE_CODE	" DE "
+#define RSC_SYS_REG_HDR_CR4_PSE_CODE	" PSE"
+#define RSC_SYS_REG_HDR_CR4_PAE_CODE	" PAE"
+#define RSC_SYS_REG_HDR_CR4_MCE_CODE	" MCE"
+#define RSC_SYS_REG_HDR_CR4_PGE_CODE	" PGE"
+#define RSC_SYS_REG_HDR_CR4_PCE_CODE	" PCE"
+#define RSC_SYS_REG_HDR_CR4_FX_CODE	" FX "
+#define RSC_SYS_REG_HDR_CR4_XMM_CODE	"XMM "
+#define RSC_SYS_REG_HDR_CR4_UMIP_CODE	"UMIP"
+#define RSC_SYS_REG_HDR_CR4_5LP_CODE	" 5LP"
+#define RSC_SYS_REG_HDR_CR4_VMX_CODE	" VMX"
+#define RSC_SYS_REG_HDR_CR4_SMX_CODE	" SMX"
+#define RSC_SYS_REG_HDR_CR4_FS_CODE	" FS "
+#define RSC_SYS_REG_HDR_CR4_PCID_CODE	"PCID"
+#define RSC_SYS_REG_HDR_CR4_SAV_CODE	" SAV"
+#define RSC_SYS_REG_HDR_CR4_KL_CODE	"  KL"
+#define RSC_SYS_REG_HDR_CR4_SME_CODE	" SME"
+#define RSC_SYS_REG_HDR_CR4_SMA_CODE	" SMA"
+#define RSC_SYS_REG_HDR_CR4_PKE_CODE	" PKE"
+#define RSC_SYS_REG_HDR_CR4_CET_CODE	" CET"
+#define RSC_SYS_REG_HDR_CR4_PKS_CODE	" PKS"
+#define RSC_SYS_REG_HDR_CR8_CODE	"CR8:"
+#define RSC_SYS_REG_HDR_CR8_TPL_CODE	" TPL"
+#define RSC_SYS_REG_HDR_EFCR_CODE	"EFCR"
+#define RSC_SYS_REG_HDR_EFCR_LCK_CODE	"LCK "
+#define RSC_SYS_REG_HDR_EFCR_VMX_CODE	"VMX^"
+#define RSC_SYS_REG_HDR_EFCR_SGX_CODE	"SGX "
+#define RSC_SYS_REG_HDR_EFCR_LSE_CODE	"[SEN"
+#define RSC_SYS_REG_HDR_EFCR_GSE_CODE	"TER]"
+#define RSC_SYS_REG_HDR_EFCR_LSGX_CODE	" [ S"
+#define RSC_SYS_REG_HDR_EFCR_GSGX_CODE	"GX ]"
+#define RSC_SYS_REG_HDR_EFCR_LMC_CODE	" LMC"
+#define RSC_SYS_REG_HDR_EFER_CODE	"EFER"
+#define RSC_SYS_REG_HDR_EFER_SCE_CODE	" SCE"
+#define RSC_SYS_REG_HDR_EFER_LME_CODE	" LME"
+#define RSC_SYS_REG_HDR_EFER_LMA_CODE	" LMA"
+#define RSC_SYS_REG_HDR_EFER_NXE_CODE	" NXE"
+#define RSC_SYS_REG_HDR_EFER_SVM_CODE	" SVM"
+
+#define RSC_ISA_3DNOW_CODE		" 3DNow!/Ext [%c/%c]"
+#define RSC_ISA_ADX_CODE		"          ADX [%c]"
+#define RSC_ISA_AES_CODE		"          AES [%c]"
+#define RSC_ISA_AVX_CODE		"  AVX/AVX2 [%c/%c] "
+#define RSC_ISA_AVX512_F_CODE		" AVX512-F     [%c]"
+#define RSC_ISA_AVX512_DQ_CODE		"    AVX512-DQ [%c]"
+#define RSC_ISA_AVX512_IFMA_CODE	"  AVX512-IFMA [%c]"
+#define RSC_ISA_AVX512_PF_CODE		"   AVX512-PF [%c] "
+#define RSC_ISA_AVX512_ER_CODE		" AVX512-ER    [%c]"
+#define RSC_ISA_AVX512_CD_CODE		"    AVX512-CD [%c]"
+#define RSC_ISA_AVX512_BW_CODE		"    AVX512-BW [%c]"
+#define RSC_ISA_AVX512_VL_CODE		"   AVX512-VL [%c] "
+#define RSC_ISA_AVX512_VBMI_CODE	" AVX512-VBMI  [%c]"
+#define RSC_ISA_AVX512_VBMI2_CODE	" AVX512-VBMI2 [%c]"
+#define RSC_ISA_AVX512_VNMI_CODE	"  AVX512-VNMI [%c]"
+#define RSC_ISA_AVX512_ALG_CODE 	"  AVX512-ALG [%c] "
+#define RSC_ISA_AVX512_VPOP_CODE	" AVX512-VPOP  [%c]"
+#define RSC_ISA_AVX512_VNNIW_CODE	" AVX512-VNNIW [%c]"
+#define RSC_ISA_AVX512_FMAPS_CODE	" AVX512-FMAPS [%c]"
+#define RSC_ISA_AVX512_VP2I_CODE	" AVX512-VP2I [%c] "
+#define RSC_ISA_AVX512_BF16_CODE	" AVX512-BF16  [%c]"
+#define RSC_ISA_BMI_CODE		"  BMI1/BMI2 [%c/%c]"
+#define RSC_ISA_CLWB_CODE		"         CLWB [%c]"
+#define RSC_ISA_CLFLUSH_CODE		" CLFLUSH/O [%c/%c] "
+#define RSC_ISA_AC_FLAG_CODE		" CLAC-STAC    [%c]"
+#define RSC_ISA_CMOV_CODE		"         CMOV [%c]"
+#define RSC_ISA_XCHG8B_CODE		"    CMPXCHG8B [%c]"
+#define RSC_ISA_XCHG16B_CODE		"  CMPXCHG16B [%c] "
+#define RSC_ISA_F16C_CODE		" F16C         [%c]"
+#define RSC_ISA_FPU_CODE		"          FPU [%c]"
+#define RSC_ISA_FXSR_CODE		"         FXSR [%c]"
+#define RSC_ISA_LSHF_CODE		"   LAHF-SAHF [%c] "
+#define RSC_ISA_MMX_CODE		" MMX/Ext    [%c/%c]"
+#define RSC_ISA_MWAITX_CODE		" MON/MWAITX [%c/%c]"
+#define RSC_ISA_MOVBE_CODE		"        MOVBE [%c]"
+#define RSC_ISA_PCLMULDQ_CODE		"   PCLMULQDQ [%c] "
+#define RSC_ISA_POPCNT_CODE		" POPCNT       [%c]"
+#define RSC_ISA_RDRAND_CODE		"       RDRAND [%c]"
+#define RSC_ISA_RDSEED_CODE		"       RDSEED [%c]"
+#define RSC_ISA_RDTSCP_CODE		"      RDTSCP [%c] "
+#define RSC_ISA_SEP_CODE		" SEP          [%c]"
+#define RSC_ISA_SHA_CODE		"          SHA [%c]"
+#define RSC_ISA_SSE_CODE		"          SSE [%c]"
+#define RSC_ISA_SSE2_CODE		"        SSE2 [%c] "
+#define RSC_ISA_SSE3_CODE		" SSE3         [%c]"
+#define RSC_ISA_SSSE3_CODE		"        SSSE3 [%c]"
+#define RSC_ISA_SSE4_1_CODE		"  SSE4.1/4A [%c/%c]"
+#define RSC_ISA_SSE4_2_CODE		"      SSE4.2 [%c] "
+#define RSC_ISA_SERIALIZE_CODE		" SERIALIZE    [%c]"
+#define RSC_ISA_SYSCALL_CODE		"      SYSCALL [%c]"
+#define RSC_ISA_RDPID_FMT1_CODE 	"        RDPID [%c]"
+#define RSC_ISA_RDPID_FMT2_CODE 	"       RDPID [%c] "
+#define RSC_ISA_UMIP_CODE		"        UMIP [%c] "
+#define RSC_ISA_SGX_CODE		"          SGX [%c]"

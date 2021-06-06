@@ -137,13 +137,29 @@ module_param_array(Custom_TDP_Offset, short, &Custom_TDP_Count ,	\
 					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Custom_TDP_Offset, "TDP Limit Offset (watt)");
 
-static unsigned int Activate_TDP_Count = 0;
+static unsigned int TDP_Limiting_Count = 0;
 static signed short Activate_TDP_Limit[PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE)] = {
 			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
-module_param_array(Activate_TDP_Limit, short, &Activate_TDP_Count,	\
+module_param_array(Activate_TDP_Limit, short, &TDP_Limiting_Count,	\
 					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-MODULE_PARM_DESC(Activate_TDP_Limit, "Activate TDP Limit");
+MODULE_PARM_DESC(Activate_TDP_Limit, "Activate TDP Limiting");
+
+static unsigned int TDP_Clamping_Count = 0;
+static signed short Activate_TDP_Clamp[PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE)] = {
+			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+};
+module_param_array(Activate_TDP_Clamp, short, &TDP_Clamping_Count,	\
+					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Activate_TDP_Clamp, "Activate TDP Clamping");
+
+static unsigned short Custom_TDC_Offset = 0;
+module_param(Custom_TDC_Offset, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Custom_TDC_Offset, "TDC Limit Offset (amp)");
+
+static signed short Activate_TDC_Limit = -1;
+module_param(Activate_TDC_Limit, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Activate_TDC_Limit, "Activate TDC Limiting");
 
 static signed short L1_HW_PREFETCH_Disable = -1;
 module_param(L1_HW_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -301,6 +317,10 @@ static signed short Mech_L1D_FLUSH = -1;
 module_param(Mech_L1D_FLUSH, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Mech_L1D_FLUSH, "Mitigation Mechanism Cache L1D Flush");
 
+static signed short WDT_Enable = -1;
+module_param(WDT_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(WDT_Enable, "Watchdog Hardware Timer");
+
 static struct {
 	signed int		Major;
 	struct cdev		*kcdev;
@@ -352,6 +372,14 @@ static ktime_t RearmTheTimer;
 #define ADDR( _head_ , _mbr_ )	( _head_ _mbr_ )
 #define PUBLIC(...)		ADDR( KPublic , __VA_ARGS__ )
 #define PRIVATE(...)		ADDR( KPrivate, __VA_ARGS__ )
+
+#define RESET_ARRAY(_array, _cnt, _val, ... )				\
+({									\
+	unsigned int rst;						\
+	for (rst = 0; rst < _cnt; rst++) {				\
+		_array[rst] __VA_ARGS__ = _val;				\
+	}								\
+})
 
 unsigned int FixMissingRatioAndFrequency(unsigned int r32, CLOCK *pClock)
 {
@@ -433,7 +461,6 @@ static long CoreFreqK_Register_ClockSource(unsigned int cpu)
     {
 	unsigned long long Freq_Hz;
 	unsigned int Freq_KHz;
-	int rx;
 
 	if ((PUBLIC(RO(Proc))->Features.AdvPower.EDX.Inv_TSC == 1)
 	||  (PUBLIC(RO(Proc))->Features.ExtInfo.EDX.RDTSCP == 1))
@@ -448,25 +475,27 @@ static long CoreFreqK_Register_ClockSource(unsigned int cpu)
 	Freq_Hz = PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)]
 		* PUBLIC(RO(Core, AT(cpu)))->Clock.Hz;
 	Freq_KHz = Freq_Hz / 1000U;
-
-	rx = clocksource_register_khz(&CoreFreqK_CS, Freq_KHz);
-	switch ( rx ) {
-	default:
+	if (Freq_KHz != 0)
+	{
+		int rx = clocksource_register_khz(&CoreFreqK_CS, Freq_KHz);
+	    switch (rx) {
+	    default:
 		/* Fallthrough */
-	case -EBUSY:
+	    case -EBUSY:
 		PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_DISABLE;
 		rc = (long) rx;
 		break;
-	case 0:
+	    case 0:
 		PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_ENABLE;
 		rc = RC_SUCCESS;
 
-	pr_debug("%s: Freq_KHz[%u] Kernel CPU_KHZ[%u] TSC_KHZ[%u]\n" \
-		"LPJ[%lu] mask[%llx] mult[%u] shift[%u]\n",
+		pr_debug("%s: Freq_KHz[%u] Kernel CPU_KHZ[%u] TSC_KHZ[%u]\n" \
+			"LPJ[%lu] mask[%llx] mult[%u] shift[%u]\n",
 		CoreFreqK_CS.name, Freq_KHz, cpu_khz, tsc_khz, loops_per_jiffy,
 		CoreFreqK_CS.mask, CoreFreqK_CS.mult, CoreFreqK_CS.shift);
 
 		break;
+	    }
 	}
     } else {
 		PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_DISABLE;
@@ -3163,7 +3192,7 @@ void Nehalem_PowerLimit(void)
 	    }
 	}
     }
-    if (Activate_TDP_Count > 0) {
+    if (TDP_Limiting_Count > 0) {
 	switch (Activate_TDP_Limit[PWR_DOMAIN(PKG)]) {
 	case COREFREQ_TOGGLE_OFF:
 	case COREFREQ_TOGGLE_ON:
@@ -3172,6 +3201,22 @@ void Nehalem_PowerLimit(void)
 		break;
 	}
     }
+    if (Custom_TDC_Offset != 0) {
+	signed short	TDC_Limit = PowerLimit.TDC_Limit >> 3;
+			TDC_Limit += Custom_TDC_Offset;
+	if (TDC_Limit > 0)
+	{
+		PowerLimit.TDC_Limit = TDC_Limit << 3;
+		WrRdMSR = 1;
+	}
+    }
+	switch (Activate_TDC_Limit) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		PowerLimit.TDC_Override = Activate_TDC_Limit;
+		WrRdMSR = 1;
+		break;
+	}
 	if (WrRdMSR) {
 		if (PUBLIC(RO(Proc))->Features.TDP_Unlock) {
 			WRMSR(PowerLimit, MSR_TURBO_POWER_CURRENT_LIMIT);
@@ -3185,8 +3230,9 @@ void Nehalem_PowerLimit(void)
 		= PowerLimit.TDP_Override;
 	/*	TDP: 1/(2 << (3-1)) = 1/8 watt	*/
 	PUBLIC(RO(Proc))->PowerThermal.Unit.PU = 3;
-	/*	TDC: 1/8 Amp			*/
+	/*	TDC: 1/8 amp			*/
 	PUBLIC(RO(Proc))->PowerThermal.TDC = PowerLimit.TDC_Limit >> 3;
+	PUBLIC(RO(Proc))->PowerThermal.Enable_Limit.TDC=PowerLimit.TDC_Override;
 }
 
 void Intel_PowerInterface(void)
@@ -3236,7 +3282,7 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 	  }
 	}
     }
-	if (Activate_TDP_Count > lt) {
+	if (TDP_Limiting_Count > lt) {
 		switch (Activate_TDP_Limit[lt]) {
 		case COREFREQ_TOGGLE_OFF:
 		case COREFREQ_TOGGLE_ON:
@@ -3245,12 +3291,30 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 			break;
 		}
 	}
+	if (TDP_Clamping_Count > lt) {
+		switch (Activate_TDP_Clamp[lt]) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			PowerLimit.Clamping1 = Activate_TDP_Clamp[lt];
+			WrRdMSR = 1;
+			break;
+		}
+	}
 	if (PowerLimitLockMask == PKG_POWER_LIMIT_LOCK_MASK) {
-	    if (Activate_TDP_Count > rt) {
+	    if (TDP_Limiting_Count > rt) {
 		switch (Activate_TDP_Limit[rt]) {
 		case COREFREQ_TOGGLE_OFF:
 		case COREFREQ_TOGGLE_ON:
 			PowerLimit.Enable_Limit2 = Activate_TDP_Limit[rt];
+			WrRdMSR = 1;
+			break;
+		}
+	    }
+	    if (TDP_Clamping_Count > rt) {
+		switch (Activate_TDP_Clamp[rt]) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			PowerLimit.Clamping2 = Activate_TDP_Clamp[rt];
 			WrRdMSR = 1;
 			break;
 		}
@@ -3377,6 +3441,23 @@ void Skylake_X_Platform_Info(unsigned int cpu)
     if (NC > 8) {
 	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 8; /*	16C	*/
     }
+}
+
+unsigned int AMD_HSMP_Exec(	enum HSMP_FUNC MSG_FUNC,
+				HSMP_ARG MSG_ARG[],
+				unsigned int HSMP_CmdRegister,
+				unsigned int HSMP_ArgRegister,
+				unsigned int HSMP_RspRegister,
+				unsigned int SMU_IndexRegister,
+				unsigned int SMU_DataRegister )
+{
+	return(AMD_HSMP_Mailbox(MSG_FUNC,
+				MSG_ARG,
+				HSMP_CmdRegister,
+				HSMP_ArgRegister,
+				HSMP_RspRegister,
+				SMU_IndexRegister,
+				SMU_DataRegister));
 }
 
 
@@ -4035,6 +4116,33 @@ static PCI_CALLBACK P35(struct pci_dev *dev)
 	return (Router(dev, 0x48, 64, 0x4000, Query_P35));
 }
 
+static PCI_CALLBACK ICH_TCO(struct pci_dev *dev)
+{
+	Intel_TCO1_CNT TCO1_CNT = {.value = 0};
+
+	pci_read_config_word(dev, 0x40 + 8, &TCO1_CNT.value);
+
+	switch (WDT_Enable) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		TCO1_CNT.TCO_TMR_HALT = !WDT_Enable;
+		pci_write_config_word(dev, 0x40 + 8, TCO1_CNT.value);
+		pci_read_config_word(dev, 0x40 + 8, &TCO1_CNT.value);
+		break;
+	}
+	if (TCO1_CNT.TCO_TMR_HALT) {
+		BITCLR_CC( LOCKLESS,	PUBLIC(RW(Proc))->WDT,
+					PUBLIC(RO(Proc))->Service.Core );
+	} else {
+		BITSET_CC( LOCKLESS,	PUBLIC(RW(Proc))->WDT,
+					PUBLIC(RO(Proc))->Service.Core );
+	}
+	BITSET_CC( LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
+				PUBLIC(RO(Proc))->Service.Core );
+
+	return ((PCI_CALLBACK) 0);
+}
+
 static PCI_CALLBACK SoC_SLM(struct pci_dev *dev)
 {/* DRP */
 	PCI_MCR MsgCtrlReg = {
@@ -4584,7 +4692,8 @@ static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev)
 *	AMD I/O Virtualization Technology (IOMMU) Specification Jan. 2020
 *	coreboot/src/soc/amd/picasso/agesa_acpi.c
 */
-	AMD_IOMMU_CAP_BAR	IOMMU_Cap_Bar;
+	AMD_IOMMU_CAP_BAR IOMMU_Cap_Bar;
+	unsigned char IOMMU_UnLock = 0;
 
 	PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_CR.value = 0x0;
 
@@ -4594,8 +4703,9 @@ static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev)
 	pci_read_config_dword(dev, 0x44, &IOMMU_Cap_Bar.low);
 	pci_read_config_dword(dev, 0x48, &IOMMU_Cap_Bar.high);
 
-	IOMMU_Cap_Bar.addr = IOMMU_Cap_Bar.addr & 0xffffe000;
-    if (IOMMU_Cap_Bar.addr != 0x0)
+	IOMMU_UnLock = IOMMU_Cap_Bar.addr & 0x1;
+	IOMMU_Cap_Bar.addr = IOMMU_Cap_Bar.addr & 0xffffc000;
+    if ((IOMMU_Cap_Bar.addr != 0x0) && IOMMU_UnLock)
     {
 	void __iomem *IOMMU_MMIO;
 	const size_t bsize = PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_HDR.EFRSup ?
@@ -4603,7 +4713,7 @@ static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev)
 
       if ((IOMMU_MMIO = ioremap(IOMMU_Cap_Bar.addr, bsize)) != NULL)
       {
-	PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_CR.value=readq(IOMMU_MMIO + 0x18);
+	PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_CR.value = readq(IOMMU_MMIO + 0x18);
 
 	iounmap(IOMMU_MMIO);
       }
@@ -4787,15 +4897,38 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 	return ((PCI_CALLBACK) 0);
 }
 
-static int CoreFreqK_ProbePCI(void)
+static void CoreFreqK_ResetChip(struct pci_dev *dev)
 {
-	struct pci_device_id *id = Arch[PUBLIC(RO(Proc))->ArchID].PCI_ids;
+	memset( PUBLIC(RO(Proc))->Uncore.Chip, 0,
+		CHIP_MAX_PCI*sizeof(struct CHIP_ST) );
+}
+
+static void CoreFreqK_AppendChip(struct pci_dev *dev)
+{
+	unsigned int idx;
+	for (idx = 0; idx < CHIP_MAX_PCI; idx++)
+	{
+		if (PUBLIC(RO(Proc))->Uncore.Chip[idx].VID == 0)
+		{
+			PUBLIC(RO(Proc))->Uncore.Chip[idx].VID = dev->vendor;
+			PUBLIC(RO(Proc))->Uncore.Chip[idx].DID = dev->device;
+
+			break;
+		}
+	}
+}
+
+static int CoreFreqK_ProbePCI(	struct pci_device_id PCI_ids[],
+				void (*PreProbe)(struct pci_dev*),
+				void (*PostProbe)(struct pci_dev*) )
+{
+	struct pci_device_id *id = PCI_ids;
 	struct pci_dev *dev = NULL;
 	int rc = -ENODEV;
 
-	memset( PUBLIC(RO(Proc))->Uncore.Chip, 0,
-		CHIP_MAX_PCI*sizeof(struct CHIP_ST) );
-
+	if (PreProbe != NULL) {
+		PreProbe(dev);
+	}
 	while (id->vendor || id->subvendor || id->class_mask)
 	{
 		dev = pci_get_device(id->vendor, id->device, NULL);
@@ -4806,17 +4939,9 @@ static int CoreFreqK_ProbePCI(void)
 
 		if ((rc = (int) Callback(dev)) == 0)
 		{
-			unsigned int idx;
-		  for (idx = 0; idx < CHIP_MAX_PCI; idx++)
-		  {
-		    if (PUBLIC(RO(Proc))->Uncore.Chip[idx].VID == 0)
-		    {
-			PUBLIC(RO(Proc))->Uncore.Chip[idx].VID = dev->vendor;
-			PUBLIC(RO(Proc))->Uncore.Chip[idx].DID = dev->device;
-
-			break;
-		    }
-		  }
+			if (PostProbe != NULL) {
+				PostProbe(dev);
+			}
 		}
 		pci_disable_device(dev);
 	    }
@@ -5790,8 +5915,6 @@ long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod)
   if (pClockMod != NULL) {
     if ((pClockMod->NC >= 1) && (pClockMod->NC <= 7))
     {
-      if (PUBLIC(RO(Proc))->Registration.Experimental)
-      {
 	CLOCK_ZEN_ARG ClockZen = {	/* P[1..7]-States allowed	*/
 		.pClockMod  = pClockMod,
 		.PstateAddr = MSR_AMD_PSTATE_DEF_BASE + pClockMod->NC,
@@ -5799,9 +5922,6 @@ long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod)
 		.rc = RC_SUCCESS
 	};
 	return (For_All_AMD_Zen_Clock(&ClockZen, TurboClock_AMD_Zen_PerCore));
-      } else {
-	return (-RC_EXPERIMENTAL);
-      }
     } else {
 	return (-RC_UNIMPLEMENTED);
     }
@@ -5815,7 +5935,6 @@ long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
   if (pClockMod != NULL) {
     switch (pClockMod->NC) {
     case CLOCK_MOD_MAX:
-      if (PUBLIC(RO(Proc))->Registration.Experimental)
       {
 	CLOCK_ZEN_ARG ClockZen = {	/* P[0]:Max non-boosted P-State */
 		.pClockMod  = pClockMod,
@@ -5824,8 +5943,6 @@ long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 		.rc = RC_SUCCESS
 	};
 	return(For_All_AMD_Zen_BaseClock(&ClockZen, BaseClock_AMD_Zen_PerCore));
-      } else {
-	return (-RC_EXPERIMENTAL);
       }
     case CLOCK_MOD_TGT:
       {
@@ -5868,6 +5985,9 @@ void Query_AMD_F17h_Power_Limits(CORE_RO *Core)
 
 void Query_AMD_Family_17h(unsigned int cpu)
 {
+	unsigned int rx;
+	HSMP_ARG arg[8];
+
 	PRIVATE(OF(Specific)) = LookupProcessor();
     if (PRIVATE(OF(Specific)) != NULL)
     {
@@ -5895,9 +6015,10 @@ void Query_AMD_Family_17h(unsigned int cpu)
 		Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Zen2_Temp;
 
 		Query_AMD_F17h_Power_Limits( PUBLIC(RO(Core, AT(cpu))) );
+
+		PUBLIC(RO(Proc))->Features.HSMP_Capable = 1;
 	    }
 		break;
-
 	default:
 /*
 	AMD_Family_17h:
@@ -5912,16 +6033,18 @@ void Query_AMD_Family_17h(unsigned int cpu)
 
 	    if (PUBLIC(RO(Proc))->Registration.Experimental) {
 		Query_AMD_F17h_Power_Limits( PUBLIC(RO(Core, AT(cpu))) );
+
+		PUBLIC(RO(Proc))->Features.HSMP_Capable = 1;
 	    }
 		break;
 	}
 
 	if (Compute_AMD_Zen_Boost(cpu) == true)
 	{	/*	Count the Xtra Boost ratios			*/
-		PUBLIC(RO(Proc))->Features.TDP_Levels = 2;
+		PUBLIC(RO(Proc))->Features.XtraCOF = 2;
 	}
 	else {	/*	Disabled CPB: Hide ratios			*/
-		PUBLIC(RO(Proc))->Features.TDP_Levels = 0;
+		PUBLIC(RO(Proc))->Features.XtraCOF = 0;
 	}
 	/*	Apply same register bit fields as Intel RAPL_POWER_UNIT */
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.Unit, MSR_AMD_RAPL_POWER_UNIT);
@@ -5929,6 +6052,101 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	HyperThreading_Technology();
 
 	AMD_Processor_PIN(PUBLIC(RO(Proc))->Features.leaf80000008.EBX.PPIN);
+
+	if (PUBLIC(RO(Proc))->Features.HSMP_Capable)
+	{ /* Mark the SMU as Enable if the reachability test is successful */
+		RESET_ARRAY(arg, 8, 0, .value);
+		rx = AMD_HSMP_Exec(	HSMP_TEST_MSG, arg, SMU_HSMP_F19H,
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H );
+	    if (rx == HSMP_RESULT_OK)
+	    {
+		PUBLIC(RO(Proc))->Features.HSMP_Enable = 1;
+	    }
+	    else if (IS_HSMP_OOO(rx))
+	    {
+		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
+	    }
+	} else {
+		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
+	}
+	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
+	{
+		RESET_ARRAY(arg, 8, 0, .value);
+		rx = AMD_HSMP_Exec(	HSMP_RD_SMU_VER, arg, SMU_HSMP_F19H,
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H );
+	    if (rx == HSMP_RESULT_OK)
+	    {
+		PUBLIC(RO(Proc))->Features.Factory.SMU.Version = arg[0].value;
+	    }
+	    else if (IS_HSMP_OOO(rx))
+	    {
+		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
+	    }
+	}
+	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
+	{
+		RESET_ARRAY(arg, 8, 0, .value);
+		rx = AMD_HSMP_Exec(	HSMP_RD_VERSION, arg, SMU_HSMP_F19H,
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H );
+	    if (rx == HSMP_RESULT_OK)
+	    {
+		PUBLIC(RO(Proc))->Features.Factory.SMU.Interface = arg[0].value;
+	    }
+	    else if (IS_HSMP_OOO(rx))
+	    {
+		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
+	    }
+	}
+	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
+	{
+		RESET_ARRAY(arg, 8, 0, .value);
+		rx = AMD_HSMP_Exec(	HSMP_RD_PKG_PL1, arg, SMU_HSMP_F19H,
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H );
+	    if (rx == HSMP_RESULT_OK)
+	    {
+		PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
+			PWR_DOMAIN(PKG)
+		].Domain_Limit1 = arg[0].value / 1000;
+
+		PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
+			PWR_DOMAIN(PKG)
+		].Enable_Limit1 = PUBLIC(RO(Proc))->Features.TDP_Unlock = 1;
+	    }
+	    else if (IS_HSMP_OOO(rx))
+	    {
+		PUBLIC(RO(Proc))->Features.HSMP_Enable =	\
+		PUBLIC(RO(Proc))->Features.TDP_Unlock = 0;
+	    }
+	}
+	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
+	{
+		RESET_ARRAY(arg, 8, 0, .value);
+		rx = AMD_HSMP_Exec(	HSMP_RD_MAX_PPT, arg, SMU_HSMP_F19H,
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H );
+	    if (rx == HSMP_RESULT_OK)
+	    {
+		PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
+			PWR_DOMAIN(PKG)
+		].Domain_Limit2 = arg[0].value / 1000;
+
+		PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
+			PWR_DOMAIN(PKG)
+		].Enable_Limit2 = 1;
+
+		PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
+			PWR_DOMAIN(PKG)
+		].Clamping2 = 1;
+	    }
+	    else if (IS_HSMP_OOO(rx))
+	    {
+		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
+	    }
+	}
 }
 
 void Dump_CPUID(CORE_RO *Core)
@@ -6725,41 +6943,92 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
 	/*	Enable or Disable the Package C6 State . Bit[32]	*/
-	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
-	{
-		RDMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
-		switch (PC6_Enable) {
-		case COREFREQ_TOGGLE_OFF:
-			BITCLR(LOCKLESS, PC6, 32);
-			ToggleFeature = 1;
-			break;
-		case COREFREQ_TOGGLE_ON:
-			BITSET(LOCKLESS, PC6, 32);
-			ToggleFeature = 1;
-			break;
-		default:
-			ToggleFeature = 0;
-			break;
-		}
-		if (ToggleFeature == 1) {
-			WRMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
-			RDMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
-		}
-		if(BITWISEAND(LOCKLESS, PC6, 0x100000000LLU) == 0x100000000LLU)
-		{
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->PC6, Core->Bind);
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PC6, Core->Bind);
-		}
-		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask, Core->Bind);
+    if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+    {
+	RDMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
+	switch (PC6_Enable) {
+	case COREFREQ_TOGGLE_OFF:
+		BITCLR(LOCKLESS, PC6, 32);
+		ToggleFeature = 1;
+		break;
+	case COREFREQ_TOGGLE_ON:
+		BITSET(LOCKLESS, PC6, 32);
+		ToggleFeature = 1;
+		break;
+	default:
+		ToggleFeature = 0;
+		break;
 	}
-	/*		Core C-State Base Address.			*/
+	if (ToggleFeature == 1) {
+		WRMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
+		RDMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
+	}
+	if(BITWISEAND(LOCKLESS, PC6, 0x100000000LLU) == 0x100000000LLU)
+	{
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->PC6, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PC6, Core->Bind);
+	}
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask, Core->Bind);
+
+	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
+	{
+		unsigned int rx;
+		HSMP_ARG arg[8];
+		RESET_ARRAY(arg, 8, 0, .value);
+		rx = AMD_HSMP_Exec(	HSMP_RD_PROCHOT, arg, SMU_HSMP_F19H,
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H );
+	    if (rx == HSMP_RESULT_OK)
+	    {
+		PUBLIC(RO(Proc))->PowerThermal.Events=((arg[0].value & 0x1)<<1);
+	    }
+	    else if (IS_HSMP_OOO(rx))
+	    {
+		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
+	    }
+	}
+    }
+	/*		SMT C-State Base Address.			*/
 	RDMSR(CStateBaseAddr, MSR_AMD_CSTATE_BAR);
 	Core->Query.CStateBaseAddr = CStateBaseAddr.IOaddr;
 	/*		Package C-State: Configuration Control .	*/
 	Core->Query.CfgLock = 1;
 	/*		Package C-State: I/O MWAIT Redirection .	*/
 	Core->Query.IORedir = 0;
+	/*		CPU Watchdog Timer.				*/
+	if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
+	{
+		AMD_CPU_WDT_CFG CPU_WDT_CFG = {.value = 0};
+		RDMSR(CPU_WDT_CFG, MSR_AMD_CPU_WDT_CFG);
+
+		switch (WDT_Enable) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			CPU_WDT_CFG.TmrCfgEn = WDT_Enable;
+			WRMSR(CPU_WDT_CFG, MSR_AMD_CPU_WDT_CFG);
+			RDMSR(CPU_WDT_CFG, MSR_AMD_CPU_WDT_CFG);
+			break;
+		}
+		if (CPU_WDT_CFG.TmrCfgEn) {
+			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT, Core->Bind);
+		} else {
+			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT, Core->Bind);
+		}
+		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
+	}
+}
+
+void Intel_Watchdog(CORE_RO *Core)
+{
+	struct pci_device_id PCI_WDT_ids[] = {
+		{
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_LPC),
+		.driver_data = (kernel_ulong_t) ICH_TCO
+		},
+		{0, }
+	};
+	CoreFreqK_ProbePCI(PCI_WDT_ids, NULL, NULL);
 }
 
 void Intel_Turbo_Activation_Ratio(CORE_RO *Core)
@@ -7483,7 +7752,7 @@ void Control_IO_MWAIT(	struct CSTATES_ENCODING_ST IORedir[],
 {
 	CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
 	RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-	/*		Core C-State Base Address.			*/
+	/*		SMT C-State Base Address.			*/
 	Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 
     if (Core->Query.IORedir)
@@ -8223,6 +8492,7 @@ void PerCore_Reset(CORE_RO *Core)
 
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask	, Core->Bind);
 
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->ODCM	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PowerMgmt , Core->Bind);
@@ -8249,6 +8519,7 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSCHANGE_MC_NO, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TAA_NO	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SPLA	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT	, Core->Bind);
 }
 
 static void PerCore_VirtualMachine(void *arg)
@@ -8296,6 +8567,9 @@ static void PerCore_VirtualMachine(void *arg)
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
 }
 
 static void PerCore_Intel_Query(void *arg)
@@ -8329,6 +8603,9 @@ static void PerCore_Intel_Query(void *arg)
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
 
 	PowerThermal(Core);
 
@@ -8364,6 +8641,7 @@ static void PerCore_AuthenticAMD_Query(void *arg)
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 }
 
 static void PerCore_Core2_Query(void *arg)
@@ -8398,6 +8676,9 @@ static void PerCore_Core2_Query(void *arg)
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
 
 	PowerThermal(Core);				/* Shared | Unique */
 
@@ -8490,7 +8771,7 @@ static void PerCore_Silvermont_Query(void *arg)
 	Compute_Intel_Silvermont_Burst(Core);
 
 	Query_Intel_C1E(Core);
-	/*TODO(Needs a per Module topology)*/
+
 	Intel_CStatesConfiguration(CSTATES_SOC_SLM, Core);
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
@@ -8504,6 +8785,8 @@ static void PerCore_Silvermont_Query(void *arg)
 		Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,	/* Table 2-8 */
 					PKG_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(PKG) );
+
+		Intel_Watchdog(Core);
 	}
 }
 
@@ -8552,8 +8835,12 @@ static void PerCore_Goldmont_Query(void *arg)
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */
 		Intel_CStatesConfiguration(CSTATES_SOC_GDM, Core);
+	} else {
+		CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
+		RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+	/*	Store the C-State Base Address used by I/O-MWAIT	*/
+		Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 	}
-
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
@@ -8573,6 +8860,8 @@ static void PerCore_Goldmont_Query(void *arg)
 		Intel_DomainPowerLimit( MSR_DRAM_POWER_LIMIT,	/* Table 2-12 */
 					PPn_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(RAM) );
+
+		Intel_Watchdog(Core);
 	}
 }
 
@@ -8605,8 +8894,12 @@ static void PerCore_Nehalem_Same_Query(void *arg)
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */
 		Intel_CStatesConfiguration(CSTATES_NHM, Core);
+	} else {
+		CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
+		RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+	/*	Store the C-State Base Address used by I/O-MWAIT	*/
+		Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 	}
-
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
@@ -8627,6 +8920,8 @@ static void PerCore_Nehalem_Query(void *arg)
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		Nehalem_PowerLimit();		/* Table 2-15	*/
+
+		Intel_Watchdog(Core);
 	}
 }
 
@@ -8640,6 +8935,8 @@ static void PerCore_Nehalem_EX_Query(void *arg)
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		Nehalem_PowerLimit();		/* Table 2-15	*/
+
+		Intel_Watchdog(Core);
 	}
 }
 
@@ -8686,8 +8983,12 @@ static void PerCore_SandyBridge_Query(void *arg)
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */
 		Intel_CStatesConfiguration(CSTATES_SNB, Core);
+	} else {
+		CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
+		RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+	/*	Store the C-State Base Address used by I/O-MWAIT	*/
+		Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 	}
-
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
@@ -8705,6 +9006,8 @@ static void PerCore_SandyBridge_Query(void *arg)
 		Intel_DomainPowerLimit( MSR_PP0_POWER_LIMIT,
 					PPn_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(CORES) );
+
+		Intel_Watchdog(Core);
 	}
 }
 
@@ -8794,8 +9097,12 @@ static void PerCore_Haswell_EP_Query(void *arg)
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */
 		Intel_CStatesConfiguration(CSTATES_SNB, Core);
+	} else {
+		CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
+		RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+	/*	Store the C-State Base Address used by I/O-MWAIT	*/
+		Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 	}
-
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
@@ -8820,6 +9127,8 @@ static void PerCore_Haswell_EP_Query(void *arg)
 		Intel_DomainPowerLimit( MSR_DRAM_POWER_LIMIT,
 					PPn_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(RAM) );
+
+		Intel_Watchdog(Core);
 	}
 }
 
@@ -8855,8 +9164,12 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */
 		Intel_CStatesConfiguration(CSTATES_ULT, Core);
+	} else {
+		CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
+		RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+	/*	Store the C-State Base Address used by I/O-MWAIT	*/
+		Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 	}
-
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
@@ -8878,6 +9191,8 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 		Intel_DomainPowerLimit( MSR_PP1_POWER_LIMIT,
 					PPn_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(UNCORE) );
+
+		Intel_Watchdog(Core);
 	}
 }
 
@@ -8933,8 +9248,12 @@ static void PerCore_Skylake_Query(void *arg)
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */
 		Intel_CStatesConfiguration(CSTATES_SKL, Core);
+	} else {
+		CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
+		RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+	/*	Store the C-State Base Address used by I/O-MWAIT	*/
+		Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 	}
-
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
@@ -8963,6 +9282,8 @@ static void PerCore_Skylake_Query(void *arg)
 		Intel_DomainPowerLimit( MSR_PLATFORM_POWER_LIMIT,
 					PKG_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(PLATFORM) );
+
+		Intel_Watchdog(Core);
 	}
 }
 
@@ -9024,6 +9345,7 @@ static void PerCore_AMD_Family_0Fh_Query(void *arg)
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 }
 
 static void PerCore_AMD_Family_Same_Query(void *arg)
@@ -9056,6 +9378,7 @@ static void PerCore_AMD_Family_Same_Query(void *arg)
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 }
 
 static void PerCore_AMD_Family_10h_Query(void *arg)
@@ -9109,16 +9432,59 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	PerCore_Query_AMD_Zen_Features(Core);
 	CPB_State = Compute_AMD_Zen_Boost(Core->Bind);
 
-	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
-	{
-		if (CPB_State == true)
-		{	/*	Count CPB and XFR ratios		*/
-			PUBLIC(RO(Proc))->Features.TDP_Levels = 2;
-		}
-		else {
-			PUBLIC(RO(Proc))->Features.TDP_Levels = 0;
-		}
+    if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+    {
+	unsigned int rx;
+	HSMP_ARG arg[8];
+
+	if (CPB_State == true)
+	{	/*	Count CPB and XFR ratios		*/
+		PUBLIC(RO(Proc))->Features.XtraCOF = 2;
 	}
+	else {
+		PUBLIC(RO(Proc))->Features.XtraCOF = 0;
+	}
+	#define _lt (PWR_LIMIT_SIZE * PWR_DOMAIN(PKG))
+	if (Custom_TDP_Count > _lt) {
+	    if (Custom_TDP_Offset[_lt] != 0)
+	    {
+		signed int TDP_Limit;
+		TDP_Limit = PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
+					PWR_DOMAIN(PKG)
+			].Domain_Limit1;
+
+		TDP_Limit = TDP_Limit + Custom_TDP_Offset[_lt];
+
+		if (PUBLIC(RO(Proc))->Features.HSMP_Enable && (TDP_Limit > 0))
+		{
+			RESET_ARRAY(arg, 8, 0, .value);
+			arg[0].value = 1000 * TDP_Limit;
+			rx = AMD_HSMP_Exec(HSMP_WR_PKG_PL1, arg, SMU_HSMP_F19H,
+						SMU_AMD_INDEX_REGISTER_F17H,
+						SMU_AMD_DATA_REGISTER_F17H);
+		    if (rx == HSMP_RESULT_OK)
+		    {
+			RESET_ARRAY(arg, 8, 0, .value);
+			rx = AMD_HSMP_Exec(HSMP_RD_PKG_PL1, arg, SMU_HSMP_F19H,
+						SMU_AMD_INDEX_REGISTER_F17H,
+						SMU_AMD_DATA_REGISTER_F17H);
+		    }
+		    if (rx == HSMP_RESULT_OK)
+		    {
+			PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
+				PWR_DOMAIN(PKG)
+			].Domain_Limit1 = arg[0].value / 1000;
+		    }
+		    else if (IS_HSMP_OOO(rx))
+		    {
+			PUBLIC(RO(Proc))->Features.HSMP_Enable =	\
+			PUBLIC(RO(Proc))->Features.TDP_Unlock = 0;
+		    }
+		}
+	    }
+	}
+	#undef _lt
+    }
 	SystemRegisters(Core);
 
 	AMD_Microcode(Core);
@@ -9233,7 +9599,7 @@ void Sys_MemInfo(SYSGATE_RO *SysGate)
 	SysGate->memInfo.freehigh  = info.freehigh  << (PAGE_SHIFT - 10);
 }
 
-#define Sys_Tick(Pkg)						\
+#define Sys_Tick(Pkg, ...)					\
 ({								\
 	if (PUBLIC(OF(Gate)) != NULL)				\
 	{							\
@@ -9242,6 +9608,7 @@ void Sys_MemInfo(SYSGATE_RO *SysGate)
 			Pkg->tickStep = Pkg->tickReset ;	\
 			Sys_DumpTask( PUBLIC(OF(Gate)) );	\
 			Sys_MemInfo( PUBLIC(OF(Gate)) );	\
+			__VA_ARGS__				\
 		}						\
 	}							\
 })
@@ -9683,8 +10050,6 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 
 #define SMT_Counters_AMD_Family_17h(Core, T)				\
 ({									\
-	register unsigned long long Cx;					\
-									\
 	RDTSCP_COUNTERx3(Core->Counter[T].TSC,				\
 			MSR_CORE_PERF_UCC, Core->Counter[T].C0.UCC,	\
 			MSR_CORE_PERF_URC, Core->Counter[T].C0.URC,	\
@@ -9699,14 +10064,13 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 	Atomic_Add_VPMC (LOCKLESS, Core->Counter[T].C6, Core->VPMC.C5); \
 	Atomic_Add_VPMC (LOCKLESS, Core->Counter[T].C6, Core->VPMC.C6); \
     }									\
-	Cx =	Core->Counter[T].C6					\
-		+ Core->Counter[T].C3					\
-		+ Core->Counter[T].C0.URC;				\
-									\
+    else								\
+    {									\
 	Core->Counter[T].C1 =						\
-		(Core->Counter[T].TSC > Cx) ?				\
-			Core->Counter[T].TSC - Cx			\
+		(Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?	\
+			Core->Counter[T].TSC - Core->Counter[T].C0.URC	\
 			: 0;						\
+    }									\
 })
 
 #define Mark_OVH(Core)							\
@@ -9814,7 +10178,8 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
 		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
-      MSR_NHM_UNCORE_PERF_FIXED_CTR0, PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
+		MSR_NHM_UNCORE_PERF_FIXED_CTR0 ,			\
+			PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);	\
 })
 
 #define PKG_Counters_SandyBridge(Core, T)				\
@@ -9824,18 +10189,41 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
 		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
-      MSR_SNB_UNCORE_PERF_FIXED_CTR0, PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
+		MSR_SNB_UNCORE_PERF_FIXED_CTR0 ,			\
+			PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);	\
 })
 
-#define PKG_Counters_SandyBridge_EP(Core, T)				\
+#define PKG_COUNTERS_SANDYBRIDGE_EP(Core, T)				\
 ({									\
     RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
 		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
 		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
-    MSR_SNB_EP_UNCORE_PERF_FIXED_CTR0,PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
+		MSR_SNB_EP_UNCORE_PERF_FIXED_CTR0,			\
+			PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);	\
 })
+
+static void PKG_Counters_SandyBridge_EP(CORE_RO *Core, unsigned int T)
+{
+	PKG_COUNTERS_SANDYBRIDGE_EP(Core, T);
+}
+
+#define PKG_COUNTERS_IVYBRIDGE_EP(Core, T)				\
+({									\
+    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
+		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
+		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
+		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
+		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
+		MSR_SNB_EP_UNCORE_PERF_FIXED_CTR0,			\
+			PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);	\
+})
+
+static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
+{
+	PKG_COUNTERS_IVYBRIDGE_EP(Core, T);
+}
 
 #define PKG_Counters_Haswell_EP(Core, T)				\
 ({									\
@@ -9844,7 +10232,8 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
 		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
-    MSR_HSW_EP_UNCORE_PERF_FIXED_CTR0,PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
+		MSR_HSW_EP_UNCORE_PERF_FIXED_CTR0,			\
+			PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);	\
 })
 
 #define PKG_Counters_Haswell_ULT(Core, T)				\
@@ -9878,7 +10267,8 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
 		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
-      MSR_SKL_UNCORE_PERF_FIXED_CTR0, PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
+		MSR_SKL_UNCORE_PERF_FIXED_CTR0 ,			\
+			PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);	\
 })
 
 #define PKG_Counters_Skylake_X(Core, T) 				\
@@ -10295,6 +10685,28 @@ void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 									\
 	Pkg->PowerThermal.Sensor = Core->PowerThermal.Sensor;		\
 })
+
+#define Pkg_AMD_Family_19h_PROCHOT(Pkg) 				\
+({									\
+    if (Pkg->Features.HSMP_Enable)					\
+    {									\
+	unsigned int rx;						\
+	HSMP_ARG arg[8];						\
+	RESET_ARRAY(arg, 8, 0, .value);					\
+	rx = AMD_HSMP_Exec(	HSMP_RD_PROCHOT, arg, SMU_HSMP_F19H,	\
+				SMU_AMD_INDEX_REGISTER_F17H,		\
+				SMU_AMD_DATA_REGISTER_F17H );		\
+	if (rx == HSMP_RESULT_OK)					\
+	{								\
+		Pkg->PowerThermal.Events = ((arg[0].value & 0x1) << 1); \
+	}								\
+	else if (IS_HSMP_OOO(rx))					\
+	{								\
+		Pkg->Features.HSMP_Enable = 0;				\
+	}								\
+    }									\
+})
+
 
 static enum hrtimer_restart Cycle_VirtualMachine(struct hrtimer *pTimer)
 {
@@ -11416,7 +11828,8 @@ static void Stop_Uncore_SandyBridge(void *arg)
 }
 
 
-static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
+static enum hrtimer_restart Cycle_Intel_Xeon_EP(struct hrtimer *pTimer,
+			void (*PKG_Counters_Intel_EP)(CORE_RO*, unsigned int))
 {
 	PERF_STATUS PerfStatus = {.value = 0};
 	CORE_RO *Core;
@@ -11443,7 +11856,7 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
-		PKG_Counters_SandyBridge_EP(Core, 1);
+		PKG_Counters_Intel_EP(Core, 1);
 
 		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
@@ -11565,12 +11978,18 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 	return (HRTIMER_NORESTART);
 }
 
+static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
+{
+	return (Cycle_Intel_Xeon_EP(pTimer, PKG_Counters_SandyBridge_EP));
+}
+
 void InitTimer_SandyBridge_EP(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_SandyBridge_EP, 1);
 }
 
-static void Start_SandyBridge_EP(void *arg)
+static void Entry_Intel_Xeon_EP(void *arg,
+			void (*PKG_Counters_Intel_EP)(CORE_RO*, unsigned int))
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
@@ -11586,7 +12005,7 @@ static void Start_SandyBridge_EP(void *arg)
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
 		}
-		PKG_Counters_SandyBridge_EP(Core, 0);
+		PKG_Counters_Intel_EP(Core, 0);
 		PWR_ACCU_SandyBridge_EP(PUBLIC(RO(Proc)), 0);
 	}
 
@@ -11622,8 +12041,14 @@ static void Stop_SandyBridge_EP(void *arg)
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
-static void Start_Uncore_SandyBridge_EP(void *arg)
+static void Start_SandyBridge_EP(void *arg)
 {
+	Entry_Intel_Xeon_EP(arg, PKG_Counters_SandyBridge_EP);
+}
+
+/*	SandyBridge/EP Uncore PMU MSR for Xeon family 06_2Dh		*/
+static void Start_Uncore_SandyBridge_EP(void *arg)
+{	/*	Tables 2-20 , 2-23 , 2-24				*/
 	UNCORE_FIXED_PERF_CONTROL Uncore_FixedPerfControl;
 	UNCORE_PMON_GLOBAL_CONTROL Uncore_PMonGlobalControl;
 
@@ -11636,24 +12061,77 @@ static void Start_Uncore_SandyBridge_EP(void *arg)
 
 	WRMSR(Uncore_FixedPerfControl, MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
 
-	RDMSR(Uncore_PMonGlobalControl, MSR_SNB_EP_PMON_GLOBAL_CTRL);
+	RDMSR(Uncore_PMonGlobalControl, MSR_SNB_UNCORE_PERF_GLOBAL_CTRL);
 
 	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl = \
 						Uncore_PMonGlobalControl;
 
 	Uncore_PMonGlobalControl.Unfreeze_All = 1;
 
-	WRMSR(Uncore_PMonGlobalControl, MSR_SNB_EP_PMON_GLOBAL_CTRL);
+	WRMSR(Uncore_PMonGlobalControl, MSR_SNB_UNCORE_PERF_GLOBAL_CTRL);
 }
 
 static void Stop_Uncore_SandyBridge_EP(void *arg)
+{
+    if (PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl.SNB.EN_CTR0 == 0)
+    {
+	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl.Freeze_All = 1;
+    }
+	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl,
+		MSR_SNB_UNCORE_PERF_GLOBAL_CTRL);
+
+	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl,
+		MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
+}
+
+static enum hrtimer_restart Cycle_IvyBridge_EP(struct hrtimer *pTimer)
+{
+	return (Cycle_Intel_Xeon_EP(pTimer, PKG_Counters_IvyBridge_EP));
+}
+
+void InitTimer_IvyBridge_EP(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_IvyBridge_EP, 1);
+}
+
+static void Start_IvyBridge_EP(void *arg)
+{
+	Entry_Intel_Xeon_EP(arg, PKG_Counters_IvyBridge_EP);
+}
+
+/*	IvyBridge/EP Uncore PMU MSR for Xeon family 06_3E		*/
+static void Start_Uncore_IvyBridge_EP(void *arg)
+{	/*	Tables 2-20 , 2-24 , 2-26 , 2-27 , 2-28 		*/
+	UNCORE_FIXED_PERF_CONTROL Uncore_FixedPerfControl;
+	UNCORE_PMON_GLOBAL_CONTROL Uncore_PMonGlobalControl;
+
+	RDMSR(Uncore_FixedPerfControl, MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
+
+	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl = \
+						Uncore_FixedPerfControl;
+
+	Uncore_FixedPerfControl.SNB.EN_CTR0 = 1;
+
+	WRMSR(Uncore_FixedPerfControl, MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
+
+	RDMSR(Uncore_PMonGlobalControl, MSR_IVB_EP_PMON_GLOBAL_CTRL);
+
+	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl = \
+						Uncore_PMonGlobalControl;
+
+	Uncore_PMonGlobalControl.Unfreeze_All = 1;
+
+	WRMSR(Uncore_PMonGlobalControl, MSR_IVB_EP_PMON_GLOBAL_CTRL);
+}
+
+static void Stop_Uncore_IvyBridge_EP(void *arg)
 {	/* If fixed counter was disable at entry, force freezing	*/
     if (PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl.SNB.EN_CTR0 == 0)
     {
 	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl.Freeze_All = 1;
     }
 	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl,
-		MSR_SNB_EP_PMON_GLOBAL_CTRL);
+		MSR_IVB_EP_PMON_GLOBAL_CTRL);
 
 	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl,
 		MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
@@ -13304,7 +13782,10 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
 
 		Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
 
-		Sys_Tick(PUBLIC(RO(Proc)));
+		Sys_Tick(PUBLIC(RO(Proc)),
+			{
+				Pkg_AMD_Family_19h_PROCHOT(PUBLIC(RO(Proc)));
+			});
 	} else {
 		Core->PowerThermal.VID = 0;
 	}
@@ -13572,11 +14053,9 @@ static void Stop_AMD_Family_17h(void *arg)
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
-long Sys_OS_Driver_Query(SYSGATE_RO *SysGate)
+long Sys_OS_Driver_Query(void)
 {
 	int rc = RC_SUCCESS;
-  if (SysGate != NULL)
-  {
 #ifdef CONFIG_CPU_FREQ
 	const char *pFreqDriver;
 	struct cpufreq_policy freqPolicy;
@@ -13584,53 +14063,56 @@ long Sys_OS_Driver_Query(SYSGATE_RO *SysGate)
 #ifdef CONFIG_CPU_IDLE
 	struct cpuidle_driver *idleDriver;
 #endif /* CONFIG_CPU_IDLE */
-	memset(&SysGate->OS, 0, sizeof(OS_DRIVER));
+	memset(&PUBLIC(RO(Proc))->OS, 0, sizeof(OS_DRIVER));
 #ifdef CONFIG_CPU_IDLE
     if ((idleDriver = cpuidle_get_driver()) != NULL)
     {
 	int idx;
-	StrCopy(SysGate->OS.IdleDriver.Name, idleDriver->name,CPUIDLE_NAME_LEN);
 
-	if (idleDriver->state_count < CPUIDLE_STATE_MAX) {
-		SysGate->OS.IdleDriver.stateCount = idleDriver->state_count;
-	} else {
-		SysGate->OS.IdleDriver.stateCount = CPUIDLE_STATE_MAX;
-	}
-		SysGate->OS.IdleDriver.stateLimit = idleDriver->state_count;
+	StrCopy(PUBLIC(RO(Proc))->OS.IdleDriver.Name,
+		idleDriver->name,
+		CPUIDLE_NAME_LEN);
 
-	for (idx = 0; idx < SysGate->OS.IdleDriver.stateCount; idx++)
-	{
-		StrCopy(SysGate->OS.IdleDriver.State[idx].Name,
-			idleDriver->states[idx].name, CPUIDLE_NAME_LEN);
+      if (idleDriver->state_count < CPUIDLE_STATE_MAX) {
+	PUBLIC(RO(Proc))->OS.IdleDriver.stateCount = idleDriver->state_count;
+      } else {
+	PUBLIC(RO(Proc))->OS.IdleDriver.stateCount = CPUIDLE_STATE_MAX;
+      }
+	PUBLIC(RO(Proc))->OS.IdleDriver.stateLimit = idleDriver->state_count;
 
-		StrCopy(SysGate->OS.IdleDriver.State[idx].Desc,
-			idleDriver->states[idx].desc, CPUIDLE_NAME_LEN);
+      for (idx = 0; idx < PUBLIC(RO(Proc))->OS.IdleDriver.stateCount; idx++)
+      {
+	StrCopy(PUBLIC(RO(Proc))->OS.IdleDriver.State[idx].Name,
+		idleDriver->states[idx].name, CPUIDLE_NAME_LEN);
 
-		SysGate->OS.IdleDriver.State[idx].exitLatency = \
-				idleDriver->states[idx].exit_latency;
+	StrCopy(PUBLIC(RO(Proc))->OS.IdleDriver.State[idx].Desc,
+		idleDriver->states[idx].desc, CPUIDLE_NAME_LEN);
 
-		SysGate->OS.IdleDriver.State[idx].powerUsage = \
-				idleDriver->states[idx].power_usage;
+	PUBLIC(RO(Proc))->OS.IdleDriver.State[idx].exitLatency = \
+					idleDriver->states[idx].exit_latency;
 
-		SysGate->OS.IdleDriver.State[idx].targetResidency = \
+	PUBLIC(RO(Proc))->OS.IdleDriver.State[idx].powerUsage = \
+					idleDriver->states[idx].power_usage;
+
+	PUBLIC(RO(Proc))->OS.IdleDriver.State[idx].targetResidency = \
 				idleDriver->states[idx].target_residency;
-	}
-	if(PUBLIC(RO(Proc))->Registration.Driver.CPUidle == REGISTRATION_ENABLE)
+      }
+      if(PUBLIC(RO(Proc))->Registration.Driver.CPUidle == REGISTRATION_ENABLE)
+      {
+	for (idx = 0; idx < CoreFreqK.IdleDriver.state_count; idx++)
 	{
-	  for (idx = 0; idx < CoreFreqK.IdleDriver.state_count; idx++)
-	  {
 	    if (CoreFreqK.IdleDriver.states[idx].flags & CPUIDLE_FLAG_UNUSABLE)
 	    {
-		SysGate->OS.IdleDriver.stateLimit = idx;
+		PUBLIC(RO(Proc))->OS.IdleDriver.stateLimit = idx;
 		break;
 	    }
-	  }
 	}
+      }
     }
 #endif /* CONFIG_CPU_IDLE */
 #ifdef CONFIG_CPU_FREQ
 	if ((pFreqDriver = cpufreq_get_current_driver()) != NULL) {
-		StrCopy(SysGate->OS.FreqDriver.Name,
+		StrCopy(PUBLIC(RO(Proc))->OS.FreqDriver.Name,
 			pFreqDriver, CPUFREQ_NAME_LEN);
 	}
 	memset(&freqPolicy, 0, sizeof(freqPolicy));
@@ -13638,18 +14120,15 @@ long Sys_OS_Driver_Query(SYSGATE_RO *SysGate)
     {
 	struct cpufreq_governor *pGovernor = freqPolicy.governor;
 	if (pGovernor != NULL) {
-		StrCopy(SysGate->OS.FreqDriver.Governor,
+		StrCopy(PUBLIC(RO(Proc))->OS.FreqDriver.Governor,
 			pGovernor->name, CPUFREQ_NAME_LEN);
 	} else {
-		SysGate->OS.FreqDriver.Governor[0] = '\0';
+		PUBLIC(RO(Proc))->OS.FreqDriver.Governor[0] = '\0';
 	}
     } else {
-	SysGate->OS.FreqDriver.Governor[0] = '\0';
+	PUBLIC(RO(Proc))->OS.FreqDriver.Governor[0] = '\0';
     }
 #endif /* CONFIG_CPU_FREQ */
-  } else {
-	rc = -ENXIO;
-  }
 	return (rc);
 }
 
@@ -13674,18 +14153,46 @@ long SysGate_OnDemand(void)
 	long rc = -1;
     if (PUBLIC(OF(Gate)) == NULL)
     {	/*			On-demand allocation.			*/
-	PUBLIC(OF(Gate)) = alloc_pages_exact( PUBLIC(RO(Proc))->OS.ReqMem.Size,
-						GFP_KERNEL );
-      if (PUBLIC(OF(Gate)) != NULL)
-      {
-	const size_t allocPages=PAGE_SIZE << PUBLIC(RO(Proc))->OS.ReqMem.Order;
+	PUBLIC(OF(Gate)) = alloc_pages_exact(PUBLIC(RO(Proc))->Gate.ReqMem.Size,
+						GFP_KERNEL);
+	if (PUBLIC(OF(Gate)) != NULL)
+	{
+		const size_t
+		allocPages = PAGE_SIZE << PUBLIC(RO(Proc))->Gate.ReqMem.Order;
 		memset(PUBLIC(OF(Gate)), 0, allocPages);
 		rc = 0;
-      }
+	}
     } else {					/* Already allocated	*/
 		rc = 1;
     }
 	return (rc);
+}
+
+#define Atomic_Write_VPMC( _Core, cycles, _lvl)				\
+{									\
+	switch (_lvl) {							\
+	case 0:								\
+		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C1, cycles);	\
+		break;							\
+	case 1:								\
+		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C2, cycles);	\
+		break;							\
+	case 2:								\
+		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C3, cycles);	\
+		break;							\
+	case 3:								\
+		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C4, cycles);	\
+		break;							\
+	case 4:								\
+		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C5, cycles);	\
+		break;							\
+	case 5:								\
+		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C6, cycles);	\
+		break;							\
+	case 6:								\
+		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C7, cycles);	\
+		break;							\
+	};								\
 }
 
 #if defined(CONFIG_CPU_IDLE) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
@@ -13763,10 +14270,23 @@ static int CoreFreqK_S2_MWAIT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 static int CoreFreqK_HALT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
+	const unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
 	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
-/*	Source: /drivers/acpi/processor_idle.c				*/
-	safe_halt();
+/*	Source: /arch/x86/include/asm/irqflags.h: native_safe_halt();	*/
+	__asm__ volatile
+	(
+		"sti"		"\n\t"
+		"hlt"		"\n\t"
+		"# RFLAGS"	"\n\t"
+		"pushfq"	"\n\t"
+		"popq	%0"
+		: "=m" (Core->SystemRegister.RFLAGS)
+		:
+		: "cc", "memory"
+	);
 	return index;
 }
 
@@ -13791,10 +14311,23 @@ static int CoreFreqK_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 #endif /* 5.9.0 */
 {
+	const unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
 	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
 
-	safe_halt();
+	__asm__ volatile
+	(
+		"sti"		"\n\t"
+		"hlt"		"\n\t"
+		"# RFLAGS"	"\n\t"
+		"pushfq"	"\n\t"
+		"popq	%0"
+		: "=m" (Core->SystemRegister.RFLAGS)
+		:
+		: "cc", "memory"
+	);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	return index;
 #endif /* 5.9.0 */
@@ -13833,15 +14366,21 @@ static int CoreFreqK_IO_Handler(struct cpuidle_device *pIdleDevice,
 	const unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	const unsigned short lvl = \
-			(CoreFreqK.IdleDriver.states[index].flags >> 28) & 0xf;
-
-	const unsigned short cstate_addr = Core->Query.CStateBaseAddr + lvl;
 	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
 
-	inw(cstate_addr);
-
+	__asm__ volatile
+	(
+		"xorw	%%ax,	%%ax"	"\n\t"
+		"movw	%1,	%%dx"	"\n\t"
+		"inb	%%dx,	%%al"	"\n\t"
+		"# RFLAGS"		"\n\t"
+		"pushfq"		"\n\t"
+		"popq	%0"
+		: "=m" (Core->SystemRegister.RFLAGS)
+		: "ir" (Core->Query.CStateBaseAddr)
+		: "%ax", "%dx", "cc", "memory"
+	);
 	return index;
 }
 
@@ -13869,14 +14408,21 @@ static int CoreFreqK_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
 	const unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	const unsigned short lvl = \
-			(CoreFreqK.IdleDriver.states[index].flags >> 28) & 0xf;
-
-	const unsigned short cstate_addr = Core->Query.CStateBaseAddr + lvl;
 	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
 
-	inw(cstate_addr);
+	__asm__ volatile
+	(
+		"xorw	%%ax,	%%ax"	"\n\t"
+		"movw	%1,	%%dx"	"\n\t"
+		"inb	%%dx,	%%al"	"\n\t"
+		"# RFLAGS"		"\n\t"
+		"pushfq"		"\n\t"
+		"popq	%0"
+		: "=m" (Core->SystemRegister.RFLAGS)
+		: "ir" (Core->Query.CStateBaseAddr)
+		: "%ax", "%dx", "cc", "memory"
+	);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	return index;
 #endif /* 5.9.0 */
@@ -13908,40 +14454,13 @@ static int CoreFreqK_S2_IO_AMD_Handler(struct cpuidle_device *pIdleDevice,
 }
 #endif /* 5.9.0 */
 	/*		Idle Cycles callback functions			*/
-#define Atomic_Write_VPMC( _Core, cycles, _lvl)				\
-{									\
-	switch (_lvl) {							\
-	case 0:								\
-		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C1, cycles);	\
-		break;							\
-	case 1:								\
-		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C2, cycles);	\
-		break;							\
-	case 2:								\
-		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C3, cycles);	\
-		break;							\
-	case 3:								\
-		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C4, cycles);	\
-		break;							\
-	case 4:								\
-		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C5, cycles);	\
-		break;							\
-	case 5:								\
-		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C6, cycles);	\
-		break;							\
-	case 6:								\
-		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C7, cycles);	\
-		break;							\
-	};								\
-}
-
 static int Alternative_Computation_Of_Cycles(
 	int (*Handler)(struct cpuidle_device*, struct cpuidle_driver*, int),
 			struct cpuidle_device *pIdleDevice,
 			struct cpuidle_driver *pIdleDriver, int index
 )
 {
-	unsigned long long TSC[2] __attribute__ ((aligned (8)));
+	unsigned long long TSC[3] __attribute__ ((aligned (8)));
 	const unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	const unsigned short lvl = \
@@ -13952,21 +14471,26 @@ static int Alternative_Computation_Of_Cycles(
 	{
 		RDTSCP64(TSC[0]);
 
+		RDTSCP64(TSC[1]);
+
 		Handler(pIdleDevice, pIdleDriver, index);
 
-		RDTSCP64(TSC[1]);
+		RDTSCP64(TSC[2]);
 	}
 	else
 	{
 		RDTSC64(TSC[0]);
 
+		RDTSCP64(TSC[1]);
+
 		Handler(pIdleDevice, pIdleDriver, index);
 
-		RDTSC64(TSC[1]);
+		RDTSC64(TSC[2]);
 	}
-	TSC[1] = TSC[1] - TSC[0];
+	TSC[2]	= TSC[2] - TSC[1]
+		- (TSC[1] > TSC[0] ? TSC[1] - TSC[0] : TSC[0] - TSC[1]);
 
-	Atomic_Write_VPMC(Core, TSC[1], lvl);
+	Atomic_Write_VPMC(Core, TSC[2], lvl);
 
 	return index;
 }
@@ -13984,7 +14508,7 @@ static int Alternative_Computation_Of_Cycles_S2(
 )
 #endif /* 5.9.0 */
 {
-	unsigned long long TSC[2] __attribute__ ((aligned (8)));
+	unsigned long long TSC[3] __attribute__ ((aligned (8)));
 	const unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	const unsigned short lvl = \
@@ -13995,28 +14519,33 @@ static int Alternative_Computation_Of_Cycles_S2(
 	{
 		RDTSCP64(TSC[0]);
 
+		RDTSCP64(TSC[1]);
+
 		S2_Handler(pIdleDevice, pIdleDriver, index);
 
-		RDTSCP64(TSC[1]);
+		RDTSCP64(TSC[2]);
 	}
 	else
 	{
 		RDTSC64(TSC[0]);
 
+		RDTSC64(TSC[1]);
+
 		S2_Handler(pIdleDevice, pIdleDriver, index);
 
-		RDTSC64(TSC[1]);
+		RDTSCP64(TSC[2]);
 	}
-	TSC[1] = TSC[1] - TSC[0];
+	TSC[2]	= TSC[2] - TSC[1]
+		- (TSC[1] > TSC[0] ? TSC[1] - TSC[0] : TSC[0] - TSC[1]);
 
-	Atomic_Write_VPMC(Core, TSC[1], lvl);
+	Atomic_Write_VPMC(Core, TSC[2], lvl);
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	return index;
 #endif /* 5.9.0 */
 }
-
 #undef Atomic_Write_VPMC
+
 	/*		Alternative Idle methods			*/
 static int CoreFreqK_Alt_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
@@ -14304,7 +14833,10 @@ static int CoreFreqK_IdleDriver_Init(void)
 		CoreFreqK.IdleDriver.states[
 			CoreFreqK.IdleDriver.state_count
 		].desc[2] = 'T';
+
+		PUBLIC(RO(Proc))->Registration.Driver.Route = ROUTE_MWAIT;
 		break;
+
 	  case ROUTE_HALT:
 	    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
 	    {
@@ -14341,7 +14873,10 @@ static int CoreFreqK_IdleDriver_Init(void)
 		CoreFreqK.IdleDriver.states[
 			CoreFreqK.IdleDriver.state_count
 		].desc[2] = 'T';
+
+		PUBLIC(RO(Proc))->Registration.Driver.Route = ROUTE_HALT;
 		break;
+
 	  case ROUTE_IO:
 	  {
 	    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
@@ -14394,10 +14929,15 @@ static int CoreFreqK_IdleDriver_Init(void)
 			CoreFreqK.IdleDriver.state_count
 		].desc[2] = 'O';
 	  }
+
+		PUBLIC(RO(Proc))->Registration.Driver.Route = ROUTE_IO;
 		break;
+
 	  case ROUTE_DEFAULT:
 	  IDLE_DEFAULT:
 	  default:
+		PUBLIC(RO(Proc))->Registration.Driver.Route = ROUTE_DEFAULT;
+
 	    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
 	    {
 		CoreFreqK.IdleDriver.states[
@@ -14407,17 +14947,38 @@ static int CoreFreqK_IdleDriver_Init(void)
 		CoreFreqK.IdleDriver.states[
 			CoreFreqK.IdleDriver.state_count
 		].enter_s2idle = CoreFreqK_S2_MWAIT_Handler;
+
+		PUBLIC(RO(Proc))->Registration.Driver.Route = ROUTE_MWAIT;
 	    }
 	    else if ((PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
 		|| (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON))
 	    {
-		CoreFreqK.IdleDriver.states[
-			CoreFreqK.IdleDriver.state_count
-		].enter = CoreFreqK_HALT_AMD_Handler;
+		CSTATE_BASE_ADDR CStateBaseAddr = {.value = 0};
+		RDMSR(CStateBaseAddr, MSR_AMD_CSTATE_BAR);
+		if (CStateBaseAddr.IOaddr != 0x0)
+		{
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter = CoreFreqK_IO_Handler;
 
-		CoreFreqK.IdleDriver.states[
-			CoreFreqK.IdleDriver.state_count
-		].enter_s2idle = CoreFreqK_S2_HALT_AMD_Handler;
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter_s2idle = CoreFreqK_S2_IO_Handler;
+
+			PUBLIC(RO(Proc))->Registration.Driver.Route = ROUTE_IO;
+		}
+		else
+		{
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter = CoreFreqK_HALT_AMD_Handler;
+
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter_s2idle = CoreFreqK_S2_HALT_AMD_Handler;
+
+			PUBLIC(RO(Proc))->Registration.Driver.Route=ROUTE_HALT;
+		}
 	    }
 	    else {
 		pr_warn("CoreFreq: "	\
@@ -14523,8 +15084,8 @@ static long CoreFreqK_Limit_Idle(int target)
 	}
 	rc = RC_SUCCESS;
     }
-    if ((PUBLIC(OF(Gate)) != NULL) && (floor != -1)) {
-	PUBLIC(OF(Gate))->OS.IdleDriver.stateLimit = 1 + floor;
+    if (floor != -1) {
+	PUBLIC(RO(Proc))->OS.IdleDriver.stateLimit = 1 + floor;
     }
 #endif /* CONFIG_CPU_IDLE */
 	return (rc);
@@ -15354,16 +15915,8 @@ static void For_All_CPU_Compute_Clock(void)
 
 #define SYSGATE_UPDATE(_rc)						\
 ({									\
-	_rc = Sys_OS_Driver_Query(PUBLIC(OF(Gate)));			\
+	_rc = Sys_OS_Driver_Query();					\
 	_rc = (_rc != -ENXIO) ? RC_OK_SYSGATE : _rc;			\
-})
-
-#define RESET_ARRAY(_array, _cnt, _val) 				\
-({									\
-	unsigned int rst;						\
-	for (rst = 0; rst < _cnt; rst++) {				\
-		_array[rst] = _val;					\
-	}								\
 })
 
 static long CoreFreqK_ioctl(	struct file *filp,
@@ -15383,7 +15936,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
     break;
 
     case COREFREQ_IOCTL_SYSONCE:
-	rc = Sys_OS_Driver_Query(PUBLIC(OF(Gate)));
+	rc = Sys_OS_Driver_Query();
 	rc = (rc != -ENXIO) ? Sys_Kernel(PUBLIC(OF(Gate))) : rc;
     break;
 
@@ -15449,7 +16002,11 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	    if (PUBLIC(RO(Proc))->Registration.Experimental)
 	    {
 	      if ( !PUBLIC(RO(Proc))->Registration.PCI ) {
-		PUBLIC(RO(Proc))->Registration.PCI = CoreFreqK_ProbePCI() == 0;
+		PUBLIC(RO(Proc))->Registration.PCI = \
+			CoreFreqK_ProbePCI(
+				Arch[PUBLIC(RO(Proc))->ArchID].PCI_ids,
+				CoreFreqK_ResetChip, CoreFreqK_AppendChip
+			) == 0;
 		rc = RC_OK_COMPUTE;
 	     } else {
 		rc = RC_SUCCESS;
@@ -15507,6 +16064,25 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		}
 		Controller_Start(1);
 		break;
+	}
+	break;
+
+      case MACHINE_IDLE_ROUTE:
+	if (PUBLIC(RO(Proc))->Registration.Driver.CPUidle & REGISTRATION_ENABLE)
+	{
+		Controller_Stop(1);
+		rc = CoreFreqK_UnRegister_CPU_Idle();
+		Register_CPU_Idle = -1;
+		if (rc == RC_SUCCESS)
+		{
+			Register_CPU_Idle = 1;
+			Idle_Route = prm.dl.lo;
+			rc = CoreFreqK_Register_CPU_Idle();
+			if (rc == RC_SUCCESS) {
+				SYSGATE_UPDATE(rc);
+			}
+		}
+		Controller_Start(1);
 	}
 	break;
 
@@ -15883,7 +16459,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		rc = RC_SUCCESS;
 		break;
 
-	case TECHNOLOGY_TDP_LIMIT:
+	case TECHNOLOGY_TDP_LIMITING:
 	    {
 		const enum PWR_DOMAIN	pw = prm.dh.lo;
 		const enum PWR_LIMIT	pl = prm.dh.hi;
@@ -15895,13 +16471,39 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		case COREFREQ_TOGGLE_OFF:
 		case COREFREQ_TOGGLE_ON:
 			Controller_Stop(1);
-			Activate_TDP_Count = PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE);
-			RESET_ARRAY(Activate_TDP_Limit, Activate_TDP_Count, -1);
+			TDP_Limiting_Count = PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE);
+			RESET_ARRAY(Activate_TDP_Limit, TDP_Limiting_Count, -1);
 			Activate_TDP_Limit[idx] = prm.dl.lo;
 
 			Controller_Start(1);
-			RESET_ARRAY(Activate_TDP_Limit, Activate_TDP_Count, -1);
-			Activate_TDP_Count = 0;
+			RESET_ARRAY(Activate_TDP_Limit, TDP_Limiting_Count, -1);
+			TDP_Limiting_Count = 0;
+			rc = RC_SUCCESS;
+			break;
+		}
+	      }
+	    }
+		break;
+
+	case TECHNOLOGY_TDP_CLAMPING:
+	    {
+		const enum PWR_DOMAIN	pw = prm.dh.lo;
+		const enum PWR_LIMIT	pl = prm.dh.hi;
+
+		const unsigned int idx = (PWR_LIMIT_SIZE * pw) + pl;
+	      if (idx < PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE))
+	      {
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			TDP_Clamping_Count = PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE);
+			RESET_ARRAY(Activate_TDP_Clamp, TDP_Clamping_Count, -1);
+			Activate_TDP_Clamp[idx] = prm.dl.lo;
+
+			Controller_Start(1);
+			RESET_ARRAY(Activate_TDP_Clamp, TDP_Clamping_Count, -1);
+			TDP_Clamping_Count = 0;
 			rc = RC_SUCCESS;
 			break;
 		}
@@ -15930,6 +16532,43 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		rc = RC_SUCCESS;
 	      }
 	    }
+		break;
+
+	case TECHNOLOGY_TDC_LIMITING:
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			Activate_TDC_Limit = prm.dl.lo;
+			Controller_Start(1);
+			Activate_TDC_Limit = -1;
+			rc = RC_SUCCESS;
+			break;
+		}
+		break;
+
+	case TECHNOLOGY_TDC_OFFSET:
+	    {
+		const signed short offset = (signed char) prm.dl.lo;
+		Controller_Stop(1);
+		Custom_TDC_Offset = offset;
+		Controller_Start(1);
+		Custom_TDC_Offset = 0;
+		rc = RC_SUCCESS;
+	    }
+		break;
+
+	case TECHNOLOGY_WDT:
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			WDT_Enable = prm.dl.lo;
+			Controller_Start(1);
+			WDT_Enable = -1;
+			rc = RC_SUCCESS;
+			break;
+		}
 		break;
 	}
 	break;
@@ -16120,8 +16759,8 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 	case 1:
 		/* Fallthrough */
 	case 0: {
-		const unsigned long secSize = \
-				PAGE_SIZE << PUBLIC(RO(Proc))->OS.ReqMem.Order;
+		const unsigned long
+		secSize = PAGE_SIZE << PUBLIC(RO(Proc))->Gate.ReqMem.Order;
 		if (reqSize != secSize) {
 			return (-EAGAIN);
 		}
@@ -16243,7 +16882,9 @@ static int CoreFreqK_Resume(struct device *dev)
     }
 	/*		Probe PCI again 				*/
     if (PUBLIC(RO(Proc))->Registration.PCI) {
-	PUBLIC(RO(Proc))->Registration.PCI = CoreFreqK_ProbePCI() == 0;
+	PUBLIC(RO(Proc))->Registration.PCI = \
+		CoreFreqK_ProbePCI(Arch[PUBLIC(RO(Proc))->ArchID].PCI_ids,
+				CoreFreqK_ResetChip, CoreFreqK_AppendChip) == 0;
     }
 	Controller_Start(1);
 
@@ -16717,9 +17358,10 @@ static int CoreFreqK_Scale_And_Compute_Level_Up(INIT_ARG *pArg)
 
 	PUBLIC(RO(Proc))->CPU.Count = pArg->SMT_Count;
 	/* PreCompute SysGate memory allocation. */
-	PUBLIC(RO(Proc))->OS.ReqMem.Size = sizeof(SYSGATE_RO);
-	PUBLIC(RO(Proc))->OS.ReqMem.Order = \
-				get_order(PUBLIC(RO(Proc))->OS.ReqMem.Size);
+	PUBLIC(RO(Proc))->Gate.ReqMem.Size = sizeof(SYSGATE_RO);
+
+	PUBLIC(RO(Proc))->Gate.ReqMem.Order = \
+				get_order(PUBLIC(RO(Proc))->Gate.ReqMem.Size);
 
 	PUBLIC(RO(Proc))->Registration.AutoClock = AutoClock;
 	PUBLIC(RO(Proc))->Registration.Experimental = Experimental;
@@ -16877,7 +17519,7 @@ static void CoreFreqK_Ignition_Level_Down(void)
 
     if (PUBLIC(OF(Gate)) != NULL)
     {
-	free_pages_exact(PUBLIC(OF(Gate)), PUBLIC(RO(Proc))->OS.ReqMem.Size);
+	free_pages_exact(PUBLIC(OF(Gate)), PUBLIC(RO(Proc))->Gate.ReqMem.Size);
     }
 }
 
@@ -17028,7 +17670,9 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 
 	Controller_Start(0);
 
-	PUBLIC(RO(Proc))->Registration.PCI = CoreFreqK_ProbePCI() == 0;
+	PUBLIC(RO(Proc))->Registration.PCI = \
+		CoreFreqK_ProbePCI(Arch[PUBLIC(RO(Proc))->ArchID].PCI_ids,
+				CoreFreqK_ResetChip, CoreFreqK_AppendChip) == 0;
 
 #ifdef CONFIG_HOTPLUG_CPU
 	#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 6, 0)

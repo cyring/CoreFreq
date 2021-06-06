@@ -478,7 +478,7 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 
 
 #define PCI_CONFIG_ADDRESS(bus, dev, fn, reg) \
-	(0x80000000 | (bus << 16) | (dev << 11) | (fn << 8) | (reg & ~3))
+	(0x80000000 | ((bus) << 16)|((dev) << 11)|((fn) << 8)|((reg) & ~3))
 
 #define RDPCI(_data, _reg)						\
 ({									\
@@ -552,18 +552,18 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 #define IT8720			0x8720
 
 /*
- * --- Core_AMD_SMN_Read ---
+ * --- Core_AMD_SMN_Read and Core_AMD_SMN_Write ---
  *
- * amd_smn_read() protects the SMU access through mutex_[un]lock
- * functions which must not be used in interrupt context.
+ * amd_smn_read() and amd_smn_write() protect any SMU access through
+ * mutex_[un]lock functions which must not be used in interrupt context.
  *
- * The high resolution timers are bound to CPUs with smp_call_function_*
- * where context is in interrupt; and where mutex will freeze the kernel.
+ * The high resolution timers are bound to CPUs using smp_call_function_*
+ * where context is interrupt; and where mutexes will freeze the kernel.
 */
 
 #if defined(CONFIG_AMD_NB) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0))\
  && defined(LEGACY) && (LEGACY > 1)
-FEAT_MSG("LEGACY Level 2: Core_AMD_SMN_Read() built with amd_smn_read()")
+FEAT_MSG("LEGACY Level 2: built with amd_smn_read(), amd_smn_write()")
 #define Core_AMD_SMN_Read(	SMN_Register,				\
 				SMN_Address,				\
 				SMU_IndexRegister,			\
@@ -578,7 +578,24 @@ FEAT_MSG("LEGACY Level 2: Core_AMD_SMN_Read() built with amd_smn_read()")
 	}								\
     }									\
 })
+
+#define Core_AMD_SMN_Write(	SMN_Register,				\
+				SMN_Address,				\
+				SMU_IndexRegister,			\
+				SMU_DataRegister )			\
+({									\
+    if (PRIVATE(OF(ZenIF_dev)) != NULL)					\
+    {									\
+	if (amd_smn_write(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),\
+			SMN_Address, &SMN_Register.value))		\
+	{								\
+		pr_warn("CoreFreq: Failed to write amd_smn_write()\n"); \
+	}								\
+    }									\
+})
+
 #else
+
 #define Core_AMD_SMN_Read(	SMN_Register,				\
 				SMN_Address,				\
 				SMU_IndexRegister,			\
@@ -602,13 +619,119 @@ FEAT_MSG("LEGACY Level 2: Core_AMD_SMN_Read() built with amd_smn_read()")
 	}								\
 	tries--;							\
     } while ( (tries != 0) && (ret != 1) );				\
-	if (tries == 0) {						\
-		pr_warn("CoreFreq: Core_AMD_SMN_Read(%x, %x) failed\n", \
-			SMN_Register.value, SMN_Address);		\
+    if (tries == 0) {							\
+	pr_warn("CoreFreq: Core_AMD_SMN_Read(%x, %x) TryLock\n",	\
+		SMN_Register.value, SMN_Address);			\
+    }									\
+})
+
+#define Core_AMD_SMN_Write(	SMN_Register,				\
+				SMN_Address,				\
+				SMU_IndexRegister,			\
+				SMU_DataRegister )			\
+({									\
+	unsigned int tries = BIT_IO_RETRIES_COUNT;			\
+	unsigned char ret;						\
+    do {								\
+	ret = BIT_ATOM_TRYLOCK( BUS_LOCK,				\
+				PRIVATE(OF(AMD_SMN_LOCK)),		\
+				ATOMIC_SEED );				\
+	if ( ret == 0 ) {						\
+		udelay(BIT_IO_DELAY_INTERVAL);				\
+	} else {							\
+		WRPCI(SMN_Address, SMU_IndexRegister);			\
+		WRPCI(SMN_Register.value, SMU_DataRegister);		\
+									\
+		BIT_ATOM_UNLOCK(BUS_LOCK,				\
+				PRIVATE(OF(AMD_SMN_LOCK)),		\
+				ATOMIC_SEED);				\
 	}								\
+	tries--;							\
+    } while ( (tries != 0) && (ret != 1) );				\
+    if (tries == 0) {							\
+	pr_warn("CoreFreq: Core_AMD_SMN_Write(%x, %x) TryLock\n",	\
+		SMN_Register.value, SMN_Address);			\
+    }									\
 })
 #endif /* CONFIG_AMD_NB and LEGACY */
 
+typedef union
+{
+	unsigned int		value;
+	struct
+	{
+		unsigned int
+		bits		: 32-0;
+	};
+} HSMP_ARG;
+
+#define AMD_HSMP_Mailbox(	MSG_FUNC,				\
+				MSG_ARG,				\
+				HSMP_CmdRegister,			\
+				HSMP_ArgRegister,			\
+				HSMP_RspRegister,			\
+				SMU_IndexRegister,			\
+				SMU_DataRegister )			\
+({									\
+	HSMP_ARG MSG_RSP = {.value = 0x0};				\
+	HSMP_ARG MSG_ID = {.value = MSG_FUNC};				\
+	unsigned int tries = BIT_IO_RETRIES_COUNT;			\
+	unsigned char ret;						\
+  do {									\
+	ret = BIT_ATOM_TRYLOCK( BUS_LOCK,				\
+				PRIVATE(OF(AMD_SMN_LOCK)),		\
+				ATOMIC_SEED );				\
+    if ( ret == 0 ) {							\
+	udelay(BIT_IO_DELAY_INTERVAL);					\
+    }									\
+    else								\
+    {									\
+	unsigned int idx;						\
+	unsigned char wait;						\
+									\
+	WRPCI(HSMP_RspRegister	, SMU_IndexRegister);			\
+	WRPCI(MSG_RSP.value	, SMU_DataRegister);			\
+									\
+	for (idx = 0; idx < 8; idx++) { 				\
+		WRPCI(HSMP_ArgRegister + (idx << 2), SMU_IndexRegister);\
+		WRPCI(MSG_ARG[idx].value, SMU_DataRegister);		\
+	}								\
+	WRPCI(HSMP_CmdRegister	, SMU_IndexRegister);			\
+	WRPCI(MSG_ID.value	, SMU_DataRegister);			\
+									\
+	idx = BIT_IO_RETRIES_COUNT;					\
+	do {								\
+		WRPCI(HSMP_RspRegister	, SMU_IndexRegister);		\
+		RDPCI(MSG_RSP.value	, SMU_DataRegister);		\
+									\
+		idx--;							\
+		wait = (idx != 0) && (MSG_RSP.value == 0x0) ? 1 : 0;	\
+		if (wait == 1) {					\
+			udelay(BIT_IO_DELAY_INTERVAL);			\
+		}							\
+	} while (wait == 1);						\
+	if (idx == 0) { 						\
+		pr_warn("CoreFreq: AMD_HSMP_Mailbox(%x) Timeout\n",	\
+			MSG_FUNC);					\
+	}								\
+	else if (MSG_RSP.value == 0x1)					\
+	{								\
+	    for (idx = 0; idx < 8; idx++) {				\
+		WRPCI(HSMP_ArgRegister + (idx << 2), SMU_IndexRegister);\
+		RDPCI(MSG_ARG[idx].value, SMU_DataRegister);		\
+	    }								\
+	}								\
+	BIT_ATOM_UNLOCK(BUS_LOCK,					\
+			PRIVATE(OF(AMD_SMN_LOCK)),			\
+			ATOMIC_SEED);					\
+    }									\
+	tries--;							\
+  } while ( (tries != 0) && (ret != 1) );				\
+  if (tries == 0) {							\
+	pr_warn("CoreFreq: AMD_HSMP_Mailbox(%x) TryLock\n", MSG_FUNC);	\
+  }									\
+	MSG_RSP.value;							\
+})
 
 /* Driver' private and public data definitions.				*/
 enum CSTATES_CLASS {
@@ -997,8 +1120,14 @@ static void Stop_Uncore_SandyBridge_EP(void *arg) ;
 
 extern void Query_IvyBridge(unsigned int cpu) ;
 static void PerCore_IvyBridge_Query(void *arg) ;
+
 extern void Query_IvyBridge_EP(unsigned int cpu) ;
 static void PerCore_IvyBridge_EP_Query(void *arg) ;
+static void Start_IvyBridge_EP(void *arg) ;
+#define     Stop_IvyBridge_EP Stop_SandyBridge_EP
+extern void InitTimer_IvyBridge_EP(unsigned int cpu) ;
+static void Start_Uncore_IvyBridge_EP(void *arg) ;
+static void Stop_Uncore_IvyBridge_EP(void *arg) ;
 
 extern void Query_Haswell(unsigned int cpu) ;
 static void PerCore_Haswell_Query(void *arg) ;
@@ -6077,10 +6206,10 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Signature = _IvyBridge_EP,
 	.Query = Query_IvyBridge_EP,
 	.Update = PerCore_IvyBridge_EP_Query,
-	.Start = Start_SandyBridge_EP,
-	.Stop = Stop_SandyBridge_EP,
+	.Start = Start_IvyBridge_EP,
+	.Stop = Stop_IvyBridge_EP,
 	.Exit = NULL,
-	.Timer = InitTimer_SandyBridge_EP,
+	.Timer = InitTimer_IvyBridge_EP,
 	.BaseClock = BaseClock_IvyBridge,
 	.ClockMod = ClockMod_SandyBridge_PPC,
 	.TurboClock = TurboClock_IvyBridge_EP,
@@ -6089,8 +6218,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_SandyBridge_EP_ids,
 	.Uncore = {
-		.Start = Start_Uncore_SandyBridge_EP,
-		.Stop = Stop_Uncore_SandyBridge_EP,
+		.Start = Start_Uncore_IvyBridge_EP,
+		.Stop = Stop_Uncore_IvyBridge_EP,
 		.ClockMod = NULL
 		},
 	.Specific = IvyBridge_EP_Specific,

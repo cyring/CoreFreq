@@ -678,12 +678,10 @@ typedef struct
 
 
 typedef struct {
-		OS_DRIVER	OS;
-
 		int		taskCount;
 		TASK_MCB	taskList[TASK_LIMIT];
 
-		MEM_MCB		memInfo;
+		MEM_MCB 	memInfo;
 
 		unsigned int	kernelVersionNumber;
 
@@ -762,6 +760,7 @@ typedef struct
 	BitCC	/* AMD */	PC6_Mask __attribute__ ((aligned (16)));
 	BitCC			SPEC_CTRL_Mask __attribute__ ((aligned (16)));
 	BitCC			ARCH_CAP_Mask  __attribute__ ((aligned (16)));
+	BitCC			WDT_Mask __attribute__ ((aligned (16)));
 
 	enum THERMAL_FORMULAS	thermalFormula;
 	enum VOLTAGE_FORMULAS	voltageFormula;
@@ -801,18 +800,21 @@ typedef struct
 		RAPL_POWER_UNIT Unit;
 	  union {
 	    struct {
-/*32-bits*/	unsigned int		_rsv32;
+/*64-bits*/	DOMAIN_POWER_LIMIT	PowerLimit[PWR_DOMAIN(SIZE)];
+/*64-bits*/	DOMAIN_POWER_INFO	PowerInfo;
+/*32-bits*/	struct {
+			unsigned int	TDC	:  1-0,
+					_Unused : 32-1;
+		} Enable_Limit;
 /*16-bits*/	unsigned short		EDC;
 /*16-bits*/	unsigned short		TDC;
-/*64-bits*/	DOMAIN_POWER_INFO	PowerInfo;
-/*64-bits*/	DOMAIN_POWER_LIMIT	PowerLimit[PWR_DOMAIN(SIZE)];
 	    };
 	    struct {
+/*64-bits*/	unsigned long long	_pad64[PWR_DOMAIN(SIZE)];
 /*32-bits*/	AMD_17_MTS_CPK_PWR	PWR;
 /*32-bits*/	AMD_17_MTS_CPK_TDP	TDP;
 /*32-bits*/	AMD_17_MTS_CPK_EDC	EDC;
 /*32-bits*/	unsigned int		_pad32;
-/*64-bits*/	unsigned long long	_pad64[PWR_DOMAIN(SIZE)];
 	    } Zen;
 	  };
 	} PowerThermal;
@@ -822,7 +824,9 @@ typedef struct
 			size_t	Size;
 			int	Order;
 		} ReqMem;
-	} OS;
+	} Gate;
+
+	OS_DRIVER		OS;
 
 	struct {
 		Bit64		NMI;
@@ -880,6 +884,7 @@ typedef struct
 	BitCC			PSCHANGE_MC_NO	__attribute__ ((aligned (16)));
 	BitCC			TAA_NO		__attribute__ ((aligned (16)));
 	BitCC			SPLA		__attribute__ ((aligned (16)));
+	BitCC			WDT		__attribute__ ((aligned (16)));
 
 	struct {
 		Bit64		Signal	__attribute__ ((aligned (8)));
@@ -1042,6 +1047,8 @@ typedef struct
 #ifndef PCI_DEVICE_ID_INTEL_NHM_EP_NON_CORE
 	#define PCI_DEVICE_ID_INTEL_NHM_EP_NON_CORE	0x2c70
 #endif
+/* Source: Intel Using the Intel ICH Family Watchdog Timer (WDT)	*/
+#define PCI_DEVICE_ID_INTEL_ICH10_LPC			0x3a16
 /* Source: Intel X58 Express Chipset Datasheet				*/
 #define PCI_DEVICE_ID_INTEL_X58_HUB_CORE		0x342e
 #define PCI_DEVICE_ID_INTEL_X58_HUB_CTRL		0x3423

@@ -293,7 +293,8 @@ typedef struct
 				L2_HW_CL_Prefetch:20-19,
 				IOMMU_Ver_Major : 24-20,
 				IOMMU_Ver_Minor : 28-24,
-				_pad64		: 64-28;
+				WDT		: 29-28,
+				_pad64		: 64-29;
 	} Technology;
 
 	struct {
@@ -417,6 +418,10 @@ typedef struct
 		} Domain[PWR_DOMAIN(SIZE)];
 		unsigned short		TDP, Min, Max;
 		unsigned short		PPT, EDC, TDC;
+		struct {
+			unsigned short	TDC	:  1-0,
+					_Unused : 16-1;
+		} Feature;
 	} Power;
 
 	signed int			ArchID;
@@ -454,7 +459,7 @@ typedef struct
 				taskCount;
 		TASK_MCB	taskList[TASK_LIMIT];
 
-		MEM_MCB		memInfo;
+		MEM_MCB 	memInfo;
 
 		struct {
 		unsigned short	version,

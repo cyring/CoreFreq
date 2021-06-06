@@ -16,6 +16,7 @@
 #include "coretypes.h"
 #include "corefreq.h"
 #include "corefreq-ui.h"
+#include "corefreq-cli-rsc.h"
 #include "corefreq-cli.h"
 #include "corefreq-cli-json.h"
 #include "corefreq-cli-extra.h"
@@ -1306,6 +1307,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_literal(&s, "%llu", Shm->Proc.Technology.PC6);
 			json_key(&s, "SMM");
 			json_literal(&s, "%llu", Shm->Proc.Technology.SMM);
+			json_key(&s, "WDT");
+			json_literal(&s, "%llu", Shm->Proc.Technology.WDT);
 			json_key(&s, "VM");
 			json_literal(&s, "%llu", Shm->Proc.Technology.VM);
 			json_key(&s, "IOMMU");

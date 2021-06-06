@@ -91,30 +91,6 @@ enum PALETTE {
 #define CoK	COLOR(1, CYAN, BLACK)
 #define WoK	COLOR(1, WHITE, BLACK)
 
-#define VOID_COLOR 							\
-{									\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
-}
-
 #define HSPACE	"        ""        ""        ""        ""        "	\
 		"        ""        ""        ""        ""        "	\
 		"        ""        ""        ""        ""        "	\
@@ -184,6 +160,7 @@ typedef union {
 #define SCANKEY_SHIFT_b 	0x0000000000000042
 #define SCANKEY_SHIFT_c 	0x0000000000000043
 #define SCANKEY_SHIFT_d 	0x0000000000000044
+#define SCANKEY_SHIFT_e 	0x0000000000000045
 #define SCANKEY_SHIFT_f 	0x0000000000000046
 #define SCANKEY_SHIFT_h 	0x0000000000000048
 #define SCANKEY_SHIFT_i 	0x0000000000000049
@@ -292,12 +269,19 @@ typedef union {
 #define HWK	{.fg = WHITE,	.bg = BLACK,	.bf = 1}
 #define HKB	{.fg = BLACK,	.bg = BLUE,	.bf = 1}
 #define HWB	{.fg = WHITE,	.bg = BLUE,	.bf = 1}
+#define HKM	{.fg = BLACK,	.bg = MAGENTA,	.bf = 1}
 #define HWC	{.fg = WHITE,	.bg = CYAN,	.bf = 1}
 #define HKW	{.fg = BLACK,	.bg = WHITE,	.bf = 1}
+#define HRW	{.fg = RED,	.bg = WHITE,	.bf = 1}
+#define HYW	{.fg = YELLOW,	.bg = WHITE,	.bf = 1}
+#define HBW	{.fg = BLUE,	.bg = WHITE,	.bf = 1}
+#define HCW	{.fg = CYAN,	.bg = WHITE,	.bf = 1}
+#define HMW	{.fg = MAGENTA, .bg = WHITE,	.bf = 1}
 #define _HCK	{.fg = CYAN,	.bg = BLACK,	.un = 1,	.bf = 1}
 #define _HWK	{.fg = WHITE,	.bg = BLACK,	.un = 1,	.bf = 1}
 #define _HWB	{.fg = WHITE,	.bg = BLUE,	.un = 1,	.bf = 1}
 #define _HKW	{.fg = BLACK,	.bg = WHITE,	.un = 1,	.bf = 1}
+#define _HCW	{.fg = CYAN,	.bg = WHITE,	.un = 1,	.bf = 1}
 #define LDK	{.fg = BLACK,	.bg = BLACK}
 #define LRK	{.fg = RED,	.bg = BLACK}
 #define LGK	{.fg = GREEN,	.bg = BLACK}
@@ -307,24 +291,29 @@ typedef union {
 #define LCK	{.fg = CYAN,	.bg = BLACK}
 #define LWK	{.fg = WHITE,	.bg = BLACK}
 #define LWB	{.fg = WHITE,	.bg = BLUE}
+#define LKM	{.fg = BLACK,	.bg = MAGENTA}
 #define LKC	{.fg = BLACK,	.bg = CYAN}
 #define LKW	{.fg = BLACK,	.bg = WHITE}
 #define LRW	{.fg = RED,	.bg = WHITE}
+#define LGW	{.fg = GREEN,	.bg = WHITE}
 #define LBW	{.fg = BLUE,	.bg = WHITE}
+#define LCW	{.fg = CYAN,	.bg = WHITE}
+#define LMW	{.fg = MAGENTA, .bg = WHITE}
 #define _LCK	{.fg = CYAN,	.bg = BLACK,	.un = 1}
 #define _LWK	{.fg = WHITE,	.bg = BLACK,	.un = 1}
+#define _LKM	{.fg = BLACK,	.bg = MAGENTA,	.un = 1}
 #define _LKW	{.fg = BLACK,	.bg = WHITE,	.un = 1}
 #define _LBW	{.fg = BLUE,	.bg = WHITE,	.un = 1}
 
-#define MAKE_TITLE_UNFOCUS	MakeAttr(BLACK, 0, BLUE , 1)
-#define MAKE_TITLE_FOCUS	MakeAttr(WHITE, 0, CYAN , 1)
-#define MAKE_BORDER_UNFOCUS	MakeAttr(BLACK, 0, BLUE , 1)
-#define MAKE_BORDER_FOCUS	MakeAttr(WHITE, 0, BLUE , 1)
-#define MAKE_SELECT_UNFOCUS	MakeAttr(BLACK, 0, BLACK, 1)
-#define MAKE_SELECT_FOCUS	MakeAttr(BLACK, 0, CYAN , 0)
-#define MAKE_PRINT_UNFOCUS	MakeAttr(WHITE, 0, BLACK, 0)
-#define MAKE_PRINT_FOCUS	MakeAttr(WHITE, 0, BLACK, 1)
-#define MAKE_PRINT_DROP 	MakeAttr(BLACK, 0, WHITE, 0)
+#define MAKE_TITLE_UNFOCUS	RSC(UI).ATTR()[UI_MAKE_TITLE_UNFOCUS]
+#define MAKE_TITLE_FOCUS	RSC(UI).ATTR()[UI_MAKE_TITLE_FOCUS]
+#define MAKE_BORDER_UNFOCUS	RSC(UI).ATTR()[UI_MAKE_BORDER_UNFOCUS]
+#define MAKE_BORDER_FOCUS	RSC(UI).ATTR()[UI_MAKE_BORDER_FOCUS]
+#define MAKE_SELECT_UNFOCUS	RSC(UI).ATTR()[UI_MAKE_SELECT_UNFOCUS]
+#define MAKE_SELECT_FOCUS	RSC(UI).ATTR()[UI_MAKE_SELECT_FOCUS]
+#define MAKE_PRINT_UNFOCUS	RSC(UI).ATTR()[UI_MAKE_PRINT_UNFOCUS]
+#define MAKE_PRINT_FOCUS	RSC(UI).ATTR()[UI_MAKE_PRINT_FOCUS]
+#define MAKE_PRINT_DROP 	RSC(UI).ATTR()[UI_MAKE_PRINT_DROP]
 
 typedef unsigned char	ASCII;
 
@@ -520,8 +509,6 @@ typedef void (*WINFUNC)(Window*);
 typedef char REGSTR[];
 typedef char *REGPTR;
 
-extern ATTRIBUTE vColor[];
-
 extern ASCII hSpace[];
 extern ASCII hBar[];
 extern ASCII hLine[];
@@ -622,12 +609,16 @@ extern void DestroyLayer(Layer *layer) ;
 
 extern void CreateLayer(Layer *layer, CoordSize size) ;
 
-#define ResetLayer(layer, _attr, _code)					\
-	memset(layer->attr, _attr, layer->size.wth * layer->size.hth);	\
-	memset(layer->code, _code, layer->size.wth * layer->size.hth);
+#define ResetLayer(layer, attrib)					\
+({									\
+	memset(layer->attr, attrib.value, layer->size.wth * layer->size.hth); \
+	memset(layer->code, 0x0, layer->size.wth * layer->size.hth);	\
+})
 
 #define ClearGarbage(_layer, _plane, _col, _row, _len, _value)		\
-	memset(&LayerAt(_layer, _plane, _col, _row), _value, _len)
+({									\
+	memset(&LayerAt(_layer, _plane, _col, _row), _value, _len);	\
+})
 
 extern void FillLayerArea(Layer *layer,CUINT col, CUINT row,
 				CUINT width, CUINT height,
@@ -718,7 +709,7 @@ extern void ForEachCellPrint(Window *win, WinList *list) ;
 extern void EraseWindowWithBorder(Window *win) ;
 
 extern void PrintLCD(	Layer *layer, CUINT col, CUINT row,
-			int len, char *pStr, enum PALETTE lcdColor) ;
+			int len, char *pStr, ATTRIBUTE lcdColor ) ;
 
 extern void MotionReset_Win(Window *win) ;
 
@@ -775,10 +766,10 @@ extern void WindowsUpdate(WinList *winList) ;
 		.row =	(win->matrix.origin.row + row)			\
 	};								\
 	memset(&LayerAt(win->layer, attr, cell.col, cell.row),		\
-		MakeAttr(BLACK,0,BLACK,0).value,			\
+		RSC(UI).ATTR()[UI_WIN_MENU_ERASE_CELL].value,		\
 		TCellAt(win, shift.horz, shift.vert).length);		\
 	memset(&LayerAt(win->layer, code, cell.col, cell.row),		\
-		MakeAttr(BLACK,0,BLACK,0).value,			\
+		RSC(UI).ATTR()[UI_WIN_MENU_ERASE_CELL].value,		\
 		TCellAt(win, shift.horz, shift.vert).length);		\
 })
 
@@ -877,6 +868,14 @@ extern  locale_t	SysLoc;
 	LocaleTo(LC_ALL);						\
 })
 
+extern enum THEMES	AppThm;
+
+#define GET_THEME()		(AppThm)
+#define SET_THEME(_app_thm)						\
+({									\
+	AppThm = _app_thm;						\
+})
+
 enum DUMP_METHOD {
 	DUMP_TO_JSON,
 	DUMP_TO_ANSI
@@ -902,7 +901,7 @@ extern __typeof__ (errno) LoadGeometries(char*) ;
   ({									\
 	char str[32];							\
 	size_t len = snprintf(str, 20+1, "%llu", UBENCH_METRIC(0));	\
-	LayerFillAt(layer, 0, 2, len, str, MakeAttr(MAGENTA, 0, BLACK, 1)); \
+	LayerFillAt(layer, 0, 2, len, str, RSC(UI).ATTR()[UI_LAYOUT_UBENCH]); \
   })
 #else
   #define UI_Draw_uBenchmark(layer) {}

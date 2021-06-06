@@ -104,7 +104,7 @@
 #define MSR_SNB_UNCORE_PERF_GLOBAL_CTRL 	0x00000391
 #define MSR_SKL_UNCORE_PERF_GLOBAL_CTRL 	0x00000e01
 
-#define MSR_SNB_EP_PMON_GLOBAL_CTRL		0x00000c00
+#define MSR_IVB_EP_PMON_GLOBAL_CTRL		0x00000c00
 #define MSR_HSW_EP_PMON_GLOBAL_CTRL		0x00000700
 
 #define MSR_NHM_UNCORE_PERF_GLOBAL_STATUS	0x00000392
@@ -855,14 +855,17 @@ typedef union
 		TM2_Enable	: 14-13,
 		ReservedBits3	: 16-14,
 		EIST		: 17-16, /* Enhanced Intel SpeedStep Tech. */
-		ReservedBits4	: 18-17,
+		BR_PROCHOT	: 18-17, /* Broadwell			*/
 		FSM		: 19-18,
 		PrefetchCacheDis: 20-19, /* Pentium4, Xeon		*/
-		ReservedBits5	: 22-20,
+		ReservedBits4	: 22-20,
 		CPUID_MaxVal	: 23-22,
 		xTPR		: 24-23,
 		L1DataCacheMode : 25-24, /* Pentium4, Xeon		*/
-		ReservedBits6	: 34-25,
+		ReservedBits5	: 26-25,
+		C2E		: 27-26, /* Broadwell			*/
+		ReservedBits6	: 32-27,
+		C4E		: 34-32, /* Broadwell Mobile		*/
 		XD_Bit_Disable	: 35-34,
 		ReservedBits7	: 37-35,
 		DCU_L1_Prefetch	: 38-37, /* Core (R/W) Disable=1	*/
@@ -878,7 +881,7 @@ typedef union
 	struct
 	{
 		unsigned long long int
-		ReservedBits1	:  1-0,
+		BD_PROCHOT	:  1-0,  /* BiDirectional PROCHOT	*/
 		C1E		:  2-1,
 		ReservedBits2	: 19-2,
 		R2H_Disable	: 20-19, /* SKL,KBL,CFL:Race To Halt Disable=1*/
@@ -1548,6 +1551,19 @@ typedef union
 		ReservedBits4	: 64-61;
 	};
 } Intel_IOMMU_CAP_REG;
+
+typedef union
+{
+	unsigned short	value;
+	struct {
+		unsigned short
+		ReservedBits1	:  9-0,
+		VerbatimCopy	: 10-9,  /* Same bit read must be write back */
+		ReservedBits2	: 11-10,
+		TCO_TMR_HALT	: 12-11, /*1=WDT will halt; 0=WDT will count */
+		ReservedBits3	: 16-12;
+	};
+} Intel_TCO1_CNT;
 
 
 typedef union

@@ -5,8 +5,8 @@
  */
 
 #define COREFREQ_MAJOR	1
-#define COREFREQ_MINOR	85
-#define COREFREQ_REV	6
+#define COREFREQ_MINOR	86
+#define COREFREQ_REV	0
 
 #if !defined(CORE_COUNT)
 	#define CORE_COUNT	256
@@ -1260,6 +1260,18 @@ typedef struct	/* BSP CPUID features.					*/
 		CLOCK		Clock;
 		unsigned int	Freq,
 				Ratio;
+	  struct {
+		unsigned int	Interface;
+	    union {
+		unsigned int	Version;
+		struct {
+		unsigned char	Revision,
+				Minor,
+				Major,
+				Other;
+		};
+	    };
+	  } SMU;
 	} Factory;
 
 	struct {
@@ -1282,7 +1294,10 @@ typedef struct	/* BSP CPUID features.					*/
 			EEO_Enable	: 34-33,
 			R2H_Capable	: 35-34,
 			R2H_Enable	: 36-35,
-			_pad64		: 64-36;
+			HSMP_Capable	: 37-36,
+			HSMP_Enable	: 38-37,
+			XtraCOF 	: 40-38, /* 1:CPB ; 2:{CPB and XFR} */
+			_pad64		: 64-40;
 	};
 } FEATURES;
 
@@ -1462,10 +1477,12 @@ enum IDLE_ROUTE {
 	ROUTE_DEFAULT	= 0,
 	ROUTE_IO	= 1,
 	ROUTE_HALT	= 2,
-	ROUTE_MWAIT	= 3
+	ROUTE_MWAIT	= 3,
+	ROUTE_SIZE
 };
 
 typedef struct {	/* 0: Disable; 1: Enable; 2: Full-control	*/
+	enum IDLE_ROUTE Route;
 	unsigned short	CPUidle :  2-0,
 			CPUfreq :  4-2,
 			Governor:  6-4,
@@ -1553,7 +1570,8 @@ enum {
 	MACHINE_CPU_FREQ,
 	MACHINE_GOVERNOR,
 	MACHINE_CLOCK_SOURCE,
-	MACHINE_FORMULA_SCOPE
+	MACHINE_FORMULA_SCOPE,
+	MACHINE_IDLE_ROUTE
 };
 
 enum {
@@ -1582,8 +1600,12 @@ enum {
 	TECHNOLOGY_L2_HW_PREFETCH,
 	TECHNOLOGY_L2_HW_CL_PREFETCH,
 	TECHNOLOGY_CFG_TDP_LVL,
-	TECHNOLOGY_TDP_LIMIT,
-	TECHNOLOGY_TDP_OFFSET
+	TECHNOLOGY_TDP_LIMITING,
+	TECHNOLOGY_TDP_OFFSET,
+	TECHNOLOGY_TDP_CLAMPING,
+	TECHNOLOGY_TDC_LIMITING,
+	TECHNOLOGY_TDC_OFFSET,
+	TECHNOLOGY_WDT
 };
 
 #define COREFREQ_ORDER_MAGIC	0xc6
@@ -1760,7 +1782,7 @@ FEAT_MSG("Macroing:RING_MOVE(XMM)")
 ({									\
 	RING_CTRL ctrl = {						\
 			.arg = 0x0LU,					\
-			.cmd = _cmd, .sub = _sub			\
+			.cmd = (_cmd), .sub = (_sub)			\
 	};								\
 	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
 	RING_MOVE(Ring.buffer[head], ctrl);				\
@@ -1769,8 +1791,8 @@ FEAT_MSG("Macroing:RING_MOVE(XMM)")
 #define RING_WRITE_1xPARAM( _sub, Ring, _cmd, _arg)			\
 ({									\
 	RING_CTRL ctrl = {						\
-			.arg = _arg,					\
-			.cmd = _cmd, .sub = _sub			\
+			.arg = (_arg),					\
+			.cmd = (_cmd), .sub = (_sub)			\
 	};								\
 	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
 	RING_MOVE(Ring.buffer[head], ctrl);				\
@@ -1779,9 +1801,9 @@ FEAT_MSG("Macroing:RING_MOVE(XMM)")
 #define RING_WRITE_2xPARAM( _sub, Ring, _cmd, _dllo, _dlhi)		\
 ({									\
 	RING_CTRL ctrl = {						\
-			.dl = {.lo = _dllo, .hi = _dlhi},		\
+			.dl = {.lo = (_dllo), .hi = (_dlhi)},		\
 			.dh = {.lo = 0x0U , .hi = 0x0U },		\
-			.cmd = _cmd, .sub = _sub			\
+			.cmd = (_cmd), .sub = (_sub)			\
 	};								\
 	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
 	RING_MOVE(Ring.buffer[head], ctrl);				\
@@ -1790,9 +1812,9 @@ FEAT_MSG("Macroing:RING_MOVE(XMM)")
 #define RING_WRITE_3xPARAM( _sub, Ring, _cmd, _dllo, _dlhi, _dhlo)	\
 ({									\
 	RING_CTRL ctrl = {						\
-			.dl = {.lo = _dllo, .hi = _dlhi},		\
-			.dh = {.lo = _dhlo, .hi = 0x0U },		\
-			.cmd = _cmd, .sub = _sub			\
+			.dl = {.lo = (_dllo), .hi = (_dlhi)},		\
+			.dh = {.lo = (_dhlo), .hi = 0x0U },		\
+			.cmd = (_cmd), .sub = (_sub)			\
 	};								\
 	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
 	RING_MOVE(Ring.buffer[head], ctrl);				\
@@ -1801,9 +1823,9 @@ FEAT_MSG("Macroing:RING_MOVE(XMM)")
 #define RING_WRITE_4xPARAM(_sub, Ring, _cmd, _dllo, _dlhi, _dhlo, _dhhi)\
 ({									\
 	RING_CTRL ctrl = {						\
-			.dl = {.lo = _dllo, .hi = _dlhi},		\
-			.dh = {.lo = _dhlo, .hi = _dhhi},		\
-			.cmd = _cmd, .sub = _sub			\
+			.dl = {.lo = (_dllo), .hi = (_dlhi)},		\
+			.dh = {.lo = (_dhlo), .hi = (_dhhi)},		\
+			.cmd = (_cmd), .sub = (_sub)			\
 	};								\
 	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
 	RING_MOVE(Ring.buffer[head], ctrl);				\

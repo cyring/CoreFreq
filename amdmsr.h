@@ -54,6 +54,8 @@
 	#define MSR_AMD_CSTATE_BAR		0xc0010073
 #endif
 
+#define MSR_AMD_CPU_WDT_CFG			0xc0010074
+
 #ifndef MSR_VM_CR
 	#define MSR_VM_CR			0xc0010114
 #endif
@@ -113,6 +115,9 @@
 #define SMU_AMD_INDEX_REGISTER_F17H	PCI_CONFIG_ADDRESS(0, 0, 0, 0x60)
 #define SMU_AMD_DATA_REGISTER_F17H	PCI_CONFIG_ADDRESS(0, 0, 0, 0x64)
 
+#define SMU_AMD_INDEX_REGISTER_HSMP	PCI_CONFIG_ADDRESS(0, 0, 0, 0xc4)
+#define SMU_AMD_DATA_REGISTER_HSMP	PCI_CONFIG_ADDRESS(0, 0, 0, 0xc8)
+
 /* Sources:
  * BKDG for AMD Family [15_60h - 15_70h]
 	D0F0xBC_xD820_0CA4 Reported Temperature Control
@@ -144,6 +149,44 @@
 #ifndef MSR_AMD_CC6_F17H_STATUS
 	#define MSR_AMD_CC6_F17H_STATUS 	0xc0010296
 #endif
+
+/* Sources: PPR Vol 2 for AMD Family 19h Model 01h B1			*/
+#define SMU_HSMP_F19H	/*Cmd:*/0x3b10534, /*Arg:*/0x3b109e0, /*Rsp:*/0x3b10980
+
+enum HSMP_FUNC {
+	HSMP_TEST_MSG	= 0x1,	/* Returns [ARG0] + 1			*/
+	HSMP_RD_SMU_VER = 0x2,	/* SMU FW Version			*/
+	HSMP_RD_VERSION = 0x3,	/* Interface Version			*/
+	HSMP_RD_CUR_PWR = 0x4,	/* Current Socket power (mWatts)	*/
+	HSMP_WR_PKG_PL1 = 0x5,	/* Input within [31:0]; Limit (mWatts)	*/
+	HSMP_RD_PKG_PL1 = 0x6,	/* Returns Socket power limit (mWatts)	*/
+	HSMP_RD_MAX_PPT = 0x7,	/* Max Socket power limit (mWatts)	*/
+	HSMP_WR_SMT_BOOST=0x8,	/* ApicId[31:16], Max Freq. (MHz)[15:0] */
+	HSMP_WR_ALL_BOOST=0x9,	/* Max Freq. (MHz)[15:0] for ALL	*/
+	HSMP_RD_SMT_BOOST=0xa,	/* Input ApicId[15:0]; Dflt Fmax[15:0]	*/
+	HSMP_RD_PROCHOT = 0xb,	/* 1 = PROCHOT is asserted		*/
+	HSMP_WR_XGMI_WTH= 0xc,	/* 0 = x2, 1 = x8, 2 = x16		*/
+	HSMP_RD_APB_PST = 0xd,	/* Data Fabric P-state[7-0]={0,1,2,3}	*/
+	HSMP_ENABLE_APB = 0xe,	/* Data Fabric P-State Performance Boost*/
+	HSMP_RD_DF_MCLK = 0xf,	/* FCLK[ARG:0], MEMCLK[ARG:1] (MHz)	*/
+	HSMP_RD_CCLK	= 0x10, /* CPU core clock limit (MHz)		*/
+	HSMP_RD_PC0	= 0x11, /* Socket C0 Residency (100%)		*/
+	HSMP_WR_DPM_LCLK= 0x12, /* NBIO[24:16]; Max[15:8], Min[7:0] DPM */
+	HSMP_RESERVED	= 0x13,
+	HSMP_RD_DDR_BW	= 0x14	/* Max[31:20];Usage{Gbps[19:8],Pct[7:0]}*/
+};
+
+enum {
+	HSMP_UNSPECIFIED= 0x0,
+	HSMP_RESULT_OK	= 0x1,
+	HSMP_FAIL_BGN	= 0x2,
+	HSMP_FAIL_END	= 0xfd,
+	HSMP_INVAL_MSG	= 0xfe,
+	HSMP_INVAL_INPUT= 0xff
+};
+
+#define IS_HSMP_OOO(_rx) (_rx == HSMP_UNSPECIFIED			\
+			|| (_rx >= HSMP_FAIL_BGN && _rx <= HSMP_FAIL_END))
 
 /* Sources: PPR for AMD Family 17h					*/
 #define AMD_FCH_PM_CSTATE_EN	0x0000007e
@@ -321,14 +364,17 @@ typedef union
 	IoCfgGpFault	: 21-20,
 	LockTscToCurrP0 : 22-21,/* RW:lock the TSC to the current P0 frequency*/
 	Reserved6	: 24-22,
-	TscFreqSel	: 25-24,
-	CpbDis		: 26-25,
-	EffFreqCntMwait : 27-26,
-	EffFreqROLock	: 28-27,
+	TscFreqSel	: 25-24, /* RO: 1=TSC increments at the P0 frequency */
+	CpbDis		: 26-25, /* RW: 1=Core Performance Boost disable */
+	EffFreqCntMwait : 27-26, /* RW: A-M-Perf increment during MWAIT */
+	EffFreqROLock	: 28-27, /* W1: Lock A-M-Perf & IR-Perf counters */
 	Reserved7	: 29-28,
 	CSEnable	: 30-29,
 	IRPerfEn	: 31-30, /* RW: enable instructions retired counter */
-	Reserved	: 64-31;
+	Reserved8	: 32-31,
+	Undefined	: 33-32, /* RW: enable by default		*/
+	SmmPgCfgLock	: 34-33,
+	Reserved9	: 64-34;
     } Family_17h;
     struct
     {
@@ -907,6 +953,20 @@ typedef union
 	ReservedBits4	: 64-55;
     };
 } AMD_IOMMU_CTRL_REG;
+
+typedef union
+{
+	unsigned long long value;
+    struct
+    {
+	unsigned long long	 /* Per Core: MSR 0xC0010074 (RW)	*/
+	TmrCfgEn	:  1-0,
+	TmrTimebaseSel	:  3-1,
+	Reserved1	:  7-3,
+	TmrCfgSeverity	: 10-7,
+	Reserved2	: 64-10;
+    };
+} AMD_CPU_WDT_CFG;
 
 typedef union
 {

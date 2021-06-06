@@ -11,21 +11,31 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 *
 */
 
-#define RSC_COPY_R0_FR "     par CyrIng                                     "
-#define RSC_COPY_R1_FR "                                                    "
-#define RSC_COPY_R2_FR "            (C)2015-2021 "			\
-			"CYRIL ING""\x89""NIERIE           "
+#define RSC_COPY0_CODE_FR "     par CyrIng                                     "
+#define RSC_COPY1_CODE_FR "                                                    "
+#define RSC_COPY2_CODE_FR "            (C)2015-2021 "			\
+			  "CYRIL ING""\x89""NIERIE           "
 
 #define RSC_LAYOUT_HEADER_PROC_CODE_FR					\
 {									\
 	' ','P','r','o','c','e','s','s','e','u','r','[' 		\
 }
 
+#define RSC_LAYOUT_HEADER_CPU_CODE_FR	RSC_LAYOUT_HEADER_CPU_CODE_EN
+
+#define RSC_LAYOUT_HEADER_ARCH_CODE_FR	RSC_LAYOUT_HEADER_ARCH_CODE_EN
+
+#define RSC_LAYOUT_HEADER_CACHE_L1_CODE_FR RSC_LAYOUT_HEADER_CACHE_L1_CODE_EN
+
 #define RSC_LAYOUT_HEADER_BCLK_CODE_FR					\
 {									\
 	' ','H','o','r','l','o','g','e',' ',' ',' ',' ',		\
 	'~',' ','0','0','0',' ','0','0','0',' ','0','0','0',' ','H','z' \
 }
+
+#define RSC_LAYOUT_HEADER_CACHES_CODE_FR RSC_LAYOUT_HEADER_CACHES_CODE_EN
+
+#define RSC_LAYOUT_RULER_LOAD_CODE_FR	RSC_LAYOUT_RULER_LOAD_CODE_EN
 
 #define RSC_LAYOUT_RULER_REL_LOAD_CODE_FR				\
 {									\
@@ -38,6 +48,17 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 	'F','r',0xa9,'q','u','e','n','c','e',' ','a','b','s','o','l','u',\
 	'e',' ' 							\
 }
+
+#define RSC_LAYOUT_MONITOR_FREQUENCY_CODE_FR	\
+					RSC_LAYOUT_MONITOR_FREQUENCY_CODE_EN
+
+#define RSC_LAYOUT_MONITOR_INST_CODE_FR RSC_LAYOUT_MONITOR_INST_CODE_EN
+
+#define RSC_LAYOUT_MONITOR_COMMON_CODE_FR RSC_LAYOUT_MONITOR_COMMON_CODE_EN
+
+#define RSC_LAYOUT_MONITOR_TASKS_CODE_FR RSC_LAYOUT_MONITOR_TASKS_CODE_EN
+
+#define RSC_LAYOUT_MONITOR_SLICE_CODE_FR RSC_LAYOUT_MONITOR_SLICE_CODE_EN
 
 #define RSC_LAYOUT_RULER_FREQUENCY_CODE_FR				\
 {									\
@@ -87,6 +108,18 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-' \
 }
 
+#define RSC_LAYOUT_RULER_FREQUENCY_PKG_CODE_FR	\
+					RSC_LAYOUT_RULER_FREQUENCY_PKG_CODE_EN
+
+#define RSC_LAYOUT_RULER_INST_CODE_FR	RSC_LAYOUT_RULER_INST_CODE_EN
+
+#define RSC_LAYOUT_RULER_CYCLES_CODE_FR RSC_LAYOUT_RULER_CYCLES_CODE_EN
+
+#define RSC_LAYOUT_RULER_CSTATES_CODE_FR RSC_LAYOUT_RULER_CSTATES_CODE_EN
+
+#define RSC_LAYOUT_RULER_INTERRUPTS_CODE_FR	\
+					RSC_LAYOUT_RULER_INTERRUPTS_CODE_EN
+
 #define RSC_LAYOUT_RULER_PACKAGE_CODE_FR				\
 	"------------ Cycles ----  ""\x89""tat -------------------- Ratio TS" \
 	"C ----------------------------------------------------------"	\
@@ -103,6 +136,19 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"--------------------"
+
+#define RSC_LAYOUT_PACKAGE_PC_CODE_FR	RSC_LAYOUT_PACKAGE_PC_CODE_EN
+#define RSC_LAYOUT_PACKAGE_PC02_CODE_FR RSC_LAYOUT_PACKAGE_PC02_CODE_EN
+#define RSC_LAYOUT_PACKAGE_PC03_CODE_FR RSC_LAYOUT_PACKAGE_PC03_CODE_EN
+#define RSC_LAYOUT_PACKAGE_PC04_CODE_FR RSC_LAYOUT_PACKAGE_PC04_CODE_EN
+#define RSC_LAYOUT_PACKAGE_PC06_CODE_FR RSC_LAYOUT_PACKAGE_PC06_CODE_EN
+#define RSC_LAYOUT_PACKAGE_PC07_CODE_FR RSC_LAYOUT_PACKAGE_PC07_CODE_EN
+#define RSC_LAYOUT_PACKAGE_PC08_CODE_FR RSC_LAYOUT_PACKAGE_PC08_CODE_EN
+#define RSC_LAYOUT_PACKAGE_PC09_CODE_FR RSC_LAYOUT_PACKAGE_PC09_CODE_EN
+#define RSC_LAYOUT_PACKAGE_PC10_CODE_FR RSC_LAYOUT_PACKAGE_PC10_CODE_EN
+#define RSC_LAYOUT_PACKAGE_MC06_CODE_FR RSC_LAYOUT_PACKAGE_MC06_CODE_EN
+
+#define RSC_LAYOUT_PACKAGE_UNCORE_CODE_FR RSC_LAYOUT_PACKAGE_UNCORE_CODE_EN
 
 #define RSC_LAYOUT_TASKS_STATE_SORTED_CODE_FR				\
 {									\
@@ -155,6 +201,10 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 	' ', 'V','a','l','e','u','r','[',' ',' ',' ',']',' '		\
 }
 
+#define RSC_LAYOUT_TASKS_VALUE_OFF_CODE_FR RSC_LAYOUT_TASKS_VALUE_OFF_CODE_EN
+
+#define RSC_LAYOUT_TASKS_VALUE_ON_CODE_FR RSC_LAYOUT_TASKS_VALUE_ON_CODE_EN
+
 #define RSC_LAYOUT_TASKS_TRACKING_CODE_FR				\
 {									\
 	'S','u','i','v','i',' ','[', 'n',']',' ','P','I','D',' ','[',' ',\
@@ -169,6 +219,13 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"--------------------"
+
+#define RSC_LAYOUT_RULER_PWR_UNCORE_CODE_FR RSC_LAYOUT_RULER_PWR_UNCORE_CODE_EN
+
+#define RSC_LAYOUT_RULER_PWR_SOC_CODE_FR RSC_LAYOUT_RULER_PWR_SOC_CODE_EN
+
+#define RSC_LAYOUT_RULER_PWR_PLATFORM_CODE_FR	\
+					RSC_LAYOUT_RULER_PWR_PLATFORM_CODE_EN
 
 #define RSC_LAYOUT_RULER_VOLTAGE_CODE_FR				\
 	"--- Fr""\xa9""q(MHz) - VID --- Min(V)-- Vcore -- Max(V) -----------" \
@@ -210,6 +267,13 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 	"------------------------------------------------------------"	\
 	"--------------------"
 
+#define RSC_LAYOUT_FOOTER_TECH_X86_CODE_FR RSC_LAYOUT_FOOTER_TECH_X86_CODE_EN
+
+#define RSC_LAYOUT_FOOTER_TECH_INTEL_CODE_FR \
+					RSC_LAYOUT_FOOTER_TECH_INTEL_CODE_EN
+
+#define RSC_LAYOUT_FOOTER_TECH_AMD_CODE_FR RSC_LAYOUT_FOOTER_TECH_AMD_CODE_EN
+
 #define RSC_LAYOUT_FOOTER_SYSTEM_CODE_FR				\
 {									\
 	'T',0xa2,'c','h','e','s','[',' ',' ',' ',' ',' ',' ',']',	\
@@ -217,10 +281,22 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 	' ','/',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','B',']' 	\
 }
 
-#define RSC_CREATE_HOTPLUG_CPU_ENABLE_CODE_FR	"<  ACTIVER >"
-#define RSC_CREATE_HOTPLUG_CPU_DISABLE_CODE_FR	"<D""\x89""SACTIVER>"
-#define RSC_CREATE_HOTPLUG_CPU_ONLINE_CODE_FR	" %03u   On   "
-#define RSC_CREATE_HOTPLUG_CPU_OFFLINE_CODE_FR	" %03u  Off   "
+#define RSC_LAYOUT_CARD_CORE_ONLINE_COND0_CODE_FR	\
+				RSC_LAYOUT_CARD_CORE_ONLINE_COND0_CODE_EN
+
+#define RSC_LAYOUT_CARD_CORE_ONLINE_COND1_CODE_FR	\
+				RSC_LAYOUT_CARD_CORE_ONLINE_COND1_CODE_EN
+
+#define RSC_LAYOUT_CARD_CORE_OFFLINE_CODE_FR \
+					RSC_LAYOUT_CARD_CORE_OFFLINE_CODE_EN
+
+#define RSC_LAYOUT_CARD_CLK_CODE_FR	RSC_LAYOUT_CARD_CLK_CODE_EN
+
+#define RSC_LAYOUT_CARD_UNCORE_CODE_FR	RSC_LAYOUT_CARD_UNCORE_CODE_EN
+
+#define RSC_LAYOUT_CARD_BUS_CODE_FR	RSC_LAYOUT_CARD_BUS_CODE_EN
+
+#define RSC_LAYOUT_CARD_MC_CODE_FR	RSC_LAYOUT_CARD_MC_CODE_EN
 
 #define RSC_LAYOUT_CARD_LOAD_CODE_FR					\
 {									\
@@ -232,10 +308,17 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 	'[',' ',' ','%','R','E','P','O','S',' ',' ',']' 		\
 }
 
+#define RSC_LAYOUT_CARD_RAM_CODE_FR	RSC_LAYOUT_CARD_RAM_CODE_EN
+
 #define RSC_LAYOUT_CARD_TASK_CODE_FR					\
 {									\
 	'[','T',0xa2,'c','h','e',' ',' ',' ',' ',' ',']' 		\
 }
+
+#define RSC_CREATE_HOTPLUG_CPU_ENABLE_CODE_FR	"<  ACTIVER >"
+#define RSC_CREATE_HOTPLUG_CPU_DISABLE_CODE_FR	"<D""\x89""SACTIVER>"
+#define RSC_CREATE_HOTPLUG_CPU_ONLINE_CODE_FR	" %03u   On   "
+#define RSC_CREATE_HOTPLUG_CPU_OFFLINE_CODE_FR	" %03u  Off   "
 
 #define RSC_PROCESSOR_TITLE_CODE_FR	" Processeur "
 #define RSC_PROCESSOR_CODE_FR		"Processeur"
@@ -273,15 +356,119 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_SCOPE_CORE_CODE_FR		"Core"
 #define RSC_SCOPE_PACKAGE_CODE_FR	" Pkg"
 
-#define RSC_CPUID_TITLE_FR 		\
+#define RSC_CPUID_TITLE_CODE_FR 	\
 	" fonction           EAX          EBX          ECX          EDX "
 
 #define RSC_LARGEST_STD_FUNC_CODE_FR	"Fonction standard maximum"
 #define RSC_LARGEST_EXT_FUNC_CODE_FR	"Fonction ""\xa9""tendue  maximum"
 
 #define RSC_SYS_REGS_TITLE_CODE_FR	" Registres Syst""\xa8""me "
+#define RSC_SYS_REG_FLAGS_TF_CODE_FR	RSC_SYS_REG_FLAGS_TF_CODE_EN
+#define RSC_SYS_REG_FLAGS_IF_CODE_FR	RSC_SYS_REG_FLAGS_IF_CODE_EN
+#define RSC_SYS_REG_FLAGS_IOPL_CODE_FR	RSC_SYS_REG_FLAGS_IOPL_CODE_EN
+#define RSC_SYS_REG_FLAGS_NT_CODE_FR	RSC_SYS_REG_FLAGS_NT_CODE_EN
+#define RSC_SYS_REG_FLAGS_RF_CODE_FR	RSC_SYS_REG_FLAGS_RF_CODE_EN
+#define RSC_SYS_REG_FLAGS_VM_CODE_FR	RSC_SYS_REG_FLAGS_VM_CODE_EN
+#define RSC_SYS_REG_FLAGS_AC_CODE_FR	RSC_SYS_REG_FLAGS_AC_CODE_EN
+#define RSC_SYS_REG_FLAGS_VIF_CODE_FR	RSC_SYS_REG_FLAGS_VIF_CODE_EN
+#define RSC_SYS_REG_FLAGS_VIP_CODE_FR	RSC_SYS_REG_FLAGS_VIP_CODE_EN
+#define RSC_SYS_REG_FLAGS_ID_CODE_FR	RSC_SYS_REG_FLAGS_ID_CODE_EN
+#define RSC_SYS_REGS_CR0_CODE_FR	RSC_SYS_REGS_CR0_CODE_EN
+#define RSC_SYS_REG_CR0_PE_CODE_FR	RSC_SYS_REG_CR0_PE_CODE_EN
+#define RSC_SYS_REG_CR0_MP_CODE_FR	RSC_SYS_REG_CR0_MP_CODE_EN
+#define RSC_SYS_REG_CR0_EM_CODE_FR	RSC_SYS_REG_CR0_EM_CODE_EN
+#define RSC_SYS_REG_CR0_TS_CODE_FR	RSC_SYS_REG_CR0_TS_CODE_EN
+#define RSC_SYS_REG_CR0_ET_CODE_FR	RSC_SYS_REG_CR0_ET_CODE_EN
+#define RSC_SYS_REG_CR0_NE_CODE_FR	RSC_SYS_REG_CR0_NE_CODE_EN
+#define RSC_SYS_REG_CR0_WP_CODE_FR	RSC_SYS_REG_CR0_WP_CODE_EN
+#define RSC_SYS_REG_CR0_AM_CODE_FR	RSC_SYS_REG_CR0_AM_CODE_EN
+#define RSC_SYS_REG_CR0_NW_CODE_FR	RSC_SYS_REG_CR0_NW_CODE_EN
+#define RSC_SYS_REG_CR0_CD_CODE_FR	RSC_SYS_REG_CR0_CD_CODE_EN
+#define RSC_SYS_REG_CR0_PG_CODE_FR	RSC_SYS_REG_CR0_PG_CODE_EN
+#define RSC_SYS_REGS_CR3_CODE_FR	RSC_SYS_REGS_CR3_CODE_EN
+#define RSC_SYS_REG_CR3_PWT_CODE_FR	RSC_SYS_REG_CR3_PWT_CODE_EN
+#define RSC_SYS_REG_CR3_PCD_CODE_FR	RSC_SYS_REG_CR3_PCD_CODE_EN
+#define RSC_SYS_REGS_CR4_CODE_FR	RSC_SYS_REGS_CR4_CODE_EN
+#define RSC_SYS_REG_CR4_VME_CODE_FR	RSC_SYS_REG_CR4_VME_CODE_EN
+#define RSC_SYS_REG_CR4_PVI_CODE_FR	RSC_SYS_REG_CR4_PVI_CODE_EN
+#define RSC_SYS_REG_CR4_TSD_CODE_FR	RSC_SYS_REG_CR4_TSD_CODE_EN
+#define RSC_SYS_REG_CR4_DE_CODE_FR	RSC_SYS_REG_CR4_DE_CODE_EN
+#define RSC_SYS_REG_CR4_PSE_CODE_FR	RSC_SYS_REG_CR4_PSE_CODE_EN
+#define RSC_SYS_REG_CR4_PAE_CODE_FR	RSC_SYS_REG_CR4_PAE_CODE_EN
+#define RSC_SYS_REG_CR4_MCE_CODE_FR	RSC_SYS_REG_CR4_MCE_CODE_EN
+#define RSC_SYS_REG_CR4_PGE_CODE_FR	RSC_SYS_REG_CR4_PGE_CODE_EN
+#define RSC_SYS_REG_CR4_PCE_CODE_FR	RSC_SYS_REG_CR4_PCE_CODE_EN
+#define RSC_SYS_REG_CR4_FX_CODE_FR	RSC_SYS_REG_CR4_FX_CODE_EN
+#define RSC_SYS_REG_CR4_XMM_CODE_FR	RSC_SYS_REG_CR4_XMM_CODE_EN
+#define RSC_SYS_REG_CR4_UMIP_CODE_FR	RSC_SYS_REG_CR4_UMIP_CODE_EN
+#define RSC_SYS_REG_CR4_5LP_CODE_FR	RSC_SYS_REG_CR4_5LP_CODE_EN
+#define RSC_SYS_REG_CR4_VMX_CODE_FR	RSC_SYS_REG_CR4_VMX_CODE_EN
+#define RSC_SYS_REG_CR4_SMX_CODE_FR	RSC_SYS_REG_CR4_SMX_CODE_EN
+#define RSC_SYS_REG_CR4_FS_CODE_FR	RSC_SYS_REG_CR4_FS_CODE_EN
+#define RSC_SYS_REG_CR4_PCID_CODE_FR	RSC_SYS_REG_CR4_PCID_CODE_EN
+#define RSC_SYS_REG_CR4_SAV_CODE_FR	RSC_SYS_REG_CR4_SAV_CODE_EN
+#define RSC_SYS_REG_CR4_KL_CODE_FR	RSC_SYS_REG_CR4_KL_CODE_EN
+#define RSC_SYS_REG_CR4_SME_CODE_FR	RSC_SYS_REG_CR4_SME_CODE_EN
+#define RSC_SYS_REG_CR4_SMA_CODE_FR	RSC_SYS_REG_CR4_SMA_CODE_EN
+#define RSC_SYS_REG_CR4_PKE_CODE_FR	RSC_SYS_REG_CR4_PKE_CODE_EN
+#define RSC_SYS_REG_CR4_CET_CODE_FR	RSC_SYS_REG_CR4_CET_CODE_EN
+#define RSC_SYS_REG_CR4_PKS_CODE_FR	RSC_SYS_REG_CR4_PKS_CODE_EN
+#define RSC_SYS_REGS_CR8_CODE_FR	RSC_SYS_REGS_CR8_CODE_EN
+#define RSC_SYS_REG_CR8_TPL_CODE_FR	RSC_SYS_REG_CR8_TPL_CODE_EN
+#define RSC_SYS_REGS_EFCR_CODE_FR	RSC_SYS_REGS_EFCR_CODE_EN
+#define RSC_SYS_REG_EFCR_LCK_CODE_FR	RSC_SYS_REG_EFCR_LCK_CODE_EN
+#define RSC_SYS_REG_EFCR_VMX_CODE_FR	RSC_SYS_REG_EFCR_VMX_CODE_EN
+#define RSC_SYS_REG_EFCR_SGX_CODE_FR	RSC_SYS_REG_EFCR_SGX_CODE_EN
+#define RSC_SYS_REG_EFCR_LSE_CODE_FR	RSC_SYS_REG_EFCR_LSE_CODE_EN
+#define RSC_SYS_REG_EFCR_GSE_CODE_FR	RSC_SYS_REG_EFCR_GSE_CODE_EN
+#define RSC_SYS_REG_EFCR_LSGX_CODE_FR	RSC_SYS_REG_EFCR_LSGX_CODE_EN
+#define RSC_SYS_REG_EFCR_GSGX_CODE_FR	RSC_SYS_REG_EFCR_GSGX_CODE_EN
+#define RSC_SYS_REG_EFCR_LMC_CODE_FR	RSC_SYS_REG_EFCR_LMC_CODE_EN
+#define RSC_SYS_REGS_EFER_CODE_FR	RSC_SYS_REGS_EFER_CODE_EN
+#define RSC_SYS_REG_EFER_SCE_CODE_FR	RSC_SYS_REG_EFER_SCE_CODE_EN
+#define RSC_SYS_REG_EFER_LME_CODE_FR	RSC_SYS_REG_EFER_LME_CODE_EN
+#define RSC_SYS_REG_EFER_LMA_CODE_FR	RSC_SYS_REG_EFER_LMA_CODE_EN
+#define RSC_SYS_REG_EFER_NXE_CODE_FR	RSC_SYS_REG_EFER_NXE_CODE_EN
+#define RSC_SYS_REG_EFER_SVM_CODE_FR	RSC_SYS_REG_EFER_SVM_CODE_EN
 
 #define RSC_ISA_TITLE_CODE_FR		" Jeu d'instructions ""\xa9""tendu "
+
+#define RSC_ISA_3DNOW_COMM_CODE_FR	RSC_ISA_3DNOW_COMM_CODE_EN
+#define RSC_ISA_ADX_COMM_CODE_FR	RSC_ISA_ADX_COMM_CODE_EN
+#define RSC_ISA_AES_COMM_CODE_FR	RSC_ISA_AES_COMM_CODE_EN
+#define RSC_ISA_AVX_COMM_CODE_FR	RSC_ISA_AVX_COMM_CODE_EN
+#define RSC_ISA_BMI_COMM_CODE_FR	RSC_ISA_BMI_COMM_CODE_EN
+#define RSC_ISA_CLWB_COMM_CODE_FR	RSC_ISA_CLWB_COMM_CODE_EN
+#define RSC_ISA_CLFLUSH_COMM_CODE_FR	RSC_ISA_CLFLUSH_COMM_CODE_EN
+#define RSC_ISA_AC_FLAG_COMM_CODE_FR	RSC_ISA_AC_FLAG_COMM_CODE_EN
+#define RSC_ISA_CMOV_COMM_CODE_FR	RSC_ISA_CMOV_COMM_CODE_EN
+#define RSC_ISA_XCHG8B_COMM_CODE_FR	RSC_ISA_XCHG8B_COMM_CODE_EN
+#define RSC_ISA_XCHG16B_COMM_CODE_FR	RSC_ISA_XCHG16B_COMM_CODE_EN
+#define RSC_ISA_F16C_COMM_CODE_FR	RSC_ISA_F16C_COMM_CODE_EN
+#define RSC_ISA_FPU_COMM_CODE_FR	RSC_ISA_FPU_COMM_CODE_EN
+#define RSC_ISA_FXSR_COMM_CODE_FR	RSC_ISA_FXSR_COMM_CODE_EN
+#define RSC_ISA_LSHF_COMM_CODE_FR	RSC_ISA_LSHF_COMM_CODE_EN
+#define RSC_ISA_MMX_COMM_CODE_FR	RSC_ISA_MMX_COMM_CODE_EN
+#define RSC_ISA_MWAITX_COMM_CODE_FR	RSC_ISA_MWAITX_COMM_CODE_EN
+#define RSC_ISA_MOVBE_COMM_CODE_FR	RSC_ISA_MOVBE_COMM_CODE_EN
+#define RSC_ISA_PCLMULDQ_COMM_CODE_FR	RSC_ISA_PCLMULDQ_COMM_CODE_EN
+#define RSC_ISA_POPCNT_COMM_CODE_FR	RSC_ISA_POPCNT_COMM_CODE_EN
+#define RSC_ISA_RDRAND_COMM_CODE_FR	RSC_ISA_RDRAND_COMM_CODE_EN
+#define RSC_ISA_RDSEED_COMM_CODE_FR	RSC_ISA_RDSEED_COMM_CODE_EN
+#define RSC_ISA_RDTSCP_COMM_CODE_FR	RSC_ISA_RDTSCP_COMM_CODE_EN
+#define RSC_ISA_SEP_COMM_CODE_FR	RSC_ISA_SEP_COMM_CODE_EN
+#define RSC_ISA_SHA_COMM_CODE_FR	RSC_ISA_SHA_COMM_CODE_EN
+#define RSC_ISA_SSE_COMM_CODE_FR	RSC_ISA_SSE_COMM_CODE_EN
+#define RSC_ISA_SSE2_COMM_CODE_FR	RSC_ISA_SSE2_COMM_CODE_EN
+#define RSC_ISA_SSE3_COMM_CODE_FR	RSC_ISA_SSE3_COMM_CODE_EN
+#define RSC_ISA_SSSE3_COMM_CODE_FR	RSC_ISA_SSSE3_COMM_CODE_EN
+#define RSC_ISA_SSE4_1_COMM_CODE_FR	RSC_ISA_SSE4_1_COMM_CODE_EN
+#define RSC_ISA_SSE4_2_COMM_CODE_FR	RSC_ISA_SSE4_2_COMM_CODE_EN
+#define RSC_ISA_SERIALIZE_COMM_CODE_FR	RSC_ISA_SERIALIZE_COMM_CODE_EN
+#define RSC_ISA_SYSCALL_COMM_CODE_FR	RSC_ISA_SYSCALL_COMM_CODE_EN
+#define RSC_ISA_RDPID_COMM_CODE_FR	RSC_ISA_RDPID_COMM_CODE_EN
+#define RSC_ISA_UMIP_COMM_CODE_FR	RSC_ISA_UMIP_COMM_CODE_EN
+#define RSC_ISA_SGX_COMM_CODE_FR	RSC_ISA_SGX_COMM_CODE_EN
 
 #define RSC_FEATURES_TITLE_CODE_FR	" Caract""\xa9""ristiques "
 #define RSC_NOT_AVAILABLE_CODE_FR	"N/A"
@@ -365,6 +552,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_TECHNOLOGIES_EEO_CODE_FR	"Optimisation ""\xa9""nerg""\xa9""tique"
 #define RSC_TECHNOLOGIES_R2H_CODE_FR	"Optimisation Race To Halt"
 #define RSC_TECHNOLOGIES_HYPERV_CODE_FR "Hyperviseur"
+#define RSC_TECHNOLOGIES_WDT_CODE_FR	"Compteur Watchdog"
 
 #define RSC_PERF_MON_TITLE_CODE_FR	" Gestion de la performance "
 #define RSC_VERSION_CODE_FR		"Version"
@@ -435,7 +623,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_POWER_THERMAL_PPT_CODE_FR	"Consommation maximale"
 #define RSC_POWER_THERMAL_TPL_CODE_FR	"Limite de puissance"
 #define RSC_POWER_THERMAL_EDC_CODE_FR	"Limite de courant sup""\xa9""rieure"
-#define RSC_POWER_THERMAL_TDC_CODE_FR	"Limite de courant durable"
+#define RSC_POWER_THERMAL_TDC_CODE_FR	"Limite de courant sup""\xa9""rieure"
 
 #define RSC_KERNEL_TITLE_CODE_FR	" Noyau "
 #define RSC_KERNEL_TOTAL_RAM_CODE_FR	"RAM totale"
@@ -504,6 +692,85 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_MEM_CTRL_DIMM_SIZE_2_CODE_FR	"oire "
 #define RSC_MEM_CTRL_DIMM_SIZE_3_CODE_FR	"(MB) "
 
+#define RSC_DDR3_CL_COMM_CODE_FR	RSC_DDR3_CL_COMM_CODE_EN
+#define RSC_DDR3_RCD_COMM_CODE_FR	RSC_DDR3_RCD_COMM_CODE_EN
+#define RSC_DDR3_RP_COMM_CODE_FR	RSC_DDR3_RP_COMM_CODE_EN
+#define RSC_DDR3_RAS_COMM_CODE_FR	RSC_DDR3_RAS_COMM_CODE_EN
+#define RSC_DDR3_RRD_COMM_CODE_FR	RSC_DDR3_RRD_COMM_CODE_EN
+#define RSC_DDR3_RFC_COMM_CODE_FR	RSC_DDR3_RFC_COMM_CODE_EN
+#define RSC_DDR3_WR_COMM_CODE_FR	RSC_DDR3_WR_COMM_CODE_EN
+#define RSC_DDR3_RTP_COMM_CODE_FR	RSC_DDR3_RTP_COMM_CODE_EN
+#define RSC_DDR3_WTP_COMM_CODE_FR	RSC_DDR3_WTP_COMM_CODE_EN
+#define RSC_DDR3_FAW_COMM_CODE_FR	RSC_DDR3_FAW_COMM_CODE_EN
+#define RSC_DDR3_B2B_COMM_CODE_FR	RSC_DDR3_B2B_COMM_CODE_EN
+#define RSC_DDR3_CWL_COMM_CODE_FR	RSC_DDR3_CWL_COMM_CODE_EN
+#define RSC_DDR3_CMD_COMM_CODE_FR	RSC_DDR3_CMD_COMM_CODE_EN
+#define RSC_DDR3_REFI_COMM_CODE_FR	RSC_DDR3_REFI_COMM_CODE_EN
+#define RSC_DDR3_DDWRTRD_COMM_CODE_FR	RSC_DDR3_DDWRTRD_COMM_CODE_EN
+#define RSC_DDR3_DRWRTRD_COMM_CODE_FR	RSC_DDR3_DRWRTRD_COMM_CODE_EN
+#define RSC_DDR3_SRWRTRD_COMM_CODE_FR	RSC_DDR3_SRWRTRD_COMM_CODE_EN
+#define RSC_DDR3_DDRDTWR_COMM_CODE_FR	RSC_DDR3_DDRDTWR_COMM_CODE_EN
+#define RSC_DDR3_DRRDTWR_COMM_CODE_FR	RSC_DDR3_DRRDTWR_COMM_CODE_EN
+#define RSC_DDR3_SRRDTWR_COMM_CODE_FR	RSC_DDR3_SRRDTWR_COMM_CODE_EN
+#define RSC_DDR3_DDRDTRD_COMM_CODE_FR	RSC_DDR3_DDRDTRD_COMM_CODE_EN
+#define RSC_DDR3_DRRDTRD_COMM_CODE_FR	RSC_DDR3_DRRDTRD_COMM_CODE_EN
+#define RSC_DDR3_SRRDTRD_COMM_CODE_FR	RSC_DDR3_SRRDTRD_COMM_CODE_EN
+#define RSC_DDR3_DDWRTWR_COMM_CODE_FR	RSC_DDR3_DDWRTWR_COMM_CODE_EN
+#define RSC_DDR3_DRWRTWR_COMM_CODE_FR	RSC_DDR3_DRWRTWR_COMM_CODE_EN
+#define RSC_DDR3_SRWRTWR_COMM_CODE_FR	RSC_DDR3_SRWRTWR_COMM_CODE_EN
+#define RSC_DDR3_CKE_COMM_CODE_FR	RSC_DDR3_CKE_COMM_CODE_EN
+#define RSC_DDR3_ECC_COMM_CODE_FR	RSC_DDR3_ECC_COMM_CODE_EN
+
+#define RSC_DDR4_RDRD_SCL_COMM_CODE_FR	RSC_DDR4_RDRD_SCL_COMM_CODE_EN
+#define RSC_DDR4_RDRD_SC_COMM_CODE_FR	RSC_DDR4_RDRD_SC_COMM_CODE_EN
+#define RSC_DDR4_RDRD_SD_COMM_CODE_FR	RSC_DDR4_RDRD_SD_COMM_CODE_EN
+#define RSC_DDR4_RDRD_DD_COMM_CODE_FR	RSC_DDR4_RDRD_DD_COMM_CODE_EN
+#define RSC_DDR4_RDWR_SCL_COMM_CODE_FR	RSC_DDR4_RDWR_SCL_COMM_CODE_EN
+#define RSC_DDR4_RDWR_SC_COMM_CODE_FR	RSC_DDR4_RDWR_SC_COMM_CODE_EN
+#define RSC_DDR4_RDWR_SD_COMM_CODE_FR	RSC_DDR4_RDWR_SD_COMM_CODE_EN
+#define RSC_DDR4_RDWR_DD_COMM_CODE_FR	RSC_DDR4_RDWR_DD_COMM_CODE_EN
+#define RSC_DDR4_WRRD_SCL_COMM_CODE_FR	RSC_DDR4_WRRD_SCL_COMM_CODE_EN
+#define RSC_DDR4_WRRD_SC_COMM_CODE_FR	RSC_DDR4_WRRD_SC_COMM_CODE_EN
+#define RSC_DDR4_WRRD_SD_COMM_CODE_FR	RSC_DDR4_WRRD_SD_COMM_CODE_EN
+#define RSC_DDR4_WRRD_DD_COMM_CODE_FR	RSC_DDR4_WRRD_DD_COMM_CODE_EN
+#define RSC_DDR4_WRWR_SCL_COMM_CODE_FR	RSC_DDR4_WRWR_SCL_COMM_CODE_EN
+#define RSC_DDR4_WRWR_SC_COMM_CODE_FR	RSC_DDR4_WRWR_SC_COMM_CODE_EN
+#define RSC_DDR4_WRWR_SD_COMM_CODE_FR	RSC_DDR4_WRWR_SD_COMM_CODE_EN
+#define RSC_DDR4_WRWR_DD_COMM_CODE_FR	RSC_DDR4_WRWR_DD_COMM_CODE_EN
+
+#define RSC_DDR4_ZEN_RCD_R_COMM_CODE_FR RSC_DDR4_ZEN_RCD_R_COMM_CODE_EN
+#define RSC_DDR4_ZEN_RCD_W_COMM_CODE_FR RSC_DDR4_ZEN_RCD_W_COMM_CODE_EN
+#define RSC_DDR4_ZEN_RC_COMM_CODE_FR	RSC_DDR4_ZEN_RC_COMM_CODE_EN
+#define RSC_DDR4_ZEN_RRD_S_COMM_CODE_FR RSC_DDR4_ZEN_RRD_S_COMM_CODE_EN
+#define RSC_DDR4_ZEN_RRD_L_COMM_CODE_FR RSC_DDR4_ZEN_RRD_L_COMM_CODE_EN
+#define RSC_DDR4_ZEN_WTR_S_COMM_CODE_FR RSC_DDR4_ZEN_WTR_S_COMM_CODE_EN
+#define RSC_DDR4_ZEN_WTR_L_COMM_CODE_FR RSC_DDR4_ZEN_WTR_L_COMM_CODE_EN
+#define RSC_DDR4_ZEN_RDRD_SCL_COMM_CODE_FR RSC_DDR4_ZEN_RDRD_SCL_COMM_CODE_EN
+#define RSC_DDR4_ZEN_WRWR_SCL_COMM_CODE_FR RSC_DDR4_ZEN_WRWR_SCL_COMM_CODE_EN
+#define RSC_DDR4_ZEN_RTP_COMM_CODE_FR	RSC_DDR4_ZEN_RTP_COMM_CODE_EN
+#define RSC_DDR4_ZEN_RDWR_COMM_CODE_FR	RSC_DDR4_ZEN_RDWR_COMM_CODE_EN
+#define RSC_DDR4_ZEN_WRRD_COMM_CODE_FR	RSC_DDR4_ZEN_WRRD_COMM_CODE_EN
+#define RSC_DDR4_ZEN_WRWR_SC_COMM_CODE_FR RSC_DDR4_ZEN_WRWR_SC_COMM_CODE_EN
+#define RSC_DDR4_ZEN_WRWR_SD_COMM_CODE_FR RSC_DDR4_ZEN_WRWR_SD_COMM_CODE_EN
+#define RSC_DDR4_ZEN_WRWR_DD_COMM_CODE_FR RSC_DDR4_ZEN_WRWR_DD_COMM_CODE_EN
+#define RSC_DDR4_ZEN_RDRD_SC_COMM_CODE_FR RSC_DDR4_ZEN_RDRD_SC_COMM_CODE_EN
+#define RSC_DDR4_ZEN_RDRD_SD_COMM_CODE_FR RSC_DDR4_ZEN_RDRD_SD_COMM_CODE_EN
+#define RSC_DDR4_ZEN_RDRD_DD_COMM_CODE_FR RSC_DDR4_ZEN_RDRD_DD_COMM_CODE_EN
+#define RSC_DDR4_ZEN_RTR_DLR_COMM_CODE_FR RSC_DDR4_ZEN_RTR_DLR_COMM_CODE_EN
+#define RSC_DDR4_ZEN_WTW_DLR_COMM_CODE_FR RSC_DDR4_ZEN_WTW_DLR_COMM_CODE_EN
+#define RSC_DDR4_ZEN_WTR_DLR_COMM_CODE_FR RSC_DDR4_ZEN_WTR_DLR_COMM_CODE_EN
+#define RSC_DDR4_ZEN_RRD_DLR_COMM_CODE_FR RSC_DDR4_ZEN_RRD_DLR_COMM_CODE_EN
+#define RSC_DDR4_ZEN_RFC1_COMM_CODE_FR	RSC_DDR4_ZEN_RFC1_COMM_CODE_EN
+#define RSC_DDR4_ZEN_RFC2_COMM_CODE_FR	RSC_DDR4_ZEN_RFC2_COMM_CODE_EN
+#define RSC_DDR4_ZEN_RFC4_COMM_CODE_FR	RSC_DDR4_ZEN_RFC4_COMM_CODE_EN
+#define RSC_DDR4_ZEN_RCPB_COMM_CODE_FR	RSC_DDR4_ZEN_RCPB_COMM_CODE_EN
+#define RSC_DDR4_ZEN_RPPB_COMM_CODE_FR	RSC_DDR4_ZEN_RPPB_COMM_CODE_EN
+#define RSC_DDR4_ZEN_BGS_COMM_CODE_FR	RSC_DDR4_ZEN_BGS_COMM_CODE_EN
+#define RSC_DDR4_ZEN_BGS_ALT_COMM_CODE_FR RSC_DDR4_ZEN_BGS_ALT_COMM_CODE_EN
+#define RSC_DDR4_ZEN_BAN_COMM_CODE_FR	RSC_DDR4_ZEN_BAN_COMM_CODE_EN
+#define RSC_DDR4_ZEN_RCPAGE_COMM_CODE_FR RSC_DDR4_ZEN_RCPAGE_COMM_CODE_EN
+#define RSC_DDR4_ZEN_GDM_COMM_CODE_FR	RSC_DDR4_ZEN_GDM_COMM_CODE_EN
+
 #define RSC_TASKS_SORTBY_STATE_CODE_FR		" ""\x89""tat     "
 #define RSC_TASKS_SORTBY_RTIME_CODE_FR		" RunTime  "
 #define RSC_TASKS_SORTBY_UTIME_CODE_FR		" UserTime "
@@ -511,70 +778,78 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_TASKS_SORTBY_PID_CODE_FR		" PID      "
 #define RSC_TASKS_SORTBY_COMM_CODE_FR		" Commande "
 
-#define RSC_MENU_ITEM_MENU_CODE_FR       "     [F2] Menu          "
-#define RSC_MENU_ITEM_VIEW_CODE_FR       "     [F3] Vue           "
-#define RSC_MENU_ITEM_WINDOW_CODE_FR     "    [F4] Fen""\xaa""tre        "
-#define RSC_MENU_ITEM_SETTINGS_CODE_FR   " R""\xa9""glages           [s] "
-#define RSC_MENU_ITEM_SMBIOS_CODE_FR     " Infos SMBIOS       [B] "
-#define RSC_MENU_ITEM_KERNEL_CODE_FR     " Infos Noyau        [k] "
-#define RSC_MENU_ITEM_HOTPLUG_CODE_FR    " HotPlug CPU        [#] "
-#define RSC_MENU_ITEM_TOOLS_CODE_FR      " Outils             [O] "
-#define RSC_MENU_ITEM_ABOUT_CODE_FR      " ""\x80""-propos           [a] "
-#define RSC_MENU_ITEM_HELP_CODE_FR       " Aide               [h] "
-#define RSC_MENU_ITEM_KEYS_CODE_FR       " Raccourcis        [F1] "
-#define RSC_MENU_ITEM_LANG_CODE_FR       " Langues            [L] "
-#define RSC_MENU_ITEM_QUIT_CODE_FR       " Quitter     [Ctrl]+[x] "
-#define RSC_MENU_ITEM_DASHBOARD_CODE_FR  " Tableau de bord    [d] "
-#define RSC_MENU_ITEM_FREQUENCY_CODE_FR  " Fr""\xa9""quence          [f] "
-#define RSC_MENU_ITEM_INST_CYCLE_CODE_FR " Cycles Instruction [i] "
-#define RSC_MENU_ITEM_CORE_CYCLE_CODE_FR " Cycles des Coeurs  [c] "
-#define RSC_MENU_ITEM_IDLE_STATE_CODE_FR " ""\x89""tats de sommeil   [l] "
-#define RSC_MENU_ITEM_PKG_CYCLE_CODE_FR  " Cycles du Package  [g] "
-#define RSC_MENU_ITEM_TASKS_MON_CODE_FR  " Suivi des t""\xa2""ches   [x] "
-#define RSC_MENU_ITEM_SYS_INTER_CODE_FR  " Interruptions      [q] "
-#define RSC_MENU_ITEM_SENSORS_CODE_FR    " Capteurs           [C] "
-#define RSC_MENU_ITEM_VOLTAGE_CODE_FR    "   Voltage          [V] "
-#define RSC_MENU_ITEM_POWER_CODE_FR      "   Puissance        [W] "
-#define RSC_MENU_ITEM_SLICE_CTR_CODE_FR  " Compteurs tranche  [T] "
-#define RSC_MENU_ITEM_PROCESSOR_CODE_FR  " Processeur         [p] "
-#define RSC_MENU_ITEM_TOPOLOGY_CODE_FR   " Topologie          [m] "
-#define RSC_MENU_ITEM_FEATURES_CODE_FR   " Caract""\xa9""ristiques   [e] "
-#define RSC_MENU_ITEM_ISA_EXT_CODE_FR    " Jeu Instructions   [I] "
-#define RSC_MENU_ITEM_TECH_CODE_FR       " Technologies       [t] "
-#define RSC_MENU_ITEM_PERF_MON_CODE_FR   " Gestion de Perf.   [o] "
-#define RSC_MENU_ITEM_POW_THERM_CODE_FR  " Puissance-Therm.   [w] "
-#define RSC_MENU_ITEM_CPUID_CODE_FR      " Extraction CPUID   [u] "
-#define RSC_MENU_ITEM_SYS_REGS_CODE_FR   " Registres Syst""\xa8""me  [R] "
-#define RSC_MENU_ITEM_MEM_CTRL_CODE_FR   " Contr""\xb4""leur "		\
-						"M""\xa9""moire [M] "
+#define RSC_MENU_ITEM_MENU_CODE_FR        "     [F2] Menu          "
+#define RSC_MENU_ITEM_VIEW_CODE_FR        "     [F3] Vue           "
+#define RSC_MENU_ITEM_WINDOW_CODE_FR      "    [F4] Fen""\xaa""tre        "
+#define RSC_MENU_ITEM_SETTINGS_CODE_FR    " R""\xa9""glages           [s] "
+#define RSC_MENU_ITEM_SMBIOS_CODE_FR      " Infos SMBIOS       [B] "
+#define RSC_MENU_ITEM_KERNEL_CODE_FR      " Infos Noyau        [k] "
+#define RSC_MENU_ITEM_HOTPLUG_CODE_FR     " HotPlug CPU        [#] "
+#define RSC_MENU_ITEM_TOOLS_CODE_FR       " Outils             [O] "
+#define RSC_MENU_ITEM_THEME_CODE_FR       " Th""\xa8""me              [E] "
+#define RSC_MENU_ITEM_ABOUT_CODE_FR       " ""\x80""-propos           [a] "
+#define RSC_MENU_ITEM_HELP_CODE_FR        " Aide               [h] "
+#define RSC_MENU_ITEM_KEYS_CODE_FR        " Raccourcis        [F1] "
+#define RSC_MENU_ITEM_LANG_CODE_FR        " Langues            [L] "
+#define RSC_MENU_ITEM_QUIT_CODE_FR        " Quitter     [Ctrl]+[x] "
+#define RSC_MENU_ITEM_DASHBOARD_CODE_FR   " Tableau de bord    [d] "
+#define RSC_MENU_ITEM_FREQUENCY_CODE_FR   " Fr""\xa9""quence          [f] "
+#define RSC_MENU_ITEM_INST_CYCLES_CODE_FR " Cycles Instruction [i] "
+#define RSC_MENU_ITEM_CORE_CYCLES_CODE_FR " Cycles des Coeurs  [c] "
+#define RSC_MENU_ITEM_IDLE_STATES_CODE_FR " ""\x89""tats de sommeil   [l] "
+#define RSC_MENU_ITEM_PKG_CYCLES_CODE_FR  " Cycles du Package  [g] "
+#define RSC_MENU_ITEM_TASKS_MON_CODE_FR   " Suivi des t""\xa2""ches   [x] "
+#define RSC_MENU_ITEM_SYS_INTER_CODE_FR   " Interruptions      [q] "
+#define RSC_MENU_ITEM_SENSORS_CODE_FR     " Capteurs           [C] "
+#define RSC_MENU_ITEM_VOLTAGE_CODE_FR     "   Voltage          [V] "
+#define RSC_MENU_ITEM_POWER_CODE_FR       "   Puissance        [W] "
+#define RSC_MENU_ITEM_SLICE_CTRS_CODE_FR  " Compteurs tranche  [T] "
+#define RSC_MENU_ITEM_PROCESSOR_CODE_FR   " Processeur         [p] "
+#define RSC_MENU_ITEM_TOPOLOGY_CODE_FR    " Topologie          [m] "
+#define RSC_MENU_ITEM_FEATURES_CODE_FR    " Caract""\xa9""ristiques   [e] "
+#define RSC_MENU_ITEM_ISA_EXT_CODE_FR     " Jeu Instructions   [I] "
+#define RSC_MENU_ITEM_TECH_CODE_FR        " Technologies       [t] "
+#define RSC_MENU_ITEM_PERF_MON_CODE_FR    " Gestion de Perf.   [o] "
+#define RSC_MENU_ITEM_POW_THERM_CODE_FR   " Puissance-Therm.   [w] "
+#define RSC_MENU_ITEM_CPUID_CODE_FR       " Extraction CPUID   [u] "
+#define RSC_MENU_ITEM_SYS_REGS_CODE_FR    " Registres Syst""\xa8""me  [R] "
+#define RSC_MENU_ITEM_MEM_CTRL_CODE_FR    " Contr""\xb4""leur "		\
+					  "M""\xa9""moire [M] "
 
-#define RSC_SETTINGS_TITLE_CODE_FR	      " R""\xa9""glages "
+#define RSC_SETTINGS_TITLE_CODE_FR	" R""\xa9""glages "
 
-#define RSC_SETTINGS_DAEMON_CODE_FR	      " Acc""\xa8""s d""\xa9""mon" \
-						"                    "
+#define RSC_SETTINGS_DAEMON_CODE_FR	" Acc""\xa8""s d""\xa9""mon" \
+					"                    "
 
-#define RSC_SETTINGS_INTERVAL_CODE_FR	      " Intervalle(ms)          <    > "
-#define RSC_SETTINGS_SYS_TICK_CODE_FR	      " Sys. Tick(ms)                  "
-#define RSC_SETTINGS_POLL_WAIT_CODE_FR	      " Poll Wait(ms)                  "
-#define RSC_SETTINGS_RING_WAIT_CODE_FR	      " Ring Wait(ms)                  "
-#define RSC_SETTINGS_CHILD_WAIT_CODE_FR       " Child Wait(ms)                 "
-#define RSC_SETTINGS_SLICE_WAIT_CODE_FR       " Slice Wait(ms)                 "
-#define RSC_SETTINGS_RECORDER_CODE_FR	      " Enregistreur(sec)       <    > "
-#define RSC_SETTINGS_AUTO_CLOCK_CODE_FR       " Auto Clock               <   > "
+#define RSC_SETTINGS_INTERVAL_CODE_FR	" Intervalle(ms)          <    > "
+#define RSC_SETTINGS_SYS_TICK_CODE_FR	" Sys. Tick(ms)                  "
+#define RSC_SETTINGS_POLL_WAIT_CODE_FR	" Poll Wait(ms)                  "
+#define RSC_SETTINGS_RING_WAIT_CODE_FR	" Ring Wait(ms)                  "
+#define RSC_SETTINGS_CHILD_WAIT_CODE_FR " Child Wait(ms)                 "
+#define RSC_SETTINGS_SLICE_WAIT_CODE_FR " Slice Wait(ms)                 "
+#define RSC_SETTINGS_RECORDER_CODE_FR	" Enregistreur(sec)       <    > "
+#define RSC_SETTINGS_AUTO_CLOCK_CODE_FR " Auto Clock               <   > "
 
-#define RSC_SETTINGS_EXPERIMENTAL_CODE_FR     " Exp""\xa9""rimental"	\
-						"             <   > "
+#define RSC_SETTINGS_EXPERIMENTAL_CODE_FR " Exp""\xa9""rimental"	\
+					  "             <   > "
 
-#define RSC_SETTINGS_CPU_HOTPLUG_CODE_FR      " Hot-Plug CPU             [   ] "
-#define RSC_SETTINGS_PCI_ENABLED_CODE_FR      " Activation PCI           [   ] "
-#define RSC_SETTINGS_NMI_REGISTERED_CODE_FR   " Activation NMI           <   > "
-#define RSC_SETTINGS_CPUIDLE_REGISTER_CODE_FR " Pilote CPU-IDLE          <   > "
-#define RSC_SETTINGS_CPUFREQ_REGISTER_CODE_FR " Pilote CPU-FREQ          <   > "
-#define RSC_SETTINGS_GOVERNOR_CPUFREQ_CODE_FR " Gouverneur CPU-FREQ      <   > "
-#define RSC_SETTINGS_CLOCK_SOURCE_CODE_FR     " Source d'Horloge         <   > "
-#define RSC_SETTINGS_THERMAL_SCOPE_CODE_FR    " Capteur thermique       <    > "
-#define RSC_SETTINGS_VOLTAGE_SCOPE_CODE_FR    " Capteur de tension      <    > "
-#define RSC_SETTINGS_POWER_SCOPE_CODE_FR      " Capteur de puissance    <    > "
+#define RSC_SETTINGS_CPU_HOTPLUG_CODE_FR    " Hot-Plug CPU             [   ] "
+#define RSC_SETTINGS_PCI_ENABLED_CODE_FR    " Activation PCI           [   ] "
+#define RSC_SETTINGS_NMI_REGISTERED_CODE_FR " Activation NMI           <   > "
+#define RSC_SETTINGS_CPUIDLE_REGISTERED_CODE_FR \
+					    " Pilote CPU-IDLE          <   > "
+
+#define RSC_SETTINGS_CPUFREQ_REGISTERED_CODE_FR \
+					    " Pilote CPU-FREQ          <   > "
+
+#define RSC_SETTINGS_GOVERNOR_REGISTERED_CODE_FR \
+					    " Gouverneur CPU-FREQ      <   > "
+
+#define RSC_SETTINGS_CS_REGISTERED_CODE_FR  " Source d'Horloge         <   > "
+#define RSC_SETTINGS_THERMAL_SCOPE_CODE_FR  " Capteur thermique       <    > "
+#define RSC_SETTINGS_VOLTAGE_SCOPE_CODE_FR  " Capteur de tension      <    > "
+#define RSC_SETTINGS_POWER_SCOPE_CODE_FR    " Capteur de puissance    <    > "
+#define RSC_SETTINGS_IDLE_ROUTE_CODE_FR     " Route CPU-IDLE                 "
 
 #define RSC_HELP_TITLE_CODE_FR		" Aide "
 #define RSC_HELP_KEY_ESCAPE_CODE_FR	" [""\x89""chap]          "
@@ -654,14 +929,24 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 					"D""\xa9""filement "
 
 #define RSC_ADV_HELP_ITEM_GO_DW_CODE_FR " Bas  Suiv                       CPU  "
-#define RSC_ADV_HELP_TERMINAL_CODE_FR	" Terminal:                            "
-#define RSC_ADV_HELP_PRT_SCR_CODE_FR	" [Ctrl]+[p]                    Copier "
-#define RSC_ADV_HELP_REC_SCR_CODE_FR	" [Alt]+[p]                Enregistrer "
-#define RSC_ADV_HELP_FAHR_CELS_CODE_FR	" F              Fahrenheit ou Celsius "
-#define RSC_ADV_HELP_PROC_EVENT_CODE_FR " H           G""\xa9""rer Alertes" \
+#define RSC_ADV_HELP_ITEM_TERMINAL_CODE_FR \
+					" Terminal:                            "
+
+#define RSC_ADV_HELP_ITEM_PRT_SCR_CODE_FR \
+					" [Ctrl]+[p]                    Copier "
+
+#define RSC_ADV_HELP_ITEM_REC_SCR_CODE_FR \
+					" [Alt]+[p]                Enregistrer "
+
+#define RSC_ADV_HELP_ITEM_FAHR_CELS_CODE_FR \
+					" F              Fahrenheit ou Celsius "
+
+#define RSC_ADV_HELP_ITEM_PROC_EVENT_CODE_FR \
+					" H           G""\xa9""rer Alertes" \
 					" Processeur "
 
-#define RSC_ADV_HELP_SECRET_CODE_FR	" Y          Basculer donn""\xa9""es" \
+#define RSC_ADV_HELP_ITEM_SECRET_CODE_FR \
+					" Y          Basculer donn""\xa9""es" \
 					" secr""\xa8""tes "
 
 #define RSC_TURBO_CLOCK_TITLE_CODE_FR	" Fr""\xa9""q. Turbo %1dC "
@@ -682,9 +967,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_ENABLE_COND0_CODE_FR	"               Activer              "
 #define RSC_BOX_ENABLE_COND1_CODE_FR	"           <   Activer  >           "
 
-#define RSC_BOX_INTERVAL_TITLE_CODE_FR	"Intervalle"
-#define RSC_BOX_AUTOCLOCK_TITLE_CODE_FR " Auto Clock "
-#define RSC_BOX_MODE_TITLE_CODE_FR	" Exp""\xa9""rimental "
+#define RSC_BOX_INTERVAL_TITLE_CODE_FR	 "Intervalle"
+#define RSC_BOX_AUTO_CLOCK_TITLE_CODE_FR " Auto Clock "
+#define RSC_BOX_MODE_TITLE_CODE_FR	 " Exp""\xa9""rimental "
 
 #define RSC_BOX_MODE_DESC_CODE_FR	"     CoreFreq mode "	\
 					"op""\xa9""rationnel     "
@@ -731,17 +1016,23 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_BOX_R2H_DESC_CODE_FR	"      Optimisation Race To Halt     "
 
-#define RSC_BOX_NOM_MODE_COND0_CODE_FR		"       Fonctionnement" \
-						" nominal       "
+#define RSC_BOX_WDT_DESC_CODE_FR	"         Compteur Watchdog          "
 
-#define RSC_BOX_NOM_MODE_COND1_CODE_FR		"     < Fonctionnement" \
-						" nominal >     "
+#define RSC_BOX_NOMINAL_MODE_COND0_CODE_FR \
+					"       Fonctionnement" \
+					" nominal       "
 
-#define RSC_BOX_EXP_MODE_COND0_CODE_FR		"     Fonctionnement "	\
-						"exp""\xa9""rimental    "
+#define RSC_BOX_NOMINAL_MODE_COND1_CODE_FR \
+					"     < Fonctionnement" \
+					" nominal >     "
 
-#define RSC_BOX_EXP_MODE_COND1_CODE_FR		"   < Fonctionnement "	\
-						"exp""\xa9""rimental >  "
+#define RSC_BOX_EXPERIMENT_MODE_COND0_CODE_FR \
+					"     Fonctionnement "	\
+					"exp""\xa9""rimental    "
+
+#define RSC_BOX_EXPERIMENT_MODE_COND1_CODE_FR \
+					"   < Fonctionnement "	\
+					"exp""\xa9""rimental >  "
 
 #define RSC_BOX_INTERRUPT_TITLE_CODE_FR 	" Interruptions NMI "
 #define RSC_BOX_CPU_IDLE_TITLE_CODE_FR		" Pilote CPU-IDLE "
@@ -749,16 +1040,16 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_GOVERNOR_TITLE_CODE_FR		" Gouverneur CPU-FREQ "
 #define RSC_BOX_CLOCK_SOURCE_TITLE_CODE_FR	" Source d'Horloge "
 
-#define RSC_BOX_OPS_REGISTER_ST0_CODE_FR	"             " \
+#define RSC_BOX_OPS_REGISTER_COND0_CODE_FR	"             " \
 						"Enregistrer            "
 
-#define RSC_BOX_OPS_REGISTER_ST1_CODE_FR	"         <   " \
+#define RSC_BOX_OPS_REGISTER_COND1_CODE_FR	"         <   " \
 						"Enregistrer  >         "
 
-#define RSC_BOX_OPS_UNREGIST_ST0_CODE_FR	"           D""\xa9""s" \
+#define RSC_BOX_OPS_UNREGISTER_COND0_CODE_FR	"           D""\xa9""s" \
 						"enregistrer           "
 
-#define RSC_BOX_OPS_UNREGIST_ST1_CODE_FR	"         < D""\xa9""s" \
+#define RSC_BOX_OPS_UNREGISTER_COND1_CODE_FR	"         < D""\xa9""s" \
 						"enregistrer >         "
 
 #define RSC_BOX_EVENT_TITLE_CODE_FR		" Effacer "	\
@@ -778,7 +1069,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 						"IND""\x89""TERMIN""\x89"\
 						"        "
 
-#define RSC_BOX_PKG_STATE_TITLE_CODE_FR 	" Limite ""\x89""tats Package "
+#define RSC_BOX_PKG_STATE_LIMIT_TITLE_CODE_FR	" Limite ""\x89""tats Package "
 
 #define RSC_BOX_IO_MWAIT_TITLE_CODE_FR		" E/S MWAIT "
 #define RSC_BOX_IO_MWAIT_DESC_CODE_FR	"        Redirection E/S MWAIT       "
@@ -812,14 +1103,15 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_HWP_POLICY_0E0_CODE_FR		"                224     "
 #define RSC_BOX_HWP_POLICY_MAX_CODE_FR		"       Maximale:255     "
 
-#define RSC_BOX_TOOLS_TITLE_CODE_FR	" Outils "
-#define RSC_BOX_TOOLS_STOP_CODE_FR	"          ARR""\x8a""TER          "
-#define RSC_BOX_TOOLS_ATOMIC_CODE_FR	"       Stress Atomic       "
-#define RSC_BOX_TOOLS_CRC32_CODE_FR	"        Calcul CRC32       "
-#define RSC_BOX_TOOLS_CONIC_CODE_FR	"   <   Calcul Conique   >  "
-#define RSC_BOX_TOOLS_RAND_CPU_CODE_FR	"    Turbo CPU al""\xa9""atoire    "
-#define RSC_BOX_TOOLS_RR_CPU_CODE_FR	"    Turbo CPU circulaire   "
-#define RSC_BOX_TOOLS_USR_CPU_CODE_FR	"    Turbo < Choisir CPU >  "
+#define RSC_BOX_TOOLS_TITLE_CODE_FR	    " Outils "
+#define RSC_BOX_TOOLS_STOP_BURN_CODE_FR     "          ARR""\x8a""TER          "
+#define RSC_BOX_TOOLS_ATOMIC_BURN_CODE_FR   "       Stress Atomic       "
+#define RSC_BOX_TOOLS_CRC32_BURN_CODE_FR    "        Calcul CRC32       "
+#define RSC_BOX_TOOLS_CONIC_BURN_CODE_FR    "   <   Calcul Conique   >  "
+#define RSC_BOX_TOOLS_RANDOM_CPU_CODE_FR    "    Turbo CPU al""\xa9""atoire    "
+#define RSC_BOX_TOOLS_ROUND_ROBIN_CPU_CODE_FR \
+					    "    Turbo CPU circulaire   "
+#define RSC_BOX_TOOLS_USER_CPU_CODE_FR	    "    Turbo < Choisir CPU >  "
 
 #define RSC_BOX_CONIC_TITLE_CODE_FR	" Variations Coniques "
 #define RSC_BOX_CONIC_ITEM_1_CODE_FR	"         Ellipso""\xaf""de         "
@@ -837,6 +1129,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_LANG_TITLE_CODE_FR		" Langues "
 #define RSC_BOX_LANG_ENGLISH_CODE_FR		"     Anglais     "
 #define RSC_BOX_LANG_FRENCH_CODE_FR		"     Fran""\xa7""ais    "
+
+#define RSC_BOX_THEME_TITLE_CODE_FR		" Th""\xa8""mes "
 
 #define RSC_BOX_SCOPE_THERMAL_TITLE_CODE_FR	" Temp""\xa9""rature "
 #define RSC_BOX_SCOPE_VOLTAGE_TITLE_CODE_FR	" Tension "
@@ -860,20 +1154,26 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_PL1_DESC_CODE_FR	"      Limite de puissance PL1       "
 #define RSC_BOX_PL2_DESC_CODE_FR	"      Limite de puissance PL2       "
 
+#define RSC_BOX_TDC_TITLE_CODE_FR		" TDC du courant "
+#define RSC_BOX_TDC_DESC_CODE_FR	"       Limite de courant TDC        "
+
 #define RSC_ERROR_CMD_SYNTAX_CODE_FR					\
 		"CoreFreq."						\
 		"  Copyright (C) 2015-2021 CYRIL INGENIERIE\n\n"	\
-		"Usage:\t%s [-option <arguments>]\n"			\
+		"Usage:\t%s [-Option <argument>] [-Commande <argument>]\n"\
 		"\n    Options de l'interface\n"			\
-		"\t-0,1,2\tUnité mémoire en K,M,G octet\n"		\
-		"\t-F\tTemperature en Fahrenheit\n"			\
-		"\t-J  #\tNuméro d'index de chaîne SMBIOS\n"		\
-		"\t-Y\tAfficher les données secrètes\n" 		\
-		"\t-t <v>\tAfficher Top (par défault); en option la <v>ue:\n"\
+		"\t-Ok\tUnité mémoire en kilo-octet\n"			\
+		"\t-Om\tUnité mémoire en méga-octet\n"			\
+		"\t-Og\tUnité mémoire en giga-octet\n"			\
+		"\t-OF\tTempérature en Fahrenheit\n"			\
+		"\t-OJ #\tNuméro d'index de chaîne SMBIOS\n"		\
+		"\t-OE #\tNuméro d'index du thème de couleurs\n"	\
+		"\t-OY\tAfficher les données secrètes\n"		\
+		"\n    Options de commande\n"				\
+		"\t-t <v>\tAfficher Top (par défault); en option, la <v>ue:\n"\
 		"\t\t{\tfrequency, instructions, core, idle, package,\n"\
 		"\t\t\ttasks, interrupts, sensors, voltage, power, slices  }\n"\
 		"\t-d\tAfficher le tableau de bord\n"			\
-		"\n    Options de commande\n"				\
 		"\t-C <#>\tMoniteur des Capteurs\n"			\
 		"\t-V <#>\tMoniteur de Voltage\n"			\
 		"\t-W <#>\tMoniteur de Puissance\n"			\
@@ -976,3 +1276,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_EXIT_FOOTER_CODE_FR  "                                     " \
 				 "[""\x89""chap] pour annuler "
+
+#define RSC_CREATE_SETTINGS_COND0_CODE_FR RSC_CREATE_SETTINGS_COND0_CODE_EN
+#define RSC_CREATE_SETTINGS_COND1_CODE_FR RSC_CREATE_SETTINGS_COND1_CODE_EN
+
+#define RSC_CREATE_ADV_HELP_COND0_CODE_FR RSC_CREATE_ADV_HELP_COND0_CODE_EN
+#define RSC_CREATE_ADV_HELP_COND1_CODE_FR RSC_CREATE_ADV_HELP_BLANK_CODE_EN
