@@ -576,6 +576,7 @@ struct {
     };
 		time_t	StartedAt;
 		FILE	*Handle;
+		char	*Buffer;
 		void	(*Header)(void);
 		void	(*Write)(char*, int);
 		void	(*Break)(void);
@@ -583,6 +584,7 @@ struct {
 	.StartedAt = 0,
 	.Reset	= 0x0,
 	.Handle = NULL,
+	.Buffer = NULL,
 	.Header = JSON_Header,
 	.Write	= JSON_Page,
 	.Break	= JSON_Break
@@ -1769,6 +1771,7 @@ void FreeAll(char *buffer)
 	DestroyFullStock();
 
 	if (Console != NULL) {
+		setbuf(stdout, NULL);
 		free(Console);
 	}
 	if (buffer != NULL) {
@@ -1793,18 +1796,28 @@ void FreeAll(char *buffer)
 	}
 	if (Dump.Handle != NULL) {
 		fclose(Dump.Handle);
+		Dump.Handle = NULL;
+	}
+	if (Dump.Buffer != NULL) {
+		free(Dump.Buffer);
+		Dump.Buffer = NULL;
 	}
 }
 
 UBENCH_DECLARE()
 
+#define MAX_ANSI_WIDTH	(10 * MAX_WIDTH)
+#define MAX_ANSI_SCREEN (MAX_ANSI_WIDTH * MAX_HEIGHT)
 __typeof__ (errno) AllocAll(char **buffer)
 {	/* Alloc 10 times to include the ANSI cursor strings.		*/
-	if ((*buffer = malloc(10 * MAX_WIDTH)) == NULL) {
+
+	if ((*buffer = malloc(MAX_ANSI_WIDTH)) == NULL) {
 		return (ENOMEM);
 	}
-	if ((Console = malloc((10 * MAX_WIDTH) * MAX_HEIGHT)) == NULL) {
+	if ((Console = malloc(MAX_ANSI_SCREEN)) == NULL) {
 		return (ENOMEM);
+	} else {
+		setvbuf(stdout, Console, _IOFBF, MAX_ANSI_SCREEN);
 	}
 	const CoordSize layerSize = {
 		.wth = MAX_WIDTH,
@@ -1836,15 +1849,12 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize)
 {
 	register ATTRIBUTE	*fa, *sa, *da, *wa;
 	register ASCII		*fc, *sc, *dc, *wc;
-	register unsigned int	sdx = 0, idx;
-	register unsigned int	cursor;
-	register signed int	_col, _row;
+	register signed int	_col, _row, cursor;
+	register signed int	idx, sdx = 0;
 	register ATTRIBUTE	attr = {.value = 0};
 
     for (_row = 0; _row < drawSize.height; _row++)
     {
-	register const signed int _wth = _row * Fuse->size.wth;
-
 	stream[sdx++] = 0x1b;
 	stream[sdx++] = '[';
 
@@ -1857,9 +1867,10 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize)
 	stream[sdx++] = '1';
 	stream[sdx++] = 'H';
 
+	cursor = _row * Fuse->size.wth;
 	for (_col = 0; _col < drawSize.width; _col++)
 	{
-		idx = _col + _wth;
+		idx = _col + cursor;
 		fa =   &Fuse->attr[idx];
 		sa = &sLayer->attr[idx];
 		da = &dLayer->attr[idx];
@@ -1931,41 +1942,50 @@ __typeof__ (errno) StartDump(	char *dumpFormat, int tickReset,
 {
 	__typeof__ (errno) rc = EBUSY;
 
-	if (!BITVAL(Dump.Status, 0))
+    if (!BITVAL(Dump.Status, 0))
+    {
+	char *dumpFileName = malloc(64);
+	if (dumpFileName != NULL)
 	{
-		char *dumpFileName = malloc(64);
-		if (dumpFileName != NULL)
-		{
-			Bit64 tsc __attribute__ ((aligned (8)));
-			RDTSC64(tsc);
+	    if ((Dump.Buffer = malloc(MAX_ANSI_SCREEN)) != NULL)
+	    {
+		Bit64 tsc __attribute__ ((aligned (8)));
+		RDTSC64(tsc);
 
-			snprintf(dumpFileName, 64, dumpFormat, tsc);
-			if ((Dump.Handle = fopen(dumpFileName, "w")) != NULL)
-			{
-				switch (method) {
-				case DUMP_TO_JSON:
-					Dump.Header= JSON_Header;
-					Dump.Write = JSON_Page;
-					Dump.Break = JSON_Break;
-					break;
-				case DUMP_TO_ANSI:
-					Dump.Header= ANSI_Header;
-					Dump.Write = ANSI_Page;
-					Dump.Break = ANSI_Break;
-					break;
-				};
-				Dump.Tick = tickReset;
-				Dump.Header();
-				BITSET(LOCKLESS, Dump.Status, 0);
-				rc = 0;
-			} else {
-				rc = errno;
-			}
-			free(dumpFileName);
+		snprintf(dumpFileName, 64, dumpFormat, tsc);
+		if ((Dump.Handle = fopen(dumpFileName, "w")) != NULL)
+		{
+			setvbuf(Dump.Handle,Dump.Buffer,_IOFBF,MAX_ANSI_SCREEN);
+
+			switch (method) {
+			case DUMP_TO_JSON:
+				Dump.Header= JSON_Header;
+				Dump.Write = JSON_Page;
+				Dump.Break = JSON_Break;
+				break;
+			case DUMP_TO_ANSI:
+				Dump.Header= ANSI_Header;
+				Dump.Write = ANSI_Page;
+				Dump.Break = ANSI_Break;
+				break;
+			};
+			Dump.Tick = tickReset;
+			Dump.Header();
+			BITSET(LOCKLESS, Dump.Status, 0);
+			rc = 0;
 		} else {
-			rc = ENOMEM;
+			rc = errno;
+			free(Dump.Buffer);
+			Dump.Buffer = NULL;
 		}
+	    } else {
+		rc = ENOMEM;
+	    }
+		free(dumpFileName);
+	} else {
+		rc = ENOMEM;
 	}
+    }
 	return (rc);
 }
 
@@ -1994,9 +2014,9 @@ unsigned int WriteConsole(SCREEN_SIZE drawSize)
 
 	if (writeSize > 0)
 	{
-		fwrite(Console, (size_t) writeSize, 1, stdout);
-		fflush(stdout);
-
+		if (fwrite(Console, (size_t) writeSize, 1, stdout) > 0) {
+			fflush(stdout);
+		}
 		if (BITVAL(Dump.Status, 0))
 		{
 			Dump.Write(Console, writeSize);
@@ -2010,6 +2030,10 @@ unsigned int WriteConsole(SCREEN_SIZE drawSize)
 
 				if (fclose(Dump.Handle) == 0) {
 					Dump.Handle = NULL;
+				}
+				if (Dump.Buffer != NULL) {
+					free(Dump.Buffer);
+					Dump.Buffer = NULL;
 				}
 				layout = 1;
 			}
@@ -2083,6 +2107,8 @@ void JSON_Page(char *inStr, int outSize)
 void JSON_Break(void)
 {
 }
+#undef MAX_ANSI_SCREEN
+#undef MAX_ANSI_WIDTH
 
 void _TERMINAL_IN(void)
 {

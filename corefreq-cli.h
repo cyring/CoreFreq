@@ -466,7 +466,7 @@ typedef void (*UPDATE_CALLBACK)(TGrid*, DATA_TYPE);
 #if defined(UBENCH) && UBENCH == 1
   #define Draw_uBenchmark(layer)					\
   ({									\
-    if (draw.Flag.uBench) {						\
+    if (Draw.Flag.uBench) {						\
 	size_t len = snprintf(Buffer, 20+1, "%llu", UBENCH_METRIC(0));	\
 	LayerFillAt(	layer, 0, 0, len, Buffer,			\
 			RSC(UI).ATTR()[UI_LAYOUT_UBENCH] );		\
@@ -539,6 +539,11 @@ struct DRAW_ST {
     } Unit;
 	enum SMB_STRING SmbIndex;
 	enum THEMES	Theme;
+#ifndef NO_UPPER
+    struct BAR_ST {
+	CUINT		col;
+    } *Bar;
+#endif /* NO_UPPER */
 };
 
 struct RECORDER_ST {
