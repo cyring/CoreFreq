@@ -851,6 +851,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_SETTINGS_POWER_SCOPE_CODE_FR    " Capteur de puissance    <    > "
 #define RSC_SETTINGS_IDLE_ROUTE_CODE_FR     " Route CPU-IDLE                 "
 
+#define RSC_SETTINGS_ROUTE_TITLE_CODE_FR "Route"
+
 #define RSC_HELP_TITLE_CODE_FR		" Aide "
 #define RSC_HELP_KEY_ESCAPE_CODE_FR	" [""\x89""chap]          "
 #define RSC_HELP_KEY_SHIFT_TAB_CODE_FR	" [Maj]+[Tab]      "
@@ -941,6 +943,10 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_ADV_HELP_ITEM_FAHR_CELS_CODE_FR \
 					" F              Fahrenheit ou Celsius "
 
+#define RSC_ADV_HELP_ITEM_SYSGATE_CODE_FR \
+					" G            Basculer l'""\xa9""tat"\
+					" SysGate "
+
 #define RSC_ADV_HELP_ITEM_PROC_EVENT_CODE_FR \
 					" H           G""\xa9""rer Alertes" \
 					" Processeur "
@@ -967,9 +973,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_ENABLE_COND0_CODE_FR	"               Activer              "
 #define RSC_BOX_ENABLE_COND1_CODE_FR	"           <   Activer  >           "
 
-#define RSC_BOX_INTERVAL_TITLE_CODE_FR	 "Intervalle"
+#define RSC_BOX_INTERVAL_TITLE_CODE_FR	"Intervalle"
 #define RSC_BOX_AUTO_CLOCK_TITLE_CODE_FR " Auto Clock "
-#define RSC_BOX_MODE_TITLE_CODE_FR	 " Exp""\xa9""rimental "
+#define RSC_BOX_MODE_TITLE_CODE_FR	" Exp""\xa9""rimental "
 
 #define RSC_BOX_MODE_DESC_CODE_FR	"     CoreFreq mode "	\
 					"op""\xa9""rationnel     "

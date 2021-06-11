@@ -75,6 +75,10 @@ static signed int Experimental = 0;
 module_param(Experimental, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Experimental, "Enable features under development");
 
+static signed int CPU_Count = -1;
+module_param(CPU_Count, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(CPU_Count, "-1:Kernel(default); 0:Hardware; >0: User value");
+
 static signed short Target_Ratio_Unlock = -1;
 module_param(Target_Ratio_Unlock, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Target_Ratio_Unlock, "1:Target Ratio Unlock; 0:Lock");
@@ -17171,10 +17175,20 @@ static int CoreFreqK_Query_Features_Level_Up(INIT_ARG *pArg)
 	}
 	if (rc == 0)
 	{
-		unsigned int OS_Count = num_present_cpus();
-		/*	Rely on the operating system's cpu counting.	*/
-		if (pArg->SMT_Count != OS_Count) {
-			pArg->SMT_Count = OS_Count;
+		switch (CPU_Count) {
+		case -1:
+		    {	/* Rely on the operating system's cpu counting. */
+			unsigned int OS_Count = num_present_cpus();
+			if (pArg->SMT_Count != OS_Count) {
+				pArg->SMT_Count = OS_Count;
+			}
+		    }
+			break;
+		default:
+			if (CPU_Count > 0) { /* Hardware unless User override */
+				pArg->SMT_Count = (unsigned int) CPU_Count;
+			}
+			break;
 		}
 	} else {
 		rc = -ENXIO;

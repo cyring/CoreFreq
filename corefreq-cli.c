@@ -6519,6 +6519,7 @@ Window *CreateAdvHelp(unsigned long long id)
 	{1, RSC(ADV_HELP_ITEM_POWER).CODE(),	{SCANKEY_DOLLAR}},
 	{1, RSC(ADV_HELP_ITEM_TOP).CODE(),	{SCANKEY_DOT}	},
 	{1, RSC(ADV_HELP_ITEM_FAHR_CELS).CODE(),{SCANKEY_SHIFT_f}},
+	{1, RSC(ADV_HELP_ITEM_SYSGATE).CODE(),	{SCANKEY_SHIFT_g}},
 	{1, RSC(ADV_HELP_ITEM_PROC_EVENT).CODE(),{SCANKEY_SHIFT_h}},
 	{1, RSC(ADV_HELP_ITEM_SECRET).CODE(),	{SCANKEY_SHIFT_y}},
 	{1, RSC(ADV_HELP_ITEM_UPD).CODE(),	{SCANKEY_AST}	},
@@ -6608,7 +6609,8 @@ Window *CreateAbout(unsigned long long id)
 
 		wAbout->matrix.select.row = wAbout->matrix.size.hth - 1;
 
-		StoreWindow(wAbout,	.title, " CoreFreq ");
+		StoreWindow(wAbout, .title, (char *)RSC(COREFREQ_TITLE).CODE());
+
 		StoreWindow(wAbout,	.color[0].select, MAKE_PRINT_UNFOCUS);
 		StoreWindow(wAbout,	.color[1].select, MAKE_PRINT_FOCUS);
 
@@ -7275,7 +7277,8 @@ Window *CreateHotPlugCPU(unsigned long long id)
     }
 	wCPU->matrix.select.col = 1;
 
-	StoreWindow(wCPU,	.title, 	" CPU ");
+	StoreWindow(wCPU, .title, (char *)RSC(CREATE_HOTPLUG_CPU_TITLE).CODE());
+
 	StoreWindow(wCPU,	.color[1].title,
 				RSC(UI).ATTR()[UI_WIN_HOT_PLUG_CPU_TITLE]);
 
@@ -9409,44 +9412,27 @@ int Shortcut(SCANKEY *scan)
 
     case OPS_IDLE_ROUTE:
     {
-	Coordinate origin = {
-		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
-		.row = TOP_HEADER_ROW + 3
-	};
-	const Coordinate select = {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	const Coordinate origin = {
+		.col = 43,
+		.row = TOP_HEADER_ROW + 17
+	}, select = {
 		.col = 0,
 		.row = Shm->Registration.Driver.Route
 	};
-	Window *wSettings = SearchWinListById(SCANKEY_s, &winList);
-	if (wSettings != NULL) {
-		origin.col = wSettings->matrix.origin.col
-			+ wSettings->lazyComp.rowLen
-			- 4 - RSZ(SETTINGS_ROUTE_DFLT);
-		origin.row = wSettings->matrix.origin.row
-			+ 16 - wSettings->matrix.scroll.vert;
-	}
-	Window *wDrop = CreateBox(scan->key, origin, select, NULL,
-				RSC(SETTINGS_ROUTE_DFLT).CODE(),
-					MAKE_PRINT_DROP, OPS_ROUTE_DFLT,
-				RSC(SETTINGS_ROUTE_IO).CODE(),
-					MAKE_PRINT_DROP, OPS_ROUTE_IO,
-				RSC(SETTINGS_ROUTE_HALT).CODE(),
-					MAKE_PRINT_DROP, OPS_ROUTE_HALT,
-				RSC(SETTINGS_ROUTE_MWAIT).CODE(),
-					MAKE_PRINT_DROP, OPS_ROUTE_MWAIT );
-	if (wDrop != NULL) {
-		StoreWindow(wDrop, .color[0].select, MAKE_PRINT_DROP);
-		StoreWindow(wDrop, .color[1].select,
-					RSC(UI).ATTR()[UI_WIN_MENU_SELECT]);
-
-		StoreWindow(wDrop, .color[0].title, MAKE_PRINT_DROP);
-		StoreWindow(wDrop, .color[1].title,
-					RSC(UI).ATTR()[UI_DROP_IDLE_ROUTE]);
-
-		StoreWindow(wDrop, .Print, ForEachCellPrint_Drop);
-
-		AppendWindow(wDrop, &winList);
-	}
+	AppendWindow(
+		CreateBox(scan->key, origin, select,
+			(char *) RSC(SETTINGS_ROUTE_TITLE).CODE(),
+		RSC(SETTINGS_ROUTE_DFLT).CODE(), stateAttr[0], OPS_ROUTE_DFLT,
+		RSC(SETTINGS_ROUTE_IO).CODE(),   stateAttr[0], OPS_ROUTE_IO,
+		RSC(SETTINGS_ROUTE_HALT).CODE(), stateAttr[0], OPS_ROUTE_HALT,
+		RSC(SETTINGS_ROUTE_MWAIT).CODE(),stateAttr[0], OPS_ROUTE_MWAIT),
+		&winList);
+      } else {
+	SetHead(&winList, win);
+      }
     }
     break;
 
@@ -9867,6 +9853,14 @@ int Shortcut(SCANKEY *scan)
     case SCANKEY_SHIFT_y:
 	Setting.secret = !Setting.secret;
 	Draw.Flag.layout = 1;
+    break;
+
+    case SCANKEY_SHIFT_g:
+	if (!RING_FULL(Shm->Ring[1])) {
+		RING_WRITE(Shm->Ring[1],
+			COREFREQ_TOGGLE_SYSGATE,
+			!BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1));
+	}
     break;
 
     case SCANKEY_SHIFT_h:
@@ -13229,7 +13223,9 @@ void Layout_Header(Layer *layer, CUINT row)
 			lArch2 = RSZ(LAYOUT_HEADER_CACHES),
 			xArch2 = Draw.Size.width-lArch2;
 
-	PrintLCD(layer, 0, row, 4, "::::", RSC(UI).ATTR()[UI_LAYOUT_LCD_RESET]);
+	PrintLCD(layer, 0, row, RSZ(LAYOUT_LCD_RESET),
+		(char *) RSC(LAYOUT_LCD_RESET).CODE(),
+		RSC(UI).ATTR()[UI_LAYOUT_LCD_RESET]);
 
 	LayerDeclare(LAYOUT_HEADER_PROC, lProc0, xProc0, row, hProc0);
 	LayerDeclare(LAYOUT_HEADER_CPU , lProc1, xProc1, row, hProc1);
@@ -13962,9 +13958,12 @@ void Layout_Footer(Layer *layer, CUINT row)
 		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_ENABLE_2]
 	};
 	const struct { ASCII *code; ATTRIBUTE attr; } TSC[] = {
-		{(ASCII *)"  TSC  ", RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TSC_NONE]},
-		{(ASCII *)"TSC-VAR", RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TSC_VAR]},
-		{(ASCII *)"TSC-INV", RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TSC_INV]}
+		{RSC(LAYOUT_FOOTER_TSC_NONE).CODE(),
+				RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TSC_NONE]},
+		{RSC(LAYOUT_FOOTER_TSC_VAR).CODE(),
+				RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TSC_VAR]},
+		{RSC(LAYOUT_FOOTER_TSC_INV).CODE(),
+				RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TSC_INV]}
 	};
 
 	hTech0.code[ 6] = TSC[Shm->Proc.Features.InvariantTSC].code[0];
@@ -14099,7 +14098,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 	len = snprintf( Buffer, MAX_UTS_LEN, "%s",
 			BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) ?
-			Shm->SysGate.sysname : "SysGate" );
+			Shm->SysGate.sysname : (char *) RSC(SYSGATE).CODE() );
 
 	LayerFillAt(	layer, col, row,
 			len, Buffer,

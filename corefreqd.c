@@ -5281,8 +5281,16 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 	RING_CTRL ctrl __attribute__ ((aligned(16)));
 	RING_READ(Ref->Shm->Ring[rid], ctrl);
 
-   switch (ctrl.cmd)
-   {
+   switch (ctrl.cmd) {
+   case COREFREQ_TOGGLE_SYSGATE:
+	switch (ctrl.arg) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		SysGate_Toggle(Ref, ctrl.arg);
+		BITWISESET(LOCKLESS, Ref->Shm->Proc.Sync, BIT_MASK_NTFY);
+		break;
+	}
+	break;
    case COREFREQ_ORDER_MACHINE:
 	switch (ctrl.arg) {
 	case COREFREQ_TOGGLE_OFF:
