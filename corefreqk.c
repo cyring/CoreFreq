@@ -17185,7 +17185,9 @@ static int CoreFreqK_Query_Features_Level_Up(INIT_ARG *pArg)
 		    }
 			break;
 		default:
-			if (CPU_Count > 0) { /* Hardware unless User override */
+			if ((CPU_Count > 0) && (CPU_Count <= CORE_COUNT)
+			 && (CPU_Count <= NR_CPUS))
+			{ /* Hardware probing unless User override value */
 				pArg->SMT_Count = (unsigned int) CPU_Count;
 			}
 			break;
