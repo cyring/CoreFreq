@@ -3,19 +3,21 @@
 # Licenses: GPL2
 
 CC ?= cc
-WARNING = -Wall
+WARNING = -Wall -Wfatal-errors
 PWD ?= $(shell pwd)
 KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 PREFIX ?= /usr
 UBENCH = 0
 CORE_COUNT ?= 256
 TASK_ORDER = 5
-MAX_FREQ_HZ = 5250000000
+MAX_FREQ_HZ ?= 5250000000
 MSR_CORE_PERF_UCC ?= MSR_IA32_APERF
 MSR_CORE_PERF_URC ?= MSR_IA32_MPERF
 
 obj-m := corefreqk.o
-ccflags-y := -D CORE_COUNT=$(CORE_COUNT) -D TASK_ORDER=$(TASK_ORDER)
+ccflags-y :=	-D CORE_COUNT=$(CORE_COUNT) \
+		-D TASK_ORDER=$(TASK_ORDER) \
+		-D MAX_FREQ_HZ=$(MAX_FREQ_HZ)
 ccflags-y += $(WARNING)
 
 ifneq ($(OPTIM_LVL),)

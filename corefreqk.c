@@ -5585,15 +5585,35 @@ inline unsigned int AMD_Zen_CoreCOF(unsigned int FID, unsigned int DID)
 	return (COF);
 }
 
-inline unsigned int AMD_Zen_CoreFID(unsigned int COF, unsigned int DID)
+unsigned short AMD_Zen_Compute_FID_DID( unsigned int COF,
+					unsigned int *FID,
+					unsigned int *DID )
 {
-	unsigned int FID;
-	if (DID != 0) {
-		FID = (COF * DID) >> 1;
+	unsigned int tmp = (*FID);
+	if ((*DID) != 0) {
+		tmp = (COF * (*DID)) >> 1;
 	} else {
-		FID = COF << 2;
+		tmp = COF << 2;
 	}
-	return (FID);
+	if (tmp < (1 << 8)) {
+		(*FID) = tmp;
+		return (0);
+	} else {
+		return (1);
+	}
+}
+
+inline unsigned short AMD_Zen_CoreFID(	unsigned int COF,
+					unsigned int *FID,
+					unsigned int *DID )
+{
+	unsigned short ret = AMD_Zen_Compute_FID_DID(COF, FID, DID);
+	while ((ret != 0) && ((*DID) > 0))
+	{
+		(*DID) = (*DID) >> 1;
+		ret = AMD_Zen_Compute_FID_DID(COF, FID, DID);
+	}
+	return (ret);
 }
 
 bool Compute_AMD_Zen_Boost(unsigned int cpu)
@@ -5774,7 +5794,7 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 	CLOCK_ZEN_ARG *pClockZen = (CLOCK_ZEN_ARG *) arg;
 	PSTATEDEF PstateDef = {.value = 0};
 	HWCR HwCfgRegister = {.value = 0};
-	unsigned int COF, FID;
+	unsigned int COF, FID, DID;
 	/*	Make sure the Core Performance Boost is disabled.	*/
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
   if (HwCfgRegister.Family_17h.CpbDis)
@@ -5783,22 +5803,27 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 	RDMSR(PstateDef, pClockZen->PstateAddr);
     if (PstateDef.Family_17h.PstateEn)
     {
-	if (pClockZen->pClockMod->cpu == -1)
-	{
+	if (pClockZen->pClockMod->cpu == -1) { /* Request an absolute COF */
 		COF = pClockZen->pClockMod->Ratio;
-	} else {
-		/* Compute the new Frequency ID with the COF offset	*/
+	} else { /* Compute the requested COF based on a frequency offset */
 		COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 					PstateDef.Family_17h.CpuDfsId );
 
 		COF = COF + pClockZen->pClockMod->Offset;
 	}
-	FID = AMD_Zen_CoreFID(COF, PstateDef.Family_17h.CpuDfsId);
-	/*		Write the P-State MSR with the new FID		*/
-	PstateDef.Family_17h.CpuFid = FID;
-	WRMSR(PstateDef, pClockZen->PstateAddr);
+	FID = PstateDef.Family_17h.CpuFid;
+	DID = PstateDef.Family_17h.CpuDfsId;
+	/*	Attempt to write the P-State MSR with new FID and DID	*/
+	if (AMD_Zen_CoreFID(COF, &FID, &DID) == 0)
+	{
+		PstateDef.Family_17h.CpuFid = FID;
+		PstateDef.Family_17h.CpuDfsId = DID;
+		WRMSR(PstateDef, pClockZen->PstateAddr);
 
-	pClockZen->rc = RC_OK_COMPUTE;
+		pClockZen->rc = RC_OK_COMPUTE;
+	} else {
+		pClockZen->rc = -RC_PSTATE_NOT_FOUND;
+	}
     } else {
 	pClockZen->rc = -ENODEV;
     }
@@ -17368,6 +17393,9 @@ static int CoreFreqK_Alloc_Processor_RW_Level_Up(INIT_ARG *pArg)
 static int CoreFreqK_Scale_And_Compute_Level_Up(INIT_ARG *pArg)
 {
 	SET_FOOTPRINT(PUBLIC(RO(Proc))->FootPrint,	\
+					MAX_FREQ_HZ,	\
+					CORE_COUNT,	\
+					TASK_ORDER,	\
 					COREFREQ_MAJOR, \
 					COREFREQ_MINOR, \
 					COREFREQ_REV	);

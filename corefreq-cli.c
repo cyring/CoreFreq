@@ -17294,7 +17294,10 @@ int main(int argc, char *argv[])
 			PROT_READ|PROT_WRITE, MAP_SHARED,
 			fd, 0)) != MAP_FAILED)
       {
-       if (CHK_FOOTPRINT(Shm->FootPrint,COREFREQ_MAJOR,
+       if (CHK_FOOTPRINT(Shm->FootPrint,MAX_FREQ_HZ,
+					CORE_COUNT,
+					TASK_ORDER,
+					COREFREQ_MAJOR,
 					COREFREQ_MINOR,
 					COREFREQ_REV)	)
        {

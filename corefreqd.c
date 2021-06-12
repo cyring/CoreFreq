@@ -6214,7 +6214,10 @@ REASON_CODE Shm_Manager(FD *fd, PROC_RO *Proc_RO, PROC_RW *Proc_RW,
 		/* Clear SHM						*/
 		memset(Shm, 0, ShmSize);
 		/* Store version footprint into SHM			*/
-		SET_FOOTPRINT(Shm->FootPrint,	COREFREQ_MAJOR,
+		SET_FOOTPRINT(Shm->FootPrint,	MAX_FREQ_HZ,
+						CORE_COUNT,
+						TASK_ORDER,
+						COREFREQ_MAJOR,
 						COREFREQ_MINOR,
 						COREFREQ_REV	);
 		/* Reference time the Server is starting at.		*/
@@ -6564,7 +6567,10 @@ int main(int argc, char *argv[])
 				PROT_READ|PROT_WRITE, MAP_SHARED,
 				fd.Drv, vm_pgoff[1])) != MAP_FAILED)
 		  {
-		    if (CHK_FOOTPRINT(Proc->FootPrint,	COREFREQ_MAJOR,
+		    if (CHK_FOOTPRINT(Proc->FootPrint,	MAX_FREQ_HZ,
+							CORE_COUNT,
+							TASK_ORDER,
+							COREFREQ_MAJOR,
 							COREFREQ_MINOR,
 							COREFREQ_REV)	)
 		    {
