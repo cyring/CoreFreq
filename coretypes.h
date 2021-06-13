@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	86
-#define COREFREQ_REV	2
+#define COREFREQ_REV	3
 
 #if !defined(CORE_COUNT)
 	#define CORE_COUNT	256
@@ -402,7 +402,7 @@ enum PWR_DOMAIN {
 #if !defined(MAX_FREQ_HZ)
 	#define MAX_FREQ_HZ	5250000000
 #elif (MAX_FREQ_HZ < 4850000000)
-	#error "MAX_FREQ_HZ ust be at least 4850000000 Hz"
+	#error "MAX_FREQ_HZ must be at least 4850000000 Hz"
 #endif
 
 #define MAXCLOCK_TO_RATIO(_typeout, BaseClock)				\

@@ -528,6 +528,7 @@ StockList stockList = {.head = NULL, .tail = NULL};
 
 WinList winList = {.head = NULL};
 
+void *StreamBuf = NULL;
 char *Console = NULL;
 
 enum LOCALES	AppLoc = LOC_EN;
@@ -1771,8 +1772,11 @@ void FreeAll(char *buffer)
 	DestroyFullStock();
 
 	if (Console != NULL) {
-		setbuf(stdout, NULL);
 		free(Console);
+	}
+	if (StreamBuf != NULL) {
+		setbuf(stdout, NULL);
+		free(StreamBuf);
 	}
 	if (buffer != NULL) {
 		free(buffer);
@@ -1816,8 +1820,11 @@ __typeof__ (errno) AllocAll(char **buffer)
 	}
 	if ((Console = malloc(MAX_ANSI_SCREEN)) == NULL) {
 		return (ENOMEM);
+	}
+	if ((StreamBuf = malloc(MAX_ANSI_SCREEN)) == NULL) {
+		return (ENOMEM);
 	} else {
-		setvbuf(stdout, Console, _IOFBF, MAX_ANSI_SCREEN);
+		setvbuf(stdout, StreamBuf, _IOFBF, MAX_ANSI_SCREEN);
 	}
 	const CoordSize layerSize = {
 		.wth = MAX_WIDTH,
