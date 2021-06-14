@@ -8,6 +8,8 @@
 #define RSC_COPY1_CODE_EN "                                                    "
 #define RSC_COPY2_CODE_EN "            (C)2015-2021 CYRIL INGENIERIE           "
 
+#define RSC_LAYOUT_LCD_RESET_CODE	"::::"
+
 #define RSC_LAYOUT_HEADER_PROC_CODE_EN					\
 {									\
 	' ','P','r','o','c','e','s','s','o','r',' ','[' 		\
@@ -551,6 +553,10 @@
 	' ','/',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','B',']' 	\
 }
 
+#define RSC_LAYOUT_FOOTER_TSC_NONE_CODE "  TSC  "
+#define RSC_LAYOUT_FOOTER_TSC_VAR_CODE	"TSC-VAR"
+#define RSC_LAYOUT_FOOTER_TSC_INV_CODE	"TSC-INV"
+
 #define RSC_LAYOUT_CARD_CORE_ONLINE_COND0_CODE_EN			\
 {									\
 	'[',' ',' ',' ',' ',' ',' ',' ',' ','C',' ',']' 		\
@@ -606,11 +612,13 @@
 	'[','T','a','s','k','s',' ',' ',' ',' ',' ',']' 		\
 }
 
+#define RSC_CREATE_HOTPLUG_CPU_TITLE_CODE	" CPU "
 #define RSC_CREATE_HOTPLUG_CPU_ENABLE_CODE_EN	"<   ENABLE >"
 #define RSC_CREATE_HOTPLUG_CPU_DISABLE_CODE_EN	"<  DISABLE >"
 #define RSC_CREATE_HOTPLUG_CPU_ONLINE_CODE_EN	" %03u   On   "
 #define RSC_CREATE_HOTPLUG_CPU_OFFLINE_CODE_EN	" %03u  Off   "
 
+#define RSC_COREFREQ_TITLE_CODE 	" CoreFreq "
 #define RSC_PROCESSOR_TITLE_CODE_EN	" Processor "
 #define RSC_PROCESSOR_CODE_EN		"Processor"
 #define RSC_ARCHITECTURE_CODE_EN	"Architecture"
@@ -641,6 +649,7 @@
 #define RSC_HIGHEST_CODE_EN		"Highest"
 #define RSC_RECORDER_CODE_EN		"Recorder"
 #define RSC_STRESS_CODE_EN		"Stress"
+#define RSC_SYSGATE_CODE		"SysGate"
 
 #define RSC_SCOPE_NONE_CODE_EN		"None"
 #define RSC_SCOPE_THREAD_CODE_EN	" SMT"
@@ -1299,6 +1308,9 @@
 #define RSC_ADV_HELP_ITEM_FAHR_CELS_CODE_EN \
 					" F              Fahrenheit or Celsius "
 
+#define RSC_ADV_HELP_ITEM_SYSGATE_CODE_EN \
+					" G               Toggle SysGate state "
+
 #define RSC_ADV_HELP_ITEM_PROC_EVENT_CODE_EN \
 					" H            Manage Processor Events "
 
@@ -1318,9 +1330,9 @@
 #define RSC_BOX_ENABLE_COND0_CODE_EN	"               Enable               "
 #define RSC_BOX_ENABLE_COND1_CODE_EN	"           <   Enable   >           "
 
-#define RSC_BOX_INTERVAL_TITLE_CODE_EN	 " Interval "
+#define RSC_BOX_INTERVAL_TITLE_CODE_EN	"Interval"
 #define RSC_BOX_AUTO_CLOCK_TITLE_CODE_EN " Auto Clock "
-#define RSC_BOX_MODE_TITLE_CODE_EN	 " Experimental "
+#define RSC_BOX_MODE_TITLE_CODE_EN	" Experimental "
 
 #define RSC_BOX_MODE_DESC_CODE_EN	"       CoreFreq Operation Mode       "
 #define RSC_BOX_EIST_DESC_CODE_EN	"             SpeedStep              "
@@ -1601,6 +1613,7 @@
 #define RSC_BOX_INTERVAL_STEP9_CODE	"   2500   "
 #define RSC_BOX_INTERVAL_STEP10_CODE	"   3000   "
 
+#define RSC_SETTINGS_ROUTE_TITLE_CODE_EN "Route"
 #define RSC_SETTINGS_ROUTE_DFLT_CODE	"DEFAULT"
 #define RSC_SETTINGS_ROUTE_IO_CODE	"    I/O"
 #define RSC_SETTINGS_ROUTE_HALT_CODE	"   HALT"

@@ -5281,8 +5281,16 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 	RING_CTRL ctrl __attribute__ ((aligned(16)));
 	RING_READ(Ref->Shm->Ring[rid], ctrl);
 
-   switch (ctrl.cmd)
-   {
+   switch (ctrl.cmd) {
+   case COREFREQ_TOGGLE_SYSGATE:
+	switch (ctrl.arg) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		SysGate_Toggle(Ref, ctrl.arg);
+		BITWISESET(LOCKLESS, Ref->Shm->Proc.Sync, BIT_MASK_NTFY);
+		break;
+	}
+	break;
    case COREFREQ_ORDER_MACHINE:
 	switch (ctrl.arg) {
 	case COREFREQ_TOGGLE_OFF:
@@ -6206,7 +6214,10 @@ REASON_CODE Shm_Manager(FD *fd, PROC_RO *Proc_RO, PROC_RW *Proc_RW,
 		/* Clear SHM						*/
 		memset(Shm, 0, ShmSize);
 		/* Store version footprint into SHM			*/
-		SET_FOOTPRINT(Shm->FootPrint,	COREFREQ_MAJOR,
+		SET_FOOTPRINT(Shm->FootPrint,	MAX_FREQ_HZ,
+						CORE_COUNT,
+						TASK_ORDER,
+						COREFREQ_MAJOR,
 						COREFREQ_MINOR,
 						COREFREQ_REV	);
 		/* Reference time the Server is starting at.		*/
@@ -6556,7 +6567,10 @@ int main(int argc, char *argv[])
 				PROT_READ|PROT_WRITE, MAP_SHARED,
 				fd.Drv, vm_pgoff[1])) != MAP_FAILED)
 		  {
-		    if (CHK_FOOTPRINT(Proc->FootPrint,	COREFREQ_MAJOR,
+		    if (CHK_FOOTPRINT(Proc->FootPrint,	MAX_FREQ_HZ,
+							CORE_COUNT,
+							TASK_ORDER,
+							COREFREQ_MAJOR,
 							COREFREQ_MINOR,
 							COREFREQ_REV)	)
 		    {

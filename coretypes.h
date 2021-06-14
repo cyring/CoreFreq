@@ -6,10 +6,13 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	86
-#define COREFREQ_REV	0
+#define COREFREQ_REV	3
 
 #if !defined(CORE_COUNT)
 	#define CORE_COUNT	256
+#elif !(CORE_COUNT == 64 || CORE_COUNT == 128 || CORE_COUNT == 256 \
+	|| CORE_COUNT == 512 || CORE_COUNT == 1024)
+	#error "CORE_COUNT must be 64, 128, 256, 512 or 1024"
 #endif
 
 enum CRC_MANUFACTURER
@@ -396,15 +399,14 @@ enum PWR_DOMAIN {
 #define CLOCK_MHz(_t, _f)	(_f / UNIT_MHz((_t) 1))
 #define CLOCK_GHz(_t, _f)	(_f / UNIT_GHz((_t) 1))
 
-#if defined(MAX_FREQ_HZ) && (MAX_FREQ_HZ >= 4850000000)
-	#define MAXCLOCK_TO_RATIO(_typeout, BaseClock) ( (_typeout) (	\
-			MAX_FREQ_HZ / BaseClock				\
-	) )
-#else
-	#define MAXCLOCK_TO_RATIO(_typeout, BaseClock) ( (_typeout) (	\
-			5250000000 / BaseClock				\
-	) )
+#if !defined(MAX_FREQ_HZ)
+	#define MAX_FREQ_HZ	5250000000
+#elif (MAX_FREQ_HZ < 4850000000)
+	#error "MAX_FREQ_HZ must be at least 4850000000 Hz"
 #endif
+
+#define MAXCLOCK_TO_RATIO(_typeout, BaseClock)				\
+	( (_typeout) (MAX_FREQ_HZ / BaseClock) )
 
 enum OFFLINE
 {
@@ -1628,7 +1630,8 @@ enum COREFREQ_MAGIC_COMMAND {
 	COREFREQ_ORDER_ATOMIC		= _IO(COREFREQ_ORDER_MAGIC, 0x2),
 	COREFREQ_ORDER_CRC32		= _IO(COREFREQ_ORDER_MAGIC, 0x3),
 	COREFREQ_ORDER_CONIC		= _IO(COREFREQ_ORDER_MAGIC, 0x4),
-	COREFREQ_ORDER_TURBO		= _IO(COREFREQ_ORDER_MAGIC, 0x5)
+	COREFREQ_ORDER_TURBO		= _IO(COREFREQ_ORDER_MAGIC, 0x5),
+	COREFREQ_TOGGLE_SYSGATE 	= _IO(COREFREQ_ORDER_MAGIC, 0xf)
 };
 
 enum PATTERN {
@@ -1928,20 +1931,31 @@ typedef union {
 #define COREFREQ_FORMAT_STR(_length) "%" COREFREQ_STRINGIFY(_length) "s"
 
 typedef struct {
+    struct {
+	unsigned long long max_freq_Hz;
+	unsigned short	core_count,
+			task_order;
+    } builtIn;
 	unsigned short	major,
 			minor,
 			rev;
 } FOOTPRINT;
 
-#define SET_FOOTPRINT(_place, _major, _minor, _rev)			\
+#define SET_FOOTPRINT(_place, _Hz, _CC, _order, _major, _minor, _rev)	\
 ({									\
+	_place.builtIn.max_freq_Hz = _Hz;				\
+	_place.builtIn.core_count = _CC;				\
+	_place.builtIn.task_order = _order;				\
 	_place.major	= _major;					\
 	_place.minor	= _minor;					\
 	_place.rev	= _rev ;					\
 })
 
-#define CHK_FOOTPRINT(_place, _major, _minor, _rev)			\
+#define CHK_FOOTPRINT(_place, _Hz, _CC, _order, _major, _minor, _rev)	\
 (									\
+	(_place.builtIn.max_freq_Hz == _Hz) &&				\
+	(_place.builtIn.core_count == _CC) &&				\
+	(_place.builtIn.task_order == _order) &&			\
 	(_place.major	== _major) &&					\
 	(_place.minor	== _minor) &&					\
 	(_place.rev	== _rev)					\

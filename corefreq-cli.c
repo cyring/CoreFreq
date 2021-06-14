@@ -5717,7 +5717,7 @@ Coordinate *cTask = NULL;
 
 CardList cardList = {.head = NULL, .tail = NULL};
 
-struct DRAW_ST draw = {
+struct DRAW_ST Draw = {
 	.Cache = {
 	    #ifndef NO_HEADER
 		.TopAvg = 0.0,
@@ -5753,7 +5753,7 @@ struct DRAW_ST draw = {
 	.Theme		= THM_DFLT
 };
 
-enum THERM_PWR_EVENTS processorEvents = EVENT_THERM_NONE;
+enum THERM_PWR_EVENTS ProcessorEvents = EVENT_THERM_NONE;
 
 struct RECORDER_ST Recorder = {
 		.Reset = 0,
@@ -5864,7 +5864,7 @@ void ForEachCellPrint_Menu(Window *win, void *plist)
 			PrintContent(win, list, win->matrix.select.col, row);
 		}
     }
-    if ((len = draw.Size.width-win->lazyComp.rowLen-win->matrix.origin.col) > 0)
+    if ((len = Draw.Size.width-win->lazyComp.rowLen-win->matrix.origin.col) > 0)
     {
 	LayerFillAt(	win->layer,
 			(win->matrix.origin.col + win->lazyComp.rowLen),
@@ -6519,6 +6519,7 @@ Window *CreateAdvHelp(unsigned long long id)
 	{1, RSC(ADV_HELP_ITEM_POWER).CODE(),	{SCANKEY_DOLLAR}},
 	{1, RSC(ADV_HELP_ITEM_TOP).CODE(),	{SCANKEY_DOT}	},
 	{1, RSC(ADV_HELP_ITEM_FAHR_CELS).CODE(),{SCANKEY_SHIFT_f}},
+	{1, RSC(ADV_HELP_ITEM_SYSGATE).CODE(),	{SCANKEY_SHIFT_g}},
 	{1, RSC(ADV_HELP_ITEM_PROC_EVENT).CODE(),{SCANKEY_SHIFT_h}},
 	{1, RSC(ADV_HELP_ITEM_SECRET).CODE(),	{SCANKEY_SHIFT_y}},
 	{1, RSC(ADV_HELP_ITEM_UPD).CODE(),	{SCANKEY_AST}	},
@@ -6582,14 +6583,14 @@ Window *CreateAbout(unsigned long long id)
 		f = sizeof(F) / sizeof(F[0]),
 		v = strlen(COREFREQ_VERSION);
 	CUINT	cHeight = c + f,
-		oCol = (draw.Size.width - RSZ(CF0)) / 2,
+		oCol = (Draw.Size.width - RSZ(CF0)) / 2,
 		oRow = TOP_HEADER_ROW + 4;
 
-	if (cHeight >= (draw.Size.height - 1)) {
-		cHeight = draw.Size.height - 2;
+	if (cHeight >= (Draw.Size.height - 1)) {
+		cHeight = Draw.Size.height - 2;
 	}
-	if (oRow + cHeight >= draw.Size.height) {
-		oRow = abs(draw.Size.height - (1 + cHeight));
+	if (oRow + cHeight >= Draw.Size.height) {
+		oRow = abs(Draw.Size.height - (1 + cHeight));
 	}
 	Window *wAbout = CreateWindow(	wLayer, id, 1, cHeight,
 					oCol, oRow,
@@ -6608,7 +6609,8 @@ Window *CreateAbout(unsigned long long id)
 
 		wAbout->matrix.select.row = wAbout->matrix.size.hth - 1;
 
-		StoreWindow(wAbout,	.title, " CoreFreq ");
+		StoreWindow(wAbout, .title, (char *)RSC(COREFREQ_TITLE).CODE());
+
 		StoreWindow(wAbout,	.color[0].select, MAKE_PRINT_UNFOCUS);
 		StoreWindow(wAbout,	.color[1].select, MAKE_PRINT_FOCUS);
 
@@ -6755,7 +6757,7 @@ Window *CreateSysInfo(unsigned long long id)
 			StoreWindow(wSysInfo,	.key.Enter, MotionEnter_Cell);
 			break;
 		case SCANKEY_SHIFT_b:
-			wSysInfo->matrix.select.row = draw.SmbIndex;
+			wSysInfo->matrix.select.row = Draw.SmbIndex;
 			/* fallthrough */
 		default:
 			StoreWindow(wSysInfo,	.key.Enter, MotionEnter_Cell);
@@ -6949,7 +6951,7 @@ Window *CreateSortByField(unsigned long long id)
 					33,
 					TOP_HEADER_ROW
 				#ifndef NO_UPPER
-					+ draw.Area.MaxRows
+					+ Draw.Area.MaxRows
 					+ 2,
 				#else
 					+ 1,
@@ -7080,8 +7082,8 @@ Window *CreateTracking(unsigned long long id)
 
 	const CUINT margin = 12;	/*	"--- Freq(MHz"		*/
 	const CUINT height = TOP_SEPARATOR
-		+ (draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER));
-	const CUINT width = (draw.Size.width - margin) / 2;
+		+ (Draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER));
+	const CUINT width = (Draw.Size.width - margin) / 2;
 	const int padding = width - TASK_COMM_LEN - (7 + 2);
 
 	wTrack = CreateWindow( wLayer, id,
@@ -7236,7 +7238,7 @@ void UpdateHotPlugTrigger(TGrid *grid, DATA_TYPE data)
 
 Window *CreateHotPlugCPU(unsigned long long id)
 {
-	Window *wCPU = CreateWindow(	wLayer, id, 2, draw.Area.MaxRows,
+	Window *wCPU = CreateWindow(	wLayer, id, 2, Draw.Area.MaxRows,
 					LOAD_LEAD + 1, TOP_HEADER_ROW + 1,
 					WINFLAG_NO_STOCK );
   if (wCPU != NULL)
@@ -7275,7 +7277,8 @@ Window *CreateHotPlugCPU(unsigned long long id)
     }
 	wCPU->matrix.select.col = 1;
 
-	StoreWindow(wCPU,	.title, 	" CPU ");
+	StoreWindow(wCPU, .title, (char *)RSC(CREATE_HOTPLUG_CPU_TITLE).CODE());
+
 	StoreWindow(wCPU,	.color[1].title,
 				RSC(UI).ATTR()[UI_WIN_HOT_PLUG_CPU_TITLE]);
 
@@ -7417,7 +7420,7 @@ Window *CreateRatioClock(unsigned long long id,
 	CLOCK_ARG clockMod = {.sllong = id};
 
 	const CUINT hthMax = 1 + lowestShift + highestShift;
-	CUINT hthWin = CUMIN( (draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER)),
+	CUINT hthWin = CUMIN( (Draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER)),
 				hthMax );
 
 	Window *wCK = CreateWindow(	wLayer, id,
@@ -7565,9 +7568,9 @@ void UpdateRoomSchedule(TGrid *grid, DATA_TYPE data)
 Window *CreateSelectCPU(unsigned long long id)
 {
 	const CUINT _height = (ADD_UPPER & ADD_LOWER)
-			+ (draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER));
+			+ (Draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER));
 	const CUINT height = CUMIN(Shm->Proc.CPU.Count, _height);
-	const CUINT column = draw.Size.width <= 35 ? 1 : draw.Size.width - 35;
+	const CUINT column = Draw.Size.width <= 35 ? 1 : Draw.Size.width - 35;
 
 	Window *wUSR = CreateWindow(	wLayer, id,
 					1, height,
@@ -8402,7 +8405,7 @@ Window *CreateSelectFreq(unsigned long long id,
 			UPDATE_CALLBACK Pkg_Freq_Update,
 			UPDATE_CALLBACK CPU_Freq_Update)
 {
-	const CUINT _height = (draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER))
+	const CUINT _height = (Draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER))
 			#ifndef NO_FOOTER
 				+ (ADD_UPPER | ADD_LOWER)
 			#endif
@@ -8466,7 +8469,7 @@ Window *CreateSelectIdle(unsigned long long id)
 {
 	Window *wIdle = CreateWindow(wLayer, id,
 			1, 1 + Shm->SysGate.OS.IdleDriver.stateCount,
-			(draw.Size.width - (2 + RSZ(BOX_IDLE_LIMIT_TITLE))) / 2,
+			(Draw.Size.width - (2 + RSZ(BOX_IDLE_LIMIT_TITLE))) / 2,
 			TOP_HEADER_ROW + 2,
 			WINFLAG_NO_STOCK);
 
@@ -8587,7 +8590,7 @@ Window *PopUpMessage(ASCII *title, RING_CTRL *pCtrl)
 
 	wMsg = CreateWindow(	wLayer, pCtrl->arg,
 				1, 5,
-				1, draw.Size.height - (1 + 5),
+				1, Draw.Size.height - (1 + 5),
 				WINFLAG_NO_STOCK );
     if (wMsg != NULL)
     {
@@ -8874,9 +8877,9 @@ Window *CreateExit(unsigned long long id, IssueList *issue, CUINT wth,CUINT hth)
 
 	wExit = CreateWindow(	wLayer, id,
 				1, (hth + 6),
-				(draw.Size.width - wth) / 2,
-				(hth + 6) > draw.Size.height ?
-					1 : (draw.Size.height - (hth + 2)) / 2,
+				(Draw.Size.width - wth) / 2,
+				(hth + 6) > Draw.Size.height ?
+					1 : (Draw.Size.height - (hth + 2)) / 2,
 				WINFLAG_NO_STOCK );
     if (wExit != NULL)
     {
@@ -8934,50 +8937,50 @@ void TrapScreenSize(int caught)
 	SCREEN_SIZE currentSize = GetScreenSize();
 	CUINT areaMaxRows = 1;
 
-    if (currentSize.height != draw.Size.height)
+    if (currentSize.height != Draw.Size.height)
     {
 	if (currentSize.height > MAX_HEIGHT) {
-		draw.Size.height = MAX_HEIGHT;
+		Draw.Size.height = MAX_HEIGHT;
 	} else {
-		draw.Size.height = currentSize.height;
+		Draw.Size.height = currentSize.height;
 	}
-	switch (draw.Disposal) {
+	switch (Draw.Disposal) {
 	case D_MAINVIEW:
-	draw.Area.MinHeight = (ADD_LOWER * (draw.View == V_PACKAGE ? 10 : 0))
+	Draw.Area.MinHeight = (ADD_LOWER * (Draw.View == V_PACKAGE ? 10 : 0))
 				+ TOP_HEADER_ROW
 				+ TOP_SEPARATOR
 				+ TOP_FOOTER_ROW;
 	break;
 	default:
-	draw.Area.MinHeight = LEADING_TOP + 2 * (MARGIN_HEIGHT + INTER_HEIGHT);
+	Draw.Area.MinHeight = LEADING_TOP + 2 * (MARGIN_HEIGHT + INTER_HEIGHT);
 	break;
 	}
-	draw.Flag.clear  = 1;
-	draw.Flag.height = !(draw.Size.height < draw.Area.MinHeight);
+	Draw.Flag.clear  = 1;
+	Draw.Flag.height = !(Draw.Size.height < Draw.Area.MinHeight);
     }
-    if (currentSize.width != draw.Size.width) {
+    if (currentSize.width != Draw.Size.width) {
 	if (currentSize.width > MAX_WIDTH) {
-		draw.Size.width = MAX_WIDTH;
+		Draw.Size.width = MAX_WIDTH;
 	} else {
-		draw.Size.width = currentSize.width;
+		Draw.Size.width = currentSize.width;
 	}
-	draw.Flag.clear = 1;
-	draw.Flag.width = !(draw.Size.width < MIN_WIDTH);
+	Draw.Flag.clear = 1;
+	Draw.Flag.width = !(Draw.Size.width < MIN_WIDTH);
     }
-    if ((ADD_UPPER | ADD_LOWER) && (draw.Size.height > draw.Area.MinHeight)) {
-	areaMaxRows = draw.Size.height - draw.Area.MinHeight;
-      if (draw.View != V_PACKAGE) {
+    if ((ADD_UPPER | ADD_LOWER) && (Draw.Size.height > Draw.Area.MinHeight)) {
+	areaMaxRows = Draw.Size.height - Draw.Area.MinHeight;
+      if (Draw.View != V_PACKAGE) {
 	areaMaxRows = areaMaxRows >> (ADD_UPPER & ADD_LOWER);
       }
       if (!areaMaxRows) {
 	areaMaxRows = 1;
       }
     }
-	draw.Area.MaxRows = CUMIN(Shm->Proc.CPU.Count, areaMaxRows);
-	draw.Area.LoadWidth = draw.Size.width - LOAD_LEAD;
-	draw.cpuScroll = 0;
+	Draw.Area.MaxRows = CUMIN(Shm->Proc.CPU.Count, areaMaxRows);
+	Draw.Area.LoadWidth = Draw.Size.width - LOAD_LEAD;
+	Draw.cpuScroll = 0;
 
-    if (draw.Flag.clear == 1 ) {
+    if (Draw.Flag.clear == 1 ) {
 	ReScaleAllWindows(&winList);
     }
   }
@@ -9009,11 +9012,11 @@ int Shortcut(SCANKEY *scan)
 	}
 	/* Fallthrough */
     case SCANKEY_PLUS:
-	if ((draw.Disposal == D_MAINVIEW)
-	&&  (draw.cpuScroll < (Shm->Proc.CPU.Count - draw.Area.MaxRows)))
+	if ((Draw.Disposal == D_MAINVIEW)
+	&&  (Draw.cpuScroll < (Shm->Proc.CPU.Count - Draw.Area.MaxRows)))
 	{
-		draw.cpuScroll++;
-		draw.Flag.layout = 1;
+		Draw.cpuScroll++;
+		Draw.Flag.layout = 1;
 	}
     break;
 
@@ -9023,9 +9026,9 @@ int Shortcut(SCANKEY *scan)
 	}
 	/* Fallthrough */
     case SCANKEY_MINUS:
-	if ((draw.Disposal == D_MAINVIEW) && (draw.cpuScroll > 0)) {
-		draw.cpuScroll--;
-		draw.Flag.layout = 1;
+	if ((Draw.Disposal == D_MAINVIEW) && (Draw.cpuScroll > 0)) {
+		Draw.cpuScroll--;
+		Draw.Flag.layout = 1;
 	}
     break;
 
@@ -9033,9 +9036,9 @@ int Shortcut(SCANKEY *scan)
     case SCANCON_HOME:
 	if (!IsDead(&winList)) {
 		return (-1);
-	} else if (draw.Disposal == D_MAINVIEW) {
-		draw.cpuScroll = 0;
-		draw.Flag.layout = 1;
+	} else if (Draw.Disposal == D_MAINVIEW) {
+		Draw.cpuScroll = 0;
+		Draw.Flag.layout = 1;
 	}
     break;
 
@@ -9043,37 +9046,37 @@ int Shortcut(SCANKEY *scan)
     case SCANCON_END:
 	if (!IsDead(&winList)) {
 		return (-1);
-	} else if (draw.Disposal == D_MAINVIEW) {
-		draw.cpuScroll = Shm->Proc.CPU.Count - draw.Area.MaxRows;
-		draw.Flag.layout = 1;
+	} else if (Draw.Disposal == D_MAINVIEW) {
+		Draw.cpuScroll = Shm->Proc.CPU.Count - Draw.Area.MaxRows;
+		Draw.Flag.layout = 1;
 	}
     break;
 
     case SCANKEY_PGDW:
 	if (!IsDead(&winList)) {
 		return (-1);
-	} else if (draw.Disposal == D_MAINVIEW) {
-	    if ( (draw.cpuScroll + draw.Area.MaxRows) < ( Shm->Proc.CPU.Count
-							- draw.Area.MaxRows ) )
+	} else if (Draw.Disposal == D_MAINVIEW) {
+	    if ( (Draw.cpuScroll + Draw.Area.MaxRows) < ( Shm->Proc.CPU.Count
+							- Draw.Area.MaxRows ) )
 	    {
-		draw.cpuScroll += draw.Area.MaxRows;
+		Draw.cpuScroll += Draw.Area.MaxRows;
 	    } else {
-		draw.cpuScroll = Shm->Proc.CPU.Count - draw.Area.MaxRows;
+		Draw.cpuScroll = Shm->Proc.CPU.Count - Draw.Area.MaxRows;
 	    }
-		draw.Flag.layout = 1;
+		Draw.Flag.layout = 1;
 	}
     break;
 
     case SCANKEY_PGUP:
 	if (!IsDead(&winList)) {
 		return (-1);
-	} else if (draw.Disposal == D_MAINVIEW) {
-	    if (draw.cpuScroll >= draw.Area.MaxRows) {
-		draw.cpuScroll -= draw.Area.MaxRows;
+	} else if (Draw.Disposal == D_MAINVIEW) {
+	    if (Draw.cpuScroll >= Draw.Area.MaxRows) {
+		Draw.cpuScroll -= Draw.Area.MaxRows;
 	    } else {
-		draw.cpuScroll = 0;
+		Draw.cpuScroll = 0;
 	    }
-		draw.Flag.layout = 1;
+		Draw.Flag.layout = 1;
 	}
     break;
 
@@ -9139,7 +9142,7 @@ int Shortcut(SCANKEY *scan)
 
     case SCANKEY_CTRL_u:
     #if defined(UBENCH) && UBENCH == 1
-	draw.Flag.uBench = !draw.Flag.uBench;
+	Draw.Flag.uBench = !Draw.Flag.uBench;
     #endif
     break;
 
@@ -9306,7 +9309,7 @@ int Shortcut(SCANKEY *scan)
       {
 	const int bON = ((Shm->Registration.AutoClock & 0b10) != 0);
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 4
 	}, select = {
 		.col = 0,
@@ -9363,7 +9366,7 @@ int Shortcut(SCANKEY *scan)
 		}
 	};
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 3
 	}, select = {
 		.col = 0,
@@ -9409,44 +9412,27 @@ int Shortcut(SCANKEY *scan)
 
     case OPS_IDLE_ROUTE:
     {
-	Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
-		.row = TOP_HEADER_ROW + 3
-	};
-	const Coordinate select = {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	const Coordinate origin = {
+		.col = 43,
+		.row = TOP_HEADER_ROW + 17
+	}, select = {
 		.col = 0,
 		.row = Shm->Registration.Driver.Route
 	};
-	Window *wSettings = SearchWinListById(SCANKEY_s, &winList);
-	if (wSettings != NULL) {
-		origin.col = wSettings->matrix.origin.col
-			+ wSettings->lazyComp.rowLen
-			- 4 - RSZ(SETTINGS_ROUTE_DFLT);
-		origin.row = wSettings->matrix.origin.row
-			+ 16 - wSettings->matrix.scroll.vert;
-	}
-	Window *wDrop = CreateBox(scan->key, origin, select, NULL,
-				RSC(SETTINGS_ROUTE_DFLT).CODE(),
-					MAKE_PRINT_DROP, OPS_ROUTE_DFLT,
-				RSC(SETTINGS_ROUTE_IO).CODE(),
-					MAKE_PRINT_DROP, OPS_ROUTE_IO,
-				RSC(SETTINGS_ROUTE_HALT).CODE(),
-					MAKE_PRINT_DROP, OPS_ROUTE_HALT,
-				RSC(SETTINGS_ROUTE_MWAIT).CODE(),
-					MAKE_PRINT_DROP, OPS_ROUTE_MWAIT );
-	if (wDrop != NULL) {
-		StoreWindow(wDrop, .color[0].select, MAKE_PRINT_DROP);
-		StoreWindow(wDrop, .color[1].select,
-					RSC(UI).ATTR()[UI_WIN_MENU_SELECT]);
-
-		StoreWindow(wDrop, .color[0].title, MAKE_PRINT_DROP);
-		StoreWindow(wDrop, .color[1].title,
-					RSC(UI).ATTR()[UI_DROP_IDLE_ROUTE]);
-
-		StoreWindow(wDrop, .Print, ForEachCellPrint_Drop);
-
-		AppendWindow(wDrop, &winList);
-	}
+	AppendWindow(
+		CreateBox(scan->key, origin, select,
+			(char *) RSC(SETTINGS_ROUTE_TITLE).CODE(),
+		RSC(SETTINGS_ROUTE_DFLT).CODE(), stateAttr[0], OPS_ROUTE_DFLT,
+		RSC(SETTINGS_ROUTE_IO).CODE(),   stateAttr[0], OPS_ROUTE_IO,
+		RSC(SETTINGS_ROUTE_HALT).CODE(), stateAttr[0], OPS_ROUTE_HALT,
+		RSC(SETTINGS_ROUTE_MWAIT).CODE(),stateAttr[0], OPS_ROUTE_MWAIT),
+		&winList);
+      } else {
+	SetHead(&winList, win);
+      }
     }
     break;
 
@@ -9521,7 +9507,7 @@ int Shortcut(SCANKEY *scan)
 		break;
 	}
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 5
 	}, select = {
 		.col = 0,
@@ -9711,23 +9697,23 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case SCANKEY_PERCENT:
-	if ((draw.View == V_FREQ) && (draw.Disposal == D_MAINVIEW)) {
-		draw.Flag.avgOrPC = !draw.Flag.avgOrPC;
-		draw.Flag.clear = 1;
+	if ((Draw.View == V_FREQ) && (Draw.Disposal == D_MAINVIEW)) {
+		Draw.Flag.avgOrPC = !Draw.Flag.avgOrPC;
+		Draw.Flag.clear = 1;
 	}
     break;
 
     case SCANKEY_DOT:
-	if (draw.Disposal == D_MAINVIEW) {
-		draw.Flag.clkOrLd = !draw.Flag.clkOrLd;
-		draw.Flag.clear = 1;
+	if (Draw.Disposal == D_MAINVIEW) {
+		Draw.Flag.clkOrLd = !Draw.Flag.clkOrLd;
+		Draw.Flag.clear = 1;
 	}
     break;
 
     case 0x000000000000007e:
     {
-	draw.Disposal = D_ASCIITEST;
-	draw.Size.height = 0;
+	Draw.Disposal = D_ASCIITEST;
+	Draw.Size.height = 0;
 	TrapScreenSize(SIGWINCH);
     }
     break;
@@ -9744,7 +9730,7 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case SCANKEY_b:
-	if ((draw.View == V_TASKS) && (draw.Disposal == D_MAINVIEW)) {
+	if ((Draw.View == V_TASKS) && (Draw.Disposal == D_MAINVIEW)) {
 		Window *win = SearchWinListById(scan->key, &winList);
 		if (win == NULL) {
 			AppendWindow(CreateSortByField(scan->key), &winList);
@@ -9756,32 +9742,32 @@ int Shortcut(SCANKEY *scan)
 #ifndef NO_LOWER
     case SCANKEY_c:
     {
-	draw.Disposal = D_MAINVIEW;
-	draw.View = V_CYCLES;
-	draw.Size.height = 0;
+	Draw.Disposal = D_MAINVIEW;
+	Draw.View = V_CYCLES;
+	Draw.Size.height = 0;
 	TrapScreenSize(SIGWINCH);
     }
     break;
 #endif
     case SCANKEY_d:
     {
-	draw.Disposal = D_DASHBOARD;
-	draw.Size.height = 0;
+	Draw.Disposal = D_DASHBOARD;
+	Draw.Size.height = 0;
 	TrapScreenSize(SIGWINCH);
     }
     break;
 
     case SCANKEY_f:
     {
-	draw.Disposal = D_MAINVIEW;
-	draw.View = V_FREQ;
-	draw.Size.height = 0;
+	Draw.Disposal = D_MAINVIEW;
+	Draw.View = V_FREQ;
+	Draw.Size.height = 0;
 	TrapScreenSize(SIGWINCH);
     }
     break;
 
     case SCANKEY_n:
-	if ((draw.View == V_TASKS) && (draw.Disposal == D_MAINVIEW)) {
+	if ((Draw.View == V_TASKS) && (Draw.Disposal == D_MAINVIEW)) {
 		Window *win = SearchWinListById(scan->key, &winList);
 		if (win == NULL) {
 			AppendWindow(CreateTracking(scan->key), &winList);
@@ -9793,9 +9779,9 @@ int Shortcut(SCANKEY *scan)
 #ifndef NO_LOWER
     case SCANKEY_g:
     {
-	draw.Disposal = D_MAINVIEW;
-	draw.View = V_PACKAGE;
-	draw.Size.height = 0;
+	Draw.Disposal = D_MAINVIEW;
+	Draw.View = V_PACKAGE;
+	Draw.Size.height = 0;
 	TrapScreenSize(SIGWINCH);
     }
     break;
@@ -9825,18 +9811,18 @@ int Shortcut(SCANKEY *scan)
 #ifndef NO_LOWER
     case SCANKEY_i:
     {
-	draw.Disposal = D_MAINVIEW;
-	draw.View = V_INST;
-	draw.Size.height = 0;
+	Draw.Disposal = D_MAINVIEW;
+	Draw.View = V_INST;
+	Draw.Size.height = 0;
 	TrapScreenSize(SIGWINCH);
     }
     break;
 
     case SCANKEY_l:
     {
-	draw.Disposal = D_MAINVIEW;
-	draw.View = V_CSTATES;
-	draw.Size.height = 0;
+	Draw.Disposal = D_MAINVIEW;
+	Draw.View = V_CSTATES;
+	Draw.Size.height = 0;
 	TrapScreenSize(SIGWINCH);
     }
     break;
@@ -9854,19 +9840,27 @@ int Shortcut(SCANKEY *scan)
 
     case SCANKEY_DOLLAR:
 	Setting.jouleWatt = !Setting.jouleWatt;
-	if (draw.Disposal == D_MAINVIEW) {
-		draw.Flag.layout = 1;
+	if (Draw.Disposal == D_MAINVIEW) {
+		Draw.Flag.layout = 1;
 	}
     break;
 
     case SCANKEY_SHIFT_f:
 	Setting.fahrCels = !Setting.fahrCels;
-	draw.Flag.layout = 1;
+	Draw.Flag.layout = 1;
     break;
 
     case SCANKEY_SHIFT_y:
 	Setting.secret = !Setting.secret;
-	draw.Flag.layout = 1;
+	Draw.Flag.layout = 1;
+    break;
+
+    case SCANKEY_SHIFT_g:
+	if (!RING_FULL(Shm->Ring[1])) {
+		RING_WRITE(Shm->Ring[1],
+			COREFREQ_TOGGLE_SYSGATE,
+			!BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1));
+	}
     break;
 
     case SCANKEY_SHIFT_h:
@@ -9885,25 +9879,25 @@ int Shortcut(SCANKEY *scan)
 	Window *wBox = CreateBox(scan->key, origin, select,
 			(char*) RSC(BOX_EVENT_TITLE).CODE(),
 				RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
-	RSC(BOX_EVENT).ATTR()[(processorEvents & EVENT_THERM_SENSOR) ? 1 : 0],
+	RSC(BOX_EVENT).ATTR()[(ProcessorEvents & EVENT_THERM_SENSOR) ? 1 : 0],
 				BOXKEY_CLR_THM_SENSOR,
 				RSC(BOX_EVENT_PROCHOT_AGENT).CODE(),
-	RSC(BOX_EVENT).ATTR()[(processorEvents & EVENT_THERM_PROCHOT) ? 1 : 0],
+	RSC(BOX_EVENT).ATTR()[(ProcessorEvents & EVENT_THERM_PROCHOT) ? 1 : 0],
 				BOXKEY_CLR_THM_PROCHOT,
 				RSC(BOX_EVENT_CRITICAL_TEMP).CODE(),
-	RSC(BOX_EVENT).ATTR()[(processorEvents & EVENT_THERM_CRIT) ? 1 : 0],
+	RSC(BOX_EVENT).ATTR()[(ProcessorEvents & EVENT_THERM_CRIT) ? 1 : 0],
 				BOXKEY_CLR_THM_CRIT,
 				RSC(BOX_EVENT_THERM_THRESHOLD).CODE(),
-	RSC(BOX_EVENT).ATTR()[(processorEvents & EVENT_THERM_THOLD) ? 1 : 0],
+	RSC(BOX_EVENT).ATTR()[(ProcessorEvents & EVENT_THERM_THOLD) ? 1 : 0],
 				BOXKEY_CLR_THM_THOLD,
 				RSC(BOX_EVENT_POWER_LIMIT).CODE(),
-	RSC(BOX_EVENT).ATTR()[(processorEvents & EVENT_POWER_LIMIT) ? 2 : 0],
+	RSC(BOX_EVENT).ATTR()[(ProcessorEvents & EVENT_POWER_LIMIT) ? 2 : 0],
 				BOXKEY_CLR_PWR_LIMIT,
 				RSC(BOX_EVENT_CURRENT_LIMIT).CODE(),
-	RSC(BOX_EVENT).ATTR()[(processorEvents & EVENT_CURRENT_LIMIT) ? 2 : 0],
+	RSC(BOX_EVENT).ATTR()[(ProcessorEvents & EVENT_CURRENT_LIMIT) ? 2 : 0],
 				BOXKEY_CLR_CUR_LIMIT,
 				RSC(BOX_EVENT_CROSS_DOM_LIMIT).CODE(),
-	RSC(BOX_EVENT).ATTR()[(processorEvents & EVENT_CROSS_DOMAIN) ? 1 : 0],
+	RSC(BOX_EVENT).ATTR()[(ProcessorEvents & EVENT_CROSS_DOMAIN) ? 1 : 0],
 				BOXKEY_CLR_X_DOMAIN);
 
 	if (wBox != NULL) {
@@ -9965,7 +9959,7 @@ int Shortcut(SCANKEY *scan)
     {
 	if (GET_LOCALE() != LOC_EN) {
 		SET_LOCALE(LOC_EN);
-		draw.Flag.layout = 1;
+		Draw.Flag.layout = 1;
 	}
     }
     break;
@@ -9974,7 +9968,7 @@ int Shortcut(SCANKEY *scan)
     {
 	if (GET_LOCALE() != LOC_FR) {
 		SET_LOCALE(LOC_FR);
-		draw.Flag.layout = 1;
+		Draw.Flag.layout = 1;
 	}
     }
     break;
@@ -9985,7 +9979,7 @@ int Shortcut(SCANKEY *scan)
 	if (win == NULL)
 	{
 		const Coordinate origin = {
-			.col = (draw.Size.width - RSZ(BOX_THEME_BLANK)) / 2,
+			.col = (Draw.Size.width - RSZ(BOX_THEME_BLANK)) / 2,
 			.row = TOP_HEADER_ROW + 11
 		}, select = {
 			.col = 0,
@@ -10012,12 +10006,12 @@ int Shortcut(SCANKEY *scan)
 
     case BOXKEY_THEME_DFLT:
 	SET_THEME(THM_DFLT);
-	draw.Flag.layout = 1;
+	Draw.Flag.layout = 1;
     break;
 
     case BOXKEY_THEME_USR1:
 	SET_THEME(THM_USR1);
-	draw.Flag.layout = 1;
+	Draw.Flag.layout = 1;
     break;
 
     case SCANKEY_SHIFT_m:
@@ -10044,45 +10038,45 @@ int Shortcut(SCANKEY *scan)
 #ifndef NO_LOWER
     case SCANKEY_q:
     {
-	draw.Disposal = D_MAINVIEW;
-	draw.View = V_INTR;
-	draw.Size.height = 0;
+	Draw.Disposal = D_MAINVIEW;
+	Draw.View = V_INTR;
+	Draw.Size.height = 0;
 	TrapScreenSize(SIGWINCH);
     }
     break;
 
     case SCANKEY_SHIFT_c:
     {
-	draw.Disposal = D_MAINVIEW;
-	draw.View = V_SENSORS;
-	draw.Size.height = 0;
+	Draw.Disposal = D_MAINVIEW;
+	Draw.View = V_SENSORS;
+	Draw.Size.height = 0;
 	TrapScreenSize(SIGWINCH);
     }
     break;
 
     case SCANKEY_SHIFT_v:
     {
-	draw.Disposal = D_MAINVIEW;
-	draw.View = V_VOLTAGE;
-	draw.Size.height = 0;
+	Draw.Disposal = D_MAINVIEW;
+	Draw.View = V_VOLTAGE;
+	Draw.Size.height = 0;
 	TrapScreenSize(SIGWINCH);
     }
     break;
 
     case SCANKEY_SHIFT_w:
     {
-	draw.Disposal = D_MAINVIEW;
-	draw.View = V_ENERGY;
-	draw.Size.height = 0;
+	Draw.Disposal = D_MAINVIEW;
+	Draw.View = V_ENERGY;
+	Draw.Size.height = 0;
 	TrapScreenSize(SIGWINCH);
     }
     break;
 
     case SCANKEY_SHIFT_t:
     {
-	draw.Disposal = D_MAINVIEW;
-	draw.View = V_SLICE;
-	draw.Size.height = 0;
+	Draw.Disposal = D_MAINVIEW;
+	Draw.View = V_SLICE;
+	Draw.Size.height = 0;
 	TrapScreenSize(SIGWINCH);
     }
     break;
@@ -10099,75 +10093,75 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case SCANKEY_r:
-	if ((draw.View == V_TASKS) && (draw.Disposal == D_MAINVIEW)) {
+	if ((Draw.View == V_TASKS) && (Draw.Disposal == D_MAINVIEW)) {
 		Shm->SysGate.reverseOrder = !Shm->SysGate.reverseOrder;
-		draw.Flag.layout = 1;
+		Draw.Flag.layout = 1;
 	}
     break;
 
     case SCANKEY_v:
-	if ((draw.View == V_TASKS) && (draw.Disposal == D_MAINVIEW)) {
-		draw.Flag.taskVal = !draw.Flag.taskVal;
-		draw.Flag.layout = 1;
+	if ((Draw.View == V_TASKS) && (Draw.Disposal == D_MAINVIEW)) {
+		Draw.Flag.taskVal = !Draw.Flag.taskVal;
+		Draw.Flag.layout = 1;
 	}
     break;
 #ifndef NO_LOWER
     case SCANKEY_x:
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
 		Shm->SysGate.trackTask = 0;
-		draw.Disposal = D_MAINVIEW;
-		draw.View = V_TASKS;
-		draw.Size.height = 0;
+		Draw.Disposal = D_MAINVIEW;
+		Draw.View = V_TASKS;
+		Draw.Size.height = 0;
 		TrapScreenSize(SIGWINCH);
 	}
     break;
 #endif
     case SCANKEY_EXCL:
-	if (draw.Disposal == D_MAINVIEW) {
-		draw.Load = !draw.Load;
-		draw.Flag.layout = 1;
+	if (Draw.Disposal == D_MAINVIEW) {
+		Draw.Load = !Draw.Load;
+		Draw.Flag.layout = 1;
 	}
     break;
 
     case SORTBY_STATE:
     {
 	Shm->SysGate.sortByField = F_STATE;
-	draw.Flag.layout = 1;
+	Draw.Flag.layout = 1;
     }
     break;
 
     case SORTBY_RTIME:
     {
 	Shm->SysGate.sortByField = F_RTIME;
-	draw.Flag.layout = 1;
+	Draw.Flag.layout = 1;
     }
     break;
 
     case SORTBY_UTIME:
     {
 	Shm->SysGate.sortByField = F_UTIME;
-	draw.Flag.layout = 1;
+	Draw.Flag.layout = 1;
     }
     break;
 
     case SORTBY_STIME:
     {
 	Shm->SysGate.sortByField = F_STIME;
-	draw.Flag.layout = 1;
+	Draw.Flag.layout = 1;
     }
     break;
 
     case SORTBY_PID:
     {
 	Shm->SysGate.sortByField = F_PID;
-	draw.Flag.layout = 1;
+	Draw.Flag.layout = 1;
     }
     break;
 
     case SORTBY_COMM:
     {
 	Shm->SysGate.sortByField = F_COMM;
-	draw.Flag.layout = 1;
+	Draw.Flag.layout = 1;
     }
     break;
 
@@ -10177,7 +10171,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 2
 	}, select = {
 		.col = 0,
@@ -10225,7 +10219,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 3
 	}, select = {
 		.col = 0,
@@ -10273,7 +10267,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 3
 	}, select = {
 		.col = 0,
@@ -10321,7 +10315,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 4
 	}, select = {
 		.col = 0,
@@ -10369,7 +10363,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 2
 	}, select = {
 		.col = 0,
@@ -10419,7 +10413,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 3
 	}, select = {
 		.col = 0,
@@ -10469,7 +10463,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 2
 	}, select = {
 		.col = 0,
@@ -10519,7 +10513,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 5
 	}, select = {
 		.col = 0,
@@ -10569,7 +10563,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 6
 	}, select = {
 		.col = 0,
@@ -10619,7 +10613,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 7
 	}, select = {
 		.col = 0,
@@ -10675,7 +10669,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 8
 	}, select = {
 		.col = 0,
@@ -10727,7 +10721,7 @@ int Shortcut(SCANKEY *scan)
 	ASCII *title;
 	ASCII *descCode;
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 9
 	}, select = {
 		.col = 0,
@@ -10786,7 +10780,7 @@ int Shortcut(SCANKEY *scan)
 	ASCII *title;
 	ASCII *descCode;
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 10
 	}, select = {
 		.col = 0,
@@ -10858,7 +10852,7 @@ int Shortcut(SCANKEY *scan)
 		[_UNSPEC] = 0
 	};
 	const Coordinate origin = {
-		.col = (draw.Size.width - (44 - 17)) / 2,
+		.col = (Draw.Size.width - (44 - 17)) / 2,
 		.row = TOP_HEADER_ROW + 3
 	}, select = {
 		.col = 0,
@@ -10938,7 +10932,7 @@ int Shortcut(SCANKEY *scan)
 		Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir == 1
 	);
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 9
 	}, select = {
 		.col = 0,
@@ -11001,7 +10995,7 @@ int Shortcut(SCANKEY *scan)
 		[_UNSPEC] =  0
 	};
 	const Coordinate origin = {
-		.col = (draw.Size.width - (44 - 17)) / 2,
+		.col = (Draw.Size.width - (44 - 17)) / 2,
 		.row = TOP_HEADER_ROW + 4
 	}, select = {
 	.col = 0,
@@ -11065,7 +11059,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 6
 	}, select = {
 		.col = 0,
@@ -11118,7 +11112,7 @@ int Shortcut(SCANKEY *scan)
 					Shm->Proc.Service.Core
 				].PowerThermal.DutyCycle.Extended;
 	const Coordinate origin = {
-		.col = (draw.Size.width - 27) / 2,
+		.col = (Draw.Size.width - 27) / 2,
 		.row = TOP_HEADER_ROW + 3
 	}, select = {
 		.col = 0,
@@ -11195,7 +11189,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const Coordinate origin = {
-		.col = (draw.Size.width - (2 + RSZ(BOX_POWER_POLICY_LOW))) / 2,
+		.col = (Draw.Size.width - (2 + RSZ(BOX_POWER_POLICY_LOW))) / 2,
 		.row = TOP_HEADER_ROW + 3
 	}, select = {
 		.col = 0,
@@ -11306,7 +11300,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const Coordinate origin = {
-		.col = (draw.Size.width - (2 + RSZ(BOX_POWER_POLICY_LOW))) / 2,
+		.col = (Draw.Size.width - (2 + RSZ(BOX_POWER_POLICY_LOW))) / 2,
 		.row = TOP_HEADER_ROW + 3
 	}, select = {
 		.col = 0,
@@ -11452,7 +11446,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 11
 	}, select = {
 		.col = 0,
@@ -11490,7 +11484,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 12
 	}, select = {
 		.col = 0,
@@ -11540,7 +11534,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 11
 	}, select = {
 		.col = 0,
@@ -11590,7 +11584,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 13
 	}, select = {
 		.col = 0,
@@ -11640,7 +11634,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_CFG_TDP_BLANK)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_CFG_TDP_BLANK)) / 2,
 		.row = TOP_HEADER_ROW + 11
 	}, select = {
 		.col = 0,
@@ -11713,7 +11707,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 15
 	}, select = {
 		.col = 0,
@@ -11812,7 +11806,7 @@ int Shortcut(SCANKEY *scan)
 		}
 	};
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 1
 	}, select = {
 		.col = 0,
@@ -11973,7 +11967,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const Coordinate origin = {
-		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 2
 	}, select = {
 		.col = 0,
@@ -12656,7 +12650,7 @@ int Shortcut(SCANKEY *scan)
 	}
 	else if (StartDump("corefreq_%llx.asc", 0, DUMP_TO_ANSI) == 0)
 	{
-		draw.Flag.layout = 1;
+		Draw.Flag.layout = 1;
 	}
     break;
 
@@ -12670,7 +12664,7 @@ int Shortcut(SCANKEY *scan)
 				Recorder.Reset - 1,
 				DUMP_TO_JSON) == 0 )
 	{
-		draw.Flag.layout = 1;
+		Draw.Flag.layout = 1;
 	}
     break;
 
@@ -12703,15 +12697,15 @@ int Shortcut(SCANKEY *scan)
     default:
       if (scan->key & TRACK_TASK) {
 	Shm->SysGate.trackTask = scan->key & TRACK_MASK;
-	draw.Flag.layout = 1;
+	Draw.Flag.layout = 1;
       }
       else if (scan->key & SMBIOS_STRING_INDEX)
       {
-	if (draw.Disposal == D_MAINVIEW) {
+	if (Draw.Disposal == D_MAINVIEW) {
 		enum SMB_STRING usrIdx = scan->key & SMBIOS_STRING_MASK;
 		if (usrIdx < SMB_STRING_COUNT) {
-			draw.SmbIndex = usrIdx;
-			draw.Flag.layout = 1;
+			Draw.SmbIndex = usrIdx;
+			Draw.Flag.layout = 1;
 		}
 	}
       }
@@ -13203,12 +13197,12 @@ void PrintTaskMemory(Layer *layer, CUINT row,
 	snprintf(Buffer, 11+20+20+1,
 			"%6d" "%9lu" "%-9lu",
 			taskCount,
-			freeRAM >> draw.Unit.Memory,
-			totalRAM >> draw.Unit.Memory);
+			freeRAM >> Draw.Unit.Memory,
+			totalRAM >> Draw.Unit.Memory);
 
-	memcpy(&LayerAt(layer, code, (draw.Size.width-35), row), &Buffer[0], 6);
-	memcpy(&LayerAt(layer, code, (draw.Size.width-22), row), &Buffer[6], 9);
-	memcpy(&LayerAt(layer, code, (draw.Size.width-12), row), &Buffer[15],9);
+	memcpy(&LayerAt(layer, code, (Draw.Size.width-35), row), &Buffer[0], 6);
+	memcpy(&LayerAt(layer, code, (Draw.Size.width-22), row), &Buffer[6], 9);
+	memcpy(&LayerAt(layer, code, (Draw.Size.width-12), row), &Buffer[15],9);
 }
 #endif
 
@@ -13219,17 +13213,19 @@ void Layout_Header(Layer *layer, CUINT row)
 	const CUINT	lProc0 = RSZ(LAYOUT_HEADER_PROC),
 			xProc0 = 12,
 			lProc1 = RSZ(LAYOUT_HEADER_CPU),
-			xProc1 = draw.Size.width - lProc1,
+			xProc1 = Draw.Size.width - lProc1,
 			lArch0 = RSZ(LAYOUT_HEADER_ARCH),
 			xArch0 = 12,
 			lArch1 = RSZ(LAYOUT_HEADER_CACHE_L1),
-			xArch1 = draw.Size.width-lArch1,
+			xArch1 = Draw.Size.width-lArch1,
 			lBClk0 = RSZ(LAYOUT_HEADER_BCLK),
 			xBClk0 = 12,
 			lArch2 = RSZ(LAYOUT_HEADER_CACHES),
-			xArch2 = draw.Size.width-lArch2;
+			xArch2 = Draw.Size.width-lArch2;
 
-	PrintLCD(layer, 0, row, 4, "::::", RSC(UI).ATTR()[UI_LAYOUT_LCD_RESET]);
+	PrintLCD(layer, 0, row, RSZ(LAYOUT_LCD_RESET),
+		(char *) RSC(LAYOUT_LCD_RESET).CODE(),
+		RSC(UI).ATTR()[UI_LAYOUT_LCD_RESET]);
 
 	LayerDeclare(LAYOUT_HEADER_PROC, lProc0, xProc0, row, hProc0);
 	LayerDeclare(LAYOUT_HEADER_CPU , lProc1, xProc1, row, hProc1);
@@ -13358,7 +13354,7 @@ void Layout_Header(Layer *layer, CUINT row)
 #ifndef NO_UPPER
 void Layout_Ruler_Load(Layer *layer, CUINT row)
 {
-	LayerDeclare(LAYOUT_RULER_LOAD, draw.Size.width, 0, row, hLoad0);
+	LayerDeclare(LAYOUT_RULER_LOAD, Draw.Size.width, 0, row, hLoad0);
 
 	struct {
 		Coordinate	origin;
@@ -13385,7 +13381,7 @@ void Layout_Ruler_Load(Layer *layer, CUINT row)
 			hLoad0.length, hLoad0.attr, hLoad0.code);
 
 	LayerCopyAt(layer, hLoad1.origin.col, hLoad1.origin.row, hLoad1.length,
-			hLoad1.attr[draw.Load], hLoad1.code[draw.Load]);
+			hLoad1.attr[Draw.Load], hLoad1.code[Draw.Load]);
 
 	/* Alternate the color of the frequency ratios			*/
 	const ATTRIBUTE attr[2] = {
@@ -13395,7 +13391,7 @@ void Layout_Ruler_Load(Layer *layer, CUINT row)
 	int idx = Ruler.Count, bright = 1;
     while (idx-- > 0)
     {
-	int hPos = Ruler.Uniq[idx] * draw.Area.LoadWidth / Ruler.Maximum;
+	int hPos = Ruler.Uniq[idx] * Draw.Area.LoadWidth / Ruler.Maximum;
 	if (((hPos+6) < hLoad1.origin.col)
 	 || ((hLoad0.origin.col+hPos+3) > (hLoad1.origin.col+hLoad1.length)))
 	{
@@ -13499,95 +13495,95 @@ CUINT Layout_Monitor_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Ruler_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(	LAYOUT_RULER_FREQUENCY, draw.Size.width,
+	LayerDeclare(	LAYOUT_RULER_FREQUENCY, Draw.Size.width,
 			0, row, hFreq0 );
 
 	LayerCopyAt(	layer, hFreq0.origin.col, hFreq0.origin.row,
 			hFreq0.length, hFreq0.attr, hFreq0.code );
 	UNUSED(cpu);
 
-	if (!draw.Flag.avgOrPC) {
-		LayerDeclare(	LAYOUT_RULER_FREQUENCY_AVG, draw.Size.width,
-				0, (row + draw.Area.MaxRows + 1), hAvg0 );
+	if (!Draw.Flag.avgOrPC) {
+		LayerDeclare(	LAYOUT_RULER_FREQUENCY_AVG, Draw.Size.width,
+				0, (row + Draw.Area.MaxRows + 1), hAvg0 );
 
 		LayerCopyAt(	layer, hAvg0.origin.col, hAvg0.origin.row,
 				hAvg0.length, hAvg0.attr, hAvg0.code );
 	} else {
-		LayerDeclare(	LAYOUT_RULER_FREQUENCY_PKG, draw.Size.width,
-				0, (row + draw.Area.MaxRows + 1), hPkg0) ;
+		LayerDeclare(	LAYOUT_RULER_FREQUENCY_PKG, Draw.Size.width,
+				0, (row + Draw.Area.MaxRows + 1), hPkg0) ;
 
 		LayerCopyAt(	layer, hPkg0.origin.col, hPkg0.origin.row,
 				hPkg0.length, hPkg0.attr, hPkg0.code );
 	}
-	row += draw.Area.MaxRows + 2;
+	row += Draw.Area.MaxRows + 2;
 	return (row);
 }
 
 CUINT Layout_Ruler_Instructions(Layer *layer, const unsigned int cpu,CUINT row)
 {
-	LayerDeclare(	LAYOUT_RULER_INST, draw.Size.width,
+	LayerDeclare(	LAYOUT_RULER_INST, Draw.Size.width,
 			0, row, hInstr );
 
 	LayerCopyAt(	layer, hInstr.origin.col, hInstr.origin.row,
 			hInstr.length, hInstr.attr, hInstr.code );
 
-	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
-			draw.Size.width, hLine,
+	LayerFillAt(	layer, 0, (row + Draw.Area.MaxRows + 1),
+			Draw.Size.width, hLine,
 			RSC(UI).ATTR()[UI_LAYOUT_RULER_INSTRUCTIONS] );
 	UNUSED(cpu);
 
-	row += draw.Area.MaxRows + 2;
+	row += Draw.Area.MaxRows + 2;
 	return (row);
 }
 
 CUINT Layout_Ruler_Cycles(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(	LAYOUT_RULER_CYCLES, draw.Size.width,
+	LayerDeclare(	LAYOUT_RULER_CYCLES, Draw.Size.width,
 			0, row, hCycles );
 
 	LayerCopyAt(	layer, hCycles.origin.col, hCycles.origin.row,
 			hCycles.length, hCycles.attr, hCycles.code );
 
-	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
-			draw.Size.width, hLine,
+	LayerFillAt(	layer, 0, (row + Draw.Area.MaxRows + 1),
+			Draw.Size.width, hLine,
 			RSC(UI).ATTR()[UI_LAYOUT_RULER_CYCLES] );
 	UNUSED(cpu);
 
-	row += draw.Area.MaxRows + 2;
+	row += Draw.Area.MaxRows + 2;
 	return (row);
 }
 
 CUINT Layout_Ruler_CStates(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(	LAYOUT_RULER_CSTATES, draw.Size.width,
+	LayerDeclare(	LAYOUT_RULER_CSTATES, Draw.Size.width,
 			0, row, hCStates );
 
 	LayerCopyAt(	layer, hCStates.origin.col, hCStates.origin.row,
 			hCStates.length, hCStates.attr, hCStates.code );
 
-	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
-			draw.Size.width, hLine,
+	LayerFillAt(	layer, 0, (row + Draw.Area.MaxRows + 1),
+			Draw.Size.width, hLine,
 			RSC(UI).ATTR()[UI_LAYOUT_RULER_CSTATES] );
 	UNUSED(cpu);
 
-	row += draw.Area.MaxRows + 2;
+	row += Draw.Area.MaxRows + 2;
 	return (row);
 }
 
 CUINT Layout_Ruler_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(	LAYOUT_RULER_INTERRUPTS, draw.Size.width,
+	LayerDeclare(	LAYOUT_RULER_INTERRUPTS, Draw.Size.width,
 			0, row, hIntr0 );
 
 	LayerCopyAt(	layer, hIntr0.origin.col, hIntr0.origin.row,
 			hIntr0.length, hIntr0.attr, hIntr0.code );
 
-	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
-			draw.Size.width, hLine,
+	LayerFillAt(	layer, 0, (row + Draw.Area.MaxRows + 1),
+			Draw.Size.width, hLine,
 			RSC(UI).ATTR()[UI_LAYOUT_RULER_INTERRUPTS] );
 	UNUSED(cpu);
 
-	row += draw.Area.MaxRows + 2;
+	row += Draw.Area.MaxRows + 2;
 	return (row);
 }
 
@@ -13605,7 +13601,7 @@ CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 		RSC(LAYOUT_PACKAGE_MC06).CODE()
 	};
 
-	LayerFillAt(	layer, 0, row, draw.Size.width,
+	LayerFillAt(	layer, 0, row, Draw.Size.width,
 			RSC(LAYOUT_RULER_PACKAGE).CODE(),
 			RSC(LAYOUT_RULER_PACKAGE).ATTR()[0]);
 
@@ -13615,7 +13611,7 @@ CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	for (idx = 0; idx < 9; idx++)
 	{
 		LayerCopyAt(	layer, 0, (row + idx + 1),
-				draw.Size.width,
+				Draw.Size.width,
 				RSC(LAYOUT_PACKAGE_PC).ATTR(),
 				RSC(LAYOUT_PACKAGE_PC).CODE());
 
@@ -13625,14 +13621,14 @@ CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 		LayerAt(layer, code, 3, (row + idx + 1)) = hCState[idx][3];
 	}
 
-	LayerDeclare(	LAYOUT_PACKAGE_UNCORE, draw.Size.width,
+	LayerDeclare(	LAYOUT_PACKAGE_UNCORE, Draw.Size.width,
 			0, (row + 10), hUncore);
 
 	LayerCopyAt(	layer, hUncore.origin.col, hUncore.origin.row,
 			hUncore.length, hUncore.attr, hUncore.code);
 
 	LayerFillAt(	layer, 0, (row + 11),
-			draw.Size.width, hLine,
+			Draw.Size.width, hLine,
 			RSC(UI).ATTR()[UI_LAYOUT_RULER_PACKAGE] );
 
 	row += 2 + 10;
@@ -13641,7 +13637,7 @@ CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(LAYOUT_RULER_TASKS, draw.Size.width, 0, row, hTask0);
+	LayerDeclare(LAYOUT_RULER_TASKS, Draw.Size.width, 0, row, hTask0);
 
 	struct {
 		ATTRIBUTE *attr;
@@ -13709,8 +13705,8 @@ CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 		ASCII		*code;
 	} hTask2 = {
 		.origin = {
-			.col = (draw.Size.width - 18),
-			.row = (row + draw.Area.MaxRows + 1)
+			.col = (Draw.Size.width - 18),
+			.row = (row + Draw.Area.MaxRows + 1)
 		},
 		.length = 15,
 		.attr = hReverse[Shm->SysGate.reverseOrder].attr,
@@ -13718,8 +13714,8 @@ CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	};
 
 	LayerDeclare(LAYOUT_TASKS_VALUE_SWITCH, RSZ(LAYOUT_TASKS_VALUE_SWITCH),
-			(draw.Size.width - 34),
-			(row + draw.Area.MaxRows + 1),
+			(Draw.Size.width - 34),
+			(row + Draw.Area.MaxRows + 1),
 			hTask3);
 
 	struct {
@@ -13737,8 +13733,8 @@ CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	};
 	UNUSED(cpu);
 
-	memcpy(&hTask3.attr[8], hTaskVal[draw.Flag.taskVal].attr, 3);
-	memcpy(&hTask3.code[8], hTaskVal[draw.Flag.taskVal].code, 3);
+	memcpy(&hTask3.attr[8], hTaskVal[Draw.Flag.taskVal].attr, 3);
+	memcpy(&hTask3.code[8], hTaskVal[Draw.Flag.taskVal].code, 3);
 
 	LayerDeclare(	LAYOUT_TASKS_TRACKING, RSZ(LAYOUT_TASKS_TRACKING),
 			53, row, hTrack0 );
@@ -13749,8 +13745,8 @@ CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	LayerCopyAt(	layer, hTask1.origin.col, hTask1.origin.row,
 			hTask1.length, hTask1.attr, hTask1.code );
 
-	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
-			draw.Size.width, hLine,
+	LayerFillAt(	layer, 0, (row + Draw.Area.MaxRows + 1),
+			Draw.Size.width, hLine,
 			RSC(UI).ATTR()[UI_LAYOUT_RULER_TASKS_FILL] );
 
 	LayerCopyAt(	layer, hTask2.origin.col, hTask2.origin.row,
@@ -13770,7 +13766,7 @@ CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 				7, Buffer,
 				RSC(UI).ATTR()[UI_LAYOUT_RULER_TASKS_TRACKING]);
 	}
-	row += draw.Area.MaxRows + 2;
+	row += Draw.Area.MaxRows + 2;
 	return (row);
 }
 
@@ -13778,7 +13774,7 @@ CUINT Layout_Ruler_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	CUINT oRow;
 
-	LayerDeclare(LAYOUT_RULER_SENSORS, draw.Size.width, 0, row, hSensors);
+	LayerDeclare(LAYOUT_RULER_SENSORS, Draw.Size.width, 0, row, hSensors);
 
 	UNUSED(cpu);
 
@@ -13798,8 +13794,8 @@ CUINT Layout_Ruler_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
     case Cometlake_UY:
     case Cometlake:
 	{
-	LayerDeclare(	LAYOUT_RULER_PWR_PLATFORM, draw.Size.width,
-			0, (row + draw.Area.MaxRows + 1), hPwrPfm);
+	LayerDeclare(	LAYOUT_RULER_PWR_PLATFORM, Draw.Size.width,
+			0, (row + Draw.Area.MaxRows + 1), hPwrPfm);
 
 	LayerCopyAt(	layer, hPwrPfm.origin.col, hPwrPfm.origin.row,
 			hPwrPfm.length, hPwrPfm.attr, hPwrPfm.code );
@@ -13809,8 +13805,8 @@ CUINT Layout_Ruler_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 	break;
     default:
 	{
-	LayerDeclare(	LAYOUT_RULER_PWR_UNCORE, draw.Size.width,
-			0, (row + draw.Area.MaxRows + 1), hPwrUncore );
+	LayerDeclare(	LAYOUT_RULER_PWR_UNCORE, Draw.Size.width,
+			0, (row + Draw.Area.MaxRows + 1), hPwrUncore );
 
 	LayerCopyAt(	layer, hPwrUncore.origin.col, hPwrUncore.origin.row,
 			hPwrUncore.length, hPwrUncore.attr, hPwrUncore.code );
@@ -13820,8 +13816,8 @@ CUINT Layout_Ruler_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 	break;
     }
   } else {
-	LayerDeclare(	LAYOUT_RULER_PWR_SOC, draw.Size.width,
-			0, (row + draw.Area.MaxRows + 1), hPwrSoC );
+	LayerDeclare(	LAYOUT_RULER_PWR_SOC, Draw.Size.width,
+			0, (row + Draw.Area.MaxRows + 1), hPwrSoC );
 
 	LayerCopyAt(	layer, hPwrSoC.origin.col, hPwrSoC.origin.row,
 			hPwrSoC.length, hPwrSoC.attr, hPwrSoC.code );
@@ -13833,26 +13829,26 @@ CUINT Layout_Ruler_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 	LayerAt(layer,code, 57, oRow) = \
 	LayerAt(layer,code, 77, oRow) = Setting.jouleWatt ? 'W':'J';
 
-	row += draw.Area.MaxRows + 2;
+	row += Draw.Area.MaxRows + 2;
 	return (row);
 }
 
 CUINT Layout_Ruler_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(	LAYOUT_RULER_VOLTAGE, draw.Size.width, 0, row, hVolt );
+	LayerDeclare(	LAYOUT_RULER_VOLTAGE, Draw.Size.width, 0, row, hVolt );
 
 	UNUSED(cpu);
 
 	LayerCopyAt(	layer, hVolt.origin.col, hVolt.origin.row,
 			hVolt.length, hVolt.attr, hVolt.code );
 
-	LayerDeclare(	LAYOUT_RULER_VPKG_SOC, draw.Size.width,
-			0, (row + draw.Area.MaxRows + 1), hVPkg );
+	LayerDeclare(	LAYOUT_RULER_VPKG_SOC, Draw.Size.width,
+			0, (row + Draw.Area.MaxRows + 1), hVPkg );
 
 	LayerCopyAt(	layer, hVPkg.origin.col, hVPkg.origin.row,
 			hVPkg.length, hVPkg.attr, hVPkg.code );
 
-	row += draw.Area.MaxRows + 2;
+	row += Draw.Area.MaxRows + 2;
 	return (row);
 }
 
@@ -13863,20 +13859,20 @@ CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 
     if (Setting.jouleWatt)
     {
-	LayerDeclare(LAYOUT_RULER_POWER, draw.Size.width, 0, row,  hPwr0);
+	LayerDeclare(LAYOUT_RULER_POWER, Draw.Size.width, 0, row,  hPwr0);
 
 	LayerCopyAt(	layer,  hPwr0.origin.col,  hPwr0.origin.row,
 			 hPwr0.length,  hPwr0.attr,  hPwr0.code );
     }
    else
     {
-	LayerDeclare(LAYOUT_RULER_ENERGY, draw.Size.width, 0, row,  hPwr0);
+	LayerDeclare(LAYOUT_RULER_ENERGY, Draw.Size.width, 0, row,  hPwr0);
 
 	LayerCopyAt(	layer,  hPwr0.origin.col,  hPwr0.origin.row,
 			 hPwr0.length,  hPwr0.attr,  hPwr0.code );
     }
-	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
-			draw.Size.width, hLine,
+	LayerFillAt(	layer, 0, (row + Draw.Area.MaxRows + 1),
+			Draw.Size.width, hLine,
 			RSC(UI).ATTR()[UI_LAYOUT_RULER_ENERGY] );
 
   if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
@@ -13890,8 +13886,8 @@ CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
     case Cometlake_UY:
     case Cometlake:
 	{
-	LayerDeclare(	LAYOUT_RULER_PWR_PLATFORM, draw.Size.width,
-			0, (row + draw.Area.MaxRows + 1), hPwrPfm);
+	LayerDeclare(	LAYOUT_RULER_PWR_PLATFORM, Draw.Size.width,
+			0, (row + Draw.Area.MaxRows + 1), hPwrPfm);
 
 	LayerCopyAt(	layer, hPwrPfm.origin.col, hPwrPfm.origin.row,
 			hPwrPfm.length, hPwrPfm.attr, hPwrPfm.code );
@@ -13901,8 +13897,8 @@ CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 	break;
     default:
 	{
-	LayerDeclare(	LAYOUT_RULER_PWR_UNCORE, draw.Size.width,
-			0, (row + draw.Area.MaxRows + 1), hPwrUncore);
+	LayerDeclare(	LAYOUT_RULER_PWR_UNCORE, Draw.Size.width,
+			0, (row + Draw.Area.MaxRows + 1), hPwrUncore);
 
 	LayerCopyAt(	layer, hPwrUncore.origin.col, hPwrUncore.origin.row,
 			hPwrUncore.length, hPwrUncore.attr, hPwrUncore.code );
@@ -13912,8 +13908,8 @@ CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 	break;
     }
   } else {
-	LayerDeclare(	LAYOUT_RULER_PWR_SOC, draw.Size.width,
-			0, (row + draw.Area.MaxRows + 1), hPwrSoC);
+	LayerDeclare(	LAYOUT_RULER_PWR_SOC, Draw.Size.width,
+			0, (row + Draw.Area.MaxRows + 1), hPwrSoC);
 
 	LayerCopyAt(	layer, hPwrSoC.origin.col, hPwrSoC.origin.row,
 			hPwrSoC.length, hPwrSoC.attr, hPwrSoC.code );
@@ -13925,24 +13921,24 @@ CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 	LayerAt(layer,code, 57, oRow) = \
 	LayerAt(layer,code, 77, oRow) = Setting.jouleWatt ? 'W':'J';
 
-	row += draw.Area.MaxRows + 2;
+	row += Draw.Area.MaxRows + 2;
 	return (row);
 }
 
 CUINT Layout_Ruler_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(LAYOUT_RULER_SLICE, draw.Size.width, 0, row, hSlice0);
+	LayerDeclare(LAYOUT_RULER_SLICE, Draw.Size.width, 0, row, hSlice0);
 
 	UNUSED(cpu);
 
 	LayerCopyAt(	layer, hSlice0.origin.col, hSlice0.origin.row,
 			hSlice0.length, hSlice0.attr, hSlice0.code );
 
-	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
-			draw.Size.width, hLine,
+	LayerFillAt(	layer, 0, (row + Draw.Area.MaxRows + 1),
+			Draw.Size.width, hLine,
 			RSC(UI).ATTR()[UI_LAYOUT_RULER_SLICE] );
 
-	row += draw.Area.MaxRows + 2;
+	row += Draw.Area.MaxRows + 2;
 	return (row);
 }
 #endif /* NO_LOWER */
@@ -13962,9 +13958,12 @@ void Layout_Footer(Layer *layer, CUINT row)
 		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_ENABLE_2]
 	};
 	const struct { ASCII *code; ATTRIBUTE attr; } TSC[] = {
-		{(ASCII *)"  TSC  ", RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TSC_NONE]},
-		{(ASCII *)"TSC-VAR", RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TSC_VAR]},
-		{(ASCII *)"TSC-INV", RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TSC_INV]}
+		{RSC(LAYOUT_FOOTER_TSC_NONE).CODE(),
+				RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TSC_NONE]},
+		{RSC(LAYOUT_FOOTER_TSC_VAR).CODE(),
+				RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TSC_VAR]},
+		{RSC(LAYOUT_FOOTER_TSC_INV).CODE(),
+				RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TSC_INV]}
 	};
 
 	hTech0.code[ 6] = TSC[Shm->Proc.Features.InvariantTSC].code[0];
@@ -14040,7 +14039,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 	LayerFillAt(layer, (hTech1.origin.col + hTech1.length),
 			hTech1.origin.row,
-			(draw.Size.width - hTech0.length - hTech1.length),
+			(Draw.Size.width - hTech0.length - hTech1.length),
 			hSpace,
 			RSC(UI).ATTR()[UI_LAYOUT_FOOTER_FILL]);
     }
@@ -14088,7 +14087,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 	LayerFillAt(layer, (hTech1.origin.col + hTech1.length),
 			hTech1.origin.row,
-			(draw.Size.width - hTech0.length - hTech1.length),
+			(Draw.Size.width - hTech0.length - hTech1.length),
 			hSpace,
 			RSC(UI).ATTR()[UI_LAYOUT_FOOTER_FILL]);
       }
@@ -14099,7 +14098,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 	len = snprintf( Buffer, MAX_UTS_LEN, "%s",
 			BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) ?
-			Shm->SysGate.sysname : "SysGate" );
+			Shm->SysGate.sysname : (char *) RSC(SYSGATE).CODE() );
 
 	LayerFillAt(	layer, col, row,
 			len, Buffer,
@@ -14143,16 +14142,16 @@ void Layout_Footer(Layer *layer, CUINT row)
 	col++;
 
 	LayerDeclare(	LAYOUT_FOOTER_SYSTEM, RSZ(LAYOUT_FOOTER_SYSTEM),
-			(draw.Size.width-RSZ(LAYOUT_FOOTER_SYSTEM)),row, hSys1);
+			(Draw.Size.width-RSZ(LAYOUT_FOOTER_SYSTEM)),row, hSys1);
 
 	LayerCopyAt(	layer, hSys1.origin.col, hSys1.origin.row,
 			hSys1.length, hSys1.attr, hSys1.code );
 	/* Center the DMI string					*/
-	if ((len = strlen(Shm->SMB.String[draw.SmbIndex])) > 0) {
+	if ((len = strlen(Shm->SMB.String[Draw.SmbIndex])) > 0) {
 		CSINT	can = CUMIN(hSys1.origin.col - col - 1, len),
 			ctr = ((hSys1.origin.col + col) - can) / 2;
 		LayerFillAt(	layer, ctr, hSys1.origin.row,
-				can, ScrambleSMBIOS(draw.SmbIndex, 4, '-'),
+				can, ScrambleSMBIOS(Draw.SmbIndex, 4, '-'),
 				RSC(UI).ATTR()[UI_LAYOUT_FOOTER_DMI_STRING] );
 	}
 	/* Reset Tasks count & Memory usage				*/
@@ -14165,9 +14164,9 @@ void Layout_Footer(Layer *layer, CUINT row)
 	/* Print the memory unit character				*/
 	LayerAt(layer, code,
 		hSys1.origin.col + (RSZ(LAYOUT_FOOTER_SYSTEM) - 3),
-		hSys1.origin.row) =	draw.Unit.Memory ==  0 ? 'K'
-				:	draw.Unit.Memory == 10 ? 'M'
-				:	draw.Unit.Memory == 20 ? 'G' : 0x20;
+		hSys1.origin.row) =	Draw.Unit.Memory ==  0 ? 'K'
+				:	Draw.Unit.Memory == 10 ? 'M'
+				:	Draw.Unit.Memory == 20 ? 'G' : 0x20;
 }
 #endif /* NO_FOOTER */
 
@@ -14194,23 +14193,32 @@ void Layout_BCLK_To_View(Layer *layer, const CUINT col, const CUINT row)
 #ifndef NO_UPPER
 CUINT Draw_Frequency_Load(	Layer *layer, CUINT row,
 				const unsigned int cpu, double ratio )
-{	/*	Upper view area						*/
-	const CUINT	bar0 = ((ratio > Ruler.Maximum ? Ruler.Maximum : ratio)
-				* draw.Area.LoadWidth) / Ruler.Maximum,
-			bar1 = draw.Area.LoadWidth - bar0;
-	UNUSED(cpu);
-
-    if (bar0 > 0)
-    {
+{	/*	Upper view area: draw bar chart iff load exists:	*/
+	const CUINT col = ((ratio > Ruler.Maximum ? Ruler.Maximum : ratio)
+			* Draw.Area.LoadWidth) / Ruler.Maximum;
+    if (col > 0) {
 	const ATTRIBUTE attr = ratio > Ruler.Median ?
 				RSC(UI).ATTR()[UI_DRAW_FREQUENCY_LOAD_HIGH]
 				: ratio > Ruler.Minimum ?
 				RSC(UI).ATTR()[UI_DRAW_FREQUENCY_LOAD_MEDIUM]
 				: RSC(UI).ATTR()[UI_DRAW_FREQUENCY_LOAD_LOW];
-	LayerFillAt(layer, LOAD_LEAD, row, bar0, hBar, attr);
+
+	LayerFillAt(layer, LOAD_LEAD, row, col, hBar, attr);
     }
-	ClearGarbage(	layer, attr, (bar0 + LOAD_LEAD), row, bar1,
+    if (Draw.Bar[cpu].col > 0) {
+	struct {
+		const CUINT col, wth;
+	} garbage = {
+		.col = col + LOAD_LEAD,
+		.wth = Draw.Area.LoadWidth - col
+	};
+	ClearGarbage(	layer, attr, garbage.col, row, garbage.wth,
 			RSC(UI).ATTR()[UI_DRAW_FREQUENCY_LOAD_CLEAR].value );
+
+	ClearGarbage(	layer, code, garbage.col, row, garbage.wth, 0x0 );
+    }
+	Draw.Bar[cpu].col = col;
+
 	return (0);
 }
 
@@ -14288,7 +14296,7 @@ size_t Draw_Freq_Spaces(struct FLIP_FLOP *CFlop,
 			CPU_STRUCT *Cpu,
 			const unsigned int cpu)
 {
-	return (Draw_Freq_Spaces_Matrix[draw.Load](CFlop, Cpu, cpu));
+	return (Draw_Freq_Spaces_Matrix[Draw.Load](CFlop, Cpu, cpu));
 }
 
 size_t Draw_Relative_Freq_Celsius(	struct FLIP_FLOP *CFlop,
@@ -14351,7 +14359,7 @@ size_t Draw_Freq_Celsius(	struct FLIP_FLOP *CFlop,
 				CPU_STRUCT *Cpu,
 				const unsigned int cpu )
 {
-	return (Draw_Freq_Celsius_Matrix[draw.Load](CFlop, Cpu, cpu));
+	return (Draw_Freq_Celsius_Matrix[Draw.Load](CFlop, Cpu, cpu));
 };
 
 size_t Draw_Relative_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
@@ -14414,7 +14422,7 @@ size_t Draw_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
 				CPU_STRUCT *Cpu,
 				const unsigned int cpu )
 {
-	return (Draw_Freq_Fahrenheit_Matrix[draw.Load](CFlop, Cpu, cpu));
+	return (Draw_Freq_Fahrenheit_Matrix[Draw.Load](CFlop, Cpu, cpu));
 };
 
 size_t Draw_Freq_Celsius_PerCore(	struct FLIP_FLOP *CFlop,
@@ -14607,7 +14615,7 @@ CUINT Draw_Monitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-	size_t len = Draw_Monitor_Tasks_Matrix[draw.Load](CFlop);
+	size_t len = Draw_Monitor_Tasks_Matrix[Draw.Load](CFlop);
 
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 	cTask[cpu].col = LOAD_LEAD + 8;
@@ -14658,7 +14666,7 @@ size_t Draw_Sensors_V0_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 
 	return (snprintf(Buffer, 80+1,
 			"%7.2f%.*s",
-			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
+			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			69, hSpace) );
 }
 
@@ -14672,7 +14680,7 @@ size_t Draw_Sensors_V0_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 			"%7.2f%.*s"					\
 			"%8.4f\x20\x20\x20\x20\x20\x20" 	 	\
 			"%8.4f%.*s",
-			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
+			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			26, hSpace,
 			CFlop->State.Energy,
 			CFlop->State.Power,
@@ -14707,7 +14715,7 @@ size_t Draw_Sensors_V0_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 	return (snprintf(Buffer, 80+1,
 			"%7.2f%.*s"					\
 			"%3u%.*s",
-			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
+			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			17, hSpace,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					 : CFlop->Thermal.Temp,
@@ -14725,7 +14733,7 @@ size_t Draw_Sensors_V0_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 			"%3u\x20\x20\x20\x20\x20\x20"			\
 			"%8.4f\x20\x20\x20\x20\x20\x20" 	 	\
 			"%8.4f%.*s",
-			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
+			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			17, hSpace,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					 : CFlop->Thermal.Temp,
@@ -14838,7 +14846,7 @@ size_t Draw_Sensors_V1_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 	return (snprintf(Buffer, 80+1,
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f%.*s",
-			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
+			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Voltage.Vcore,
 			56, hSpace) );
 }
@@ -14855,7 +14863,7 @@ size_t Draw_Sensors_V1_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 			"\x20\x20\x20\x20\x20\x20\x20\x20\x20"		\
 			"%8.4f\x20\x20\x20\x20\x20\x20" 		\
 			"%8.4f%.*s",
-			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
+			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Voltage.Vcore,
 			CFlop->State.Energy,
 			CFlop->State.Power,
@@ -14891,7 +14899,7 @@ size_t Draw_Sensors_V1_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f\x20\x20\x20\x20" 			\
 			"%3u%.*s",					\
-			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
+			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Voltage.Vcore,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					 : CFlop->Thermal.Temp,
@@ -14910,7 +14918,7 @@ size_t Draw_Sensors_V1_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 			"%3u\x20\x20\x20\x20\x20\x20"			\
 			"%8.4f\x20\x20\x20\x20\x20\x20" 	 	\
 			"%8.4f%.*s",
-			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
+			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Voltage.Vcore,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					 : CFlop->Thermal.Temp,
@@ -15457,7 +15465,7 @@ size_t Draw_Voltage_SMT(Layer *layer, const unsigned int cpu, CUINT row)
 			"\x20\x20\x20%5.4f"				\
 			"\x20\x20\x20%5.4f"				\
 			"%.*s",
-			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
+			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Voltage.VID,
 			Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST],
 			CFlop->Voltage.Vcore,
@@ -15516,7 +15524,7 @@ size_t Draw_Energy_Joule(Layer *layer, const unsigned int cpu, CUINT row)
 	return (snprintf(Buffer, 80+1,
 			"%7.2f\x20\x20\x20%018llu\x20\x20\x20\x20"	\
 			"%10.6f\x20\x20%10.6f\x20\x20%10.6f",
-			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
+			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Delta.Power.ACCU,
 			Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST],
 			CFlop->State.Energy,
@@ -15532,7 +15540,7 @@ size_t Draw_Power_Watt(Layer *layer, const unsigned int cpu, CUINT row)
 	return (snprintf(Buffer, 80+1,
 			"%7.2f\x20\x20\x20%018llu\x20\x20\x20\x20"	\
 			"%10.6f\x20\x20%10.6f\x20\x20%10.6f",
-			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
+			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Delta.Power.ACCU,
 			Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST],
 			CFlop->State.Power,
@@ -15665,7 +15673,7 @@ CUINT Draw_Monitor_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 
 	const unsigned int flagError = (Shm->Cpu[cpu].Slice.Error > 0);
 	size_t len;
-	len = Draw_Monitor_Slice_Matrix[flagError][draw.Load](CFlop, pSlice);
+	len = Draw_Monitor_Slice_Matrix[flagError][Draw.Load](CFlop, pSlice);
 
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
@@ -15677,8 +15685,8 @@ CUINT Draw_AltMonitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 	size_t len;
 	UNUSED(cpu);
 
-	row += 1 + draw.Area.MaxRows;
-	if (!draw.Flag.avgOrPC) {
+	row += 1 + Draw.Area.MaxRows;
+	if (!Draw.Flag.avgOrPC) {
 		len = snprintf( Buffer, ((5*2)+1)+(6*7)+1,
 				"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% " \
 				"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%",
@@ -15713,14 +15721,14 @@ CUINT Draw_AltMonitor_Common(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(layer);
 	UNUSED(cpu);
 
-	row += 2 + draw.Area.MaxRows;
+	row += 2 + Draw.Area.MaxRows;
 	return (row);
 }
 
 CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
-	CUINT bar0, bar1, margin = draw.Area.LoadWidth - 28;
+	CUINT bar0, bar1, margin = Draw.Area.LoadWidth - 28;
 	size_t len;
 	UNUSED(cpu);
 
@@ -15729,7 +15737,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = Shm->Proc.State.PC02 * margin;
 	bar1 = margin - bar0;
 
-	len = snprintf( Buffer, draw.Area.LoadWidth,
+	len = snprintf( Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC02, 100.f * Shm->Proc.State.PC02,
 			bar0, hBar, bar1, hSpace );
@@ -15738,7 +15746,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = Shm->Proc.State.PC03 * margin;
 	bar1 = margin - bar0;
 
-	len = snprintf( Buffer, draw.Area.LoadWidth,
+	len = snprintf( Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC03, 100.f * Shm->Proc.State.PC03,
 			bar0, hBar, bar1, hSpace );
@@ -15747,7 +15755,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = Shm->Proc.State.PC04 * margin;
 	bar1 = margin - bar0;
 
-	len = snprintf( Buffer, draw.Area.LoadWidth,
+	len = snprintf( Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC04, 100.f * Shm->Proc.State.PC04,
 			bar0, hBar, bar1, hSpace );
@@ -15756,7 +15764,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = Shm->Proc.State.PC06 * margin;
 	bar1 = margin - bar0;
 
-	len = snprintf( Buffer, draw.Area.LoadWidth,
+	len = snprintf( Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC06, 100.f * Shm->Proc.State.PC06,
 			bar0, hBar, bar1, hSpace );
@@ -15765,7 +15773,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = Shm->Proc.State.PC07 * margin;
 	bar1 = margin - bar0;
 
-	len = snprintf( Buffer, draw.Area.LoadWidth,
+	len = snprintf( Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC07, 100.f * Shm->Proc.State.PC07,
 			bar0, hBar, bar1, hSpace );
@@ -15774,7 +15782,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = Shm->Proc.State.PC08 * margin;
 	bar1 = margin - bar0;
 
-	len = snprintf( Buffer, draw.Area.LoadWidth,
+	len = snprintf( Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC08, 100.f * Shm->Proc.State.PC08,
 			bar0, hBar, bar1, hSpace );
@@ -15783,7 +15791,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = Shm->Proc.State.PC09 * margin;
 	bar1 = margin - bar0;
 
-	len = snprintf( Buffer, draw.Area.LoadWidth,
+	len = snprintf( Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC09, 100.f * Shm->Proc.State.PC09,
 			bar0, hBar, bar1, hSpace );
@@ -15792,7 +15800,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = Shm->Proc.State.PC10 * margin;
 	bar1 = margin - bar0;
 
-	len = snprintf( Buffer, draw.Area.LoadWidth,
+	len = snprintf( Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC10, 100.f * Shm->Proc.State.PC10,
 			bar0, hBar, bar1, hSpace );
@@ -15801,13 +15809,13 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = Shm->Proc.State.MC6 * margin;
 	bar1 = margin - bar0;
 
-	len = snprintf( Buffer, draw.Area.LoadWidth,
+	len = snprintf( Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.MC6, 100.f * Shm->Proc.State.MC6,
 			bar0, hBar, bar1, hSpace );
 	memcpy(&LayerAt(layer, code, 5, (row + 8)), Buffer, len);
 /* TSC & UNCORE */
-	len = snprintf( Buffer, draw.Area.LoadWidth,
+	len = snprintf( Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%.*s" "UNCORE:%18llu",
 			PFlop->Delta.PTSC, 7+2+18, hSpace, PFlop->Uncore.FC0 );
 	memcpy(&LayerAt(layer, code, 5, (row + 9)), Buffer, len);
@@ -15829,18 +15837,18 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 
 	/* Clear the trailing garbage chars left by the previous drawing. */
 	FillLayerArea(	layer, (LOAD_LEAD + 8), (row + 1),
-			(draw.Size.width - (LOAD_LEAD + 8)), draw.Area.MaxRows,
+			(Draw.Size.width - (LOAD_LEAD + 8)), Draw.Area.MaxRows,
 			hSpace, RSC(UI).ATTR()[UI_DRAW_ALTMONITOR_TASKS_CLEAR]);
 
     for (idx = 0; idx < Shm->SysGate.taskCount; idx++)
     {
       if (!BITVAL(Shm->Cpu[Shm->SysGate.taskList[idx].wake_cpu].OffLine, OS)
-	&& (Shm->SysGate.taskList[idx].wake_cpu >= (short int)draw.cpuScroll)
-	&& (Shm->SysGate.taskList[idx].wake_cpu < (short int)(draw.cpuScroll
-							+ draw.Area.MaxRows)))
+	&& (Shm->SysGate.taskList[idx].wake_cpu >= (short int)Draw.cpuScroll)
+	&& (Shm->SysGate.taskList[idx].wake_cpu < (short int)(Draw.cpuScroll
+							+ Draw.Area.MaxRows)))
       {
 	unsigned int ldx = 2;
-	CSINT dif = draw.Size.width
+	CSINT dif = Draw.Size.width
 		  - cTask[Shm->SysGate.taskList[idx].wake_cpu].col;
 
 	if (dif > 0)
@@ -15850,7 +15858,7 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	    if (Shm->SysGate.taskList[idx].pid == Shm->SysGate.trackTask) {
 		stateAttr = RSC(TRACKER_STATE_COLOR).ATTR();
 	    }
-	    if (!draw.Flag.taskVal) {
+	    if (!Draw.Flag.taskVal) {
 		len = snprintf( Buffer, TASK_COMM_LEN, "%s",
 				Shm->SysGate.taskList[idx].comm );
 	    } else {
@@ -15892,7 +15900,7 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 
 		cTask[Shm->SysGate.taskList[idx].wake_cpu].col += len;
 	      /* Add a blank spacing between items: up to (ldx) chars	*/
-	      while ((dif = draw.Size.width
+	      while ((dif = Draw.Size.width
 			- cTask[Shm->SysGate.taskList[idx].wake_cpu].col) > 0
 		&& ldx--)
 	      {
@@ -15918,7 +15926,7 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
       }
     }
   }
-  row += 2 + draw.Area.MaxRows;
+  row += 2 + Draw.Area.MaxRows;
   return (row);
 }
 
@@ -15952,7 +15960,7 @@ CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
 	const CUINT col = LOAD_LEAD;
 	UNUSED(cpu);
 
-	row += 1 + draw.Area.MaxRows;
+	row += 1 + Draw.Area.MaxRows;
 
 	Draw_AltMonitor_Power_Matrix[Setting.jouleWatt]();
 
@@ -15970,7 +15978,7 @@ CUINT Draw_AltMonitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 	const CUINT col = LOAD_LEAD + 8;
 	UNUSED(cpu);
 
-	row += 1 + draw.Area.MaxRows;
+	row += 1 + Draw.Area.MaxRows;
 
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 
@@ -16043,11 +16051,11 @@ void Draw_Footer(Layer *layer, CUINT row)
 	};
 	unsigned int _hot = 0, _tmp = 0;
 
-	if (!processorEvents) {
+	if (!ProcessorEvents) {
 		_hot = 0;
 		_tmp = 3;
 	} else {
-	    if (processorEvents &	( EVENT_THERM_SENSOR
+	    if (ProcessorEvents &	( EVENT_THERM_SENSOR
 					| EVENT_THERM_PROCHOT
 					| EVENT_THERM_CRIT
 					| EVENT_THERM_THOLD ) )
@@ -16090,10 +16098,10 @@ void Draw_Footer(Layer *layer, CUINT row)
 
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)
 	&& (Shm->SysGate.tickStep == Shm->SysGate.tickReset)) {
-		if ((draw.Cache.TaskCount != Shm->SysGate.taskCount)
-		 || (draw.Cache.FreeRAM != Shm->SysGate.memInfo.freeram)) {
-			draw.Cache.TaskCount = Shm->SysGate.taskCount;
-			draw.Cache.FreeRAM = Shm->SysGate.memInfo.freeram;
+		if ((Draw.Cache.TaskCount != Shm->SysGate.taskCount)
+		 || (Draw.Cache.FreeRAM != Shm->SysGate.memInfo.freeram)) {
+			Draw.Cache.TaskCount = Shm->SysGate.taskCount;
+			Draw.Cache.FreeRAM = Shm->SysGate.memInfo.freeram;
 
 			PrintTaskMemory(layer, (row + 1),
 					Shm->SysGate.taskCount,
@@ -16111,9 +16119,9 @@ void Draw_Header(Layer *layer, CUINT row)
 	unsigned int digit[9];
 
 	/* Print the Top frequency in MHz Or the C0 C-State % load	*/
-    if (!draw.Flag.clkOrLd)
+    if (!Draw.Flag.clkOrLd)
     {
-	if (draw.Load) {
+	if (Draw.Load) {
 		const unsigned int top = Shm->Proc.Top.Abs;
 		CFlop = &Shm->Cpu[top].FlipFlop[!Shm->Cpu[top].Toggle];
 
@@ -16127,9 +16135,9 @@ void Draw_Header(Layer *layer, CUINT row)
 					CFlop->Relative.Ratio);
 	}
     } else {
-	if (draw.Cache.TopAvg != Shm->Proc.Avg.C0) {
+	if (Draw.Cache.TopAvg != Shm->Proc.Avg.C0) {
 		double percent = 100.f * Shm->Proc.Avg.C0;
-		draw.Cache.TopAvg = Shm->Proc.Avg.C0;
+		Draw.Cache.TopAvg = Shm->Proc.Avg.C0;
 
 		Load2LCD(layer, 0, row, percent);
 	}
@@ -16137,8 +16145,8 @@ void Draw_Header(Layer *layer, CUINT row)
 	/* Print the focused BCLK					*/
 	row += 2;
 
-	CFlop = &Shm->Cpu[ draw.iClock + draw.cpuScroll ]		\
-		.FlipFlop[ !Shm->Cpu[draw.iClock + draw.cpuScroll].Toggle ];
+	CFlop = &Shm->Cpu[ Draw.iClock + Draw.cpuScroll ]		\
+		.FlipFlop[ !Shm->Cpu[Draw.iClock + Draw.cpuScroll].Toggle ];
 
 	Dec2Digit(9, CFlop->Clock.Hz, digit);
 
@@ -16233,7 +16241,7 @@ VIEW_FUNC Matrix_Draw_AltMon[VIEW_SIZE] = {
 #ifndef NO_LOWER
 #ifndef NO_UPPER
 	#define Illuminates_Lower_CPU_At(_layer, _col, _row)		\
-		LayerAt(_layer, attr, _col, (1 + _row + draw.Area.MaxRows)) =
+		LayerAt(_layer, attr, _col, (1 + _row + Draw.Area.MaxRows)) =
 #else
 	#define Illuminates_Lower_CPU_At(_layer, _col, _row)		\
 		LayerAt(_layer, attr, _col, (_row)) =
@@ -16267,7 +16275,7 @@ void Layout_Header_DualView_Footer(Layer *layer)
 #ifndef NO_UPPER
 	Layout_Ruler_Load(layer, row);
 #endif
-  for(cpu = draw.cpuScroll; cpu < (draw.cpuScroll + draw.Area.MaxRows); cpu++)
+  for(cpu = Draw.cpuScroll; cpu < (Draw.cpuScroll + Draw.Area.MaxRows); cpu++)
   {
 	Layout_CPU_To_String(cpu);
 #ifndef NO_UPPER
@@ -16278,11 +16286,11 @@ void Layout_Header_DualView_Footer(Layer *layer)
 	row = row + 1;
 #ifndef NO_LOWER
 #ifndef NO_UPPER
-    if (draw.View != V_PACKAGE) {
-	Layout_CPU_To_View(layer, 0, row + draw.Area.MaxRows + 1);
+    if (Draw.View != V_PACKAGE) {
+	Layout_CPU_To_View(layer, 0, row + Draw.Area.MaxRows + 1);
     }
 #else
-    if (draw.View != V_PACKAGE) {
+    if (Draw.View != V_PACKAGE) {
 	Layout_CPU_To_View(layer, 0, row);
     }
 #endif
@@ -16298,9 +16306,9 @@ void Layout_Header_DualView_Footer(Layer *layer)
 }
 #ifndef NO_LOWER
 #ifndef NO_UPPER
-	Matrix_Layout_Monitor[draw.View](layer,cpu,row + draw.Area.MaxRows + 1);
+	Matrix_Layout_Monitor[Draw.View](layer,cpu,row + Draw.Area.MaxRows + 1);
 #else
-	Matrix_Layout_Monitor[draw.View](layer,cpu,row);
+	Matrix_Layout_Monitor[Draw.View](layer,cpu,row);
 #endif
 #endif
     }
@@ -16311,22 +16319,22 @@ void Layout_Header_DualView_Footer(Layer *layer)
 #ifndef NO_UPPER
 	ClearGarbage(	dLayer, code,
 			(LOAD_LEAD - 1), row,
-			(draw.Size.width - LOAD_LEAD + 1), 0x0);
+			(Draw.Size.width - LOAD_LEAD + 1), 0x0);
 #endif
 #ifndef NO_LOWER
 #ifndef NO_UPPER
 	ClearGarbage(	dLayer, attr,
-			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
-			(draw.Size.width - LOAD_LEAD + 1),
+			(LOAD_LEAD - 1), (row + Draw.Area.MaxRows + 1),
+			(Draw.Size.width - LOAD_LEAD + 1),
 			RSC(UI).ATTR()[UI_LAYOUT_ROW_CPU_OFFLINE].value );
 
 	ClearGarbage(	dLayer, code,
-			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
-			(draw.Size.width - LOAD_LEAD + 1), 0x0 );
+			(LOAD_LEAD - 1), (row + Draw.Area.MaxRows + 1),
+			(Draw.Size.width - LOAD_LEAD + 1), 0x0 );
 #else
 	ClearGarbage(	dLayer, code,
 			(LOAD_LEAD - 1), row,
-			(draw.Size.width - LOAD_LEAD + 1), 0x0 );
+			(Draw.Size.width - LOAD_LEAD + 1), 0x0 );
 #endif
 #endif
     }
@@ -16334,9 +16342,9 @@ void Layout_Header_DualView_Footer(Layer *layer)
 	row++;
 #ifndef NO_LOWER
 #ifndef NO_UPPER
-	row = Matrix_Layout_Ruler[draw.View](layer, 0, row);
+	row = Matrix_Layout_Ruler[Draw.View](layer, 0, row);
 #else
-	row = Matrix_Layout_Ruler[draw.View](layer, 0, TOP_HEADER_ROW);
+	row = Matrix_Layout_Ruler[Draw.View](layer, 0, TOP_HEADER_ROW);
 #endif
 #endif
 #ifndef NO_FOOTER
@@ -16350,17 +16358,17 @@ void Dynamic_Header_DualView_Footer(Layer *layer)
 	CUINT row = 0;
 
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
-	processorEvents = PFlop->Thermal.Events;
+	ProcessorEvents = PFlop->Thermal.Events;
 #ifndef NO_HEADER
 	Draw_Header(layer, row);
 #endif
 	row += TOP_HEADER_ROW;
 
-  for (cpu = draw.cpuScroll; cpu < (draw.cpuScroll + draw.Area.MaxRows); cpu++)
+  for (cpu = Draw.cpuScroll; cpu < (Draw.cpuScroll + Draw.Area.MaxRows); cpu++)
   {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-	processorEvents |= CFlop->Thermal.Events;
+	ProcessorEvents |= CFlop->Thermal.Events;
 
 	row++;
 
@@ -16369,16 +16377,16 @@ void Dynamic_Header_DualView_Footer(Layer *layer)
       if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
       {
 #ifndef NO_UPPER
-	Matrix_Draw_Load[draw.Load](layer, cpu, row);
+	Matrix_Draw_Load[Draw.Load](layer, cpu, row);
 #endif
       }
 	/*	Print the Per Core BCLK indicator (yellow)		*/
 #ifdef NO_UPPER
-    if (draw.View != V_PACKAGE) {
+    if (Draw.View != V_PACKAGE) {
 #endif
 #if !defined(NO_LOWER) || !defined(NO_UPPER)
 	LayerAt(layer, code, (LOAD_LEAD - 1), row) =
-			(draw.iClock == (cpu - draw.cpuScroll)) ? '~' : 0x20;
+			(Draw.iClock == (cpu - Draw.cpuScroll)) ? '~' : 0x20;
 #endif
 #ifdef NO_UPPER
     }
@@ -16386,9 +16394,9 @@ void Dynamic_Header_DualView_Footer(Layer *layer)
 
 #ifndef NO_LOWER
 #ifndef NO_UPPER
-	Matrix_Draw_Monitor[draw.View](layer, cpu, row + draw.Area.MaxRows + 1);
+	Matrix_Draw_Monitor[Draw.View](layer, cpu, row + Draw.Area.MaxRows + 1);
 #else
-	Matrix_Draw_Monitor[draw.View](layer, cpu, row);
+	Matrix_Draw_Monitor[Draw.View](layer, cpu, row);
 #endif
 #endif
     }
@@ -16396,9 +16404,9 @@ void Dynamic_Header_DualView_Footer(Layer *layer)
 	row++;
 #ifndef NO_LOWER
 #ifndef NO_UPPER
-	row = Matrix_Draw_AltMon[draw.View](layer, 0, row);
+	row = Matrix_Draw_AltMon[Draw.View](layer, 0, row);
 #else
-	row = Matrix_Draw_AltMon[draw.View](layer, 0, TOP_HEADER_ROW);
+	row = Matrix_Draw_AltMon[Draw.View](layer, 0, TOP_HEADER_ROW);
 #endif
 #endif
 #ifndef NO_FOOTER
@@ -16626,8 +16634,8 @@ unsigned int MoveDashboardCursor(Coordinate *coord)
 {
 	const CUINT	marginWidth = MARGIN_WIDTH + (4 * INTER_WIDTH);
 	const CUINT	marginHeight = MARGIN_HEIGHT + INTER_HEIGHT;
-	const CUINT	rightEdge = draw.Size.width - marginWidth,
-			bottomEdge = draw.Size.height + marginHeight;
+	const CUINT	rightEdge = Draw.Size.width - marginWidth,
+			bottomEdge = Draw.Size.height + marginHeight;
 
 	coord->col += marginWidth;
 	if (coord->col > rightEdge) {
@@ -17004,13 +17012,23 @@ REASON_CODE Top(char option)
 
 	TrapScreenSize(SIGWINCH);
 
-	if (signal(SIGWINCH, TrapScreenSize) == SIG_ERR) {
-		REASON_SET(reason);
-  } else if((cTask = calloc(Shm->Proc.CPU.Count, sizeof(Coordinate))) == NULL) {
-		REASON_SET(reason, RC_MEM_ERR);
-  } else if (AllocAll(&Buffer) == ENOMEM) {
-		REASON_SET(reason, RC_MEM_ERR, ENOMEM);
-  } else
+  if (signal(SIGWINCH, TrapScreenSize) == SIG_ERR) {
+	REASON_SET(reason);
+  }
+  else if ((cTask = calloc(Shm->Proc.CPU.Count, sizeof(Coordinate))) == NULL) {
+	REASON_SET(reason, RC_MEM_ERR);
+  }
+#ifndef NO_UPPER
+  else if ( (Draw.Bar = calloc( Shm->Proc.CPU.Count,
+				sizeof(struct BAR_ST) )) == NULL )
+  {
+	REASON_SET(reason, RC_MEM_ERR);
+  }
+#endif /* NO_UPPER */
+  else if (AllocAll(&Buffer) == ENOMEM) {
+	REASON_SET(reason, RC_MEM_ERR, ENOMEM);
+  }
+  else
   {
 	AllocDashboard();
 
@@ -17025,20 +17043,20 @@ REASON_CODE Top(char option)
 		Dynamic_NoHeader_SingleView_NoFooter
 	};
 
-	draw.Disposal = (option == 'd') ? D_DASHBOARD : D_MAINVIEW;
+	Draw.Disposal = (option == 'd') ? D_DASHBOARD : D_MAINVIEW;
 
 	RECORDER_COMPUTE(Recorder, Shm->Sleep.Interval);
 
 	LoadGeometries(BuildConfigFQN("CoreFreq"));
 
-	SET_THEME(draw.Theme);
+	SET_THEME(Draw.Theme);
 
 	/* MAIN LOOP */
     while (!BITVAL(Shutdown, SYNC))
     {
       do
       {
-	if ((draw.Flag.daemon = BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0)) == 0)
+	if ((Draw.Flag.daemon = BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0)) == 0)
 	{
 		SCANKEY scan = {.key = 0};
 
@@ -17070,66 +17088,70 @@ REASON_CODE Top(char option)
 	}
 	if (BITCLR(LOCKLESS, Shm->Proc.Sync, COMP0)) {
 		AggregateRatio();
-		draw.Flag.clear = 1;	/* Compute required,clear the layout */
+		Draw.Flag.clear = 1;	/* Compute required,clear the layout */
 	}
 	if (BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY0)) {
 		ClientFollowService(&localService, &Shm->Proc.Service, 0);
 		RECORDER_COMPUTE(Recorder, Shm->Sleep.Interval);
-		draw.Flag.layout = 1;	 /* Platform changed, redraw layout */
+		Draw.Flag.layout = 1;	 /* Platform changed, redraw layout */
 	}
       } while ( !BITVAL(Shutdown, SYNC)
-		&& !draw.Flag.daemon
-		&& !draw.Flag.layout
-		&& !draw.Flag.clear ) ;
+		&& !Draw.Flag.daemon
+		&& !Draw.Flag.layout
+		&& !Draw.Flag.clear ) ;
 
-      if (draw.Flag.height & draw.Flag.width)
+      if (Draw.Flag.height & Draw.Flag.width)
       {
-	if (draw.Flag.clear) {
-		draw.Flag.clear  = 0;
-		draw.Flag.layout = 1;
+	if (Draw.Flag.clear) {
+		Draw.Flag.clear  = 0;
+		Draw.Flag.layout = 1;
 		ResetLayer(dLayer, RSC(UI).ATTR()[UI_FUSE_RESET_LAYER]);
 	}
-	if (draw.Flag.layout) {
-		draw.Flag.layout = 0;
+	if (Draw.Flag.layout) {
+		Draw.Flag.layout = 0;
 		ResetLayer(sLayer, RSC(UI).ATTR()[UI_FUSE_PAINT_LAYER]);
-		LayoutView[draw.Disposal](sLayer);
+		LayoutView[Draw.Disposal](sLayer);
 	}
-	if (draw.Flag.daemon)
+	if (Draw.Flag.daemon)
 	{
-		DynamicView[draw.Disposal](dLayer);
+		DynamicView[Draw.Disposal](dLayer);
 
 		/* Increment the BCLK indicator (skip offline CPU)	*/
 		do {
-			draw.iClock++;
-			if (draw.iClock >= draw.Area.MaxRows) {
-				draw.iClock = 0;
+			Draw.iClock++;
+			if (Draw.iClock >= Draw.Area.MaxRows) {
+				Draw.iClock = 0;
 			}
-		} while (BITVAL(Shm->Cpu[draw.iClock].OffLine, OS)
-			&& (draw.iClock != Shm->Proc.Service.Core)) ;
+		} while (BITVAL(Shm->Cpu[Draw.iClock].OffLine, OS)
+			&& (Draw.iClock != Shm->Proc.Service.Core)) ;
 	}
 	Draw_uBenchmark(dLayer);
 	UBENCH_RDCOUNTER(1);
 
 	/* Write to the standard output.				*/
-	draw.Flag.layout = WriteConsole(draw.Size);
+	Draw.Flag.layout = WriteConsole(Draw.Size);
 
 	UBENCH_RDCOUNTER(2);
 	UBENCH_COMPUTE();
       } else {
-	printf( CUH RoK "Term(%u x %u) < View(%u x %u)\n",
-		draw.Size.width,draw.Size.height,MIN_WIDTH,draw.Area.MinHeight);
+	fprintf(stderr, CUH RoK "Term(%u x %u) < View(%u x %u)\n",
+		Draw.Size.width,Draw.Size.height,MIN_WIDTH,Draw.Area.MinHeight);
       }
     }
     SaveGeometries(BuildConfigFQN("CoreFreq"));
   }
-  FreeAll(Buffer);
-
+	FreeAll(Buffer);
+#ifndef NO_UPPER
+  if (Draw.Bar != NULL) {
+	free(Draw.Bar);
+  }
+#endif /* NO_UPPER */
   if (cTask != NULL) {
 	free(cTask);
   }
-  DestroyAllCards(&cardList);
+	DestroyAllCards(&cardList);
 
-  return (reason);
+	return (reason);
 }
 
 REASON_CODE Help(REASON_CODE reason, ...)
@@ -17272,7 +17294,10 @@ int main(int argc, char *argv[])
 			PROT_READ|PROT_WRITE, MAP_SHARED,
 			fd, 0)) != MAP_FAILED)
       {
-       if (CHK_FOOTPRINT(Shm->FootPrint,COREFREQ_MAJOR,
+       if (CHK_FOOTPRINT(Shm->FootPrint,MAX_FREQ_HZ,
+					CORE_COUNT,
+					TASK_ORDER,
+					COREFREQ_MAJOR,
 					COREFREQ_MINOR,
 					COREFREQ_REV)	)
        {
@@ -17297,13 +17322,13 @@ int main(int argc, char *argv[])
 	    case 'O':
 		switch (argv[idx][2]) {
 		case 'k':
-			draw.Unit.Memory = 10 * 0;
+			Draw.Unit.Memory = 10 * 0;
 			break;
 		case 'm':
-			draw.Unit.Memory = 10 * 1;
+			Draw.Unit.Memory = 10 * 1;
 			break;
 		case 'g':
-			draw.Unit.Memory = 10 * 2;
+			Draw.Unit.Memory = 10 * 2;
 			break;
 		case 'F':
 			Setting.fahrCels = 1;
@@ -17315,7 +17340,7 @@ int main(int argc, char *argv[])
 			 || (usrIdx >= SMB_STRING_COUNT)) {
 				goto SYNTAX_ERROR;
 			} else {
-				draw.SmbIndex = usrIdx;
+				Draw.SmbIndex = usrIdx;
 			}
 		    }
 			break;
@@ -17329,7 +17354,7 @@ int main(int argc, char *argv[])
 			|| (theme >= THM_CNT)) {
 				goto SYNTAX_ERROR;
 			} else {
-				draw.Theme = theme;
+				Draw.Theme = theme;
 			}
 		    }
 			break;
@@ -17543,7 +17568,7 @@ int main(int argc, char *argv[])
 			if ((nlen >= 0)
 			&& (strncmp(pOpt->first, argv[idx], rlen) == 0))
 			{
-				draw.View = pOpt->view;
+				Draw.View = pOpt->view;
 				break;
 			}
 		    }
