@@ -9991,6 +9991,7 @@ int Shortcut(SCANKEY *scan)
 		RSC(BOX_THEME_BLANK).CODE(), blankAttr, SCANKEY_NULL,
 		RSC(THEME_DFLT).CODE()	, stateAttr[0], BOXKEY_THEME_DFLT,
 		RSC(THEME_USR1).CODE()	, stateAttr[0], BOXKEY_THEME_USR1,
+		RSC(THEME_USR2).CODE()	, stateAttr[0], BOXKEY_THEME_USR2,
 		RSC(BOX_THEME_BLANK).CODE(), blankAttr, SCANKEY_NULL);
 
 		if (wBox != NULL) {
@@ -10011,6 +10012,11 @@ int Shortcut(SCANKEY *scan)
 
     case BOXKEY_THEME_USR1:
 	SET_THEME(THM_USR1);
+	Draw.Flag.layout = 1;
+    break;
+
+    case BOXKEY_THEME_USR2:
+	SET_THEME(THM_USR2);
 	Draw.Flag.layout = 1;
     break;
 
