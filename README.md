@@ -400,7 +400,9 @@ o---------------------------------------------------------------o
 |                                                               |
 |  User Interface Layout:                                       |
 |    NO_HEADER=<F>  NO_FOOTER=<F>  NO_UPPER=<F>  NO_LOWER=<F>   |
-|      when <F> is 1 don't build and display this area part     |
+|      when <F> is 1: don't build and display this area part    |
+|    UI_TRANSPARENCY=<F>                                        |
+|      when <F> is 1: build with background transparency        |
 |                                                               |
 |  Example:                                                     |
 |    make CC=gcc OPTIM_LVL=3 FEAT_DBG=1                         |

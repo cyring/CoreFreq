@@ -1904,9 +1904,11 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize)
 		stream[sdx++] = ';';
 		stream[sdx++] = fa->bf ? '9' : '3';
 		stream[sdx++] = '0' + fa->fg;
+	#ifndef UI_TRANSPARENCY
 		stream[sdx++] = ';';
 		stream[sdx++] = '4';
 		stream[sdx++] = '0' + fa->bg;
+	#endif /* UI_TRANSPARENCY */
 		stream[sdx++] = 'm';
 	    }
 	    if (fa->un ^ attr.un)
