@@ -1449,11 +1449,13 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 		break;
 	case SCANKEY_HOME:
 	case SCANCON_HOME:
+	case SCANSYM_HOME:
 		if (win->hook.key.Home != NULL)
 			win->hook.key.Home(win);
 		break;
 	case SCANKEY_END:
 	case SCANCON_END:
+	case SCANSYM_END:
 		if (win->hook.key.End != NULL)
 			win->hook.key.End(win);
 		break;
@@ -1466,28 +1468,33 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 			win->hook.key.PgDw(win);
 		break;
 	case SCANKEY_SHIFT_RIGHT:
+	case SCANSYM_SHIFT_RIGHT:
 	case SCANKEY_SHIFT_d:
 		if (win->hook.key.WinRight != NULL)
 			win->hook.key.WinRight(win);
 		break;
 	case SCANKEY_SHIFT_LEFT:
+	case SCANSYM_SHIFT_LEFT:
 	case SCANKEY_SHIFT_a:	/* AZERTY */
 	case SCANKEY_SHIFT_q:	/* QWERTY */
 		if (win->hook.key.WinLeft != NULL)
 			win->hook.key.WinLeft(win);
 		break;
 	case SCANKEY_SHIFT_UP:
+	case SCANSYM_SHIFT_UP:
 	case SCANKEY_SHIFT_w:	/* QWERTY */
 	case SCANKEY_SHIFT_z:	/* AZERTY */
 		if (win->hook.key.WinUp != NULL)
 			win->hook.key.WinUp(win);
 		break;
 	case SCANKEY_SHIFT_DOWN:
+	case SCANSYM_SHIFT_DOWN:
 	case SCANKEY_SHIFT_s:
 		if (win->hook.key.WinDown != NULL)
 			win->hook.key.WinDown(win);
 		break;
 	case SCANKEY_ALT_UP:
+	case SCANSYM_ALT_UP:
 	case SCANKEY_ALT_SHIFT_a:
 	case SCANKEY_ALT_SHIFT_z:
 	case SCANKEY_ALT_a:
@@ -1498,6 +1505,7 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 			win->hook.key.Shrink(win);
 		break;
 	case SCANKEY_ALT_DOWN:
+	case SCANSYM_ALT_DOWN:
 	case SCANKEY_ALT_SHIFT_s:
 	case SCANKEY_ALT_s:
 	case SCANCON_ALT_s:
