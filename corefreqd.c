@@ -4362,6 +4362,8 @@ static char *Chipset[CHIPSETS] = {
 	[IC_SUNRISEPOINT]	= "Sunrise Point",
 	[IC_UNIONPOINT] 	= "Union Point",
 	[IC_CANNONPOINT]	= "Cannon Point",
+	[IC_400_SERIES_P]	= "400 Series-Prem-U",
+	[IC_400_SERIES_M]	= "400 Series-Base-U",
 	[IC_K8] 		= "K8/HyperTransport",
 	[IC_ZEN]		= "Zen UMC"
 };
@@ -4689,6 +4691,16 @@ void PCI_Intel(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core,unsigned short DID)
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
+		break;
+	case PCI_DEVICE_ID_INTEL_COMETLAKE_U_IMC_HB:
+		SKL_CAP(Shm, Proc, Core);
+		SKL_IMC(Shm, Proc);
+		break;
+	case PCI_DEVICE_ID_INTEL_COMETLAKE_PREM_U_PCH_LP:
+		SET_CHIPSET(IC_400_SERIES_P);
+		break;
+	case PCI_DEVICE_ID_INTEL_COMETLAKE_BASE_U_PCH_LP:
+		SET_CHIPSET(IC_400_SERIES_M);
 		break;
 	}
 }

@@ -1507,6 +1507,7 @@ static PCI_CALLBACK SKL_IMC(struct pci_dev *dev) ;
 /* TODO:
 static PCI_CALLBACK SKL_SA(struct pci_dev *dev) ;
 */
+static PCI_CALLBACK CML_PCH(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev) ;
 #ifdef CONFIG_AMD_NB
@@ -1993,6 +1994,18 @@ static struct pci_device_id PCI_Kabylake_ids[] = {
 	{
       PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_WHISKEYLAKE_U_IMC_HAQ),
 		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_U_IMC_HB),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_COMETLAKE_PREM_U_PCH_LP),
+		.driver_data = (kernel_ulong_t) CML_PCH
+	},
+	{
+    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_COMETLAKE_BASE_U_PCH_LP),
+		.driver_data = (kernel_ulong_t) CML_PCH
 	},
 	{0, }
 };

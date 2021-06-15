@@ -4606,6 +4606,11 @@ static PCI_CALLBACK SKL_SA(struct pci_dev *dev)
 	return (0);
 }
 */
+static PCI_CALLBACK CML_PCH(struct pci_dev *dev)
+{
+	UNUSED(dev);
+	return ((PCI_CALLBACK) 0);
+}
 
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev)
 {	/* Source: BKDG for AMD NPT Family 0Fh Processors.		*/
