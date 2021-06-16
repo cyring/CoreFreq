@@ -3681,8 +3681,10 @@ void SKL_IMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI =
 			Proc->Uncore.MC[mc].Channel[cha].SKL.Refresh.tREFI;
-	/*TODO(	TRAS = TRCD + TWR is not accurate )			*/
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 0;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR =
+			Proc->Uncore.MC[mc].Channel[cha].SKL.Timing.tWRPRE
+			- Proc->Uncore.MC[mc].Channel[cha].SKL.ODT.tCWL - 4;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
 			Proc->Uncore.MC[mc].Channel[cha].SKL.Timing.tRDPRE;
