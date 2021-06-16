@@ -4606,6 +4606,11 @@ static PCI_CALLBACK SKL_SA(struct pci_dev *dev)
 	return (0);
 }
 */
+static PCI_CALLBACK CML_PCH(struct pci_dev *dev)
+{
+	UNUSED(dev);
+	return ((PCI_CALLBACK) 0);
+}
 
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev)
 {	/* Source: BKDG for AMD NPT Family 0Fh Processors.		*/
@@ -9324,12 +9329,69 @@ static void PerCore_Skylake_X_Query(void *arg)
 				Intel_Turbo_Cfg_SKL_X_PerCore,
 				Assign_SKL_X_Boost );
 
-	PerCore_Skylake_Query(arg);
+	Intel_Platform_Info(Core->Bind);
+	Intel_Turbo_Config(Core, Intel_Turbo_Cfg8C_PerCore, Assign_8C_Boost);
+
+	SystemRegisters(Core);
+
+	Intel_Mitigation_Mechanisms(Core);
+
+	Intel_VirtualMachine(Core);
+
+	Intel_Microcode(Core);
+
+	Dump_CPUID(Core);
+
+	Intel_DCU_Technology(Core);
+
+	SpeedStep_Technology(Core);
+
+	TurboBoost_Technology(	Core,
+				Set_SandyBridge_Target,
+				Get_SandyBridge_Target,
+				Cmp_SandyBridge_Target,
+				Core->Boost[BOOST(1C)],
+				Core->Boost[BOOST(MAX)] );
+
+	Query_Intel_C1E(Core);
+
+	if (Core->T.ThreadID == 0) {				/* Per Core */
+		Intel_CStatesConfiguration(CSTATES_SKL, Core);
+	} else {
+		CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
+		RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+	/*	Store the C-State Base Address used by I/O-MWAIT	*/
+		Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
+	}
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
+
+	PowerThermal(Core);
+
+	ThermalMonitor_Set(Core);
+
+	Intel_Turbo_Activation_Ratio(Core);
+	Intel_Turbo_TDP_Config(Core);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,
+					PKG_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(PKG) );
+
+		Intel_DomainPowerLimit( MSR_PP0_POWER_LIMIT,
+					PPn_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(CORES) );
+
+		Intel_DomainPowerLimit( MSR_PLATFORM_POWER_LIMIT,
+					PKG_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(PLATFORM) );
+
 		Intel_DomainPowerLimit( MSR_DRAM_POWER_LIMIT,
 					PPn_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(RAM) );
+		Intel_Watchdog(Core);
 	}
 }
 

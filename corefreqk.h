@@ -1507,6 +1507,8 @@ static PCI_CALLBACK SKL_IMC(struct pci_dev *dev) ;
 /* TODO:
 static PCI_CALLBACK SKL_SA(struct pci_dev *dev) ;
 */
+static PCI_CALLBACK CML_PCH(struct pci_dev *dev) ;
+#define RKL_PCH CML_PCH
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev) ;
 #ifdef CONFIG_AMD_NB
@@ -1993,6 +1995,94 @@ static struct pci_device_id PCI_Kabylake_ids[] = {
 	{
       PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_WHISKEYLAKE_U_IMC_HAQ),
 		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_U_IMC_HB),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_PREM_U_PCH),
+		.driver_data = (kernel_ulong_t) CML_PCH
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_BASE_U_PCH),
+		.driver_data = (kernel_ulong_t) CML_PCH
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_U_ES_PCH),
+		.driver_data = (kernel_ulong_t) CML_PCH
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_Y_ES_PCH),
+		.driver_data = (kernel_ulong_t) CML_PCH
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_Y_PCH),
+		.driver_data = (kernel_ulong_t) CML_PCH
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_H470_PCH),
+		.driver_data = (kernel_ulong_t) CML_PCH
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_Z490_PCH),
+		.driver_data = (kernel_ulong_t) CML_PCH
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_Q470_PCH),
+		.driver_data = (kernel_ulong_t) CML_PCH
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_COMETLAKE_HM470_PCH),
+		.driver_data = (kernel_ulong_t) CML_PCH
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_COMETLAKE_QM480_PCH),
+		.driver_data = (kernel_ulong_t) CML_PCH
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_COMETLAKE_WM490_PCH),
+		.driver_data = (kernel_ulong_t) CML_PCH
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_COMETLAKE_W480_PCH),
+		.driver_data = (kernel_ulong_t) CML_PCH
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICELAKE_U_PCH),
+		.driver_data = (kernel_ulong_t) CML_PCH
+	},
+	{
+    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ROCKETLAKE_S_8C_IMC_HB),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ROCKETLAKE_S_6C_IMC_HB),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ROCKETLAKE_H510_PCH),
+		.driver_data = (kernel_ulong_t) RKL_PCH
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ROCKETLAKE_B560_PCH),
+		.driver_data = (kernel_ulong_t) RKL_PCH
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ROCKETLAKE_H570_PCH),
+		.driver_data = (kernel_ulong_t) RKL_PCH
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ROCKETLAKE_Q570_PCH),
+		.driver_data = (kernel_ulong_t) RKL_PCH
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ROCKETLAKE_Z590_PCH),
+		.driver_data = (kernel_ulong_t) RKL_PCH
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ROCKETLAKE_W580_PCH),
+		.driver_data = (kernel_ulong_t) RKL_PCH
 	},
 	{0, }
 };
@@ -6582,14 +6672,14 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_Kabylake_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = Intel_Driver,
+	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Cannonlake
 	},
 
@@ -6632,14 +6722,14 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_Kabylake_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = Intel_Driver,
+	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Icelake
 	},
 [Icelake_UY] = {							/* 57*/
@@ -6656,17 +6746,17 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_Kabylake_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = Intel_Driver,
+	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Icelake_UY
 	},
-[Icelake_X] = {								/* 58*/
+[Icelake_X] = { 							/* 58*/
 	.Signature = _Icelake_X,
 	.Query = Query_Kaby_Lake,
 	.Update = PerCore_Skylake_Query,
@@ -6680,17 +6770,17 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_Kabylake_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = Intel_Driver,
+	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Icelake_X
 	},
-[Icelake_D] = {								/* 59*/
+[Icelake_D] = { 							/* 59*/
 	.Signature = _Icelake_D,
 	.Query = Query_Kaby_Lake,
 	.Update = PerCore_Skylake_Query,
@@ -6704,14 +6794,14 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_Kabylake_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = Intel_Driver,
+	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Icelake_D
 	},
 
@@ -6729,18 +6819,18 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_Kabylake_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = Intel_Driver,
+	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Sunny_Cove
 	},
 
-[Tigerlake] = {								/* 61*/
+[Tigerlake] = { 							/* 61*/
 	.Signature = _Tigerlake,
 	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
@@ -6754,14 +6844,14 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_Kabylake_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = Intel_Driver,
+	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Tigerlake
 	},
 [Tigerlake_U] = {							/* 62*/
@@ -6778,18 +6868,18 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_Kabylake_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = Intel_Driver,
+	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Tigerlake_U
 	},
 
-[Cometlake] = {								/* 63*/
+[Cometlake] = { 							/* 63*/
 	.Signature = _Cometlake,
 	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
@@ -6803,14 +6893,14 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_Kabylake_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = Intel_Driver,
+	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Cometlake
 	},
 [Cometlake_UY] = {							/* 64*/
@@ -6827,14 +6917,14 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_Kabylake_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = Intel_Driver,
+	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Cometlake_UY
 	},
 
@@ -6886,7 +6976,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = Intel_Driver,
 	.Architecture = Arch_Tremont_Jacobsville
 	},
-[Tremont_Lakefield] = {							/* 67*/
+[Tremont_Lakefield] = { 						/* 67*/
 	.Signature = _Tremont_Lakefield,
 	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
@@ -6997,14 +7087,14 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_Kabylake_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = Intel_Driver,
+	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Rocketlake
 	},
 [Rocketlake_U] = {							/* 72*/
@@ -7021,14 +7111,14 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_Kabylake_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = Intel_Driver,
+	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Rocketlake_U
 	},
 
