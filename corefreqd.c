@@ -3882,6 +3882,40 @@ void SKL_CAP(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 	Shm->Proc.Technology.IOMMU_Ver_Minor = Proc->Uncore.Bus.IOMMU_Ver.Minor;
 }
 
+void RKL_CAP(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
+{
+	unsigned int units;
+
+	if (Proc->Uncore.Bus.RKL_Cap_A.DDR_OVERCLOCK) {
+		units = Proc->Uncore.Bus.RKL_Cap_C.DATA_RATE_GEAR1;
+	} else {
+		units = 30;
+	}
+	Shm->Uncore.Bus.Rate = (266 * units) + ((333 * units) / 500);
+
+	Shm->Uncore.Bus.Speed = (Core->Clock.Hz * Shm->Uncore.Bus.Rate)
+				/ Shm->Proc.Features.Factory.Clock.Hz;
+
+	if (Proc->Uncore.Bus.RKL_Cap_C.LPDDR4_EN) {
+		units = Proc->Uncore.Bus.RKL_Cap_C.DATA_RATE_LPDDR4;
+	} else if (Proc->Uncore.Bus.RKL_Cap_C.DDR4_EN) {
+		units = Proc->Uncore.Bus.RKL_Cap_C.DATA_RATE_DDR4;
+	} else {
+		units = 12;
+	}
+	Shm->Uncore.CtrlSpeed = (266 * units) + ((333 * units) / 500);
+
+	Shm->Uncore.Unit.Bus_Rate = 0b01;
+	Shm->Uncore.Unit.BusSpeed = 0b01;
+	Shm->Uncore.Unit.DDR_Rate = 0b11;
+	Shm->Uncore.Unit.DDRSpeed = 0b00;
+	Shm->Uncore.Unit.DDR_Ver  = 4;
+
+	Shm->Proc.Technology.IOMMU = !Proc->Uncore.Bus.RKL_Cap_A.VT_d;
+	Shm->Proc.Technology.IOMMU_Ver_Major = Proc->Uncore.Bus.IOMMU_Ver.Major;
+	Shm->Proc.Technology.IOMMU_Ver_Minor = Proc->Uncore.Bus.IOMMU_Ver.Minor;
+}
+
 void AMD_0Fh_MCH(SHM_STRUCT *Shm, PROC_RO *Proc)
 {
     struct {
@@ -4364,6 +4398,20 @@ static char *Chipset[CHIPSETS] = {
 	[IC_CANNONPOINT]	= "Cannon Point",
 	[IC_400_SERIES_P]	= "400 Series-Prem-U",
 	[IC_400_SERIES_M]	= "400 Series-Base-U",
+	[IC_495]		= "Intel 495",
+	[IC_H470]		= "Intel H470",
+	[IC_Z490]		= "Intel Z490",
+	[IC_Q470]		= "Intel Q470",
+	[IC_HM470]		= "Intel HM470",
+	[IC_QM480]		= "Intel QM480",
+	[IC_WM490]		= "Intel WM490",
+	[IC_W480]		= "Intel W480",
+	[IC_H510]		= "Intel H510",
+	[IC_B560]		= "Intel B560",
+	[IC_H570]		= "Intel H570",
+	[IC_Q570]		= "Intel Q570",
+	[IC_Z590]		= "Intel Z590",
+	[IC_W580]		= "Intel W580",
 	[IC_K8] 		= "K8/HyperTransport",
 	[IC_ZEN]		= "Zen UMC"
 };
@@ -4696,11 +4744,61 @@ void PCI_Intel(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core,unsigned short DID)
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		break;
-	case PCI_DEVICE_ID_INTEL_COMETLAKE_PREM_U_PCH_LP:
+	case PCI_DEVICE_ID_INTEL_COMETLAKE_PREM_U_PCH:
 		SET_CHIPSET(IC_400_SERIES_P);
 		break;
-	case PCI_DEVICE_ID_INTEL_COMETLAKE_BASE_U_PCH_LP:
+	case PCI_DEVICE_ID_INTEL_COMETLAKE_BASE_U_PCH:
 		SET_CHIPSET(IC_400_SERIES_M);
+		break;
+	case PCI_DEVICE_ID_INTEL_COMETLAKE_U_ES_PCH:
+	case PCI_DEVICE_ID_INTEL_COMETLAKE_Y_ES_PCH:
+	case PCI_DEVICE_ID_INTEL_COMETLAKE_Y_PCH:
+	case PCI_DEVICE_ID_INTEL_ICELAKE_U_PCH:
+		SET_CHIPSET(IC_495);
+		break;
+	case PCI_DEVICE_ID_INTEL_COMETLAKE_H470_PCH:
+		SET_CHIPSET(IC_H470);
+		break;
+	case PCI_DEVICE_ID_INTEL_COMETLAKE_Z490_PCH:
+		SET_CHIPSET(IC_Z490);
+		break;
+	case PCI_DEVICE_ID_INTEL_COMETLAKE_Q470_PCH:
+		SET_CHIPSET(IC_Q470);
+		break;
+	case PCI_DEVICE_ID_INTEL_COMETLAKE_HM470_PCH:
+		SET_CHIPSET(IC_HM470);
+		break;
+	case PCI_DEVICE_ID_INTEL_COMETLAKE_QM480_PCH:
+		SET_CHIPSET(IC_QM480);
+		break;
+	case PCI_DEVICE_ID_INTEL_COMETLAKE_WM490_PCH:
+		SET_CHIPSET(IC_WM490);
+		break;
+	case PCI_DEVICE_ID_INTEL_COMETLAKE_W480_PCH:
+		SET_CHIPSET(IC_W480);
+		break;
+	case PCI_DEVICE_ID_INTEL_ROCKETLAKE_S_8C_IMC_HB:
+	case PCI_DEVICE_ID_INTEL_ROCKETLAKE_S_6C_IMC_HB:
+		RKL_CAP(Shm, Proc, Core);
+		SKL_IMC(Shm, Proc);
+		break;
+	case PCI_DEVICE_ID_INTEL_ROCKETLAKE_H510_PCH:
+		SET_CHIPSET(IC_H510);
+		break;
+	case PCI_DEVICE_ID_INTEL_ROCKETLAKE_B560_PCH:
+		SET_CHIPSET(IC_B560);
+		break;
+	case PCI_DEVICE_ID_INTEL_ROCKETLAKE_H570_PCH:
+		SET_CHIPSET(IC_H570);
+		break;
+	case PCI_DEVICE_ID_INTEL_ROCKETLAKE_Q570_PCH:
+		SET_CHIPSET(IC_Q570);
+		break;
+	case PCI_DEVICE_ID_INTEL_ROCKETLAKE_Z590_PCH:
+		SET_CHIPSET(IC_Z590);
+		break;
+	case PCI_DEVICE_ID_INTEL_ROCKETLAKE_W580_PCH:
+		SET_CHIPSET(IC_W580);
 		break;
 	}
 }

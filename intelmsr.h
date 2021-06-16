@@ -3050,7 +3050,7 @@ typedef union
 } SKL_SA_PLL_RATIOS;	/* 06_4E/06_5E					*/
 
 typedef union
-{	/* Device: 0 - Function: 0 - Offset E4h				*/
+{	/* Device: 0 - Function: 0 - Offset E4h 			*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -3067,7 +3067,7 @@ typedef union
 } SKL_CAPID_A;	/* §3.39 CAPID0_A Capabilities A Register		*/
 
 typedef union
-{	/* Device: 0 - Function: 0 - Offset E8h				*/
+{	/* Device: 0 - Function: 0 - Offset E8h 			*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -3094,7 +3094,7 @@ typedef union
 } SKL_CAPID_B;	/* §3.40 CAPID0_B Capabilities B Register		*/
 
 typedef union
-{	/* Device: 0 - Function: 0 - Offset ECh				*/
+{	/* Device: 0 - Function: 0 - Offset ECh 			*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -3104,3 +3104,91 @@ typedef union
 		ReservedBits2	: 32-20;
 	};
 } SKL_CAPID_C;	/* §3.41 CAPID0_C Capabilities C Register		*/
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset E4h 			*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		NVME_F7D	:  1-0,  /* 1: Disable NVMe at Dev 3 Func 7 */
+		ReservedBits1	:  3-1,
+		DDR_OVERCLOCK	:  4-3,  /* 1: Enable Memory Overclocking */
+		CRID		:  8-4,  /* Compatibility Revision ID	*/
+		ReservedBits2	: 10-8,
+		DID0OE		: 11-10, /* 1: Allow DID override	*/
+		IGD		: 12-11, /* 1: Disable iGPU		*/
+		PDCD		: 13-12, /* 0:Capable Dual Channels, 1:Single */
+		X2APIC_EN	: 14-13, /* 1: Supports Extended APIC mode */
+		DDPCD		: 15-14,
+		CDD		: 16-15, /* 1: Disable DTT device	*/
+		ReservedBits3	: 17-16,
+		D1NM		: 18-17, /* 1: Disable DRAM 1N Timing	*/
+		PEG60D		: 19-18, /* 1: Disable PCIe at Dev 6 Func 0 */
+		DDRSZ		: 21-19, /* 0=64GB, 1=8GB, 2=4GB, 3=2GB */
+		PEGG2DIS	: 22-21, /* 1: DMI Gen2 PCIe disabled	*/
+		DMIG2DIS	: 23-22, /* 1: DMI Gen2 mode disabled	*/
+		VT_d		: 24-23, /* 1: VT-d is no supported	*/
+		FDEE		: 25-24, /* Force DRAM ECC Enable	*/
+		ECCDIS		: 26-25, /* 0:ECC capable, 1:Not ECC capable */
+		DW		: 27-26, /* DMI Width: 0=x4 , 1=x2	*/
+		PELWUD		: 28-27, /* 0: PCIe Link Width Up-Config */
+		PEG10D		: 29-28, /* 1: Disable PCIe at Dev 1 Func 0 */
+		PEG11D		: 30-29,
+		PEG12D		: 31-30,
+		NVME_FOD	: 32-31; /* 1: Disable NVMe at Dev 3 Func 0 */
+	};
+} RKL_CAPID_A;	/* §3.1.38 CAPID0_A Capabilities A Register		*/
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset E8h 			*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		SPEGFX1 	:  1-0,
+		DPEGFX1 	:  2-1,
+		VMD_DIS 	:  3-2,  /* 1: Disable VMD		*/
+		SH_OPI_EN	:  4-3,  /* 0=DMI or 1=OPI		*/
+		ReservedBits1	:  7-4,
+		DDD		:  8-7,  /* Mode 0=Debug or 1=Production */
+		GNA_DIS 	:  9-8,  /* 1: Disable Dev 8		*/
+		ReservedBits2	: 10-9,
+		LVL_MEMORY	: 11-10, /* 0=1LM , 1=2LM		*/
+		HDCPD		: 12-11, /* 1: HDCP is disabled 	*/
+		LTECH		: 15-12, /* 0=1LM, 1=EDRAM0, 3=RAM0+1, 4:2LM */
+		DMIG3DIS	: 16-15, /* DMI Gen 3 Disable fuse	*/
+		PEGX16D 	: 17-16, /* x16 PCIe port is disabled	*/
+		ADDGFXCAP	: 18-17,
+		ADDGFXEN	: 19-18,
+		PKGTYP		: 20-19, /* CPU Package Type		*/
+		PEGG3_DIS	: 21-20,
+		PLL_REF100_CFG	: 24-21,
+		SVM_DISABLE	: 25-24,
+		CACHESZ 	: 28-25,
+		SMTCAP		: 29-28,
+		OC_ENABLED	: 30-29, /* 0: Overclocking is disabled */
+		TRACE_HUB_DIS	: 31-30, /* Trace Hub & I/O are disabled */
+		IMGU_DIS	: 32-31; /* Device 5 associated memory spaces */
+	};
+} RKL_CAPID_B;	/* §3.1.39 CAPID0_B Capabilities B Register		*/
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset ECh 			*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		DATA_RATE_GEAR1 :  5-0,  /* MC: mult 266 MHz iff DDR_OVERCLOCK*/
+		DISPLAY_PIPE3	:  6-5,  /* 3rd display is enabled	*/
+		IDD		:  7-6,  /* 1:Intel display is disabled */
+		BCLK_OC_FREQ	:  9-7,  /* 0=Dis, 1=115, 2=130MHz, 3:NoLimit */
+		SGX_DIS 	: 10-9,  /* 1:SGX is disabled		*/
+		ReservedBits1	: 14-10,
+		QCLK_GV_DIS	: 15-14, /* 1: Dyn Mem Freq Chg is disabled */
+		IB_ECC		: 16-15,
+		LPDDR4_EN	: 17-16, /* 1: LPDDR4 is supported	*/
+		DATA_RATE_LPDDR4: 22-17, /* mult of 266 MHz iff DDR_OVERCLOCK */
+		DDR4_EN 	: 23-22, /* 1: DDR4 is supported	*/
+		DATA_RATE_DDR4	: 28-23, /* mult of 266 MHz iff DDR_OVERCLOCK */
+		PEGG4_DIS	: 29-28,
+		ReservedBits2	: 32-29;
+	};
+} RKL_CAPID_C;	/* §3.1.40 CAPID0_C Capabilities C Register		*/
