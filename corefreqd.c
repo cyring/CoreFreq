@@ -3763,10 +3763,10 @@ void SKL_IMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Cols =			\
 		Proc->Uncore.MC[mc].Channel[cha].SKL.Sched.x8_device_Dimm0 ?
-			1024 : 0;
+			1024 : 512;
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Cols =			\
 		Proc->Uncore.MC[mc].Channel[cha].SKL.Sched.x8_device_Dimm1 ?
-			1024 : 0;
+			1024 : 512;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE  =
 			Proc->Uncore.MC[mc].Channel[cha].SKL.Sched.tCKE;
