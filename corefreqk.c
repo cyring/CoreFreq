@@ -6293,7 +6293,7 @@ void AMD_F17h_DCU_Technology(CORE_RO *Core)			/* Per SMT[?] */
 }
 
 void Intel_DCU_Technology(CORE_RO *Core)			/*Per Core */
-{
+{ /* Avoton[06_4D], GDM[06_5C], NHM[06_1A, 06_1E, 06_1F, 06_2E], SNB+, Phi */
   if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
   {
 	int ToggleFeature = 0;
@@ -8620,8 +8620,6 @@ static void PerCore_Intel_Query(void *arg)
 
 	Dump_CPUID(Core);
 
-	Intel_DCU_Technology(Core);
-
 	SpeedStep_Technology(Core);
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
@@ -8691,8 +8689,6 @@ static void PerCore_Core2_Query(void *arg)
 	Intel_Microcode(Core);
 
 	Dump_CPUID(Core);
-
-	Intel_DCU_Technology(Core);
 
 	SpeedStep_Technology(Core);
 	DynamicAcceleration(Core);				/* Unique */
@@ -8796,8 +8792,6 @@ static void PerCore_Silvermont_Query(void *arg)
 	Intel_Microcode(Core);
 
 	Dump_CPUID(Core);
-
-	Intel_DCU_Technology(Core);
 
 	SpeedStep_Technology(Core);
 	DynamicAcceleration(Core);				/* Unique */
