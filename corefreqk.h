@@ -1910,6 +1910,10 @@ static struct pci_device_id PCI_Kabylake_ids[] = {
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_Y_IMC_HQ),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAD),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
@@ -2022,6 +2026,26 @@ static struct pci_device_id PCI_Kabylake_ids[] = {
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_U1_IMC),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_U3_IMC),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_S1_IMC),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_S2_IMC),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_S5_IMC),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
       PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_PREM_U_PCH),
 		.driver_data = (kernel_ulong_t) CML_PCH
 	},
@@ -2074,6 +2098,34 @@ static struct pci_device_id PCI_Kabylake_ids[] = {
 		.driver_data = (kernel_ulong_t) CML_PCH
 	},
 	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICELAKE_U_IMC),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICELAKE_U_4C),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_TIGERLAKE_U1_IMC),
+		.driver_data = (kernel_ulong_t) RKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_TIGERLAKE_U2_IMC),
+		.driver_data = (kernel_ulong_t) RKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_TIGERLAKE_U3_IMC),
+		.driver_data = (kernel_ulong_t) RKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_TIGERLAKE_U4_IMC),
+		.driver_data = (kernel_ulong_t) RKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_TIGERLAKE_H_IMC),
+		.driver_data = (kernel_ulong_t) RKL_IMC
+	},
+	{
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ROCKETLAKE_S_8C_IMC_HB),
 		.driver_data = (kernel_ulong_t) RKL_IMC
 	},
@@ -2104,6 +2156,14 @@ static struct pci_device_id PCI_Kabylake_ids[] = {
 	{
       PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ROCKETLAKE_W580_PCH),
 		.driver_data = (kernel_ulong_t) RKL_PCH
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ALDERLAKE_1_IMC),
+		.driver_data = (kernel_ulong_t) RKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ALDERLAKE_2_IMC),
+		.driver_data = (kernel_ulong_t) RKL_IMC
 	},
 	{0, }
 };
