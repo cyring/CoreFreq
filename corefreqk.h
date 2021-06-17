@@ -1998,6 +1998,26 @@ static struct pci_device_id PCI_Kabylake_ids[] = {
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_S_IMC_6C),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_COMETLAKE_S_IMC_10C),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_COMETLAKE_H_IMC_10C),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_COMETLAKE_W_IMC_10C),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_M_IMC_6C),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_U_IMC_HB),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
