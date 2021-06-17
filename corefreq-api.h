@@ -528,6 +528,18 @@ typedef struct
 	/* 423Ch */		SKL_IMC_REFRESH_TC	Refresh; /*32 bits    */
 			} SKL;
 			struct {
+	/* 4000h */		RKL_IMC_CR_TC_PRE	Timing; /* 32 bits    */
+	/* 4004h */		RKL_IMC_CR_TC_ACT	ACT;	/* 32 bits    */
+	/* 400Ch */		RKL_IMC_CR_TC_RDRD	RDRD;	/* 32 bits    */
+	/* 4010h */		RKL_IMC_CR_TC_RDWR	RDWR;	/* 32 bits    */
+	/* 4014h */		RKL_IMC_CR_TC_WRRD	WRRD;	/* 32 bits    */
+	/* 4018h */		RKL_IMC_CR_TC_WRWR	WRWR;	/* 32 bits    */
+	/* 4050h */		RKL_IMC_TC_PWDEN	PWDEN;	/* 64-bits    */
+	/* 4070h */		RKL_IMC_CR_TC_ODT	ODT;	/* 64 bits    */
+	/* 4088h */		RKL_IMC_SC_GS_CFG	Sched;	/* 64 bits    */
+	/* 423Ch */		RKL_IMC_REFRESH_TC	Refresh; /*32 bits    */
+			} RKL;
+			struct {
 	/* 88h */		AMD_0F_DRAM_TIMING_LOW	DTRL;	/* 32 bits    */
 			} AMD0Fh;
 			struct {
@@ -614,6 +626,13 @@ typedef struct
 	/* 500Ch */	SKL_IMC_MAD_DIMM	MADD0,		/* 32 bits    */
 	/* 5010h */				MADD1;		/* 32 bits    */
 		} SKL;
+		struct {
+	/* 5000h */	RKL_IMC_MAD_MAPPING	MADCH;		/* 32 bits    */
+	/* 5004h */	RKL_IMC_MAD_CHANNEL	MADC0,		/* 32 bits    */
+	/* 5008h */				MADC1;		/* 32 bits    */
+	/* 500Ch */	RKL_IMC_MAD_DIMM	MADD0,		/* 32 bits    */
+	/* 5010h */				MADD1;		/* 32 bits    */
+		} RKL;
 		struct {
 	/* 90h */	AMD_0F_DRAM_CONFIG_LOW	DCRL;		/* 32 bits    */
 	/* 94h */	AMD_0F_DRAM_CONFIG_HIGH DCRH;		/* 32 bits    */

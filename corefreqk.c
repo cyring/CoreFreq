@@ -4095,6 +4095,72 @@ void Query_SKL_IMC(void __iomem *mchmap)
 	Query_Turbo_TDP_Config(mchmap);
 }
 
+void Query_RKL_IMC(void __iomem *mchmap)
+{	/*Source: 11th Generation Intel® Core Processor Datasheet Vol 2*/
+	unsigned short cha;
+
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+	/*		Intra channel configuration			*/
+	PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADCH.value = readl(mchmap + 0x5000);
+    if (PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADCH.CH_L_MAP)
+    {
+	PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADC0.value = readl(mchmap + 0x5008);
+	PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADC1.value = readl(mchmap + 0x5004);
+    } else {
+	PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADC0.value = readl(mchmap + 0x5004);
+	PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADC1.value = readl(mchmap + 0x5008);
+    }
+	/*		DIMM parameters					*/
+	PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADD0.value = readl(mchmap + 0x500c);
+	PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADD1.value = readl(mchmap + 0x5010);
+	/*		Sum up any present DIMM per channel.		*/
+	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = \
+		  ((PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADD0.Dimm_L_Size != 0)
+		|| (PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADD0.Dimm_S_Size != 0))
+		+ ((PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADD1.Dimm_L_Size != 0)
+		|| (PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADD1.Dimm_S_Size != 0));
+	/*		Count of populated DIMMs L and DIMMs S		*/
+	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = \
+		  ((PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADD0.Dimm_L_Size != 0)
+		|| (PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADD1.Dimm_L_Size != 0))
+		+ ((PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADD0.Dimm_S_Size != 0)
+		|| (PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADD1.Dimm_S_Size != 0));
+
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
+    {
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].RKL.Timing.value = \
+					readl(mchmap + 0x4000 + 0x400 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].RKL.ACT.value = \
+					readl(mchmap + 0x4004 + 0x400 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].RKL.RDRD.value = \
+					readl(mchmap + 0x400c + 0x400 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].RKL.RDWR.value = \
+					readl(mchmap + 0x4010 + 0x400 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].RKL.WRRD.value = \
+					readl(mchmap + 0x4014 + 0x400 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].RKL.WRWR.value = \
+					readl(mchmap + 0x4018 + 0x400 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].RKL.Sched.value = \
+					readq(mchmap + 0x4088 + 0x400 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].RKL.PWDEN.value = \
+					readq(mchmap + 0x4050 + 0x400 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].RKL.ODT.value = \
+					readq(mchmap + 0x4070 + 0x400 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].RKL.Refresh.value = \
+					readl(mchmap + 0x423c + 0x400 * cha);
+    }
+	Query_Turbo_TDP_Config(mchmap);
+}
+
 static PCI_CALLBACK P945(struct pci_dev *dev)
 {
 	return (Router(dev, 0x44, 32, 0x4000, Query_P945));
@@ -4610,6 +4676,11 @@ static PCI_CALLBACK CML_PCH(struct pci_dev *dev)
 {
 	UNUSED(dev);
 	return ((PCI_CALLBACK) 0);
+}
+
+static PCI_CALLBACK RKL_IMC(struct pci_dev *dev)
+{	/* Same address offsets as used in Skylake			*/
+	return (SKL_HOST(dev, Query_RKL_IMC));
 }
 
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev)

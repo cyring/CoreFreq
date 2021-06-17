@@ -3759,8 +3759,8 @@ void SKL_IMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 		break;
 	}
 
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Banks =			\
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Banks =			\
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Banks = 		\
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Banks = 		\
 	Proc->Uncore.MC[mc].Channel[cha].SKL.Sched.DRAM_Tech == 0b00 ? 16 : 8;
 
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Cols =			\
@@ -3884,6 +3884,185 @@ void SKL_CAP(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 	Shm->Proc.Technology.IOMMU_Ver_Minor = Proc->Uncore.Bus.IOMMU_Ver.Minor;
 }
 
+void RKL_IMC(SHM_STRUCT *Shm, PROC_RO *Proc)
+{
+    unsigned short mc, cha;
+
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+    {
+	Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
+	Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
+
+     for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+     {
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.ODT.tCL;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.Timing.tRP;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.Timing.tRP;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.Timing.tRAS;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.ACT.tRRD_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.Refresh.tRFC;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.Refresh.tREFI;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.Timing.tWRPRE
+			- Proc->Uncore.MC[mc].Channel[cha].RKL.ODT.tCWL - 4;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.Timing.tRDPRE;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.Timing.tWRPRE;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.ACT.tFAW;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.ODT.tCWL;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_SG =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.RDRD.tRDRD_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DG =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.RDRD.tRDRD_DG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DR =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.RDRD.tRDRD_DR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DD =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.RDRD.tRDRD_DD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_SG =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.RDWR.tRDWR_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DG =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.RDWR.tRDWR_DG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DR =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.RDWR.tRDWR_DR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DD =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.RDWR.tRDWR_DD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_SG =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.WRRD.tWRRD_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DG =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.WRRD.tWRRD_DG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DR =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.WRRD.tWRRD_DR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DD =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.WRRD.tWRRD_DD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_SG =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.WRWR.tWRWR_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DG =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.WRWR.tWRWR_DG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DR =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.WRWR.tWRWR_DR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DD =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.WRWR.tWRWR_DD;
+
+	switch (Proc->Uncore.MC[mc].Channel[cha].RKL.Sched.CMD_Stretch) {
+	case 0b00:
+	case 0b11:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+		break;
+	case 0b01:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+		break;
+	case 0b10:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 3;
+		break;
+	}
+
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Banks = 		\
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Banks = 		\
+	!Proc->Uncore.MC[mc].Channel[cha].RKL.Sched.ReservedBits1 ? 16 : 8;
+
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Cols =			\
+		Proc->Uncore.MC[mc].Channel[cha].RKL.Sched.x8_device_Dimm0 ?
+			1024 : 512;
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Cols =			\
+		Proc->Uncore.MC[mc].Channel[cha].RKL.Sched.x8_device_Dimm1 ?
+			1024 : 512;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE  =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.PWDEN.tCKE;
+     }
+	Shm->Uncore.MC[mc].Channel[0].Timing.ECC =
+				Proc->Uncore.MC[mc].RKL.MADC0.ECC;
+
+	Shm->Uncore.MC[mc].Channel[1].Timing.ECC =
+				Proc->Uncore.MC[mc].RKL.MADC1.ECC;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		Proc->Uncore.MC[mc].RKL.MADC0.Dimm_L_Map
+	].Size = 512 * Proc->Uncore.MC[mc].RKL.MADD0.Dimm_L_Size;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		!Proc->Uncore.MC[mc].RKL.MADC0.Dimm_L_Map
+	].Size = 512 * Proc->Uncore.MC[mc].RKL.MADD0.Dimm_S_Size;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		Proc->Uncore.MC[mc].RKL.MADC1.Dimm_L_Map
+	].Size = 512 * Proc->Uncore.MC[mc].RKL.MADD1.Dimm_L_Size;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		!Proc->Uncore.MC[mc].RKL.MADC1.Dimm_L_Map
+	].Size = 512 * Proc->Uncore.MC[mc].RKL.MADD1.Dimm_S_Size;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		Proc->Uncore.MC[mc].RKL.MADC0.Dimm_L_Map
+	].Ranks = 1 + Proc->Uncore.MC[mc].RKL.MADD0.DLNOR;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		!Proc->Uncore.MC[mc].RKL.MADC0.Dimm_L_Map
+	].Ranks = 1 + Proc->Uncore.MC[mc].RKL.MADD0.DSNOR;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		Proc->Uncore.MC[mc].RKL.MADC1.Dimm_L_Map
+	].Ranks = 1 + Proc->Uncore.MC[mc].RKL.MADD1.DLNOR;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		!Proc->Uncore.MC[mc].RKL.MADC1.Dimm_L_Map
+	].Ranks = 1 + Proc->Uncore.MC[mc].RKL.MADD1.DSNOR;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		Proc->Uncore.MC[mc].RKL.MADC0.Dimm_L_Map
+	].Rows = SKL_DimmWidthToRows(Proc->Uncore.MC[mc].RKL.MADD0.DLW);
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		!Proc->Uncore.MC[mc].RKL.MADC0.Dimm_L_Map
+	].Rows = SKL_DimmWidthToRows(Proc->Uncore.MC[mc].RKL.MADD0.DSW);
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		Proc->Uncore.MC[mc].RKL.MADC1.Dimm_L_Map
+	].Rows = SKL_DimmWidthToRows(Proc->Uncore.MC[mc].RKL.MADD1.DLW);
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		!Proc->Uncore.MC[mc].RKL.MADC1.Dimm_L_Map
+	].Rows = SKL_DimmWidthToRows(Proc->Uncore.MC[mc].RKL.MADD1.DSW);
+    }
+}
+
 void RKL_CAP(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 {
 	unsigned int units;
@@ -3911,7 +4090,7 @@ void RKL_CAP(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 	Shm->Uncore.Unit.BusSpeed = 0b01;
 	Shm->Uncore.Unit.DDR_Rate = 0b11;
 	Shm->Uncore.Unit.DDRSpeed = 0b00;
-	Shm->Uncore.Unit.DDR_Ver  = 4;
+	Shm->Uncore.Unit.DDR_Ver  = Proc->Uncore.MC[0].RKL.MADCH.DDR_TYPE ? 5:4;
 
 	Shm->Proc.Technology.IOMMU = !Proc->Uncore.Bus.RKL_Cap_A.VT_d;
 	Shm->Proc.Technology.IOMMU_Ver_Major = Proc->Uncore.Bus.IOMMU_Ver.Major;
@@ -4782,7 +4961,7 @@ void PCI_Intel(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core,unsigned short DID)
 	case PCI_DEVICE_ID_INTEL_ROCKETLAKE_S_8C_IMC_HB:
 	case PCI_DEVICE_ID_INTEL_ROCKETLAKE_S_6C_IMC_HB:
 		RKL_CAP(Shm, Proc, Core);
-		SKL_IMC(Shm, Proc);
+		RKL_IMC(Shm, Proc);
 		break;
 	case PCI_DEVICE_ID_INTEL_ROCKETLAKE_H510_PCH:
 		SET_CHIPSET(IC_H510);

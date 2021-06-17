@@ -6888,6 +6888,7 @@ Window *CreateMemCtrl(unsigned long long id)
 	unsigned int mc, rows = 1, ctrlHeaders = 6, channelHeaders = 4;
 
 	switch (Shm->Uncore.Unit.DDR_Ver) {
+	case 5:
 	case 4:
 		ctrlHeaders = 7;
 		channelHeaders = 5;
@@ -17426,6 +17427,7 @@ int main(int argc, char *argv[])
 		Window tty = {.matrix.size.wth = MC_MATX};
 
 		switch (Shm->Uncore.Unit.DDR_Ver) {
+		case 5:
 		case 4:
 		    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {
 			MemoryController(&tty, NULL, Timing_DDR4);

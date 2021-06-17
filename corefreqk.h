@@ -1509,6 +1509,7 @@ static PCI_CALLBACK SKL_SA(struct pci_dev *dev) ;
 */
 static PCI_CALLBACK CML_PCH(struct pci_dev *dev) ;
 #define RKL_PCH CML_PCH
+static PCI_CALLBACK RKL_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev) ;
 #ifdef CONFIG_AMD_NB
@@ -1894,7 +1895,7 @@ static struct pci_device_id PCI_Skylake_X_ids[] = {
 	{0, }
 };
 
-/* 7th & 8th Generation							*/
+/* 7th & 8th up to 11th Generation: Chipsets might cross generations	*/
 static struct pci_device_id PCI_Kabylake_ids[] = {
 	{
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAD),
@@ -2054,11 +2055,11 @@ static struct pci_device_id PCI_Kabylake_ids[] = {
 	},
 	{
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ROCKETLAKE_S_8C_IMC_HB),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) RKL_IMC
 	},
 	{
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ROCKETLAKE_S_6C_IMC_HB),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) RKL_IMC
 	},
 	{
       PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ROCKETLAKE_H510_PCH),

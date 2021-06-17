@@ -2856,8 +2856,8 @@ typedef union
 		unsigned int
 		tFAW		:  7-0,  /* Four activates window: 16-88 */
 		ReservedBits1	:  8-7,
-		tRRD_SG		: 13-8,  /* Same Bank Group: 4-15	*/
-		tRRD_DG		: 18-13, /* Diff Bank Group: 4-22	*/
+		tRRD_SG 	: 13-8,  /* Same Bank Group: 4-15; RKL: 4-22 */
+		tRRD_DG 	: 18-13, /* Diff Bank Group: 4-22	*/
 		DERATING_EXT	: 21-18,
 		tRCD_WR		: 27-21, /* if DDR4-E else same as tRP	*/
 		ReservedBits3	: 32-27;
@@ -3104,6 +3104,118 @@ typedef union
 		ReservedBits2	: 32-20;
 	};
 } SKL_CAPID_C;	/* §3.41 CAPID0_C Capabilities C Register		*/
+
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: 4000h & Channel1: 4400h */
+	unsigned int		value;
+	struct {
+		unsigned int
+		tRP		:  6-0,  /* (incl. tRCD) - Range: 8-59	*/
+		tRPab_ext	:  9-6,  /* Range: 0-6. Unknown: 0b111	*/
+		tRAS		: 16-9,  /* Range: 28-90		*/
+		tRDPRE		: 21-16, /* Range:  6-15		*/
+		tPPD		: 24-21, /* Range:  4-7 		*/
+		tWRPRE		: 32-24; /* Range: 18-159		*/
+	};
+} RKL_IMC_CR_TC_PRE;	/* Timing constraints to PRE commands		*/
+
+#define RKL_IMC_CR_TC_ACT	SKL_IMC_CR_TC_ACT
+
+#define RKL_IMC_CR_TC_RDRD	SKL_IMC_CR_TC_RDRD
+
+#define RKL_IMC_CR_TC_RDWR	SKL_IMC_CR_TC_RDWR
+
+#define RKL_IMC_CR_TC_WRRD	SKL_IMC_CR_TC_WRRD
+
+#define RKL_IMC_CR_TC_WRWR	SKL_IMC_CR_TC_WRWR
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: 4050h & Channel1: 4450h */
+	unsigned long long	value;
+	struct {
+		unsigned long long
+		tCKE		:  5-0,  /* Range:  4-16		*/
+		ReservedBits1	:  8-5,
+		tXP		: 13-8,  /* Range:  4-16		*/
+		ReservedBits2	: 16-13,
+		tXPDLL		: 22-16, /* Range:  4-63		*/
+		tPRPDEN 	: 24-22, /* Range:  1-3 		*/
+		tRDPDEN 	: 31-24, /* Range:  4-95		*/
+		ReservedBits3	: 32-31,
+		tWRPDEN 	: 40-32, /* Range:  4-159		*/
+		ReservedBits4	: 64-40;
+	};
+} RKL_IMC_TC_PWDEN;	/* Power Down Timing				*/
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: 4070h & Channel1: 4470h */
+	unsigned long long	value;
+	struct {
+		unsigned long long
+		ReservedBits1	: 16-0,
+		tCL		: 22-16, /* Range:  4-36		*/
+		tCWL		: 28-22, /* LPDDR4: 4-34; DDR4: 5-34 @ 1N */
+		ReservedBits2	: 64-28;
+	};
+} RKL_IMC_CR_TC_ODT;	/* ODT Command timing				*/
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: 4088h & Channel1: 4488h */
+	unsigned long long	value;
+	struct {
+		unsigned long long
+		ReservedBits1	:  3-0,
+		CMD_Stretch	:  5-3,  /* 00:1N , 01:2N , 10:3N , 11:1N */
+		N_to_1_ratio	:  8-5,
+		Addr_Mirroring	: 12-8,
+		tCPDED		: 15-12, /* Range:  1-7 @ 1N		*/
+		ReservedBits2	: 28-15,
+		x8_device_Dimm0 : 29-28, /* LSB is for DIMM 0		*/
+		x8_device_Dimm1 : 30-29, /* MSB is for DIMM 1		*/
+		NO_GEAR2_PRM_DIV: 31-30,
+		GEAR2		: 32-31,
+		ENABLE_1_DPC	: 34-32,
+		ReservedBits3	: 64-34;
+	};
+} RKL_IMC_SC_GS_CFG;	/* Scheduler configuration			*/
+
+#define RKL_IMC_REFRESH_TC	SKL_IMC_REFRESH_TC
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset 5000h			*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		DDR_TYPE	:  3-0,  /* 000:DDR4, 001:DDR5		*/
+		ECHM		:  4-3,  /* LPDDR4: 2x32 or 1x64-bits channel */
+		CH_L_MAP	:  5-4,  /* 0:Channel0 , 1:Channel1	*/
+		ReservedBits1	: 12-5,
+		CH_S_SIZE	: 20-12, /* Channel S size multiplies of 0.5GB*/
+		ReservedBits2	: 32-20;
+	};
+} RKL_IMC_MAD_MAPPING;
+
+#define RKL_IMC_MAD_CHANNEL	SKL_IMC_MAD_CHANNEL
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: 500Ch & Channel1: 5010h */
+	unsigned int		value;
+	struct {
+		unsigned int
+		Dimm_L_Size	:  7-0,  /* Size of DIMM in 512 MB multiples */
+		DLW		:  9-7,  /* DIMM L width: 0=x8, 1=x16, 2=x32 */
+		DLNOR		: 11-9,  /* DIMM L ranks: 0=1, 1=2, 2=3, 3=4 */
+		ReservedBits1	: 16-11,
+		Dimm_S_Size	: 23-16, /* DIMM S size in 512 MB multiples */
+		ReservedBits2	: 24-23,
+		DSW		: 26-24, /* DIMM S width: 0=x8, 1=x16, 2=x32 */
+		DSNOR		: 28-26, /* DIMM S # of ranks: 0=1 , 1=2 */
+		ReservedBits3	: 29-28,
+		DLS_BG0_BIT_11	: 30-29,
+		ReservedBits4	: 32-30;
+	};
+} RKL_IMC_MAD_DIMM;
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset E4h 			*/
