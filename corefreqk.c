@@ -3840,12 +3840,12 @@ kernel_ulong_t Query_Lynnfield_IMC(struct pci_dev *dev, unsigned short mc)
 	kernel_ulong_t rc = 0;
 	unsigned int did[2][2] = {
 		{
-			PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_CH0_CTRL,
-			PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_CH1_CTRL
+			DID_INTEL_LYNNFIELD_MC_CH0_CTRL,
+			DID_INTEL_LYNNFIELD_MC_CH1_CTRL
 		},
 		{
-			PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_CH0_ADDR,
-			PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_CH1_ADDR
+			DID_INTEL_LYNNFIELD_MC_CH0_ADDR,
+			DID_INTEL_LYNNFIELD_MC_CH1_ADDR
 		}
 	};
 	unsigned short cha;
@@ -4288,14 +4288,14 @@ static PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev)
 	kernel_ulong_t rc = 0;
 	unsigned int did[2][3] = {
 		{
-			PCI_DEVICE_ID_INTEL_I7_MC_CH0_CTRL,
-			PCI_DEVICE_ID_INTEL_I7_MC_CH1_CTRL,
-			PCI_DEVICE_ID_INTEL_I7_MC_CH2_CTRL
+			DID_INTEL_I7_MC_CH0_CTRL,
+			DID_INTEL_I7_MC_CH1_CTRL,
+			DID_INTEL_I7_MC_CH2_CTRL
 		},
 		{
-			PCI_DEVICE_ID_INTEL_I7_MC_CH0_ADDR,
-			PCI_DEVICE_ID_INTEL_I7_MC_CH1_ADDR,
-			PCI_DEVICE_ID_INTEL_I7_MC_CH2_ADDR
+			DID_INTEL_I7_MC_CH0_ADDR,
+			DID_INTEL_I7_MC_CH1_ADDR,
+			DID_INTEL_I7_MC_CH2_ADDR
 		}
 	};
 	unsigned short mc;
@@ -4324,14 +4324,14 @@ static PCI_CALLBACK Westmere_EP_IMC(struct pci_dev *dev)
 	kernel_ulong_t rc = 0;
 	unsigned int did[2][3] = {
 		{
-			PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH0_CTRL,
-			PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH1_CTRL,
-			PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH2_CTRL
+			DID_INTEL_NHM_EP_MC_CH0_CTRL,
+			DID_INTEL_NHM_EP_MC_CH1_CTRL,
+			DID_INTEL_NHM_EP_MC_CH2_CTRL
 		},
 		{
-			PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH0_ADDR,
-			PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH1_ADDR,
-			PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH2_ADDR
+			DID_INTEL_NHM_EP_MC_CH0_ADDR,
+			DID_INTEL_NHM_EP_MC_CH1_ADDR,
+			DID_INTEL_NHM_EP_MC_CH2_ADDR
 		}
 	};
 	unsigned short mc;
@@ -7128,7 +7128,7 @@ void Intel_Watchdog(CORE_RO *Core)
 {
 	struct pci_device_id PCI_WDT_ids[] = {
 		{
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_LPC),
+		PCI_VDEVICE(INTEL, DID_INTEL_ICH10_LPC),
 		.driver_data = (kernel_ulong_t) ICH_TCO
 		},
 		{0, }

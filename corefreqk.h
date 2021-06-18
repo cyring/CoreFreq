@@ -1526,75 +1526,75 @@ static struct pci_device_id PCI_Void_ids[] = {
 
 static struct pci_device_id PCI_Core2_ids[] = {
 	{	/* 82945G - Lakeport					*/
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82945P_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_82945P_HB),
 		.driver_data = (kernel_ulong_t) P945
 	},
 	{	/* 82945GM - Calistoga					*/
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82945GM_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_82945GM_HB),
 		.driver_data = (kernel_ulong_t) P945
 	},
 	{	/* 82945GME/SE - Calistoga				*/
-	      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82945GME_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_82945GME_HB),
 		.driver_data = (kernel_ulong_t) P945
 	},
 	{	/* 82955X - Lakeport-X					*/
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82955_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_82955_HB),
 		.driver_data = (kernel_ulong_t) P955
 	},
 	{	/* 946PL/946GZ - Lakeport-PL/GZ				*/
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82946GZ_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_82946GZ_HB),
 		.driver_data = (kernel_ulong_t) P965
 	},
 	{	/* Q963/Q965 - Broadwater				*/
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82965Q_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_82965Q_HB),
 		.driver_data = (kernel_ulong_t) P965
 	},
 	{	/* P965/G965 - Broadwater				*/
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82965G_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_82965G_HB),
 		.driver_data = (kernel_ulong_t) P965
 	},
 	{	/* GM965 - Crestline					*/
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82965GM_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_82965GM_HB),
 		.driver_data = (kernel_ulong_t) G965
 	},
 	{	/* GME965 - Crestline					*/
-	      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82965GME_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_82965GME_HB),
 		.driver_data = (kernel_ulong_t) G965
 	},
 	{	/* GM45 - Cantiga					*/
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_GM45_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_GM45_HB),
 		.driver_data = (kernel_ulong_t) G965
 	},
 	{	/* Q35 - Bearlake-Q					*/
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_Q35_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_Q35_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
 	{	/* P35/G33 - Bearlake-PG+				*/
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_G33_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_G33_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
 	{	/* Q33 - Bearlake-QF					*/
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_Q33_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_Q33_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
 	{	/* X38/X48 - Bearlake-X					*/
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X38_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_X38_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
 	{	/* 3200/3210 - Intel 3200				*/
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_3200_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_3200_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
 	{	/* Q45/Q43 - Eaglelake-Q				*/
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_Q45_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_Q45_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
 	{	/* P45/G45 - Eaglelake-P				*/
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_G45_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_G45_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
 	{	/* G41 - Eaglelake-G					*/
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_G41_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_G41_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
 	{0, }
@@ -1602,7 +1602,7 @@ static struct pci_device_id PCI_Core2_ids[] = {
 
 static struct pci_device_id PCI_SoC_ids[] = {
 	{	/* 82945G - Lakeport					*/
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SLM_PTR),
+		PCI_VDEVICE(INTEL, DID_INTEL_SLM_PTR),
 		.driver_data = (kernel_ulong_t) SoC_SLM
 	},
 	{0, }
@@ -1611,27 +1611,27 @@ static struct pci_device_id PCI_SoC_ids[] = {
 /* 1st Generation							*/
 static struct pci_device_id PCI_Nehalem_QPI_ids[] = {
 	{	/* Bloomfield IMC					*/
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_I7_MCR),
+		PCI_VDEVICE(INTEL, DID_INTEL_I7_MCR),
 		.driver_data = (kernel_ulong_t) Bloomfield_IMC
 	},
 	{	/* Bloomfield IMC Test Registers			*/
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_I7_MC_TEST),
+		PCI_VDEVICE(INTEL, DID_INTEL_I7_MC_TEST),
 		.driver_data = (kernel_ulong_t) NHM_IMC_TR
 	},
 	{	/* Nehalem Control Status and RAS Registers		*/
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X58_HUB_CTRL),
+		PCI_VDEVICE(INTEL, DID_INTEL_X58_HUB_CTRL),
 		.driver_data = (kernel_ulong_t) X58_QPI
 	},
 	{
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X58_HUB_CORE),
+		PCI_VDEVICE(INTEL, DID_INTEL_X58_HUB_CORE),
 		.driver_data = (kernel_ulong_t) X58_VTD
 	},
 	{	/* Nehalem Bloomfield/Xeon C3500: Non-Core Registers	*/
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_BLOOMFIELD_NON_CORE),
+		PCI_VDEVICE(INTEL, DID_INTEL_BLOOMFIELD_NON_CORE),
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
 	},
 	{	/* Nehalem EP Xeon C5500: Non-Core Registers		*/
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_C5500_NON_CORE),
+		PCI_VDEVICE(INTEL, DID_INTEL_C5500_NON_CORE),
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
 	},
 	{0, }
@@ -1639,23 +1639,23 @@ static struct pci_device_id PCI_Nehalem_QPI_ids[] = {
 
 static struct pci_device_id PCI_Nehalem_DMI_ids[] = {
 	{	/* Lynnfield IMC					*/
-	      PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_LYNNFIELD_MCR),
+		PCI_VDEVICE(INTEL, DID_INTEL_LYNNFIELD_MCR),
 		.driver_data = (kernel_ulong_t) Lynnfield_IMC
 	},
 	{	/* Lynnfield IMC Test Registers				*/
-	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_TEST),
+		PCI_VDEVICE(INTEL, DID_INTEL_LYNNFIELD_MC_TEST),
 		.driver_data = (kernel_ulong_t) NHM_IMC_TR
 	},
 	{ /* Lynnfield QuickPath Architecture Generic Non-core Registers */
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_LYNNFIELD_NON_CORE),
+		PCI_VDEVICE(INTEL, DID_INTEL_LYNNFIELD_NON_CORE),
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
 	},
 	{ /* Clarksfield Processor Uncore Device 0, Function 0		*/
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_CLARKSFIELD_NON_CORE),
+		PCI_VDEVICE(INTEL, DID_INTEL_CLARKSFIELD_NON_CORE),
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
 	},
 	{ /* Westmere/Clarkdale QuickPath Architecture Non-core Registers */
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_CLARKDALE_NON_CORE),
+		PCI_VDEVICE(INTEL, DID_INTEL_CLARKDALE_NON_CORE),
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
 	},
 	{0, }
@@ -1663,23 +1663,23 @@ static struct pci_device_id PCI_Nehalem_DMI_ids[] = {
 
 static struct pci_device_id PCI_Westmere_EP_ids[] = {
 	{	/* Westmere EP IMC */
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_NHM_EP_MCR),
+		PCI_VDEVICE(INTEL, DID_INTEL_NHM_EP_MCR),
 		.driver_data = (kernel_ulong_t) Westmere_EP_IMC
 	},
 	{	/* Westmere EP IMC Test Registers			*/
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_NHM_EP_MC_TEST),
+		PCI_VDEVICE(INTEL, DID_INTEL_NHM_EP_MC_TEST),
 		.driver_data = (kernel_ulong_t) NHM_IMC_TR
 	},
 	{	/* Nehalem Control Status and RAS Registers		*/
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X58_HUB_CTRL),
+		PCI_VDEVICE(INTEL, DID_INTEL_X58_HUB_CTRL),
 		.driver_data = (kernel_ulong_t) X58_QPI
 	},
 	{
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X58_HUB_CORE),
+		PCI_VDEVICE(INTEL, DID_INTEL_X58_HUB_CORE),
 		.driver_data = (kernel_ulong_t) X58_VTD
 	},
 	{	/* Westmere EP: Non-Core Registers			*/
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_NHM_EP_NON_CORE),
+		PCI_VDEVICE(INTEL, DID_INTEL_NHM_EP_NON_CORE),
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
 	},
 	{0, }
@@ -1690,15 +1690,15 @@ static struct pci_device_id PCI_Westmere_EP_ids[] = {
 	TA0=0x3caa, TA1=0x3cab / TA2=0x3cac / TA3=0x3cad / TA4=0x3cae	*/
 static struct pci_device_id PCI_SandyBridge_ids[] = {
 	{
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SNB_IMC_HA0),
+		PCI_VDEVICE(INTEL, DID_INTEL_SNB_IMC_HA0),
 		.driver_data = (kernel_ulong_t) SNB_IMC
 	},
 	{	/* Desktop: IMC_SystemAgent=0x0100,0x0104		*/
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SNB_IMC_SA),
+		PCI_VDEVICE(INTEL, DID_INTEL_SNB_IMC_SA),
 		.driver_data = (kernel_ulong_t) SNB_IMC
 	},
 	{
-	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SNB_IMC_0104),
+		PCI_VDEVICE(INTEL, DID_INTEL_SNB_IMC_0104),
 		.driver_data = (kernel_ulong_t) SNB_IMC
 	},
 	{0, }
@@ -1709,11 +1709,11 @@ static struct pci_device_id PCI_SandyBridge_ids[] = {
 	TA0=0x0eaa / TA1=0x0eab / TA2=0x0eac / TA3=0x0ead		*/
 static struct pci_device_id PCI_IvyBridge_ids[] = {
 	{	/* Desktop: IMC_SystemAgent=0x0150			*/
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_IMC_SA),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_IMC_SA),
 		.driver_data = (kernel_ulong_t) IVB_IMC
 	},
 	{	/* Mobile i5-3337U: IMC=0x0154				*/
-	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_IMC_0154),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_IMC_0154),
 		.driver_data = (kernel_ulong_t) IVB_IMC
 	},
 	{0, }
@@ -1721,93 +1721,93 @@ static struct pci_device_id PCI_IvyBridge_ids[] = {
 
 static struct pci_device_id PCI_SandyBridge_EP_ids[] = {
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_HOST_BRIDGE),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_HOST_BRIDGE),
 		.driver_data = (kernel_ulong_t) SNB_EP_HB
 	},
 	{
 /*	QPIMISCSTAT							*/
-	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_QPI_LINK0),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_QPI_LINK0),
 		.driver_data = (kernel_ulong_t) SNB_EP_QPI
 	},
 	{
 /*	Power Control Unit						*/
-	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_IVB_EP_CAPABILITY),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_CAPABILITY),
 		.driver_data = (kernel_ulong_t) SNB_EP_CAP
 	},
 	{
 /*	Integrated Memory Controller # : General and MemHot Registers	*/
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CPGC),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_IMC_CTRL0_CPGC),
 		.driver_data = (kernel_ulong_t) SNB_EP_CTRL0
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CPGC),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_IMC_CTRL1_CPGC),
 		.driver_data = (kernel_ulong_t) SNB_EP_CTRL1
 	},
 	{
 /*	Integrated Memory Controller # : Channel [m-M] Thermal Registers*/
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH0),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_IMC_CTRL0_CH0),
 		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL0_CHA0
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH1),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_IMC_CTRL0_CH1),
 		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL0_CHA1
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH2),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_IMC_CTRL0_CH2),
 		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL0_CHA2
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH3),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_IMC_CTRL0_CH3),
 		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL0_CHA3
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH0),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_IMC_CTRL1_CH0),
 		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL1_CHA0
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL ,PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH1),
+		PCI_VDEVICE(INTEL ,DID_INTEL_IVB_EP_IMC_CTRL1_CH1),
 		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL1_CHA1
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH2),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_IMC_CTRL1_CH2),
 		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL1_CHA2
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH3),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_IMC_CTRL1_CH3),
 		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL1_CHA3
 	},
 /*	Integrated Memory Controller 0 : Channel # TAD Registers	*/
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH0),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_TAD_CTRL0_CH0),
 		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL0_CHA0
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH1),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_TAD_CTRL0_CH1),
 		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL0_CHA1
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH2),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_TAD_CTRL0_CH2),
 		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL0_CHA2
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH3),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_TAD_CTRL0_CH3),
 		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL0_CHA3
 	},
 	{
 /*	Integrated Memory Controller 1 : Channel # TAD Registers	*/
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH0),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_TAD_CTRL1_CH0),
 		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL1_CHA0
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH1),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_TAD_CTRL1_CH1),
 		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL1_CHA1
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH2),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_TAD_CTRL1_CH2),
 		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL1_CHA2
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH3),
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_TAD_CTRL1_CH3),
 		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL1_CHA3
 	},
 	{0, }
@@ -1818,19 +1818,19 @@ static struct pci_device_id PCI_SandyBridge_EP_ids[] = {
 	TAD0=0x2faa / TAD1=0x2fab / TAD2=0x2fac / TAD3=0x2fad		*/
 static struct pci_device_id PCI_Haswell_ids[] = {
 	{
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0),
+		PCI_VDEVICE(INTEL, DID_INTEL_HASWELL_IMC_HA0),
 		.driver_data = (kernel_ulong_t) HSW_IMC
 	},
 	{	/* Desktop: IMC_SystemAgent=0x0c00			*/
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA),
+		PCI_VDEVICE(INTEL, DID_INTEL_HASWELL_IMC_SA),
 		.driver_data = (kernel_ulong_t) HSW_IMC
 	},
 	{	/* Mobile M/H: Host Agent=0x0c04			*/
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_HASWELL_MH_IMC_HA0),
+		PCI_VDEVICE(INTEL, DID_INTEL_HASWELL_MH_IMC_HA0),
 		.driver_data = (kernel_ulong_t) HSW_IMC
 	},
 	{	/* Mobile U/Y: Host Agent=0x0a04			*/
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_HASWELL_UY_IMC_HA0),
+		PCI_VDEVICE(INTEL, DID_INTEL_HASWELL_UY_IMC_HA0),
 		.driver_data = (kernel_ulong_t) HSW_IMC
 	},
 	{0, }
@@ -1840,19 +1840,19 @@ static struct pci_device_id PCI_Haswell_ids[] = {
 	Broadwell ix-5xxx: IMC_HA0=0x1604 / 0x1614			*/
 static struct pci_device_id PCI_Broadwell_ids[] = {
 	{
-	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0),
+		PCI_VDEVICE(INTEL, DID_INTEL_BROADWELL_IMC_HA0),
 		.driver_data = (kernel_ulong_t) HSW_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_BROADWELL_D_IMC_HA0),
+		PCI_VDEVICE(INTEL, DID_INTEL_BROADWELL_D_IMC_HA0),
 		.driver_data = (kernel_ulong_t) HSW_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_BROADWELL_H_IMC_HA0),
+		PCI_VDEVICE(INTEL, DID_INTEL_BROADWELL_H_IMC_HA0),
 		.driver_data = (kernel_ulong_t) HSW_IMC
 	},
 	{	/* Desktop: IMC_SystemAgent=0x0c00			*/
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA),
+		PCI_VDEVICE(INTEL, DID_INTEL_HASWELL_IMC_SA),
 		.driver_data = (kernel_ulong_t) HSW_IMC
 	},
 	{0, }
@@ -1861,31 +1861,31 @@ static struct pci_device_id PCI_Broadwell_ids[] = {
 /* 6th Generation							*/
 static struct pci_device_id PCI_Skylake_ids[] = {
 	{
-	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SKYLAKE_U_IMC_HA),
+		PCI_VDEVICE(INTEL, DID_INTEL_SKYLAKE_U_IMC_HA),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SKYLAKE_Y_IMC_HA),
+		PCI_VDEVICE(INTEL, DID_INTEL_SKYLAKE_Y_IMC_HA),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAD),
+		PCI_VDEVICE(INTEL, DID_INTEL_SKYLAKE_S_IMC_HAD),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAQ),
+		PCI_VDEVICE(INTEL, DID_INTEL_SKYLAKE_S_IMC_HAQ),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAD),
+		PCI_VDEVICE(INTEL, DID_INTEL_SKYLAKE_H_IMC_HAD),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAQ),
+		PCI_VDEVICE(INTEL, DID_INTEL_SKYLAKE_H_IMC_HAQ),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_DT_IMC_HA),
+		PCI_VDEVICE(INTEL, DID_INTEL_SKYLAKE_DT_IMC_HA),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{0, }
@@ -1898,271 +1898,271 @@ static struct pci_device_id PCI_Skylake_X_ids[] = {
 /* 7th & 8th up to 11th Generation: Chipsets might cross generations	*/
 static struct pci_device_id PCI_Kabylake_ids[] = {
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAD),
+		PCI_VDEVICE(INTEL, DID_INTEL_KABYLAKE_H_IMC_HAD),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HA),
+		PCI_VDEVICE(INTEL, DID_INTEL_KABYLAKE_U_IMC_HA),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_Y_IMC_HA),
+		PCI_VDEVICE(INTEL, DID_INTEL_KABYLAKE_Y_IMC_HA),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_Y_IMC_HQ),
+		PCI_VDEVICE(INTEL, DID_INTEL_KABYLAKE_Y_IMC_HQ),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAD),
+		PCI_VDEVICE(INTEL, DID_INTEL_KABYLAKE_S_IMC_HAD),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAQ),
+		PCI_VDEVICE(INTEL, DID_INTEL_KABYLAKE_H_IMC_HAQ),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_DT_IMC_HA),
+		PCI_VDEVICE(INTEL, DID_INTEL_KABYLAKE_DT_IMC_HA),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HAQ),
+		PCI_VDEVICE(INTEL, DID_INTEL_KABYLAKE_U_IMC_HAQ),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAQ),
+		PCI_VDEVICE(INTEL, DID_INTEL_KABYLAKE_S_IMC_HAQ),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_X_IMC_HAQ),
+		PCI_VDEVICE(INTEL, DID_INTEL_KABYLAKE_X_IMC_HAQ),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAQ),
+		PCI_VDEVICE(INTEL, DID_INTEL_COFFEELAKE_S_IMC_HAQ),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAS),
+		PCI_VDEVICE(INTEL, DID_INTEL_COFFEELAKE_S_IMC_HAS),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_S_IMC_HAD),
+		PCI_VDEVICE(INTEL, DID_INTEL_COFFEELAKE_R_S_IMC_HAD),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_U_IMC_HAD),
+		PCI_VDEVICE(INTEL, DID_INTEL_COFFEELAKE_R_U_IMC_HAD),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_U_IMC_HAQ),
+		PCI_VDEVICE(INTEL, DID_INTEL_COFFEELAKE_R_U_IMC_HAQ),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_H_IMC_HAQ),
+		PCI_VDEVICE(INTEL, DID_INTEL_COFFEELAKE_R_H_IMC_HAQ),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_H_IMC_HAS),
+		PCI_VDEVICE(INTEL, DID_INTEL_COFFEELAKE_R_H_IMC_HAS),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_H_IMC_HAO),
+		PCI_VDEVICE(INTEL, DID_INTEL_COFFEELAKE_R_H_IMC_HAO),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_W_IMC_HAQ),
+		PCI_VDEVICE(INTEL, DID_INTEL_COFFEELAKE_R_W_IMC_HAQ),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_W_IMC_HAS),
+		PCI_VDEVICE(INTEL, DID_INTEL_COFFEELAKE_R_W_IMC_HAS),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_W_IMC_HAO),
+		PCI_VDEVICE(INTEL, DID_INTEL_COFFEELAKE_R_W_IMC_HAO),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_S_IMC_HAQ),
+		PCI_VDEVICE(INTEL, DID_INTEL_COFFEELAKE_R_S_IMC_HAQ),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_S_IMC_HAS),
+		PCI_VDEVICE(INTEL, DID_INTEL_COFFEELAKE_R_S_IMC_HAS),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_S_IMC_HAO),
+		PCI_VDEVICE(INTEL, DID_INTEL_COFFEELAKE_R_S_IMC_HAO),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_WHISKEYLAKE_U_IMC_HAD),
+		PCI_VDEVICE(INTEL, DID_INTEL_WHISKEYLAKE_U_IMC_HAD),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_WHISKEYLAKE_U_IMC_HAQ),
+		PCI_VDEVICE(INTEL, DID_INTEL_WHISKEYLAKE_U_IMC_HAQ),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_S_IMC_6C),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_S_IMC_6C),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_COMETLAKE_S_IMC_10C),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_S_IMC_10C),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_COMETLAKE_H_IMC_10C),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_H_IMC_10C),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_COMETLAKE_W_IMC_10C),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_W_IMC_10C),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_M_IMC_6C),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_M_IMC_6C),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_U_IMC_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_U_IMC_HB),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_U1_IMC),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_U1_IMC),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_U3_IMC),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_U3_IMC),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_S1_IMC),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_S1_IMC),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_S2_IMC),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_S2_IMC),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_S5_IMC),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_S5_IMC),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_PREM_U_PCH),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_PREM_U_PCH),
 		.driver_data = (kernel_ulong_t) CML_PCH
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_BASE_U_PCH),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_BASE_U_PCH),
 		.driver_data = (kernel_ulong_t) CML_PCH
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_U_ES_PCH),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_U_ES_PCH),
 		.driver_data = (kernel_ulong_t) CML_PCH
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_Y_ES_PCH),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_Y_ES_PCH),
 		.driver_data = (kernel_ulong_t) CML_PCH
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_Y_PCH),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_Y_PCH),
 		.driver_data = (kernel_ulong_t) CML_PCH
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_H470_PCH),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_H470_PCH),
 		.driver_data = (kernel_ulong_t) CML_PCH
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_Z490_PCH),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_Z490_PCH),
 		.driver_data = (kernel_ulong_t) CML_PCH
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COMETLAKE_Q470_PCH),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_Q470_PCH),
 		.driver_data = (kernel_ulong_t) CML_PCH
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_COMETLAKE_HM470_PCH),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_HM470_PCH),
 		.driver_data = (kernel_ulong_t) CML_PCH
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_COMETLAKE_QM480_PCH),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_QM480_PCH),
 		.driver_data = (kernel_ulong_t) CML_PCH
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_COMETLAKE_WM490_PCH),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_WM490_PCH),
 		.driver_data = (kernel_ulong_t) CML_PCH
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_COMETLAKE_W480_PCH),
+		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_W480_PCH),
 		.driver_data = (kernel_ulong_t) CML_PCH
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICELAKE_U_PCH),
+		PCI_VDEVICE(INTEL, DID_INTEL_ICELAKE_U_PCH),
 		.driver_data = (kernel_ulong_t) CML_PCH
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICELAKE_U_IMC),
+		PCI_VDEVICE(INTEL, DID_INTEL_ICELAKE_U_IMC),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICELAKE_U_4C),
+		PCI_VDEVICE(INTEL, DID_INTEL_ICELAKE_U_4C),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_TIGERLAKE_U1_IMC),
+		PCI_VDEVICE(INTEL, DID_INTEL_TIGERLAKE_U1_IMC),
 		.driver_data = (kernel_ulong_t) RKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_TIGERLAKE_U2_IMC),
+		PCI_VDEVICE(INTEL, DID_INTEL_TIGERLAKE_U2_IMC),
 		.driver_data = (kernel_ulong_t) RKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_TIGERLAKE_U3_IMC),
+		PCI_VDEVICE(INTEL, DID_INTEL_TIGERLAKE_U3_IMC),
 		.driver_data = (kernel_ulong_t) RKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_TIGERLAKE_U4_IMC),
+		PCI_VDEVICE(INTEL, DID_INTEL_TIGERLAKE_U4_IMC),
 		.driver_data = (kernel_ulong_t) RKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_TIGERLAKE_H_IMC),
+		PCI_VDEVICE(INTEL, DID_INTEL_TIGERLAKE_H_IMC),
 		.driver_data = (kernel_ulong_t) RKL_IMC
 	},
 	{
-    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ROCKETLAKE_S_8C_IMC_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_ROCKETLAKE_S_8C_IMC_HB),
 		.driver_data = (kernel_ulong_t) RKL_IMC
 	},
 	{
-    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ROCKETLAKE_S_6C_IMC_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_ROCKETLAKE_S_6C_IMC_HB),
 		.driver_data = (kernel_ulong_t) RKL_IMC
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ROCKETLAKE_H510_PCH),
+		PCI_VDEVICE(INTEL, DID_INTEL_ROCKETLAKE_H510_PCH),
 		.driver_data = (kernel_ulong_t) RKL_PCH
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ROCKETLAKE_B560_PCH),
+		PCI_VDEVICE(INTEL, DID_INTEL_ROCKETLAKE_B560_PCH),
 		.driver_data = (kernel_ulong_t) RKL_PCH
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ROCKETLAKE_H570_PCH),
+		PCI_VDEVICE(INTEL, DID_INTEL_ROCKETLAKE_H570_PCH),
 		.driver_data = (kernel_ulong_t) RKL_PCH
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ROCKETLAKE_Q570_PCH),
+		PCI_VDEVICE(INTEL, DID_INTEL_ROCKETLAKE_Q570_PCH),
 		.driver_data = (kernel_ulong_t) RKL_PCH
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ROCKETLAKE_Z590_PCH),
+		PCI_VDEVICE(INTEL, DID_INTEL_ROCKETLAKE_Z590_PCH),
 		.driver_data = (kernel_ulong_t) RKL_PCH
 	},
 	{
-      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ROCKETLAKE_W580_PCH),
+		PCI_VDEVICE(INTEL, DID_INTEL_ROCKETLAKE_W580_PCH),
 		.driver_data = (kernel_ulong_t) RKL_PCH
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ALDERLAKE_1_IMC),
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_1_IMC),
 		.driver_data = (kernel_ulong_t) RKL_IMC
 	},
 	{
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ALDERLAKE_2_IMC),
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_2_IMC),
 		.driver_data = (kernel_ulong_t) RKL_IMC
 	},
 	{0, }
@@ -2171,11 +2171,11 @@ static struct pci_device_id PCI_Kabylake_ids[] = {
 /* AMD Family 0Fh							*/
 static struct pci_device_id PCI_AMD_0Fh_ids[] = {
 	{
-		PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB_MEMCTL),
+		PCI_DEVICE(PCI_VENDOR_ID_AMD, DID_AMD_K8_NB_MEMCTL),
 		.driver_data = (kernel_ulong_t) AMD_0Fh_MCH
 	},
 	{
-		PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB),
+		PCI_DEVICE(PCI_VENDOR_ID_AMD, DID_AMD_K8_NB),
 		.driver_data = (kernel_ulong_t) AMD_0Fh_HTT
 	},
 	{0, }
@@ -2186,135 +2186,135 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 #ifdef CONFIG_AMD_NB
 	/* Source: /drivers/hwmon/k10temp.c				*/
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ZEPPELIN_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_RAVEN_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_RAVEN_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_MATISSE_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_STARSHIP_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_STARSHIP_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_RENOIR_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_RENOIR_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ARIEL_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_ARIEL_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_FIREFLIGHT_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_FIREFLIGHT_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ARDEN_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_ARDEN_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
 	/* Source: HYGON: /arch/x86/kernel/amd_nb.c: DF_F3 = 0x1463	*/
 	{
-		PCI_VDEVICE(HYGON, PCI_DEVICE_ID_AMD_17H_ZEPPELIN_DF_F3),
+		PCI_VDEVICE(HYGON, DID_AMD_17H_ZEPPELIN_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
 /* AMD Family 19h							*/
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_19H_VERMEER_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_19H_VERMEER_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_19h_ZenIF
 	},
 #endif /* CONFIG_AMD_NB */
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ZEN_PLUS_NB_IOMMU),
+		PCI_VDEVICE(AMD, DID_AMD_17H_ZEN_PLUS_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ZEPPELIN_NB_IOMMU),
+		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_RAVEN_NB_IOMMU),
+		PCI_VDEVICE(AMD, DID_AMD_17H_RAVEN_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
 /* AMD Families 17h and 19h: IOMMU at 0x1481				*/
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ZEN2_MTS_NB_IOMMU),
+		PCI_VDEVICE(AMD, DID_AMD_17H_ZEN2_MTS_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_STARSHIP_NB_IOMMU),
+		PCI_VDEVICE(AMD, DID_AMD_17H_STARSHIP_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_RENOIR_NB_IOMMU),
+		PCI_VDEVICE(AMD, DID_AMD_17H_RENOIR_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ZEN_APU_NB_IOMMU),
+		PCI_VDEVICE(AMD, DID_AMD_17H_ZEN_APU_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ZEN2_APU_NB_IOMMU),
+		PCI_VDEVICE(AMD, DID_AMD_17H_ZEN2_APU_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_FIREFLIGHT_NB_IOMMU),
+		PCI_VDEVICE(AMD, DID_AMD_17H_FIREFLIGHT_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ARDEN_NB_IOMMU),
+		PCI_VDEVICE(AMD, DID_AMD_17H_ARDEN_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
 	/* Source: HYGON: PCI list					*/
 	{
-		PCI_VDEVICE(HYGON, PCI_DEVICE_ID_AMD_17H_ZEN_PLUS_NB_IOMMU),
+		PCI_VDEVICE(HYGON, DID_AMD_17H_ZEN_PLUS_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
 	/* Source: SMU > Data Fabric > UMC				*/
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ZEPPELIN_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_RAVEN_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_RAVEN_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_MATISSE_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_STARSHIP_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_STARSHIP_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_RENOIR_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_RENOIR_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ARIEL_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_ARIEL_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_RAVEN2_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_RAVEN2_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_FIREFLIGHT_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_FIREFLIGHT_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ARDEN_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_ARDEN_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC
 	},
 /* AMD Family 19h							*/
 	/* Source: SMU > Data Fabric > UMC				*/
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_19H_VERMEER_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_19H_VERMEER_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_19h_UMC
 	},
 	{0, }
