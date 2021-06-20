@@ -4067,19 +4067,15 @@ void RKL_CAP(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 {
 	unsigned int units;
 
-	if (Proc->Uncore.Bus.RKL_Cap_A.DDR_OVERCLOCK) {
-		units = Proc->Uncore.Bus.RKL_Cap_C.DATA_RATE_GEAR1;
-	} else {
-		units = 30;
-	}
-	Shm->Uncore.Bus.Rate = (266 * units) + ((333 * units) / 500);
-
+	Shm->Uncore.Bus.Rate = 8000;
 	Shm->Uncore.Bus.Speed = (Core->Clock.Hz * Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.Factory.Clock.Hz;
 
-	if (Proc->Uncore.Bus.RKL_Cap_C.LPDDR4_EN) {
+	if (Proc->Uncore.Bus.RKL_Cap_C.LPDDR4_EN
+	&& !Proc->Uncore.Bus.RKL_Cap_A.DDR_OVERCLOCK) {
 		units = Proc->Uncore.Bus.RKL_Cap_C.DATA_RATE_LPDDR4;
-	} else if (Proc->Uncore.Bus.RKL_Cap_C.DDR4_EN) {
+	} else if (Proc->Uncore.Bus.RKL_Cap_C.DDR4_EN
+		&& !Proc->Uncore.Bus.RKL_Cap_A.DDR_OVERCLOCK) {
 		units = Proc->Uncore.Bus.RKL_Cap_C.DATA_RATE_DDR4;
 	} else {
 		units = 12;
@@ -4096,6 +4092,187 @@ void RKL_CAP(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 	Shm->Proc.Technology.IOMMU_Ver_Major = Proc->Uncore.Bus.IOMMU_Ver.Major;
 	Shm->Proc.Technology.IOMMU_Ver_Minor = Proc->Uncore.Bus.IOMMU_Ver.Minor;
 }
+
+void TGL_IMC(SHM_STRUCT *Shm, PROC_RO *Proc)
+{
+    unsigned short mc, cha;
+
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+    {
+	Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
+	Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
+
+     for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+     {
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.ODT.tCL;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.Timing.tRP;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.Timing.tRP;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.Timing.tRAS;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.ACT.tRRD_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.Refresh.tRFC;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.Refresh.tREFI;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.Timing.tWRPRE
+			- Proc->Uncore.MC[mc].Channel[cha].TGL.ODT.tCWL - 4;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.Timing.tRDPRE;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.Timing.tWRPRE;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.ACT.tFAW;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.ODT.tCWL;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_SG =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.RDRD.tRDRD_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DG =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.RDRD.tRDRD_DG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DR =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.RDRD.tRDRD_DR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DD =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.RDRD.tRDRD_DD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_SG =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.RDWR.tRDWR_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DG =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.RDWR.tRDWR_DG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DR =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.RDWR.tRDWR_DR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DD =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.RDWR.tRDWR_DD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_SG =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.WRRD.tWRRD_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DG =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.WRRD.tWRRD_DG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DR =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.WRRD.tWRRD_DR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DD =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.WRRD.tWRRD_DD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_SG =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.WRWR.tWRWR_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DG =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.WRWR.tWRWR_DG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DR =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.WRWR.tWRWR_DR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DD =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.WRWR.tWRWR_DD;
+
+	switch (Proc->Uncore.MC[mc].Channel[cha].TGL.Sched.CMD_Stretch) {
+	case 0b00:
+	case 0b11:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+		break;
+	case 0b01:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+		break;
+	case 0b10:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 3;
+		break;
+	}
+
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Banks = 		\
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Banks = 		\
+	!Proc->Uncore.MC[mc].Channel[cha].TGL.Sched.ReservedBits1 ? 16 : 8;
+
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Cols =			\
+		Proc->Uncore.MC[mc].Channel[cha].TGL.Sched.x8_device_Dimm0 ?
+			1024 : 512;
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Cols =			\
+		Proc->Uncore.MC[mc].Channel[cha].TGL.Sched.x8_device_Dimm1 ?
+			1024 : 512;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE  =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.PWDEN.tCKE;
+     }
+	Shm->Uncore.MC[mc].Channel[0].Timing.ECC =
+				Proc->Uncore.MC[mc].TGL.MADC0.ECC;
+
+	Shm->Uncore.MC[mc].Channel[1].Timing.ECC =
+				Proc->Uncore.MC[mc].TGL.MADC1.ECC;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		Proc->Uncore.MC[mc].TGL.MADC0.Dimm_L_Map
+	].Size = 512 * Proc->Uncore.MC[mc].TGL.MADD0.Dimm_L_Size;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		!Proc->Uncore.MC[mc].TGL.MADC0.Dimm_L_Map
+	].Size = 512 * Proc->Uncore.MC[mc].TGL.MADD0.Dimm_S_Size;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		Proc->Uncore.MC[mc].TGL.MADC1.Dimm_L_Map
+	].Size = 512 * Proc->Uncore.MC[mc].TGL.MADD1.Dimm_L_Size;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		!Proc->Uncore.MC[mc].TGL.MADC1.Dimm_L_Map
+	].Size = 512 * Proc->Uncore.MC[mc].TGL.MADD1.Dimm_S_Size;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		Proc->Uncore.MC[mc].TGL.MADC0.Dimm_L_Map
+	].Ranks = 1 + Proc->Uncore.MC[mc].TGL.MADD0.DLNOR;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		!Proc->Uncore.MC[mc].TGL.MADC0.Dimm_L_Map
+	].Ranks = 1 + Proc->Uncore.MC[mc].TGL.MADD0.DSNOR;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		Proc->Uncore.MC[mc].TGL.MADC1.Dimm_L_Map
+	].Ranks = 1 + Proc->Uncore.MC[mc].TGL.MADD1.DLNOR;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		!Proc->Uncore.MC[mc].TGL.MADC1.Dimm_L_Map
+	].Ranks = 1 + Proc->Uncore.MC[mc].TGL.MADD1.DSNOR;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		Proc->Uncore.MC[mc].TGL.MADC0.Dimm_L_Map
+	].Rows = SKL_DimmWidthToRows(Proc->Uncore.MC[mc].TGL.MADD0.DLW);
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		!Proc->Uncore.MC[mc].TGL.MADC0.Dimm_L_Map
+	].Rows = SKL_DimmWidthToRows(Proc->Uncore.MC[mc].TGL.MADD0.DSW);
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		Proc->Uncore.MC[mc].TGL.MADC1.Dimm_L_Map
+	].Rows = SKL_DimmWidthToRows(Proc->Uncore.MC[mc].TGL.MADD1.DLW);
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		!Proc->Uncore.MC[mc].TGL.MADC1.Dimm_L_Map
+	].Rows = SKL_DimmWidthToRows(Proc->Uncore.MC[mc].TGL.MADD1.DSW);
+    }
+}
+
+#define TGL_CAP RKL_CAP
 
 void AMD_0Fh_MCH(SHM_STRUCT *Shm, PROC_RO *Proc)
 {
@@ -4927,14 +5104,17 @@ void PCI_Intel(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core,unsigned short DID)
 	case DID_INTEL_COMETLAKE_H_IMC_10C:
 	case DID_INTEL_COMETLAKE_W_IMC_10C:
 	case DID_INTEL_COMETLAKE_M_IMC_6C:
-	case DID_INTEL_COMETLAKE_U_IMC_HB:
-	case DID_INTEL_COMETLAKE_U1_IMC:
-	case DID_INTEL_COMETLAKE_U3_IMC:
 	case DID_INTEL_COMETLAKE_S1_IMC:
 	case DID_INTEL_COMETLAKE_S2_IMC:
 	case DID_INTEL_COMETLAKE_S5_IMC:
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
+		break;
+	case DID_INTEL_COMETLAKE_U_IMC_HB:
+	case DID_INTEL_COMETLAKE_U1_IMC:
+	case DID_INTEL_COMETLAKE_U3_IMC:
+		RKL_CAP(Shm, Proc, Core);
+		RKL_IMC(Shm, Proc);
 		break;
 	case DID_INTEL_COMETLAKE_PREM_U_PCH:
 		SET_CHIPSET(IC_400_SERIES_P);
@@ -4979,8 +5159,8 @@ void PCI_Intel(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core,unsigned short DID)
 	case DID_INTEL_TIGERLAKE_U3_IMC:
 	case DID_INTEL_TIGERLAKE_U4_IMC:
 	case DID_INTEL_TIGERLAKE_H_IMC:
-		RKL_CAP(Shm, Proc, Core);
-		RKL_IMC(Shm, Proc);
+		TGL_CAP(Shm, Proc, Core);
+		TGL_IMC(Shm, Proc);
 		break;
 	case DID_INTEL_ROCKETLAKE_S_8C_IMC_HB:
 	case DID_INTEL_ROCKETLAKE_S_6C_IMC_HB:

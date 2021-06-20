@@ -1510,6 +1510,7 @@ static PCI_CALLBACK SKL_SA(struct pci_dev *dev) ;
 static PCI_CALLBACK CML_PCH(struct pci_dev *dev) ;
 #define RKL_PCH CML_PCH
 static PCI_CALLBACK RKL_IMC(struct pci_dev *dev) ;
+static PCI_CALLBACK TGL_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev) ;
 #ifdef CONFIG_AMD_NB
@@ -2023,15 +2024,15 @@ static struct pci_device_id PCI_Kabylake_ids[] = {
 	},
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_U_IMC_HB),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) RKL_IMC
 	},
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_U1_IMC),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) RKL_IMC
 	},
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_U3_IMC),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) RKL_IMC
 	},
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_S1_IMC),
@@ -2107,23 +2108,23 @@ static struct pci_device_id PCI_Kabylake_ids[] = {
 	},
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_TIGERLAKE_U1_IMC),
-		.driver_data = (kernel_ulong_t) RKL_IMC
+		.driver_data = (kernel_ulong_t) TGL_IMC
 	},
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_TIGERLAKE_U2_IMC),
-		.driver_data = (kernel_ulong_t) RKL_IMC
+		.driver_data = (kernel_ulong_t) TGL_IMC
 	},
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_TIGERLAKE_U3_IMC),
-		.driver_data = (kernel_ulong_t) RKL_IMC
+		.driver_data = (kernel_ulong_t) TGL_IMC
 	},
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_TIGERLAKE_U4_IMC),
-		.driver_data = (kernel_ulong_t) RKL_IMC
+		.driver_data = (kernel_ulong_t) TGL_IMC
 	},
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_TIGERLAKE_H_IMC),
-		.driver_data = (kernel_ulong_t) RKL_IMC
+		.driver_data = (kernel_ulong_t) TGL_IMC
 	},
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_ROCKETLAKE_S_8C_IMC_HB),
