@@ -53,7 +53,7 @@ However _CoreFreq_ is making use of the virtualized performance counter :
 
 **c-** Rendering  
 
-The UI renders best with an ASCII console or a Xterm with VT100 support and ANSI **colors**  
+The UI renders best with an ASCII console or a Xterm with VT100 support, ANSI **colors**; optionally transparency.  
 If **bold** and **bright** colors are not rendered then use the following terminal options:  
 #### Ubuntu Terminal
 In the Preferences - Colors tab, select `Show bold text in bright colors`  
@@ -341,6 +341,15 @@ CPU     IPS            IPC            CPI
   - The registration is confirmed into the `Settings` window  
   - The idle limit can be changed at any time in the `Kernel` window  
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_Idle_Limit.png "Idle Limit")  
+
+* Q: How to enable transparency in the User Interface ?  
+
+  A: Transparency is a build option invoked by the compilation directive `UI_TRANSPARENCY`  
+  1. Build the project with `UI_TRANSPARENCY` enabled  
+`make UI_TRANSPARENCY=1`
+  2. Start the Client with one of its transparency compatible colors theme  
+`corefreq-cli -OE 2 -t`  
+  3. Or switch to that theme from `Menu > Theme`, shortcut [`E`]  
 
 * Q: What are the build options for _CoreFreq_ ?  
 
