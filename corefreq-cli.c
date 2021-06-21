@@ -9034,6 +9034,7 @@ int Shortcut(SCANKEY *scan)
 
     case SCANKEY_HOME:
     case SCANCON_HOME:
+    case SCANSYM_HOME:
 	if (!IsDead(&winList)) {
 		return (-1);
 	} else if (Draw.Disposal == D_MAINVIEW) {
@@ -9044,6 +9045,7 @@ int Shortcut(SCANKEY *scan)
 
     case SCANKEY_END:
     case SCANCON_END:
+    case SCANSYM_END:
 	if (!IsDead(&winList)) {
 		return (-1);
 	} else if (Draw.Disposal == D_MAINVIEW) {
@@ -9106,6 +9108,7 @@ int Shortcut(SCANKEY *scan)
 
     case SCANKEY_F2:
     case SCANCON_F2:
+    case SCANSYM_F2:
     {
 	Window *win = SearchWinListById(SCANKEY_F2, &winList);
 	if (win == NULL) {
@@ -9118,6 +9121,7 @@ int Shortcut(SCANKEY *scan)
 
     case SCANKEY_F3:
     case SCANCON_F3:
+    case SCANSYM_F3:
     {
 	Window *win = SearchWinListById(SCANKEY_F2, &winList);
 	if (win == NULL) {
@@ -9130,6 +9134,7 @@ int Shortcut(SCANKEY *scan)
 
     case SCANKEY_F4:
     case SCANCON_F4:
+    case SCANSYM_F4:
     {
 	Window *win = SearchWinListById(SCANKEY_F2, &winList);
 	if (win == NULL) {
@@ -9788,6 +9793,7 @@ int Shortcut(SCANKEY *scan)
 #endif
     case SCANKEY_F1:
     case SCANCON_F1:
+    case SCANSYM_F1:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL) {
@@ -9991,6 +9997,7 @@ int Shortcut(SCANKEY *scan)
 		RSC(BOX_THEME_BLANK).CODE(), blankAttr, SCANKEY_NULL,
 		RSC(THEME_DFLT).CODE()	, stateAttr[0], BOXKEY_THEME_DFLT,
 		RSC(THEME_USR1).CODE()	, stateAttr[0], BOXKEY_THEME_USR1,
+		RSC(THEME_USR2).CODE()	, stateAttr[0], BOXKEY_THEME_USR2,
 		RSC(BOX_THEME_BLANK).CODE(), blankAttr, SCANKEY_NULL);
 
 		if (wBox != NULL) {
@@ -10011,6 +10018,11 @@ int Shortcut(SCANKEY *scan)
 
     case BOXKEY_THEME_USR1:
 	SET_THEME(THM_USR1);
+	Draw.Flag.layout = 1;
+    break;
+
+    case BOXKEY_THEME_USR2:
+	SET_THEME(THM_USR2);
 	Draw.Flag.layout = 1;
     break;
 

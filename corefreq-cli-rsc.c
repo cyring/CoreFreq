@@ -19,6 +19,7 @@
 #include "corefreq-cli-rsc-fr.h"
 #include "corefreq-cli-rsc-theme-dflt.h"
 #include "corefreq-cli-rsc-theme-usr1.h"
+#include "corefreq-cli-rsc-theme-usr2.h"
 
 #define DEF_LDA(_rsc)							\
 ATTRIBUTE _rsc##_##ATTR_ARRAY						\
@@ -26,7 +27,8 @@ ATTRIBUTE _rsc##_##ATTR_ARRAY						\
 	[(sizeof((ATTRIBUTE[]) _rsc##_##THM_DFLT_ATTR) / sizeof(ATTRIBUTE))] = \
 {									\
 	[THM_DFLT] = _rsc##_##THM_DFLT_ATTR,				\
-	[THM_USR1] = _rsc##_##THM_USR1_ATTR				\
+	[THM_USR1] = _rsc##_##THM_USR1_ATTR,				\
+	[THM_USR2] = _rsc##_##THM_USR2_ATTR				\
 };									\
 ASCII	_rsc##_##CODE_EN_ARRAY[] = _rsc##_##CODE_EN,			\
 	_rsc##_##CODE_FR_ARRAY[] = _rsc##_##CODE_FR
@@ -37,13 +39,15 @@ ATTRIBUTE _rsc##_##ATTR_ARRAY						\
 	[(sizeof((ATTRIBUTE[]) _rsc##_##THM_DFLT_ATTR) / sizeof(ATTRIBUTE))] = \
 {									\
 	[THM_DFLT] = _rsc##_##THM_DFLT_ATTR,				\
-	[THM_USR1] = _rsc##_##THM_USR1_ATTR				\
+	[THM_USR1] = _rsc##_##THM_USR1_ATTR,				\
+	[THM_USR2] = _rsc##_##THM_USR2_ATTR				\
 }
 
 #define LDV(attr_var, en_var, fr_var)					\
 	.Attr = {							\
 		[THM_DFLT] = attr_var[THM_DFLT],			\
-		[THM_USR1] = attr_var[THM_USR1] 			\
+		[THM_USR1] = attr_var[THM_USR1],			\
+		[THM_USR2] = attr_var[THM_USR2] 			\
 	},								\
 	.Code = {							\
 		[LOC_EN] = (ASCII*) en_var,				\
@@ -314,6 +318,7 @@ RESOURCE_ST Resource[] = {
 	LDB(RSC_VOID),
 	LDQ(RSC_THEME_DFLT),
 	LDQ(RSC_THEME_USR1),
+	LDQ(RSC_THEME_USR2),
 	LDQ(RSC_LAYOUT_LCD_RESET),
 #ifndef NO_HEADER
 	LDA(RSC_LAYOUT_HEADER_PROC),
