@@ -67,6 +67,10 @@ ifneq ($(NO_LOWER),)
 LAYOUT += -D NO_LOWER=$(NO_LOWER)
 endif
 
+ifneq ($(UI_TRANSPARENCY),)
+LAYOUT += -D UI_TRANSPARENCY=$(UI_TRANSPARENCY)
+endif
+
 .PHONY: all
 all: corefreqd corefreq-cli
 	$(MAKE) -j1 -C $(KERNELDIR) M=$(PWD) modules
@@ -209,7 +213,9 @@ help:
 	"|                                                               |\n"\
 	"|  User Interface Layout:                                       |\n"\
 	"|    NO_HEADER=<F>  NO_FOOTER=<F>  NO_UPPER=<F>  NO_LOWER=<F>   |\n"\
-	"|      when <F> is 1 don't build and display this area part     |\n"\
+	"|      when <F> is 1: don't build and display this area part    |\n"\
+	"|    UI_TRANSPARENCY=<F>                                        |\n"\
+	"|      when <F> is 1: build with background transparency        |\n"\
 	"|                                                               |\n"\
 	"|  Example:                                                     |\n"\
 	"|    make CC=gcc OPTIM_LVL=3 FEAT_DBG=1                         |\n"\
