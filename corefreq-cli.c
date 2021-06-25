@@ -7421,13 +7421,16 @@ Window *CreateRatioClock(unsigned long long id,
 	CLOCK_ARG clockMod = {.sllong = id};
 
 	const CUINT hthMax = 1 + lowestShift + highestShift;
-	CUINT hthWin = CUMIN( (Draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER)),
-				hthMax );
-
+	CUINT	oRow = CUMAX(1 + TOP_HEADER_ROW + TOP_FOOTER_ROW, 2);
+	CUINT hthWin = CUMIN(Draw.Size.height - oRow, hthMax);
+	if (hthWin < oRow) {
+		oRow = 1;
+		hthWin = Draw.Size.height - 2;
+	}
 	Window *wCK = CreateWindow(	wLayer, id,
 					1, hthWin,
 					oCol,
-					1 + TOP_HEADER_ROW + TOP_FOOTER_ROW,
+					oRow,
 					WINFLAG_NO_STOCK );
     if (wCK != NULL)
     {
