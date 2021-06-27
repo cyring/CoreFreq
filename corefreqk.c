@@ -5714,7 +5714,7 @@ void Query_AMD_Family_15h(unsigned int cpu)
 		CODENAME_LEN);
       }
 	break;
-    };
+    }
     if (PRIVATE(OF(Specific)) != NULL)
     {
 	PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
@@ -10827,7 +10827,7 @@ void Core_AMD_Family_0Fh_Temp(CORE_RO *Core)
 	}
 }
 
-void Core_AMD_Family_15h_Temp(CORE_RO *Core)
+void Core_AMD_Family_15h_00h_Temp(CORE_RO *Core)
 {
 	TCTL_REGISTER TctlSensor = {.value = 0};
 
@@ -10843,10 +10843,9 @@ void Core_AMD_Family_15h_Temp(CORE_RO *Core)
 	}
 }
 
-/*TODO: Bulldozer/Excavator [need hardware to test with]
+/*	Bulldozer/Excavator through SMU interface			*/
 void Core_AMD_Family_15_60h_Temp(CORE_RO *Core)
 {
-    if (PUBLIC(RO(Proc))->Registration.Experimental) {
 	TCTL_REGISTER TctlSensor = {.value = 0};
 
 	Core_AMD_SMN_Read(	TctlSensor,
@@ -10865,9 +10864,25 @@ void Core_AMD_Family_15_60h_Temp(CORE_RO *Core)
 
 		Core->PowerThermal.Events = ThermTrip.SensorTrip << 0;
 	}
-    }
 }
-*/
+
+void Core_AMD_Family_15h_Temp(CORE_RO *Core)
+{
+	switch (PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel) {
+	case 0x6:
+	case 0x7:
+		if ((PUBLIC(RO(Proc))->Features.Std.EAX.Model >= 0x0)
+		 && (PUBLIC(RO(Proc))->Features.Std.EAX.Model <= 0xf)) {
+			Core_AMD_Family_15_60h_Temp(Core);
+		} else {
+			Core_AMD_Family_15h_00h_Temp(Core);
+		}
+		break;
+	default:
+		Core_AMD_Family_15h_00h_Temp(Core);
+		break;
+	}
+}
 
 void CTL_AMD_Family_17h_Temp(CORE_RO *Core)
 {
