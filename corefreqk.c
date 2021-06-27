@@ -4391,6 +4391,34 @@ static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev)
 	return ((PCI_CALLBACK) rc);
 }
 
+static PCI_CALLBACK C5500_C3500_IMC(struct pci_dev *dev)
+{
+	kernel_ulong_t rc = 0;
+	unsigned int did[2][3] = {
+		{
+			DID_INTEL_NHM_EC_MC_CH0_CTRL,
+			DID_INTEL_NHM_EC_MC_CH1_CTRL,
+			DID_INTEL_NHM_EC_MC_CH2_CTRL
+		},
+		{
+			DID_INTEL_NHM_EC_MC_CH0_ADDR,
+			DID_INTEL_NHM_EC_MC_CH1_ADDR,
+			DID_INTEL_NHM_EC_MC_CH2_ADDR
+		}
+	};
+	switch (dev->bus->number) {
+	case 0xff:
+		PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+		rc = Query_NHM_IMC(dev, did, 0);
+		break;
+	case 0xfe:
+		PUBLIC(RO(Proc))->Uncore.CtrlCount = 2;
+		rc = Query_NHM_IMC(dev, did, 1);
+		break;
+	}
+	return ((PCI_CALLBACK) rc);
+}
+
 static PCI_CALLBACK Westmere_EP_IMC(struct pci_dev *dev)
 {
 	kernel_ulong_t rc = 0;

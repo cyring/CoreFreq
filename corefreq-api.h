@@ -987,6 +987,14 @@ typedef struct
 #define DID_INTEL_LYNNFIELD_MC_TEST	0x2c9c
 #define DID_INTEL_LYNNFIELD_MC_CH0_ADDR 0x2ca1
 #define DID_INTEL_LYNNFIELD_MC_CH1_ADDR 0x2ca9
+#define DID_INTEL_NHM_EC_MCR		0x2cd8
+#define DID_INTEL_NHM_EC_MC_CH0_CTRL	0x2ce0
+#define DID_INTEL_NHM_EC_MC_CH1_CTRL	0x2ce8
+#define DID_INTEL_NHM_EC_MC_CH2_CTRL	0x2cf0
+#define DID_INTEL_NHM_EC_MC_TEST	0x2cdc
+#define DID_INTEL_NHM_EC_MC_CH0_ADDR	0x2ce1
+#define DID_INTEL_NHM_EC_MC_CH1_ADDR	0x2ce9
+#define DID_INTEL_NHM_EC_MC_CH2_ADDR	0x2cf1
 #define DID_INTEL_NHM_EP_MCR		0x2d98
 #define DID_INTEL_NHM_EP_MC_CH0_CTRL	0x2da0
 #define DID_INTEL_NHM_EP_MC_CH1_CTRL	0x2da8
@@ -1001,6 +1009,7 @@ typedef struct
 /* Source: Intel X58 Express Chipset Datasheet				*/
 #define DID_INTEL_X58_HUB_CORE		0x342e
 #define DID_INTEL_X58_HUB_CTRL		0x3423
+#define DID_INTEL_IIO_CORE_REG		0x3728
 /* Source: /include/linux/pci_ids.h					*/
 #define DID_INTEL_SNB_IMC_HA0		0x3ca0
 /* Source: 2nd Generation Intel® Core™ Processor Family Vol2		*/

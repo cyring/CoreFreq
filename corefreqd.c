@@ -4869,6 +4869,7 @@ void PCI_Intel(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core,unsigned short DID)
 		QPI_CLK(Shm, Proc, Core);
 		break;
 	case DID_INTEL_X58_HUB_CORE:
+	case DID_INTEL_IIO_CORE_REG:
 		X58_VTD(Shm, Proc, Core);
 		break;
 	case DID_INTEL_I7_MCR:			/*	Bloomfield	*/
@@ -4879,9 +4880,11 @@ void PCI_Intel(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core,unsigned short DID)
 	case DID_INTEL_I7_MC_TEST:
 	case DID_INTEL_LYNNFIELD_MC_TEST:
 	case DID_INTEL_NHM_EP_MC_TEST:
+	case DID_INTEL_NHM_EC_MC_TEST:
 		DMI_CLK(Shm, Proc, Core);
 		break;
 	case DID_INTEL_LYNNFIELD_MCR:		/*	Lynnfield	*/
+	case DID_INTEL_NHM_EC_MCR:		/*	C5500-C3500	*/
 		NHM_IMC(Shm, Proc);
 		SET_CHIPSET(IC_IBEXPEAK);
 		break;
