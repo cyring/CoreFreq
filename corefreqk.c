@@ -385,6 +385,45 @@ static ktime_t RearmTheTimer;
 	}								\
 })
 
+static long CoreFreqK_Thermal_Scope(int scope)
+{
+    if ((scope >= FORMULA_SCOPE_NONE) && (scope <= FORMULA_SCOPE_PKG))
+    {
+	PUBLIC(RO(Proc))->thermalFormula = \
+		(KIND_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula) << 8)|scope;
+
+	return (RC_SUCCESS);
+    } else {
+	return (-EINVAL);
+    }
+}
+
+static long CoreFreqK_Voltage_Scope(int scope)
+{
+    if ((scope >= FORMULA_SCOPE_NONE) && (scope <= FORMULA_SCOPE_PKG))
+    {
+	PUBLIC(RO(Proc))->voltageFormula = \
+		(KIND_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula) << 8)|scope;
+
+	return (RC_SUCCESS);
+    } else {
+	return (-EINVAL);
+    }
+}
+
+static long CoreFreqK_Power_Scope(int scope)
+{
+    if ((scope >= FORMULA_SCOPE_NONE) && (scope <= FORMULA_SCOPE_PKG))
+    {
+	PUBLIC(RO(Proc))->powerFormula = \
+		(KIND_OF_FORMULA(PUBLIC(RO(Proc))->powerFormula) << 8)|scope;
+
+	return (RC_SUCCESS);
+    } else {
+	return (-EINVAL);
+    }
+}
+
 unsigned int FixMissingRatioAndFrequency(unsigned int r32, CLOCK *pClock)
 {
 	unsigned long long r64 = r32;
@@ -5740,6 +5779,9 @@ void Query_AMD_Family_15h(unsigned int cpu)
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
 	    Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_EXCAVATOR].CodeName,
 		CODENAME_LEN);
+	/*	One thermal sensor through the SMU interface		*/
+	PUBLIC(RO(Proc))->thermalFormula = \
+				CoreFreqK_Thermal_Scope(FORMULA_SCOPE_PKG);
       }
 	break;
     }
@@ -16111,45 +16153,6 @@ static void CoreFreqK_Register_NMI(void) {}
 static void CoreFreqK_UnRegister_NMI(void) {}
 #endif
 
-
-static long CoreFreqK_Thermal_Scope(int scope)
-{
-    if ((scope >= FORMULA_SCOPE_NONE) && (scope <= FORMULA_SCOPE_PKG))
-    {
-	PUBLIC(RO(Proc))->thermalFormula = \
-		(KIND_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula) << 8)|scope;
-
-	return (RC_SUCCESS);
-    } else {
-	return (-EINVAL);
-    }
-}
-
-static long CoreFreqK_Voltage_Scope(int scope)
-{
-    if ((scope >= FORMULA_SCOPE_NONE) && (scope <= FORMULA_SCOPE_PKG))
-    {
-	PUBLIC(RO(Proc))->voltageFormula = \
-		(KIND_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula) << 8)|scope;
-
-	return (RC_SUCCESS);
-    } else {
-	return (-EINVAL);
-    }
-}
-
-static long CoreFreqK_Power_Scope(int scope)
-{
-    if ((scope >= FORMULA_SCOPE_NONE) && (scope <= FORMULA_SCOPE_PKG))
-    {
-	PUBLIC(RO(Proc))->powerFormula = \
-		(KIND_OF_FORMULA(PUBLIC(RO(Proc))->powerFormula) << 8)|scope;
-
-	return (RC_SUCCESS);
-    } else {
-	return (-EINVAL);
-    }
-}
 
 static void For_All_CPU_Compute_Clock(void)
 {
