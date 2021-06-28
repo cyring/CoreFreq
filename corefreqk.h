@@ -1217,7 +1217,7 @@ static void Start_AMD_Family_15h(void *arg) ;
 extern void InitTimer_AMD_Family_15h(unsigned int cpu) ;
 
 #define     Query_AMD_Family_16h Query_AMD_Family_15h
-#define     PerCore_AMD_Family_16h_Query PerCore_AMD_Family_15h_Query
+static void PerCore_AMD_Family_16h_Query(void *arg) ;
 #define     Start_AMD_Family_16h Start_AMD_Family_15h
 #define     Stop_AMD_Family_16h Stop_AMD_Family_15h
 #define     InitTimer_AMD_Family_16h InitTimer_AuthenticAMD

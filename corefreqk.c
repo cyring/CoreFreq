@@ -7118,9 +7118,40 @@ long ClockMod_Intel_HWP(CLOCK_ARG *pClockMod)
 	}
 }
 
+
+void AMD_Watchdog(CORE_RO *Core)
+{	/*		CPU Watchdog Timer.				*/
+	if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
+	{
+		AMD_CPU_WDT_CFG CPU_WDT_CFG = {.value = 0};
+		RDMSR(CPU_WDT_CFG, MSR_AMD_CPU_WDT_CFG);
+
+		switch (WDT_Enable) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			CPU_WDT_CFG.TmrCfgEn = WDT_Enable;
+			WRMSR(CPU_WDT_CFG, MSR_AMD_CPU_WDT_CFG);
+			RDMSR(CPU_WDT_CFG, MSR_AMD_CPU_WDT_CFG);
+			break;
+		}
+		if (CPU_WDT_CFG.TmrCfgEn) {
+			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT, Core->Bind);
+		} else {
+			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT, Core->Bind);
+		}
+		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
+	}
+}
+
+void PerCore_AMD_CState_BAR(CORE_RO *Core)
+{	/* Families: 10h, 12h, 14h, 15h, 16h, 17h: I/O C-State Base Address. */
+	CSTATE_BASE_ADDR CStateBaseAddr = {.value = 0};
+	RDMSR(CStateBaseAddr, MSR_AMD_CSTATE_BAR);
+	Core->Query.CStateBaseAddr = CStateBaseAddr.IOaddr;
+}
+
 void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 {
-	CSTATE_BASE_ADDR CStateBaseAddr = {.value = 0};
 	unsigned long long CC6 = 0, PC6 = 0;
 	int ToggleFeature;
 
@@ -7242,33 +7273,13 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 	}
     }
 	/*		SMT C-State Base Address.			*/
-	RDMSR(CStateBaseAddr, MSR_AMD_CSTATE_BAR);
-	Core->Query.CStateBaseAddr = CStateBaseAddr.IOaddr;
+	PerCore_AMD_CState_BAR(Core);
 	/*		Package C-State: Configuration Control .	*/
 	Core->Query.CfgLock = 1;
 	/*		Package C-State: I/O MWAIT Redirection .	*/
 	Core->Query.IORedir = 0;
-	/*		CPU Watchdog Timer.				*/
-	if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
-	{
-		AMD_CPU_WDT_CFG CPU_WDT_CFG = {.value = 0};
-		RDMSR(CPU_WDT_CFG, MSR_AMD_CPU_WDT_CFG);
 
-		switch (WDT_Enable) {
-		case COREFREQ_TOGGLE_OFF:
-		case COREFREQ_TOGGLE_ON:
-			CPU_WDT_CFG.TmrCfgEn = WDT_Enable;
-			WRMSR(CPU_WDT_CFG, MSR_AMD_CPU_WDT_CFG);
-			RDMSR(CPU_WDT_CFG, MSR_AMD_CPU_WDT_CFG);
-			break;
-		}
-		if (CPU_WDT_CFG.TmrCfgEn) {
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT, Core->Bind);
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT, Core->Bind);
-		}
-		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
-	}
+	AMD_Watchdog(Core);
 }
 
 void Intel_Watchdog(CORE_RO *Core)
@@ -9666,6 +9677,7 @@ static void PerCore_AMD_Family_Same_Query(void *arg)
     } else {
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
     }
+
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
@@ -9690,6 +9702,8 @@ static void PerCore_AMD_Family_10h_Query(void *arg)
 
 	Compute_AMD_Family_10h_Boost(Core->Bind);
 	PerCore_AMD_Family_Same_Query(Core);
+	/*TODO(Errata 438) PerCore_AMD_CState_BAR(Core);		*/
+	AMD_Watchdog(Core);
 }
 
 static void PerCore_AMD_Family_11h_Query(void *arg)
@@ -9698,6 +9712,8 @@ static void PerCore_AMD_Family_11h_Query(void *arg)
 
 	Compute_AMD_Family_11h_Boost(Core->Bind);
 	PerCore_AMD_Family_Same_Query(Core);
+	/*TODO(Unspecified) PerCore_AMD_CState_BAR(Core);		*/
+	/*TODO(Watchdog): D18F3x{40,44} MCA NB Registers - Hardware needed */
 }
 
 static void PerCore_AMD_Family_12h_Query(void *arg)
@@ -9706,6 +9722,8 @@ static void PerCore_AMD_Family_12h_Query(void *arg)
 
 	Compute_AMD_Family_12h_Boost(Core->Bind);
 	PerCore_AMD_Family_Same_Query(Core);
+	PerCore_AMD_CState_BAR(Core);
+	AMD_Watchdog(Core);
 }
 
 static void PerCore_AMD_Family_14h_Query(void *arg)
@@ -9714,6 +9732,8 @@ static void PerCore_AMD_Family_14h_Query(void *arg)
 
 	Compute_AMD_Family_14h_Boost(Core->Bind);
 	PerCore_AMD_Family_Same_Query(Core);
+	PerCore_AMD_CState_BAR(Core);
+	AMD_Watchdog(Core);
 }
 
 static void PerCore_AMD_Family_15h_Query(void *arg)
@@ -9722,6 +9742,33 @@ static void PerCore_AMD_Family_15h_Query(void *arg)
 
 	Compute_AMD_Family_15h_Boost(Core->Bind);
 	PerCore_AMD_Family_Same_Query(Core);
+	PerCore_AMD_CState_BAR(Core);
+
+	switch (PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel) {
+	case 0x0:
+	case 0x1:
+	/*TODO(Watchdog): D18F3x{40,44} MCA NB Registers - Hardware needed */
+		break;
+	case 0x3:
+	case 0x6:
+	case 0x7:
+		if ((PUBLIC(RO(Proc))->Features.Std.EAX.Model >= 0x0)
+		 && (PUBLIC(RO(Proc))->Features.Std.EAX.Model <= 0xf))
+		{
+			AMD_Watchdog(Core);
+		}
+		break;
+	}
+}
+
+static void PerCore_AMD_Family_16h_Query(void *arg)
+{
+	CORE_RO *Core = (CORE_RO *) arg;
+
+	Compute_AMD_Family_15h_Boost(Core->Bind);
+	PerCore_AMD_Family_Same_Query(Core);
+	PerCore_AMD_CState_BAR(Core);
+	AMD_Watchdog(Core);
 }
 
 static void PerCore_AMD_Family_17h_Query(void *arg)
