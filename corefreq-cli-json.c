@@ -1814,6 +1814,26 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 		}
 		json_end_arr(&s);
 
+		json_key(&s, "Frequency");
+		{
+			json_start_object(&s);
+			json_key(&s, "Relative");
+			json_start_arr(&s);
+			{
+				json_literal(&s, "%f", Shm->Cpu[cpu].Relative.Freq[SENSOR_LOWEST]);
+				json_literal(&s, "%f", Shm->Cpu[cpu].Relative.Freq[SENSOR_HIGHEST]);
+			}
+			json_end_arr(&s);
+			json_key(&s, "Absolute");
+			json_start_arr(&s);
+			{
+				json_literal(&s, "%f", Shm->Cpu[cpu].Absolute.Freq[SENSOR_LOWEST]);
+				json_literal(&s, "%f", Shm->Cpu[cpu].Absolute.Freq[SENSOR_HIGHEST]);
+			}
+			json_end_arr(&s);
+			json_end_object(&s);
+		}
+
 		json_key(&s, "SystemRegister");
 		{
 			json_start_object(&s);
