@@ -1472,10 +1472,11 @@ static PCI_CALLBACK P965(struct pci_dev *dev) ;
 static PCI_CALLBACK G965(struct pci_dev *dev) ;
 static PCI_CALLBACK P35(struct pci_dev *dev) ;
 static PCI_CALLBACK SoC_SLM(struct pci_dev *dev) ;
-static PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev) ;
+static PCI_CALLBACK Nehalem_IMC(struct pci_dev *dev) ;
+#define Bloomfield_IMC Nehalem_IMC
 static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev) ;
-static PCI_CALLBACK C5500_C3500_IMC(struct pci_dev *dev) ;
-static PCI_CALLBACK Westmere_EP_IMC(struct pci_dev *dev) ;
+#define C5500_C3500_IMC Nehalem_IMC
+#define Westmere_EP_IMC Nehalem_IMC
 static PCI_CALLBACK NHM_IMC_TR(struct pci_dev *dev) ;
 static PCI_CALLBACK NHM_NON_CORE(struct pci_dev *dev) ;
 static PCI_CALLBACK X58_VTD(struct pci_dev *dev) ;

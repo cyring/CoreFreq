@@ -3766,11 +3766,15 @@ void Query_P35(void __iomem *mchmap)
 	}
 }
 
-kernel_ulong_t Query_NHM_Timing(unsigned int did,
+kernel_ulong_t Query_NHM_Timing(struct pci_dev *pdev,
 				unsigned short mc,
 				unsigned short cha)
-{	/*Source: Micron Technical Note DDR3 Power-Up, Initialization, & Reset*/
-    struct pci_dev *dev = pci_get_device(PCI_VENDOR_ID_INTEL, did, NULL);
+{	/*Source:Micron Technical Note DDR3 Power-Up, Initialization, & Reset*/
+	struct pci_dev *dev = pci_get_domain_bus_and_slot(
+						pci_domain_nr(pdev->bus),
+						pdev->bus->number,
+						PCI_DEVFN(4, 0)
+				);
     if (dev != NULL)
     {
 	pci_read_config_dword(dev, 0x70,
@@ -3803,11 +3807,15 @@ kernel_ulong_t Query_NHM_Timing(unsigned int did,
 	return (-ENODEV);
 }
 
-kernel_ulong_t Query_NHM_DIMM(	unsigned int did,
+kernel_ulong_t Query_NHM_DIMM(struct pci_dev *pdev,
 				unsigned short mc,
 				unsigned short cha)
 {
-	struct pci_dev *dev = pci_get_device(PCI_VENDOR_ID_INTEL, did, NULL);
+	struct pci_dev *dev = pci_get_domain_bus_and_slot(
+						pci_domain_nr(pdev->bus),
+						pdev->bus->number,
+						PCI_DEVFN(4, 1)
+				);
     if (dev != NULL)
     {
 	unsigned short slot;
@@ -3845,7 +3853,6 @@ void Query_NHM_MaxDIMMs(struct pci_dev *dev, unsigned short mc)
 }
 
 kernel_ulong_t Query_NHM_IMC(	struct pci_dev *dev,
-				unsigned int did[2][3],
 				unsigned short mc)
 {
 	kernel_ulong_t rc = 0;
@@ -3868,8 +3875,8 @@ kernel_ulong_t Query_NHM_IMC(	struct pci_dev *dev,
 		(cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount) && !rc;
 			cha++)
 	{
-		rc = Query_NHM_Timing(did[0][cha], mc, cha)
-		   & Query_NHM_DIMM(did[1][cha], mc, cha);
+		rc = Query_NHM_Timing(dev, mc, cha)
+		   & Query_NHM_DIMM(dev, mc, cha);
 	}
 	return (rc);
 }
@@ -3877,16 +3884,6 @@ kernel_ulong_t Query_NHM_IMC(	struct pci_dev *dev,
 kernel_ulong_t Query_Lynnfield_IMC(struct pci_dev *dev, unsigned short mc)
 {
 	kernel_ulong_t rc = 0;
-	unsigned int did[2][2] = {
-		{
-			DID_INTEL_LYNNFIELD_MC_CH0_CTRL,
-			DID_INTEL_LYNNFIELD_MC_CH1_CTRL
-		},
-		{
-			DID_INTEL_LYNNFIELD_MC_CH0_ADDR,
-			DID_INTEL_LYNNFIELD_MC_CH1_ADDR
-		}
-	};
 	unsigned short cha;
 
 	Query_NHM_MaxDIMMs(dev, mc);
@@ -3905,8 +3902,8 @@ kernel_ulong_t Query_Lynnfield_IMC(struct pci_dev *dev, unsigned short mc)
 		(cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount) && !rc;
 			cha++)
     {
-	rc = Query_NHM_Timing(did[0][cha], mc, cha)
-	   & Query_NHM_DIMM(did[1][cha], mc, cha);
+	rc = Query_NHM_Timing(dev, mc, cha)
+	   & Query_NHM_DIMM(dev, mc, cha);
     }
 	return (rc);
 }
@@ -4394,91 +4391,28 @@ static PCI_CALLBACK SoC_SLM(struct pci_dev *dev)
 	return ((PCI_CALLBACK) 0);
 }
 
-static PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev)
-{
-	kernel_ulong_t rc = 0;
-	unsigned int did[2][3] = {
-		{
-			DID_INTEL_I7_MC_CH0_CTRL,
-			DID_INTEL_I7_MC_CH1_CTRL,
-			DID_INTEL_I7_MC_CH2_CTRL
-		},
-		{
-			DID_INTEL_I7_MC_CH0_ADDR,
-			DID_INTEL_I7_MC_CH1_ADDR,
-			DID_INTEL_I7_MC_CH2_ADDR
-		}
-	};
-	unsigned short mc;
-
-	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
-	for (mc = 0; (mc < PUBLIC(RO(Proc))->Uncore.CtrlCount) && !rc; mc++) {
-		rc = Query_NHM_IMC(dev, did, mc);
-	}
-	return ((PCI_CALLBACK) rc);
-}
-
 static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev)
-{
-	kernel_ulong_t rc = 0;
-	unsigned short mc;
+{	/*		Clarksfield; Lynnfield				*/
+	kernel_ulong_t rc;
 
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
-	for (mc = 0; (mc < PUBLIC(RO(Proc))->Uncore.CtrlCount) && !rc; mc++) {
-		rc = Query_Lynnfield_IMC(dev, mc);
-	}
+
+	rc = Query_Lynnfield_IMC(dev, 0);
+
 	return ((PCI_CALLBACK) rc);
 }
 
-static PCI_CALLBACK C5500_C3500_IMC(struct pci_dev *dev)
-{
-	kernel_ulong_t rc = 0;
-	unsigned int did[2][3] = {
-		{
-			DID_INTEL_NHM_EC_MC_CH0_CTRL,
-			DID_INTEL_NHM_EC_MC_CH1_CTRL,
-			DID_INTEL_NHM_EC_MC_CH2_CTRL
-		},
-		{
-			DID_INTEL_NHM_EC_MC_CH0_ADDR,
-			DID_INTEL_NHM_EC_MC_CH1_ADDR,
-			DID_INTEL_NHM_EC_MC_CH2_ADDR
-		}
-	};
-	switch (dev->bus->number) {
-	case 0xff:
-		PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
-		rc = Query_NHM_IMC(dev, did, 0);
-		break;
-	case 0xfe:
-		PUBLIC(RO(Proc))->Uncore.CtrlCount = 2;
-		rc = Query_NHM_IMC(dev, did, 1);
-		break;
-	}
-	return ((PCI_CALLBACK) rc);
-}
+static PCI_CALLBACK Nehalem_IMC(struct pci_dev *dev)
+{ /* Arrandale; Beckton; Bloomfield; Clarkdale; Eagleton; Gainestown; Gulftown*/
+	kernel_ulong_t rc;
+	const unsigned char bus_number = 0xff - dev->bus->number;
+	const unsigned short mc = (unsigned short) bus_number % MC_MAX_CTRL;
 
-static PCI_CALLBACK Westmere_EP_IMC(struct pci_dev *dev)
-{
-	kernel_ulong_t rc = 0;
-	unsigned int did[2][3] = {
-		{
-			DID_INTEL_NHM_EP_MC_CH0_CTRL,
-			DID_INTEL_NHM_EP_MC_CH1_CTRL,
-			DID_INTEL_NHM_EP_MC_CH2_CTRL
-		},
-		{
-			DID_INTEL_NHM_EP_MC_CH0_ADDR,
-			DID_INTEL_NHM_EP_MC_CH1_ADDR,
-			DID_INTEL_NHM_EP_MC_CH2_ADDR
-		}
-	};
-	unsigned short mc;
-
-	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
-	for (mc = 0; (mc < PUBLIC(RO(Proc))->Uncore.CtrlCount) && !rc; mc++) {
-		rc = Query_NHM_IMC(dev, did, mc);
+	if (mc >= PUBLIC(RO(Proc))->Uncore.CtrlCount) {
+		PUBLIC(RO(Proc))->Uncore.CtrlCount++;
 	}
+	rc = Query_NHM_IMC(dev, mc);
+
 	return ((PCI_CALLBACK) rc);
 }
 
