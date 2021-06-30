@@ -221,10 +221,10 @@ unsigned int Dec2Digit( const unsigned int length, unsigned int decimal,
 			unsigned int thisDigit[] )
 {
 	memset(thisDigit, 0, length * sizeof(unsigned int));
-	register unsigned int j = length;
-	while (decimal > 0) {
-		thisDigit[--j] = decimal % 10;
-		decimal /= 10;
+	register unsigned int j = length, dec = decimal;
+	while (dec > 0) {
+		thisDigit[--j] = dec % 10;
+		dec /= 10;
 	}
 	return (length - j);
 }
@@ -16448,7 +16448,7 @@ void Layout_Header_DualView_Footer(Layer *layer)
 	Illuminates_CPU(layer, row, RSC(UI).ATTR()[UI_ILLUMINATES_CPU_SP]);
       } else {
 	Illuminates_CPU(layer, row, RSC(UI).ATTR()[UI_ILLUMINATES_CPU_ON]);
-}
+      }
 #ifndef NO_LOWER
 #ifndef NO_UPPER
 	Matrix_Layout_Monitor[Draw.View](layer,cpu,row + Draw.Area.MaxRows + 1);
@@ -16527,14 +16527,14 @@ void Dynamic_Header_DualView_Footer(Layer *layer)
       }
 	/*	Print the Per Core BCLK indicator (yellow)		*/
 #ifdef NO_UPPER
-    if (Draw.View != V_PACKAGE) {
+      if (Draw.View != V_PACKAGE) {
 #endif
 #if !defined(NO_LOWER) || !defined(NO_UPPER)
 	LayerAt(layer, code, (LOAD_LEAD - 1), row) =
 			(Draw.iClock == (cpu - Draw.cpuScroll)) ? '~' : 0x20;
 #endif
 #ifdef NO_UPPER
-    }
+      }
 #endif
 
 #ifndef NO_LOWER
