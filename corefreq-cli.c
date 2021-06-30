@@ -10096,6 +10096,15 @@ int Shortcut(SCANKEY *scan)
 	TrapScreenSize(SIGWINCH);
     }
     break;
+
+    case SCANKEY_y:
+    {
+	Draw.Disposal = D_MAINVIEW;
+	Draw.View = V_CUSTOM;
+	Draw.Size.height = 0;
+	TrapScreenSize(SIGWINCH);
+    }
+    break;
 #endif /* NO_LOWER */
     case SCANKEY_s:
     {
@@ -13509,6 +13518,15 @@ CUINT Layout_Monitor_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 	return (0);
 }
 
+CUINT Layout_Monitor_Custom(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	LayerFillAt(	layer, (LOAD_LEAD - 1), row,
+			Draw.Size.width, hSpace, MakeAttr(WHITE, 0, BLACK, 1) );
+	UNUSED(cpu);
+
+	return (0);
+}
+
 CUINT Layout_Ruler_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerDeclare(	LAYOUT_RULER_FREQUENCY, Draw.Size.width,
@@ -13953,6 +13971,24 @@ CUINT Layout_Ruler_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 	LayerFillAt(	layer, 0, (row + Draw.Area.MaxRows + 1),
 			Draw.Size.width, hLine,
 			RSC(UI).ATTR()[UI_LAYOUT_RULER_SLICE] );
+
+	row += Draw.Area.MaxRows + 2;
+	return (row);
+}
+
+CUINT Layout_Ruler_Custom(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	LayerFillAt(layer, 0, row, Draw.Size.width,
+	"----- Min - Relative - Max ---- Min - Absolute - Max - Min T"	\
+	"MP Max - Min(V) - Vcore - Max(V) - Min ---- Power -- Max ---"	\
+	"- Turbo - C0 --- C1 -- C2:C3 - C4:C6 - C7 --- IPS ----- IPC "	\
+	"----- CPI --------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"--------------------", MakeAttr(WHITE, 0, BLACK, 0));
+
+	LayerFillAt(	layer, 0, (row + Draw.Area.MaxRows + 1),
+			Draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
+	UNUSED(cpu);
 
 	row += Draw.Area.MaxRows + 2;
 	return (row);
@@ -14932,7 +14968,7 @@ size_t Draw_Sensors_V1_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f\x20\x20\x20\x20" 			\
 			"%3u\x20\x20\x20\x20\x20\x20"			\
-			"%8.4f\x20\x20\x20\x20\x20\x20" 	 	\
+			"%8.4f\x20\x20\x20\x20\x20\x20" 		\
 			"%8.4f%.*s",
 			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Voltage.Vcore,
@@ -15696,6 +15732,62 @@ CUINT Draw_Monitor_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 	return (0);
 }
 
+CUINT Draw_Monitor_Custom(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	CPU_STRUCT *Cpu = &Shm->Cpu[cpu];
+	struct FLIP_FLOP *CFlop = &Cpu->FlipFlop[!Shm->Cpu[cpu].Toggle];
+
+	size_t len;
+	len = snprintf( Buffer, MAX_WIDTH,
+			"%7.2f %7.2f %7.2f"				\
+			"\x20\x20\x20" "%7.2f %7.2f %7.2f"		\
+			"\x20\x20" "%3u %3u %3u"			\
+			"\x20\x20" "%7.4f %7.4f %7.4f"			\
+			"\x20\x20" "%8.4f %8.4f %8.4f"			\
+			"\x20\x20" "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"\
+			"\x20\x20" "%10.6f" "%10.6f" "%10.6f",
+
+			Cpu->Relative.Freq[SENSOR_LOWEST],
+			CFlop->Relative.Freq,
+			Cpu->Relative.Freq[SENSOR_HIGHEST],
+
+			Cpu->Absolute.Freq[SENSOR_LOWEST],
+			CFlop->Absolute.Freq,
+			Cpu->Absolute.Freq[SENSOR_HIGHEST],
+
+	Setting.fahrCels ? Cels2Fahr(Cpu->PowerThermal.Limit[SENSOR_LOWEST])
+			 : Cpu->PowerThermal.Limit[SENSOR_LOWEST],
+	Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
+					 : CFlop->Thermal.Temp,
+	Setting.fahrCels ? Cels2Fahr(Cpu->PowerThermal.Limit[SENSOR_HIGHEST])
+			 : Cpu->PowerThermal.Limit[SENSOR_HIGHEST],
+
+			Cpu->Sensors.Voltage.Limit[SENSOR_LOWEST],
+			CFlop->Voltage.Vcore,
+			Cpu->Sensors.Voltage.Limit[SENSOR_HIGHEST],
+
+	Setting.jouleWatt ? Cpu->Sensors.Energy.Limit[SENSOR_LOWEST]
+			  : Cpu->Sensors.Power.Limit[SENSOR_LOWEST],
+	Setting.jouleWatt ? CFlop->State.Energy : CFlop->State.Power,
+	Setting.jouleWatt ? Cpu->Sensors.Energy.Limit[SENSOR_HIGHEST]
+			  : Cpu->Sensors.Power.Limit[SENSOR_HIGHEST],
+
+			100.f * CFlop->State.Turbo,
+			100.f * CFlop->State.C0,
+			100.f * CFlop->State.C1,
+			100.f * CFlop->State.C3,
+			100.f * CFlop->State.C6,
+			100.f * CFlop->State.C7,
+
+			CFlop->State.IPS,
+			CFlop->State.IPC,
+			CFlop->State.CPI );
+
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
+
+	return (0);
+}
+
 CUINT Draw_AltMonitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	size_t len;
@@ -16191,7 +16283,8 @@ VIEW_FUNC Matrix_Layout_Monitor[VIEW_SIZE] = {
 	Layout_Monitor_Common,
 	Layout_Monitor_Common,
 	Layout_Monitor_Common,
-	Layout_Monitor_Slice
+	Layout_Monitor_Slice,
+	Layout_Monitor_Custom
 };
 
 VIEW_FUNC Matrix_Layout_Ruler[VIEW_SIZE] = {
@@ -16205,7 +16298,8 @@ VIEW_FUNC Matrix_Layout_Ruler[VIEW_SIZE] = {
 	Layout_Ruler_Sensors,
 	Layout_Ruler_Voltage,
 	Layout_Ruler_Energy,
-	Layout_Ruler_Slice
+	Layout_Ruler_Slice,
+	Layout_Ruler_Custom
 };
 #endif /* NO_LOWER */
 
@@ -16228,7 +16322,8 @@ VIEW_FUNC Matrix_Draw_Monitor[VIEW_SIZE] = {
 	Draw_Monitor_Sensors,
 	Draw_Monitor_Voltage,
 	Draw_Monitor_Energy,
-	Draw_Monitor_Slice
+	Draw_Monitor_Slice,
+	Draw_Monitor_Custom
 };
 
 VIEW_FUNC Matrix_Draw_AltMon[VIEW_SIZE] = {
@@ -16242,6 +16337,7 @@ VIEW_FUNC Matrix_Draw_AltMon[VIEW_SIZE] = {
 	Draw_AltMonitor_Power,
 	Draw_AltMonitor_Voltage,
 	Draw_AltMonitor_Power,
+	Draw_AltMonitor_Common,
 	Draw_AltMonitor_Common
 };
 #endif /* NO_LOWER */
@@ -17575,7 +17671,8 @@ int main(int argc, char *argv[])
 				{	V_SENSORS	, "sensors"	},
 				{	V_VOLTAGE	, "voltage"	},
 				{	V_ENERGY	, "power"	},
-				{	V_SLICE 	, "slices"	}
+				{	V_SLICE 	, "slices"	},
+				{	V_CUSTOM	, "custom"	}
 			}, *pOpt, *lOpt = &opt[sizeof(opt)/sizeof(opt[0])];
 		    for (pOpt = opt; pOpt < lOpt; pOpt++)
 		    {
