@@ -16196,7 +16196,7 @@ void Draw_Footer(Layer *layer, CUINT row)
 		RSC(HOT_EVENT_COND3).ATTR(),
 		RSC(HOT_EVENT_COND4).ATTR()
 	};
-	unsigned int _hot = 0, _tmp = 0;
+	register unsigned int _hot = 0, _tmp = 0;
 
 	if (!ProcessorEvents) {
 		_hot = 0;
@@ -16214,45 +16214,27 @@ void Draw_Footer(Layer *layer, CUINT row)
 		_tmp = 3;
 	    }
 	}
-	LayerAt(layer, attr,
-		Draw.Area.Footer.VoltTemp.Hot[1], row) = eventAttr[_hot][0];
+	register CUINT col[2] = {
+		Draw.Area.Footer.VoltTemp.Hot[0],
+		Draw.Area.Footer.VoltTemp.Hot[1]
+	};
 
-	LayerAt(layer, attr,
-		Draw.Area.Footer.VoltTemp.Hot[1] + 1, row) = eventAttr[_hot][1];
-
-	LayerAt(layer, attr,
-		Draw.Area.Footer.VoltTemp.Hot[1] + 2, row) = eventAttr[_hot][2];
-
-	LayerAt(layer, attr,
-		Draw.Area.Footer.VoltTemp.Hot[0] + 8, row) = eventAttr[_tmp][0];
-
-	LayerAt(layer, attr,
-		Draw.Area.Footer.VoltTemp.Hot[0] + 9, row) = eventAttr[_tmp][1];
-
-	LayerAt(layer, attr,
-		Draw.Area.Footer.VoltTemp.Hot[0] + 10, row)= eventAttr[_tmp][2];
+	LayerAt(layer, attr, col[1]	, row) = eventAttr[_hot][0];
+	LayerAt(layer, attr, col[1] + 1 , row) = eventAttr[_hot][1];
+	LayerAt(layer, attr, col[1] + 2 , row) = eventAttr[_hot][2];
+	LayerAt(layer, attr, col[0] + 8 , row) = eventAttr[_tmp][0];
+	LayerAt(layer, attr, col[0] + 9 , row) = eventAttr[_tmp][1];
+	LayerAt(layer, attr, col[0] + 10, row) = eventAttr[_tmp][2];
 
 	Draw_Footer_Voltage_Temp[Setting.fahrCels](PFlop);
 
-	LayerAt(layer, code,
-		Draw.Area.Footer.VoltTemp.Hot[0] + 8, row) = Buffer[0];
-
-	LayerAt(layer, code,
-		Draw.Area.Footer.VoltTemp.Hot[0] + 9, row) = Buffer[1];
-
-	LayerAt(layer, code,
-		Draw.Area.Footer.VoltTemp.Hot[0] + 10, row) = Buffer[2];
-
-	LayerAt(layer, code, Draw.Area.Footer.VoltTemp.Hot[0], row) = Buffer[3];
-
-	LayerAt(layer, code,
-		Draw.Area.Footer.VoltTemp.Hot[0] + 1, row) = Buffer[4];
-
-	LayerAt(layer, code,
-		Draw.Area.Footer.VoltTemp.Hot[0] + 2, row) = Buffer[5];
-
-	LayerAt(layer, code,
-		Draw.Area.Footer.VoltTemp.Hot[0] + 3, row) = Buffer[6];
+	LayerAt(layer, code, col[0] + 8 , row) = Buffer[0];
+	LayerAt(layer, code, col[0] + 9 , row) = Buffer[1];
+	LayerAt(layer, code, col[0] + 10, row) = Buffer[2];
+	LayerAt(layer, code, col[0]	, row) = Buffer[3];
+	LayerAt(layer, code, col[0] + 1 , row) = Buffer[4];
+	LayerAt(layer, code, col[0] + 2 , row) = Buffer[5];
+	LayerAt(layer, code, col[0] + 3 , row) = Buffer[6];
 
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)
 	&& (Shm->SysGate.tickStep == Shm->SysGate.tickReset)) {
