@@ -532,6 +532,18 @@ struct DRAW_ST {
 		CUINT	MinHeight;
 		CUINT	MaxRows;
 		CUINT	LoadWidth;
+    #ifndef NO_FOOTER
+	struct {
+	    struct {
+		CUINT	Hot[2];
+	    } VoltTemp;
+	    struct {
+		CUINT	Count,
+			Free,
+			Total;
+	    } TaskMem;
+	} Footer;
+    #endif
     } Area;
 	unsigned int	iClock,
 			cpuScroll,

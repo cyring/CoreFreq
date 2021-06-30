@@ -5744,7 +5744,24 @@ struct DRAW_ST Draw = {
 	.View		= V_FREQ,
 	.Disposal	= D_MAINVIEW,
 	.Size		= { .width = 0, .height = 0 },
-	.Area		= { .MinHeight = 0, .MaxRows = 0, .LoadWidth = 0 },
+	.Area		= {
+				.MinHeight = 0, .MaxRows = 0, .LoadWidth = 0,
+	    #ifndef NO_FOOTER
+		.Footer = {
+			.VoltTemp = {
+				.Hot = {
+					[0] = MIN_WIDTH - 13,
+					[1] = MIN_WIDTH - 20
+				},
+			},
+			.TaskMem = {
+				.Total	= MIN_WIDTH - 35,
+				.Free	= MIN_WIDTH - 22,
+				.Count	= MIN_WIDTH - 12
+			},
+		},
+	    #endif
+	},
 	.iClock 	= 0,
 	.cpuScroll	= 0,
 	.Load		= 0,
@@ -13225,9 +13242,14 @@ void PrintTaskMemory(Layer *layer, CUINT row,
 			freeRAM >> Draw.Unit.Memory,
 			totalRAM >> Draw.Unit.Memory);
 
-	memcpy(&LayerAt(layer, code, (Draw.Size.width-35), row), &Buffer[0], 6);
-	memcpy(&LayerAt(layer, code, (Draw.Size.width-22), row), &Buffer[6], 9);
-	memcpy(&LayerAt(layer, code, (Draw.Size.width-12), row), &Buffer[15],9);
+	memcpy(&LayerAt(layer, code, Draw.Area.Footer.TaskMem.Total, row),
+			&Buffer[0], 6);
+
+	memcpy(&LayerAt(layer, code, Draw.Area.Footer.TaskMem.Free, row),
+			&Buffer[6], 9);
+
+	memcpy(&LayerAt(layer, code, Draw.Area.Footer.TaskMem.Count, row),
+			&Buffer[15], 9);
 }
 #endif
 
@@ -14004,6 +14026,11 @@ void Layout_Footer(Layer *layer, CUINT row)
 	LayerDeclare(	LAYOUT_FOOTER_TECH_X86, RSZ(LAYOUT_FOOTER_TECH_X86),
 			0, row, hTech0 );
 
+	LayerDeclare(	LAYOUT_FOOTER_VOLT_TEMP, RSZ(LAYOUT_FOOTER_VOLT_TEMP),
+			Draw.Size.width - 15, row, hVoltTemp0 );
+	/* Pre-compute right-aligned position of Voltage & Temperature items */
+	Draw.Area.Footer.VoltTemp.Hot[0] = hVoltTemp0.origin.col + 2;
+
 	const ATTRIBUTE EN[] = {
 		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_ENABLE_0],
 		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_ENABLE_1],
@@ -14094,6 +14121,8 @@ void Layout_Footer(Layer *layer, CUINT row)
 			(Draw.Size.width - hTech0.length - hTech1.length),
 			hSpace,
 			RSC(UI).ATTR()[UI_LAYOUT_FOOTER_FILL]);
+
+	Draw.Area.Footer.VoltTemp.Hot[1] = Draw.Area.Footer.VoltTemp.Hot[0] - 7;
     }
     else
     {
@@ -14142,9 +14171,15 @@ void Layout_Footer(Layer *layer, CUINT row)
 			(Draw.Size.width - hTech0.length - hTech1.length),
 			hSpace,
 			RSC(UI).ATTR()[UI_LAYOUT_FOOTER_FILL]);
+
+	Draw.Area.Footer.VoltTemp.Hot[1]=Draw.Area.Footer.VoltTemp.Hot[0] - 11;
       }
     }
-	LayerAt(layer, code, 14+64, row) = Setting.fahrCels ? 'F' : 'C';
+	LayerCopyAt(layer, hVoltTemp0.origin.col, hVoltTemp0.origin.row,
+			hVoltTemp0.length, hVoltTemp0.attr, hVoltTemp0.code);
+
+	LayerAt(layer, code, Draw.Area.Footer.VoltTemp.Hot[0] + 11, row) = \
+						Setting.fahrCels ? 'F' : 'C';
 
 	row++;
 
@@ -14206,6 +14241,10 @@ void Layout_Footer(Layer *layer, CUINT row)
 				can, ScrambleSMBIOS(Draw.SmbIndex, 4, '-'),
 				RSC(UI).ATTR()[UI_LAYOUT_FOOTER_DMI_STRING] );
 	}
+	/* Pre-compute position of Tasks count & Memory usage		*/
+	Draw.Area.Footer.TaskMem.Total	= Draw.Size.width - 35;
+	Draw.Area.Footer.TaskMem.Free	= Draw.Size.width - 22;
+	Draw.Area.Footer.TaskMem.Count	= Draw.Size.width - 12;
 	/* Reset Tasks count & Memory usage				*/
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
 		PrintTaskMemory(layer, row,
@@ -16175,39 +16214,51 @@ void Draw_Footer(Layer *layer, CUINT row)
 		_tmp = 3;
 	    }
 	}
+	LayerAt(layer, attr,
+		Draw.Area.Footer.VoltTemp.Hot[1], row) = eventAttr[_hot][0];
 
-	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
-	{
-		LayerAt(layer, attr, 14+46, row) = eventAttr[_hot][0];
-		LayerAt(layer, attr, 14+47, row) = eventAttr[_hot][1];
-		LayerAt(layer, attr, 14+48, row) = eventAttr[_hot][2];
-	}
-	else if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-	     || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
-	{
-		LayerAt(layer, attr, 14+42, row) = eventAttr[_hot][0];
-		LayerAt(layer, attr, 14+43, row) = eventAttr[_hot][1];
-		LayerAt(layer, attr, 14+44, row) = eventAttr[_hot][2];
-	}
-	LayerAt(layer, attr, 14+61, row) = eventAttr[_tmp][0];
-	LayerAt(layer, attr, 14+62, row) = eventAttr[_tmp][1];
-	LayerAt(layer, attr, 14+63, row) = eventAttr[_tmp][2];
+	LayerAt(layer, attr,
+		Draw.Area.Footer.VoltTemp.Hot[1] + 1, row) = eventAttr[_hot][1];
+
+	LayerAt(layer, attr,
+		Draw.Area.Footer.VoltTemp.Hot[1] + 2, row) = eventAttr[_hot][2];
+
+	LayerAt(layer, attr,
+		Draw.Area.Footer.VoltTemp.Hot[0] + 8, row) = eventAttr[_tmp][0];
+
+	LayerAt(layer, attr,
+		Draw.Area.Footer.VoltTemp.Hot[0] + 9, row) = eventAttr[_tmp][1];
+
+	LayerAt(layer, attr,
+		Draw.Area.Footer.VoltTemp.Hot[0] + 10, row)= eventAttr[_tmp][2];
 
 	Draw_Footer_Voltage_Temp[Setting.fahrCels](PFlop);
 
-	LayerAt(layer, code, 75, row) = Buffer[0];
-	LayerAt(layer, code, 76, row) = Buffer[1];
-	LayerAt(layer, code, 77, row) = Buffer[2];
+	LayerAt(layer, code,
+		Draw.Area.Footer.VoltTemp.Hot[0] + 8, row) = Buffer[0];
 
-	LayerAt(layer, code, 67, row) = Buffer[3];
-	LayerAt(layer, code, 68, row) = Buffer[4];
-	LayerAt(layer, code, 69, row) = Buffer[5];
-	LayerAt(layer, code, 70, row) = Buffer[6];
+	LayerAt(layer, code,
+		Draw.Area.Footer.VoltTemp.Hot[0] + 9, row) = Buffer[1];
+
+	LayerAt(layer, code,
+		Draw.Area.Footer.VoltTemp.Hot[0] + 10, row) = Buffer[2];
+
+	LayerAt(layer, code, Draw.Area.Footer.VoltTemp.Hot[0], row) = Buffer[3];
+
+	LayerAt(layer, code,
+		Draw.Area.Footer.VoltTemp.Hot[0] + 1, row) = Buffer[4];
+
+	LayerAt(layer, code,
+		Draw.Area.Footer.VoltTemp.Hot[0] + 2, row) = Buffer[5];
+
+	LayerAt(layer, code,
+		Draw.Area.Footer.VoltTemp.Hot[0] + 3, row) = Buffer[6];
 
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)
 	&& (Shm->SysGate.tickStep == Shm->SysGate.tickReset)) {
 		if ((Draw.Cache.TaskCount != Shm->SysGate.taskCount)
-		 || (Draw.Cache.FreeRAM != Shm->SysGate.memInfo.freeram)) {
+		 || (Draw.Cache.FreeRAM != Shm->SysGate.memInfo.freeram))
+		{
 			Draw.Cache.TaskCount = Shm->SysGate.taskCount;
 			Draw.Cache.FreeRAM = Shm->SysGate.memInfo.freeram;
 

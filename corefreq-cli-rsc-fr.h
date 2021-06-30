@@ -274,6 +274,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_LAYOUT_FOOTER_TECH_AMD_CODE_FR RSC_LAYOUT_FOOTER_TECH_AMD_CODE_EN
 
+#define RSC_LAYOUT_FOOTER_VOLT_TEMP_CODE_FR RSC_LAYOUT_FOOTER_VOLT_TEMP_CODE_EN
+
 #define RSC_LAYOUT_FOOTER_SYSTEM_CODE_FR				\
 {									\
 	'T',0xa2,'c','h','e','s','[',' ',' ',' ',' ',' ',' ',']',	\
