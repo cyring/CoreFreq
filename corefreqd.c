@@ -864,11 +864,11 @@ static inline void ComputePower_AMD_17h(struct FLIP_FLOP *CFlip,
 					SHM_STRUCT *Shm,
 					unsigned int cpu)
 {
-	CFlip->State.Energy	= (double) CFlip->Delta.Power.ACCU
-				* Shm->Proc.Power.Unit.Joules;
+	CFlip->State.Energy	= CFlip->Delta.Power.ACCU;
+	CFlip->State.Energy	*= Shm->Proc.Power.Unit.Joules;
 
-	CFlip->State.Power	= (1000.0 * CFlip->State.Energy)
-				/ (double) Shm->Sleep.Interval;
+	CFlip->State.Power	= 1000.0 * CFlip->State.Energy;
+	CFlip->State.Power	/= Shm->Sleep.Interval;
 
 	Core_ComputePowerLimits(&Shm->Cpu[cpu], CFlip);
 }
@@ -1037,8 +1037,6 @@ static void *Core_Cycle(void *arg)
 	BITSET_CC(BUS_LOCK, roomCore, cpu);
 
   do {
-	double dTSC, dUCC, dURC, dINST, dC3, dC6, dC7, dC1;
-
     while (!BITCLR(LOCKLESS, Core_RW->Sync.V, NTFY)
 	&& !BITVAL(Shutdown, SYNC)
 	&& !BITVAL(Core->OffLine, OS)) {
@@ -1067,45 +1065,58 @@ static void *Core_Cycle(void *arg)
 	CFlip->Delta.TSC	= Core->Delta.TSC;
 	CFlip->Delta.C1 	= Core->Delta.C1;
 
-	dTSC	= (double) CFlip->Delta.TSC;
-	dUCC	= (double) CFlip->Delta.C0.UCC;
-	dURC	= (double) CFlip->Delta.C0.URC;
-	dINST	= (double) CFlip->Delta.INST;
-	dC3	= (double) CFlip->Delta.C3;
-	dC6	= (double) CFlip->Delta.C6;
-	dC7	= (double) CFlip->Delta.C7;
-	dC1	= (double) CFlip->Delta.C1;
-
 	/* Compute IPS=Instructions per TSC				*/
-	CFlip->State.IPS = dINST / dTSC;
+	CFlip->State.IPS = CFlip->Delta.INST;
+	CFlip->State.IPS /= CFlip->Delta.TSC;
 
 	/* Compute IPC=Instructions per non-halted reference cycle.
 	   ( Protect against a division by zero )			*/
-	CFlip->State.IPC = (CFlip->Delta.C0.URC != 0) ? dINST / dURC : 0.0f;
-
+	if (CFlip->Delta.C0.URC != 0) {
+		CFlip->State.IPC = CFlip->Delta.INST;
+		CFlip->State.IPC /= CFlip->Delta.C0.URC;
+	} else {
+		CFlip->State.IPC = 0.0f;
+	}
 	/* Compute CPI=Non-halted reference cycles per instruction.
 	   ( Protect against a division by zero )			*/
-	CFlip->State.CPI = (CFlip->Delta.INST != 0) ? dURC / dINST : 0.0f;
-
+	if (CFlip->Delta.INST != 0) {
+		CFlip->State.CPI = CFlip->Delta.C0.URC;
+		CFlip->State.CPI /= CFlip->Delta.INST;
+	} else {
+		CFlip->State.CPI = 0.0f;
+	}
 	/* Compute the Turbo State.					*/
-	CFlip->State.Turbo = dUCC / dTSC;
+	CFlip->State.Turbo = CFlip->Delta.C0.UCC;
+	CFlip->State.Turbo /= CFlip->Delta.TSC;
 
 	/* Compute the C-States.					*/
-	CFlip->State.C0 = dURC / dTSC;
-	CFlip->State.C3 = dC3  / dTSC;
-	CFlip->State.C6 = dC6  / dTSC;
-	CFlip->State.C7 = dC7  / dTSC;
-	CFlip->State.C1 = dC1  / dTSC;
+	CFlip->State.C0 = CFlip->Delta.C0.URC;
+	CFlip->State.C0 /= CFlip->Delta.TSC;
+
+	CFlip->State.C3 = CFlip->Delta.C3;
+	CFlip->State.C3 /= CFlip->Delta.TSC;
+
+	CFlip->State.C6 = CFlip->Delta.C6;
+	CFlip->State.C6 /= CFlip->Delta.TSC;
+
+	CFlip->State.C7 = CFlip->Delta.C7;
+	CFlip->State.C7 /= CFlip->Delta.TSC;
+
+	CFlip->State.C1 = CFlip->Delta.C1;
+	CFlip->State.C1 /= CFlip->Delta.TSC;
 
 	/* Update all clock ratios.					*/
 	memcpy(Cpu->Boost, Core->Boost, (BOOST(SIZE)) * sizeof(unsigned int));
 
 	/* Relative Frequency = Relative Ratio x Bus Clock Frequency	*/
-	CFlip->Relative.Ratio = (dUCC * Cpu->Boost[BOOST(MAX)]) / dTSC;
+	CFlip->Relative.Ratio = CFlip->Delta.C0.UCC;
+	CFlip->Relative.Ratio *= Cpu->Boost[BOOST(MAX)];
+	CFlip->Relative.Ratio /= CFlip->Delta.TSC;
 
-	CFlip->Relative.Freq = (double) REL_FREQ_MHz(	CFlip->Relative.Ratio,
-							Core->Clock,
-							Shm->Sleep.Interval );
+	CFlip->Relative.Freq = REL_FREQ_MHz(	CFlip->Relative.Ratio,
+						CFlip->Clock,
+						Shm->Sleep.Interval );
+
 	/* Per Core, compute the Relative Frequency limits.		*/
 	TEST_AND_SET_SENSOR( REL_FREQ, LOWEST,	CFlip->Relative.Freq,
 						Cpu->Relative.Freq );
@@ -6422,7 +6433,6 @@ REASON_CODE Core_Manager(REF *Ref)
 
 	if (!BITVAL(Shutdown, SYNC))
 	{
-		double dPTSC;
 		unsigned char fRESET = 0;
 		/* Compute the counters averages.			*/
 		Shm->Proc.Avg.Turbo /= Shm->Proc.CPU.OnLine;
@@ -6443,17 +6453,32 @@ REASON_CODE Core_Manager(REF *Ref)
 		PFlip->Delta.PC10 = Proc->Delta.PC10;
 		PFlip->Delta.MC6  = Proc->Delta.MC6;
 		/* Package C-state Residency counters			*/
-		dPTSC = (double) PFlip->Delta.PTSC;
+		Shm->Proc.State.PC02 = PFlip->Delta.PC02;
+		Shm->Proc.State.PC02 /= PFlip->Delta.PTSC;
 
-		Shm->Proc.State.PC02	= (double) PFlip->Delta.PC02 / dPTSC;
-		Shm->Proc.State.PC03	= (double) PFlip->Delta.PC03 / dPTSC;
-		Shm->Proc.State.PC04	= (double) PFlip->Delta.PC04 / dPTSC;
-		Shm->Proc.State.PC06	= (double) PFlip->Delta.PC06 / dPTSC;
-		Shm->Proc.State.PC07	= (double) PFlip->Delta.PC07 / dPTSC;
-		Shm->Proc.State.PC08	= (double) PFlip->Delta.PC08 / dPTSC;
-		Shm->Proc.State.PC09	= (double) PFlip->Delta.PC09 / dPTSC;
-		Shm->Proc.State.PC10	= (double) PFlip->Delta.PC10 / dPTSC;
-		Shm->Proc.State.MC6	= (double) PFlip->Delta.MC6  / dPTSC;
+		Shm->Proc.State.PC03 = PFlip->Delta.PC03;
+		Shm->Proc.State.PC03 /= PFlip->Delta.PTSC;
+
+		Shm->Proc.State.PC04 = PFlip->Delta.PC04;
+		Shm->Proc.State.PC04 /= PFlip->Delta.PTSC;
+
+		Shm->Proc.State.PC06 = PFlip->Delta.PC06;
+		Shm->Proc.State.PC06 /= PFlip->Delta.PTSC;
+
+		Shm->Proc.State.PC07 = PFlip->Delta.PC07;
+		Shm->Proc.State.PC07 /= PFlip->Delta.PTSC;
+
+		Shm->Proc.State.PC08 = PFlip->Delta.PC08;
+		Shm->Proc.State.PC08 /= PFlip->Delta.PTSC;
+
+		Shm->Proc.State.PC09 = PFlip->Delta.PC09;
+		Shm->Proc.State.PC09 /= PFlip->Delta.PTSC;
+
+		Shm->Proc.State.PC10 = PFlip->Delta.PC10;
+		Shm->Proc.State.PC10 /= PFlip->Delta.PTSC;
+
+		Shm->Proc.State.MC6 = PFlip->Delta.MC6;
+		Shm->Proc.State.MC6 /= PFlip->Delta.PTSC;
 		/* Uncore scope counters				*/
 		PFlip->Uncore.FC0 = Proc->Delta.Uncore.FC0;
 		/* Power & Energy counters				*/
@@ -6462,13 +6487,15 @@ REASON_CODE Core_Manager(REF *Ref)
 	  {
 		PFlip->Delta.ACCU[pw] = Proc_RW->Delta.Power.ACCU[pw];
 
-		Shm->Proc.State.Energy[pw].Current = \
-						(double) PFlip->Delta.ACCU[pw]
-						* Shm->Proc.Power.Unit.Joules;
+		Shm->Proc.State.Energy[pw].Current = PFlip->Delta.ACCU[pw];
+		Shm->Proc.State.Energy[pw].Current *= \
+						Shm->Proc.Power.Unit.Joules;
 
 		Shm->Proc.State.Power[pw].Current = \
-				(1000.0 * Shm->Proc.State.Energy[pw].Current)
-						/ (double) Shm->Sleep.Interval;
+					Shm->Proc.State.Energy[pw].Current;
+
+		Shm->Proc.State.Power[pw].Current *= 1000.0;
+		Shm->Proc.State.Power[pw].Current /= Shm->Sleep.Interval;
 
 		/* Processor scope: computes Min and Max energy consumed. */
 		TEST_AND_SET_SENSOR(	ENERGY, LOWEST,
