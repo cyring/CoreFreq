@@ -5894,7 +5894,7 @@ void ForEachCellPrint_Menu(Window *win, void *plist)
 Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 {
 	Window *wMenu = CreateWindow(	wLayer, id,
-					3, 13, 3, 0,
+					3, 14, 3, 0,
 					  WINFLAG_NO_STOCK
 					| WINFLAG_NO_SCALE
 					| WINFLAG_NO_BORDER );
@@ -6053,6 +6053,17 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 	StoreTCell(wMenu, SCANKEY_VOID, "", RSC(VOID).ATTR());
 
 	StoreTCell(wMenu, SCANKEY_SHIFT_t, RSC(MENU_ITEM_SLICE_CTRS).CODE(),
+			#ifndef NO_LOWER
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
+			#else
+					RSC(CREATE_MENU_DISABLE).ATTR());
+			#endif
+
+	StoreTCell(wMenu, SCANKEY_VOID, "", RSC(VOID).ATTR());
+/* Row 13 */
+	StoreTCell(wMenu, SCANKEY_VOID, "", RSC(VOID).ATTR());
+
+	StoreTCell(wMenu, SCANKEY_y,	RSC(MENU_ITEM_CUSTOM).CODE(),
 			#ifndef NO_LOWER
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
 			#else
@@ -14000,16 +14011,19 @@ CUINT Layout_Ruler_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Ruler_Custom(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerFillAt(layer, 0, row, Draw.Size.width,
-	"----- Min - Relative - Max ---- Min - Absolute - Max - Min T"	\
-	"MP Max - Min(V) - Vcore - Max(V) - Min ---- Power -- Max ---"	\
-	"- Turbo - C0 --- C1 -- C2:C3 - C4:C6 - C7 --- IPS ----- IPC "	\
-	"----- CPI --------------------------------------------------"	\
-	"------------------------------------------------------------"	\
-	"--------------------", MakeAttr(WHITE, 0, BLACK, 0));
+#ifndef CUSTOM_RULER
+	LayerDeclare(LAYOUT_RULER_CUSTOM, Draw.Size.width, 0, row, hCust0);
 
+	LayerCopyAt(	layer, hCust0.origin.col, hCust0.origin.row,
+			hCust0.length, hCust0.attr, hCust0.code );
+#else
+	LayerFillAt(	layer, 0, row,
+			__builtin_strlen(CUSTOM_RULER), CUSTOM_RULER,
+			RSC(UI).ATTR()[UI_LAYOUT_RULER_CUSTOM] );
+#endif /* CUSTOM_RULER */
 	LayerFillAt(	layer, 0, (row + Draw.Area.MaxRows + 1),
-			Draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
+			Draw.Size.width, hLine,
+			RSC(UI).ATTR()[UI_LAYOUT_RULER_CUSTOM] );
 	UNUSED(cpu);
 
 	row += Draw.Area.MaxRows + 2;
@@ -15777,50 +15791,66 @@ CUINT Draw_Monitor_Custom(Layer *layer, const unsigned int cpu, CUINT row)
 	struct FLIP_FLOP *CFlop = &Cpu->FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 	size_t len;
-	len = snprintf( Buffer, MAX_WIDTH,
-			"%7.2f %7.2f %7.2f"				\
-			"\x20\x20\x20" "%7.2f %7.2f %7.2f"		\
-			"\x20\x20" "%3u %3u %3u"			\
-			"\x20\x20" "%7.4f %7.4f %7.4f"			\
-			"\x20\x20" "%8.4f %8.4f %8.4f"			\
-			"\x20\x20" "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"\
-			"\x20\x20" "%10.6f" "%10.6f" "%10.6f",
+#ifndef CUSTOM_FIELD
+	len = snprintf(Buffer, MAX_WIDTH,
+		"%7.2f %7.2f %7.2f"					\
+		"\x20\x20\x20" "%7.2f %7.2f %7.2f"			\
+		"\x20\x20" "%3u %3u %3u"				\
+		"\x20\x20" "%7.4f %7.4f %7.4f"				\
+		"\x20\x20" "%8.4f %8.4f %8.4f"				\
+		"\x20\x20" "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"	\
+		"\x20\x20" "%10.6f" "%10.6f" "%10.6f",
+#else
+	len = snprintf(Buffer, MAX_WIDTH, CUSTOM_FIELD,
+#endif /* CUSTOM_FIELD */
 
-			Cpu->Relative.Freq[SENSOR_LOWEST],
-			CFlop->Relative.Freq,
-			Cpu->Relative.Freq[SENSOR_HIGHEST],
-
-			Cpu->Absolute.Freq[SENSOR_LOWEST],
-			CFlop->Absolute.Freq,
-			Cpu->Absolute.Freq[SENSOR_HIGHEST],
-
+/* [ 1] MIN_REL_FREQ	*/
+		Cpu->Relative.Freq[SENSOR_LOWEST],
+/* [ 2] RELATIVE_FREQ	*/
+		CFlop->Relative.Freq,
+/* [ 3] MAX_REL_FREQ	*/
+		Cpu->Relative.Freq[SENSOR_HIGHEST],
+/* [ 4] MIN_ABS_FREQ	*/
+		Cpu->Absolute.Freq[SENSOR_LOWEST],
+/* [ 5] ABSOLUTE_FREQ	*/
+		CFlop->Absolute.Freq,
+/* [ 6] MAX_ABS_FREQ	*/
+		Cpu->Absolute.Freq[SENSOR_HIGHEST],
+/* [ 7] MIN_TEMP	*/
 	Setting.fahrCels ? Cels2Fahr(Cpu->PowerThermal.Limit[SENSOR_LOWEST])
 			 : Cpu->PowerThermal.Limit[SENSOR_LOWEST],
+/* [ 8] TEMPERATURE	*/
 	Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					 : CFlop->Thermal.Temp,
+/* [ 9] MAX_TEMP	*/
 	Setting.fahrCels ? Cels2Fahr(Cpu->PowerThermal.Limit[SENSOR_HIGHEST])
 			 : Cpu->PowerThermal.Limit[SENSOR_HIGHEST],
-
-			Cpu->Sensors.Voltage.Limit[SENSOR_LOWEST],
-			CFlop->Voltage.Vcore,
-			Cpu->Sensors.Voltage.Limit[SENSOR_HIGHEST],
-
+/* [10] MIN_VOLT	*/
+		Cpu->Sensors.Voltage.Limit[SENSOR_LOWEST],
+/* [11] CORE_VOLTAGE	*/
+		CFlop->Voltage.Vcore,
+/* [12] MAX_VOLT	*/
+		Cpu->Sensors.Voltage.Limit[SENSOR_HIGHEST],
+/* [13] MIN_POWER	*/
 	Setting.jouleWatt ? Cpu->Sensors.Energy.Limit[SENSOR_LOWEST]
 			  : Cpu->Sensors.Power.Limit[SENSOR_LOWEST],
+/* [14] ENERGY_POWER	*/
 	Setting.jouleWatt ? CFlop->State.Energy : CFlop->State.Power,
+/* [15] MAX_POWER	*/
 	Setting.jouleWatt ? Cpu->Sensors.Energy.Limit[SENSOR_HIGHEST]
 			  : Cpu->Sensors.Power.Limit[SENSOR_HIGHEST],
-
-			100.f * CFlop->State.Turbo,
-			100.f * CFlop->State.C0,
-			100.f * CFlop->State.C1,
-			100.f * CFlop->State.C3,
-			100.f * CFlop->State.C6,
-			100.f * CFlop->State.C7,
-
-			CFlop->State.IPS,
-			CFlop->State.IPC,
-			CFlop->State.CPI );
+/* [16] PERCENT_TURBO	*/
+		100.f * CFlop->State.Turbo,
+/* [17 ... 21] C-STATES */
+		100.f * CFlop->State.C0,
+		100.f * CFlop->State.C1,
+		100.f * CFlop->State.C3,
+		100.f * CFlop->State.C6,
+		100.f * CFlop->State.C7,
+/* [22 ... 24] INST	*/
+		CFlop->State.IPS,
+		CFlop->State.IPC,
+		CFlop->State.CPI);
 
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 

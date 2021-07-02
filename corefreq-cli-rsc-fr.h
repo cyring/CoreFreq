@@ -267,6 +267,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 	"------------------------------------------------------------"	\
 	"--------------------"
 
+#define RSC_LAYOUT_RULER_CUSTOM_CODE_FR RSC_LAYOUT_RULER_CUSTOM_CODE_EN
+
 #define RSC_LAYOUT_FOOTER_TECH_X86_CODE_FR RSC_LAYOUT_FOOTER_TECH_X86_CODE_EN
 
 #define RSC_LAYOUT_FOOTER_TECH_INTEL_CODE_FR \
@@ -806,6 +808,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_MENU_ITEM_VOLTAGE_CODE_FR     "   Voltage          [V] "
 #define RSC_MENU_ITEM_POWER_CODE_FR       "   Puissance        [W] "
 #define RSC_MENU_ITEM_SLICE_CTRS_CODE_FR  " Compteurs tranche  [T] "
+#define RSC_MENU_ITEM_CUSTOM_CODE_FR	  " Vue personnalis""\xa9""e  [y] "
 #define RSC_MENU_ITEM_PROCESSOR_CODE_FR   " Processeur         [p] "
 #define RSC_MENU_ITEM_TOPOLOGY_CODE_FR    " Topologie          [m] "
 #define RSC_MENU_ITEM_FEATURES_CODE_FR    " Caract""\xa9""ristiques   [e] "
@@ -1179,8 +1182,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 		"\t-OY\tAfficher les données secrètes\n"		\
 		"\n    Options de commande\n"				\
 		"\t-t <v>\tAfficher Top (par défault); en option, la <v>ue:\n"\
-		"\t\t{\tfrequency, instructions, core, idle, package,\n"\
-		"\t\t\ttasks, interrupts, sensors, voltage, power, slices  }\n"\
+		"\t\t{\tfrequency, instructions, core, idle, package, tasks,\n"\
+		"\t\t\tinterrupts, sensors, voltage, power, slices, custom }\n"\
 		"\t-d\tAfficher le tableau de bord\n"			\
 		"\t-C <#>\tMoniteur des Capteurs\n"			\
 		"\t-V <#>\tMoniteur de Voltage\n"			\

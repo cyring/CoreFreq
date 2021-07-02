@@ -522,6 +522,14 @@
 	"------------------------------------------------------------"	\
 	"--------------------"
 
+#define RSC_LAYOUT_RULER_CUSTOM_CODE_EN 				\
+	"----- Min - Relative - Max ---- Min - Absolute - Max - Min T"	\
+	"MP Max - Min(V) - Vcore - Max(V) - Min ---- Power -- Max ---"	\
+	"- Turbo - C0 --- C1 -- C2:C3 - C4:C6 - C7 --- IPS ----- IPC "	\
+	"----- CPI --------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"--------------------"
+
 #define RSC_LAYOUT_FOOTER_TECH_X86_CODE_EN				\
 {									\
 	'T','e','c','h',' ','[',' ',' ','T','S','C',' ',' ',',' 	\
@@ -1209,6 +1217,7 @@
 #define RSC_MENU_ITEM_VOLTAGE_CODE_EN		"   Voltage          [V] "
 #define RSC_MENU_ITEM_POWER_CODE_EN		"   Power            [W] "
 #define RSC_MENU_ITEM_SLICE_CTRS_CODE_EN	" Slice counters     [T] "
+#define RSC_MENU_ITEM_CUSTOM_CODE_EN		" Custom view        [y] "
 #define RSC_MENU_ITEM_PROCESSOR_CODE_EN 	" Processor          [p] "
 #define RSC_MENU_ITEM_TOPOLOGY_CODE_EN		" Topology           [m] "
 #define RSC_MENU_ITEM_FEATURES_CODE_EN		" Features           [e] "
@@ -1493,8 +1502,8 @@
 		"\t-OY\tShow Secret Data\n"				\
 		"\n    Command options\n"				\
 		"\t-t <v>\tShow Top (default) with optional <v>iew:\n"	\
-		"\t\t{\tfrequency, instructions, core, idle, package,\n"\
-		"\t\t\ttasks, interrupts, sensors, voltage, power, slices  }\n"\
+		"\t\t{\tfrequency, instructions, core, idle, package, tasks,\n"\
+		"\t\t\tinterrupts, sensors, voltage, power, slices, custom }\n"\
 		"\t-d\tShow Dashboard\n"				\
 		"\t-C <#>\tMonitor Sensors\n"				\
 		"\t-V <#>\tMonitor Voltage\n"				\

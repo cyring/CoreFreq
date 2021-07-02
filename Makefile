@@ -71,6 +71,14 @@ ifneq ($(UI_TRANSPARENCY),)
 LAYOUT += -D UI_TRANSPARENCY=$(UI_TRANSPARENCY)
 endif
 
+ifneq ($(CUSTOM_RULER),)
+LAYOUT += -D CUSTOM_RULER='"$(CUSTOM_RULER)"'
+endif
+
+ifneq ($(CUSTOM_FIELD),)
+LAYOUT += -D CUSTOM_FIELD='"$(CUSTOM_FIELD)"'
+endif
+
 .PHONY: all
 all: corefreqd corefreq-cli
 	$(MAKE) -j1 -C $(KERNELDIR) M=$(PWD) modules
@@ -216,6 +224,10 @@ help:
 	"|      when <F> is 1: don't build and display this area part    |\n"\
 	"|    UI_TRANSPARENCY=<F>                                        |\n"\
 	"|      when <F> is 1: build with background transparency        |\n"\
+	"|                                                               |\n"\
+	"|  Custom view ( printf syntax ):                               |\n"\
+	"|    CUSTOM_RULER='string'                                      |\n"\
+	"|    CUSTOM_FIELD='format'                                      |\n"\
 	"|                                                               |\n"\
 	"|  Example:                                                     |\n"\
 	"|    make CC=gcc OPTIM_LVL=3 FEAT_DBG=1                         |\n"\
