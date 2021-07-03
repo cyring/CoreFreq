@@ -5400,10 +5400,11 @@ void Topology(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO **Core, unsigned int cpu)
     case AMD_Zen_APU:
     case AMD_ZenPlus:
     case AMD_ZenPlus_APU:
-    case AMD_Zen_APU_Dali:
+    case AMD_Zen_Dali:
     case AMD_EPYC_Rome:
     case AMD_Zen2_CPK:
-    case AMD_Zen2_APU:
+    case AMD_Zen2_Renoir:
+    case AMD_Zen2_LCN:
     case AMD_Zen2_MTS:
     case AMD_Zen2_Xbox:
     case AMD_Zen3_VMR:

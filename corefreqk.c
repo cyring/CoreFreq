@@ -1823,10 +1823,11 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Zen_APU:
 	case AMD_ZenPlus:
 	case AMD_ZenPlus_APU:
-	case AMD_Zen_APU_Dali:
+	case AMD_Zen_Dali:
 	case AMD_EPYC_Rome:
 	case AMD_Zen2_CPK:
-	case AMD_Zen2_APU:
+	case AMD_Zen2_Renoir:
+	case AMD_Zen2_LCN:
 	case AMD_Zen2_MTS:
 	case AMD_Zen2_Xbox:
 	case AMD_Zen3_VMR:
@@ -6190,7 +6191,8 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	switch (PUBLIC(RO(Proc))->ArchID) {
 	case AMD_EPYC_Rome:
 	case AMD_Zen2_CPK:
-	case AMD_Zen2_APU:
+	case AMD_Zen2_Renoir:
+	case AMD_Zen2_LCN:
 	case AMD_Zen2_MTS:
 	case AMD_Zen2_Xbox:
 	case AMD_Family_19h:
@@ -6213,7 +6215,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	AMD_Zen_APU:
 	AMD_ZenPlus:
 	AMD_ZenPlus_APU:
-	AMD_Zen_APU_Dali:
+	AMD_Zen_Dali:
 */
 		Core_AMD_Family_17h_Temp = CTL_AMD_Family_17h_Temp;
 
