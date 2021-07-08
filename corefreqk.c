@@ -5844,6 +5844,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	switch (PUBLIC(RO(Proc))->ArchID) {
 	case AMD_Zen3_CZN:
 	case AMD_Zen3_VMR:
+	case AMD_Zen2_LCN:
 	case AMD_Zen2_MTS:
 	case AMD_Zen2_Xbox:
 		Core_AMD_SMN_Read(XtraCOF,
@@ -6219,7 +6220,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	AMD_ZenPlus:
 	AMD_ZenPlus_APU:
 	AMD_Zen_Dali:
-	case AMD_Zen2_LCN:
+	AMD_Zen2_LCN:
 */
 		Core_AMD_Family_17h_Temp = CTL_AMD_Family_17h_Temp;
 
