@@ -14068,8 +14068,8 @@ void Layout_Footer(Layer *layer, CUINT row)
 	hTech0.code[11] = TSC[Shm->Proc.Features.InvariantTSC].code[5];
 	hTech0.code[12] = TSC[Shm->Proc.Features.InvariantTSC].code[6];
 
-	hTech0.attr[ 6] = hTech0.attr[ 7]=hTech0.attr[ 8] =
-	hTech0.attr[ 9] = hTech0.attr[10]=hTech0.attr[11] =
+	hTech0.attr[ 6] = hTech0.attr[ 7] = hTech0.attr[ 8] = \
+	hTech0.attr[ 9] = hTech0.attr[10] = hTech0.attr[11] = \
 	hTech0.attr[12] = TSC[Shm->Proc.Features.InvariantTSC].attr;
 
 	LayerCopyAt(	layer, hTech0.origin.col, hTech0.origin.row,
@@ -14137,7 +14137,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 			hSpace,
 			RSC(UI).ATTR()[UI_LAYOUT_FOOTER_FILL]);
 
-	Draw.Area.Footer.VoltTemp.Hot[1] = Draw.Area.Footer.VoltTemp.Hot[0] - 7;
+	Draw.Area.Footer.VoltTemp.Hot[1] = hTech1.origin.col + 46;
     }
     else
     {
@@ -14187,7 +14187,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 			hSpace,
 			RSC(UI).ATTR()[UI_LAYOUT_FOOTER_FILL]);
 
-	Draw.Area.Footer.VoltTemp.Hot[1]=Draw.Area.Footer.VoltTemp.Hot[0] - 11;
+	Draw.Area.Footer.VoltTemp.Hot[1] = hTech1.origin.col + 42;
       }
     }
 	LayerCopyAt(layer, hVoltTemp0.origin.col, hVoltTemp0.origin.row,
