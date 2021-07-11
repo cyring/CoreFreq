@@ -4396,12 +4396,8 @@ static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev)
 {	/*		Clarksfield; Lynnfield				*/
 	kernel_ulong_t rc;
 
-	const unsigned char bus_number = 0xff - dev->bus->number;
-	const unsigned short mc = (unsigned short) bus_number % MC_MAX_CTRL;
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
 
-	if (mc >= PUBLIC(RO(Proc))->Uncore.CtrlCount) {
-		PUBLIC(RO(Proc))->Uncore.CtrlCount++;
-	}
 	rc = Query_Lynnfield_IMC(dev, 0);
 
 	return ((PCI_CALLBACK) rc);
