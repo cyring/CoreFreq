@@ -60,6 +60,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_LAYOUT_MONITOR_SLICE_CODE_FR RSC_LAYOUT_MONITOR_SLICE_CODE_EN
 
+#define RSC_LAYOUT_CUSTOM_FIELD_CODE_FR RSC_LAYOUT_CUSTOM_FIELD_CODE_EN
+
 #define RSC_LAYOUT_RULER_FREQUENCY_CODE_FR				\
 {									\
 	'-','-','-',' ','F','r',0xa9,'q','(','M','H','z',')',' ','R','a',\

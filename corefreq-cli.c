@@ -13554,8 +13554,11 @@ CUINT Layout_Monitor_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Monitor_Custom(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerFillAt(	layer, (LOAD_LEAD - 1), row,
-			Draw.Size.width, hSpace, MakeAttr(WHITE, 0, BLACK, 1) );
+	LayerDeclare(	LAYOUT_CUSTOM_FIELD, RSZ(LAYOUT_CUSTOM_FIELD),
+			(LOAD_LEAD - 1), row, hCustom0 );
+
+	LayerCopyAt(	layer, hCustom0.origin.col, hCustom0.origin.row,
+			hCustom0.length, hCustom0.attr, hCustom0.code );
 	UNUSED(cpu);
 
 	return (0);
@@ -14012,20 +14015,20 @@ CUINT Layout_Ruler_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Ruler_Custom(Layer *layer, const unsigned int cpu, CUINT row)
 {
-#ifndef CUSTOM_RULER
 	LayerDeclare(LAYOUT_RULER_CUSTOM, Draw.Size.width, 0, row, hCust0);
+
+	UNUSED(cpu);
 
 	LayerCopyAt(	layer, hCust0.origin.col, hCust0.origin.row,
 			hCust0.length, hCust0.attr, hCust0.code );
-#else
-	LayerFillAt(	layer, 0, row,
-			__builtin_strlen(CUSTOM_RULER), CUSTOM_RULER,
-			RSC(UI).ATTR()[UI_LAYOUT_RULER_CUSTOM] );
-#endif /* CUSTOM_RULER */
+
 	LayerFillAt(	layer, 0, (row + Draw.Area.MaxRows + 1),
 			Draw.Size.width, hLine,
 			RSC(UI).ATTR()[UI_LAYOUT_RULER_CUSTOM] );
-	UNUSED(cpu);
+
+	LayerAt(layer, code,  99, hCust0.origin.row) = \
+	LayerAt(layer, code, 117, hCust0.origin.row) = \
+						Setting.jouleWatt ? 'W':'J';
 
 	row += Draw.Area.MaxRows + 2;
 	return (row);
@@ -15792,7 +15795,6 @@ CUINT Draw_Monitor_Custom(Layer *layer, const unsigned int cpu, CUINT row)
 	struct FLIP_FLOP *CFlop = &Cpu->FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 	size_t len;
-#ifndef CUSTOM_FIELD
 	len = snprintf(Buffer, MAX_WIDTH,
 		"%7.2f %7.2f %7.2f"					\
 		"\x20\x20\x20" "%7.2f %7.2f %7.2f"			\
@@ -15801,10 +15803,6 @@ CUINT Draw_Monitor_Custom(Layer *layer, const unsigned int cpu, CUINT row)
 		"\x20\x20" "%8.4f %8.4f %8.4f"				\
 		"\x20\x20" "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"	\
 		"\x20\x20" "%10.6f" "%10.6f" "%10.6f",
-#else
-	len = snprintf(Buffer, MAX_WIDTH, CUSTOM_FIELD,
-#endif /* CUSTOM_FIELD */
-
 /* [ 1] MIN_REL_FREQ	*/
 		Cpu->Relative.Freq[SENSOR_LOWEST],
 /* [ 2] RELATIVE_FREQ	*/
