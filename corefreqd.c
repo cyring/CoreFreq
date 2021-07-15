@@ -1065,6 +1065,11 @@ static void *Core_Cycle(void *arg)
 	CFlip->Delta.TSC	= Core->Delta.TSC;
 	CFlip->Delta.C1 	= Core->Delta.C1;
 
+	/* Update all clock ratios.					*/
+	memcpy(Cpu->Boost, Core->Boost, (BOOST(SIZE)) * sizeof(unsigned int));
+
+	CFlip->Absolute.Ratio.Perf = Core->Ratio.Perf;
+
 	/* Compute IPS=Instructions per TSC				*/
 	CFlip->State.IPS = CFlip->Delta.INST;
 	CFlip->State.IPS /= CFlip->Delta.TSC;
@@ -1105,9 +1110,6 @@ static void *Core_Cycle(void *arg)
 	CFlip->State.C1 = CFlip->Delta.C1;
 	CFlip->State.C1 /= CFlip->Delta.TSC;
 
-	/* Update all clock ratios.					*/
-	memcpy(Cpu->Boost, Core->Boost, (BOOST(SIZE)) * sizeof(unsigned int));
-
 	/* Relative Frequency = Relative Ratio x Bus Clock Frequency	*/
 	CFlip->Relative.Ratio = CFlip->Delta.C0.UCC;
 	CFlip->Relative.Ratio *= Cpu->Boost[BOOST(MAX)];
@@ -1123,6 +1125,17 @@ static void *Core_Cycle(void *arg)
 
 	TEST_AND_SET_SENSOR( REL_FREQ, HIGHEST, CFlip->Relative.Freq,
 						Cpu->Relative.Freq );
+	/* Per Core, compute the Absolute Frequency limits.		*/
+	CFlip->Absolute.Freq	= ABS_FREQ_MHz(
+					__typeof__(CFlip->Absolute.Freq),
+					CFlip->Absolute.Ratio.Perf, CFlip->Clock
+				);
+
+	TEST_AND_SET_SENSOR( ABS_FREQ, LOWEST,	CFlip->Absolute.Freq,
+						Cpu->Absolute.Freq );
+
+	TEST_AND_SET_SENSOR( ABS_FREQ, HIGHEST, CFlip->Absolute.Freq,
+						Cpu->Absolute.Freq );
 	/* Per Core, evaluate thermal properties.			*/
 	CFlip->Thermal.Sensor	= Core->PowerThermal.Sensor;
 	CFlip->Thermal.Events	= Core->PowerThermal.Events;
@@ -1162,19 +1175,6 @@ static void *Core_Cycle(void *arg)
 	if (BITVAL(Shm->Registration.NMI, BIT_NMI_IO_CHECK) == 1) {
 		CFlip->Counter.NMI.IOCHECK = Core->Interrupt.NMI.IOCHECK;
 	}
-
-	CFlip->Absolute.Ratio.Perf = Core->Ratio.Perf;
-
-	CFlip->Absolute.Freq	= ABS_FREQ_MHz(
-					__typeof__(CFlip->Absolute.Freq),
-					Core->Ratio.Perf, CFlip->Clock
-				);
-	/* Per Core, compute the Absolute Frequency limits.		*/
-	TEST_AND_SET_SENSOR( ABS_FREQ, LOWEST,	CFlip->Absolute.Freq,
-						Cpu->Absolute.Freq );
-
-	TEST_AND_SET_SENSOR( ABS_FREQ, HIGHEST, CFlip->Absolute.Freq,
-						Cpu->Absolute.Freq );
     }
   } while (!BITVAL(Shutdown, SYNC) && !BITVAL(Core->OffLine, OS)) ;
 
