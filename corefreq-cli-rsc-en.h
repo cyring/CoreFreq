@@ -549,7 +549,7 @@
 #define RSC_LAYOUT_RULER_CUSTOM_CODE_EN 				\
 	"----- Min - Relative - Max ---- Min - Absolute - Max - Min T"	\
 	"MP Max - Min(V) - Vcore - Max(V) - Min( ) - Power -- Max( ) "	\
-	"- Turbo - C0 --- C1 -- C2:C3 - C4:C6 - C7 --- IPS ----- IPC "	\
+	"- Turbo -- C0 -- C1 -- C2:C3  C4:C6 -- C7 --- IPS ----- IPC "	\
 	"----- CPI --------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"--------------------"

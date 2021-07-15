@@ -16167,12 +16167,59 @@ CUINT Draw_AltMonitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 			PFlop->Voltage.VID.SOC,
 			PFlop->Voltage.SOC );
 
-	memcpy(&LayerAt(layer, code, col,	row), &Buffer [0], 7);
-	memcpy(&LayerAt(layer, code, col + 12,	row), &Buffer [7], 6);
+	memcpy(&LayerAt(layer, code, col,	row), &Buffer[ 0], 7);
+	memcpy(&LayerAt(layer, code, col + 12,	row), &Buffer[ 7], 6);
 	memcpy(&LayerAt(layer, code, col + 21,	row), &Buffer[13], 6);
 	memcpy(&LayerAt(layer, code, col + 30,	row), &Buffer[19], 6);
 	memcpy(&LayerAt(layer, code, col + 49,	row), &Buffer[25], 7);
 	memcpy(&LayerAt(layer, code, col + 59,	row), &Buffer[32], 6);
+
+	row += 1;
+	return (row);
+}
+
+CUINT Draw_AltMonitor_Custom(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	const CUINT col = LOAD_LEAD + 8;
+	UNUSED(cpu);
+
+	row += 1 + Draw.Area.MaxRows;
+
+	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+
+	size_t len;
+	len = snprintf( Buffer, MAX_WIDTH,
+			" %5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f  "	\
+			"c2:%-5.1f"	" c3:%-5.1f"	" c4:%-5.1f"	\
+			" c6:%-5.1f"	" c7:%-5.1f"	" c8:%-5.1f"	\
+			" c9:%-5.1f"	" c10:%-5.1f",
+
+			Shm->Proc.State.Voltage.Limit[SENSOR_LOWEST],
+			PFlop->Voltage.CPU,
+			Shm->Proc.State.Voltage.Limit[SENSOR_HIGHEST],
+
+	Setting.jouleWatt ?
+	  Shm->Proc.State.Power[PWR_DOMAIN(CORES)].Limit[SENSOR_LOWEST]
+	: Shm->Proc.State.Energy[PWR_DOMAIN(CORES)].Limit[SENSOR_LOWEST],
+
+	Setting.jouleWatt ?
+	  Shm->Proc.State.Power[PWR_DOMAIN(CORES)].Current
+	: Shm->Proc.State.Energy[PWR_DOMAIN(CORES)].Current,
+
+	Setting.jouleWatt ?
+	  Shm->Proc.State.Power[PWR_DOMAIN(CORES)].Limit[SENSOR_HIGHEST]
+	: Shm->Proc.State.Energy[PWR_DOMAIN(CORES)].Limit[SENSOR_HIGHEST],
+
+			100.f * Shm->Proc.State.PC02,
+			100.f * Shm->Proc.State.PC03,
+			100.f * Shm->Proc.State.PC04,
+			100.f * Shm->Proc.State.PC06,
+			100.f * Shm->Proc.State.PC07,
+			100.f * Shm->Proc.State.PC08,
+			100.f * Shm->Proc.State.PC09,
+			100.f * Shm->Proc.State.PC10 );
+
+	memcpy(&LayerAt(layer, code, col +  56, row), &Buffer[ 0], len);
 
 	row += 1;
 	return (row);
@@ -16400,7 +16447,7 @@ VIEW_FUNC Matrix_Draw_AltMon[VIEW_SIZE] = {
 	Draw_AltMonitor_Voltage,
 	Draw_AltMonitor_Power,
 	Draw_AltMonitor_Common,
-	Draw_AltMonitor_Common
+	Draw_AltMonitor_Custom
 };
 #endif /* NO_LOWER */
 /* <<< GLOBALS <<< */
