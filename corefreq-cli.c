@@ -16178,37 +16178,30 @@ CUINT Draw_AltMonitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 	return (row);
 }
 
-CUINT Draw_AltMonitor_Custom(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_AltMonitor_Custom_Energy_Joule(void)
 {
-	const CUINT col = LOAD_LEAD + 8;
-	UNUSED(cpu);
-
-	row += 1 + Draw.Area.MaxRows;
-
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 
-	size_t len;
-	len = snprintf( Buffer, MAX_WIDTH,
-			" %5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f  "	\
-			"c2:%-5.1f"	" c3:%-5.1f"	" c4:%-5.1f"	\
+	return snprintf(Buffer, MAX_WIDTH,
+			" RAM:%8.4f(J) -" " SoC:%8.4f(J)/%5.4f(V)"	\
+			" - Pkg:%8.4f(J) - "				\
+			"%5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f -"	\
+			" c2:%-5.1f"	" c3:%-5.1f"	" c4:%-5.1f"	\
 			" c6:%-5.1f"	" c7:%-5.1f"	" c8:%-5.1f"	\
 			" c9:%-5.1f"	" c10:%-5.1f",
+
+			Shm->Proc.State.Energy[PWR_DOMAIN(RAM)].Current,
+			Shm->Proc.State.Energy[PWR_DOMAIN(UNCORE)].Current,
+			PFlop->Voltage.SOC,
+			Shm->Proc.State.Energy[PWR_DOMAIN(PKG)].Current,
 
 			Shm->Proc.State.Voltage.Limit[SENSOR_LOWEST],
 			PFlop->Voltage.CPU,
 			Shm->Proc.State.Voltage.Limit[SENSOR_HIGHEST],
 
-	Setting.jouleWatt ?
-	  Shm->Proc.State.Power[PWR_DOMAIN(CORES)].Limit[SENSOR_LOWEST]
-	: Shm->Proc.State.Energy[PWR_DOMAIN(CORES)].Limit[SENSOR_LOWEST],
-
-	Setting.jouleWatt ?
-	  Shm->Proc.State.Power[PWR_DOMAIN(CORES)].Current
-	: Shm->Proc.State.Energy[PWR_DOMAIN(CORES)].Current,
-
-	Setting.jouleWatt ?
-	  Shm->Proc.State.Power[PWR_DOMAIN(CORES)].Limit[SENSOR_HIGHEST]
-	: Shm->Proc.State.Energy[PWR_DOMAIN(CORES)].Limit[SENSOR_HIGHEST],
+		Shm->Proc.State.Energy[PWR_DOMAIN(CORES)].Limit[SENSOR_LOWEST],
+			Shm->Proc.State.Energy[PWR_DOMAIN(CORES)].Current,
+		Shm->Proc.State.Energy[PWR_DOMAIN(CORES)].Limit[SENSOR_HIGHEST],
 
 			100.f * Shm->Proc.State.PC02,
 			100.f * Shm->Proc.State.PC03,
@@ -16217,9 +16210,58 @@ CUINT Draw_AltMonitor_Custom(Layer *layer, const unsigned int cpu, CUINT row)
 			100.f * Shm->Proc.State.PC07,
 			100.f * Shm->Proc.State.PC08,
 			100.f * Shm->Proc.State.PC09,
-			100.f * Shm->Proc.State.PC10 );
+			100.f * Shm->Proc.State.PC10);
+}
 
-	memcpy(&LayerAt(layer, code, col +  56, row), &Buffer[ 0], len);
+size_t Draw_AltMonitor_Custom_Power_Watt(void)
+{
+	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+
+	return snprintf(Buffer, MAX_WIDTH,
+			" RAM:%8.4f(W) -" " SoC:%8.4f(W)/%5.4f(V)"	\
+			" - Pkg:%8.4f(W) - "				\
+			"%5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f -"	\
+			" c2:%-5.1f"	" c3:%-5.1f"	" c4:%-5.1f"	\
+			" c6:%-5.1f"	" c7:%-5.1f"	" c8:%-5.1f"	\
+			" c9:%-5.1f"	" c10:%-5.1f",
+
+			Shm->Proc.State.Power[PWR_DOMAIN(RAM)].Current,
+			Shm->Proc.State.Power[PWR_DOMAIN(UNCORE)].Current,
+			PFlop->Voltage.SOC,
+			Shm->Proc.State.Power[PWR_DOMAIN(PKG)].Current,
+
+			Shm->Proc.State.Voltage.Limit[SENSOR_LOWEST],
+			PFlop->Voltage.CPU,
+			Shm->Proc.State.Voltage.Limit[SENSOR_HIGHEST],
+
+		Shm->Proc.State.Power[PWR_DOMAIN(CORES)].Limit[SENSOR_LOWEST],
+			Shm->Proc.State.Power[PWR_DOMAIN(CORES)].Current,
+		Shm->Proc.State.Power[PWR_DOMAIN(CORES)].Limit[SENSOR_HIGHEST],
+
+			100.f * Shm->Proc.State.PC02,
+			100.f * Shm->Proc.State.PC03,
+			100.f * Shm->Proc.State.PC04,
+			100.f * Shm->Proc.State.PC06,
+			100.f * Shm->Proc.State.PC07,
+			100.f * Shm->Proc.State.PC08,
+			100.f * Shm->Proc.State.PC09,
+			100.f * Shm->Proc.State.PC10);
+}
+
+size_t (*Draw_AltMonitor_Custom_Matrix[])(void) = {
+	Draw_AltMonitor_Custom_Energy_Joule,
+	Draw_AltMonitor_Custom_Power_Watt
+};
+
+CUINT Draw_AltMonitor_Custom(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	UNUSED(cpu);
+
+	row += 1 + Draw.Area.MaxRows;
+
+	size_t len = Draw_AltMonitor_Custom_Matrix[Setting.jouleWatt]();
+
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), &Buffer[ 0], len);
 
 	row += 1;
 	return (row);
