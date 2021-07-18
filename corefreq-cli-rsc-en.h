@@ -1598,6 +1598,7 @@
 #define RSC_MECH_PSCHANGE_MC_NO_CODE_EN "Architectural - Page Size Change MCE"
 #define RSC_MECH_TAA_NO_CODE_EN "Architectural - TSX Asynchronous Abort"
 #define RSC_MECH_SPLA_CODE_EN	"Architectural - Split Locked Access Exception"
+#define RSC_MECH_PSFD_CODE_EN	"Architectural - Predictive Store Forwarding"
 
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_EN	"  %3s       Processor     " \
 						"   %s     %c%4u %c "

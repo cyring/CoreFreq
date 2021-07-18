@@ -1167,31 +1167,37 @@ typedef struct	/* Processor Capacity Leaf.				*/
 		Reserved	: 32-24;
 	} EAX;
 	struct
-	{	/* AMD Family 17h					*/
+	{	/* AMD Family 17h, 19h					*/
 		unsigned int
 		CLZERO		:  1-0,  /* Clear Zero Instruction	*/
 		IRPerf		:  2-1,  /* Inst. Retired Counter support */
 		XSaveErPtr	:  3-2,  /* FX___ error pointers support */
-		Reserved1	:  4-3,
+		INVLPGB 	:  4-3,  /* SMT TLB invalidate broadcast */
 		RDPRU		:  5-4,  /* MPERF/APERF at user level	*/
-		Reserved2	:  6-5,
+		Reserved1	:  6-5,
 		MBE		:  7-6,  /* Memory Bandwidth Enforcement */
-		Reserved3	:  8-7,
+		Reserved2	:  8-7,
 		MCOMMIT 	:  9-8,  /* Memory Commit Instruction	*/
 		WBNOINVD	: 10-9,
-		Reserved4	: 12-10,
+		Reserved3	: 12-10,
 		IBPB		: 13-12, /* Indirect Branch Prediction Barrier*/
 		INT_WBINVD	: 14-13, /* Interruptible WBINVD,WBNOINVD */
 		IBRS		: 15-14, /* IBR Speculation		*/
 		STIBP		: 16-15, /* Single Thread Indirect Branch Pred*/
-		Reserved5	: 17-16,
+		Reserved4	: 17-16,
 		STIBP_AlwaysOn	: 18-17,
 		IBRS_Preferred	: 19-18,
 		IBRS_ProtectMode: 20-19,
-		Reserved6	: 23-20,
+		MSR_EFER_LMSLE	: 21-20,
+		TlbFlushNested	: 22-21,
+		Reserved5	: 23-22,
 		PPIN		: 24-23, /* Protected Processor Inventory Num */
 		SSBD		: 25-24, /* Speculative Store Bypass Disable */
-		Reserved	: 32-25;
+		Reserved6	: 27-25,
+		CPPC		: 28-27,
+		PSFD		: 29-28,
+		Reserved7	: 31-29,
+		BranchSample	: 32-31;
 	} EBX;
 	struct { /* AMD reserved					*/
 		unsigned int
@@ -1204,7 +1210,7 @@ typedef struct	/* Processor Capacity Leaf.				*/
 	struct
 	{	/* AMD Family 17h					*/
 		unsigned int
-		Reserved1	: 16-0,
+		INVLPGB_CountMax: 16-0,  /* Maximum count for INVLPGB inst. */
 		RdpruMax	: 24-16, /* RDPRU Instruction max input */
 		Reserved2	: 32-24;
 	} EDX;

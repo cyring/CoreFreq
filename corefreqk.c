@@ -321,6 +321,10 @@ static signed short Mech_L1D_FLUSH = -1;
 module_param(Mech_L1D_FLUSH, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Mech_L1D_FLUSH, "Mitigation Mechanism Cache L1D Flush");
 
+static signed short Mech_PSFD = -1;
+module_param(Mech_PSFD, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Mech_PSFD, "Mitigation Mechanism PSFD");
+
 static signed short WDT_Enable = -1;
 module_param(WDT_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(WDT_Enable, "Watchdog Hardware Timer");
@@ -8583,7 +8587,8 @@ void AMD_Mitigation_Mechanisms(CORE_RO *Core)
 
     if (PUBLIC(RO(Proc))->Features.leaf80000008.EBX.IBRS
      || PUBLIC(RO(Proc))->Features.leaf80000008.EBX.STIBP
-     || PUBLIC(RO(Proc))->Features.leaf80000008.EBX.SSBD)
+     || PUBLIC(RO(Proc))->Features.leaf80000008.EBX.SSBD
+     || PUBLIC(RO(Proc))->Features.leaf80000008.EBX.PSFD)
     {
 	RDMSR(Spec_Ctrl, MSR_AMD_SPEC_CTRL);
 
@@ -8604,6 +8609,14 @@ void AMD_Mitigation_Mechanisms(CORE_RO *Core)
 	{
 		Spec_Ctrl.SSBD = Mech_SSBD;
 		WrRdMSR = 1;
+	}
+	if ((Mech_PSFD == COREFREQ_TOGGLE_OFF)
+	 || (Mech_PSFD == COREFREQ_TOGGLE_ON))
+	{
+	    if (PUBLIC(RO(Proc))->Features.leaf80000008.EBX.PSFD) {
+		Spec_Ctrl.PSFD = Mech_PSFD;
+		WrRdMSR = 1;
+	    }
 	}
 	if (WrRdMSR == 1)
 	{
@@ -8627,6 +8640,11 @@ void AMD_Mitigation_Mechanisms(CORE_RO *Core)
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBD, Core->Bind);
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBD, Core->Bind);
+	}
+	if (Spec_Ctrl.PSFD) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->PSFD, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSFD, Core->Bind);
 	}
     }
 	if (PUBLIC(RO(Proc))->Features.leaf80000008.EBX.IBPB
@@ -8710,6 +8728,7 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IBRS	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->STIBP 	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBD	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSFD	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RDCL_NO	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IBRS_ALL	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RSBA	, Core->Bind);

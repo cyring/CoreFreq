@@ -1260,6 +1260,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_MECH_PSCHANGE_MC_NO_CODE_FR "Architectural - Page Size Change MCE"
 #define RSC_MECH_TAA_NO_CODE_FR "Architectural - TSX Asynchronous Abort"
 #define RSC_MECH_SPLA_CODE_FR	"Architectural - Split Locked Access Exception"
+#define RSC_MECH_PSFD_CODE_FR	"Architectural - Predictive Store Forwarding"
 
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_FR	"  %3s       Processeur    " \
 						"   %s     %c%4u %c "

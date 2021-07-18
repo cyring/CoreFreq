@@ -327,7 +327,8 @@ typedef struct
 				PSCHANGE_MC_NO	: 20-18,
 				TAA_NO		: 22-20,
 				SPLA		: 23-22,
-				_UnusedMechBits : 64-23;
+				PSFD		: 24-23,
+				_UnusedMechBits : 64-24;
 	} Mechanisms;
 
 	enum THERMAL_FORMULAS	thermalFormula;

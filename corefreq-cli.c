@@ -2402,6 +2402,14 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		2, "%s%.*sSPLA   [%7s]", RSC(MECH_SPLA).CODE(),
 		width - 19 - RSZ(MECH_SPLA),
 		MECH
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Mechanisms.PSFD,
+		attr_Feat,
+		2, "%s%.*sPSFD   [%7s]", RSC(MECH_PSFD).CODE(),
+		width - 19 - RSZ(MECH_PSFD),
+		NULL
 	}
     };
 	size_t idx;

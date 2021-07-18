@@ -291,12 +291,14 @@ typedef union
 	IBRS		:  1-0,  /*RW: Indirect Branch Restriction Speculation*/
 	STIBP		:  2-1,  /*RW: Single Thread Indirect Branch Predictor*/
 	SSBD		:  3-2,  /*RW: Speculative Store Bypass Disable */
-	Reserved	: 64-3;
+	Reserved1	:  7-3,
+	PSFD		:  8-7,  /* RW: Predictive Store Forwarding Disable */
+	Reserved2	: 64-8;
     };
 } AMD_SPEC_CTRL;
 
 typedef union
-{	/* Speculative Control: Per Core MSR 0x00000049			*/
+{	/* Speculative Control: Per Core MSR 0x00000049 iff CPUID:IBPB	*/
 	unsigned long long value;
     struct
     {

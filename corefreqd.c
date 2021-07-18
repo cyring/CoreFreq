@@ -1670,6 +1670,10 @@ void Mitigation_1st_Stage(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
     else if (	(Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	||	(Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
     {
+	unsigned short	PSFD = BITCMP_CC(	LOCKLESS,
+						Proc_RW->PSFD,
+						Proc_RO->SPEC_CTRL_Mask );
+
 	Shm->Proc.Mechanisms.IBRS = (
 		Shm->Proc.Features.leaf80000008.EBX.IBRS == 1
 	);
@@ -1681,6 +1685,10 @@ void Mitigation_1st_Stage(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
 	);
 
 	Mitigation_2nd_Stage(Shm, Proc_RO, Proc_RW);
+
+	Shm->Proc.Mechanisms.PSFD = (
+		Shm->Proc.Features.leaf80000008.EBX.PSFD + (2 * PSFD)
+	);
     }
 }
 
