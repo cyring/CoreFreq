@@ -1211,8 +1211,8 @@ typedef struct	/* Processor Capacity Leaf.				*/
 	{	/* AMD Family 17h					*/
 		unsigned int
 		INVLPGB_CountMax: 16-0,  /* Maximum count for INVLPGB inst. */
-		RdpruMax	: 24-16, /* RDPRU Instruction max input */
-		Reserved2	: 32-24;
+		RDPRU_Max	: 24-16, /* RDPRU Instruction max input */
+		Reserved	: 32-24;
 	} EDX;
 } CPUID_0x80000008;
 

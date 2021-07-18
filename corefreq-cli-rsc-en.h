@@ -841,6 +841,9 @@
 #define RSC_FEATURES_APIC_CODE_EN   "Advanced Programmable Interrupt Controller"
 #define RSC_FEATURES_CORE_MP_CODE_EN	"Core Multi-Processing"
 #define RSC_FEATURES_CNXT_ID_CODE_EN	"L1 Data Cache Context ID"
+#define RSC_FEATURES_CPPC_CODE_EN	\
+				"Collaborative Processor Performance Control"
+
 #define RSC_FEATURES_DCA_CODE_EN	"Direct Cache Access"
 #define RSC_FEATURES_DE_CODE_EN 	"Debugging Extension"
 
@@ -853,9 +856,12 @@
 #define RSC_FEATURES_FMA_CODE_EN	"Fused Multiply Add"
 #define RSC_FEATURES_HLE_CODE_EN	"Hardware Lock Elision"
 #define RSC_FEATURES_IBS_CODE_EN	"Instruction Based Sampling"
+#define RSC_FEATURES_INVLPGB_CODE_EN	"Instruction INVLPGB"
 #define RSC_FEATURES_LM_CODE_EN 	"Long Mode 64 bits"
 #define RSC_FEATURES_LWP_CODE_EN	"LightWeight Profiling"
+#define RSC_FEATURES_MBE_CODE_EN	"Memory Bandwidth Enforcement"
 #define RSC_FEATURES_MCA_CODE_EN	"Machine-Check Architecture"
+#define RSC_FEATURES_MCOMMIT_CODE_EN	"Instruction MCOMMIT"
 #define RSC_FEATURES_MPX_CODE_EN	"Memory Protection Extensions"
 #define RSC_FEATURES_MSR_CODE_EN	"Model Specific Registers"
 #define RSC_FEATURES_MTRR_CODE_EN	"Memory Type Range Registers"
@@ -872,6 +878,7 @@
 #define RSC_FEATURES_PSN_CODE_EN	"Processor Serial Number"
 #define RSC_FEATURES_RDT_PQE_CODE_EN	"Resource Director Technology/PQE"
 #define RSC_FEATURES_RDT_PQM_CODE_EN	"Resource Director Technology/PQM"
+#define RSC_FEATURES_RDPRU_CODE_EN	"Read Processor Register at User level"
 #define RSC_FEATURES_RTM_CODE_EN	"Restricted Transactional Memory"
 #define RSC_FEATURES_SMX_CODE_EN	"Safer Mode Extensions"
 #define RSC_FEATURES_SELF_SNOOP_CODE_EN "Self-Snoop"

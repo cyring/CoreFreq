@@ -489,6 +489,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_APIC_CODE_FR   "Advanced Programmable Interrupt Controller"
 #define RSC_FEATURES_CORE_MP_CODE_FR	"Core Multi-Processing"
 #define RSC_FEATURES_CNXT_ID_CODE_FR	"L1 Data Cache Context ID"
+#define RSC_FEATURES_CPPC_CODE_FR	\
+				"Collaborative Processor Performance Control"
+
 #define RSC_FEATURES_DCA_CODE_FR	"Direct Cache Access"
 #define RSC_FEATURES_DE_CODE_FR 	"Debugging Extension"
 
@@ -501,9 +504,12 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_FMA_CODE_FR	"Fused Multiply Add"
 #define RSC_FEATURES_HLE_CODE_FR	"Hardware Lock Elision"
 #define RSC_FEATURES_IBS_CODE_FR	"Instruction Based Sampling"
+#define RSC_FEATURES_INVLPGB_CODE_FR	"Instruction INVLPGB"
 #define RSC_FEATURES_LM_CODE_FR 	"Long Mode 64 bits"
 #define RSC_FEATURES_LWP_CODE_FR	"LightWeight Profiling"
+#define RSC_FEATURES_MBE_CODE_FR	"Memory Bandwidth Enforcement"
 #define RSC_FEATURES_MCA_CODE_FR	"Machine-Check Architecture"
+#define RSC_FEATURES_MCOMMIT_CODE_FR	"Instruction MCOMMIT"
 #define RSC_FEATURES_MPX_CODE_FR	"Memory Protection Extensions"
 #define RSC_FEATURES_MSR_CODE_FR	"Model Specific Registers"
 #define RSC_FEATURES_MTRR_CODE_FR	"Memory Type Range Registers"
@@ -520,6 +526,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_PSN_CODE_FR	"Processor Serial Number"
 #define RSC_FEATURES_RDT_PQE_CODE_FR	"Resource Director Technology/PQE"
 #define RSC_FEATURES_RDT_PQM_CODE_FR	"Resource Director Technology/PQM"
+#define RSC_FEATURES_RDPRU_CODE_FR	"Read Processor Register at User level"
 #define RSC_FEATURES_RTM_CODE_FR	"Restricted Transactional Memory"
 #define RSC_FEATURES_SMX_CODE_FR	"Safer Mode Extensions"
 #define RSC_FEATURES_SELF_SNOOP_CODE_FR "Self-Snoop"

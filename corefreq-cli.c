@@ -1911,6 +1911,14 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		NULL
 	},
 	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Features.leaf80000008.EBX.CPPC == 1,
+		attr_Feat,
+		2, "%s%.*sCPPC   [%7s]", RSC(FEATURES_CPPC).CODE(),
+		width - 19 - RSZ(FEATURES_CPPC),
+		NULL
+	},
+	{
 		NULL,
 		Shm->Proc.Features.Std.ECX.DCA == 1,
 		attr_Feat,
@@ -1984,6 +1992,14 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		NULL
 	},
 	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Features.leaf80000008.EBX.INVLPGB == 1,
+		attr_Feat,
+		2, "%s%.*sINVLPGB   [%7s]", RSC(FEATURES_INVLPGB).CODE(),
+		width - 22 - RSZ(FEATURES_INVLPGB),
+		NULL
+	},
+	{
 		NULL,
 		Shm->Proc.Features.ExtInfo.EDX.IA64 == 1,
 		attr_Feat,
@@ -2000,11 +2016,27 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		NULL
 	},
 	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Features.leaf80000008.EBX.MBE == 1,
+		attr_Feat,
+		2, "%s%.*sMBE   [%7s]", RSC(FEATURES_MBE).CODE(),
+		width - 18 - RSZ(FEATURES_MBE),
+		NULL
+	},
+	{
 		NULL,
 		Shm->Proc.Features.Std.EDX.MCA == 1,
 		attr_Feat,
 		2, "%s%.*sMCA   [%7s]", RSC(FEATURES_MCA).CODE(),
 		width - 18 - RSZ(FEATURES_MCA),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Features.leaf80000008.EBX.MCOMMIT == 1,
+		attr_Feat,
+		2, "%s%.*sMCOMMIT   [%7s]", RSC(FEATURES_MCOMMIT).CODE(),
+		width - 22 - RSZ(FEATURES_MCOMMIT),
 		NULL
 	},
 	{
@@ -2133,6 +2165,14 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sRDT-M   [%7s]", RSC(FEATURES_RDT_PQM).CODE(),
 		width - 20 - RSZ(FEATURES_RDT_PQM),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Features.leaf80000008.EBX.RDPRU == 1,
+		attr_Feat,
+		2, "%s%.*sRDPRU   [%7s]", RSC(FEATURES_RDPRU).CODE(),
+		width - 20 - RSZ(FEATURES_RDPRU),
 		NULL
 	},
 	{

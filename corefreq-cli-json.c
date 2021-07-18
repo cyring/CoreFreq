@@ -1264,8 +1264,12 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 				json_key(&s, "EDX");
 				{
 					json_start_object(&s);
+					json_key(&s, "INVLPGB_CountMax");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EDX.INVLPGB_CountMax);
+					json_key(&s, "RDPRU_Max");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EDX.RDPRU_Max);
 					json_key(&s, "Reserved");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.AdvPower.EDX.Reserved);
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EDX.Reserved);
 					json_end_object(&s);
 				}
 				json_end_object(&s);
