@@ -768,6 +768,11 @@
 #define RSC_SYS_REG_EFER_LMA_CODE_EN	" Long Mode Active "
 #define RSC_SYS_REG_EFER_NXE_CODE_EN	" Execute-Disable Bit Enable "
 #define RSC_SYS_REG_EFER_SVM_CODE_EN	" Secure Virtual Machine Enable "
+#define RSC_SYS_REG_EFER_LMS_CODE_EN	" Long Mode Segment Limit Enable "
+#define RSC_SYS_REG_EFER_FFX_CODE_EN	" Fast FXSAVE/FRSTOR Enable "
+#define RSC_SYS_REG_EFER_TCE_CODE_EN	" Translation Cache Extension Enable "
+#define RSC_SYS_REG_EFER_MCM_CODE_EN	" MCOMMIT Memory Commit Instruction "
+#define RSC_SYS_REG_EFER_WBI_CODE_EN	" Interruptible WBINVD, WBNOINVD "
 
 #define RSC_ISA_TITLE_CODE_EN		" Instruction Set Extensions "
 
@@ -2087,6 +2092,11 @@
 #define RSC_SYS_REG_HDR_EFER_LMA_CODE	" LMA"
 #define RSC_SYS_REG_HDR_EFER_NXE_CODE	" NXE"
 #define RSC_SYS_REG_HDR_EFER_SVM_CODE	" SVM"
+#define RSC_SYS_REG_HDR_EFER_LMS_CODE	" LMS"
+#define RSC_SYS_REG_HDR_EFER_FFX_CODE	" FFX"
+#define RSC_SYS_REG_HDR_EFER_TCE_CODE	" TCE"
+#define RSC_SYS_REG_HDR_EFER_MCM_CODE	" MCM"
+#define RSC_SYS_REG_HDR_EFER_WBI_CODE	" WBI"
 
 #define RSC_ISA_3DNOW_CODE		" 3DNow!/Ext [%c/%c]"
 #define RSC_ISA_ADX_CODE		"          ADX [%c]"

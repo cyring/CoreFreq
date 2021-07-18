@@ -200,6 +200,9 @@ enum SYS_REG {
 	EXFER_SVME	= 12,	/* AMD F17h				*/
 	EXFER_LMSLE	= 13,	/* AMD F17h				*/
 	EXFER_FFXSE	= 14,	/* AMD F17h				*/
+	EXFER_TCE	= 15,	/* AMD F17h				*/
+	EXFER_MCOMMIT	= 17,	/* AMD F17h				*/
+	EXFER_INT_WBINVD= 18,	/* AMD F17h				*/
 
 	UNDEF_CR	= 64
 };
