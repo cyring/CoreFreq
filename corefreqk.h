@@ -1496,7 +1496,7 @@ static PCI_CALLBACK SoC_SLM(struct pci_dev *dev) ;
 static PCI_CALLBACK Nehalem_IMC(struct pci_dev *dev) ;
 #define Bloomfield_IMC Nehalem_IMC
 static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev) ;
-#define C5500_C3500_IMC Nehalem_IMC
+static PCI_CALLBACK Jasper_Forest_IMC(struct pci_dev *dev) ;
 #define Westmere_EP_IMC Nehalem_IMC
 static PCI_CALLBACK NHM_IMC_TR(struct pci_dev *dev) ;
 static PCI_CALLBACK NHM_NON_CORE(struct pci_dev *dev) ;
@@ -1684,7 +1684,7 @@ static struct pci_device_id PCI_Nehalem_DMI_ids[] = {
 	},
 	{	/* Nehalem/C5500-C3500/Jasper Forest IMC		*/
 		PCI_VDEVICE(INTEL, DID_INTEL_NHM_EC_MCR),
-		.driver_data = (kernel_ulong_t) C5500_C3500_IMC
+		.driver_data = (kernel_ulong_t) Jasper_Forest_IMC
 	},
 	{	/* Nehalem/C5500-C3500 IMC Test Registers		*/
 		PCI_VDEVICE(INTEL, DID_INTEL_NHM_EC_MC_TEST),
@@ -2404,12 +2404,14 @@ static MICRO_ARCH Arch_Nehalem_Bloomfield[]={{"Nehalem/Bloomfield"},{NULL}};
 
 enum {
 	CN_LYNNFIELD,
-	CN_CLARKSFIELD
+	CN_CLARKSFIELD,
+	CN_JASPER_FOREST
 };
 
 static MICRO_ARCH Arch_Nehalem_Lynnfield[] = {
 	[CN_LYNNFIELD]		= {"Nehalem/Lynnfield"},
 	[CN_CLARKSFIELD]	= {"Nehalem/Clarksfield"},
+	[CN_JASPER_FOREST]	= {"Nehalem/Jasper Forest"},
 	{NULL}
 };
 
@@ -2872,6 +2874,17 @@ static PROCESSOR_SPECIFIC Nehalem_Lynnfield_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_CLARKSFIELD,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b00,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_TGT_RATIO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("Intel(R) Xeon(R) CPU C55"),
+	.Boost = {0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_JASPER_FOREST,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
 	.TurboUnlocked = 0,

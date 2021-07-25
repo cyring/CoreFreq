@@ -3857,8 +3857,7 @@ void Query_NHM_MaxDIMMs(struct pci_dev *dev, unsigned short mc)
 	}
 }
 
-kernel_ulong_t Query_NHM_IMC(	struct pci_dev *dev,
-				unsigned short mc)
+kernel_ulong_t Query_NHM_IMC(struct pci_dev *dev, unsigned short mc)
 {
 	kernel_ulong_t rc = 0;
 	unsigned short cha;
@@ -3876,13 +3875,11 @@ kernel_ulong_t Query_NHM_IMC(	struct pci_dev *dev,
 	+ (PUBLIC(RO(Proc))->Uncore.MC[mc].NHM.CONTROL.CHANNEL1_ACTIVE != 0)
 	+ (PUBLIC(RO(Proc))->Uncore.MC[mc].NHM.CONTROL.CHANNEL2_ACTIVE != 0);
 
-	for (cha = 0;
-		(cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount) && !rc;
-			cha++)
-	{
-		rc = Query_NHM_Timing(dev, mc, cha)
-		   & Query_NHM_DIMM(dev, mc, cha);
-	}
+    for (cha = 0;
+	(cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount) && !rc; cha++)
+    {
+	rc = Query_NHM_Timing(dev, mc, cha) & Query_NHM_DIMM(dev, mc, cha);
+    }
 	return (rc);
 }
 
@@ -3904,11 +3901,9 @@ kernel_ulong_t Query_Lynnfield_IMC(struct pci_dev *dev, unsigned short mc)
 	+ (PUBLIC(RO(Proc))->Uncore.MC[mc].NHM.CONTROL.CHANNEL1_ACTIVE != 0);
 
     for (cha = 0;
-		(cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount) && !rc;
-			cha++)
+	(cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount) && !rc; cha++)
     {
-	rc = Query_NHM_Timing(dev, mc, cha)
-	   & Query_NHM_DIMM(dev, mc, cha);
+	rc = Query_NHM_Timing(dev, mc, cha) & Query_NHM_DIMM(dev, mc, cha);
     }
 	return (rc);
 }
@@ -4398,26 +4393,59 @@ static PCI_CALLBACK SoC_SLM(struct pci_dev *dev)
 
 static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev)
 {	/*		Clarksfield; Lynnfield				*/
-	kernel_ulong_t rc;
+	kernel_ulong_t rc = 0;
+	unsigned short mc;
 
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+	for (mc = 0; (mc < PUBLIC(RO(Proc))->Uncore.CtrlCount) && !rc; mc++) {
+		rc = Query_Lynnfield_IMC(dev, 0);
+	}
+	return ((PCI_CALLBACK) rc);
+}
 
-	rc = Query_Lynnfield_IMC(dev, 0);
+static PCI_CALLBACK Jasper_Forest_IMC(struct pci_dev *pdev)
+{
+	kernel_ulong_t rc = 0;
+	unsigned int cpu = 0, SocketID = 0, bus_number = pdev->bus->number;
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 0;
 
+    while ((cpu < PUBLIC(RO(Proc))->CPU.Count) && !rc)
+    {
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	if (Core->T.PackageID == SocketID)
+	{
+		struct pci_dev *dev = pci_get_domain_bus_and_slot(
+						pci_domain_nr(pdev->bus),
+						bus_number,
+						PCI_DEVFN(3, 0) );
+	    if (dev != NULL)
+	    {
+		const unsigned short mc = ((unsigned short) SocketID)
+					% MC_MAX_CTRL;
+		rc = Query_NHM_IMC(dev, mc);
+		pci_dev_put(dev);
+	    }
+		PUBLIC(RO(Proc))->Uncore.CtrlCount++;
+
+		if (bus_number < 0xff) {
+			bus_number++;
+		}
+		SocketID++;
+	}
+	cpu++;
+    }
 	return ((PCI_CALLBACK) rc);
 }
 
 static PCI_CALLBACK Nehalem_IMC(struct pci_dev *dev)
 { /* Arrandale; Beckton; Bloomfield; Clarkdale; Eagleton; Gainestown; Gulftown*/
-	kernel_ulong_t rc;
-	const unsigned char bus_number = 0xff - dev->bus->number;
-	const unsigned short mc = (unsigned short) bus_number % MC_MAX_CTRL;
+	kernel_ulong_t rc = 0;
+	unsigned short mc;
 
-	if (mc >= PUBLIC(RO(Proc))->Uncore.CtrlCount) {
-		PUBLIC(RO(Proc))->Uncore.CtrlCount++;
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+	for (mc = 0; (mc < PUBLIC(RO(Proc))->Uncore.CtrlCount) && !rc; mc++) {
+		rc = Query_NHM_IMC(dev, mc);
 	}
-	rc = Query_NHM_IMC(dev, mc);
-
 	return ((PCI_CALLBACK) rc);
 }
 
