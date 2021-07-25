@@ -1614,8 +1614,16 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_literal(&s, "%llu", Shm->Proc.Mechanisms.PSCHANGE_MC_NO);
 			json_key(&s, "TAA_NO");
 			json_literal(&s, "%llu", Shm->Proc.Mechanisms.TAA_NO);
+			json_key(&s, "STLB");
+			json_literal(&s, "%llu", Shm->Proc.Mechanisms.STLB);
+			json_key(&s, "FUSA");
+			json_literal(&s, "%llu", Shm->Proc.Mechanisms.FUSA);
+			json_key(&s, "RSM_CPL0");
+			json_literal(&s, "%llu", Shm->Proc.Mechanisms.RSM_CPL0);
 			json_key(&s, "SPLA");
 			json_literal(&s, "%llu", Shm->Proc.Mechanisms.SPLA);
+			json_key(&s, "SNOOP_FILTER");
+			json_literal(&s, "%llu", Shm->Proc.Mechanisms.SNOOP_FILTER);
 			json_key(&s, "PSFD");
 			json_literal(&s, "%llu", Shm->Proc.Mechanisms.PSFD);
 

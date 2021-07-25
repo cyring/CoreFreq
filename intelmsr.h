@@ -419,14 +419,19 @@ typedef union
 } ARCH_CAPABILITIES;
 
 typedef union
-{	/* 06_86 [TREMONT]						*/
+{	/* 06_86 [TREMONT], 06_8D, 06_8C [Tiger Lake]			*/
 	unsigned long long	value;
 	struct
 	{
 		unsigned long long
-		ReservedBits1	:  5-0,
-		SPLA_EXCEPTION	:  6-5, /*Exception for split locked accesses*/
-		ReservedBits2	: 64-6;
+		STLB_SUPPORTED	:  1-0, /* STLB QoS MSRs (1A8FH-1A97H) */
+		ReservedBits1	:  2-1,
+		FUSA_SUPPORTED	:  3-2,
+		RSM_IN_CPL0_ONLY:  4-3, /* RSM inst avail in all CPL if == 0 */
+		ReservedBits2	:  5-4,
+		SPLA_EXCEPTION	:  6-5, /* split locked access MSR (0x33) */
+		SNOOP_FILTER_SUP:  7-6, /*Snoop Filter QoS Mask MSRs supported*/
+		ReservedBits3	: 64-7;
 	};
 } CORE_CAPABILITIES;
 

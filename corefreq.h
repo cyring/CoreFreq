@@ -326,9 +326,13 @@ typedef struct
 				MDS_NO		: 18-16,
 				PSCHANGE_MC_NO	: 20-18,
 				TAA_NO		: 22-20,
-				SPLA		: 23-22,
-				PSFD		: 24-23,
-				_UnusedMechBits : 64-24;
+				STLB		: 23-22,
+				FUSA		: 24-23,
+				RSM_CPL0	: 25-24,
+				SPLA		: 26-25,
+				SNOOP_FILTER	: 27-26,
+				PSFD		: 28-27,
+				_UnusedMechBits : 64-28;
 	} Mechanisms;
 
 	enum THERMAL_FORMULAS	thermalFormula;

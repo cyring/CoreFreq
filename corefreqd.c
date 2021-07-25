@@ -1663,8 +1663,20 @@ void Mitigation_1st_Stage(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
 	Shm->Proc.Mechanisms.TAA_NO = (
 		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP + (2 * TAA_NO)
 	);
+	Shm->Proc.Mechanisms.STLB = BITCMP_CC(	LOCKLESS,
+						Proc_RW->STLB,
+						Proc_RO->ARCH_CAP_Mask );
+	Shm->Proc.Mechanisms.FUSA = BITCMP_CC(	LOCKLESS,
+						Proc_RW->FUSA,
+						Proc_RO->ARCH_CAP_Mask );
+	Shm->Proc.Mechanisms.RSM_CPL0 = BITCMP_CC(LOCKLESS,
+						Proc_RW->RSM_CPL0,
+						Proc_RO->ARCH_CAP_Mask );
 	Shm->Proc.Mechanisms.SPLA = BITCMP_CC(	LOCKLESS,
 						Proc_RW->SPLA,
+						Proc_RO->ARCH_CAP_Mask );
+	Shm->Proc.Mechanisms.SNOOP_FILTER = BITCMP_CC(LOCKLESS,
+						Proc_RW->SNOOP_FILTER,
 						Proc_RO->ARCH_CAP_Mask );
     }
     else if (	(Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)

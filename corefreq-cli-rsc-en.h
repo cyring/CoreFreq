@@ -1609,7 +1609,11 @@
 
 #define RSC_MECH_PSCHANGE_MC_NO_CODE_EN "Architectural - Page Size Change MCE"
 #define RSC_MECH_TAA_NO_CODE_EN "Architectural - TSX Asynchronous Abort"
+#define RSC_MECH_STLB_CODE_EN	"Architectural - STLB QoS"
+#define RSC_MECH_FUSA_CODE_EN	"Architectural - Functional Safety Island"
+#define RSC_MECH_RSM_CPL0_CODE_EN "Architectural - RSM in CPL0 only"
 #define RSC_MECH_SPLA_CODE_EN	"Architectural - Split Locked Access Exception"
+#define RSC_MECH_SNOOP_FILTER_CODE_EN "Architectural - Snoop Filter QoS Mask"
 #define RSC_MECH_PSFD_CODE_EN	"Architectural - Predictive Store Forwarding"
 
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_EN	"  %3s       Processor     " \

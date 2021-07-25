@@ -2479,10 +2479,42 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Mechanisms.STLB,
+		attr_Feat,
+		2, "%s%.*sSTLB   [%7s]", RSC(MECH_STLB).CODE(),
+		width - 19 - RSZ(MECH_STLB),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Mechanisms.FUSA,
+		attr_Feat,
+		2, "%s%.*sFuSa   [%7s]", RSC(MECH_FUSA).CODE(),
+		width - 19 - RSZ(MECH_FUSA),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Mechanisms.RSM_CPL0,
+		attr_Feat,
+		2, "%s%.*sRSM   [%7s]", RSC(MECH_RSM_CPL0).CODE(),
+		width - 18 - RSZ(MECH_RSM_CPL0),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
 		Shm->Proc.Mechanisms.SPLA,
 		attr_Feat,
 		2, "%s%.*sSPLA   [%7s]", RSC(MECH_SPLA).CODE(),
 		width - 19 - RSZ(MECH_SPLA),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Mechanisms.SNOOP_FILTER,
+		attr_Feat,
+		2, "%s%.*sSNOOP_FILTER   [%7s]", RSC(MECH_SNOOP_FILTER).CODE(),
+		width - 27 - RSZ(MECH_SNOOP_FILTER),
 		MECH
 	},
 	{

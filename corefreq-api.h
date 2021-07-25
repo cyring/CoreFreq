@@ -927,7 +927,11 @@ typedef struct
 	BitCC			MDS_NO		__attribute__ ((aligned (16)));
 	BitCC			PSCHANGE_MC_NO	__attribute__ ((aligned (16)));
 	BitCC			TAA_NO		__attribute__ ((aligned (16)));
+	BitCC			STLB		__attribute__ ((aligned (16)));
+	BitCC			FUSA		__attribute__ ((aligned (16)));
+	BitCC			RSM_CPL0	__attribute__ ((aligned (16)));
 	BitCC			SPLA		__attribute__ ((aligned (16)));
+	BitCC			SNOOP_FILTER	__attribute__ ((aligned (16)));
 	BitCC			WDT		__attribute__ ((aligned (16)));
 
 	struct {

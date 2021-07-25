@@ -8576,10 +8576,30 @@ void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 
 	RDMSR(Core_Cap, MSR_IA32_CORE_CAPABILITIES);
 
+	if (Core_Cap.STLB_SUPPORTED) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->STLB, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->STLB, Core->Bind);
+	}
+	if (Core_Cap.FUSA_SUPPORTED) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->FUSA, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->FUSA, Core->Bind);
+	}
+	if (Core_Cap.RSM_IN_CPL0_ONLY) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->RSM_CPL0, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RSM_CPL0, Core->Bind);
+	}
 	if (Core_Cap.SPLA_EXCEPTION) {
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SPLA, Core->Bind);
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SPLA, Core->Bind);
+	}
+	if (Core_Cap.SNOOP_FILTER_SUP) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SNOOP_FILTER, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SNOOP_FILTER, Core->Bind);
 	}
     } else {
 	/* Source: arch/x86/kernel/cpu/intel.c				*/
@@ -8765,7 +8785,11 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->MDS_NO	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSCHANGE_MC_NO, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TAA_NO	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->STLB	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->FUSA	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RSM_CPL0	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SPLA	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SNOOP_FILTER, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT	, Core->Bind);
 }
 
