@@ -5791,6 +5791,11 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 	    }
 	  }
 	}
+	if (mc < (Shm->Uncore.CtrlCount - 1)) {
+		for (nc = 0; nc < MC_MATX; nc++) {
+			PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+		}
+	}
     }
   }
   if (str != NULL) {
@@ -7004,7 +7009,8 @@ Window *CreateMemCtrl(unsigned long long id)
 {
 	Window *wIMC;
 	TIMING_FUNC pTimingFunc = Timing_DDR3;
-	unsigned int mc, rows = 1, ctrlHeaders = 6, channelHeaders = 4;
+	unsigned int	mc, rows = 1 + (Shm->Uncore.CtrlCount > 1),
+			ctrlHeaders = 6, channelHeaders = 4;
 
 	switch (Shm->Uncore.Unit.DDR_Ver) {
 	case 5:
