@@ -7640,6 +7640,22 @@ void PowerThermal(CORE_RO *Core)
 		{_Cannonlake,		1, 1, 1, 0},	/* 06_66 */
 		{_Geminilake,		1, 0, 1, 0},	/* 06_7A */
 		{_Icelake_UY,		1, 1, 1, 0},	/* 06_7E */
+
+		{_Icelake_X,		1, 1, 1, 0},
+		{_Icelake_D,		1, 1, 1, 0},
+		{_Sunny_Cove,		1, 1, 1, 0},
+		{_Tigerlake,		1, 1, 1, 0},
+		{_Tigerlake_U,		1, 1, 0, 0},	/* 06_8C */
+		{_Cometlake,		1, 1, 1, 0},
+		{_Cometlake_UY,		1, 1, 1, 0},
+		{_Atom_Denverton,	1, 1, 1, 0},
+		{_Tremont_Jacobsville,	1, 1, 1, 0},
+		{_Tremont_Lakefield,	1, 1, 1, 0},
+		{_Tremont_Elkhartlake,	1, 1, 1, 0},
+		{_Tremont_Jasperlake,	1, 1, 1, 0},
+		{_Sapphire_Rapids,	1, 1, 1, 0},
+		{_Rocketlake,		1, 1, 1, 0},
+		{_Rocketlake_U,		1, 1, 1, 0}
 	};
 	unsigned int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
  for (id = 0; id < ids; id++)
