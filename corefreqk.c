@@ -966,6 +966,7 @@ static void Query_Features(void *pArg)
 	iArg->Features->PerfMon.EBX.LLC_Misses    = 1;
 	iArg->Features->PerfMon.EBX.BranchRetired = 1;
 	iArg->Features->PerfMon.EBX.BranchMispred = 1;
+	iArg->Features->PerfMon.EBX.TopdownSlots  = 1;
 
 	/* Per Vendor features */
     if (iArg->Features->Info.Vendor.CRC == CRC_INTEL)

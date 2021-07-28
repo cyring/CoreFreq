@@ -613,6 +613,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_PERF_MON_MISS_LLC_CODE_FR	"Last Level Cache Misses"
 #define RSC_PERF_MON_BRANCH_RET_CODE_FR "Branch Instructions Retired"
 #define RSC_PERF_MON_BRANCH_MIS_CODE_FR "Branch Mispredicts Retired"
+#define RSC_PERF_MON_TOPDOWN_SLOTS_CODE_FR "Top-down slots Counter"
 #define RSC_PERF_MON_TSC_CODE_FR	"Performance Time Stamp Counter"
 #define RSC_PERF_MON_NB_DF_CODE_FR	"Data Fabric Performance Counter"
 #define RSC_PERF_MON_CORE_CODE_FR	"Core Performance Counter"

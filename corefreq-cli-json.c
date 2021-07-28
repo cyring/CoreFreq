@@ -905,6 +905,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.PerfMon.EBX.BranchRetired);
 					json_key(&s, "BranchMispred");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.PerfMon.EBX.BranchMispred);
+					json_key(&s, "TopdownSlots");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.PerfMon.EBX.TopdownSlots);
 					json_key(&s, "ReservedBits");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.PerfMon.EBX.ReservedBits);
 					json_end_object(&s);

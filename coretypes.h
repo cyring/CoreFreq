@@ -957,7 +957,8 @@ typedef struct	/* Architectural Performance Monitoring Leaf.		*/
 		LLC_Misses	:  5-4,
 		BranchRetired	:  6-5,
 		BranchMispred	:  7-6,
-		ReservedBits	: 32-7;
+		TopdownSlots	:  8-7,
+		ReservedBits	: 32-8;
 	} EBX;
 	struct
 	{
