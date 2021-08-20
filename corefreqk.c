@@ -9944,7 +9944,11 @@ void Sys_DumpTask(SYSGATE_RO *SysGate)
 		SysGate->taskList[cnt].pid      = thread->pid;
 		SysGate->taskList[cnt].tgid     = thread->tgid;
 		SysGate->taskList[cnt].ppid     = thread->parent->pid;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 14, 0)
 		SysGate->taskList[cnt].state    = (short int) thread->state;
+#else
+		SysGate->taskList[cnt].state    = (short int) thread->__state;
+#endif
 #if defined(CONFIG_SCHED_BMQ)
 		SysGate->taskList[cnt].wake_cpu = (short int) thread->cpu;
 #else
