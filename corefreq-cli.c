@@ -5461,7 +5461,7 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 
 void Timing_DDR4_Zen(Window *win,CELL_FUNC OutFunc,CUINT *nl, unsigned short mc)
 {
-	const ASCII *Header_DDR4_Zen[3][MC_MATX] = {
+	const ASCII *Header_DDR4_Zen[4][MC_MATX] = {
 		{
 			RSC(MEM_CTRL_CHANNEL).CODE(),
 			RSC(DDR4_ZEN_CL).CODE(),
@@ -5512,9 +5512,26 @@ void Timing_DDR4_Zen(Window *win,CELL_FUNC OutFunc,CUINT *nl, unsigned short mc)
 			RSC(DDR4_ZEN_CMD).CODE(),
 			RSC(DDR4_ZEN_GDM).CODE(),
 			RSC(DDR4_ZEN_ECC).CODE()
+		},
+		{
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(DDR4_ZEN_MRD).CODE(),
+			RSC(DDR4_ZEN_MRD_PDA).CODE(),
+			RSC(DDR4_ZEN_MOD).CODE(),
+			RSC(DDR4_ZEN_MOD_PDA).CODE(),
+			RSC(DDR4_ZEN_STAG).CODE(),
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(MEM_CTRL_MTY_CELL).CODE()
 		}
 	};
-	const ASCII *Footer_DDR4_Zen[3][MC_MATX] = {
+	const ASCII *Footer_DDR4_Zen[4][MC_MATX] = {
 		{
 			NULL,
 			RSC(DDR3_CL_COMM).CODE(),
@@ -5564,7 +5581,24 @@ void Timing_DDR4_Zen(Window *win,CELL_FUNC OutFunc,CUINT *nl, unsigned short mc)
 			RSC(DDR3_CKE_COMM).CODE(),
 			RSC(DDR3_CMD_COMM).CODE(),
 			RSC(DDR4_ZEN_GDM_COMM).CODE(),
-			RSC(DDR3_ECC_COMM).CODE(),
+			RSC(DDR3_ECC_COMM).CODE()
+		},
+		{
+			NULL,
+			RSC(DDR4_ZEN_MRD_COMM).CODE(),
+			RSC(DDR4_ZEN_MRD_PDA_COMM).CODE(),
+			RSC(DDR4_ZEN_MOD_COMM).CODE(),
+			RSC(DDR4_ZEN_MOD_PDA_COMM).CODE(),
+			RSC(DDR4_ZEN_STAG_COMM).CODE(),
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			NULL
 		}
 	};
 	ATTRIBUTE *attrib[2] = {
@@ -5655,6 +5689,24 @@ void Timing_DDR4_Zen(Window *win,CELL_FUNC OutFunc,CUINT *nl, unsigned short mc)
 		PRT(IMC, attrib[1], "%3uT ", TIMING(mc, cha).CMD_Rate);
 		PRT(IMC, attrib[1], "\x20\x20%3s", ENABLED(TIMING(mc,cha).GDM));
 		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).ECC);
+	}
+	for (nc = 0; nc < MC_MATX; nc++) {
+		GridHover(	PRT(IMC,attrib[0], Header_DDR4_Zen[3][nc]),
+				(char*) Footer_DDR4_Zen[3][nc] );
+	}
+	for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+	{
+		PRT(IMC, attrib[0], "\x20\x20#%-2u", cha);
+
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).tMRD);
+		PRT(IMC, attrib[1], " %-4u", TIMING(mc, cha).tMRD_PDA);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).tMOD);
+		PRT(IMC, attrib[1], " %-4u", TIMING(mc, cha).tMOD_PDA);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tSTAG);
+
+		for (nc = 0; nc < 9; nc++) {
+			PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+		}
 	}
 }
 

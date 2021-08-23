@@ -1221,6 +1221,21 @@
 #define RSC_DDR4_ZEN_RCPAGE_COMM_CODE_EN " tRCPage ( Row Cycle Page Time ) "
 #define RSC_DDR4_ZEN_GDM_COMM_CODE_EN	" GDM ( Gear Down Mode ) "
 
+#define RSC_DDR4_ZEN_MRD_COMM_CODE_EN	\
+			" tMRD ( MRS to another MRS command, Same CS ) "
+
+#define RSC_DDR4_ZEN_MOD_COMM_CODE_EN	\
+			" tMOD ( MRS to another non-MRS command, Same CS ) "
+
+#define RSC_DDR4_ZEN_MRD_PDA_COMM_CODE_EN \
+			" tMRD_PDA ( MRS PDA to another MRS command, Same CS ) "
+
+#define RSC_DDR4_ZEN_MOD_PDA_COMM_CODE_EN \
+		" tMOD_PDA ( MRS PDA to another non-MRS command, Same CS ) "
+
+#define RSC_DDR4_ZEN_STAG_COMM_CODE_EN	\
+		" tSTAG ( Min timing between REF commands, Different CS ) "
+
 #define RSC_TASKS_SORTBY_STATE_CODE_EN		" State    "
 #define RSC_TASKS_SORTBY_RTIME_CODE_EN		" RunTime  "
 #define RSC_TASKS_SORTBY_UTIME_CODE_EN		" UserTime "
@@ -2025,6 +2040,11 @@
 #define RSC_DDR4_ZEN_CMD_CODE		"  CMD"
 #define RSC_DDR4_ZEN_GDM_CODE		"  GDM"
 #define RSC_DDR4_ZEN_ECC_CODE		"  ECC"
+#define RSC_DDR4_ZEN_MRD_CODE		" MRD:"
+#define RSC_DDR4_ZEN_MOD_CODE		" MOD:"
+#define RSC_DDR4_ZEN_MRD_PDA_CODE	"PDA  "
+#define RSC_DDR4_ZEN_MOD_PDA_CODE	"PDA  "
+#define RSC_DDR4_ZEN_STAG_CODE		" STAG"
 
 #define RSC_SYS_REGS_SPACE_CODE 	"    "
 #define RSC_SYS_REGS_NA_CODE		"  - "

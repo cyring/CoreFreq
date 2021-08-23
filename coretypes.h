@@ -1425,12 +1425,17 @@ typedef struct
 	unsigned int	tRFC1;
 	};
 	unsigned int	tRFC2,
-			tRFC4;
+			tRFC4,
+			tMRD,
+			tMOD,
+			tMRD_PDA,
+			tMOD_PDA,
+			tSTAG;
 
 	unsigned int	CMD_Rate;
 	union {
-	unsigned int	B2B;
-	  struct{
+	  unsigned int	B2B;
+	  struct {
 	  unsigned int	GDM	:  1-0,
 			BGS	:  2-1,
 			BGS_ALT :  3-2,

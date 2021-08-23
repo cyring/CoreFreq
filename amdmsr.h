@@ -1374,11 +1374,11 @@ typedef union
 	unsigned int		value;
 	struct {
 		unsigned int
-		tMRS		:  6-0,
+		tMRD		:  6-0,
 		ReservedBits1	:  8-6,
 		tMOD		: 14-8,
 		ReservedBits2	: 16-14,
-		tMRS_PDA	: 22-16,
+		tMRD_PDA	: 22-16,
 		ReservedBits3	: 24-22,
 		tMOD_PDA	: 30-24,
 		ReservedBits4	: 32-30;

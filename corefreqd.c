@@ -4714,6 +4714,21 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.BGS_ALT =
 		(Proc->Uncore.MC[mc].Channel[cha].AMD17h.BGS_ALT.value
 		& AMD_17_UMC_BGS_ALT_MASK_ON) == AMD_17_UMC_BGS_ALT_MASK_ON;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tMRD =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR13.tMRD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tMOD =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR13.tMOD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tMRD_PDA =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR13.tMRD_PDA;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tMOD_PDA =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR13.tMOD_PDA;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tSTAG =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR20.tSTAG;
   }
  }
 }
