@@ -1563,7 +1563,20 @@ typedef union
 		tRFC2		: 22-11,
 		tRFC4		: 32-22;
 	};
-} AMD_17_UMC_TIMING_DTR60;
+} AMD_17_UMC_TIMING_DTRFC;
+
+typedef union
+{	/* SMU: address = 0x5028c					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		RcvrWait	: 11-0,
+		CmdStgCnt	: 22-11,
+		ReservedBits1	: 24-22,
+		tWR_MPR 	: 30-24,
+		ReservedBits2	: 32-30;
+	};
+} AMD_17_UMC_TIMING_DTR35;
 
 typedef union
 {	/* SMU: address = { 0x5d2b4 , 0x5d2b5 , 0x5d2b6 , 0x5d2b7 }	*/

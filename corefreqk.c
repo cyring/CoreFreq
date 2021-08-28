@@ -5098,8 +5098,13 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 			SMU_AMD_INDEX_REGISTER_F17H,
 			SMU_AMD_DATA_REGISTER_F17H );
 
-    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR60,
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTRFC,
 			UMC_BAR[cha] + 0x260,
+			SMU_AMD_INDEX_REGISTER_F17H,
+			SMU_AMD_DATA_REGISTER_F17H );
+
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR35,
+			UMC_BAR[cha] + 0x28c,
 			SMU_AMD_INDEX_REGISTER_F17H,
 			SMU_AMD_DATA_REGISTER_F17H );
 

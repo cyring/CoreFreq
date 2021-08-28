@@ -4684,13 +4684,13 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR12.tREFI;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC1 =
-			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR60.tRFC1;
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTRFC.tRFC1;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC2 =
-			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR60.tRFC2;
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTRFC.tRFC2;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC4 =
-			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR60.tRFC4;
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTRFC.tRFC4;
 
 	switch(Proc->Uncore.MC[mc].Channel[cha].AMD17h.MISC.CMD_Rate) {
 	case 0b00:
@@ -4746,6 +4746,9 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRDDATA =
 		Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR22.tRDDATA_EN;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWRMPR =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR35.tWR_MPR;
   }
  }
 }

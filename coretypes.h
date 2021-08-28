@@ -1434,7 +1434,8 @@ typedef struct
 			tPHYWRD,
 			tPHYWRL,
 			tPHYRDL,
-			tRDDATA;
+			tRDDATA,
+			tWRMPR;
 
 	unsigned int	CMD_Rate;
 	union {

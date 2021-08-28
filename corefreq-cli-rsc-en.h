@@ -1250,6 +1250,9 @@
 #define RSC_DDR4_ZEN_RDDATA_COMM_CODE_EN \
 			" tRDDATA ( Read command to dfi_rddata_en delay ) "
 
+#define RSC_DDR4_ZEN_WRMPR_COMM_CODE_EN \
+			" tWRMPR ( Number of clocks greater than tMOD ) "
+
 #define RSC_TASKS_SORTBY_STATE_CODE_EN		" State    "
 #define RSC_TASKS_SORTBY_RTIME_CODE_EN		" RunTime  "
 #define RSC_TASKS_SORTBY_UTIME_CODE_EN		" UserTime "
@@ -2065,6 +2068,7 @@
 #define RSC_DDR4_ZEN_PHYRDL_CODE	" RDL]"
 #define RSC_DDR4_ZEN_RDDATA_CODE	"RDDAT"
 #define RSC_DDR4_ZEN_PHY_CODE		"A PHY"
+#define RSC_DDR4_ZEN_WRMPR_CODE 	"WRMPR"
 
 #define RSC_SYS_REGS_SPACE_CODE 	"    "
 #define RSC_SYS_REGS_NA_CODE		"  - "
