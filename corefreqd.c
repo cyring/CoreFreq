@@ -4558,14 +4558,16 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
 				Proc->Uncore.MC[mc].Channel[cha].AMD17h.Ranks;
 
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 16;
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = DIMM_Size >> 10;
-
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = DIMM_Size >> 19;
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = \
-			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
-			/ Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
+		8 << Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DAC.NumBanks;
+
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = \
+	1 << (10+Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DAC.NumRowLo);
+
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = \
+	1 << (5 + Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DAC.NumCol);
+
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = DIMM_Size >> 10;
     }
    }
 	Shm->Uncore.MC[mc].SlotCount = slotCount;

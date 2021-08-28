@@ -4947,6 +4947,18 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 	if ((SDP_CTRL.value != 0xffffffff) && (SDP_CTRL.INIT))
 	{
 		UMC_BAR[count++] = SMU_AMD_UMC_BASE_CHA_F17H(cha);
+
+		Core_AMD_SMN_Read(
+		    PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[0].DAC,
+			(SMU_AMD_UMC_BASE_CHA_F17H(0) + 0x30),
+			SMU_AMD_INDEX_REGISTER_F17H,
+			SMU_AMD_DATA_REGISTER_F17H );
+
+		Core_AMD_SMN_Read(
+		    PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[1].DAC,
+			(SMU_AMD_UMC_BASE_CHA_F17H(0) + 0x34),
+			SMU_AMD_INDEX_REGISTER_F17H,
+			SMU_AMD_DATA_REGISTER_F17H );
 	}
     }
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = count;

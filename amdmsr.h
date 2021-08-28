@@ -1150,6 +1150,24 @@ Remark: if BGS_Alt[ON][AUTO] is set then BGS[OFF]
 #define AMD_17_UMC_BGS_ALT_MASK_ON	0x000007f0
 
 typedef union
+{	/* SMU address: UMC{0,1}-DIMM{0}=0x50030; UMC{0,1}-DIMM{1}=0x50034 */
+	unsigned int		value;
+	struct
+	{
+		unsigned int
+		ReservedBits1	:  2-0,
+		NumBankGroups	:  4-2,  /* 0=None; 1=2x; 2=4x; 3=8x BGs */
+		NumRM		:  6-4,  /* 0=None; 1=2x; 2=4x; 3=8x RM */
+		ReservedBits2	:  8-6,
+		NumRowLo	: 12-8,  /* [0-8] = 10 + NumRowLo	*/
+		NumRowHi	: 16-12,
+		NumCol		: 20-16, /* [0-0xb] = 5 + NumCol	*/
+		NumBanks	: 22-20, /* 0=8x; 1=16x; 2=32x Banks	*/
+		ReservedBits3	: 32-22;
+	};
+} AMD_17_UMC_DRAM_ADDR_CFG;
+
+typedef union
 {	/* SMU: address = 0x50080					*/
 	unsigned int		value;
 	struct

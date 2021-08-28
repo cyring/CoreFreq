@@ -592,6 +592,7 @@ typedef struct
 	/* 48h */	NHM_IMC_DOD_CHANNEL		DOD;	/* 32 bits    */
 	/* 80h */	SNB_EP_DIMM_MTR 		MTR;	/* 32 bits    */
 	/* 40h */	AMD_0F_DRAM_CS_BASE_ADDR	MBA;	/* 32 bits    */
+	/* 5003{0,4}h*/ AMD_17_UMC_DRAM_ADDR_CFG	DAC;	/* 32 bits    */
 		} DIMM[MC_MAX_DIMM];
 	} Channel[MC_MAX_CHA];
 
