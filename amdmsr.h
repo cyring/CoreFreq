@@ -1534,7 +1534,25 @@ typedef union
 		tCKE		: 29-24, /*	Clock Enable Time	*/
 		ReservedBits3	: 32-29;
 	};
-} AMD_17_UMC_TIMING_DTR54;
+} AMD_17_UMC_TIMING_DTR21;
+
+typedef union
+{	/* SMU: address = 0x50258					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		tRDDATA_EN	:  7-0,
+		ReservedBits1	:  8-7,
+		tPHY_WRLAT	: 13-8,
+		ReservedBits2	: 16-13,
+		tPHY_RDLAT	: 22-16,
+		ReservedBits3	: 24-22,
+		tPHY_WRDATA	: 27-24,
+		ReservedBits4	: 28-27,
+		tPARIN_LAT	: 30-28,
+		ReservedBits5	: 32-30;
+	};
+} AMD_17_UMC_TIMING_DTR22;
 
 typedef union
 {	/* SMU: address = { 0x50260 , 0x50261 , 0x50262 , 0x50263 }	*/

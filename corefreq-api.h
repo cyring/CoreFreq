@@ -579,7 +579,8 @@ typedef struct
 				AMD_17_UMC_TIMING_DTR12 DTR12;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR13 DTR13;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR20 DTR20;	/* 32 bits   */
-				AMD_17_UMC_TIMING_DTR54 DTR54;	/* 32 bits   */
+				AMD_17_UMC_TIMING_DTR21 DTR21;	/* 32 bits   */
+				AMD_17_UMC_TIMING_DTR22 DTR22;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR60 DTR60;	/* 32 bits   */
 			    struct {
 				unsigned int value;		/* 32 bits   */

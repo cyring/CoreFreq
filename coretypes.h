@@ -1430,7 +1430,11 @@ typedef struct
 			tMOD,
 			tMRD_PDA,
 			tMOD_PDA,
-			tSTAG;
+			tSTAG,
+			tPHYWRD,
+			tPHYWRL,
+			tPHYRDL,
+			tRDDATA;
 
 	unsigned int	CMD_Rate;
 	union {

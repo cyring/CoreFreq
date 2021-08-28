@@ -4678,7 +4678,7 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 		Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR10.tWrRdScDLR;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE =
-			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR54.tCKE;
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR21.tCKE;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR12.tREFI;
@@ -4734,6 +4734,18 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tSTAG =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR20.tSTAG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tPHYWRD =
+		Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR22.tPHY_WRDATA;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tPHYWRL =
+		Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR22.tPHY_WRLAT;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tPHYRDL =
+		Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR22.tPHY_RDLAT;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRDDATA =
+		Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR22.tRDDATA_EN;
   }
  }
 }
