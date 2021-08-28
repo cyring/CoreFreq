@@ -11043,6 +11043,7 @@ void Core_AMD_Family_15h_Temp(CORE_RO *Core)
 void CTL_AMD_Family_17h_Temp(CORE_RO *Core)
 {
 	TCTL_REGISTER TctlSensor = {.value = 0};
+	TCTL_THERM_TRIP ThermTrip = {.value = 0};
 
 	Core_AMD_SMN_Read(	TctlSensor,
 				SMU_AMD_THM_TCTL_REGISTER_F17H,
@@ -11061,11 +11062,21 @@ void CTL_AMD_Family_17h_Temp(CORE_RO *Core)
 	} else {
 		Core->PowerThermal.Param.Offset[1] = 0;
 	}
+
+	Core_AMD_SMN_Read(	ThermTrip,
+				SMU_AMD_THM_TCTL_REGISTER_F17H + 0x8,
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H );
+
+	if (ThermTrip.THERM_TP_EN) {
+		Core->PowerThermal.Events = ThermTrip.THERM_TP << 0;
+	}
 }
 
 void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 {
 	TCCD_REGISTER TccdSensor = {.value = 0};
+	TCTL_THERM_TRIP ThermTrip = {.value = 0};
 
 	Core_AMD_SMN_Read(	TccdSensor,
 				(SMU_AMD_THM_TCTL_CCD_REGISTER_F17H
@@ -11080,6 +11091,15 @@ void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 		Core->PowerThermal.Param.Offset[1] = 49;
 	} else {
 		Core->PowerThermal.Param.Offset[1] = 0;
+	}
+
+	Core_AMD_SMN_Read(	ThermTrip,
+				SMU_AMD_THM_TCTL_REGISTER_F17H + 0x8,
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H );
+
+	if (ThermTrip.THERM_TP_EN) {
+		Core->PowerThermal.Events = ThermTrip.THERM_TP << 0;
 	}
 }
 

@@ -980,14 +980,58 @@ typedef union
 		TmpMaxDiffUp	:  7-5,  /* Family: 12h, 14h, 15h	*/
 		TmpSlewDnEn	:  8-7,  /* Family: 12h, 14h, 15h	*/
 		PerStepTimeDn	: 13-8,  /* Family: 12h, 14h, 15h	*/
-		ReservedBits1	: 16-13,
+		ReservedBits	: 16-13,
 		CurTempTJselect : 18-16, /* Family: 15h, 16h		*/
-		ReservedBits2	: 19-18,
+		CurTempTJslewSel: 19-18,
 		CurTempRangeSel : 20-19, /* Family: 17h 		*/
-		ReservedBits3	: 21-20,
+		MCM_EN		: 21-20,
 		CurTmp		: 32-21; /* Family: 12h, 14h, 15h, 17h	*/
 	};
 } TCTL_REGISTER;
+
+typedef union
+{
+	unsigned int		value;	/* Family: 17h, 19h @ SMU(0x59004) */
+	struct
+	{
+		unsigned int
+		HTC_EN		:  1-0,  /* 1: HTC feature is enabled	*/
+		ReservedBits1	:  2-1,
+		EXTERNAL_PROCHOT:  3-2,
+		INTERNAL_PROCHOT:  4-3,
+		HTC_ACTIVE	:  5-4,
+		HTC_ACTIVE_LOG	:  6-5,  /* 1: HTC_ACTIVE is asserted	*/
+		ReservedBits2	:  8-6,
+		HTC_DIAG	:  9-8,  /* 1: Trigger HTC iff ACT & EN */
+		PROCHOT_PIN_OUT : 10-9,  /* 1: Disable HTC to trigger PROCHOT*/
+		HTC_TO_IH_EN	: 11-10, /* Internal PROCHOT Int Handler */
+		PROCHOT_TO_IH_EN: 12-11, /* External PROCHOT Int Handler */
+		PROCHOT_EVENTSRC: 15-12, /* Select 1=Ext, 2=Internal, 4=Both */
+		PROCHOT_PIN_IN	: 16-15, /* 1: Disable external PROCHOT */
+		HTC_TMP_LIMIT	: 23-16, /* HTC Temperature Limit	*/
+		HTC_HYST_LIMIT	: 27-23,
+		HTC_SLEW_SEL	: 29-27,
+		ReservedBits3	: 32-29;
+	};
+} TCTL_HTC;
+
+typedef union
+{
+	unsigned int		value;	/* Family: 17h, 19h @ SMU(0x59008) */
+	struct
+	{
+		unsigned int
+		CTF_PAD_POLARITY:  1-0,
+		THERM_TP	:  2-1,  /* Asserted if THERM_TP_EN == 1 */
+		CTF_THRESHOLD	:  3-2,  /* CTF_THRESHOLD_EXCEEDED */
+		THERM_TP_SENSE	:  4-3,
+		ReservedBits1	:  5-4,
+		THERM_TP_EN	:  6-5,  /* 1: ThermTrip is enabled	*/
+		THERM_TP_LIMIT	: 14-6,
+		ReservedBits2	: 31-14,
+		SW_THERM_TP	: 32-31; /* 1: Trigger ThermTrip (R/O)	*/
+	};
+} TCTL_THERM_TRIP;
 
 typedef struct
 {	/* Family: [15_00h - 15_0Fh]	Bus:0h,Dev:18h,Func:3h,Reg:1D4h */
