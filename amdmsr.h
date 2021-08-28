@@ -1190,6 +1190,29 @@ typedef union
 } AMD_17_UMC_SDP_CTRL;
 
 typedef union
+{	/* SMU: address = 0x5012c					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		DisAutoRefresh	:  1-0,  /* Disable periodic refresh	*/
+		ReservedBits1	:  3-1,
+		LpDis		:  4-3,  /* Disable DFI low power requests */
+		UrgRefLimit	:  7-4,  /* UrgRefLimit Refresh range [1-6] */
+		ReservedBits2	:  8-7,
+		SubUrgRef	: 11-8,  /* SubUrgRefLowerBound <= UrgRefLimit*/
+		ReservedBits3	: 16-11,
+		AutoRef_DDR4	: 19-16, /* {1X,2X,4X,RSVD,RSVD,OTF-2X,OTF-4X}*/
+		ReservedBits4	: 20-19,
+		PchgCmdSep	: 24-20, /* CMD separation between PRE CMDs */
+		AutoRefCmdSep	: 28-24, /* CMD separation between REF CMDs */
+		PwrDownEn	: 29-28, /* 1: Enable DRAM Power Down Mode */
+		PwrDownMode	: 30-29, /* 0: Full; 1: Partial Channel PD */
+		AggrPwrDownEn	: 31-30, /* 1: Aggressive Power Down Mode */
+		RefCntMode	: 32-31; /* SPAZ counter: 0: SRX; 1: ARB */
+	};
+} AMD_17_UMC_SPAZ_CTRL;
+
+typedef union
 {	/* SMU: address = 0x5014c					*/
 	unsigned int		value;
 	struct

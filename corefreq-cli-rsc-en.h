@@ -1236,6 +1236,8 @@
 #define RSC_DDR4_ZEN_STAG_COMM_CODE_EN	\
 		" tSTAG ( Min timing between REF commands, Different CS ) "
 
+#define RSC_DDR4_ZEN_PDM_COMM_CODE_EN	" PDM ( DRAM Power Down Mode ) "
+
 #define RSC_TASKS_SORTBY_STATE_CODE_EN		" State    "
 #define RSC_TASKS_SORTBY_RTIME_CODE_EN		" RunTime  "
 #define RSC_TASKS_SORTBY_UTIME_CODE_EN		" UserTime "
@@ -2045,6 +2047,7 @@
 #define RSC_DDR4_ZEN_MRD_PDA_CODE	"PDA  "
 #define RSC_DDR4_ZEN_MOD_PDA_CODE	"PDA  "
 #define RSC_DDR4_ZEN_STAG_CODE		" STAG"
+#define RSC_DDR4_ZEN_PDM_CODE		"  PDM"
 
 #define RSC_SYS_REGS_SPACE_CODE 	"    "
 #define RSC_SYS_REGS_NA_CODE		"  - "

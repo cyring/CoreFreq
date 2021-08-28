@@ -4715,6 +4715,9 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 		(Proc->Uncore.MC[mc].Channel[cha].AMD17h.BGS_ALT.value
 		& AMD_17_UMC_BGS_ALT_MASK_ON) == AMD_17_UMC_BGS_ALT_MASK_ON;
 
+	Shm->Uncore.MC[mc].Channel[cha].Timing.PDM =
+		Proc->Uncore.MC[mc].Channel[cha].AMD17h.SPAZ.PwrDownEn;
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tMRD =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR13.tMRD;
 

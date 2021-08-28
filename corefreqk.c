@@ -5001,6 +5001,11 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 	    }
 	  }
 	}
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.SPAZ,
+			UMC_BAR[cha] + 0x12c,
+			SMU_AMD_INDEX_REGISTER_F17H,
+			SMU_AMD_DATA_REGISTER_F17H );
+
     Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.MISC,
 			UMC_BAR[cha] + 0x200,
 			SMU_AMD_INDEX_REGISTER_F17H,

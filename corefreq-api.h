@@ -554,7 +554,8 @@ typedef struct
 			struct {
 	/* 88h */		AMD_0F_DRAM_TIMING_LOW	DTRL;	/* 32 bits    */
 			} AMD0Fh;
-			struct {
+			struct
+			{
 				unsigned int		Ranks;
 				AMD_17_UMC_ECC_CAP_HI	ECC;	/* 32 bits   */
 			  struct {
@@ -563,6 +564,7 @@ typedef struct
 			    }				Chip,	/* 32 bits   */
 							Mask;	/* 32 bits   */
 			  } CHIP[4][2];
+				AMD_17_UMC_SPAZ_CTRL	SPAZ;	/* 32 bits   */
 				AMD_17_UMC_CFG_MISC	MISC;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR1	DTR1;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR2	DTR2;	/* 32 bits   */
@@ -619,11 +621,11 @@ typedef struct
 	/* 0F00h */	SOC_MC_DTR2		DTR2;		/* 32 bits    */
 	/* 0F00h */	SOC_MC_DTR3		DTR3;		/* 32 bits    */
 	/* 0F00h */	SOC_MC_DRFC		DRFC;		/* 32 bits    */
-	/* 0F00h */	SOC_MC_BIOS_CFG		BIOS_CFG;	/* 32 bits    */
+	/* 0F00h */	SOC_MC_BIOS_CFG 	BIOS_CFG;	/* 32 bits    */
 		} SLM;
 		struct {
 	/* 3:0-48h */	NHM_IMC_CONTROL 	CONTROL;	/* 32 bits    */
-	/* 3:0 4Ch */	NHM_IMC_STATUS		STATUS;		/* 32 bits    */
+	/* 3:0 4Ch */	NHM_IMC_STATUS		STATUS; 	/* 32 bits    */
 		} NHM;
 		struct {
 	/* 5004h */	SNB_IMC_MAD_CHANNEL	MAD0,		/* 32 bits    */
