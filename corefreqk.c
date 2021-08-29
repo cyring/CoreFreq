@@ -4737,7 +4737,8 @@ void SoC_SKL_VTD(void)
   }
 }
 
-static PCI_CALLBACK SKL_HOST(struct pci_dev *dev, void (*Query)(void __iomem*))
+static PCI_CALLBACK SKL_HOST(struct pci_dev *dev, void (*Query)(void __iomem*),
+				unsigned long long wsize)
 {
 	pci_read_config_dword(dev, 0xe4,
 				&PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_A.value);
@@ -4750,12 +4751,12 @@ static PCI_CALLBACK SKL_HOST(struct pci_dev *dev, void (*Query)(void __iomem*))
 
 	SoC_SKL_VTD();
 
-	return (Router(dev, 0x48, 64, 0x8000, Query));
+	return (Router(dev, 0x48, 64, wsize, Query));
 }
 
 static PCI_CALLBACK SKL_IMC(struct pci_dev *dev)
 {
-	return (SKL_HOST(dev, Query_SKL_IMC));
+	return (SKL_HOST(dev, Query_SKL_IMC, 0x8000));
 }
 
 /* TODO(Hardware missing)
@@ -4787,12 +4788,12 @@ static PCI_CALLBACK CML_PCH(struct pci_dev *dev)
 
 static PCI_CALLBACK RKL_IMC(struct pci_dev *dev)
 {	/* Same address offsets as used in Skylake			*/
-	return (SKL_HOST(dev, Query_RKL_IMC));
+	return (SKL_HOST(dev, Query_RKL_IMC, 0x8000));
 }
 
 static PCI_CALLBACK TGL_IMC(struct pci_dev *dev)
 {	/* Some address offsets differ from Rocket Lake.		*/
-	return (SKL_HOST(dev, Query_TGL_IMC));
+	return (SKL_HOST(dev, Query_TGL_IMC, 0x20000));
 }
 
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev)

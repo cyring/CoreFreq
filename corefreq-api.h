@@ -1227,6 +1227,8 @@ typedef struct
 #define DID_INTEL_TIGERLAKE_U4_IMC	0x9a14
 #define DID_INTEL_TIGERLAKE_H_IMC	0x9a36
 /* Source: 11th Generation Intel® Core™ Processor Desktop Datasheet Vol1 */
+#define DID_INTEL_TIGERLAKE_UP3_IMC	0xa082
+#define DID_INTEL_TIGERLAKE_UP4_IMC	0xa087
 #define DID_INTEL_ROCKETLAKE_S_8C_IMC_HB 0x4c43
 #define DID_INTEL_ROCKETLAKE_S_6C_IMC_HB 0x4c53
 /* Source: Intel 500 Series Chipset Family Platform Controller Hub	*/

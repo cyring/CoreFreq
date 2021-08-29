@@ -5236,6 +5236,10 @@ void PCI_Intel(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core,unsigned short DID)
 		RKL_CAP(Shm, Proc, Core);
 		RKL_IMC(Shm, Proc);
 		break;
+	case DID_INTEL_TIGERLAKE_UP3_IMC:
+	case DID_INTEL_TIGERLAKE_UP4_IMC:
+		SET_CHIPSET(IC_H510);
+		break;
 	case DID_INTEL_ROCKETLAKE_H510_PCH:
 		SET_CHIPSET(IC_H510);
 		break;

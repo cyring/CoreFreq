@@ -1538,6 +1538,7 @@ static PCI_CALLBACK CML_PCH(struct pci_dev *dev) ;
 #define RKL_PCH CML_PCH
 static PCI_CALLBACK RKL_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK TGL_IMC(struct pci_dev *dev) ;
+#define TGL_PCH CML_PCH
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev) ;
 #ifdef CONFIG_AMD_NB
@@ -2168,6 +2169,14 @@ static struct pci_device_id PCI_Kabylake_ids[] = {
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_TIGERLAKE_H_IMC),
 		.driver_data = (kernel_ulong_t) TGL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_TIGERLAKE_UP3_IMC),
+		.driver_data = (kernel_ulong_t) TGL_PCH
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_TIGERLAKE_UP4_IMC),
+		.driver_data = (kernel_ulong_t) TGL_PCH
 	},
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_ROCKETLAKE_S_8C_IMC_HB),
