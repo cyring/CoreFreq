@@ -6984,7 +6984,7 @@ Window *CreateSysInfo(unsigned long long id)
 			break;
 		case SCANKEY_SHIFT_b:
 			wSysInfo->matrix.select.row = Draw.SmbIndex;
-			/* fallthrough */
+			fallthrough;
 		default:
 			StoreWindow(wSysInfo,	.key.Enter, MotionEnter_Cell);
 			break;
@@ -7607,7 +7607,7 @@ unsigned int MultiplierIsRatio(unsigned int cpu, unsigned int multiplier)
 			|| (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON)) {
 				break;
 			}
-			/* Fallthrough */
+			fallthrough;
 		default:
 			if (Shm->Cpu[cpu].Boost[boost] == multiplier) {
 				return (1);
@@ -9241,7 +9241,7 @@ int Shortcut(SCANKEY *scan)
 	if (!IsDead(&winList)) {
 		return (-1);
 	}
-	/* Fallthrough */
+	fallthrough;
     case SCANKEY_PLUS:
 	if ((Draw.Disposal == D_MAINVIEW)
 	&&  (Draw.cpuScroll < (Shm->Proc.CPU.Count - Draw.Area.MaxRows)))
@@ -9255,7 +9255,7 @@ int Shortcut(SCANKEY *scan)
 	if (!IsDead(&winList)) {
 		return (-1);
 	}
-	/* Fallthrough */
+	fallthrough;
     case SCANKEY_MINUS:
 	if ((Draw.Disposal == D_MAINVIEW) && (Draw.cpuScroll > 0)) {
 		Draw.cpuScroll--;
@@ -12008,7 +12008,7 @@ int Shortcut(SCANKEY *scan)
     case (BOXKEY_TDP_UNCORE	| PL1):
     case (BOXKEY_TDP_RAM	| PL1):
     case (BOXKEY_TDP_PLATFORM	| PL1):
-	/* Fallthrough */
+	fallthrough;
     case (BOXKEY_TDP_PKG	| PL2):
     case (BOXKEY_TDP_CORES	| PL2):
     case (BOXKEY_TDP_UNCORE	| PL2):
@@ -12118,7 +12118,7 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_PL1_UNCORE_LIM_ON:
     case BOXKEY_PL1_RAM_LIM_ON:
     case BOXKEY_PL1_PLT_LIM_ON:
-	/* Fallthrough */
+	fallthrough;
     case BOXKEY_PL2_PKG_LIM_ON:
     case BOXKEY_PL2_CORE_LIM_ON:
     case BOXKEY_PL2_UNCORE_LIM_ON:
@@ -12143,7 +12143,7 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_PL1_UNCORE_LIM_OFF:
     case BOXKEY_PL1_RAM_LIM_OFF:
     case BOXKEY_PL1_PLT_LIM_OFF:
-	/* Fallthrough */
+	fallthrough;
     case BOXKEY_PL2_PKG_LIM_OFF:
     case BOXKEY_PL2_CORE_LIM_OFF:
     case BOXKEY_PL2_UNCORE_LIM_OFF:
@@ -12168,7 +12168,7 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_PL1_UNCORE_CLAMP_ON:
     case BOXKEY_PL1_RAM_CLAMP_ON:
     case BOXKEY_PL1_PLT_CLAMP_ON:
-	/* Fallthrough */
+	fallthrough;
     case BOXKEY_PL2_PKG_CLAMP_ON:
     case BOXKEY_PL2_CORE_CLAMP_ON:
     case BOXKEY_PL2_UNCORE_CLAMP_ON:
@@ -12193,7 +12193,7 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_PL1_UNCORE_CLAMP_OFF:
     case BOXKEY_PL1_RAM_CLAMP_OFF:
     case BOXKEY_PL1_PLT_CLAMP_OFF:
-	/* Fallthrough */
+	fallthrough;
     case BOXKEY_PL2_PKG_CLAMP_OFF:
     case BOXKEY_PL2_CORE_CLAMP_OFF:
     case BOXKEY_PL2_UNCORE_CLAMP_OFF:
@@ -12877,7 +12877,7 @@ int Shortcut(SCANKEY *scan)
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) == 0) {
 		break;
 	}
-	/* fallthrough */
+	fallthrough;
     case SCANKEY_e:
     case SCANKEY_o:
     case SCANKEY_p:
@@ -16258,7 +16258,7 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 					Shm->SysGate.taskList[idx].systime );
 			break;
 		case F_PID:
-			/* fallthrough */
+			fallthrough;
 		case F_COMM:
 			len = snprintf( Buffer, TASK_COMM_LEN+11+2, "%s(%d)",
 					Shm->SysGate.taskList[idx].comm,
@@ -17167,13 +17167,13 @@ void Draw_Card_Core(Layer *layer, Card *card)
 	if ( !(_cpu == Shm->Proc.Service.Core) ) {
 		break;
 	}
-	/* Fallthrough */
+	fallthrough;
     case FORMULA_SCOPE_CORE:
 	if (	!( (Shm->Cpu[_cpu].Topology.ThreadID == 0)
 		|| (Shm->Cpu[_cpu].Topology.ThreadID == -1)) ) {
 		break;
 	}
-	/* Fallthrough */
+	fallthrough;
     case FORMULA_SCOPE_SMT:
 	{
 	unsigned int digit[3];
@@ -17676,7 +17676,7 @@ void Emergency(int caught)
 		    }
 	    }
 	  }
-		/* Fallthrough */
+		fallthrough;
 	case SIGBUS:
 	case SIGFPE:
 	case SIGHUP:	/* Terminal lost */
@@ -18003,7 +18003,7 @@ int main(int argc, char *argv[])
 		}
 		break;
 	    case 'd':
-		/* Fallthrough */
+		fallthrough;
 	    case 't':
 		if (++idx < argc) {
 			struct {

@@ -92,7 +92,7 @@ void Core_ComputeThermalLimits(CPU_STRUCT *Cpu, struct FLIP_FLOP *CFlip)
 						Cpu->PowerThermal.Limit );
 }
 
-static inline void ComputeThermal_None( struct FLIP_FLOP *CFlip,
+static void ComputeThermal_None( struct FLIP_FLOP *CFlip,
 					SHM_STRUCT *Shm,
 					unsigned int cpu )
 {
@@ -105,7 +105,7 @@ static inline void ComputeThermal_None( struct FLIP_FLOP *CFlip,
 #define ComputeThermal_None_PerCore	ComputeThermal_None
 #define ComputeThermal_None_PerPkg	ComputeThermal_None
 
-static void (*ComputeThermal_None_Matrix[4])(	struct FLIP_FLOP*,
+static void (*ComputeThermal_None_Matrix[4])( struct FLIP_FLOP*,
 						SHM_STRUCT*,
 						unsigned int ) = \
 {
@@ -115,9 +115,9 @@ static void (*ComputeThermal_None_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeThermal_None_PerPkg
 };
 
-static inline void ComputeThermal_Intel(struct FLIP_FLOP *CFlip,
+static void ComputeThermal_Intel( struct FLIP_FLOP *CFlip,
 					SHM_STRUCT *Shm,
-					unsigned int cpu)
+					unsigned int cpu )
 {
 	COMPUTE_THERMAL(INTEL,
 			CFlip->Thermal.Temp,
@@ -129,9 +129,9 @@ static inline void ComputeThermal_Intel(struct FLIP_FLOP *CFlip,
 
 #define ComputeThermal_Intel_PerSMT	ComputeThermal_Intel
 
-static inline void ComputeThermal_Intel_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeThermal_Intel_PerCore( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
-						unsigned int cpu)
+						unsigned int cpu )
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1))
@@ -140,7 +140,7 @@ static inline void ComputeThermal_Intel_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeThermal_Intel_PerPkg( struct FLIP_FLOP *CFlip,
+static void ComputeThermal_Intel_PerPkg( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -150,7 +150,7 @@ static inline void ComputeThermal_Intel_PerPkg( struct FLIP_FLOP *CFlip,
 	}
 }
 
-static void (*ComputeThermal_Intel_Matrix[4])(	struct FLIP_FLOP*,
+static void (*ComputeThermal_Intel_Matrix[4])( struct FLIP_FLOP*,
 						SHM_STRUCT*,
 						unsigned int ) = \
 {
@@ -160,7 +160,7 @@ static void (*ComputeThermal_Intel_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeThermal_Intel_PerPkg
 };
 
-static inline void ComputeThermal_AMD(	struct FLIP_FLOP *CFlip,
+static void ComputeThermal_AMD( struct FLIP_FLOP *CFlip,
 					SHM_STRUCT *Shm,
 					unsigned int cpu )
 {
@@ -174,7 +174,7 @@ static inline void ComputeThermal_AMD(	struct FLIP_FLOP *CFlip,
 
 #define ComputeThermal_AMD_PerSMT	ComputeThermal_AMD
 
-static inline void ComputeThermal_AMD_PerCore(	struct FLIP_FLOP *CFlip,
+static void ComputeThermal_AMD_PerCore( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -185,7 +185,7 @@ static inline void ComputeThermal_AMD_PerCore(	struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeThermal_AMD_PerPkg(	struct FLIP_FLOP *CFlip,
+static void ComputeThermal_AMD_PerPkg(	struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -195,7 +195,7 @@ static inline void ComputeThermal_AMD_PerPkg(	struct FLIP_FLOP *CFlip,
 	}
 }
 
-static void (*ComputeThermal_AMD_Matrix[4])(	struct FLIP_FLOP*,
+static void (*ComputeThermal_AMD_Matrix[4])( struct FLIP_FLOP*,
 						SHM_STRUCT*,
 						unsigned int ) = \
 {
@@ -205,9 +205,9 @@ static void (*ComputeThermal_AMD_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeThermal_AMD_PerPkg
 };
 
-static inline void ComputeThermal_AMD_0Fh(	struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
-						unsigned int cpu )
+static void ComputeThermal_AMD_0Fh( struct FLIP_FLOP *CFlip,
+					SHM_STRUCT *Shm,
+					unsigned int cpu )
 {
 	COMPUTE_THERMAL(AMD_0Fh,
 			CFlip->Thermal.Temp,
@@ -219,7 +219,7 @@ static inline void ComputeThermal_AMD_0Fh(	struct FLIP_FLOP *CFlip,
 
 #define ComputeThermal_AMD_0Fh_PerSMT	ComputeThermal_AMD_0Fh
 
-static inline void ComputeThermal_AMD_0Fh_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeThermal_AMD_0Fh_PerCore( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -230,7 +230,7 @@ static inline void ComputeThermal_AMD_0Fh_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeThermal_AMD_0Fh_PerPkg(struct FLIP_FLOP *CFlip,
+static void ComputeThermal_AMD_0Fh_PerPkg( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -240,9 +240,9 @@ static inline void ComputeThermal_AMD_0Fh_PerPkg(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static void (*ComputeThermal_AMD_0Fh_Matrix[4])(struct FLIP_FLOP*,
-						SHM_STRUCT*,
-						unsigned int) = \
+static void (*ComputeThermal_AMD_0Fh_Matrix[4])( struct FLIP_FLOP*,
+							SHM_STRUCT*,
+							unsigned int ) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputeThermal_None,
 	[FORMULA_SCOPE_SMT ] = ComputeThermal_AMD_0Fh_PerSMT,
@@ -250,9 +250,9 @@ static void (*ComputeThermal_AMD_0Fh_Matrix[4])(struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeThermal_AMD_0Fh_PerPkg
 };
 
-static inline void ComputeThermal_AMD_15h(	struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
-						unsigned int cpu )
+static void ComputeThermal_AMD_15h( struct FLIP_FLOP *CFlip,
+					SHM_STRUCT *Shm,
+					unsigned int cpu )
 {
     if (Shm->Cpu[cpu].Topology.CoreID == 0)
     {
@@ -267,7 +267,7 @@ static inline void ComputeThermal_AMD_15h(	struct FLIP_FLOP *CFlip,
 
 #define ComputeThermal_AMD_15h_PerSMT	ComputeThermal_AMD_15h
 
-static inline void ComputeThermal_AMD_15h_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeThermal_AMD_15h_PerCore( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -277,7 +277,7 @@ static inline void ComputeThermal_AMD_15h_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeThermal_AMD_15h_PerPkg(struct FLIP_FLOP *CFlip,
+static void ComputeThermal_AMD_15h_PerPkg( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -288,8 +288,8 @@ static inline void ComputeThermal_AMD_15h_PerPkg(struct FLIP_FLOP *CFlip,
 }
 
 static void (*ComputeThermal_AMD_15h_Matrix[4])(struct FLIP_FLOP*,
-						SHM_STRUCT*,
-						unsigned int) = \
+							SHM_STRUCT*,
+							unsigned int) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputeThermal_None,
 	[FORMULA_SCOPE_SMT ] = ComputeThermal_AMD_15h_PerSMT,
@@ -297,9 +297,9 @@ static void (*ComputeThermal_AMD_15h_Matrix[4])(struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeThermal_AMD_15h_PerPkg
 };
 
-static inline void ComputeThermal_AMD_17h(	struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
-						unsigned int cpu )
+static void ComputeThermal_AMD_17h( struct FLIP_FLOP *CFlip,
+					SHM_STRUCT *Shm,
+					unsigned int cpu )
 {
 	COMPUTE_THERMAL(AMD_17h,
 			CFlip->Thermal.Temp,
@@ -311,7 +311,7 @@ static inline void ComputeThermal_AMD_17h(	struct FLIP_FLOP *CFlip,
 
 #define ComputeThermal_AMD_17h_PerSMT	ComputeThermal_AMD_17h
 
-static inline void ComputeThermal_AMD_17h_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeThermal_AMD_17h_PerCore( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -322,7 +322,7 @@ static inline void ComputeThermal_AMD_17h_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeThermal_AMD_17h_PerPkg(struct FLIP_FLOP *CFlip,
+static void ComputeThermal_AMD_17h_PerPkg( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -351,7 +351,7 @@ void Core_ComputeVoltageLimits(CPU_STRUCT *Cpu, struct FLIP_FLOP *CFlip)
 						Cpu->Sensors.Voltage.Limit );
 }
 
-static inline void ComputeVoltage_None( struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_None( struct FLIP_FLOP *CFlip,
 					SHM_STRUCT *Shm,
 					unsigned int cpu )
 {
@@ -376,7 +376,7 @@ static void (*ComputeVoltage_None_Matrix[4])(	struct FLIP_FLOP*,
 
 #define ComputeVoltage_Intel_Matrix	ComputeVoltage_None_Matrix
 
-static inline void ComputeVoltage_Intel_Core2( struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_Core2( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {	/* Intel Core 2 Extreme Datasheet §3.3-Table 2			*/
@@ -389,7 +389,7 @@ static inline void ComputeVoltage_Intel_Core2( struct FLIP_FLOP *CFlip,
 
 #define ComputeVoltage_Intel_Core2_PerSMT	ComputeVoltage_Intel_Core2
 
-static inline void ComputeVoltage_Intel_Core2_PerCore( struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_Core2_PerCore( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -400,7 +400,7 @@ static inline void ComputeVoltage_Intel_Core2_PerCore( struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeVoltage_Intel_Core2_PerPkg(	struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_Core2_PerPkg( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -410,7 +410,7 @@ static inline void ComputeVoltage_Intel_Core2_PerPkg(	struct FLIP_FLOP *CFlip,
 	}
 }
 
-static void (*ComputeVoltage_Intel_Core2_Matrix[4])(	struct FLIP_FLOP*,
+static void (*ComputeVoltage_Intel_Core2_Matrix[4])( struct FLIP_FLOP*,
 							SHM_STRUCT*,
 							unsigned int ) = \
 {
@@ -420,7 +420,7 @@ static void (*ComputeVoltage_Intel_Core2_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_Intel_Core2_PerPkg
 };
 
-static inline void ComputeVoltage_Intel_SoC( struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_SoC( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {	/* Intel Valleyview-D/M SoC					*/
@@ -433,7 +433,7 @@ static inline void ComputeVoltage_Intel_SoC( struct FLIP_FLOP *CFlip,
 
 #define ComputeVoltage_Intel_SoC_PerSMT	ComputeVoltage_Intel_SoC
 
-static inline void ComputeVoltage_Intel_SoC_PerCore( struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_SoC_PerCore( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -444,7 +444,7 @@ static inline void ComputeVoltage_Intel_SoC_PerCore( struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeVoltage_Intel_SoC_PerPkg(	struct FLIP_FLOP *CFlip,
+static  void ComputeVoltage_Intel_SoC_PerPkg( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -454,7 +454,7 @@ static inline void ComputeVoltage_Intel_SoC_PerPkg(	struct FLIP_FLOP *CFlip,
 	}
 }
 
-static void (*ComputeVoltage_Intel_SoC_Matrix[4])(	struct FLIP_FLOP*,
+static void (*ComputeVoltage_Intel_SoC_Matrix[4])( struct FLIP_FLOP*,
 							SHM_STRUCT*,
 							unsigned int ) = \
 {
@@ -464,7 +464,7 @@ static void (*ComputeVoltage_Intel_SoC_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_Intel_SoC_PerPkg
 };
 
-static inline void ComputeVoltage_Intel_SNB(	struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_SNB( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -477,7 +477,7 @@ static inline void ComputeVoltage_Intel_SNB(	struct FLIP_FLOP *CFlip,
 
 #define ComputeVoltage_Intel_SNB_PerSMT 	ComputeVoltage_Intel_SNB
 
-static inline void ComputeVoltage_Intel_SNB_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_SNB_PerCore( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -488,7 +488,7 @@ static inline void ComputeVoltage_Intel_SNB_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeVoltage_Intel_SNB_PerPkg(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_SNB_PerPkg( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -498,7 +498,7 @@ static inline void ComputeVoltage_Intel_SNB_PerPkg(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static void (*ComputeVoltage_Intel_SNB_Matrix[4])(	struct FLIP_FLOP*,
+static void (*ComputeVoltage_Intel_SNB_Matrix[4])( struct FLIP_FLOP*,
 							SHM_STRUCT*,
 							unsigned int ) = \
 {
@@ -508,7 +508,7 @@ static void (*ComputeVoltage_Intel_SNB_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_Intel_SNB_PerPkg
 };
 
-static inline void ComputeVoltage_Intel_SKL_X( struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_SKL_X( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -521,7 +521,7 @@ static inline void ComputeVoltage_Intel_SKL_X( struct FLIP_FLOP *CFlip,
 
 #define ComputeVoltage_Intel_SKL_X_PerSMT	ComputeVoltage_Intel_SKL_X
 
-static inline void ComputeVoltage_Intel_SKL_X_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_SKL_X_PerCore( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -532,7 +532,7 @@ static inline void ComputeVoltage_Intel_SKL_X_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeVoltage_Intel_SKL_X_PerPkg(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_SKL_X_PerPkg( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -542,7 +542,7 @@ static inline void ComputeVoltage_Intel_SKL_X_PerPkg(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static void (*ComputeVoltage_Intel_SKL_X_Matrix[4])(	struct FLIP_FLOP*,
+static void (*ComputeVoltage_Intel_SKL_X_Matrix[4])( struct FLIP_FLOP*,
 							SHM_STRUCT*,
 							unsigned int ) = \
 {
@@ -552,7 +552,7 @@ static void (*ComputeVoltage_Intel_SKL_X_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_Intel_SKL_X_PerPkg
 };
 
-static inline void ComputeVoltage_AMD(	struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD( struct FLIP_FLOP *CFlip,
 					SHM_STRUCT *Shm,
 					unsigned int cpu )
 {
@@ -565,7 +565,7 @@ static inline void ComputeVoltage_AMD(	struct FLIP_FLOP *CFlip,
 
 #define ComputeVoltage_AMD_PerSMT	ComputeVoltage_AMD
 
-static inline void ComputeVoltage_AMD_PerCore(	struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD_PerCore( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -576,7 +576,7 @@ static inline void ComputeVoltage_AMD_PerCore(	struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeVoltage_AMD_PerPkg(	struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD_PerPkg( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -586,7 +586,7 @@ static inline void ComputeVoltage_AMD_PerPkg(	struct FLIP_FLOP *CFlip,
 	}
 }
 
-static void (*ComputeVoltage_AMD_Matrix[4])(	struct FLIP_FLOP*,
+static void (*ComputeVoltage_AMD_Matrix[4])( struct FLIP_FLOP*,
 						SHM_STRUCT*,
 						unsigned int ) = \
 {
@@ -596,7 +596,7 @@ static void (*ComputeVoltage_AMD_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_AMD_PerPkg
 };
 
-static inline void ComputeVoltage_AMD_0Fh(	struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD_0Fh( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {	/* AMD BKDG Family 0Fh §10.6 Table 70				*/
@@ -609,7 +609,7 @@ static inline void ComputeVoltage_AMD_0Fh(	struct FLIP_FLOP *CFlip,
 
 #define ComputeVoltage_AMD_0Fh_PerSMT	ComputeVoltage_AMD_0Fh
 
-static inline void ComputeVoltage_AMD_0Fh_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD_0Fh_PerCore( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -620,7 +620,7 @@ static inline void ComputeVoltage_AMD_0Fh_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeVoltage_AMD_0Fh_PerPkg(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD_0Fh_PerPkg( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -640,9 +640,9 @@ static void (*ComputeVoltage_AMD_0Fh_Matrix[4])(struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_AMD_0Fh_PerPkg
 };
 
-static inline void ComputeVoltage_AMD_15h(	struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
-						unsigned int cpu )
+static void ComputeVoltage_AMD_15h( struct FLIP_FLOP *CFlip,
+					SHM_STRUCT *Shm,
+					unsigned int cpu )
 {
 	COMPUTE_VOLTAGE(AMD_15h,
 			CFlip->Voltage.Vcore,
@@ -653,7 +653,7 @@ static inline void ComputeVoltage_AMD_15h(	struct FLIP_FLOP *CFlip,
 
 #define ComputeVoltage_AMD_15h_PerSMT	ComputeVoltage_AMD_15h
 
-static inline void ComputeVoltage_AMD_15h_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD_15h_PerCore( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -664,7 +664,7 @@ static inline void ComputeVoltage_AMD_15h_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeVoltage_AMD_15h_PerPkg(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD_15h_PerPkg( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -684,7 +684,7 @@ static void (*ComputeVoltage_AMD_15h_Matrix[4])(struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_AMD_15h_PerPkg
 };
 
-static inline void ComputeVoltage_AMD_17h(	struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD_17h( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -697,7 +697,7 @@ static inline void ComputeVoltage_AMD_17h(	struct FLIP_FLOP *CFlip,
 
 #define ComputeVoltage_AMD_17h_PerSMT	ComputeVoltage_AMD_17h
 
-static inline void ComputeVoltage_AMD_17h_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD_17h_PerCore( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -708,7 +708,7 @@ static inline void ComputeVoltage_AMD_17h_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeVoltage_AMD_17h_PerPkg(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD_17h_PerPkg( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -728,7 +728,7 @@ static void (*ComputeVoltage_AMD_17h_Matrix[4])(struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_AMD_17h_PerPkg
 };
 
-static inline void ComputeVoltage_Winbond_IO(	struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Winbond_IO( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {	/* Winbond W83627EHF/EF, W83627EHG,EG				*/
@@ -741,7 +741,7 @@ static inline void ComputeVoltage_Winbond_IO(	struct FLIP_FLOP *CFlip,
 
 #define ComputeVoltage_Winbond_IO_PerSMT	ComputeVoltage_Winbond_IO
 
-static inline void ComputeVoltage_Winbond_IO_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Winbond_IO_PerCore( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -752,7 +752,7 @@ static inline void ComputeVoltage_Winbond_IO_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeVoltage_Winbond_IO_PerPkg(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Winbond_IO_PerPkg( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -762,7 +762,7 @@ static inline void ComputeVoltage_Winbond_IO_PerPkg(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static void (*ComputeVoltage_Winbond_IO_Matrix[4])(	struct FLIP_FLOP*,
+static void (*ComputeVoltage_Winbond_IO_Matrix[4])( struct FLIP_FLOP*,
 							SHM_STRUCT*,
 							unsigned int ) = \
 {
@@ -772,7 +772,7 @@ static void (*ComputeVoltage_Winbond_IO_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_Winbond_IO_PerPkg
 };
 
-static inline void ComputeVoltage_ITE_Tech_IO(	struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_ITE_Tech_IO( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {	/* ITE Tech IT8720F						*/
@@ -785,7 +785,7 @@ static inline void ComputeVoltage_ITE_Tech_IO(	struct FLIP_FLOP *CFlip,
 
 #define ComputeVoltage_ITE_Tech_IO_PerSMT	ComputeVoltage_ITE_Tech_IO
 
-static inline void ComputeVoltage_ITE_Tech_IO_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_ITE_Tech_IO_PerCore( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -796,7 +796,7 @@ static inline void ComputeVoltage_ITE_Tech_IO_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeVoltage_ITE_Tech_IO_PerPkg(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_ITE_Tech_IO_PerPkg( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -831,7 +831,7 @@ void Core_ComputePowerLimits(CPU_STRUCT *Cpu, struct FLIP_FLOP *CFlip)
 						Cpu->Sensors.Power.Limit );
 }
 
-static inline void ComputePower_None(	struct FLIP_FLOP *CFlip,
+static void ComputePower_None( struct FLIP_FLOP *CFlip,
 					SHM_STRUCT *Shm,
 					unsigned int cpu )
 {
@@ -860,7 +860,7 @@ static void (*ComputePower_None_Matrix[4])(	struct FLIP_FLOP*,
 
 #define ComputePower_AMD_Matrix 	ComputePower_None_Matrix
 
-static inline void ComputePower_AMD_17h(struct FLIP_FLOP *CFlip,
+static void ComputePower_AMD_17h( struct FLIP_FLOP *CFlip,
 					SHM_STRUCT *Shm,
 					unsigned int cpu)
 {
@@ -875,9 +875,9 @@ static inline void ComputePower_AMD_17h(struct FLIP_FLOP *CFlip,
 
 #define ComputePower_AMD_17h_PerSMT	ComputePower_AMD_17h
 
-static inline void ComputePower_AMD_17h_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputePower_AMD_17h_PerCore( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
-						unsigned int cpu)
+						unsigned int cpu )
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1))
@@ -886,7 +886,7 @@ static inline void ComputePower_AMD_17h_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputePower_AMD_17h_PerPkg( struct FLIP_FLOP *CFlip,
+static void ComputePower_AMD_17h_PerPkg( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -1920,7 +1920,7 @@ void P945_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 
 		switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
 		default:
-			/* Fallthrough */
+			fallthrough;
 		case 0b010:
 			Ratio.Q = 1;
 			Ratio.R = 1;
@@ -1940,7 +1940,7 @@ void P945_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 
 		switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
 		default:
-			/* Fallthrough */
+			fallthrough;
 		case 0b010:
 			Ratio.Q = 3;
 			Ratio.R = 4;
@@ -1956,13 +1956,13 @@ void P945_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 		}
 		break;
 	default:
-		/* Fallthrough */
+		fallthrough;
 	case 0b011:
 		Shm->Uncore.Bus.Rate = 667;
 
 		switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
 		default:
-			/* Fallthrough */
+			fallthrough;
 		case 0b010:
 			Ratio.Q = 3;
 			Ratio.R = 5;
@@ -2057,7 +2057,7 @@ void P965_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 
 	switch (Proc->Uncore.Bus.ClkCfg.FSB_Select) {
 	case 0b111:	/* Unknown */
-		/* Fallthrough */
+		fallthrough;
 	case 0b000:
 		Shm->Uncore.Bus.Rate = 1066;
 
@@ -2150,7 +2150,7 @@ void P965_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 		}
 		break;
 	default:
-		/* Fallthrough */
+		fallthrough;
 	case 0b010:
 		Shm->Uncore.Bus.Rate = 800;
 
@@ -2450,7 +2450,7 @@ void G965_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 		}
 		break;
 	default:
-		/* Fallthrough */
+		fallthrough;
 	case 0b010:
 		Shm->Uncore.Bus.Rate = 800;
 
@@ -3035,7 +3035,7 @@ void QPI_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 		Shm->Uncore.CtrlSpeed = 2133;
 		break;
 	case 0b000000:
-		/* Fallthrough */
+		fallthrough;
 	default:
 		Shm->Uncore.CtrlSpeed = 800;
 		break;
@@ -3086,7 +3086,7 @@ void DMI_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 		Shm->Uncore.CtrlSpeed = 1333;
 		break;
 	case 0b000000:
-		/* Fallthrough */
+		fallthrough;
 	default:
 		Shm->Uncore.CtrlSpeed = 266;
 		break;
@@ -5450,7 +5450,7 @@ void Topology(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO **Core, unsigned int cpu)
 	 || (Shm->Proc.Features.Std.EAX.ExtModel == 0x7)) {
 		break;
 	}
-	/* Fallthrough */
+	fallthrough;
     case AMD_Zen:
     case AMD_Zen_APU:
     case AMD_ZenPlus:
@@ -5833,7 +5833,7 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 		break;
 	case RC_OK_SYSGATE:
 		SysGate_OS_Driver(Ref);
-	/* Fallthrough */
+		fallthrough;
 	case RC_SUCCESS: /* Platform changed -> pending notification.	*/
 		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_NTFY);
 		break;
@@ -5990,7 +5990,7 @@ static void *Emergency_Handler(void *pRef)
 			break;
 		case SIGCHLD: /* Exit Ring Thread  */
 			leave = 0x1;
-			/* Fallthrough */
+			fallthrough;
 		case SIGSTKFLT:
 		case SIGXFSZ:
 		case SIGXCPU:
@@ -6080,15 +6080,15 @@ void Emergency_Command(REF *Ref, unsigned int cmd)
 	}
 }
 
-static inline void Pkg_ComputeThermal_None(	struct PKG_FLIP_FLOP *PFlip,
-						struct FLIP_FLOP *SProc )
+static void Pkg_ComputeThermal_None(	struct PKG_FLIP_FLOP *PFlip,
+					struct FLIP_FLOP *SProc )
 {
 	UNUSED(PFlip);
 	UNUSED(SProc);
 }
 
-static inline void Pkg_ComputeThermal_Intel(	struct PKG_FLIP_FLOP *PFlip,
-						struct FLIP_FLOP *SProc )
+static void Pkg_ComputeThermal_Intel(	struct PKG_FLIP_FLOP *PFlip,
+					struct FLIP_FLOP *SProc )
 {
 	COMPUTE_THERMAL(INTEL,
 		PFlip->Thermal.Temp,
@@ -6096,8 +6096,8 @@ static inline void Pkg_ComputeThermal_Intel(	struct PKG_FLIP_FLOP *PFlip,
 		PFlip->Thermal.Sensor);
 }
 
-static inline void Pkg_ComputeThermal_AMD(	struct PKG_FLIP_FLOP *PFlip,
-						struct FLIP_FLOP *SProc )
+static void Pkg_ComputeThermal_AMD(	struct PKG_FLIP_FLOP *PFlip,
+					struct FLIP_FLOP *SProc )
 {
 	COMPUTE_THERMAL(AMD,
 		PFlip->Thermal.Temp,
@@ -6105,8 +6105,8 @@ static inline void Pkg_ComputeThermal_AMD(	struct PKG_FLIP_FLOP *PFlip,
 		PFlip->Thermal.Sensor);
 }
 
-static inline void Pkg_ComputeThermal_AMD_0Fh(	struct PKG_FLIP_FLOP *PFlip,
-						struct FLIP_FLOP *SProc )
+static void Pkg_ComputeThermal_AMD_0Fh( struct PKG_FLIP_FLOP *PFlip,
+					struct FLIP_FLOP *SProc )
 {
 	COMPUTE_THERMAL(AMD_0Fh,
 		PFlip->Thermal.Temp,
@@ -6114,8 +6114,8 @@ static inline void Pkg_ComputeThermal_AMD_0Fh(	struct PKG_FLIP_FLOP *PFlip,
 		PFlip->Thermal.Sensor);
 }
 
-static inline void Pkg_ComputeThermal_AMD_15h(	struct PKG_FLIP_FLOP *PFlip,
-						struct FLIP_FLOP *SProc )
+static void Pkg_ComputeThermal_AMD_15h( struct PKG_FLIP_FLOP *PFlip,
+					struct FLIP_FLOP *SProc )
 {
 	COMPUTE_THERMAL(AMD_15h,
 		PFlip->Thermal.Temp,
@@ -6123,8 +6123,8 @@ static inline void Pkg_ComputeThermal_AMD_15h(	struct PKG_FLIP_FLOP *PFlip,
 		PFlip->Thermal.Sensor);
 }
 
-static inline void Pkg_ComputeThermal_AMD_17h(	struct PKG_FLIP_FLOP *PFlip,
-						struct FLIP_FLOP *SProc )
+static void Pkg_ComputeThermal_AMD_17h( struct PKG_FLIP_FLOP *PFlip,
+					struct FLIP_FLOP *SProc )
 {
 	COMPUTE_THERMAL(AMD_17h,
 		PFlip->Thermal.Temp,
@@ -6132,7 +6132,7 @@ static inline void Pkg_ComputeThermal_AMD_17h(	struct PKG_FLIP_FLOP *PFlip,
 		PFlip->Thermal.Sensor);
 }
 
-static inline void Pkg_ComputeVoltage_None(struct PKG_FLIP_FLOP *PFlip)
+static void Pkg_ComputeVoltage_None(struct PKG_FLIP_FLOP *PFlip)
 {
 	UNUSED(PFlip);
 }
@@ -6141,14 +6141,14 @@ static inline void Pkg_ComputeVoltage_None(struct PKG_FLIP_FLOP *PFlip)
 
 #define Pkg_ComputeVoltage_Intel_Core2	Pkg_ComputeVoltage_None
 
-static inline void Pkg_ComputeVoltage_Intel_SoC(struct PKG_FLIP_FLOP *PFlip)
+static void Pkg_ComputeVoltage_Intel_SoC(struct PKG_FLIP_FLOP *PFlip)
 {
 	COMPUTE_VOLTAGE(INTEL_SOC,
 			PFlip->Voltage.CPU,
 			PFlip->Voltage.VID.CPU);
 }
 
-static inline void Pkg_ComputeVoltage_Intel_SNB(struct PKG_FLIP_FLOP *PFlip)
+static void Pkg_ComputeVoltage_Intel_SNB(struct PKG_FLIP_FLOP *PFlip)
 {	/* Intel 2nd Generation Datasheet Vol-1 §7.4 Table 7-1		*/
 	COMPUTE_VOLTAGE(INTEL_SNB,
 			PFlip->Voltage.CPU,
@@ -6163,7 +6163,7 @@ static inline void Pkg_ComputeVoltage_Intel_SNB(struct PKG_FLIP_FLOP *PFlip)
 
 #define Pkg_ComputeVoltage_AMD_15h	Pkg_ComputeVoltage_None
 
-static inline void Pkg_ComputeVoltage_AMD_17h(struct PKG_FLIP_FLOP *PFlip)
+static void Pkg_ComputeVoltage_AMD_17h(struct PKG_FLIP_FLOP *PFlip)
 {
 	COMPUTE_VOLTAGE(AMD_17h,
 			PFlip->Voltage.CPU,
@@ -6174,21 +6174,21 @@ static inline void Pkg_ComputeVoltage_AMD_17h(struct PKG_FLIP_FLOP *PFlip)
 			PFlip->Voltage.VID.SOC);
 }
 
-static inline void Pkg_ComputeVoltage_Winbond_IO(struct PKG_FLIP_FLOP *PFlip)
+static void Pkg_ComputeVoltage_Winbond_IO(struct PKG_FLIP_FLOP *PFlip)
 {	/* Winbond W83627EHF/EF, W83627EHG,EG				*/
 	COMPUTE_VOLTAGE(WINBOND_IO,
 			PFlip->Voltage.CPU,
 			PFlip->Voltage.VID.CPU);
 }
 
-static inline void Pkg_ComputeVoltage_ITE_Tech_IO(struct PKG_FLIP_FLOP *PFlip)
+static void Pkg_ComputeVoltage_ITE_Tech_IO(struct PKG_FLIP_FLOP *PFlip)
 {
 	COMPUTE_VOLTAGE(ITETECH_IO,
 			PFlip->Voltage.CPU,
 			PFlip->Voltage.VID.CPU);
 }
 
-static inline void Pkg_ComputePower_None(PROC_RW *Proc, struct FLIP_FLOP *CFlop)
+static void Pkg_ComputePower_None(PROC_RW *Proc, struct FLIP_FLOP *CFlop)
 {
 	UNUSED(Proc);
 	UNUSED(CFlop);
@@ -6200,13 +6200,13 @@ static inline void Pkg_ComputePower_None(PROC_RW *Proc, struct FLIP_FLOP *CFlop)
 
 #define Pkg_ComputePower_AMD		Pkg_ComputePower_None
 
-static inline void Pkg_ComputePower_AMD_17h(	PROC_RW *Proc,
-						struct FLIP_FLOP *CFlop )
+static void Pkg_ComputePower_AMD_17h(	PROC_RW *Proc,
+					struct FLIP_FLOP *CFlop )
 {
 	Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] += CFlop->Delta.Power.ACCU;
 }
 
-static inline void Pkg_ResetPower_None(PROC_RW *Proc)
+static void Pkg_ResetPower_None(PROC_RW *Proc)
 {
 	UNUSED(Proc);
 }
@@ -6217,7 +6217,7 @@ static inline void Pkg_ResetPower_None(PROC_RW *Proc)
 
 #define Pkg_ResetPower_AMD		Pkg_ResetPower_None
 
-static inline void Pkg_ResetPower_AMD_17h(PROC_RW *Proc)
+static void Pkg_ResetPower_AMD_17h(PROC_RW *Proc)
 {
 	Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] = 0;
 }

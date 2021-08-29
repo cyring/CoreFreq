@@ -527,7 +527,7 @@ static long CoreFreqK_Register_ClockSource(unsigned int cpu)
 		int rx = clocksource_register_khz(&CoreFreqK_CS, Freq_KHz);
 	    switch (rx) {
 	    default:
-		/* Fallthrough */
+		fallthrough;
 	    case -EBUSY:
 		PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_DISABLE;
 		rc = (long) rx;
@@ -792,25 +792,25 @@ static void Query_Features(void *pArg)
       switch (Override_SubCstate_Depth) {
       case 8:
 	iArg->Features->MWait.EDX.SubCstate_MWAIT7 = Override_SubCstate[7];
-	/* Fallthrough */
+	fallthrough;
       case 7:
 	iArg->Features->MWait.EDX.SubCstate_MWAIT6 = Override_SubCstate[6];
-	/* Fallthrough */
+	fallthrough;
       case 6:
 	iArg->Features->MWait.EDX.SubCstate_MWAIT5 = Override_SubCstate[5];
-	/* Fallthrough */
+	fallthrough;
       case 5:
 	iArg->Features->MWait.EDX.SubCstate_MWAIT4 = Override_SubCstate[4];
-	/* Fallthrough */
+	fallthrough;
       case 4:
 	iArg->Features->MWait.EDX.SubCstate_MWAIT3 = Override_SubCstate[3];
-	/* Fallthrough */
+	fallthrough;
       case 3:
 	iArg->Features->MWait.EDX.SubCstate_MWAIT2 = Override_SubCstate[2];
-	/* Fallthrough */
+	fallthrough;
       case 2:
 	iArg->Features->MWait.EDX.SubCstate_MWAIT1 = Override_SubCstate[1];
-	/* Fallthrough */
+	fallthrough;
       case 1:
 	iArg->Features->MWait.EDX.SubCstate_MWAIT0 = Override_SubCstate[0];
 	break;
@@ -1766,7 +1766,7 @@ static void Map_AMD_Topology(void *arg)
 		);
 		Core->T.Cluster.Node = leaf80000001.ECX.NodeId;
 	    }
-		/* Fallthrough */
+		fallthrough;
 	case AMD_Family_11h:
 	case AMD_Family_12h:
 	case AMD_Family_14h:
@@ -1788,7 +1788,7 @@ static void Map_AMD_Topology(void *arg)
 	    Core->T.Cache[3].Size+=L3_SubCache_AMD_Piledriver(L3.SubCacheSize2);
 	    Core->T.Cache[3].Size+=L3_SubCache_AMD_Piledriver(L3.SubCacheSize3);
 	    }
-		/* Fallthrough */
+		fallthrough;
 	case AMD_Family_16h:
 		Core->T.ApicID    = leaf1_ebx.Init_APIC_ID;
 		Core->T.PackageID = leaf1_ebx.Init_APIC_ID
@@ -5370,6 +5370,7 @@ void Query_Skylake(unsigned int cpu)
 
 void Query_Kaby_Lake(unsigned int cpu)
 {
+	Power_ACCU_Skylake = Power_ACCU_SKL_PLATFORM;
 	Query_Skylake(cpu);
 }
 
@@ -10925,6 +10926,11 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 						MSR_DRAM_ENERGY_STATUS);\
 })
 
+static void Power_ACCU_SKL_DEFAULT(PROC_RO *Pkg, unsigned int T)
+{
+	PWR_ACCU_Skylake(Pkg, T);
+}
+
 #define PWR_ACCU_SKL_PLATFORM(Pkg, T)					\
 ({									\
         RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(PKG)],		\
@@ -10939,6 +10945,11 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
         RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(RAM)],		\
 						MSR_DRAM_ENERGY_STATUS);\
 })
+
+static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T)
+{
+	PWR_ACCU_SKL_PLATFORM(Pkg, T);
+}
 
 #define Delta_PWR_ACCU(Pkg, PwrDomain)					\
 ({									\
@@ -11067,7 +11078,7 @@ void Core_AMD_Family_15h_Temp(CORE_RO *Core)
 	}
 }
 
-void CTL_AMD_Family_17h_Temp(CORE_RO *Core)
+static void CTL_AMD_Family_17h_Temp(CORE_RO *Core)
 {
 	TCTL_REGISTER TctlSensor = {.value = 0};
 	TCTL_THERM_TRIP ThermTrip = {.value = 0};
@@ -11100,7 +11111,7 @@ void CTL_AMD_Family_17h_Temp(CORE_RO *Core)
 	}
 }
 
-void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
+static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 {
 	TCCD_REGISTER TccdSensor = {.value = 0};
 	TCTL_THERM_TRIP ThermTrip = {.value = 0};
@@ -13316,33 +13327,7 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 		break;
 	    }
 
-	    switch (PUBLIC(RO(Proc))->ArchID) {
-	    case Kabylake_UY:
-	    case Kabylake:
-	    case Cannonlake:
-	    case Icelake_UY:
-	    case Icelake:
-	    case Cometlake_UY:
-	    case Cometlake:
-		PWR_ACCU_SKL_PLATFORM(PUBLIC(RO(Proc)), 1);
-		break;
-	    case Skylake_UY:
-	    case Skylake_S:
-	    case Skylake_X:
-	    case Icelake_X:
-	    case Icelake_D:
-	    case Sunny_Cove:
-	    case Tigerlake_U:
-	    case Tigerlake:
-	    case Atom_Denverton:
-	    case Tremont_Jacobsville:
-	    case Tremont_Lakefield:
-	    case Tremont_Elkhartlake:
-	    case Tremont_Jasperlake:
-	    default:
-		PWR_ACCU_Skylake(PUBLIC(RO(Proc)), 1);
-		break;
-	    }
+		Power_ACCU_Skylake(PUBLIC(RO(Proc)), 1);
 
 		Delta_PC02(PUBLIC(RO(Proc)));
 
@@ -13471,33 +13456,7 @@ static void Start_Skylake(void *arg)
 		}
 		PKG_Counters_Skylake(Core, 0);
 
-	    switch (PUBLIC(RO(Proc))->ArchID) {
-	    case Kabylake_UY:
-	    case Kabylake:
-	    case Cannonlake:
-	    case Icelake_UY:
-	    case Icelake:
-	    case Cometlake_UY:
-	    case Cometlake:
-		PWR_ACCU_SKL_PLATFORM(PUBLIC(RO(Proc)), 0);
-		break;
-	    case Skylake_UY:
-	    case Skylake_S:
-	    case Skylake_X:
-	    case Icelake_X:
-	    case Icelake_D:
-	    case Sunny_Cove:
-	    case Tigerlake_U:
-	    case Tigerlake:
-	    case Atom_Denverton:
-	    case Tremont_Jacobsville:
-	    case Tremont_Lakefield:
-	    case Tremont_Elkhartlake:
-	    case Tremont_Jasperlake:
-	    default:
-		PWR_ACCU_Skylake(PUBLIC(RO(Proc)), 0);
-		break;
-	    }
+		Power_ACCU_Skylake(PUBLIC(RO(Proc)), 0);
 	}
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
@@ -14248,7 +14207,7 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
 		Core_AMD_Family_17h_Temp(Core);
 		break;
 	    }
-		/* Fallthrough */
+		fallthrough;
 	case FORMULA_SCOPE_SMT:
 		Core_AMD_Family_17h_Temp(Core);
 		break;
@@ -14260,7 +14219,7 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
 	    {
 		break;
 	    }
-		/* Fallthrough */
+		fallthrough;
 	case FORMULA_SCOPE_SMT:
 		Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
 		break;
@@ -16101,7 +16060,7 @@ static long CoreFreqK_Register_CPU_Idle(void)
 	int rx = CoreFreqK_IdleDriver_Init();
     switch ( rx ) {
     default:
-	/* Fallthrough */
+	fallthrough;
     case -ENODEV:
     case -ENOMEM:
 	PUBLIC(RO(Proc))->Registration.Driver.CPUidle = REGISTRATION_DISABLE;
@@ -16145,7 +16104,7 @@ static long CoreFreqK_Register_CPU_Freq(void)
 	int rx = CoreFreqK_FreqDriver_Init();
     switch ( rx ) {
     default:
-	/* Fallthrough */
+	fallthrough;
     case -EEXIST:		/*	Another driver is in control.	*/
 	PUBLIC(RO(Proc))->Registration.Driver.CPUfreq = REGISTRATION_DISABLE;
 	rc = (long) rx;
@@ -17169,7 +17128,7 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 	case -1:
 		break;
 	case 1:
-		/* Fallthrough */
+		fallthrough;
 	case 0: {
 		const unsigned long
 		secSize = PAGE_SIZE << PUBLIC(RO(Proc))->Gate.ReqMem.Order;
@@ -17972,7 +17931,7 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 		}
 		break;
 	case CRC_HYGON:
-		/* Fallthrough */
+		fallthrough;
 	case CRC_AMD: {
 		Arch[GenuineArch].Query = Query_AuthenticAMD;
 		Arch[GenuineArch].Update= PerCore_AuthenticAMD_Query;

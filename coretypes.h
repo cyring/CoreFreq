@@ -1995,3 +1995,15 @@ typedef struct {
 )
 
 #define UNUSED(expr) do { (void)(expr); } while (0)
+
+#ifndef fallthrough
+	#if defined __has_attribute
+		#if __has_attribute(fallthrough)
+			#define fallthrough	__attribute__((fallthrough))
+		#else
+			#define fallthrough	/* Fallthrough */
+		#endif
+	#else
+		#define fallthrough	/* Fallthrough */
+	#endif
+#endif

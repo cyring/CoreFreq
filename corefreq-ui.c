@@ -1515,7 +1515,7 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 	case SCANKEY_ENTER:
 		if (win->hook.key.Enter != NULL)
 			return (win->hook.key.Enter(scan, win));
-		/* fallthrough */
+		fallthrough;
 	default:
 		return (-1);
 	}

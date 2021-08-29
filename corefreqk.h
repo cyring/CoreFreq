@@ -1196,6 +1196,10 @@ extern void InitTimer_Skylake_X(unsigned int cpu) ;
 static void Start_Uncore_Skylake_X(void *arg) ;
 static void Stop_Uncore_Skylake_X(void *arg) ;
 
+static void Power_ACCU_SKL_DEFAULT(PROC_RO *Pkg, unsigned int T) ;
+static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T) ;
+void (*Power_ACCU_Skylake)(PROC_RO*, unsigned int) = Power_ACCU_SKL_DEFAULT;
+
 extern void Query_Kaby_Lake(unsigned int cpu) ;
 static void PerCore_Kaby_Lake_Query(void *arg) ;
 
@@ -1255,8 +1259,8 @@ void Core_AMD_F17h_No_Thermal(CORE_RO *Core)
 {
 	UNUSED(Core);
 }
-void CTL_AMD_Family_17h_Temp(CORE_RO *Core) ;
-void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core) ;
+static void CTL_AMD_Family_17h_Temp(CORE_RO *Core) ;
+static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core) ;
 void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 
 #define     Query_AMD_Family_19h Query_AMD_Family_17h
@@ -6773,7 +6777,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Kabylake_UY] = {							/* 53*/
 	.Signature = _Kabylake_UY,
-	.Query = Query_Skylake,
+	.Query = Query_Kaby_Lake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6798,7 +6802,7 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Cannonlake] = {							/* 54*/
 	.Signature = _Cannonlake,
-	.Query = Query_Skylake,
+	.Query = Query_Kaby_Lake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6848,7 +6852,7 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Icelake] = {								/* 56*/
 	.Signature = _Icelake,
-	.Query = Query_Skylake,
+	.Query = Query_Kaby_Lake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6872,7 +6876,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Icelake_UY] = {							/* 57*/
 	.Signature = _Icelake_UY,
-	.Query = Query_Skylake,
+	.Query = Query_Kaby_Lake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6896,7 +6900,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Icelake_X] = { 							/* 58*/
 	.Signature = _Icelake_X,
-	.Query = Query_Kaby_Lake,
+	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6920,7 +6924,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Icelake_D] = { 							/* 59*/
 	.Signature = _Icelake_D,
-	.Query = Query_Kaby_Lake,
+	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -7019,7 +7023,7 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Cometlake] = { 							/* 63*/
 	.Signature = _Cometlake,
-	.Query = Query_Skylake,
+	.Query = Query_Kaby_Lake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -7043,7 +7047,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Cometlake_UY] = {							/* 64*/
 	.Signature = _Cometlake_UY,
-	.Query = Query_Skylake,
+	.Query = Query_Kaby_Lake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
