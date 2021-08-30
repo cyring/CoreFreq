@@ -905,6 +905,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.PerfMon.EBX.BranchRetired);
 					json_key(&s, "BranchMispred");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.PerfMon.EBX.BranchMispred);
+					json_key(&s, "TopdownSlots");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.PerfMon.EBX.TopdownSlots);
 					json_key(&s, "ReservedBits");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.PerfMon.EBX.ReservedBits);
 					json_end_object(&s);
@@ -1205,8 +1207,44 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.IRPerf);
 					json_key(&s, "XSaveErPtr");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.XSaveErPtr);
-					json_key(&s, "Reserved");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.Reserved);
+					json_key(&s, "INVLPGB");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.INVLPGB);
+					json_key(&s, "RDPRU");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.RDPRU);
+					json_key(&s, "MBE");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.MBE);
+					json_key(&s, "MCOMMIT");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.MCOMMIT);
+					json_key(&s, "WBNOINVD");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.WBNOINVD);
+					json_key(&s, "IBPB");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.IBPB);
+					json_key(&s, "INT_WBINVD");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.INT_WBINVD);
+					json_key(&s, "IBRS");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.IBRS);
+					json_key(&s, "STIBP");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.STIBP);
+					json_key(&s, "STIBP_AlwaysOn");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.STIBP_AlwaysOn);
+					json_key(&s, "IBRS_Preferred");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.IBRS_Preferred);
+					json_key(&s, "IBRS_ProtectMode");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.IBRS_ProtectMode);
+					json_key(&s, "MSR_EFER_LMSLE");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.MSR_EFER_LMSLE);
+					json_key(&s, "TlbFlushNested");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.TlbFlushNested);
+					json_key(&s, "PPIN");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.PPIN);
+					json_key(&s, "SSBD");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.SSBD);
+					json_key(&s, "CPPC");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.CPPC);
+					json_key(&s, "PSFD");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.PSFD);
+					json_key(&s, "BranchSample");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.BranchSample);
 					json_end_object(&s);
 				}
 				json_key(&s, "ECX");
@@ -1228,8 +1266,12 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 				json_key(&s, "EDX");
 				{
 					json_start_object(&s);
+					json_key(&s, "INVLPGB_CountMax");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EDX.INVLPGB_CountMax);
+					json_key(&s, "RDPRU_Max");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EDX.RDPRU_Max);
 					json_key(&s, "Reserved");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.AdvPower.EDX.Reserved);
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EDX.Reserved);
 					json_end_object(&s);
 				}
 				json_end_object(&s);
@@ -1574,8 +1616,18 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_literal(&s, "%llu", Shm->Proc.Mechanisms.PSCHANGE_MC_NO);
 			json_key(&s, "TAA_NO");
 			json_literal(&s, "%llu", Shm->Proc.Mechanisms.TAA_NO);
+			json_key(&s, "STLB");
+			json_literal(&s, "%llu", Shm->Proc.Mechanisms.STLB);
+			json_key(&s, "FUSA");
+			json_literal(&s, "%llu", Shm->Proc.Mechanisms.FUSA);
+			json_key(&s, "RSM_CPL0");
+			json_literal(&s, "%llu", Shm->Proc.Mechanisms.RSM_CPL0);
 			json_key(&s, "SPLA");
 			json_literal(&s, "%llu", Shm->Proc.Mechanisms.SPLA);
+			json_key(&s, "SNOOP_FILTER");
+			json_literal(&s, "%llu", Shm->Proc.Mechanisms.SNOOP_FILTER);
+			json_key(&s, "PSFD");
+			json_literal(&s, "%llu", Shm->Proc.Mechanisms.PSFD);
 
 			json_end_object(&s);
 		}
@@ -1813,6 +1865,26 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_end_object(&s);
 		}
 		json_end_arr(&s);
+
+		json_key(&s, "Frequency");
+		{
+			json_start_object(&s);
+			json_key(&s, "Relative");
+			json_start_arr(&s);
+			{
+				json_literal(&s, "%f", Shm->Cpu[cpu].Relative.Freq[SENSOR_LOWEST]);
+				json_literal(&s, "%f", Shm->Cpu[cpu].Relative.Freq[SENSOR_HIGHEST]);
+			}
+			json_end_arr(&s);
+			json_key(&s, "Absolute");
+			json_start_arr(&s);
+			{
+				json_literal(&s, "%f", Shm->Cpu[cpu].Absolute.Freq[SENSOR_LOWEST]);
+				json_literal(&s, "%f", Shm->Cpu[cpu].Absolute.Freq[SENSOR_HIGHEST]);
+			}
+			json_end_arr(&s);
+			json_end_object(&s);
+		}
 
 		json_key(&s, "SystemRegister");
 		{

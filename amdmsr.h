@@ -291,12 +291,14 @@ typedef union
 	IBRS		:  1-0,  /*RW: Indirect Branch Restriction Speculation*/
 	STIBP		:  2-1,  /*RW: Single Thread Indirect Branch Predictor*/
 	SSBD		:  3-2,  /*RW: Speculative Store Bypass Disable */
-	Reserved	: 64-3;
+	Reserved1	:  7-3,
+	PSFD		:  8-7,  /* RW: Predictive Store Forwarding Disable */
+	Reserved2	: 64-8;
     };
 } AMD_SPEC_CTRL;
 
 typedef union
-{	/* Speculative Control: Per Core MSR 0x00000049			*/
+{	/* Speculative Control: Per Core MSR 0x00000049 iff CPUID:IBPB	*/
 	unsigned long long value;
     struct
     {
@@ -978,14 +980,58 @@ typedef union
 		TmpMaxDiffUp	:  7-5,  /* Family: 12h, 14h, 15h	*/
 		TmpSlewDnEn	:  8-7,  /* Family: 12h, 14h, 15h	*/
 		PerStepTimeDn	: 13-8,  /* Family: 12h, 14h, 15h	*/
-		ReservedBits1	: 16-13,
+		ReservedBits	: 16-13,
 		CurTempTJselect : 18-16, /* Family: 15h, 16h		*/
-		ReservedBits2	: 19-18,
+		CurTempTJslewSel: 19-18,
 		CurTempRangeSel : 20-19, /* Family: 17h 		*/
-		ReservedBits3	: 21-20,
+		MCM_EN		: 21-20,
 		CurTmp		: 32-21; /* Family: 12h, 14h, 15h, 17h	*/
 	};
 } TCTL_REGISTER;
+
+typedef union
+{
+	unsigned int		value;	/* Family: 17h, 19h @ SMU(0x59004) */
+	struct
+	{
+		unsigned int
+		HTC_EN		:  1-0,  /* 1: HTC feature is enabled	*/
+		ReservedBits1	:  2-1,
+		EXTERNAL_PROCHOT:  3-2,
+		INTERNAL_PROCHOT:  4-3,
+		HTC_ACTIVE	:  5-4,
+		HTC_ACTIVE_LOG	:  6-5,  /* 1: HTC_ACTIVE is asserted	*/
+		ReservedBits2	:  8-6,
+		HTC_DIAG	:  9-8,  /* 1: Trigger HTC iff ACT & EN */
+		PROCHOT_PIN_OUT : 10-9,  /* 1: Disable HTC to trigger PROCHOT*/
+		HTC_TO_IH_EN	: 11-10, /* Internal PROCHOT Int Handler */
+		PROCHOT_TO_IH_EN: 12-11, /* External PROCHOT Int Handler */
+		PROCHOT_EVENTSRC: 15-12, /* Select 1=Ext, 2=Internal, 4=Both */
+		PROCHOT_PIN_IN	: 16-15, /* 1: Disable external PROCHOT */
+		HTC_TMP_LIMIT	: 23-16, /* HTC Temperature Limit	*/
+		HTC_HYST_LIMIT	: 27-23,
+		HTC_SLEW_SEL	: 29-27,
+		ReservedBits3	: 32-29;
+	};
+} TCTL_HTC;
+
+typedef union
+{
+	unsigned int		value;	/* Family: 17h, 19h @ SMU(0x59008) */
+	struct
+	{
+		unsigned int
+		CTF_PAD_POLARITY:  1-0,
+		THERM_TP	:  2-1,  /* Asserted if THERM_TP_EN == 1 */
+		CTF_THRESHOLD	:  3-2,  /* CTF_THRESHOLD_EXCEEDED */
+		THERM_TP_SENSE	:  4-3,
+		ReservedBits1	:  5-4,
+		THERM_TP_EN	:  6-5,  /* 1: ThermTrip is enabled	*/
+		THERM_TP_LIMIT	: 14-6,
+		ReservedBits2	: 31-14,
+		SW_THERM_TP	: 32-31; /* 1: Trigger ThermTrip (R/O)	*/
+	};
+} TCTL_THERM_TRIP;
 
 typedef struct
 {	/* Family: [15_00h - 15_0Fh]	Bus:0h,Dev:18h,Func:3h,Reg:1D4h */
@@ -1104,6 +1150,24 @@ Remark: if BGS_Alt[ON][AUTO] is set then BGS[OFF]
 #define AMD_17_UMC_BGS_ALT_MASK_ON	0x000007f0
 
 typedef union
+{	/* SMU address: UMC{0,1}-DIMM{0}=0x50030; UMC{0,1}-DIMM{1}=0x50034 */
+	unsigned int		value;
+	struct
+	{
+		unsigned int
+		ReservedBits1	:  2-0,
+		NumBankGroups	:  4-2,  /* 0=None; 1=2x; 2=4x; 3=8x BGs */
+		NumRM		:  6-4,  /* 0=None; 1=2x; 2=4x; 3=8x RM */
+		ReservedBits2	:  8-6,
+		NumRowLo	: 12-8,  /* [0-8] = 10 + NumRowLo	*/
+		NumRowHi	: 16-12,
+		NumCol		: 20-16, /* [0-0xb] = 5 + NumCol	*/
+		NumBanks	: 22-20, /* 0=8x; 1=16x; 2=32x Banks	*/
+		ReservedBits3	: 32-22;
+	};
+} AMD_17_UMC_DRAM_ADDR_CFG;
+
+typedef union
 {	/* SMU: address = 0x50080					*/
 	unsigned int		value;
 	struct
@@ -1142,6 +1206,29 @@ typedef union
 		INIT		: 32-31;
 	};
 } AMD_17_UMC_SDP_CTRL;
+
+typedef union
+{	/* SMU: address = 0x5012c					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		DisAutoRefresh	:  1-0,  /* Disable periodic refresh	*/
+		ReservedBits1	:  3-1,
+		LpDis		:  4-3,  /* Disable DFI low power requests */
+		UrgRefLimit	:  7-4,  /* UrgRefLimit Refresh range [1-6] */
+		ReservedBits2	:  8-7,
+		SubUrgRef	: 11-8,  /* SubUrgRefLowerBound <= UrgRefLimit*/
+		ReservedBits3	: 16-11,
+		AutoRef_DDR4	: 19-16, /* {1X,2X,4X,RSVD,RSVD,OTF-2X,OTF-4X}*/
+		ReservedBits4	: 20-19,
+		PchgCmdSep	: 24-20, /* CMD separation between PRE CMDs */
+		AutoRefCmdSep	: 28-24, /* CMD separation between REF CMDs */
+		PwrDownEn	: 29-28, /* 1: Enable DRAM Power Down Mode */
+		PwrDownMode	: 30-29, /* 0: Full; 1: Partial Channel PD */
+		AggrPwrDownEn	: 31-30, /* 1: Aggressive Power Down Mode */
+		RefCntMode	: 32-31; /* SPAZ counter: 0: SRX; 1: ARB */
+	};
+} AMD_17_UMC_SPAZ_CTRL;
 
 typedef union
 {	/* SMU: address = 0x5014c					*/
@@ -1190,12 +1277,12 @@ typedef union
 	struct
 	{
 		unsigned int
-		MEMCLK		:  7-0,
+		MEMCLK		:  7-0,  /* ((Value * 100) / 3) MHz	*/
 		ReservedBits1	:  8-7,
-		Bit8		:  9-8,
+		BankGroup	:  9-8,  /* 1: BankGroup is Enable	*/
 		CMD_Rate	: 11-9,  /* 0b10 = 2T ; 0b00 = 1T	*/
 		GearDownMode	: 12-11, /* BIOS match is OK		*/
-		Preamble2T	: 13-12, /* TODO(BIOS match test == 1)	*/
+		Preamble2T	: 13-12, /* 1: 2T DQS preambles enabled */
 		ReservedBits2	: 32-13;
 	};
 } AMD_17_UMC_CFG_MISC;
@@ -1254,8 +1341,8 @@ typedef union
 	unsigned int		value;
 	struct {
 		unsigned int
-		tFAW		:  8-0,
-		ReservedBits1	: 18-8,
+		tFAW		:  7-0,
+		ReservedBits1	: 18-7,
 		tFAWSLR 	: 24-18, /* tFAW(Same Logical Rank)	*/
 		ReservedBits2	: 25-24,
 		tFAWDLR 	: 31-25, /* FAW(Different Logical Ranks) */
@@ -1282,8 +1369,8 @@ typedef union
 	unsigned int		value;
 	struct {
 		unsigned int
-		tWR		:  8-0,
-		ReservedBits1	: 32-8;
+		tWR		:  7-0,
+		ReservedBits1	: 32-7;
 	};
 } AMD_17_UMC_TIMING_DTR6;
 
@@ -1308,7 +1395,8 @@ typedef union
 		ReservedBits2	: 16-12,
 		tscRdTRd	: 20-16,
 		tRdRdScDLR	: 24-20, /* tRdRdSc(Different Logical Ranks) */
-		tRdRdScl	: 30-24,
+		tRdRdScl	: 28-24,
+		ReservedBits3	: 30-28,
 		tRdRdBan	: 32-30; /* Read to Read Timing Ban	*/
 	};				/*  Ban: 00=None, 01=One, 1x=Two */
 } AMD_17_UMC_TIMING_DTR8;
@@ -1348,7 +1436,11 @@ typedef union
 	unsigned int		value;
 	struct {
 		unsigned int /* 0000 1110 0100 0010 0000 0000 1000 0000 */
-		ReservedBits	: 32-0;
+		tZQCS		:  8-0,
+		tZQOPER 	: 20-8,
+		ZqcsInterval	: 30-20, /* Value x (2 ^ Exp)		*/
+		ReservedBits	: 31-30,
+		ShortInit	: 32-31; /* if 1 then Exp=10 else Exp=20 */
 	};
 } AMD_17_UMC_TIMING_DTR11;
 
@@ -1358,20 +1450,109 @@ typedef union
 	struct {
 		unsigned int
 		tREFI		: 16-0,
-		ReservedBits 	: 32-16;
+		ReservedBits	: 32-16;
 	};
 } AMD_17_UMC_TIMING_DTR12;
+
+typedef union
+{	/* SMU: address = 0x50234					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		tMRD		:  6-0,
+		ReservedBits1	:  8-6,
+		tMOD		: 14-8,
+		ReservedBits2	: 16-14,
+		tMRD_PDA	: 22-16,
+		ReservedBits3	: 24-22,
+		tMOD_PDA	: 30-24,
+		ReservedBits4	: 32-30;
+	};
+} AMD_17_UMC_TIMING_DTR13;
+
+typedef union
+{	/* SMU: address = 0x50238					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		tXS		: 11-0,
+		ReservedBits1	: 16-11,
+		tDLL		: 27-16,
+		ReservedBits2	: 32-27;
+	};
+} AMD_17_UMC_TIMING_DTR14;
+
+typedef union
+{	/* SMU: address = 0x5023c					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		tALERT_CRC	:  7-0,
+		ReservedBits1	:  8-7,
+		tALERT_PARITY	: 15-8,
+		ReservedBits2	: 16-15,
+		CmdParityLatency: 20-16,
+		ReservedBits3	: 24-20,
+		tRANK_BUSY	: 31-24,
+		ReservedBits4	: 32-31;
+	};
+} AMD_17_UMC_TIMING_DTR15;
+
+typedef union
+{	/* SMU: address = 0x50244					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		tPD		:  5-0,  /* Powerdown Min Delay 	*/
+		ReservedBits1	: 17-5,
+		tPOWERDOWN	: 25-17, /* Powerdown Delay		*/
+		tPRE_PD 	: 31-25, /* Precharge Powerdown 	*/
+		ReservedBits2	: 32-31;
+	};
+} AMD_17_UMC_TIMING_DTR17;
+
+typedef union
+{	/* SMU: address = 0x50250					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		ReservedBits1	: 16-0,
+		tSTAG		: 24-16,  /* Min Delay between REF cmd	*/
+		ReservedBits2	: 32-24;
+	};
+} AMD_17_UMC_TIMING_DTR20;
 
 typedef union
 {	/* SMU: address = { 0x50254 , 0x50255 , 0x50256 , 0x50257 }	*/
 	unsigned int		value;
 	struct {
 		unsigned int
-		ReservedBits1	: 24-0,
+		tXP		:  6-0,
+		ReservedBits1	: 16-6,
+		tPDE		: 20-16, /* POWERDOWN Entry to CMD Bus	*/
+		ReservedBits2	: 24-20,
 		tCKE		: 29-24, /*	Clock Enable Time	*/
-		ReservedBits2	: 32-29;
+		ReservedBits3	: 32-29;
 	};
-} AMD_17_UMC_TIMING_DTR54;
+} AMD_17_UMC_TIMING_DTR21;
+
+typedef union
+{	/* SMU: address = 0x50258					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		tRDDATA_EN	:  7-0,
+		ReservedBits1	:  8-7,
+		tPHY_WRLAT	: 13-8,
+		ReservedBits2	: 16-13,
+		tPHY_RDLAT	: 22-16,
+		ReservedBits3	: 24-22,
+		tPHY_WRDATA	: 27-24,
+		ReservedBits4	: 28-27,
+		tPARIN_LAT	: 30-28,
+		ReservedBits5	: 32-30;
+	};
+} AMD_17_UMC_TIMING_DTR22;
 
 typedef union
 {	/* SMU: address = { 0x50260 , 0x50261 , 0x50262 , 0x50263 }	*/
@@ -1382,7 +1563,20 @@ typedef union
 		tRFC2		: 22-11,
 		tRFC4		: 32-22;
 	};
-} AMD_17_UMC_TIMING_DTR60;
+} AMD_17_UMC_TIMING_DTRFC;
+
+typedef union
+{	/* SMU: address = 0x5028c					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		RcvrWait	: 11-0,
+		CmdStgCnt	: 22-11,
+		ReservedBits1	: 24-22,
+		tWR_MPR 	: 30-24,
+		ReservedBits2	: 32-30;
+	};
+} AMD_17_UMC_TIMING_DTR35;
 
 typedef union
 {	/* SMU: address = { 0x5d2b4 , 0x5d2b5 , 0x5d2b6 , 0x5d2b7 }	*/

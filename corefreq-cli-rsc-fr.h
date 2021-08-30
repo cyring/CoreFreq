@@ -60,6 +60,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_LAYOUT_MONITOR_SLICE_CODE_FR RSC_LAYOUT_MONITOR_SLICE_CODE_EN
 
+#define RSC_LAYOUT_CUSTOM_FIELD_CODE_FR RSC_LAYOUT_CUSTOM_FIELD_CODE_EN
+
 #define RSC_LAYOUT_RULER_FREQUENCY_CODE_FR				\
 {									\
 	'-','-','-',' ','F','r',0xa9,'q','(','M','H','z',')',' ','R','a',\
@@ -267,12 +269,16 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 	"------------------------------------------------------------"	\
 	"--------------------"
 
+#define RSC_LAYOUT_RULER_CUSTOM_CODE_FR RSC_LAYOUT_RULER_CUSTOM_CODE_EN
+
 #define RSC_LAYOUT_FOOTER_TECH_X86_CODE_FR RSC_LAYOUT_FOOTER_TECH_X86_CODE_EN
 
 #define RSC_LAYOUT_FOOTER_TECH_INTEL_CODE_FR \
 					RSC_LAYOUT_FOOTER_TECH_INTEL_CODE_EN
 
 #define RSC_LAYOUT_FOOTER_TECH_AMD_CODE_FR RSC_LAYOUT_FOOTER_TECH_AMD_CODE_EN
+
+#define RSC_LAYOUT_FOOTER_VOLT_TEMP_CODE_FR RSC_LAYOUT_FOOTER_VOLT_TEMP_CODE_EN
 
 #define RSC_LAYOUT_FOOTER_SYSTEM_CODE_FR				\
 {									\
@@ -430,6 +436,11 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_SYS_REG_EFER_LMA_CODE_FR	RSC_SYS_REG_EFER_LMA_CODE_EN
 #define RSC_SYS_REG_EFER_NXE_CODE_FR	RSC_SYS_REG_EFER_NXE_CODE_EN
 #define RSC_SYS_REG_EFER_SVM_CODE_FR	RSC_SYS_REG_EFER_SVM_CODE_EN
+#define RSC_SYS_REG_EFER_LMS_CODE_FR	RSC_SYS_REG_EFER_LMS_CODE_EN
+#define RSC_SYS_REG_EFER_FFX_CODE_FR	RSC_SYS_REG_EFER_FFX_CODE_EN
+#define RSC_SYS_REG_EFER_TCE_CODE_FR	RSC_SYS_REG_EFER_TCE_CODE_EN
+#define RSC_SYS_REG_EFER_MCM_CODE_FR	RSC_SYS_REG_EFER_MCM_CODE_EN
+#define RSC_SYS_REG_EFER_WBI_CODE_FR	RSC_SYS_REG_EFER_WBI_CODE_EN
 
 #define RSC_ISA_TITLE_CODE_FR		" Jeu d'instructions ""\xa9""tendu "
 
@@ -483,6 +494,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_APIC_CODE_FR   "Advanced Programmable Interrupt Controller"
 #define RSC_FEATURES_CORE_MP_CODE_FR	"Core Multi-Processing"
 #define RSC_FEATURES_CNXT_ID_CODE_FR	"L1 Data Cache Context ID"
+#define RSC_FEATURES_CPPC_CODE_FR	\
+				"Collaborative Processor Performance Control"
+
 #define RSC_FEATURES_DCA_CODE_FR	"Direct Cache Access"
 #define RSC_FEATURES_DE_CODE_FR 	"Debugging Extension"
 
@@ -495,9 +509,12 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_FMA_CODE_FR	"Fused Multiply Add"
 #define RSC_FEATURES_HLE_CODE_FR	"Hardware Lock Elision"
 #define RSC_FEATURES_IBS_CODE_FR	"Instruction Based Sampling"
+#define RSC_FEATURES_INVLPGB_CODE_FR	"Instruction INVLPGB"
 #define RSC_FEATURES_LM_CODE_FR 	"Long Mode 64 bits"
 #define RSC_FEATURES_LWP_CODE_FR	"LightWeight Profiling"
+#define RSC_FEATURES_MBE_CODE_FR	"Memory Bandwidth Enforcement"
 #define RSC_FEATURES_MCA_CODE_FR	"Machine-Check Architecture"
+#define RSC_FEATURES_MCOMMIT_CODE_FR	"Instruction MCOMMIT"
 #define RSC_FEATURES_MPX_CODE_FR	"Memory Protection Extensions"
 #define RSC_FEATURES_MSR_CODE_FR	"Model Specific Registers"
 #define RSC_FEATURES_MTRR_CODE_FR	"Memory Type Range Registers"
@@ -514,6 +531,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_PSN_CODE_FR	"Processor Serial Number"
 #define RSC_FEATURES_RDT_PQE_CODE_FR	"Resource Director Technology/PQE"
 #define RSC_FEATURES_RDT_PQM_CODE_FR	"Resource Director Technology/PQM"
+#define RSC_FEATURES_RDPRU_CODE_FR	"Read Processor Register at User level"
 #define RSC_FEATURES_RTM_CODE_FR	"Restricted Transactional Memory"
 #define RSC_FEATURES_SMX_CODE_FR	"Safer Mode Extensions"
 #define RSC_FEATURES_SELF_SNOOP_CODE_FR "Self-Snoop"
@@ -595,6 +613,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_PERF_MON_MISS_LLC_CODE_FR	"Last Level Cache Misses"
 #define RSC_PERF_MON_BRANCH_RET_CODE_FR "Branch Instructions Retired"
 #define RSC_PERF_MON_BRANCH_MIS_CODE_FR "Branch Mispredicts Retired"
+#define RSC_PERF_MON_TOPDOWN_SLOTS_CODE_FR "Top-down slots Counter"
 #define RSC_PERF_MON_TSC_CODE_FR	"Performance Time Stamp Counter"
 #define RSC_PERF_MON_NB_DF_CODE_FR	"Data Fabric Performance Counter"
 #define RSC_PERF_MON_CORE_CODE_FR	"Core Performance Counter"
@@ -770,6 +789,17 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_DDR4_ZEN_BAN_COMM_CODE_FR	RSC_DDR4_ZEN_BAN_COMM_CODE_EN
 #define RSC_DDR4_ZEN_RCPAGE_COMM_CODE_FR RSC_DDR4_ZEN_RCPAGE_COMM_CODE_EN
 #define RSC_DDR4_ZEN_GDM_COMM_CODE_FR	RSC_DDR4_ZEN_GDM_COMM_CODE_EN
+#define RSC_DDR4_ZEN_MRD_COMM_CODE_FR	RSC_DDR4_ZEN_MRD_COMM_CODE_EN
+#define RSC_DDR4_ZEN_MOD_COMM_CODE_FR	RSC_DDR4_ZEN_MOD_COMM_CODE_EN
+#define RSC_DDR4_ZEN_MRD_PDA_COMM_CODE_FR RSC_DDR4_ZEN_MRD_PDA_COMM_CODE_EN
+#define RSC_DDR4_ZEN_MOD_PDA_COMM_CODE_FR RSC_DDR4_ZEN_MOD_PDA_COMM_CODE_EN
+#define RSC_DDR4_ZEN_STAG_COMM_CODE_FR	RSC_DDR4_ZEN_STAG_COMM_CODE_EN
+#define RSC_DDR4_ZEN_PDM_COMM_CODE_FR	RSC_DDR4_ZEN_PDM_COMM_CODE_EN
+#define RSC_DDR4_ZEN_PHYWRD_COMM_CODE_FR RSC_DDR4_ZEN_PHYWRD_COMM_CODE_EN
+#define RSC_DDR4_ZEN_PHYWRL_COMM_CODE_FR RSC_DDR4_ZEN_PHYWRL_COMM_CODE_EN
+#define RSC_DDR4_ZEN_PHYRDL_COMM_CODE_FR RSC_DDR4_ZEN_PHYRDL_COMM_CODE_EN
+#define RSC_DDR4_ZEN_RDDATA_COMM_CODE_FR RSC_DDR4_ZEN_RDDATA_COMM_CODE_EN
+#define RSC_DDR4_ZEN_WRMPR_COMM_CODE_FR RSC_DDR4_ZEN_WRMPR_COMM_CODE_EN
 
 #define RSC_TASKS_SORTBY_STATE_CODE_FR		" ""\x89""tat     "
 #define RSC_TASKS_SORTBY_RTIME_CODE_FR		" RunTime  "
@@ -804,6 +834,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_MENU_ITEM_VOLTAGE_CODE_FR     "   Voltage          [V] "
 #define RSC_MENU_ITEM_POWER_CODE_FR       "   Puissance        [W] "
 #define RSC_MENU_ITEM_SLICE_CTRS_CODE_FR  " Compteurs tranche  [T] "
+#define RSC_MENU_ITEM_CUSTOM_CODE_FR	  " Vue personnalis""\xa9""e  [y] "
 #define RSC_MENU_ITEM_PROCESSOR_CODE_FR   " Processeur         [p] "
 #define RSC_MENU_ITEM_TOPOLOGY_CODE_FR    " Topologie          [m] "
 #define RSC_MENU_ITEM_FEATURES_CODE_FR    " Caract""\xa9""ristiques   [e] "
@@ -1177,8 +1208,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 		"\t-OY\tAfficher les données secrètes\n"		\
 		"\n    Options de commande\n"				\
 		"\t-t <v>\tAfficher Top (par défault); en option, la <v>ue:\n"\
-		"\t\t{\tfrequency, instructions, core, idle, package,\n"\
-		"\t\t\ttasks, interrupts, sensors, voltage, power, slices  }\n"\
+		"\t\t{\tfrequency, instructions, core, idle, package, tasks,\n"\
+		"\t\t\tinterrupts, sensors, voltage, power, slices, custom }\n"\
 		"\t-d\tAfficher le tableau de bord\n"			\
 		"\t-C <#>\tMoniteur des Capteurs\n"			\
 		"\t-V <#>\tMoniteur de Voltage\n"			\
@@ -1252,7 +1283,12 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_MECH_PSCHANGE_MC_NO_CODE_FR "Architectural - Page Size Change MCE"
 #define RSC_MECH_TAA_NO_CODE_FR "Architectural - TSX Asynchronous Abort"
+#define RSC_MECH_STLB_CODE_FR		RSC_MECH_STLB_CODE_EN
+#define RSC_MECH_FUSA_CODE_FR		RSC_MECH_FUSA_CODE_EN
+#define RSC_MECH_RSM_CPL0_CODE_FR	RSC_MECH_RSM_CPL0_CODE_EN
 #define RSC_MECH_SPLA_CODE_FR	"Architectural - Split Locked Access Exception"
+#define RSC_MECH_SNOOP_FILTER_CODE_FR	RSC_MECH_SNOOP_FILTER_CODE_EN
+#define RSC_MECH_PSFD_CODE_FR	"Architectural - Predictive Store Forwarding"
 
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_FR	"  %3s       Processeur    " \
 						"   %s     %c%4u %c "

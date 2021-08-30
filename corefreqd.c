@@ -92,7 +92,7 @@ void Core_ComputeThermalLimits(CPU_STRUCT *Cpu, struct FLIP_FLOP *CFlip)
 						Cpu->PowerThermal.Limit );
 }
 
-static inline void ComputeThermal_None( struct FLIP_FLOP *CFlip,
+static void ComputeThermal_None( struct FLIP_FLOP *CFlip,
 					SHM_STRUCT *Shm,
 					unsigned int cpu )
 {
@@ -105,7 +105,7 @@ static inline void ComputeThermal_None( struct FLIP_FLOP *CFlip,
 #define ComputeThermal_None_PerCore	ComputeThermal_None
 #define ComputeThermal_None_PerPkg	ComputeThermal_None
 
-static void (*ComputeThermal_None_Matrix[4])(	struct FLIP_FLOP*,
+static void (*ComputeThermal_None_Matrix[4])( struct FLIP_FLOP*,
 						SHM_STRUCT*,
 						unsigned int ) = \
 {
@@ -115,9 +115,9 @@ static void (*ComputeThermal_None_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeThermal_None_PerPkg
 };
 
-static inline void ComputeThermal_Intel(struct FLIP_FLOP *CFlip,
+static void ComputeThermal_Intel( struct FLIP_FLOP *CFlip,
 					SHM_STRUCT *Shm,
-					unsigned int cpu)
+					unsigned int cpu )
 {
 	COMPUTE_THERMAL(INTEL,
 			CFlip->Thermal.Temp,
@@ -129,9 +129,9 @@ static inline void ComputeThermal_Intel(struct FLIP_FLOP *CFlip,
 
 #define ComputeThermal_Intel_PerSMT	ComputeThermal_Intel
 
-static inline void ComputeThermal_Intel_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeThermal_Intel_PerCore( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
-						unsigned int cpu)
+						unsigned int cpu )
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1))
@@ -140,7 +140,7 @@ static inline void ComputeThermal_Intel_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeThermal_Intel_PerPkg( struct FLIP_FLOP *CFlip,
+static void ComputeThermal_Intel_PerPkg( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -150,7 +150,7 @@ static inline void ComputeThermal_Intel_PerPkg( struct FLIP_FLOP *CFlip,
 	}
 }
 
-static void (*ComputeThermal_Intel_Matrix[4])(	struct FLIP_FLOP*,
+static void (*ComputeThermal_Intel_Matrix[4])( struct FLIP_FLOP*,
 						SHM_STRUCT*,
 						unsigned int ) = \
 {
@@ -160,7 +160,7 @@ static void (*ComputeThermal_Intel_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeThermal_Intel_PerPkg
 };
 
-static inline void ComputeThermal_AMD(	struct FLIP_FLOP *CFlip,
+static void ComputeThermal_AMD( struct FLIP_FLOP *CFlip,
 					SHM_STRUCT *Shm,
 					unsigned int cpu )
 {
@@ -174,7 +174,7 @@ static inline void ComputeThermal_AMD(	struct FLIP_FLOP *CFlip,
 
 #define ComputeThermal_AMD_PerSMT	ComputeThermal_AMD
 
-static inline void ComputeThermal_AMD_PerCore(	struct FLIP_FLOP *CFlip,
+static void ComputeThermal_AMD_PerCore( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -185,7 +185,7 @@ static inline void ComputeThermal_AMD_PerCore(	struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeThermal_AMD_PerPkg(	struct FLIP_FLOP *CFlip,
+static void ComputeThermal_AMD_PerPkg(	struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -195,7 +195,7 @@ static inline void ComputeThermal_AMD_PerPkg(	struct FLIP_FLOP *CFlip,
 	}
 }
 
-static void (*ComputeThermal_AMD_Matrix[4])(	struct FLIP_FLOP*,
+static void (*ComputeThermal_AMD_Matrix[4])( struct FLIP_FLOP*,
 						SHM_STRUCT*,
 						unsigned int ) = \
 {
@@ -205,9 +205,9 @@ static void (*ComputeThermal_AMD_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeThermal_AMD_PerPkg
 };
 
-static inline void ComputeThermal_AMD_0Fh(	struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
-						unsigned int cpu )
+static void ComputeThermal_AMD_0Fh( struct FLIP_FLOP *CFlip,
+					SHM_STRUCT *Shm,
+					unsigned int cpu )
 {
 	COMPUTE_THERMAL(AMD_0Fh,
 			CFlip->Thermal.Temp,
@@ -219,7 +219,7 @@ static inline void ComputeThermal_AMD_0Fh(	struct FLIP_FLOP *CFlip,
 
 #define ComputeThermal_AMD_0Fh_PerSMT	ComputeThermal_AMD_0Fh
 
-static inline void ComputeThermal_AMD_0Fh_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeThermal_AMD_0Fh_PerCore( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -230,7 +230,7 @@ static inline void ComputeThermal_AMD_0Fh_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeThermal_AMD_0Fh_PerPkg(struct FLIP_FLOP *CFlip,
+static void ComputeThermal_AMD_0Fh_PerPkg( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -240,9 +240,9 @@ static inline void ComputeThermal_AMD_0Fh_PerPkg(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static void (*ComputeThermal_AMD_0Fh_Matrix[4])(struct FLIP_FLOP*,
-						SHM_STRUCT*,
-						unsigned int) = \
+static void (*ComputeThermal_AMD_0Fh_Matrix[4])( struct FLIP_FLOP*,
+							SHM_STRUCT*,
+							unsigned int ) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputeThermal_None,
 	[FORMULA_SCOPE_SMT ] = ComputeThermal_AMD_0Fh_PerSMT,
@@ -250,9 +250,9 @@ static void (*ComputeThermal_AMD_0Fh_Matrix[4])(struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeThermal_AMD_0Fh_PerPkg
 };
 
-static inline void ComputeThermal_AMD_15h(	struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
-						unsigned int cpu )
+static void ComputeThermal_AMD_15h( struct FLIP_FLOP *CFlip,
+					SHM_STRUCT *Shm,
+					unsigned int cpu )
 {
     if (Shm->Cpu[cpu].Topology.CoreID == 0)
     {
@@ -267,7 +267,7 @@ static inline void ComputeThermal_AMD_15h(	struct FLIP_FLOP *CFlip,
 
 #define ComputeThermal_AMD_15h_PerSMT	ComputeThermal_AMD_15h
 
-static inline void ComputeThermal_AMD_15h_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeThermal_AMD_15h_PerCore( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -277,7 +277,7 @@ static inline void ComputeThermal_AMD_15h_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeThermal_AMD_15h_PerPkg(struct FLIP_FLOP *CFlip,
+static void ComputeThermal_AMD_15h_PerPkg( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -288,8 +288,8 @@ static inline void ComputeThermal_AMD_15h_PerPkg(struct FLIP_FLOP *CFlip,
 }
 
 static void (*ComputeThermal_AMD_15h_Matrix[4])(struct FLIP_FLOP*,
-						SHM_STRUCT*,
-						unsigned int) = \
+							SHM_STRUCT*,
+							unsigned int) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputeThermal_None,
 	[FORMULA_SCOPE_SMT ] = ComputeThermal_AMD_15h_PerSMT,
@@ -297,9 +297,9 @@ static void (*ComputeThermal_AMD_15h_Matrix[4])(struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeThermal_AMD_15h_PerPkg
 };
 
-static inline void ComputeThermal_AMD_17h(	struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
-						unsigned int cpu )
+static void ComputeThermal_AMD_17h( struct FLIP_FLOP *CFlip,
+					SHM_STRUCT *Shm,
+					unsigned int cpu )
 {
 	COMPUTE_THERMAL(AMD_17h,
 			CFlip->Thermal.Temp,
@@ -311,7 +311,7 @@ static inline void ComputeThermal_AMD_17h(	struct FLIP_FLOP *CFlip,
 
 #define ComputeThermal_AMD_17h_PerSMT	ComputeThermal_AMD_17h
 
-static inline void ComputeThermal_AMD_17h_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeThermal_AMD_17h_PerCore( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -322,7 +322,7 @@ static inline void ComputeThermal_AMD_17h_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeThermal_AMD_17h_PerPkg(struct FLIP_FLOP *CFlip,
+static void ComputeThermal_AMD_17h_PerPkg( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -351,7 +351,7 @@ void Core_ComputeVoltageLimits(CPU_STRUCT *Cpu, struct FLIP_FLOP *CFlip)
 						Cpu->Sensors.Voltage.Limit );
 }
 
-static inline void ComputeVoltage_None( struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_None( struct FLIP_FLOP *CFlip,
 					SHM_STRUCT *Shm,
 					unsigned int cpu )
 {
@@ -376,7 +376,7 @@ static void (*ComputeVoltage_None_Matrix[4])(	struct FLIP_FLOP*,
 
 #define ComputeVoltage_Intel_Matrix	ComputeVoltage_None_Matrix
 
-static inline void ComputeVoltage_Intel_Core2( struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_Core2( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {	/* Intel Core 2 Extreme Datasheet §3.3-Table 2			*/
@@ -389,7 +389,7 @@ static inline void ComputeVoltage_Intel_Core2( struct FLIP_FLOP *CFlip,
 
 #define ComputeVoltage_Intel_Core2_PerSMT	ComputeVoltage_Intel_Core2
 
-static inline void ComputeVoltage_Intel_Core2_PerCore( struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_Core2_PerCore( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -400,7 +400,7 @@ static inline void ComputeVoltage_Intel_Core2_PerCore( struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeVoltage_Intel_Core2_PerPkg(	struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_Core2_PerPkg( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -410,7 +410,7 @@ static inline void ComputeVoltage_Intel_Core2_PerPkg(	struct FLIP_FLOP *CFlip,
 	}
 }
 
-static void (*ComputeVoltage_Intel_Core2_Matrix[4])(	struct FLIP_FLOP*,
+static void (*ComputeVoltage_Intel_Core2_Matrix[4])( struct FLIP_FLOP*,
 							SHM_STRUCT*,
 							unsigned int ) = \
 {
@@ -420,7 +420,7 @@ static void (*ComputeVoltage_Intel_Core2_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_Intel_Core2_PerPkg
 };
 
-static inline void ComputeVoltage_Intel_SoC( struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_SoC( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {	/* Intel Valleyview-D/M SoC					*/
@@ -433,7 +433,7 @@ static inline void ComputeVoltage_Intel_SoC( struct FLIP_FLOP *CFlip,
 
 #define ComputeVoltage_Intel_SoC_PerSMT	ComputeVoltage_Intel_SoC
 
-static inline void ComputeVoltage_Intel_SoC_PerCore( struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_SoC_PerCore( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -444,7 +444,7 @@ static inline void ComputeVoltage_Intel_SoC_PerCore( struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeVoltage_Intel_SoC_PerPkg(	struct FLIP_FLOP *CFlip,
+static  void ComputeVoltage_Intel_SoC_PerPkg( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -454,7 +454,7 @@ static inline void ComputeVoltage_Intel_SoC_PerPkg(	struct FLIP_FLOP *CFlip,
 	}
 }
 
-static void (*ComputeVoltage_Intel_SoC_Matrix[4])(	struct FLIP_FLOP*,
+static void (*ComputeVoltage_Intel_SoC_Matrix[4])( struct FLIP_FLOP*,
 							SHM_STRUCT*,
 							unsigned int ) = \
 {
@@ -464,7 +464,7 @@ static void (*ComputeVoltage_Intel_SoC_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_Intel_SoC_PerPkg
 };
 
-static inline void ComputeVoltage_Intel_SNB(	struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_SNB( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -477,7 +477,7 @@ static inline void ComputeVoltage_Intel_SNB(	struct FLIP_FLOP *CFlip,
 
 #define ComputeVoltage_Intel_SNB_PerSMT 	ComputeVoltage_Intel_SNB
 
-static inline void ComputeVoltage_Intel_SNB_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_SNB_PerCore( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -488,7 +488,7 @@ static inline void ComputeVoltage_Intel_SNB_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeVoltage_Intel_SNB_PerPkg(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_SNB_PerPkg( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -498,7 +498,7 @@ static inline void ComputeVoltage_Intel_SNB_PerPkg(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static void (*ComputeVoltage_Intel_SNB_Matrix[4])(	struct FLIP_FLOP*,
+static void (*ComputeVoltage_Intel_SNB_Matrix[4])( struct FLIP_FLOP*,
 							SHM_STRUCT*,
 							unsigned int ) = \
 {
@@ -508,7 +508,7 @@ static void (*ComputeVoltage_Intel_SNB_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_Intel_SNB_PerPkg
 };
 
-static inline void ComputeVoltage_Intel_SKL_X( struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_SKL_X( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -521,7 +521,7 @@ static inline void ComputeVoltage_Intel_SKL_X( struct FLIP_FLOP *CFlip,
 
 #define ComputeVoltage_Intel_SKL_X_PerSMT	ComputeVoltage_Intel_SKL_X
 
-static inline void ComputeVoltage_Intel_SKL_X_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_SKL_X_PerCore( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -532,7 +532,7 @@ static inline void ComputeVoltage_Intel_SKL_X_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeVoltage_Intel_SKL_X_PerPkg(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Intel_SKL_X_PerPkg( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -542,7 +542,7 @@ static inline void ComputeVoltage_Intel_SKL_X_PerPkg(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static void (*ComputeVoltage_Intel_SKL_X_Matrix[4])(	struct FLIP_FLOP*,
+static void (*ComputeVoltage_Intel_SKL_X_Matrix[4])( struct FLIP_FLOP*,
 							SHM_STRUCT*,
 							unsigned int ) = \
 {
@@ -552,7 +552,7 @@ static void (*ComputeVoltage_Intel_SKL_X_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_Intel_SKL_X_PerPkg
 };
 
-static inline void ComputeVoltage_AMD(	struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD( struct FLIP_FLOP *CFlip,
 					SHM_STRUCT *Shm,
 					unsigned int cpu )
 {
@@ -565,7 +565,7 @@ static inline void ComputeVoltage_AMD(	struct FLIP_FLOP *CFlip,
 
 #define ComputeVoltage_AMD_PerSMT	ComputeVoltage_AMD
 
-static inline void ComputeVoltage_AMD_PerCore(	struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD_PerCore( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -576,7 +576,7 @@ static inline void ComputeVoltage_AMD_PerCore(	struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeVoltage_AMD_PerPkg(	struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD_PerPkg( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -586,7 +586,7 @@ static inline void ComputeVoltage_AMD_PerPkg(	struct FLIP_FLOP *CFlip,
 	}
 }
 
-static void (*ComputeVoltage_AMD_Matrix[4])(	struct FLIP_FLOP*,
+static void (*ComputeVoltage_AMD_Matrix[4])( struct FLIP_FLOP*,
 						SHM_STRUCT*,
 						unsigned int ) = \
 {
@@ -596,7 +596,7 @@ static void (*ComputeVoltage_AMD_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_AMD_PerPkg
 };
 
-static inline void ComputeVoltage_AMD_0Fh(	struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD_0Fh( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {	/* AMD BKDG Family 0Fh §10.6 Table 70				*/
@@ -609,7 +609,7 @@ static inline void ComputeVoltage_AMD_0Fh(	struct FLIP_FLOP *CFlip,
 
 #define ComputeVoltage_AMD_0Fh_PerSMT	ComputeVoltage_AMD_0Fh
 
-static inline void ComputeVoltage_AMD_0Fh_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD_0Fh_PerCore( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -620,7 +620,7 @@ static inline void ComputeVoltage_AMD_0Fh_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeVoltage_AMD_0Fh_PerPkg(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD_0Fh_PerPkg( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -640,9 +640,9 @@ static void (*ComputeVoltage_AMD_0Fh_Matrix[4])(struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_AMD_0Fh_PerPkg
 };
 
-static inline void ComputeVoltage_AMD_15h(	struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
-						unsigned int cpu )
+static void ComputeVoltage_AMD_15h( struct FLIP_FLOP *CFlip,
+					SHM_STRUCT *Shm,
+					unsigned int cpu )
 {
 	COMPUTE_VOLTAGE(AMD_15h,
 			CFlip->Voltage.Vcore,
@@ -653,7 +653,7 @@ static inline void ComputeVoltage_AMD_15h(	struct FLIP_FLOP *CFlip,
 
 #define ComputeVoltage_AMD_15h_PerSMT	ComputeVoltage_AMD_15h
 
-static inline void ComputeVoltage_AMD_15h_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD_15h_PerCore( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -664,7 +664,7 @@ static inline void ComputeVoltage_AMD_15h_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeVoltage_AMD_15h_PerPkg(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD_15h_PerPkg( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -684,7 +684,7 @@ static void (*ComputeVoltage_AMD_15h_Matrix[4])(struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_AMD_15h_PerPkg
 };
 
-static inline void ComputeVoltage_AMD_17h(	struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD_17h( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -697,7 +697,7 @@ static inline void ComputeVoltage_AMD_17h(	struct FLIP_FLOP *CFlip,
 
 #define ComputeVoltage_AMD_17h_PerSMT	ComputeVoltage_AMD_17h
 
-static inline void ComputeVoltage_AMD_17h_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD_17h_PerCore( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -708,7 +708,7 @@ static inline void ComputeVoltage_AMD_17h_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeVoltage_AMD_17h_PerPkg(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_AMD_17h_PerPkg( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -728,7 +728,7 @@ static void (*ComputeVoltage_AMD_17h_Matrix[4])(struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_AMD_17h_PerPkg
 };
 
-static inline void ComputeVoltage_Winbond_IO(	struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Winbond_IO( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {	/* Winbond W83627EHF/EF, W83627EHG,EG				*/
@@ -741,7 +741,7 @@ static inline void ComputeVoltage_Winbond_IO(	struct FLIP_FLOP *CFlip,
 
 #define ComputeVoltage_Winbond_IO_PerSMT	ComputeVoltage_Winbond_IO
 
-static inline void ComputeVoltage_Winbond_IO_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Winbond_IO_PerCore( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -752,7 +752,7 @@ static inline void ComputeVoltage_Winbond_IO_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeVoltage_Winbond_IO_PerPkg(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_Winbond_IO_PerPkg( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -762,7 +762,7 @@ static inline void ComputeVoltage_Winbond_IO_PerPkg(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static void (*ComputeVoltage_Winbond_IO_Matrix[4])(	struct FLIP_FLOP*,
+static void (*ComputeVoltage_Winbond_IO_Matrix[4])( struct FLIP_FLOP*,
 							SHM_STRUCT*,
 							unsigned int ) = \
 {
@@ -772,7 +772,7 @@ static void (*ComputeVoltage_Winbond_IO_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_Winbond_IO_PerPkg
 };
 
-static inline void ComputeVoltage_ITE_Tech_IO(	struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_ITE_Tech_IO( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {	/* ITE Tech IT8720F						*/
@@ -785,7 +785,7 @@ static inline void ComputeVoltage_ITE_Tech_IO(	struct FLIP_FLOP *CFlip,
 
 #define ComputeVoltage_ITE_Tech_IO_PerSMT	ComputeVoltage_ITE_Tech_IO
 
-static inline void ComputeVoltage_ITE_Tech_IO_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_ITE_Tech_IO_PerCore( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -796,7 +796,7 @@ static inline void ComputeVoltage_ITE_Tech_IO_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputeVoltage_ITE_Tech_IO_PerPkg(struct FLIP_FLOP *CFlip,
+static void ComputeVoltage_ITE_Tech_IO_PerPkg( struct FLIP_FLOP *CFlip,
 							SHM_STRUCT *Shm,
 							unsigned int cpu )
 {
@@ -831,7 +831,7 @@ void Core_ComputePowerLimits(CPU_STRUCT *Cpu, struct FLIP_FLOP *CFlip)
 						Cpu->Sensors.Power.Limit );
 }
 
-static inline void ComputePower_None(	struct FLIP_FLOP *CFlip,
+static void ComputePower_None( struct FLIP_FLOP *CFlip,
 					SHM_STRUCT *Shm,
 					unsigned int cpu )
 {
@@ -860,24 +860,24 @@ static void (*ComputePower_None_Matrix[4])(	struct FLIP_FLOP*,
 
 #define ComputePower_AMD_Matrix 	ComputePower_None_Matrix
 
-static inline void ComputePower_AMD_17h(struct FLIP_FLOP *CFlip,
+static void ComputePower_AMD_17h( struct FLIP_FLOP *CFlip,
 					SHM_STRUCT *Shm,
 					unsigned int cpu)
 {
-	CFlip->State.Energy	= (double) CFlip->Delta.Power.ACCU
-				* Shm->Proc.Power.Unit.Joules;
+	CFlip->State.Energy	= CFlip->Delta.Power.ACCU;
+	CFlip->State.Energy	*= Shm->Proc.Power.Unit.Joules;
 
-	CFlip->State.Power	= (1000.0 * CFlip->State.Energy)
-				/ (double) Shm->Sleep.Interval;
+	CFlip->State.Power	= 1000.0 * CFlip->State.Energy;
+	CFlip->State.Power	/= Shm->Sleep.Interval;
 
 	Core_ComputePowerLimits(&Shm->Cpu[cpu], CFlip);
 }
 
 #define ComputePower_AMD_17h_PerSMT	ComputePower_AMD_17h
 
-static inline void ComputePower_AMD_17h_PerCore(struct FLIP_FLOP *CFlip,
+static void ComputePower_AMD_17h_PerCore( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
-						unsigned int cpu)
+						unsigned int cpu )
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1))
@@ -886,7 +886,7 @@ static inline void ComputePower_AMD_17h_PerCore(struct FLIP_FLOP *CFlip,
 	}
 }
 
-static inline void ComputePower_AMD_17h_PerPkg( struct FLIP_FLOP *CFlip,
+static void ComputePower_AMD_17h_PerPkg( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -1037,8 +1037,6 @@ static void *Core_Cycle(void *arg)
 	BITSET_CC(BUS_LOCK, roomCore, cpu);
 
   do {
-	double dTSC, dUCC, dURC, dINST, dC3, dC6, dC7, dC1;
-
     while (!BITCLR(LOCKLESS, Core_RW->Sync.V, NTFY)
 	&& !BITVAL(Shutdown, SYNC)
 	&& !BITVAL(Core->OffLine, OS)) {
@@ -1067,51 +1065,77 @@ static void *Core_Cycle(void *arg)
 	CFlip->Delta.TSC	= Core->Delta.TSC;
 	CFlip->Delta.C1 	= Core->Delta.C1;
 
-	dTSC	= (double) CFlip->Delta.TSC;
-	dUCC	= (double) CFlip->Delta.C0.UCC;
-	dURC	= (double) CFlip->Delta.C0.URC;
-	dINST	= (double) CFlip->Delta.INST;
-	dC3	= (double) CFlip->Delta.C3;
-	dC6	= (double) CFlip->Delta.C6;
-	dC7	= (double) CFlip->Delta.C7;
-	dC1	= (double) CFlip->Delta.C1;
-
-	/* Compute IPS=Instructions per TSC				*/
-	CFlip->State.IPS = dINST / dTSC;
-
-	/* Compute IPC=Instructions per non-halted reference cycle.
-	   ( Protect against a division by zero )			*/
-	CFlip->State.IPC = (CFlip->Delta.C0.URC != 0) ? dINST / dURC : 0.0f;
-
-	/* Compute CPI=Non-halted reference cycles per instruction.
-	   ( Protect against a division by zero )			*/
-	CFlip->State.CPI = (CFlip->Delta.INST != 0) ? dURC / dINST : 0.0f;
-
-	/* Compute the Turbo State.					*/
-	CFlip->State.Turbo = dUCC / dTSC;
-
-	/* Compute the C-States.					*/
-	CFlip->State.C0 = dURC / dTSC;
-	CFlip->State.C3 = dC3  / dTSC;
-	CFlip->State.C6 = dC6  / dTSC;
-	CFlip->State.C7 = dC7  / dTSC;
-	CFlip->State.C1 = dC1  / dTSC;
-
 	/* Update all clock ratios.					*/
 	memcpy(Cpu->Boost, Core->Boost, (BOOST(SIZE)) * sizeof(unsigned int));
 
-	/* Relative Frequency = Relative Ratio x Bus Clock Frequency	*/
-	CFlip->Relative.Ratio = (dUCC * Cpu->Boost[BOOST(MAX)]) / dTSC;
+	CFlip->Absolute.Ratio.Perf = Core->Ratio.Perf;
 
-	CFlip->Relative.Freq = (double) REL_FREQ_MHz(	CFlip->Relative.Ratio,
-							Core->Clock,
-							Shm->Sleep.Interval );
+	/* Compute IPS=Instructions per TSC				*/
+	CFlip->State.IPS = CFlip->Delta.INST;
+	CFlip->State.IPS /= CFlip->Delta.TSC;
+
+	/* Compute IPC=Instructions per non-halted reference cycle.
+	   ( Protect against a division by zero )			*/
+	if (CFlip->Delta.C0.URC != 0) {
+		CFlip->State.IPC = CFlip->Delta.INST;
+		CFlip->State.IPC /= CFlip->Delta.C0.URC;
+	} else {
+		CFlip->State.IPC = 0.0f;
+	}
+	/* Compute CPI=Non-halted reference cycles per instruction.
+	   ( Protect against a division by zero )			*/
+	if (CFlip->Delta.INST != 0) {
+		CFlip->State.CPI = CFlip->Delta.C0.URC;
+		CFlip->State.CPI /= CFlip->Delta.INST;
+	} else {
+		CFlip->State.CPI = 0.0f;
+	}
+	/* Compute the Turbo State.					*/
+	CFlip->State.Turbo = CFlip->Delta.C0.UCC;
+	CFlip->State.Turbo /= CFlip->Delta.TSC;
+
+	/* Compute the C-States.					*/
+	CFlip->State.C0 = CFlip->Delta.C0.URC;
+	CFlip->State.C0 /= CFlip->Delta.TSC;
+
+	CFlip->State.C3 = CFlip->Delta.C3;
+	CFlip->State.C3 /= CFlip->Delta.TSC;
+
+	CFlip->State.C6 = CFlip->Delta.C6;
+	CFlip->State.C6 /= CFlip->Delta.TSC;
+
+	CFlip->State.C7 = CFlip->Delta.C7;
+	CFlip->State.C7 /= CFlip->Delta.TSC;
+
+	CFlip->State.C1 = CFlip->Delta.C1;
+	CFlip->State.C1 /= CFlip->Delta.TSC;
+
+	/* Relative Frequency = Relative Ratio x Bus Clock Frequency	*/
+	CFlip->Relative.Ratio = CFlip->Delta.C0.UCC;
+	CFlip->Relative.Ratio *= Cpu->Boost[BOOST(MAX)];
+	CFlip->Relative.Ratio /= CFlip->Delta.TSC;
+
+	CFlip->Relative.Freq = REL_FREQ_MHz(	CFlip->Relative.Ratio,
+						CFlip->Clock,
+						Shm->Sleep.Interval );
+
 	/* Per Core, compute the Relative Frequency limits.		*/
 	TEST_AND_SET_SENSOR( REL_FREQ, LOWEST,	CFlip->Relative.Freq,
 						Cpu->Relative.Freq );
 
 	TEST_AND_SET_SENSOR( REL_FREQ, HIGHEST, CFlip->Relative.Freq,
 						Cpu->Relative.Freq );
+	/* Per Core, compute the Absolute Frequency limits.		*/
+	CFlip->Absolute.Freq	= ABS_FREQ_MHz(
+					__typeof__(CFlip->Absolute.Freq),
+					CFlip->Absolute.Ratio.Perf, CFlip->Clock
+				);
+
+	TEST_AND_SET_SENSOR( ABS_FREQ, LOWEST,	CFlip->Absolute.Freq,
+						Cpu->Absolute.Freq );
+
+	TEST_AND_SET_SENSOR( ABS_FREQ, HIGHEST, CFlip->Absolute.Freq,
+						Cpu->Absolute.Freq );
 	/* Per Core, evaluate thermal properties.			*/
 	CFlip->Thermal.Sensor	= Core->PowerThermal.Sensor;
 	CFlip->Thermal.Events	= Core->PowerThermal.Events;
@@ -1151,19 +1175,6 @@ static void *Core_Cycle(void *arg)
 	if (BITVAL(Shm->Registration.NMI, BIT_NMI_IO_CHECK) == 1) {
 		CFlip->Counter.NMI.IOCHECK = Core->Interrupt.NMI.IOCHECK;
 	}
-
-	CFlip->Absolute.Ratio.Perf = Core->Ratio.Perf;
-
-	CFlip->Absolute.Freq	= ABS_FREQ_MHz(
-					__typeof__(CFlip->Absolute.Freq),
-					Core->Ratio.Perf, CFlip->Clock
-				);
-	/* Per Core, compute the Absolute Frequency limits.		*/
-	TEST_AND_SET_SENSOR( ABS_FREQ, LOWEST,	CFlip->Absolute.Freq,
-						Cpu->Absolute.Freq );
-
-	TEST_AND_SET_SENSOR( ABS_FREQ, HIGHEST, CFlip->Absolute.Freq,
-						Cpu->Absolute.Freq );
     }
   } while (!BITVAL(Shutdown, SYNC) && !BITVAL(Core->OffLine, OS)) ;
 
@@ -1652,13 +1663,29 @@ void Mitigation_1st_Stage(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
 	Shm->Proc.Mechanisms.TAA_NO = (
 		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP + (2 * TAA_NO)
 	);
+	Shm->Proc.Mechanisms.STLB = BITCMP_CC(	LOCKLESS,
+						Proc_RW->STLB,
+						Proc_RO->ARCH_CAP_Mask );
+	Shm->Proc.Mechanisms.FUSA = BITCMP_CC(	LOCKLESS,
+						Proc_RW->FUSA,
+						Proc_RO->ARCH_CAP_Mask );
+	Shm->Proc.Mechanisms.RSM_CPL0 = BITCMP_CC(LOCKLESS,
+						Proc_RW->RSM_CPL0,
+						Proc_RO->ARCH_CAP_Mask );
 	Shm->Proc.Mechanisms.SPLA = BITCMP_CC(	LOCKLESS,
 						Proc_RW->SPLA,
+						Proc_RO->ARCH_CAP_Mask );
+	Shm->Proc.Mechanisms.SNOOP_FILTER = BITCMP_CC(LOCKLESS,
+						Proc_RW->SNOOP_FILTER,
 						Proc_RO->ARCH_CAP_Mask );
     }
     else if (	(Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	||	(Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
     {
+	unsigned short	PSFD = BITCMP_CC(	LOCKLESS,
+						Proc_RW->PSFD,
+						Proc_RO->SPEC_CTRL_Mask );
+
 	Shm->Proc.Mechanisms.IBRS = (
 		Shm->Proc.Features.leaf80000008.EBX.IBRS == 1
 	);
@@ -1670,6 +1697,10 @@ void Mitigation_1st_Stage(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
 	);
 
 	Mitigation_2nd_Stage(Shm, Proc_RO, Proc_RW);
+
+	Shm->Proc.Mechanisms.PSFD = (
+		Shm->Proc.Features.leaf80000008.EBX.PSFD + (2 * PSFD)
+	);
     }
 }
 
@@ -1889,7 +1920,7 @@ void P945_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 
 		switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
 		default:
-			/* Fallthrough */
+			fallthrough;
 		case 0b010:
 			Ratio.Q = 1;
 			Ratio.R = 1;
@@ -1909,7 +1940,7 @@ void P945_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 
 		switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
 		default:
-			/* Fallthrough */
+			fallthrough;
 		case 0b010:
 			Ratio.Q = 3;
 			Ratio.R = 4;
@@ -1925,13 +1956,13 @@ void P945_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 		}
 		break;
 	default:
-		/* Fallthrough */
+		fallthrough;
 	case 0b011:
 		Shm->Uncore.Bus.Rate = 667;
 
 		switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
 		default:
-			/* Fallthrough */
+			fallthrough;
 		case 0b010:
 			Ratio.Q = 3;
 			Ratio.R = 5;
@@ -2026,7 +2057,7 @@ void P965_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 
 	switch (Proc->Uncore.Bus.ClkCfg.FSB_Select) {
 	case 0b111:	/* Unknown */
-		/* Fallthrough */
+		fallthrough;
 	case 0b000:
 		Shm->Uncore.Bus.Rate = 1066;
 
@@ -2119,7 +2150,7 @@ void P965_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 		}
 		break;
 	default:
-		/* Fallthrough */
+		fallthrough;
 	case 0b010:
 		Shm->Uncore.Bus.Rate = 800;
 
@@ -2419,7 +2450,7 @@ void G965_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 		}
 		break;
 	default:
-		/* Fallthrough */
+		fallthrough;
 	case 0b010:
 		Shm->Uncore.Bus.Rate = 800;
 
@@ -3004,7 +3035,7 @@ void QPI_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 		Shm->Uncore.CtrlSpeed = 2133;
 		break;
 	case 0b000000:
-		/* Fallthrough */
+		fallthrough;
 	default:
 		Shm->Uncore.CtrlSpeed = 800;
 		break;
@@ -3055,7 +3086,7 @@ void DMI_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 		Shm->Uncore.CtrlSpeed = 1333;
 		break;
 	case 0b000000:
-		/* Fallthrough */
+		fallthrough;
 	default:
 		Shm->Uncore.CtrlSpeed = 266;
 		break;
@@ -3759,8 +3790,8 @@ void SKL_IMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 		break;
 	}
 
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Banks =			\
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Banks =			\
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Banks = 		\
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Banks = 		\
 	Proc->Uncore.MC[mc].Channel[cha].SKL.Sched.DRAM_Tech == 0b00 ? 16 : 8;
 
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Cols =			\
@@ -3884,23 +3915,198 @@ void SKL_CAP(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 	Shm->Proc.Technology.IOMMU_Ver_Minor = Proc->Uncore.Bus.IOMMU_Ver.Minor;
 }
 
+void RKL_IMC(SHM_STRUCT *Shm, PROC_RO *Proc)
+{
+    unsigned short mc, cha;
+
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+    {
+	Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
+	Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
+
+     for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+     {
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.ODT.tCL;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.Timing.tRP;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.Timing.tRP;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.Timing.tRAS;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.ACT.tRRD_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.Refresh.tRFC;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.Refresh.tREFI;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.Timing.tWRPRE
+			- Proc->Uncore.MC[mc].Channel[cha].RKL.ODT.tCWL - 4;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.Timing.tRDPRE;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.Timing.tWRPRE;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.ACT.tFAW;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.ODT.tCWL;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_SG =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.RDRD.tRDRD_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DG =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.RDRD.tRDRD_DG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DR =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.RDRD.tRDRD_DR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DD =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.RDRD.tRDRD_DD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_SG =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.RDWR.tRDWR_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DG =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.RDWR.tRDWR_DG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DR =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.RDWR.tRDWR_DR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DD =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.RDWR.tRDWR_DD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_SG =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.WRRD.tWRRD_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DG =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.WRRD.tWRRD_DG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DR =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.WRRD.tWRRD_DR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DD =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.WRRD.tWRRD_DD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_SG =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.WRWR.tWRWR_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DG =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.WRWR.tWRWR_DG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DR =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.WRWR.tWRWR_DR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DD =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.WRWR.tWRWR_DD;
+
+	switch (Proc->Uncore.MC[mc].Channel[cha].RKL.Sched.CMD_Stretch) {
+	case 0b00:
+	case 0b11:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+		break;
+	case 0b01:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+		break;
+	case 0b10:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 3;
+		break;
+	}
+
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Banks = 		\
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Banks = 		\
+	!Proc->Uncore.MC[mc].Channel[cha].RKL.Sched.ReservedBits1 ? 16 : 8;
+
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Cols =			\
+		Proc->Uncore.MC[mc].Channel[cha].RKL.Sched.x8_device_Dimm0 ?
+			1024 : 512;
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Cols =			\
+		Proc->Uncore.MC[mc].Channel[cha].RKL.Sched.x8_device_Dimm1 ?
+			1024 : 512;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE  =
+			Proc->Uncore.MC[mc].Channel[cha].RKL.PWDEN.tCKE;
+     }
+	Shm->Uncore.MC[mc].Channel[0].Timing.ECC =
+				Proc->Uncore.MC[mc].RKL.MADC0.ECC;
+
+	Shm->Uncore.MC[mc].Channel[1].Timing.ECC =
+				Proc->Uncore.MC[mc].RKL.MADC1.ECC;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		Proc->Uncore.MC[mc].RKL.MADC0.Dimm_L_Map
+	].Size = 512 * Proc->Uncore.MC[mc].RKL.MADD0.Dimm_L_Size;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		!Proc->Uncore.MC[mc].RKL.MADC0.Dimm_L_Map
+	].Size = 512 * Proc->Uncore.MC[mc].RKL.MADD0.Dimm_S_Size;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		Proc->Uncore.MC[mc].RKL.MADC1.Dimm_L_Map
+	].Size = 512 * Proc->Uncore.MC[mc].RKL.MADD1.Dimm_L_Size;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		!Proc->Uncore.MC[mc].RKL.MADC1.Dimm_L_Map
+	].Size = 512 * Proc->Uncore.MC[mc].RKL.MADD1.Dimm_S_Size;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		Proc->Uncore.MC[mc].RKL.MADC0.Dimm_L_Map
+	].Ranks = 1 + Proc->Uncore.MC[mc].RKL.MADD0.DLNOR;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		!Proc->Uncore.MC[mc].RKL.MADC0.Dimm_L_Map
+	].Ranks = 1 + Proc->Uncore.MC[mc].RKL.MADD0.DSNOR;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		Proc->Uncore.MC[mc].RKL.MADC1.Dimm_L_Map
+	].Ranks = 1 + Proc->Uncore.MC[mc].RKL.MADD1.DLNOR;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		!Proc->Uncore.MC[mc].RKL.MADC1.Dimm_L_Map
+	].Ranks = 1 + Proc->Uncore.MC[mc].RKL.MADD1.DSNOR;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		Proc->Uncore.MC[mc].RKL.MADC0.Dimm_L_Map
+	].Rows = SKL_DimmWidthToRows(Proc->Uncore.MC[mc].RKL.MADD0.DLW);
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		!Proc->Uncore.MC[mc].RKL.MADC0.Dimm_L_Map
+	].Rows = SKL_DimmWidthToRows(Proc->Uncore.MC[mc].RKL.MADD0.DSW);
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		Proc->Uncore.MC[mc].RKL.MADC1.Dimm_L_Map
+	].Rows = SKL_DimmWidthToRows(Proc->Uncore.MC[mc].RKL.MADD1.DLW);
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		!Proc->Uncore.MC[mc].RKL.MADC1.Dimm_L_Map
+	].Rows = SKL_DimmWidthToRows(Proc->Uncore.MC[mc].RKL.MADD1.DSW);
+    }
+}
+
 void RKL_CAP(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 {
 	unsigned int units;
 
-	if (Proc->Uncore.Bus.RKL_Cap_A.DDR_OVERCLOCK) {
-		units = Proc->Uncore.Bus.RKL_Cap_C.DATA_RATE_GEAR1;
-	} else {
-		units = 30;
-	}
-	Shm->Uncore.Bus.Rate = (266 * units) + ((333 * units) / 500);
-
+	Shm->Uncore.Bus.Rate = 8000;
 	Shm->Uncore.Bus.Speed = (Core->Clock.Hz * Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.Factory.Clock.Hz;
 
-	if (Proc->Uncore.Bus.RKL_Cap_C.LPDDR4_EN) {
+	if (Proc->Uncore.Bus.RKL_Cap_C.LPDDR4_EN
+	&& !Proc->Uncore.Bus.RKL_Cap_A.DDR_OVERCLOCK) {
 		units = Proc->Uncore.Bus.RKL_Cap_C.DATA_RATE_LPDDR4;
-	} else if (Proc->Uncore.Bus.RKL_Cap_C.DDR4_EN) {
+	} else if (Proc->Uncore.Bus.RKL_Cap_C.DDR4_EN
+		&& !Proc->Uncore.Bus.RKL_Cap_A.DDR_OVERCLOCK) {
 		units = Proc->Uncore.Bus.RKL_Cap_C.DATA_RATE_DDR4;
 	} else {
 		units = 12;
@@ -3911,12 +4117,193 @@ void RKL_CAP(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 	Shm->Uncore.Unit.BusSpeed = 0b01;
 	Shm->Uncore.Unit.DDR_Rate = 0b11;
 	Shm->Uncore.Unit.DDRSpeed = 0b00;
-	Shm->Uncore.Unit.DDR_Ver  = 4;
+	Shm->Uncore.Unit.DDR_Ver  = Proc->Uncore.MC[0].RKL.MADCH.DDR_TYPE ? 5:4;
 
 	Shm->Proc.Technology.IOMMU = !Proc->Uncore.Bus.RKL_Cap_A.VT_d;
 	Shm->Proc.Technology.IOMMU_Ver_Major = Proc->Uncore.Bus.IOMMU_Ver.Major;
 	Shm->Proc.Technology.IOMMU_Ver_Minor = Proc->Uncore.Bus.IOMMU_Ver.Minor;
 }
+
+void TGL_IMC(SHM_STRUCT *Shm, PROC_RO *Proc)
+{
+    unsigned short mc, cha;
+
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+    {
+	Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
+	Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
+
+     for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+     {
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.ODT.tCL;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.Timing.tRP;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.Timing.tRP;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.Timing.tRAS;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.ACT.tRRD_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.Refresh.tRFC;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.Refresh.tREFI;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.Timing.tWRPRE
+			- Proc->Uncore.MC[mc].Channel[cha].TGL.ODT.tCWL - 4;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.Timing.tRDPRE;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.Timing.tWRPRE;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.ACT.tFAW;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.ODT.tCWL;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_SG =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.RDRD.tRDRD_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DG =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.RDRD.tRDRD_DG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DR =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.RDRD.tRDRD_DR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DD =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.RDRD.tRDRD_DD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_SG =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.RDWR.tRDWR_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DG =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.RDWR.tRDWR_DG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DR =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.RDWR.tRDWR_DR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DD =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.RDWR.tRDWR_DD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_SG =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.WRRD.tWRRD_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DG =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.WRRD.tWRRD_DG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DR =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.WRRD.tWRRD_DR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DD =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.WRRD.tWRRD_DD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_SG =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.WRWR.tWRWR_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DG =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.WRWR.tWRWR_DG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DR =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.WRWR.tWRWR_DR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DD =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.WRWR.tWRWR_DD;
+
+	switch (Proc->Uncore.MC[mc].Channel[cha].TGL.Sched.CMD_Stretch) {
+	case 0b00:
+	case 0b11:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+		break;
+	case 0b01:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+		break;
+	case 0b10:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 3;
+		break;
+	}
+
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Banks = 		\
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Banks = 		\
+	!Proc->Uncore.MC[mc].Channel[cha].TGL.Sched.ReservedBits1 ? 16 : 8;
+
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Cols =			\
+		Proc->Uncore.MC[mc].Channel[cha].TGL.Sched.x8_device_Dimm0 ?
+			1024 : 512;
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Cols =			\
+		Proc->Uncore.MC[mc].Channel[cha].TGL.Sched.x8_device_Dimm1 ?
+			1024 : 512;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE  =
+			Proc->Uncore.MC[mc].Channel[cha].TGL.PWDEN.tCKE;
+     }
+	Shm->Uncore.MC[mc].Channel[0].Timing.ECC =
+				Proc->Uncore.MC[mc].TGL.MADC0.ECC;
+
+	Shm->Uncore.MC[mc].Channel[1].Timing.ECC =
+				Proc->Uncore.MC[mc].TGL.MADC1.ECC;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		Proc->Uncore.MC[mc].TGL.MADC0.Dimm_L_Map
+	].Size = 512 * Proc->Uncore.MC[mc].TGL.MADD0.Dimm_L_Size;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		!Proc->Uncore.MC[mc].TGL.MADC0.Dimm_L_Map
+	].Size = 512 * Proc->Uncore.MC[mc].TGL.MADD0.Dimm_S_Size;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		Proc->Uncore.MC[mc].TGL.MADC1.Dimm_L_Map
+	].Size = 512 * Proc->Uncore.MC[mc].TGL.MADD1.Dimm_L_Size;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		!Proc->Uncore.MC[mc].TGL.MADC1.Dimm_L_Map
+	].Size = 512 * Proc->Uncore.MC[mc].TGL.MADD1.Dimm_S_Size;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		Proc->Uncore.MC[mc].TGL.MADC0.Dimm_L_Map
+	].Ranks = 1 + Proc->Uncore.MC[mc].TGL.MADD0.DLNOR;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		!Proc->Uncore.MC[mc].TGL.MADC0.Dimm_L_Map
+	].Ranks = 1 + Proc->Uncore.MC[mc].TGL.MADD0.DSNOR;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		Proc->Uncore.MC[mc].TGL.MADC1.Dimm_L_Map
+	].Ranks = 1 + Proc->Uncore.MC[mc].TGL.MADD1.DLNOR;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		!Proc->Uncore.MC[mc].TGL.MADC1.Dimm_L_Map
+	].Ranks = 1 + Proc->Uncore.MC[mc].TGL.MADD1.DSNOR;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		Proc->Uncore.MC[mc].TGL.MADC0.Dimm_L_Map
+	].Rows = SKL_DimmWidthToRows(Proc->Uncore.MC[mc].TGL.MADD0.DLW);
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		!Proc->Uncore.MC[mc].TGL.MADC0.Dimm_L_Map
+	].Rows = SKL_DimmWidthToRows(Proc->Uncore.MC[mc].TGL.MADD0.DSW);
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		Proc->Uncore.MC[mc].TGL.MADC1.Dimm_L_Map
+	].Rows = SKL_DimmWidthToRows(Proc->Uncore.MC[mc].TGL.MADD1.DLW);
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		!Proc->Uncore.MC[mc].TGL.MADC1.Dimm_L_Map
+	].Rows = SKL_DimmWidthToRows(Proc->Uncore.MC[mc].TGL.MADD1.DSW);
+    }
+}
+
+#define TGL_CAP RKL_CAP
 
 void AMD_0Fh_MCH(SHM_STRUCT *Shm, PROC_RO *Proc)
 {
@@ -4171,14 +4558,16 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
 				Proc->Uncore.MC[mc].Channel[cha].AMD17h.Ranks;
 
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 16;
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = DIMM_Size >> 10;
-
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = DIMM_Size >> 19;
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = \
-			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
-			/ Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
+		8 << Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DAC.NumBanks;
+
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = \
+	1 << (10+Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DAC.NumRowLo);
+
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = \
+	1 << (5 + Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DAC.NumCol);
+
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = DIMM_Size >> 10;
     }
    }
 	Shm->Uncore.MC[mc].SlotCount = slotCount;
@@ -4289,19 +4678,19 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 		Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR10.tWrRdScDLR;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE =
-			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR54.tCKE;
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR21.tCKE;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR12.tREFI;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC1 =
-			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR60.tRFC1;
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTRFC.tRFC1;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC2 =
-			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR60.tRFC2;
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTRFC.tRFC2;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC4 =
-			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR60.tRFC4;
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTRFC.tRFC4;
 
 	switch(Proc->Uncore.MC[mc].Channel[cha].AMD17h.MISC.CMD_Rate) {
 	case 0b00:
@@ -4327,6 +4716,39 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.BGS_ALT =
 		(Proc->Uncore.MC[mc].Channel[cha].AMD17h.BGS_ALT.value
 		& AMD_17_UMC_BGS_ALT_MASK_ON) == AMD_17_UMC_BGS_ALT_MASK_ON;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.PDM =
+		Proc->Uncore.MC[mc].Channel[cha].AMD17h.SPAZ.PwrDownEn;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tMRD =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR13.tMRD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tMOD =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR13.tMOD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tMRD_PDA =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR13.tMRD_PDA;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tMOD_PDA =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR13.tMOD_PDA;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tSTAG =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR20.tSTAG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tPHYWRD =
+		Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR22.tPHY_WRDATA;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tPHYWRL =
+		Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR22.tPHY_WRLAT;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tPHYRDL =
+		Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR22.tPHY_RDLAT;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRDDATA =
+		Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR22.tRDDATA_EN;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWRMPR =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR35.tWR_MPR;
   }
  }
 }
@@ -4427,380 +4849,419 @@ static char *Chipset[CHIPSETS] = {
 void PCI_Intel(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core,unsigned short DID)
 {
 	switch (DID) {
-	case PCI_DEVICE_ID_INTEL_82945P_HB:
+	case DID_INTEL_82945P_HB:
 		P945_CLK(Shm, Proc, Core);
 		P945_MCH(Shm, Proc);
 		SET_CHIPSET(IC_LAKEPORT);
 		break;
-	case PCI_DEVICE_ID_INTEL_82945GM_HB:
-	case PCI_DEVICE_ID_INTEL_82945GME_HB:
+	case DID_INTEL_82945GM_HB:
+	case DID_INTEL_82945GME_HB:
 		P945_CLK(Shm, Proc, Core);
 		P945_MCH(Shm, Proc);
 		SET_CHIPSET(IC_CALISTOGA);
 		break;
-	case PCI_DEVICE_ID_INTEL_82955_HB:
+	case DID_INTEL_82955_HB:
 		P945_CLK(Shm, Proc, Core);
 		P955_MCH(Shm, Proc);
 		SET_CHIPSET(IC_LAKEPORT_X);
 		break;
-	case PCI_DEVICE_ID_INTEL_82946GZ_HB:
+	case DID_INTEL_82946GZ_HB:
 		P965_CLK(Shm, Proc, Core);
 		P965_MCH(Shm, Proc);
 		SET_CHIPSET(IC_LAKEPORT_P);
 		break;
-	case PCI_DEVICE_ID_INTEL_82965Q_HB:
-	case PCI_DEVICE_ID_INTEL_82965G_HB:
+	case DID_INTEL_82965Q_HB:
+	case DID_INTEL_82965G_HB:
 		P965_CLK(Shm, Proc, Core);
 		P965_MCH(Shm, Proc);
 		SET_CHIPSET(IC_BROADWATER);
 		break;
-	case PCI_DEVICE_ID_INTEL_82965GM_HB:
-	case PCI_DEVICE_ID_INTEL_82965GME_HB:
+	case DID_INTEL_82965GM_HB:
+	case DID_INTEL_82965GME_HB:
 		G965_CLK(Shm, Proc, Core);
 		G965_MCH(Shm, Proc);
 		SET_CHIPSET(IC_CRESTLINE);
 		break;
-	case PCI_DEVICE_ID_INTEL_GM45_HB:
+	case DID_INTEL_GM45_HB:
 		G965_CLK(Shm, Proc, Core);
 		G965_MCH(Shm, Proc);
 		SET_CHIPSET(IC_CANTIGA);
 		break;
-	case PCI_DEVICE_ID_INTEL_Q35_HB:
+	case DID_INTEL_Q35_HB:
 		P35_CLK(Shm, Proc, Core);
 		P35_MCH(Shm, Proc);
 		SET_CHIPSET(IC_BEARLAKE_Q);
 		break;
-	case PCI_DEVICE_ID_INTEL_G33_HB:
+	case DID_INTEL_G33_HB:
 		P35_CLK(Shm, Proc, Core);
 		P35_MCH(Shm, Proc);
 		SET_CHIPSET(IC_BEARLAKE_P);
 		break;
-	case PCI_DEVICE_ID_INTEL_Q33_HB:
+	case DID_INTEL_Q33_HB:
 		P35_CLK(Shm, Proc, Core);
 		P35_MCH(Shm, Proc);
 		SET_CHIPSET(IC_BEARLAKE_QF);
 		break;
-	case PCI_DEVICE_ID_INTEL_X38_HB:
+	case DID_INTEL_X38_HB:
 		P35_CLK(Shm, Proc, Core);
 		P35_MCH(Shm, Proc);
 		SET_CHIPSET(IC_BEARLAKE_X);
 		break;
-	case PCI_DEVICE_ID_INTEL_3200_HB:
+	case DID_INTEL_3200_HB:
 		P35_CLK(Shm, Proc, Core);
 		P35_MCH(Shm, Proc);
 		SET_CHIPSET(IC_INTEL_3200);
 		break;
-	case PCI_DEVICE_ID_INTEL_Q45_HB:
+	case DID_INTEL_Q45_HB:
 		P35_CLK(Shm, Proc, Core);
 		P4S_MCH(Shm, Proc);
 		SET_CHIPSET(IC_EAGLELAKE_Q);
 		break;
-	case PCI_DEVICE_ID_INTEL_G45_HB:
+	case DID_INTEL_G45_HB:
 		P35_CLK(Shm, Proc, Core);
 		P4S_MCH(Shm, Proc);
 		SET_CHIPSET(IC_EAGLELAKE_P);
 		break;
-	case PCI_DEVICE_ID_INTEL_G41_HB:
+	case DID_INTEL_G41_HB:
 		P35_CLK(Shm, Proc, Core);
 		P4S_MCH(Shm, Proc);
 		SET_CHIPSET(IC_EAGLELAKE_G);
 		break;
-	case PCI_DEVICE_ID_INTEL_SLM_PTR:
+	case DID_INTEL_SLM_PTR:
 		SLM_PTR(Shm, Proc, Core);
 		SET_CHIPSET(IC_BAYTRAIL);
 		break;
-	case PCI_DEVICE_ID_INTEL_X58_HUB_CTRL:
+	case DID_INTEL_X58_HUB_CTRL:
 		QPI_CLK(Shm, Proc, Core);
 		break;
-	case PCI_DEVICE_ID_INTEL_X58_HUB_CORE:
+	case DID_INTEL_X58_HUB_CORE:
+	case DID_INTEL_IIO_CORE_REG:
 		X58_VTD(Shm, Proc, Core);
 		break;
-	case PCI_DEVICE_ID_INTEL_I7_MCR:	/* Bloomfield		*/
-	case PCI_DEVICE_ID_INTEL_NHM_EP_MCR:	/* Westmere EP		*/
+	case DID_INTEL_I7_MCR:			/*	Bloomfield	*/
+	case DID_INTEL_NHM_EP_MCR:		/*	Westmere EP	*/
 		NHM_IMC(Shm, Proc);
 		SET_CHIPSET(IC_TYLERSBURG);
 		break;
-	case PCI_DEVICE_ID_INTEL_I7_MC_TEST:
-	case PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_TEST:
-	case PCI_DEVICE_ID_INTEL_NHM_EP_MC_TEST:
+	case DID_INTEL_I7_MC_TEST:
+	case DID_INTEL_LYNNFIELD_MC_TEST:
+	case DID_INTEL_NHM_EP_MC_TEST:
+	case DID_INTEL_NHM_EC_MC_TEST:
 		DMI_CLK(Shm, Proc, Core);
 		break;
-	case PCI_DEVICE_ID_INTEL_LYNNFIELD_MCR:	/* Lynnfield		*/
+	case DID_INTEL_LYNNFIELD_MCR:		/*	Lynnfield	*/
+	case DID_INTEL_NHM_EC_MCR:		/*	C5500-C3500	*/
 		NHM_IMC(Shm, Proc);
 		SET_CHIPSET(IC_IBEXPEAK);
 		break;
-	case PCI_DEVICE_ID_INTEL_SNB_IMC_HA0:	/* Sandy Bridge-E	*/
+	case DID_INTEL_SNB_IMC_HA0:		/*	Sandy Bridge-E	*/
 		SNB_EP_CAP(Shm, Proc, Core);
 		SNB_EP_IMC(Shm, Proc);
 		SET_CHIPSET(IC_PATSBURG);
 		break;
-	case PCI_DEVICE_ID_INTEL_SNB_IMC_SA:	/* SNB Desktop	*/
+	case DID_INTEL_SNB_IMC_SA:		/*	SNB Desktop	*/
 		SNB_CAP(Shm, Proc, Core);
 		SNB_IMC(Shm, Proc);
 		SET_CHIPSET(IC_COUGARPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_SNB_IMC_0104:
+	case DID_INTEL_SNB_IMC_0104:
 		SNB_CAP(Shm, Proc, Core);
 		SNB_IMC(Shm, Proc);
 		SET_CHIPSET(IC_IBEXPEAK_M);
 		break;
-	case PCI_DEVICE_ID_INTEL_IVB_EP_HOST_BRIDGE:  /* Xeon E5 & E7 v2 */
+	case DID_INTEL_IVB_EP_HOST_BRIDGE:	/* Xeon E5 & E7 v2	*/
 		SNB_EP_CAP(Shm, Proc, Core);
 		SNB_EP_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CAVECREEK);
 		break;
-	case PCI_DEVICE_ID_INTEL_IVB_IMC_SA:	/* IVB Desktop	*/
+	case DID_INTEL_IVB_IMC_SA:		/*	IVB Desktop	*/
 		IVB_CAP(Shm, Proc, Core);
 		SNB_IMC(Shm, Proc);
 		SET_CHIPSET(IC_PANTHERPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_IVB_IMC_0154:	/* IVB Mobile i5-3337U */
+	case DID_INTEL_IVB_IMC_0154:		/* IVB Mobile i5-3337U	*/
 		IVB_CAP(Shm, Proc, Core);
 		SNB_IMC(Shm, Proc);
 		SET_CHIPSET(IC_PANTHERPOINT_M);
 		break;
-	case PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA:    /* HSW & BDW Desktop */
-	case PCI_DEVICE_ID_INTEL_HASWELL_MH_IMC_HA0:/* HSW Mobile M/H	*/
-	case PCI_DEVICE_ID_INTEL_HASWELL_UY_IMC_HA0:/* HSW Mobile U/Y	*/
+	case DID_INTEL_HASWELL_IMC_SA:		/* HSW & BDW Desktop	*/
+	case DID_INTEL_HASWELL_MH_IMC_HA0:	/* HSW Mobile M/H	*/
+	case DID_INTEL_HASWELL_UY_IMC_HA0:	/* HSW Mobile U/Y	*/
 		IVB_CAP(Shm, Proc, Core);
 		HSW_IMC(Shm, Proc);
 		SET_CHIPSET(IC_LYNXPOINT_M);
 		break;
-	case PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0:   /* Haswell		*/
+	case DID_INTEL_HASWELL_IMC_HA0: 		/* Haswell	*/
 		IVB_CAP(Shm, Proc, Core);
 		HSW_IMC(Shm, Proc);
 		SET_CHIPSET(IC_LYNXPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0: /* Broadwell/Y/U Core m */
+	case DID_INTEL_BROADWELL_IMC_HA0:	/* Broadwell/Y/U Core m */
 		IVB_CAP(Shm, Proc, Core);
 		HSW_IMC(Shm, Proc);
 		SET_CHIPSET(IC_WILDCATPOINT_M);
 		break;
-	case PCI_DEVICE_ID_INTEL_BROADWELL_D_IMC_HA0:/* BDW/Desktop	*/
-	case PCI_DEVICE_ID_INTEL_BROADWELL_H_IMC_HA0:/* Broadwell/H	*/
+	case DID_INTEL_BROADWELL_D_IMC_HA0:	/*	BDW/Desktop	*/
+	case DID_INTEL_BROADWELL_H_IMC_HA0:	/*	Broadwell/H	*/
 		IVB_CAP(Shm, Proc, Core);
 		HSW_IMC(Shm, Proc);
 		SET_CHIPSET(IC_WELLSBURG);
 		break;
-	case PCI_DEVICE_ID_INTEL_SKYLAKE_U_IMC_HA:  /* Skylake/U Processor */
+	case DID_INTEL_SKYLAKE_U_IMC_HA:	/* Skylake/U Processor */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_SKYLAKE_Y_IMC_HA:  /* Skylake/Y Processor */
+	case DID_INTEL_SKYLAKE_Y_IMC_HA:	/* Skylake/Y Processor */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAD: /* Skylake/S Dual Core */
+	case DID_INTEL_SKYLAKE_S_IMC_HAD:	/* Skylake/S Dual Core */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAQ: /* Skylake/S Quad Core */
+	case DID_INTEL_SKYLAKE_S_IMC_HAQ:	/* Skylake/S Quad Core	*/
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAD: /* Skylake/H Dual Core */
+	case DID_INTEL_SKYLAKE_H_IMC_HAD:	/* Skylake/H Dual Core	*/
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAQ: /* Skylake/H Quad Core */
+	case DID_INTEL_SKYLAKE_H_IMC_HAQ:	/* Skylake/H Quad Core	*/
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_SKYLAKE_DT_IMC_HA:	/* Skylake/DT Server */
+	case DID_INTEL_SKYLAKE_DT_IMC_HA:	/* Skylake/DT Server	*/
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HA:	/* BGA 1356	*/
+	case DID_INTEL_KABYLAKE_U_IMC_HA:	/*	BGA 1356	*/
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_Y_IMC_HA:	/* BGA 1515	*/
+	case DID_INTEL_KABYLAKE_Y_IMC_HA:	/*	BGA 1515	*/
+	case DID_INTEL_KABYLAKE_Y_IMC_HQ:
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAD: /* Kaby Lake/H Dual Core */
+	case DID_INTEL_KABYLAKE_H_IMC_HAD:	/* Kaby Lake/H Dual Core */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAD: /* Kaby Lake/S Dual Core */
+	case DID_INTEL_KABYLAKE_S_IMC_HAD:	/* Kaby Lake/S Dual Core */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAQ: /* Kaby Lake/H Quad Core */
+	case DID_INTEL_KABYLAKE_H_IMC_HAQ:	/* Kaby Lake/H Quad Core */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_DT_IMC_HA: /* Kaby Lake/DT Server */
+	case DID_INTEL_KABYLAKE_DT_IMC_HA:	/* Kaby Lake/DT Server	*/
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HAQ: /* U-Quad Core BGA 1356 */
+	case DID_INTEL_KABYLAKE_U_IMC_HAQ:	/* U-Quad Core BGA 1356 */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAQ: /* Kaby Lake/S Quad Core */
+	case DID_INTEL_KABYLAKE_S_IMC_HAQ:	/* Kaby Lake/S Quad Core */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_X_IMC_HAQ:
+	case DID_INTEL_KABYLAKE_X_IMC_HAQ:
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAQ:/* Coffee Lake Quad Core*/
+	case DID_INTEL_COFFEELAKE_S_IMC_HAQ:	/* Coffee Lake Quad Core */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAS:/* Coffee Lake Hexa Core*/
+	case DID_INTEL_COFFEELAKE_S_IMC_HAS:	/* Coffee Lake Hexa Core */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_COFFEELAKE_R_S_IMC_HAD:
+	case DID_INTEL_COFFEELAKE_R_S_IMC_HAD:
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_COFFEELAKE_R_U_IMC_HAD:
+	case DID_INTEL_COFFEELAKE_R_U_IMC_HAD:
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_COFFEELAKE_R_U_IMC_HAQ:
+	case DID_INTEL_COFFEELAKE_R_U_IMC_HAQ:
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_COFFEELAKE_R_H_IMC_HAQ:
+	case DID_INTEL_COFFEELAKE_R_H_IMC_HAQ:
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_COFFEELAKE_R_H_IMC_HAS:
+	case DID_INTEL_COFFEELAKE_R_H_IMC_HAS:
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_COFFEELAKE_R_H_IMC_HAO:
+	case DID_INTEL_COFFEELAKE_R_H_IMC_HAO:
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_COFFEELAKE_R_W_IMC_HAQ:
+	case DID_INTEL_COFFEELAKE_R_W_IMC_HAQ:
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_COFFEELAKE_R_W_IMC_HAS:
+	case DID_INTEL_COFFEELAKE_R_W_IMC_HAS:
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_COFFEELAKE_R_W_IMC_HAO:
+	case DID_INTEL_COFFEELAKE_R_W_IMC_HAO:
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_COFFEELAKE_R_S_IMC_HAQ:
+	case DID_INTEL_COFFEELAKE_R_S_IMC_HAQ:
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_COFFEELAKE_R_S_IMC_HAS:
+	case DID_INTEL_COFFEELAKE_R_S_IMC_HAS:
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_COFFEELAKE_R_S_IMC_HAO:
+	case DID_INTEL_COFFEELAKE_R_S_IMC_HAO:
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_WHISKEYLAKE_U_IMC_HAD: /* WHL Dual Core */
+	case DID_INTEL_WHISKEYLAKE_U_IMC_HAD:	/*	WHL Dual Core	*/
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_WHISKEYLAKE_U_IMC_HAQ: /* WHL Quad Core */
+	case DID_INTEL_WHISKEYLAKE_U_IMC_HAQ:	/*	WHL Quad Core	*/
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_COMETLAKE_U_IMC_HB:
+	case DID_INTEL_COMETLAKE_S_IMC_6C:
+	case DID_INTEL_COMETLAKE_S_IMC_10C:
+	case DID_INTEL_COMETLAKE_H_IMC_10C:
+	case DID_INTEL_COMETLAKE_W_IMC_10C:
+	case DID_INTEL_COMETLAKE_M_IMC_6C:
+	case DID_INTEL_COMETLAKE_S1_IMC:
+	case DID_INTEL_COMETLAKE_S2_IMC:
+	case DID_INTEL_COMETLAKE_S5_IMC:
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		break;
-	case PCI_DEVICE_ID_INTEL_COMETLAKE_PREM_U_PCH:
+	case DID_INTEL_COMETLAKE_U_IMC_HB:
+	case DID_INTEL_COMETLAKE_U1_IMC:
+	case DID_INTEL_COMETLAKE_U3_IMC:
+		RKL_CAP(Shm, Proc, Core);
+		RKL_IMC(Shm, Proc);
+		break;
+	case DID_INTEL_COMETLAKE_PREM_U_PCH:
 		SET_CHIPSET(IC_400_SERIES_P);
 		break;
-	case PCI_DEVICE_ID_INTEL_COMETLAKE_BASE_U_PCH:
+	case DID_INTEL_COMETLAKE_BASE_U_PCH:
 		SET_CHIPSET(IC_400_SERIES_M);
 		break;
-	case PCI_DEVICE_ID_INTEL_COMETLAKE_U_ES_PCH:
-	case PCI_DEVICE_ID_INTEL_COMETLAKE_Y_ES_PCH:
-	case PCI_DEVICE_ID_INTEL_COMETLAKE_Y_PCH:
-	case PCI_DEVICE_ID_INTEL_ICELAKE_U_PCH:
+	case DID_INTEL_COMETLAKE_U_ES_PCH:
+	case DID_INTEL_COMETLAKE_Y_ES_PCH:
+	case DID_INTEL_COMETLAKE_Y_PCH:
+	case DID_INTEL_ICELAKE_U_PCH:
 		SET_CHIPSET(IC_495);
 		break;
-	case PCI_DEVICE_ID_INTEL_COMETLAKE_H470_PCH:
+	case DID_INTEL_COMETLAKE_H470_PCH:
 		SET_CHIPSET(IC_H470);
 		break;
-	case PCI_DEVICE_ID_INTEL_COMETLAKE_Z490_PCH:
+	case DID_INTEL_COMETLAKE_Z490_PCH:
 		SET_CHIPSET(IC_Z490);
 		break;
-	case PCI_DEVICE_ID_INTEL_COMETLAKE_Q470_PCH:
+	case DID_INTEL_COMETLAKE_Q470_PCH:
 		SET_CHIPSET(IC_Q470);
 		break;
-	case PCI_DEVICE_ID_INTEL_COMETLAKE_HM470_PCH:
+	case DID_INTEL_COMETLAKE_HM470_PCH:
 		SET_CHIPSET(IC_HM470);
 		break;
-	case PCI_DEVICE_ID_INTEL_COMETLAKE_QM480_PCH:
+	case DID_INTEL_COMETLAKE_QM480_PCH:
 		SET_CHIPSET(IC_QM480);
 		break;
-	case PCI_DEVICE_ID_INTEL_COMETLAKE_WM490_PCH:
+	case DID_INTEL_COMETLAKE_WM490_PCH:
 		SET_CHIPSET(IC_WM490);
 		break;
-	case PCI_DEVICE_ID_INTEL_COMETLAKE_W480_PCH:
+	case DID_INTEL_COMETLAKE_W480_PCH:
 		SET_CHIPSET(IC_W480);
 		break;
-	case PCI_DEVICE_ID_INTEL_ROCKETLAKE_S_8C_IMC_HB:
-	case PCI_DEVICE_ID_INTEL_ROCKETLAKE_S_6C_IMC_HB:
-		RKL_CAP(Shm, Proc, Core);
+	case DID_INTEL_ICELAKE_U_IMC:
+	case DID_INTEL_ICELAKE_U_4C:
+		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		break;
-	case PCI_DEVICE_ID_INTEL_ROCKETLAKE_H510_PCH:
+	case DID_INTEL_TIGERLAKE_U1_IMC:
+	case DID_INTEL_TIGERLAKE_U2_IMC:
+	case DID_INTEL_TIGERLAKE_U3_IMC:
+	case DID_INTEL_TIGERLAKE_U4_IMC:
+	case DID_INTEL_TIGERLAKE_H_IMC:
+		TGL_CAP(Shm, Proc, Core);
+		TGL_IMC(Shm, Proc);
+		break;
+	case DID_INTEL_ROCKETLAKE_S_8C_IMC_HB:
+	case DID_INTEL_ROCKETLAKE_S_6C_IMC_HB:
+		RKL_CAP(Shm, Proc, Core);
+		RKL_IMC(Shm, Proc);
+		break;
+	case DID_INTEL_TIGERLAKE_UP3_IMC:
+	case DID_INTEL_TIGERLAKE_UP4_IMC:
 		SET_CHIPSET(IC_H510);
 		break;
-	case PCI_DEVICE_ID_INTEL_ROCKETLAKE_B560_PCH:
+	case DID_INTEL_ROCKETLAKE_H510_PCH:
+		SET_CHIPSET(IC_H510);
+		break;
+	case DID_INTEL_ROCKETLAKE_B560_PCH:
 		SET_CHIPSET(IC_B560);
 		break;
-	case PCI_DEVICE_ID_INTEL_ROCKETLAKE_H570_PCH:
+	case DID_INTEL_ROCKETLAKE_H570_PCH:
 		SET_CHIPSET(IC_H570);
 		break;
-	case PCI_DEVICE_ID_INTEL_ROCKETLAKE_Q570_PCH:
+	case DID_INTEL_ROCKETLAKE_Q570_PCH:
 		SET_CHIPSET(IC_Q570);
 		break;
-	case PCI_DEVICE_ID_INTEL_ROCKETLAKE_Z590_PCH:
+	case DID_INTEL_ROCKETLAKE_Z590_PCH:
 		SET_CHIPSET(IC_Z590);
 		break;
-	case PCI_DEVICE_ID_INTEL_ROCKETLAKE_W580_PCH:
+	case DID_INTEL_ROCKETLAKE_W580_PCH:
 		SET_CHIPSET(IC_W580);
+		break;
+	case DID_INTEL_ALDERLAKE_1_IMC:
+	case DID_INTEL_ALDERLAKE_2_IMC:
+		RKL_CAP(Shm, Proc, Core);
+		RKL_IMC(Shm, Proc);
 		break;
 	}
 }
@@ -4808,29 +5269,29 @@ void PCI_Intel(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core,unsigned short DID)
 void PCI_AMD(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core, unsigned short DID)
 {
 	switch (DID) {
-	case PCI_DEVICE_ID_AMD_K8_NB_MEMCTL:
+	case DID_AMD_K8_NB_MEMCTL:
 		AMD_0Fh_HTT(Shm, Proc);
 		AMD_0Fh_MCH(Shm, Proc);
 		SET_CHIPSET(IC_K8);
 		break;
-	case PCI_DEVICE_ID_AMD_17H_ZEN_PLUS_NB_IOMMU:
-	case PCI_DEVICE_ID_AMD_17H_ZEPPELIN_NB_IOMMU:
-	case PCI_DEVICE_ID_AMD_17H_RAVEN_NB_IOMMU:
-	case PCI_DEVICE_ID_AMD_17H_ZEN2_MTS_NB_IOMMU:
-	case PCI_DEVICE_ID_AMD_17H_STARSHIP_NB_IOMMU:
-	case PCI_DEVICE_ID_AMD_17H_RENOIR_NB_IOMMU:
-	case PCI_DEVICE_ID_AMD_17H_ZEN_APU_NB_IOMMU:
-	case PCI_DEVICE_ID_AMD_17H_ZEN2_APU_NB_IOMMU:
+	case DID_AMD_17H_ZEN_PLUS_NB_IOMMU:
+	case DID_AMD_17H_ZEPPELIN_NB_IOMMU:
+	case DID_AMD_17H_RAVEN_NB_IOMMU:
+	case DID_AMD_17H_ZEN2_MTS_NB_IOMMU:
+	case DID_AMD_17H_STARSHIP_NB_IOMMU:
+	case DID_AMD_17H_RENOIR_NB_IOMMU:
+	case DID_AMD_17H_ZEN_APU_NB_IOMMU:
+	case DID_AMD_17H_ZEN2_APU_NB_IOMMU:
 		AMD_17h_IOMMU(Shm, Proc);
 		break;
-	case PCI_DEVICE_ID_AMD_17H_ZEPPELIN_DF_F3:
-	case PCI_DEVICE_ID_AMD_17H_RAVEN_DF_F3:
-	case PCI_DEVICE_ID_AMD_17H_MATISSE_DF_F3:
-	case PCI_DEVICE_ID_AMD_17H_STARSHIP_DF_F3:
-	case PCI_DEVICE_ID_AMD_17H_RENOIR_DF_F3:
-	case PCI_DEVICE_ID_AMD_17H_ARIEL_DF_F3:
-	case PCI_DEVICE_ID_AMD_17H_FIREFLIGHT_DF_F3:
-	case PCI_DEVICE_ID_AMD_17H_ARDEN_DF_F3:
+	case DID_AMD_17H_ZEPPELIN_DF_F3:
+	case DID_AMD_17H_RAVEN_DF_F3:
+	case DID_AMD_17H_MATISSE_DF_F3:
+	case DID_AMD_17H_STARSHIP_DF_F3:
+	case DID_AMD_17H_RENOIR_DF_F3:
+	case DID_AMD_17H_ARIEL_DF_F3:
+	case DID_AMD_17H_FIREFLIGHT_DF_F3:
+	case DID_AMD_17H_ARDEN_DF_F3:
 		AMD_17h_CAP(Shm, Proc, Core);
 		AMD_17h_UMC(Shm, Proc);
 		SET_CHIPSET(IC_ZEN);
@@ -4993,15 +5454,16 @@ void Topology(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO **Core, unsigned int cpu)
 	 || (Shm->Proc.Features.Std.EAX.ExtModel == 0x7)) {
 		break;
 	}
-	/* Fallthrough */
+	fallthrough;
     case AMD_Zen:
     case AMD_Zen_APU:
     case AMD_ZenPlus:
     case AMD_ZenPlus_APU:
-    case AMD_Zen_APU_Dali:
+    case AMD_Zen_Dali:
     case AMD_EPYC_Rome:
     case AMD_Zen2_CPK:
-    case AMD_Zen2_APU:
+    case AMD_Zen2_Renoir:
+    case AMD_Zen2_LCN:
     case AMD_Zen2_MTS:
     case AMD_Zen2_Xbox:
     case AMD_Zen3_VMR:
@@ -5375,7 +5837,7 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 		break;
 	case RC_OK_SYSGATE:
 		SysGate_OS_Driver(Ref);
-	/* Fallthrough */
+		fallthrough;
 	case RC_SUCCESS: /* Platform changed -> pending notification.	*/
 		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_NTFY);
 		break;
@@ -5532,7 +5994,7 @@ static void *Emergency_Handler(void *pRef)
 			break;
 		case SIGCHLD: /* Exit Ring Thread  */
 			leave = 0x1;
-			/* Fallthrough */
+			fallthrough;
 		case SIGSTKFLT:
 		case SIGXFSZ:
 		case SIGXCPU:
@@ -5622,15 +6084,15 @@ void Emergency_Command(REF *Ref, unsigned int cmd)
 	}
 }
 
-static inline void Pkg_ComputeThermal_None(	struct PKG_FLIP_FLOP *PFlip,
-						struct FLIP_FLOP *SProc )
+static void Pkg_ComputeThermal_None(	struct PKG_FLIP_FLOP *PFlip,
+					struct FLIP_FLOP *SProc )
 {
 	UNUSED(PFlip);
 	UNUSED(SProc);
 }
 
-static inline void Pkg_ComputeThermal_Intel(	struct PKG_FLIP_FLOP *PFlip,
-						struct FLIP_FLOP *SProc )
+static void Pkg_ComputeThermal_Intel(	struct PKG_FLIP_FLOP *PFlip,
+					struct FLIP_FLOP *SProc )
 {
 	COMPUTE_THERMAL(INTEL,
 		PFlip->Thermal.Temp,
@@ -5638,8 +6100,8 @@ static inline void Pkg_ComputeThermal_Intel(	struct PKG_FLIP_FLOP *PFlip,
 		PFlip->Thermal.Sensor);
 }
 
-static inline void Pkg_ComputeThermal_AMD(	struct PKG_FLIP_FLOP *PFlip,
-						struct FLIP_FLOP *SProc )
+static void Pkg_ComputeThermal_AMD(	struct PKG_FLIP_FLOP *PFlip,
+					struct FLIP_FLOP *SProc )
 {
 	COMPUTE_THERMAL(AMD,
 		PFlip->Thermal.Temp,
@@ -5647,8 +6109,8 @@ static inline void Pkg_ComputeThermal_AMD(	struct PKG_FLIP_FLOP *PFlip,
 		PFlip->Thermal.Sensor);
 }
 
-static inline void Pkg_ComputeThermal_AMD_0Fh(	struct PKG_FLIP_FLOP *PFlip,
-						struct FLIP_FLOP *SProc )
+static void Pkg_ComputeThermal_AMD_0Fh( struct PKG_FLIP_FLOP *PFlip,
+					struct FLIP_FLOP *SProc )
 {
 	COMPUTE_THERMAL(AMD_0Fh,
 		PFlip->Thermal.Temp,
@@ -5656,8 +6118,8 @@ static inline void Pkg_ComputeThermal_AMD_0Fh(	struct PKG_FLIP_FLOP *PFlip,
 		PFlip->Thermal.Sensor);
 }
 
-static inline void Pkg_ComputeThermal_AMD_15h(	struct PKG_FLIP_FLOP *PFlip,
-						struct FLIP_FLOP *SProc )
+static void Pkg_ComputeThermal_AMD_15h( struct PKG_FLIP_FLOP *PFlip,
+					struct FLIP_FLOP *SProc )
 {
 	COMPUTE_THERMAL(AMD_15h,
 		PFlip->Thermal.Temp,
@@ -5665,8 +6127,8 @@ static inline void Pkg_ComputeThermal_AMD_15h(	struct PKG_FLIP_FLOP *PFlip,
 		PFlip->Thermal.Sensor);
 }
 
-static inline void Pkg_ComputeThermal_AMD_17h(	struct PKG_FLIP_FLOP *PFlip,
-						struct FLIP_FLOP *SProc )
+static void Pkg_ComputeThermal_AMD_17h( struct PKG_FLIP_FLOP *PFlip,
+					struct FLIP_FLOP *SProc )
 {
 	COMPUTE_THERMAL(AMD_17h,
 		PFlip->Thermal.Temp,
@@ -5674,7 +6136,7 @@ static inline void Pkg_ComputeThermal_AMD_17h(	struct PKG_FLIP_FLOP *PFlip,
 		PFlip->Thermal.Sensor);
 }
 
-static inline void Pkg_ComputeVoltage_None(struct PKG_FLIP_FLOP *PFlip)
+static void Pkg_ComputeVoltage_None(struct PKG_FLIP_FLOP *PFlip)
 {
 	UNUSED(PFlip);
 }
@@ -5683,14 +6145,14 @@ static inline void Pkg_ComputeVoltage_None(struct PKG_FLIP_FLOP *PFlip)
 
 #define Pkg_ComputeVoltage_Intel_Core2	Pkg_ComputeVoltage_None
 
-static inline void Pkg_ComputeVoltage_Intel_SoC(struct PKG_FLIP_FLOP *PFlip)
+static void Pkg_ComputeVoltage_Intel_SoC(struct PKG_FLIP_FLOP *PFlip)
 {
 	COMPUTE_VOLTAGE(INTEL_SOC,
 			PFlip->Voltage.CPU,
 			PFlip->Voltage.VID.CPU);
 }
 
-static inline void Pkg_ComputeVoltage_Intel_SNB(struct PKG_FLIP_FLOP *PFlip)
+static void Pkg_ComputeVoltage_Intel_SNB(struct PKG_FLIP_FLOP *PFlip)
 {	/* Intel 2nd Generation Datasheet Vol-1 §7.4 Table 7-1		*/
 	COMPUTE_VOLTAGE(INTEL_SNB,
 			PFlip->Voltage.CPU,
@@ -5705,7 +6167,7 @@ static inline void Pkg_ComputeVoltage_Intel_SNB(struct PKG_FLIP_FLOP *PFlip)
 
 #define Pkg_ComputeVoltage_AMD_15h	Pkg_ComputeVoltage_None
 
-static inline void Pkg_ComputeVoltage_AMD_17h(struct PKG_FLIP_FLOP *PFlip)
+static void Pkg_ComputeVoltage_AMD_17h(struct PKG_FLIP_FLOP *PFlip)
 {
 	COMPUTE_VOLTAGE(AMD_17h,
 			PFlip->Voltage.CPU,
@@ -5716,21 +6178,21 @@ static inline void Pkg_ComputeVoltage_AMD_17h(struct PKG_FLIP_FLOP *PFlip)
 			PFlip->Voltage.VID.SOC);
 }
 
-static inline void Pkg_ComputeVoltage_Winbond_IO(struct PKG_FLIP_FLOP *PFlip)
+static void Pkg_ComputeVoltage_Winbond_IO(struct PKG_FLIP_FLOP *PFlip)
 {	/* Winbond W83627EHF/EF, W83627EHG,EG				*/
 	COMPUTE_VOLTAGE(WINBOND_IO,
 			PFlip->Voltage.CPU,
 			PFlip->Voltage.VID.CPU);
 }
 
-static inline void Pkg_ComputeVoltage_ITE_Tech_IO(struct PKG_FLIP_FLOP *PFlip)
+static void Pkg_ComputeVoltage_ITE_Tech_IO(struct PKG_FLIP_FLOP *PFlip)
 {
 	COMPUTE_VOLTAGE(ITETECH_IO,
 			PFlip->Voltage.CPU,
 			PFlip->Voltage.VID.CPU);
 }
 
-static inline void Pkg_ComputePower_None(PROC_RW *Proc, struct FLIP_FLOP *CFlop)
+static void Pkg_ComputePower_None(PROC_RW *Proc, struct FLIP_FLOP *CFlop)
 {
 	UNUSED(Proc);
 	UNUSED(CFlop);
@@ -5742,13 +6204,13 @@ static inline void Pkg_ComputePower_None(PROC_RW *Proc, struct FLIP_FLOP *CFlop)
 
 #define Pkg_ComputePower_AMD		Pkg_ComputePower_None
 
-static inline void Pkg_ComputePower_AMD_17h(	PROC_RW *Proc,
-						struct FLIP_FLOP *CFlop )
+static void Pkg_ComputePower_AMD_17h(	PROC_RW *Proc,
+					struct FLIP_FLOP *CFlop )
 {
 	Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] += CFlop->Delta.Power.ACCU;
 }
 
-static inline void Pkg_ResetPower_None(PROC_RW *Proc)
+static void Pkg_ResetPower_None(PROC_RW *Proc)
 {
 	UNUSED(Proc);
 }
@@ -5759,7 +6221,7 @@ static inline void Pkg_ResetPower_None(PROC_RW *Proc)
 
 #define Pkg_ResetPower_AMD		Pkg_ResetPower_None
 
-static inline void Pkg_ResetPower_AMD_17h(PROC_RW *Proc)
+static void Pkg_ResetPower_AMD_17h(PROC_RW *Proc)
 {
 	Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] = 0;
 }
@@ -6031,7 +6493,6 @@ REASON_CODE Core_Manager(REF *Ref)
 
 	if (!BITVAL(Shutdown, SYNC))
 	{
-		double dPTSC;
 		unsigned char fRESET = 0;
 		/* Compute the counters averages.			*/
 		Shm->Proc.Avg.Turbo /= Shm->Proc.CPU.OnLine;
@@ -6052,17 +6513,32 @@ REASON_CODE Core_Manager(REF *Ref)
 		PFlip->Delta.PC10 = Proc->Delta.PC10;
 		PFlip->Delta.MC6  = Proc->Delta.MC6;
 		/* Package C-state Residency counters			*/
-		dPTSC = (double) PFlip->Delta.PTSC;
+		Shm->Proc.State.PC02 = PFlip->Delta.PC02;
+		Shm->Proc.State.PC02 /= PFlip->Delta.PTSC;
 
-		Shm->Proc.State.PC02	= (double) PFlip->Delta.PC02 / dPTSC;
-		Shm->Proc.State.PC03	= (double) PFlip->Delta.PC03 / dPTSC;
-		Shm->Proc.State.PC04	= (double) PFlip->Delta.PC04 / dPTSC;
-		Shm->Proc.State.PC06	= (double) PFlip->Delta.PC06 / dPTSC;
-		Shm->Proc.State.PC07	= (double) PFlip->Delta.PC07 / dPTSC;
-		Shm->Proc.State.PC08	= (double) PFlip->Delta.PC08 / dPTSC;
-		Shm->Proc.State.PC09	= (double) PFlip->Delta.PC09 / dPTSC;
-		Shm->Proc.State.PC10	= (double) PFlip->Delta.PC10 / dPTSC;
-		Shm->Proc.State.MC6	= (double) PFlip->Delta.MC6  / dPTSC;
+		Shm->Proc.State.PC03 = PFlip->Delta.PC03;
+		Shm->Proc.State.PC03 /= PFlip->Delta.PTSC;
+
+		Shm->Proc.State.PC04 = PFlip->Delta.PC04;
+		Shm->Proc.State.PC04 /= PFlip->Delta.PTSC;
+
+		Shm->Proc.State.PC06 = PFlip->Delta.PC06;
+		Shm->Proc.State.PC06 /= PFlip->Delta.PTSC;
+
+		Shm->Proc.State.PC07 = PFlip->Delta.PC07;
+		Shm->Proc.State.PC07 /= PFlip->Delta.PTSC;
+
+		Shm->Proc.State.PC08 = PFlip->Delta.PC08;
+		Shm->Proc.State.PC08 /= PFlip->Delta.PTSC;
+
+		Shm->Proc.State.PC09 = PFlip->Delta.PC09;
+		Shm->Proc.State.PC09 /= PFlip->Delta.PTSC;
+
+		Shm->Proc.State.PC10 = PFlip->Delta.PC10;
+		Shm->Proc.State.PC10 /= PFlip->Delta.PTSC;
+
+		Shm->Proc.State.MC6 = PFlip->Delta.MC6;
+		Shm->Proc.State.MC6 /= PFlip->Delta.PTSC;
 		/* Uncore scope counters				*/
 		PFlip->Uncore.FC0 = Proc->Delta.Uncore.FC0;
 		/* Power & Energy counters				*/
@@ -6071,13 +6547,15 @@ REASON_CODE Core_Manager(REF *Ref)
 	  {
 		PFlip->Delta.ACCU[pw] = Proc_RW->Delta.Power.ACCU[pw];
 
-		Shm->Proc.State.Energy[pw].Current = \
-						(double) PFlip->Delta.ACCU[pw]
-						* Shm->Proc.Power.Unit.Joules;
+		Shm->Proc.State.Energy[pw].Current = PFlip->Delta.ACCU[pw];
+		Shm->Proc.State.Energy[pw].Current *= \
+						Shm->Proc.Power.Unit.Joules;
 
 		Shm->Proc.State.Power[pw].Current = \
-				(1000.0 * Shm->Proc.State.Energy[pw].Current)
-						/ (double) Shm->Sleep.Interval;
+					Shm->Proc.State.Energy[pw].Current;
+
+		Shm->Proc.State.Power[pw].Current *= 1000.0;
+		Shm->Proc.State.Power[pw].Current /= Shm->Sleep.Interval;
 
 		/* Processor scope: computes Min and Max energy consumed. */
 		TEST_AND_SET_SENSOR(	ENERGY, LOWEST,

@@ -429,10 +429,11 @@ enum VIEW {
 	V_SENSORS,
 	V_VOLTAGE,
 	V_ENERGY,
-	V_SLICE
+	V_SLICE,
+	V_CUSTOM
 };
 
-#define VIEW_SIZE	(1 + V_SLICE)
+#define VIEW_SIZE	(1 + V_CUSTOM)
 
 typedef void (*DISPOSAL_FUNC)(Layer*);
 
@@ -531,6 +532,18 @@ struct DRAW_ST {
 		CUINT	MinHeight;
 		CUINT	MaxRows;
 		CUINT	LoadWidth;
+    #ifndef NO_FOOTER
+	struct {
+	    struct {
+		CUINT	Hot[2];
+	    } VoltTemp;
+	    struct {
+		CUINT	Count,
+			Free,
+			Total;
+	    } TaskMem;
+	} Footer;
+    #endif
     } Area;
 	unsigned int	iClock,
 			cpuScroll,

@@ -141,6 +141,30 @@
 	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '	\
 }
 
+#define RSC_LAYOUT_CUSTOM_FIELD_CODE_EN 				\
+{									\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '		\
+}
+
 #define RSC_LAYOUT_RULER_FREQUENCY_CODE_EN				\
 {									\
 	'-','-','-',' ','F','r','e','q','(','M','H','z',')',' ','R','a',\
@@ -522,6 +546,14 @@
 	"------------------------------------------------------------"	\
 	"--------------------"
 
+#define RSC_LAYOUT_RULER_CUSTOM_CODE_EN 				\
+	"----- Min - Relative - Max ---- Min - Absolute - Max - Min T"	\
+	"MP Max - Min(V) - Vcore - Max(V) - Min( ) - Power -- Max( ) "	\
+	"- Turbo -- C0 -- C1 -- C2:C3  C4:C6 -- C7 --- IPS ----- IPC "	\
+	"----- CPI --------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"--------------------"
+
 #define RSC_LAYOUT_FOOTER_TECH_X86_CODE_EN				\
 {									\
 	'T','e','c','h',' ','[',' ',' ','T','S','C',' ',' ',',' 	\
@@ -533,8 +565,7 @@
 	'T','U','R','B','O',',','C','1','E',',',			\
 	' ','P','M',',','C','3','A',',','C','1','A',',',		\
 	'C','3','U',',','C','1','U',',',				\
-	'T','M',',','H','O','T',']',' ',				\
-	'V','[',' ','.',' ',' ',']',' ','T','[',' ',' ',' ',' ',']' 	\
+	'T','M',',','H','O','T',']',' ' 				\
 }
 
 #define RSC_LAYOUT_FOOTER_TECH_AMD_CODE_EN				\
@@ -542,8 +573,12 @@
 	'S','M','T',',','C','n','Q',',','H','W','P',',',		\
 	'B','O','O','S','T',',','C','1','E',',','C','C','6',		\
 	',','P','C','6',',','C','C','x',',','D','T','S',',',		\
-	'T','T','P',',','H','O','T',']',' ',' ',' ',' ',' ',		\
-	'V','[',' ','.',' ',' ',']',' ','T','[',' ',' ',' ',' ',']' 	\
+	'T','T','P',',','H','O','T',']',' ',' ',' ',' ',' '		\
+}
+
+#define RSC_LAYOUT_FOOTER_VOLT_TEMP_CODE_EN				\
+{									\
+	'V','[',' ','.',' ',' ',']',' ','T','[',' ',' ',' ',' ',']'	\
 }
 
 #define RSC_LAYOUT_FOOTER_SYSTEM_CODE_EN				\
@@ -733,6 +768,11 @@
 #define RSC_SYS_REG_EFER_LMA_CODE_EN	" Long Mode Active "
 #define RSC_SYS_REG_EFER_NXE_CODE_EN	" Execute-Disable Bit Enable "
 #define RSC_SYS_REG_EFER_SVM_CODE_EN	" Secure Virtual Machine Enable "
+#define RSC_SYS_REG_EFER_LMS_CODE_EN	" Long Mode Segment Limit Enable "
+#define RSC_SYS_REG_EFER_FFX_CODE_EN	" Fast FXSAVE/FRSTOR Enable "
+#define RSC_SYS_REG_EFER_TCE_CODE_EN	" Translation Cache Extension Enable "
+#define RSC_SYS_REG_EFER_MCM_CODE_EN	" MCOMMIT Memory Commit Instruction "
+#define RSC_SYS_REG_EFER_WBI_CODE_EN	" Interruptible WBINVD, WBNOINVD "
 
 #define RSC_ISA_TITLE_CODE_EN		" Instruction Set Extensions "
 
@@ -806,6 +846,9 @@
 #define RSC_FEATURES_APIC_CODE_EN   "Advanced Programmable Interrupt Controller"
 #define RSC_FEATURES_CORE_MP_CODE_EN	"Core Multi-Processing"
 #define RSC_FEATURES_CNXT_ID_CODE_EN	"L1 Data Cache Context ID"
+#define RSC_FEATURES_CPPC_CODE_EN	\
+				"Collaborative Processor Performance Control"
+
 #define RSC_FEATURES_DCA_CODE_EN	"Direct Cache Access"
 #define RSC_FEATURES_DE_CODE_EN 	"Debugging Extension"
 
@@ -818,9 +861,12 @@
 #define RSC_FEATURES_FMA_CODE_EN	"Fused Multiply Add"
 #define RSC_FEATURES_HLE_CODE_EN	"Hardware Lock Elision"
 #define RSC_FEATURES_IBS_CODE_EN	"Instruction Based Sampling"
+#define RSC_FEATURES_INVLPGB_CODE_EN	"Instruction INVLPGB"
 #define RSC_FEATURES_LM_CODE_EN 	"Long Mode 64 bits"
 #define RSC_FEATURES_LWP_CODE_EN	"LightWeight Profiling"
+#define RSC_FEATURES_MBE_CODE_EN	"Memory Bandwidth Enforcement"
 #define RSC_FEATURES_MCA_CODE_EN	"Machine-Check Architecture"
+#define RSC_FEATURES_MCOMMIT_CODE_EN	"Instruction MCOMMIT"
 #define RSC_FEATURES_MPX_CODE_EN	"Memory Protection Extensions"
 #define RSC_FEATURES_MSR_CODE_EN	"Model Specific Registers"
 #define RSC_FEATURES_MTRR_CODE_EN	"Memory Type Range Registers"
@@ -837,6 +883,7 @@
 #define RSC_FEATURES_PSN_CODE_EN	"Processor Serial Number"
 #define RSC_FEATURES_RDT_PQE_CODE_EN	"Resource Director Technology/PQE"
 #define RSC_FEATURES_RDT_PQM_CODE_EN	"Resource Director Technology/PQM"
+#define RSC_FEATURES_RDPRU_CODE_EN	"Read Processor Register at User level"
 #define RSC_FEATURES_RTM_CODE_EN	"Restricted Transactional Memory"
 #define RSC_FEATURES_SMX_CODE_EN	"Safer Mode Extensions"
 #define RSC_FEATURES_SELF_SNOOP_CODE_EN "Self-Snoop"
@@ -918,6 +965,7 @@
 #define RSC_PERF_MON_MISS_LLC_CODE_EN	"Last Level Cache Misses"
 #define RSC_PERF_MON_BRANCH_RET_CODE_EN "Branch Instructions Retired"
 #define RSC_PERF_MON_BRANCH_MIS_CODE_EN "Branch Mispredicts Retired"
+#define RSC_PERF_MON_TOPDOWN_SLOTS_CODE_EN "Top-down slots Counter"
 #define RSC_PERF_MON_TSC_CODE_EN	"Performance Time Stamp Counter"
 #define RSC_PERF_MON_NB_DF_CODE_EN	"Data Fabric Performance Counter"
 #define RSC_PERF_MON_CORE_CODE_EN	"Core Performance Counter"
@@ -1173,6 +1221,38 @@
 #define RSC_DDR4_ZEN_RCPAGE_COMM_CODE_EN " tRCPage ( Row Cycle Page Time ) "
 #define RSC_DDR4_ZEN_GDM_COMM_CODE_EN	" GDM ( Gear Down Mode ) "
 
+#define RSC_DDR4_ZEN_MRD_COMM_CODE_EN	\
+			" tMRD ( MRS to another MRS command, Same CS ) "
+
+#define RSC_DDR4_ZEN_MOD_COMM_CODE_EN	\
+			" tMOD ( MRS to another non-MRS command, Same CS ) "
+
+#define RSC_DDR4_ZEN_MRD_PDA_COMM_CODE_EN \
+			" tMRD_PDA ( MRS PDA to another MRS command, Same CS ) "
+
+#define RSC_DDR4_ZEN_MOD_PDA_COMM_CODE_EN \
+		" tMOD_PDA ( MRS PDA to another non-MRS command, Same CS ) "
+
+#define RSC_DDR4_ZEN_STAG_COMM_CODE_EN	\
+		" tSTAG ( Min timing between REF commands, Different CS ) "
+
+#define RSC_DDR4_ZEN_PDM_COMM_CODE_EN	" PDM ( DRAM Power Down Mode ) "
+
+#define RSC_DDR4_ZEN_PHYWRD_COMM_CODE_EN \
+			" tPHYWRD ( dfi_wrdata_en to dfi_wrdata delay ) "
+
+#define RSC_DDR4_ZEN_PHYWRL_COMM_CODE_EN \
+			" tPHYWRL ( Write command to dfi_wrdata_en delay ) "
+
+#define RSC_DDR4_ZEN_PHYRDL_COMM_CODE_EN \
+			" tPHYRDL ( dfi_rddata_en to dfi_rddata_vld delay ) "
+
+#define RSC_DDR4_ZEN_RDDATA_COMM_CODE_EN \
+			" tRDDATA ( Read command to dfi_rddata_en delay ) "
+
+#define RSC_DDR4_ZEN_WRMPR_COMM_CODE_EN \
+			" tWRMPR ( Number of clocks greater than tMOD ) "
+
 #define RSC_TASKS_SORTBY_STATE_CODE_EN		" State    "
 #define RSC_TASKS_SORTBY_RTIME_CODE_EN		" RunTime  "
 #define RSC_TASKS_SORTBY_UTIME_CODE_EN		" UserTime "
@@ -1206,6 +1286,7 @@
 #define RSC_MENU_ITEM_VOLTAGE_CODE_EN		"   Voltage          [V] "
 #define RSC_MENU_ITEM_POWER_CODE_EN		"   Power            [W] "
 #define RSC_MENU_ITEM_SLICE_CTRS_CODE_EN	" Slice counters     [T] "
+#define RSC_MENU_ITEM_CUSTOM_CODE_EN		" Custom view        [y] "
 #define RSC_MENU_ITEM_PROCESSOR_CODE_EN 	" Processor          [p] "
 #define RSC_MENU_ITEM_TOPOLOGY_CODE_EN		" Topology           [m] "
 #define RSC_MENU_ITEM_FEATURES_CODE_EN		" Features           [e] "
@@ -1490,8 +1571,8 @@
 		"\t-OY\tShow Secret Data\n"				\
 		"\n    Command options\n"				\
 		"\t-t <v>\tShow Top (default) with optional <v>iew:\n"	\
-		"\t\t{\tfrequency, instructions, core, idle, package,\n"\
-		"\t\t\ttasks, interrupts, sensors, voltage, power, slices  }\n"\
+		"\t\t{\tfrequency, instructions, core, idle, package, tasks,\n"\
+		"\t\t\tinterrupts, sensors, voltage, power, slices, custom }\n"\
 		"\t-d\tShow Dashboard\n"				\
 		"\t-C <#>\tMonitor Sensors\n"				\
 		"\t-V <#>\tMonitor Voltage\n"				\
@@ -1561,7 +1642,12 @@
 
 #define RSC_MECH_PSCHANGE_MC_NO_CODE_EN "Architectural - Page Size Change MCE"
 #define RSC_MECH_TAA_NO_CODE_EN "Architectural - TSX Asynchronous Abort"
+#define RSC_MECH_STLB_CODE_EN	"Architectural - STLB QoS"
+#define RSC_MECH_FUSA_CODE_EN	"Architectural - Functional Safety Island"
+#define RSC_MECH_RSM_CPL0_CODE_EN "Architectural - RSM in CPL0 only"
 #define RSC_MECH_SPLA_CODE_EN	"Architectural - Split Locked Access Exception"
+#define RSC_MECH_SNOOP_FILTER_CODE_EN "Architectural - Snoop Filter QoS Mask"
+#define RSC_MECH_PSFD_CODE_EN	"Architectural - Predictive Store Forwarding"
 
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_EN	"  %3s       Processor     " \
 						"   %s     %c%4u %c "
@@ -1971,6 +2057,18 @@
 #define RSC_DDR4_ZEN_CMD_CODE		"  CMD"
 #define RSC_DDR4_ZEN_GDM_CODE		"  GDM"
 #define RSC_DDR4_ZEN_ECC_CODE		"  ECC"
+#define RSC_DDR4_ZEN_MRD_CODE		" MRD:"
+#define RSC_DDR4_ZEN_MOD_CODE		" MOD:"
+#define RSC_DDR4_ZEN_MRD_PDA_CODE	"PDA  "
+#define RSC_DDR4_ZEN_MOD_PDA_CODE	"PDA  "
+#define RSC_DDR4_ZEN_STAG_CODE		"STAG "
+#define RSC_DDR4_ZEN_PDM_CODE		" PDM "
+#define RSC_DDR4_ZEN_PHYWRD_CODE	" [WRD"
+#define RSC_DDR4_ZEN_PHYWRL_CODE	"  WRL"
+#define RSC_DDR4_ZEN_PHYRDL_CODE	" RDL]"
+#define RSC_DDR4_ZEN_RDDATA_CODE	"RDDAT"
+#define RSC_DDR4_ZEN_PHY_CODE		"A PHY"
+#define RSC_DDR4_ZEN_WRMPR_CODE 	"WRMPR"
 
 #define RSC_SYS_REGS_SPACE_CODE 	"    "
 #define RSC_SYS_REGS_NA_CODE		"  - "
@@ -2043,6 +2141,11 @@
 #define RSC_SYS_REG_HDR_EFER_LMA_CODE	" LMA"
 #define RSC_SYS_REG_HDR_EFER_NXE_CODE	" NXE"
 #define RSC_SYS_REG_HDR_EFER_SVM_CODE	" SVM"
+#define RSC_SYS_REG_HDR_EFER_LMS_CODE	" LMS"
+#define RSC_SYS_REG_HDR_EFER_FFX_CODE	" FFX"
+#define RSC_SYS_REG_HDR_EFER_TCE_CODE	" TCE"
+#define RSC_SYS_REG_HDR_EFER_MCM_CODE	" MCM"
+#define RSC_SYS_REG_HDR_EFER_WBI_CODE	" WBI"
 
 #define RSC_ISA_3DNOW_CODE		" 3DNow!/Ext [%c/%c]"
 #define RSC_ISA_ADX_CODE		"          ADX [%c]"

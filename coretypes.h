@@ -5,8 +5,8 @@
  */
 
 #define COREFREQ_MAJOR	1
-#define COREFREQ_MINOR	86
-#define COREFREQ_REV	7
+#define COREFREQ_MINOR	87
+#define COREFREQ_REV	1
 
 #if !defined(CORE_COUNT)
 	#define CORE_COUNT	256
@@ -104,10 +104,11 @@ enum {	GenuineArch = 0,
 	AMD_Zen_APU,
 	AMD_ZenPlus,
 	AMD_ZenPlus_APU,
-	AMD_Zen_APU_Dali,
+	AMD_Zen_Dali,
 	AMD_EPYC_Rome,
 	AMD_Zen2_CPK,
-	AMD_Zen2_APU,
+	AMD_Zen2_Renoir,
+	AMD_Zen2_LCN,
 	AMD_Zen2_MTS,
 	AMD_Zen2_Xbox,
 	AMD_Zen3_VMR,
@@ -199,6 +200,9 @@ enum SYS_REG {
 	EXFER_SVME	= 12,	/* AMD F17h				*/
 	EXFER_LMSLE	= 13,	/* AMD F17h				*/
 	EXFER_FFXSE	= 14,	/* AMD F17h				*/
+	EXFER_TCE	= 15,	/* AMD F17h				*/
+	EXFER_MCOMMIT	= 17,	/* AMD F17h				*/
+	EXFER_INT_WBINVD= 18,	/* AMD F17h				*/
 
 	UNDEF_CR	= 64
 };
@@ -505,6 +509,10 @@ enum CPUID_ENUM {
 	CPUID_0000000D_00000002_EXT_STATE_SUB_LEAF,
 	CPUID_0000000D_00000003_BNDREGS_STATE,
 	CPUID_0000000D_00000004_BNDCSR_STATE,
+/* AMD Family 19h */
+	CPUID_0000000D_00000009_MPK_STATE_SUB_LEAF,
+	CPUID_0000000D_00000009_CET_U_SUB_LEAF,
+	CPUID_0000000D_00000009_CET_S_SUB_LEAF,
 /* AMD Family 15h */
 	CPUID_0000000D_0000003E_EXT_STATE_SUB_LEAF,
 /* Intel */
@@ -553,7 +561,14 @@ enum CPUID_ENUM {
 	CPUID_8000001D_00000001_CACHE_L1I_PROPERTIES,
 	CPUID_8000001D_00000002_CACHE_L2_PROPERTIES,
 	CPUID_8000001D_00000003_CACHE_PROPERTIES_END,
+	CPUID_8000001D_00000004_CACHE_PROPERTIES_DONE,
 	CPUID_8000001E_00000000_EXTENDED_IDENTIFIERS,
+/* AMD Family 17h */
+	CPUID_8000001F_00000000_SECURE_ENCRYPTION,
+	CPUID_80000020_00000000_MBE_SUB_LEAF,
+	CPUID_80000020_00000001_MBE_SUB_LEAF,
+/* AMD Family 19h */
+	CPUID_80000021_00000000_EXTENDED_FEATURE_2,
 /* x86 */
 	CPUID_40000000_00000000_HYPERVISOR_VENDOR,
 	CPUID_40000001_00000000_HYPERVISOR_INTERFACE,
@@ -942,7 +957,8 @@ typedef struct	/* Architectural Performance Monitoring Leaf.		*/
 		LLC_Misses	:  5-4,
 		BranchRetired	:  6-5,
 		BranchMispred	:  7-6,
-		ReservedBits	: 32-7;
+		TopdownSlots	:  8-7,
+		ReservedBits	: 32-8;
 	} EBX;
 	struct
 	{
@@ -1166,31 +1182,37 @@ typedef struct	/* Processor Capacity Leaf.				*/
 		Reserved	: 32-24;
 	} EAX;
 	struct
-	{	/* AMD Family 17h					*/
+	{	/* AMD Family 17h, 19h					*/
 		unsigned int
 		CLZERO		:  1-0,  /* Clear Zero Instruction	*/
 		IRPerf		:  2-1,  /* Inst. Retired Counter support */
 		XSaveErPtr	:  3-2,  /* FX___ error pointers support */
-		Reserved1	:  4-3,
+		INVLPGB 	:  4-3,  /* SMT TLB invalidate broadcast */
 		RDPRU		:  5-4,  /* MPERF/APERF at user level	*/
-		Reserved2	:  6-5,
+		Reserved1	:  6-5,
 		MBE		:  7-6,  /* Memory Bandwidth Enforcement */
-		Reserved3	:  8-7,
+		Reserved2	:  8-7,
 		MCOMMIT 	:  9-8,  /* Memory Commit Instruction	*/
 		WBNOINVD	: 10-9,
-		Reserved4	: 12-10,
+		Reserved3	: 12-10,
 		IBPB		: 13-12, /* Indirect Branch Prediction Barrier*/
 		INT_WBINVD	: 14-13, /* Interruptible WBINVD,WBNOINVD */
 		IBRS		: 15-14, /* IBR Speculation		*/
 		STIBP		: 16-15, /* Single Thread Indirect Branch Pred*/
-		Reserved5	: 17-16,
+		Reserved4	: 17-16,
 		STIBP_AlwaysOn	: 18-17,
 		IBRS_Preferred	: 19-18,
 		IBRS_ProtectMode: 20-19,
-		Reserved6	: 23-20,
+		MSR_EFER_LMSLE	: 21-20,
+		TlbFlushNested	: 22-21,
+		Reserved5	: 23-22,
 		PPIN		: 24-23, /* Protected Processor Inventory Num */
 		SSBD		: 25-24, /* Speculative Store Bypass Disable */
-		Reserved	: 32-25;
+		Reserved6	: 27-25,
+		CPPC		: 28-27,
+		PSFD		: 29-28,
+		Reserved7	: 31-29,
+		BranchSample	: 32-31;
 	} EBX;
 	struct { /* AMD reserved					*/
 		unsigned int
@@ -1203,9 +1225,9 @@ typedef struct	/* Processor Capacity Leaf.				*/
 	struct
 	{	/* AMD Family 17h					*/
 		unsigned int
-		Reserved1	: 16-0,
-		RdpruMax	: 24-16, /* RDPRU Instruction max input */
-		Reserved2	: 32-24;
+		INVLPGB_CountMax: 16-0,  /* Maximum count for INVLPGB inst. */
+		RDPRU_Max	: 24-16, /* RDPRU Instruction max input */
+		Reserved	: 32-24;
 	} EDX;
 } CPUID_0x80000008;
 
@@ -1403,16 +1425,27 @@ typedef struct
 	unsigned int	tRFC1;
 	};
 	unsigned int	tRFC2,
-			tRFC4;
+			tRFC4,
+			tMRD,
+			tMOD,
+			tMRD_PDA,
+			tMOD_PDA,
+			tSTAG,
+			tPHYWRD,
+			tPHYWRL,
+			tPHYRDL,
+			tRDDATA,
+			tWRMPR;
 
 	unsigned int	CMD_Rate;
 	union {
-	unsigned int	B2B;
-	  struct{
+	  unsigned int	B2B;
+	  struct {
 	  unsigned int	GDM	:  1-0,
 			BGS	:  2-1,
 			BGS_ALT :  3-2,
-			Unused	: 32-3;
+			PDM	:  4-3,
+			Unused	: 32-4;
 	  };
 	};
 	unsigned int	ECC;
@@ -1962,3 +1995,15 @@ typedef struct {
 )
 
 #define UNUSED(expr) do { (void)(expr); } while (0)
+
+#ifndef fallthrough
+	#if defined __has_attribute
+		#if __has_attribute(fallthrough)
+			#define fallthrough	__attribute__((fallthrough))
+		#else
+			#define fallthrough	/* Fallthrough */
+		#endif
+	#else
+		#define fallthrough	/* Fallthrough */
+	#endif
+#endif

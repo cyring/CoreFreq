@@ -594,7 +594,7 @@ struct {
 int GetKey(SCANKEY *scan, struct timespec *tsec)
 {
 	struct pollfd fds = {.fd = STDIN_FILENO, .events = POLLIN};
-	int rp = 0, rz = 0;
+	register int rp, rz;
 
 	if ((rp = ppoll(&fds, 1, tsec, NULL)) > 0) {
 		if (fds.revents & POLLIN) {
@@ -1515,7 +1515,7 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 	case SCANKEY_ENTER:
 		if (win->hook.key.Enter != NULL)
 			return (win->hook.key.Enter(scan, win));
-		/* fallthrough */
+		fallthrough;
 	default:
 		return (-1);
 	}
