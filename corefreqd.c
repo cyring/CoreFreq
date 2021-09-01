@@ -5469,6 +5469,7 @@ void Topology(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO **Core, unsigned int cpu)
     case AMD_Zen3_VMR:
     case AMD_Zen3_CZN:
     case AMD_EPYC_Milan:
+    case AMD_Zen3_Chagall:
     case AMD_Family_17h:
     case AMD_Family_18h:
     case AMD_Family_19h:

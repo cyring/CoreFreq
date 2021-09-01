@@ -1838,6 +1838,7 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Zen3_VMR:
 	case AMD_Zen3_CZN:
 	case AMD_EPYC_Milan:
+	case AMD_Zen3_Chagall:
 	case AMD_Family_17h:
 	case AMD_Family_18h:
 	case AMD_Family_19h:
@@ -1899,32 +1900,38 @@ static void Map_AMD_Topology(void *arg)
 		Core->T.CoreID    = leaf8000001e.EBX.CoreId;
 		Core->T.PackageID = leaf8000001e.ECX.NodeId;
 
-		if (leaf8000001e.EBX.ThreadsPerCore > 0)
-		{	/*		SMT is enabled .		*/
+	      if (leaf8000001e.EBX.ThreadsPerCore > 0)
+	      { 	/*		SMT is enabled .		*/
 			Core->T.ThreadID  = leaf8000001e.EAX.ExtApicId & 1;
 
 		/* CCD factor for [x24 ... x128] SMT Core Threadripper	*/
-			factor	=  (leaf80000008.ECX.NC == 0x7f)
-				|| (leaf80000008.ECX.NC == 0x3f)
-				|| (leaf80000008.ECX.NC == 0x2f)
-				||((leaf80000008.ECX.NC == 0x1f)
-				&& (PUBLIC(RO(Proc))->ArchID == AMD_Zen2_CPK))
-				||((leaf80000008.ECX.NC == 0x17)
-				&& (PUBLIC(RO(Proc))->ArchID == AMD_Zen2_CPK));
-		}
-		else
-		{	/*		SMT is disabled.		*/
+		factor	=  (leaf80000008.ECX.NC == 0x7f)
+			|| (leaf80000008.ECX.NC == 0x3f)
+			|| (leaf80000008.ECX.NC == 0x2f)
+
+			|| ((leaf80000008.ECX.NC == 0x1f)
+			 && ((PUBLIC(RO(Proc))->ArchID == AMD_Zen2_CPK)))
+
+			|| ((leaf80000008.ECX.NC == 0x17)
+			 && ((PUBLIC(RO(Proc))->ArchID == AMD_Zen2_CPK)
+			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Chagall)));
+	      }
+	      else
+	      { 	/*		SMT is disabled.		*/
 			Core->T.ThreadID  = 0;
 
 		/* CCD factor for [x12 ... x64] physical Core Threadripper */
-			factor	=  (leaf80000008.ECX.NC == 0x3f)
-				|| (leaf80000008.ECX.NC == 0x1f)
-				|| (leaf80000008.ECX.NC == 0x17)
-				||((leaf80000008.ECX.NC == 0x0f)
-				&& (PUBLIC(RO(Proc))->ArchID == AMD_Zen2_CPK))
-				||((leaf80000008.ECX.NC == 0x0b)
-				&& (PUBLIC(RO(Proc))->ArchID == AMD_Zen2_CPK));
-		}
+		factor	=  (leaf80000008.ECX.NC == 0x3f)
+			|| (leaf80000008.ECX.NC == 0x1f)
+			|| (leaf80000008.ECX.NC == 0x17)
+
+			|| ((leaf80000008.ECX.NC == 0x0f)
+			 && ((PUBLIC(RO(Proc))->ArchID == AMD_Zen2_CPK)))
+
+			|| ((leaf80000008.ECX.NC == 0x0b)
+			 && ((PUBLIC(RO(Proc))->ArchID == AMD_Zen2_CPK)
+			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Chagall)));
+	      }
 
 		Core->T.Cluster.Node=leaf8000001e.ECX.NodeId;
 		Core->T.Cluster.CCD = (Core->T.CoreID >> 3) << factor;
@@ -6271,6 +6278,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	case AMD_Zen3_VMR:
 	case AMD_Zen3_CZN:
 	case AMD_EPYC_Milan:
+	case AMD_Zen3_Chagall:
 	    {
 		Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Zen2_Temp;
 

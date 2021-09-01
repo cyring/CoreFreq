@@ -1483,11 +1483,14 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 /*	[Family 19h]		AF_00h
 	[Zen3/Vermeer]		AF_21h Stepping 0	 7 nm
 	[Zen3/Cezanne]		AF_51h Stepping 0	 7 nm
-	[EPYC/Milan]		AF_01h Stepping 0	 7 nm		*/
+	[EPYC/Milan]		AF_01h Stepping 0	 7 nm
+	[Zen{2,3}/Chagall]	AF/08h Stepping 2	 7 nm	HEDT/WS */
 #define _AMD_Family_19h {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 #define _AMD_Zen3_VMR	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x2, .Model=0x1}
 #define _AMD_Zen3_CZN	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x5, .Model=0x1}
 #define _AMD_EPYC_Milan {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x0, .Model=0x1}
+#define _AMD_Zen3_Chagall	\
+			{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x0, .Model=0x8}
 
 typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
 
@@ -2677,6 +2680,9 @@ enum {
 enum {
 	CN_MILAN
 };
+enum {
+	CN_CHAGALL
+};
 
 static MICRO_ARCH Arch_AMD_Zen[] = {
 	[CN_SUMMIT_RIDGE]	= {"Zen/Summit Ridge"},
@@ -2732,6 +2738,10 @@ static MICRO_ARCH Arch_AMD_Zen3_CZN[] = {
 };
 static MICRO_ARCH Arch_AMD_EPYC_Milan[] = {
 	[CN_MILAN]		= {"EPYC/Milan"},
+	{NULL}
+};
+static MICRO_ARCH Arch_AMD_Zen3_Chagall[] = {
+	[CN_CHAGALL]		= {"Zen3/Chagall"},
 	{NULL}
 };
 static MICRO_ARCH Arch_AMD_Family_17h[] = {{"AMD Zen"}, {NULL}};
@@ -7608,5 +7618,29 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Specific = Void_Specific,
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_EPYC_Milan
+	},
+[AMD_Zen3_Chagall] = {							/* 87*/
+	.Signature = _AMD_Zen3_Chagall,
+	.Query = Query_AMD_Family_19h,
+	.Update = PerCore_AMD_Family_19h_Query,
+	.Start = Start_AMD_Family_19h,
+	.Stop = Stop_AMD_Family_19h,
+	.Exit = NULL,
+	.Timer = InitTimer_AMD_F17h_Zen3_MP,
+	.BaseClock = BaseClock_AMD_Family_19h,
+	.ClockMod = ClockMod_AMD_Zen,
+	.TurboClock = TurboClock_AMD_Zen,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN3,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_19h,
+	.powerFormula   = POWER_FORMULA_AMD_19h,
+	.PCI_ids = PCI_AMD_19h_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = AMD_Zen_Driver,
+	.Architecture = Arch_AMD_Zen3_Chagall
 	}
 };

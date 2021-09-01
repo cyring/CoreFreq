@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	87
-#define COREFREQ_REV	1
+#define COREFREQ_REV	2
 
 #if !defined(CORE_COUNT)
 	#define CORE_COUNT	256
@@ -114,6 +114,7 @@ enum {	GenuineArch = 0,
 	AMD_Zen3_VMR,
 	AMD_Zen3_CZN,
 	AMD_EPYC_Milan,
+	AMD_Zen3_Chagall,
 	ARCHITECTURES
 };
 
