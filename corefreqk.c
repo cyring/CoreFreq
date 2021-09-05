@@ -4209,69 +4209,68 @@ void Query_RKL_IMC(void __iomem *mchmap)
 	Query_Turbo_TDP_Config(mchmap);
 }
 
-void Query_TGL_IMC(void __iomem *mchmap)
+void Query_TGL_IMC(void __iomem *mchmap, unsigned short mc)
 {	/*Source: 11th Generation Intel® Core Processor Datasheet Vol 2*/
 	unsigned short cha;
 
-	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
 	/*		Intra channel configuration			*/
-	PUBLIC(RO(Proc))->Uncore.MC[0].TGL.MADCH.value = readl(mchmap + 0x5000);
-    if (PUBLIC(RO(Proc))->Uncore.MC[0].TGL.MADCH.CH_L_MAP)
+	PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADCH.value = readl(mchmap+0x5000);
+    if (PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADCH.CH_L_MAP)
     {
-	PUBLIC(RO(Proc))->Uncore.MC[0].TGL.MADC0.value = readl(mchmap + 0x5008);
-	PUBLIC(RO(Proc))->Uncore.MC[0].TGL.MADC1.value = readl(mchmap + 0x5004);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADC0.value = readl(mchmap+0x5008);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADC1.value = readl(mchmap+0x5004);
     } else {
-	PUBLIC(RO(Proc))->Uncore.MC[0].TGL.MADC0.value = readl(mchmap + 0x5004);
-	PUBLIC(RO(Proc))->Uncore.MC[0].TGL.MADC1.value = readl(mchmap + 0x5008);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADC0.value = readl(mchmap+0x5004);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADC1.value = readl(mchmap+0x5008);
     }
 	/*		DIMM parameters					*/
-	PUBLIC(RO(Proc))->Uncore.MC[0].TGL.MADD0.value = readl(mchmap + 0x500c);
-	PUBLIC(RO(Proc))->Uncore.MC[0].TGL.MADD1.value = readl(mchmap + 0x5010);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD0.value = readl(mchmap+0x500c);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD1.value = readl(mchmap+0x5010);
 	/*		Sum up any present DIMM per channel.		*/
-	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = \
-		  ((PUBLIC(RO(Proc))->Uncore.MC[0].TGL.MADD0.Dimm_L_Size != 0)
-		|| (PUBLIC(RO(Proc))->Uncore.MC[0].TGL.MADD0.Dimm_S_Size != 0))
-		+ ((PUBLIC(RO(Proc))->Uncore.MC[0].TGL.MADD1.Dimm_L_Size != 0)
-		|| (PUBLIC(RO(Proc))->Uncore.MC[0].TGL.MADD1.Dimm_S_Size != 0));
-	/*		Count of populated DIMMs L and DIMMs S	TODO
-	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = \
-		  ((PUBLIC(RO(Proc))->Uncore.MC[0].TGL.MADD0.Dimm_L_Size != 0)
-		|| (PUBLIC(RO(Proc))->Uncore.MC[0].TGL.MADD1.Dimm_L_Size != 0))
-		+ ((PUBLIC(RO(Proc))->Uncore.MC[0].TGL.MADD0.Dimm_S_Size != 0)
-		|| (PUBLIC(RO(Proc))->Uncore.MC[0].TGL.MADD1.Dimm_S_Size != 0));
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
+	  ((PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD0.Dimm_L_Size != 0)
+	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD0.Dimm_S_Size != 0))
+	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD1.Dimm_L_Size != 0)
+	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD1.Dimm_S_Size != 0));
+	/*		TODO(Count of populated DIMMs L and DIMMs S)
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = \
+	  ((PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD0.Dimm_L_Size != 0)
+	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD1.Dimm_L_Size != 0))
+	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD0.Dimm_S_Size != 0)
+	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD1.Dimm_S_Size != 0));
 	*/
-	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = 2;
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
 
-    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
     {
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].TGL.Timing.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.Timing.value = \
 					readl(mchmap + 0x4000 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].TGL.ACT.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.ACT.value = \
 					readl(mchmap + 0x4008 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].TGL.RDRD.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.RDRD.value = \
 					readl(mchmap + 0x400c + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].TGL.RDWR.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.RDWR.value = \
 					readl(mchmap + 0x4010 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].TGL.WRRD.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.WRRD.value = \
 					readl(mchmap + 0x4014 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].TGL.WRWR.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.WRWR.value = \
 					readl(mchmap + 0x4018 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].TGL.Sched.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.Sched.value = \
 					readq(mchmap + 0x4088 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].TGL.PWDEN.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.PWDEN.value = \
 					readq(mchmap + 0x4050 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].TGL.ODT.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.ODT.value = \
 					readq(mchmap + 0x4070 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].TGL.Refresh.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.Refresh.value = \
 					readl(mchmap + 0x423c + 0x400 * cha);
     }
 	Query_Turbo_TDP_Config(mchmap);
@@ -4798,9 +4797,67 @@ static PCI_CALLBACK RKL_IMC(struct pci_dev *dev)
 	return (SKL_HOST(dev, Query_RKL_IMC, 0x8000));
 }
 
+#define GET_BITFIELD(v, lo, hi) \
+	(((v) & GENMASK_ULL((hi), (lo))) >> (lo))
+
+#define MCHBAR_OFFSET			0x48
+#define MCHBAR_EN			BIT_ULL(0)
+#define MCHBAR_BASE(v)			(GET_BITFIELD(v, 16, 38) << 16)
+#define MCHBAR_SIZE			0x10000
+
+static PCI_CALLBACK TGL_Remap(struct pci_dev *pdev, unsigned short mc)
+{	/* Source: drivers/edac/igen6_edac.c				*/
+	union  {
+		u64 v;
+		struct {
+			u32 v_lo;
+			u32 v_hi;
+		};
+	} u;
+
+	void __iomem *window;
+	u64 mchbar;
+
+	if (pci_read_config_dword(pdev, MCHBAR_OFFSET, &u.v_lo)) {
+		goto Fail;
+	}
+
+	if (pci_read_config_dword(pdev, MCHBAR_OFFSET + 4, &u.v_hi)) {
+		goto Fail;
+	}
+
+	if (!(u.v & MCHBAR_EN)) {
+		goto Fail;
+	}
+
+	mchbar = MCHBAR_BASE(u.v);
+	mchbar += mc * MCHBAR_SIZE;
+
+	window = ioremap(mchbar, MCHBAR_SIZE);
+	if (!window) {
+		goto Fail;
+	}
+
+	Query_TGL_IMC(window, mc);
+
+	iounmap(window);
+
+	return ((PCI_CALLBACK) 0);
+Fail:
+	return ((PCI_CALLBACK) -ENODEV);
+}
+
 static PCI_CALLBACK TGL_IMC(struct pci_dev *dev)
-{	/* Some address offsets differ from Rocket Lake.		*/
-	return (SKL_HOST(dev, Query_TGL_IMC, 0x20000));
+{
+	PCI_CALLBACK rc;
+	unsigned short mc;
+
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 2;
+	/*	Controller #0 is not necessary activated but enabled.	*/
+	for (mc = 0; mc < PUBLIC(RO(Proc))->Uncore.CtrlCount; mc++) {
+		rc = TGL_Remap(dev, mc);
+	}
+	return (rc);
 }
 
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev)
