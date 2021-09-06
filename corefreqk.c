@@ -3517,10 +3517,11 @@ unsigned int AMD_HSMP_Exec(	enum HSMP_FUNC MSG_FUNC,
 }
 
 
-typedef void (*ROUTER)(void __iomem *mchmap);
+typedef void (*ROUTER)(void __iomem *mchmap, unsigned short mc);
 
 PCI_CALLBACK Router(struct pci_dev *dev, unsigned int offset,
-		unsigned int bsize, unsigned long long wsize, ROUTER route)
+		unsigned int bsize, unsigned long long wsize,
+		ROUTER route, unsigned short mc)
 {
 	void __iomem *mchmap;
 	union {
@@ -3546,9 +3547,10 @@ PCI_CALLBACK Router(struct pci_dev *dev, unsigned int offset,
 	mchbarEnable = BITVAL(mchbar, 0);
 	if (mchbarEnable) {
 		mchbar.addr &= wmask;
+		mchbar.addr += wsize * mc;
 		mchmap = ioremap(mchbar.addr, wsize);
 		if (mchmap != NULL) {
-			route(mchmap);
+			route(mchmap, mc);
 
 			iounmap(mchmap);
 
@@ -3559,222 +3561,212 @@ PCI_CALLBACK Router(struct pci_dev *dev, unsigned int offset,
 		return ((PCI_CALLBACK) -ENOMEM);
 }
 
-void Query_P945(void __iomem *mchmap)
+void Query_P945(void __iomem *mchmap, unsigned short mc)
 {	/* Source: Mobile Intel 945 Express Chipset Family.		*/
 	unsigned short cha;
 
-	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
-
 	PUBLIC(RO(Proc))->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].P945.DCC.value = readl(mchmap + 0x200);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].P945.DCC.value = readl(mchmap + 0x200);
 
-	switch (PUBLIC(RO(Proc))->Uncore.MC[0].P945.DCC.DAMC) {
+	switch (PUBLIC(RO(Proc))->Uncore.MC[mc].P945.DCC.DAMC) {
 	case 0b00:
 	case 0b11:
-		PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = 1;
+		PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 1;
 		break;
 	case 0b01:
 	case 0b10:
-		PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = 2;
+		PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 2;
 		break;
 	}
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = 1;
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 1;
 
-    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
     {
 	unsigned short rank, rankCount;
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.DRT0.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P945.DRT0.value = \
 					readl(mchmap + 0x110 + 0x80 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.DRT1.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P945.DRT1.value = \
 					readw(mchmap + 0x114 + 0x80 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.DRT2.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P945.DRT2.value = \
 					readl(mchmap + 0x118 + 0x80 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.BANK.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P945.BANK.value = \
 					readw(mchmap + 0x10e + 0x80 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.WIDTH.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P945.WIDTH.value = \
 					readw(mchmap + 0x40c + 0x80 * cha);
       if (cha == 0) {
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.WIDTH.value &= \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P945.WIDTH.value &= \
 								0b11111111;
 	rankCount = 4;
       } else {
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.WIDTH.value &= 0b1111;
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P945.WIDTH.value &= 0b1111;
 	rankCount = 2;
       }
       for (rank = 0; rank < rankCount; rank++)
       {
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.DRB[rank].value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P945.DRB[rank].value = \
 				readb(mchmap + 0x100 + rank + 0x80 * cha);
       }
     }
 }
 
-void Query_P955(void __iomem *mchmap)
+void Query_P955(void __iomem *mchmap, unsigned short mc)
 {	/* Source: Intel 82955X Memory Controller Hub (MCH)		*/
 	unsigned short cha;
 
-	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
-
 	PUBLIC(RO(Proc))->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].P955.DCC.value = readl(mchmap + 0x200);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].P955.DCC.value = readl(mchmap + 0x200);
 
-	switch (PUBLIC(RO(Proc))->Uncore.MC[0].P955.DCC.DAMC) {
+	switch (PUBLIC(RO(Proc))->Uncore.MC[mc].P955.DCC.DAMC) {
 	case 0b00:
 	case 0b11:
-		PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = 1;
+		PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 1;
 		break;
 	case 0b01:
 	case 0b10:
-		PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = 2;
+		PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 2;
 		break;
 	}
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = 1;
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 1;
 
-    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
     {
 	unsigned short rank;
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P955.DRT1.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P955.DRT1.value = \
 					readw(mchmap + 0x114 + 0x80 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P955.BANK.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P955.BANK.value = \
 					readw(mchmap + 0x10e + 0x80 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P955.WIDTH.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P955.WIDTH.value = \
 					readw(mchmap + 0x40c + 0x80 * cha);
 
       for (rank = 0; rank < 4; rank++)
       {
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P955.DRB[rank].value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P955.DRB[rank].value = \
 				readb(mchmap + 0x100 + rank + 0x80 * cha);
       }
     }
 }
 
-void Query_P965(void __iomem *mchmap)
+void Query_P965(void __iomem *mchmap, unsigned short mc)
 {
 	unsigned short cha;
 
-	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
-
 	PUBLIC(RO(Proc))->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].P965.CKE0.value = readl(mchmap + 0x260);
-	PUBLIC(RO(Proc))->Uncore.MC[0].P965.CKE1.value = readl(mchmap + 0x660);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].P965.CKE0.value = readl(mchmap + 0x260);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].P965.CKE1.value = readl(mchmap + 0x660);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = \
-		  (PUBLIC(RO(Proc))->Uncore.MC[0].P965.CKE0.RankPop0 != 0)
-		+ (PUBLIC(RO(Proc))->Uncore.MC[0].P965.CKE1.RankPop0 != 0);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
+		  (PUBLIC(RO(Proc))->Uncore.MC[mc].P965.CKE0.RankPop0 != 0)
+		+ (PUBLIC(RO(Proc))->Uncore.MC[mc].P965.CKE1.RankPop0 != 0);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = \
-		  (PUBLIC(RO(Proc))->Uncore.MC[0].P965.CKE0.SingleDimmPop ?1:2)
-		+ (PUBLIC(RO(Proc))->Uncore.MC[0].P965.CKE1.SingleDimmPop ?1:2);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = \
+	  (PUBLIC(RO(Proc))->Uncore.MC[mc].P965.CKE0.SingleDimmPop ? 1 : 2)
+	+ (PUBLIC(RO(Proc))->Uncore.MC[mc].P965.CKE1.SingleDimmPop ? 1 : 2);
 
-	for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
+	for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
 	{
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P965.DRT0.value = \
+		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P965.DRT0.value = \
 					readl(mchmap + 0x29c + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P965.DRT1.value = \
+		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P965.DRT1.value = \
 					readw(mchmap + 0x250 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P965.DRT2.value = \
+		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P965.DRT2.value = \
 					readl(mchmap + 0x252 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P965.DRT3.value = \
+		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P965.DRT3.value = \
 					readw(mchmap + 0x256 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P965.DRT4.value = \
+		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P965.DRT4.value = \
 					readl(mchmap + 0x258 + 0x400 * cha);
 	}
 }
 
-void Query_G965(void __iomem *mchmap)
+void Query_G965(void __iomem *mchmap, unsigned short mc)
 {	/* Source: Mobile Intel 965 Express Chipset Family.		*/
 	unsigned short cha, slot;
 
-	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
-
 	PUBLIC(RO(Proc))->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].G965.DRB0.value = readl(mchmap + 0x1200);
-	PUBLIC(RO(Proc))->Uncore.MC[0].G965.DRB1.value = readl(mchmap + 0x1300);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].G965.DRB0.value = readl(mchmap+0x1200);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].G965.DRB1.value = readl(mchmap+0x1300);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = \
-		  (PUBLIC(RO(Proc))->Uncore.MC[0].G965.DRB0.Rank1Addr != 0)
-		+ (PUBLIC(RO(Proc))->Uncore.MC[0].G965.DRB1.Rank1Addr != 0);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
+		  (PUBLIC(RO(Proc))->Uncore.MC[mc].G965.DRB0.Rank1Addr != 0)
+		+ (PUBLIC(RO(Proc))->Uncore.MC[mc].G965.DRB1.Rank1Addr != 0);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = \
-			PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount > 1 ? 1:2;
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = \
+			PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount > 1 ? 1:2;
 
-    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
     {
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].G965.DRT0.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].G965.DRT0.value = \
 					readl(mchmap + 0x1210 + 0x100 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].G965.DRT1.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].G965.DRT1.value = \
 					readl(mchmap + 0x1214 + 0x100 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].G965.DRT2.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].G965.DRT2.value = \
 					readl(mchmap + 0x1218 + 0x100 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].G965.DRT3.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].G965.DRT3.value = \
 					readl(mchmap + 0x121c + 0x100 * cha);
 
-      for (slot = 0; slot < PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount; slot++)
+      for (slot = 0; slot < PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount; slot++)
       {
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].DIMM[slot].DRA.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[slot].DRA.value = \
 					readl(mchmap + 0x1208 + 0x100 * cha);
       }
     }
 }
 
-void Query_P35(void __iomem *mchmap)
+void Query_P35(void __iomem *mchmap, unsigned short mc)
 {	/* Source: Intel® 3 Series Express Chipset Family. */
 	unsigned short cha;
 
-	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
-
 	PUBLIC(RO(Proc))->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].P35.CKE0.value = readl(mchmap + 0x260);
-	PUBLIC(RO(Proc))->Uncore.MC[0].P35.CKE1.value = readl(mchmap + 0x660);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].P35.CKE0.value = readl(mchmap + 0x260);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].P35.CKE1.value = readl(mchmap + 0x660);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = \
-		  (PUBLIC(RO(Proc))->Uncore.MC[0].P35.CKE0.RankPop0 != 0)
-		+ (PUBLIC(RO(Proc))->Uncore.MC[0].P35.CKE1.RankPop0 != 0);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
+		  (PUBLIC(RO(Proc))->Uncore.MC[mc].P35.CKE0.RankPop0 != 0)
+		+ (PUBLIC(RO(Proc))->Uncore.MC[mc].P35.CKE1.RankPop0 != 0);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = \
-	  (PUBLIC(RO(Proc))->Uncore.MC[0].P35.CKE0.SingleDimmPop ? 1 : 2)
-	+ (PUBLIC(RO(Proc))->Uncore.MC[0].P35.CKE1.SingleDimmPop ? 1 : 2);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = \
+	  (PUBLIC(RO(Proc))->Uncore.MC[mc].P35.CKE0.SingleDimmPop ? 1 : 2)
+	+ (PUBLIC(RO(Proc))->Uncore.MC[mc].P35.CKE1.SingleDimmPop ? 1 : 2);
 
-	for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
+	for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
 	{
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P35.DRT0.value = \
+		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRT0.value = \
 					readw(mchmap + 0x265 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P35.DRT1.value = \
+		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRT1.value = \
 					readw(mchmap + 0x250 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P35.DRT2.value = \
+		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRT2.value = \
 					readl(mchmap + 0x252 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P35.DRT3.value = \
+		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRT3.value = \
 					readl(mchmap + 0x256 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P35.DRT4.value = \
+		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRT4.value = \
 					readl(mchmap + 0x258 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P35.DRT5.value = \
+		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRT5.value = \
 					readw(mchmap + 0x25d + 0x400 * cha);
 	}
 }
@@ -3916,42 +3908,40 @@ kernel_ulong_t Query_Lynnfield_IMC(struct pci_dev *dev, unsigned short mc)
 	return (rc);
 }
 
-void Query_SNB_IMC(void __iomem *mchmap)
+void Query_SNB_IMC(void __iomem *mchmap, unsigned short mc)
 {	/* Sources:	2nd & 3rd Generation Intel® Core™ Processor Family
 			Intel® Xeon Processor E3-1200 Family		*/
 	unsigned short cha, dimmCount[2];
 
-	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SNB.MAD0.value = readl(mchmap + 0x5004);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SNB.MAD1.value = readl(mchmap + 0x5008);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD0.value = readl(mchmap + 0x5004);
-	PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD1.value = readl(mchmap + 0x5008);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 0;
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = 0;
-
-	dimmCount[0] =(PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD0.Dimm_A_Size > 0)
-		     +(PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD0.Dimm_B_Size > 0);
-	dimmCount[1] =(PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD1.Dimm_A_Size > 0)
-		     +(PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD1.Dimm_B_Size > 0);
+	dimmCount[0]=(PUBLIC(RO(Proc))->Uncore.MC[mc].SNB.MAD0.Dimm_A_Size > 0)
+		    +(PUBLIC(RO(Proc))->Uncore.MC[mc].SNB.MAD0.Dimm_B_Size > 0);
+	dimmCount[1]=(PUBLIC(RO(Proc))->Uncore.MC[mc].SNB.MAD1.Dimm_A_Size > 0)
+		    +(PUBLIC(RO(Proc))->Uncore.MC[mc].SNB.MAD1.Dimm_B_Size > 0);
 
     for (cha = 0; cha < 2; cha++)
     {
-	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount += (dimmCount[cha] > 0);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount += (dimmCount[cha] > 0);
     }
-    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
     {
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SNB.DBP.value = \
+		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.DBP.value = \
 					readl(mchmap + 0x4000 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SNB.RAP.value = \
+		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.RAP.value = \
 					readl(mchmap + 0x4004 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SNB.RFTP.value = \
+		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.RFTP.value = \
 					readl(mchmap + 0x4298 + 0x400 * cha);
     }
 	/*		Is Dual DIMM Per Channel Disable ?		*/
-	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = \
 			(PUBLIC(RO(Proc))->Uncore.Bus.SNB_Cap.DDPCD == 1) ?
-			1 : PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount;
+			1 : PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount;
 }
 
 void Query_Turbo_TDP_Config(void __iomem *mchmap)
@@ -4027,183 +4017,177 @@ void Query_Turbo_TDP_Config(void __iomem *mchmap)
 	}
 }
 
-void Query_HSW_IMC(void __iomem *mchmap)
+void Query_HSW_IMC(void __iomem *mchmap, unsigned short mc)
 {	/*Source: Desktop 4th & 5th Generation Intel® Core™ Processor Family.*/
 	unsigned short cha, dimmCount[2];
 
-	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SNB.MAD0.value = readl(mchmap + 0x5004);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SNB.MAD1.value = readl(mchmap + 0x5008);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD0.value = readl(mchmap + 0x5004);
-	PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD1.value = readl(mchmap + 0x5008);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 0;
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = 0;
-
-	dimmCount[0] =(PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD0.Dimm_A_Size > 0)
-		     +(PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD0.Dimm_B_Size > 0);
-	dimmCount[1] =(PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD1.Dimm_A_Size > 0)
-		     +(PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD1.Dimm_B_Size > 0);
+	dimmCount[0]=(PUBLIC(RO(Proc))->Uncore.MC[mc].SNB.MAD0.Dimm_A_Size > 0)
+		    +(PUBLIC(RO(Proc))->Uncore.MC[mc].SNB.MAD0.Dimm_B_Size > 0);
+	dimmCount[1]=(PUBLIC(RO(Proc))->Uncore.MC[mc].SNB.MAD1.Dimm_A_Size > 0)
+		    +(PUBLIC(RO(Proc))->Uncore.MC[mc].SNB.MAD1.Dimm_B_Size > 0);
 
     for (cha = 0; cha < 2; cha++)
     {
-	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount += (dimmCount[cha] > 0);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount += (dimmCount[cha] > 0);
     }
-    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
     {
 /*TODO( Unsolved: What is the channel #1 'X' factor of Haswell registers ? )*/
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].HSW.REG4C00.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].HSW.REG4C00.value = \
 							readl(mchmap + 0x4c00);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].HSW.Timing.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].HSW.Timing.value = \
 							readl(mchmap + 0x4c04);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].HSW.Rank_A.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].HSW.Rank_A.value = \
 							readl(mchmap + 0x4c08);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].HSW.Rank_B.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].HSW.Rank_B.value = \
 							readl(mchmap + 0x4c0c);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].HSW.Rank.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].HSW.Rank.value = \
 							readl(mchmap + 0x4c14);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].HSW.Refresh.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].HSW.Refresh.value = \
 							readl(mchmap + 0x4e98);
     }
 	/*		Is Dual DIMM Per Channel Disable ?		*/
-	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = \
 			(PUBLIC(RO(Proc))->Uncore.Bus.SNB_Cap.DDPCD == 1) ?
-			1 : PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount;
+			1 : PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount;
 
 	Query_Turbo_TDP_Config(mchmap);
 }
 
-void Query_SKL_IMC(void __iomem *mchmap)
+void Query_SKL_IMC(void __iomem *mchmap, unsigned short mc)
 {	/*Source: 6th & 7th Generation Intel® Processor for S-Platforms Vol 2*/
 	unsigned short cha;
-
-	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
 	/*		Intra channel configuration			*/
-	PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADCH.value = readl(mchmap + 0x5000);
-    if (PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADCH.CH_L_MAP)
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADCH.value = readl(mchmap+0x5000);
+    if (PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADCH.CH_L_MAP)
     {
-	PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADC0.value = readl(mchmap + 0x5008);
-	PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADC1.value = readl(mchmap + 0x5004);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADC0.value = readl(mchmap+0x5008);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADC1.value = readl(mchmap+0x5004);
     } else {
-	PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADC0.value = readl(mchmap + 0x5004);
-	PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADC1.value = readl(mchmap + 0x5008);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADC0.value = readl(mchmap+0x5004);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADC1.value = readl(mchmap+0x5008);
     }
 	/*		DIMM parameters					*/
-	PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD0.value = readl(mchmap + 0x500c);
-	PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD1.value = readl(mchmap + 0x5010);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADD0.value = readl(mchmap+0x500c);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADD1.value = readl(mchmap+0x5010);
 	/*		Sum up any present DIMM per channel.		*/
-	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = \
-		  ((PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD0.Dimm_L_Size != 0)
-		|| (PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD0.Dimm_S_Size != 0))
-		+ ((PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD1.Dimm_L_Size != 0)
-		|| (PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD1.Dimm_S_Size != 0));
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
+	  ((PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADD0.Dimm_L_Size != 0)
+	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADD0.Dimm_S_Size != 0))
+	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADD1.Dimm_L_Size != 0)
+	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADD1.Dimm_S_Size != 0));
 	/*		Count of populated DIMMs L and DIMMs S	TODO
-	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = \
-		  ((PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD0.Dimm_L_Size != 0)
-		|| (PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD1.Dimm_L_Size != 0))
-		+ ((PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD0.Dimm_S_Size != 0)
-		|| (PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD1.Dimm_S_Size != 0));
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = \
+	  ((PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADD0.Dimm_L_Size != 0)
+	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADD1.Dimm_L_Size != 0))
+	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADD0.Dimm_S_Size != 0)
+	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADD1.Dimm_S_Size != 0));
 	*/
-	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = 2;
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
 
-    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
     {
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.Timing.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SKL.Timing.value = \
 					readl(mchmap + 0x4000 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.ACT.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SKL.ACT.value = \
 					readl(mchmap + 0x4004 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.RDRD.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SKL.RDRD.value = \
 					readl(mchmap + 0x400c + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.RDWR.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SKL.RDWR.value = \
 					readl(mchmap + 0x4010 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.WRRD.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SKL.WRRD.value = \
 					readl(mchmap + 0x4014 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.WRWR.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SKL.WRWR.value = \
 					readl(mchmap + 0x4018 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.Sched.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SKL.Sched.value = \
 					readl(mchmap + 0x401c + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.ODT.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SKL.ODT.value = \
 					readl(mchmap + 0x4070 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.Refresh.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SKL.Refresh.value = \
 					readl(mchmap + 0x423c + 0x400 * cha);
     }
 	Query_Turbo_TDP_Config(mchmap);
 }
 
-void Query_RKL_IMC(void __iomem *mchmap)
+void Query_RKL_IMC(void __iomem *mchmap, unsigned short mc)
 {	/*Source: 11th Generation Intel® Core Processor Datasheet Vol 2*/
 	unsigned short cha;
-
-	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
 	/*		Intra channel configuration			*/
-	PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADCH.value = readl(mchmap + 0x5000);
-    if (PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADCH.CH_L_MAP)
+	PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADCH.value = readl(mchmap+0x5000);
+    if (PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADCH.CH_L_MAP)
     {
-	PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADC0.value = readl(mchmap + 0x5008);
-	PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADC1.value = readl(mchmap + 0x5004);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADC0.value = readl(mchmap+0x5008);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADC1.value = readl(mchmap+0x5004);
     } else {
-	PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADC0.value = readl(mchmap + 0x5004);
-	PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADC1.value = readl(mchmap + 0x5008);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADC0.value = readl(mchmap+0x5004);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADC1.value = readl(mchmap+0x5008);
     }
 	/*		DIMM parameters					*/
-	PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADD0.value = readl(mchmap + 0x500c);
-	PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADD1.value = readl(mchmap + 0x5010);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADD0.value = readl(mchmap+0x500c);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADD1.value = readl(mchmap+0x5010);
 	/*		Sum up any present DIMM per channel.		*/
-	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = \
-		  ((PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADD0.Dimm_L_Size != 0)
-		|| (PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADD0.Dimm_S_Size != 0))
-		+ ((PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADD1.Dimm_L_Size != 0)
-		|| (PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADD1.Dimm_S_Size != 0));
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
+	  ((PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADD0.Dimm_L_Size != 0)
+	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADD0.Dimm_S_Size != 0))
+	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADD1.Dimm_L_Size != 0)
+	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADD1.Dimm_S_Size != 0));
 	/*		Count of populated DIMMs L and DIMMs S	TODO
-	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = \
-		  ((PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADD0.Dimm_L_Size != 0)
-		|| (PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADD1.Dimm_L_Size != 0))
-		+ ((PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADD0.Dimm_S_Size != 0)
-		|| (PUBLIC(RO(Proc))->Uncore.MC[0].RKL.MADD1.Dimm_S_Size != 0));
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = \
+	  ((PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADD0.Dimm_L_Size != 0)
+	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADD1.Dimm_L_Size != 0))
+	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADD0.Dimm_S_Size != 0)
+	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADD1.Dimm_S_Size != 0));
 	*/
-	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = 2;
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
 
-    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
     {
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].RKL.Timing.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].RKL.Timing.value = \
 					readl(mchmap + 0x4000 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].RKL.ACT.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].RKL.ACT.value = \
 					readl(mchmap + 0x4004 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].RKL.RDRD.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].RKL.RDRD.value = \
 					readl(mchmap + 0x400c + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].RKL.RDWR.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].RKL.RDWR.value = \
 					readl(mchmap + 0x4010 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].RKL.WRRD.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].RKL.WRRD.value = \
 					readl(mchmap + 0x4014 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].RKL.WRWR.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].RKL.WRWR.value = \
 					readl(mchmap + 0x4018 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].RKL.Sched.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].RKL.Sched.value = \
 					readq(mchmap + 0x4088 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].RKL.PWDEN.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].RKL.PWDEN.value = \
 					readq(mchmap + 0x4050 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].RKL.ODT.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].RKL.ODT.value = \
 					readq(mchmap + 0x4070 + 0x400 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].RKL.Refresh.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].RKL.Refresh.value = \
 					readl(mchmap + 0x423c + 0x400 * cha);
     }
 	Query_Turbo_TDP_Config(mchmap);
@@ -4278,27 +4262,37 @@ void Query_TGL_IMC(void __iomem *mchmap, unsigned short mc)
 
 static PCI_CALLBACK P945(struct pci_dev *dev)
 {
-	return (Router(dev, 0x44, 32, 0x4000, Query_P945));
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+
+	return (Router(dev, 0x44, 32, 0x4000, Query_P945, 0));
 }
 
 static PCI_CALLBACK P955(struct pci_dev *dev)
 {
-	return (Router(dev, 0x44, 32, 0x4000, Query_P955));
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+
+	return (Router(dev, 0x44, 32, 0x4000, Query_P955, 0));
 }
 
 static PCI_CALLBACK P965(struct pci_dev *dev)
 {
-	return (Router(dev, 0x48, 64, 0x4000, Query_P965));
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+
+	return (Router(dev, 0x48, 64, 0x4000, Query_P965, 0));
 }
 
 static PCI_CALLBACK G965(struct pci_dev *dev)
 {
-	return (Router(dev, 0x48, 64, 0x4000, Query_G965));
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+
+	return (Router(dev, 0x48, 64, 0x4000, Query_G965, 0));
 }
 
 static PCI_CALLBACK P35(struct pci_dev *dev)
 {
-	return (Router(dev, 0x48, 64, 0x4000, Query_P35));
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+
+	return (Router(dev, 0x48, 64, 0x4000, Query_P35, 0));
 }
 
 static PCI_CALLBACK ICH_TCO(struct pci_dev *dev)
@@ -4515,7 +4509,9 @@ static PCI_CALLBACK SNB_IMC(struct pci_dev *dev)
 	pci_read_config_dword(dev, 0xe4,
 				&PUBLIC(RO(Proc))->Uncore.Bus.SNB_Cap.value);
 
-	return (Router(dev, 0x48, 64, 0x8000, Query_SNB_IMC));
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+
+	return (Router(dev, 0x48, 64, 0x8000, Query_SNB_IMC, 0));
 }
 
 static PCI_CALLBACK IVB_IMC(struct pci_dev *dev)
@@ -4526,7 +4522,9 @@ static PCI_CALLBACK IVB_IMC(struct pci_dev *dev)
 	pci_read_config_dword(dev, 0xe8,
 				&PUBLIC(RO(Proc))->Uncore.Bus.IVB_Cap.value);
 
-	return (Router(dev, 0x48, 64, 0x8000, Query_SNB_IMC));
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+
+	return (Router(dev, 0x48, 64, 0x8000, Query_SNB_IMC, 0));
 }
 
 static PCI_CALLBACK SNB_EP_HB(struct pci_dev *dev)
@@ -4722,7 +4720,9 @@ static PCI_CALLBACK HSW_IMC(struct pci_dev *dev)
 	pci_read_config_dword(dev, 0xe8,
 				&PUBLIC(RO(Proc))->Uncore.Bus.IVB_Cap.value);
 
-	return (Router(dev, 0x48, 64, 0x8000, Query_HSW_IMC));
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+
+	return (Router(dev, 0x48, 64, 0x8000, Query_HSW_IMC, 0));
 }
 
 void SoC_SKL_VTD(void)
@@ -4743,8 +4743,10 @@ void SoC_SKL_VTD(void)
   }
 }
 
-static PCI_CALLBACK SKL_HOST(struct pci_dev *dev, void (*Query)(void __iomem*),
-				unsigned long long wsize)
+static PCI_CALLBACK SKL_HOST(	struct pci_dev *dev,
+				ROUTER Query,
+				unsigned long long wsize,
+				unsigned short mc )
 {
 	pci_read_config_dword(dev, 0xe4,
 				&PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_A.value);
@@ -4757,12 +4759,14 @@ static PCI_CALLBACK SKL_HOST(struct pci_dev *dev, void (*Query)(void __iomem*),
 
 	SoC_SKL_VTD();
 
-	return (Router(dev, 0x48, 64, wsize, Query));
+	return (Router(dev, 0x48, 64, wsize, Query, mc));
 }
 
 static PCI_CALLBACK SKL_IMC(struct pci_dev *dev)
 {
-	return (SKL_HOST(dev, Query_SKL_IMC, 0x8000));
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+
+	return (SKL_HOST(dev, Query_SKL_IMC, 0x8000, 0));
 }
 
 /* TODO(Hardware missing)
@@ -4781,7 +4785,7 @@ static PCI_CALLBACK SKL_SA(struct pci_dev *dev)
 	pci_read_config_dword(dev, 0xe8,
 				&PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_B.value);
 
-	return (Router(dev, 0x48, 64, 0x8000, Query_SKL_IMC));
+	return (Router(dev, 0x48, 64, 0x8000, Query_SKL_IMC, 0));
 
 	return (0);
 }
@@ -4794,69 +4798,23 @@ static PCI_CALLBACK CML_PCH(struct pci_dev *dev)
 
 static PCI_CALLBACK RKL_IMC(struct pci_dev *dev)
 {	/* Same address offsets as used in Skylake			*/
-	return (SKL_HOST(dev, Query_RKL_IMC, 0x8000));
-}
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
 
-#define GET_BITFIELD(v, lo, hi) \
-	(((v) & GENMASK_ULL((hi), (lo))) >> (lo))
-
-#define MCHBAR_OFFSET			0x48
-#define MCHBAR_EN			BIT_ULL(0)
-#define MCHBAR_BASE(v)			(GET_BITFIELD(v, 16, 38) << 16)
-#define MCHBAR_SIZE			0x10000
-
-static PCI_CALLBACK TGL_Remap(struct pci_dev *pdev, unsigned short mc)
-{	/* Source: drivers/edac/igen6_edac.c				*/
-	union  {
-		u64 v;
-		struct {
-			u32 v_lo;
-			u32 v_hi;
-		};
-	} u;
-
-	void __iomem *window;
-	u64 mchbar;
-
-	if (pci_read_config_dword(pdev, MCHBAR_OFFSET, &u.v_lo)) {
-		goto Fail;
-	}
-
-	if (pci_read_config_dword(pdev, MCHBAR_OFFSET + 4, &u.v_hi)) {
-		goto Fail;
-	}
-
-	if (!(u.v & MCHBAR_EN)) {
-		goto Fail;
-	}
-
-	mchbar = MCHBAR_BASE(u.v);
-	mchbar += mc * MCHBAR_SIZE;
-
-	window = ioremap(mchbar, MCHBAR_SIZE);
-	if (!window) {
-		goto Fail;
-	}
-
-	Query_TGL_IMC(window, mc);
-
-	iounmap(window);
-
-	return ((PCI_CALLBACK) 0);
-Fail:
-	return ((PCI_CALLBACK) -ENODEV);
+	return (SKL_HOST(dev, Query_RKL_IMC, 0x8000, 0));
 }
 
 static PCI_CALLBACK TGL_IMC(struct pci_dev *dev)
-{
+{	/* Source: drivers/edac/igen6_edac.c				*/
 	PCI_CALLBACK rc;
 	unsigned short mc;
 
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 2;
 	/*	Controller #0 is not necessary activated but enabled.	*/
 	for (mc = 0; mc < PUBLIC(RO(Proc))->Uncore.CtrlCount; mc++) {
-		rc = TGL_Remap(dev, mc);
+		rc = SKL_HOST(dev, Query_TGL_IMC, 0x10000, mc);
 	}
+	pci_read_config_dword(dev, 0xf0,
+				&PUBLIC(RO(Proc))->Uncore.Bus.TGL_Cap_E.value);
 	return (rc);
 }
 

@@ -709,6 +709,12 @@ typedef struct
 			RKL_CAPID_C		RKL_Cap_C;
 		};
 		struct {
+			TGL_CAPID_A		TGL_Cap_A;
+			TGL_CAPID_B		TGL_Cap_B;
+			TGL_CAPID_C		TGL_Cap_C;
+			TGL_CAPID_E		TGL_Cap_E;
+		};
+		struct {
 			AMD_0F_HTT_NODE_ID	NodeID;
 			AMD_0F_HTT_UNIT_ID	UnitID;
 			AMD_0F_HTT_FREQUENCY	LDTi_Freq[3];

@@ -3511,3 +3511,19 @@ typedef union
 } RKL_CAPID_C;
 
 #define TGL_CAPID_C	RKL_CAPID_C
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset F0h 			*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		LPDDR5_EN	:  1-0,
+		DATA_RATE_LPDDR5:  6-1,
+		DDR5_EN 	:  7-6,
+		DATA_RATE_DDR5	: 12-7,
+		IB_ECC_DIS	: 13-12, /* 1: IBECC is disabled	*/
+		VDDQ_VOLTAGE	: 24-13, /* Max VID of VDDQ_TX		*/
+		CRASHLOG_DIS	: 25-24, /* 1: Device 10 is disabled	*/
+		ReservedBits2	: 32-25;
+	};	/* TGL: $3.1.43 					*/
+} TGL_CAPID_E;

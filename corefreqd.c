@@ -4096,28 +4096,50 @@ void RKL_IMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 
 void RKL_CAP(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 {
-	unsigned int units;
+	unsigned int units = 12;
+	unsigned short mc;
 
 	Shm->Uncore.Bus.Rate = 8000;
 	Shm->Uncore.Bus.Speed = (Core->Clock.Hz * Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.Factory.Clock.Hz;
 
-	if (Proc->Uncore.Bus.RKL_Cap_C.LPDDR4_EN
-	&& !Proc->Uncore.Bus.RKL_Cap_A.DDR_OVERCLOCK) {
-		units = Proc->Uncore.Bus.RKL_Cap_C.DATA_RATE_LPDDR4;
-	} else if (Proc->Uncore.Bus.RKL_Cap_C.DDR4_EN
-		&& !Proc->Uncore.Bus.RKL_Cap_A.DDR_OVERCLOCK) {
-		units = Proc->Uncore.Bus.RKL_Cap_C.DATA_RATE_DDR4;
-	} else {
-		units = 12;
+  for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+    if (Proc->Uncore.MC[mc].RKL.MADCH.value) {
+	switch (Proc->Uncore.MC[mc].RKL.MADCH.DDR_TYPE) {
+	default:
+	case 0b00:	/*	DDR4	*/
+		Shm->Uncore.Unit.DDR_Ver = 4;
+
+		if ((Proc->Uncore.Bus.RKL_Cap_C.DDR4_EN)
+		 && (Proc->Uncore.Bus.RKL_Cap_A.DDR_OVERCLOCK == 0))
+		{
+			units = Proc->Uncore.Bus.RKL_Cap_C.DATA_RATE_DDR4;
+		}
+		break;
+	case 0b11:	/*	LPDDR4	*/
+		Shm->Uncore.Unit.DDR_Ver = 4;
+
+		if ((Proc->Uncore.Bus.RKL_Cap_C.LPDDR4_EN)
+		 && (Proc->Uncore.Bus.RKL_Cap_A.DDR_OVERCLOCK == 0))
+		{
+			units = Proc->Uncore.Bus.RKL_Cap_C.DATA_RATE_LPDDR4;
+		}
+		break;
+	case 0b01:	/*	DDR5	*/
+		Shm->Uncore.Unit.DDR_Ver = 5;
+		break;
+	case 0b10:	/*	LPDDR5	*/
+		Shm->Uncore.Unit.DDR_Ver = 5;
+		break;
 	}
+    }
+  }
 	Shm->Uncore.CtrlSpeed = (266 * units) + ((333 * units) / 500);
 
 	Shm->Uncore.Unit.Bus_Rate = 0b01;
 	Shm->Uncore.Unit.BusSpeed = 0b01;
 	Shm->Uncore.Unit.DDR_Rate = 0b11;
 	Shm->Uncore.Unit.DDRSpeed = 0b00;
-	Shm->Uncore.Unit.DDR_Ver  = Proc->Uncore.MC[0].RKL.MADCH.DDR_TYPE ? 5:4;
 
 	Shm->Proc.Technology.IOMMU = !Proc->Uncore.Bus.RKL_Cap_A.VT_d;
 	Shm->Proc.Technology.IOMMU_Ver_Major = Proc->Uncore.Bus.IOMMU_Ver.Major;
