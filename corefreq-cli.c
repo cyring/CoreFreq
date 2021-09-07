@@ -7118,15 +7118,17 @@ Window *CreateMemCtrl(unsigned long long id)
 	switch (Shm->Uncore.Unit.DDR_Ver) {
 	case 5:
 	case 4:
-		ctrlHeaders = 7;
-		channelHeaders = 5;
 		if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
 		{
+			ctrlHeaders = 7;
+			channelHeaders = 5;
 			pTimingFunc = Timing_DDR4;
 		}
 		else if ( (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 			||(Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
 		{
+			ctrlHeaders = 8;
+			channelHeaders = 6;
 			pTimingFunc = Timing_DDR4_Zen;
 		}
 		break;
@@ -7139,7 +7141,7 @@ Window *CreateMemCtrl(unsigned long long id)
 		break;
 	}
    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
-	rows += ctrlHeaders * Shm->Uncore.CtrlCount;
+	rows += ctrlHeaders;
 	rows += channelHeaders * Shm->Uncore.MC[mc].ChannelCount;
 	rows += Shm->Uncore.MC[mc].SlotCount * Shm->Uncore.MC[mc].ChannelCount;
     }
