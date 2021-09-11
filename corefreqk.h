@@ -2669,6 +2669,9 @@ enum {
 	CN_RENOIR
 };
 enum {
+	CN_LUCIENNE
+};
+enum {
 	CN_MATISSE
 };
 enum {
@@ -2721,7 +2724,7 @@ static MICRO_ARCH Arch_AMD_Zen2_Renoir[] = {
 	{NULL}
 };
 static MICRO_ARCH Arch_AMD_Zen2_LCN[] = {
-	[CN_RENOIR]		= {"Zen2/Lucienne"},
+	[CN_LUCIENNE]		= {"Zen2/Lucienne"},
 	{NULL}
 };
 static MICRO_ARCH Arch_AMD_Zen2_MTS[] = {

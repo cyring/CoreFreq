@@ -5883,16 +5883,13 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
     }
     if (PUBLIC(RO(Proc))->Features.AdvPower.EDX.HwPstate)
     {
-	RDMSR(PstateDef, MSR_AMD_PC6_F17H_STATUS);
-	if (PstateDef.Family_17h.CpuFid == 0)
-	{
-		PSTATELIMIT PstateLimit = {.value = 0};
+	PSTATELIMIT PstateLimit = {.value = 0};
 
-		RDMSR(PstateLimit, MSR_AMD_PSTATE_CURRENT_LIMIT);
+	RDMSR(PstateLimit, MSR_AMD_PSTATE_CURRENT_LIMIT);
 
-		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE
-				+ PstateLimit.Family_17h.PstateMaxVal));
-	}
+	RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE
+			+ PstateLimit.Family_17h.PstateMaxVal));
+
 	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 				PstateDef.Family_17h.CpuDfsId );
 
@@ -6303,26 +6300,23 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	    }
 		break;
 	default:
-/*
-	AMD_Family_17h:
-	AMD_Family_18h:
-	AMD_Zen:
-	AMD_Zen_APU:
-	AMD_ZenPlus:
-	AMD_ZenPlus_APU:
-	AMD_Zen_Dali:
-	AMD_Zen2_LCN:
-*/
+	case AMD_Family_17h:
+	case AMD_Family_18h:
+	case AMD_Zen:
+	case AMD_Zen_APU:
+	case AMD_ZenPlus:
+	case AMD_ZenPlus_APU:
+	case AMD_Zen_Dali:
+	case AMD_Zen2_LCN:
+	    {
 		Core_AMD_Family_17h_Temp = CTL_AMD_Family_17h_Temp;
 
-	    if (PUBLIC(RO(Proc))->Registration.Experimental) {
 		Query_AMD_F17h_Power_Limits( PUBLIC(RO(Core, AT(cpu))) );
 
-		PUBLIC(RO(Proc))->Features.HSMP_Capable = 1;
+		PUBLIC(RO(Proc))->Features.HSMP_Capable = 0;
 	    }
 		break;
 	}
-
 	if (Compute_AMD_Zen_Boost(cpu) == true)
 	{	/*	Count the Xtra Boost ratios			*/
 		PUBLIC(RO(Proc))->Features.XtraCOF = 2;
@@ -7184,7 +7178,7 @@ void PerCore_AMD_CState_BAR(CORE_RO *Core)
 
 void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 {
-	unsigned long long CC6 = 0, PC6 = 0;
+	ZEN_CSTATE_CONFIG CStateCfg = {.value = 0};
 	int ToggleFeature;
 
 	/*		Read The Hardware Configuration Register.	*/
@@ -7225,18 +7219,18 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask, Core->Bind);
 
 	/*	Enable or Disable the Core C6 State. Bit[22,14,16]	*/
-	RDMSR64(CC6, MSR_AMD_CC6_F17H_STATUS);
+	RDMSR(CStateCfg, MSR_AMD_F17H_CSTATE_CONFIG);
 	switch (CC6_Enable) {
 	case COREFREQ_TOGGLE_OFF:
-		BITCLR(LOCKLESS, CC6, 22);
-		BITCLR(LOCKLESS, CC6, 14);
-		BITCLR(LOCKLESS, CC6,  6);
+		CStateCfg.CCR2_CC6EN = 0;
+		CStateCfg.CCR1_CC6EN = 0;
+		CStateCfg.CCR0_CC6EN = 0;
 		ToggleFeature = 1;
 		break;
 	case COREFREQ_TOGGLE_ON:
-		BITSET(LOCKLESS, CC6, 22);
-		BITSET(LOCKLESS, CC6, 14);
-		BITSET(LOCKLESS, CC6,  6);
+		CStateCfg.CCR2_CC6EN = 1;
+		CStateCfg.CCR1_CC6EN = 1;
+		CStateCfg.CCR0_CC6EN = 1;
 		ToggleFeature = 1;
 		break;
 	default:
@@ -7245,11 +7239,11 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 	}
 	if (ToggleFeature == 1)
 	{
-		WRMSR64(CC6, MSR_AMD_CC6_F17H_STATUS);
-		RDMSR64(CC6, MSR_AMD_CC6_F17H_STATUS);
+		WRMSR(CStateCfg, MSR_AMD_F17H_CSTATE_CONFIG);
+		RDMSR(CStateCfg, MSR_AMD_F17H_CSTATE_CONFIG);
 	}
-	if ((BITWISEAND(LOCKLESS, CC6, 0x404040LLU) == 0x404040LLU)
-	  && HwCfgRegister.Family_17h.INVDWBINVD)
+	if (CStateCfg.CCR2_CC6EN && CStateCfg.CCR1_CC6EN && CStateCfg.CCR0_CC6EN
+		&& HwCfgRegister.Family_17h.INVDWBINVD)
 	{
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CC6, Core->Bind);
 	} else {
@@ -7260,14 +7254,15 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 	/*	Enable or Disable the Package C6 State . Bit[32]	*/
     if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
     {
-	RDMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
+	ZEN_PMGT_MISC PmgtMisc = {.value = 0};
+	RDMSR(PmgtMisc, MSR_AMD_F17H_PMGT_MISC);
 	switch (PC6_Enable) {
 	case COREFREQ_TOGGLE_OFF:
-		BITCLR(LOCKLESS, PC6, 32);
+		PmgtMisc.PC6En = 0;
 		ToggleFeature = 1;
 		break;
 	case COREFREQ_TOGGLE_ON:
-		BITSET(LOCKLESS, PC6, 32);
+		PmgtMisc.PC6En = 1;
 		ToggleFeature = 1;
 		break;
 	default:
@@ -7275,10 +7270,10 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 		break;
 	}
 	if (ToggleFeature == 1) {
-		WRMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
-		RDMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
+		WRMSR(PmgtMisc, MSR_AMD_F17H_PMGT_MISC);
+		RDMSR(PmgtMisc, MSR_AMD_F17H_PMGT_MISC);
 	}
-	if(BITWISEAND(LOCKLESS, PC6, 0x100000000LLU) == 0x100000000LLU)
+	if (PmgtMisc.PC6En == 1)
 	{
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->PC6, Core->Bind);
 	} else {
@@ -14180,7 +14175,7 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
 	PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(TGT)] = COF;
 
 	/*	Read the Boosted Frequency and voltage VID.		*/
-	RDMSR(PstateDef, MSR_AMD_PSTATE_F17H_BOOST);
+	RDMSR(PstateDef, MSR_AMD_F17H_HW_PSTATE_STATUS);
 	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 				PstateDef.Family_17h.CpuDfsId );
 	Core->Ratio.Perf = COF;

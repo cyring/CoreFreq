@@ -64,6 +64,10 @@
 	#define MSR_SVM_LOCK_KEY		0xc0010118
 #endif
 
+#define MSR_AMD_F17H_PMGT_MISC			0xc0010292
+#define MSR_AMD_F17H_HW_PSTATE_STATUS		0xc0010293
+#define MSR_AMD_F17H_CSTATE_CONFIG		0xc0010296
+
 #ifndef MSR_AMD_RAPL_POWER_UNIT
 	#define MSR_AMD_RAPL_POWER_UNIT 	0xc0010299
 #endif
@@ -137,18 +141,6 @@
 
 #define SMU_AMD_F17H_MATISSE_COF		0x0005d2c4
 #define SMU_AMD_F17H_CASTLEPEAK_COF		0x0005d324
-
-#ifndef MSR_AMD_PC6_F17H_STATUS
-	#define MSR_AMD_PC6_F17H_STATUS 	0xc0010292
-#endif
-
-#ifndef MSR_AMD_PSTATE_F17H_BOOST
-	#define MSR_AMD_PSTATE_F17H_BOOST	0xc0010293
-#endif
-
-#ifndef MSR_AMD_CC6_F17H_STATUS
-	#define MSR_AMD_CC6_F17H_STATUS 	0xc0010296
-#endif
 
 /* Sources: PPR Vol 2 for AMD Family 19h Model 01h B1			*/
 #define SMU_HSMP_F19H	/*Cmd:*/0x3b10534, /*Arg:*/0x3b109e0, /*Rsp:*/0x3b10980
@@ -520,6 +512,43 @@ typedef union
 	PstateEn	: 64-63; /* RW: Is this Pstate MSR valid ?	*/
     } Family_17h;
 } PSTATEDEF;
+
+typedef union
+{
+	unsigned long long value;
+    struct
+    {
+	unsigned long long	 /* MSR 0xC0010292			*/
+	CurPstateLimit	:  3-0,  /* CurHwPstateLimit ; BOOST(MAX)	*/
+	StartupPstate	:  6-3,  /* BOOST(MAX)				*/
+	DFPstateDis	:  7-6,
+	CurDFVid	: 15-7,
+	MaxCpuCof	: 21-15,
+	MaxDFCof	: 26-21,
+	CpbCap		: 29-26,
+	Reserved1	: 32-29,
+	PC6En		: 33-32, /* RW: 0=Disable PC6. 1=Enable PC6	*/
+	Reserved2	: 64-33;
+    };
+} ZEN_PMGT_MISC;
+
+typedef union
+{
+	unsigned long long value;
+    struct
+    {
+	unsigned long long	 /* MSR 0xC0010296 (R/W)		*/
+	CCR0_CC1DFSID	:  6-0,
+	CCR0_CC6EN	:  7-6,
+	Reserved1	:  8-7,
+	CCR1_CC1DFSID	: 14-8,
+	CCR1_CC6EN	: 15-14,
+	Reserved2	: 16-15,
+	CCR2_CC2DFSID	: 22-16,
+	CCR2_CC6EN	: 23-22,
+	Reserved3	: 64-23;
+    };
+} ZEN_CSTATE_CONFIG;
 
 typedef union
 {
