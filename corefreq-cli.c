@@ -3954,6 +3954,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	enum PWR_DOMAIN pw;
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
 	{
+		unsigned short digits;
 		bix	= Shm->Proc.Power.Domain[pw].Feature[PL1].Enable
 			| Shm->Proc.Power.Domain[pw].Feature[PL2].Enable;
 
@@ -3971,13 +3972,15 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 			TDP_State, pw );
 
 	    if (Shm->Proc.Power.Domain[pw].PL1 > 0) {
+		digits = (unsigned short) log10(Shm->Proc.Power.Domain[pw].TW1);
+
 		GridCall( PUT(	Shm->Proc.Features.TDP_Unlock ?
 				(BOXKEY_TDP_OR | (pw << 5) | PL1) :SCANKEY_NULL,
 				attrib[ bix ? 3 : 5 ], width, 3,
-				"%s (%2.0f sec)%.*s%s   %c%5u W%c",
+				"%s (%.0f sec)%.*s%s   %c%5u W%c",
 				RSC(POWER_THERMAL_TPL).CODE(),
 				Shm->Proc.Power.Domain[pw].TW1,
-				width - (OutFunc == NULL ? 30 : 28)
+				width - (OutFunc == NULL ? 29 : 27) - digits
 				 - RSZ(POWER_THERMAL_TPL), hSpace,
 				RSC(POWER_LABEL_PL1).CODE(),
 				Shm->Proc.Features.TDP_Unlock ? '<' : '[',
@@ -3994,13 +3997,15 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	  if (pw == PWR_DOMAIN(PKG) || pw == PWR_DOMAIN(PLATFORM))
 	  {
 	    if (Shm->Proc.Power.Domain[pw].PL2 > 0) {
+		digits = (unsigned short) log10(Shm->Proc.Power.Domain[pw].TW2);
+
 		GridCall( PUT(	Shm->Proc.Features.TDP_Unlock ?
 				(BOXKEY_TDP_OR | (pw << 5) | PL2) :SCANKEY_NULL,
 				attrib[ bix ? 3 : 5 ], width, 3,
-				"%s (%2.0f sec)%.*s%s   %c%5u W%c",
+				"%s (%.0f sec)%.*s%s   %c%5u W%c",
 				RSC(POWER_THERMAL_TPL).CODE(),
 				Shm->Proc.Power.Domain[pw].TW2,
-				width - (OutFunc == NULL ? 30 : 28)
+				width - (OutFunc == NULL ? 29 : 27) - digits
 				 - RSZ(POWER_THERMAL_TPL), hSpace,
 				RSC(POWER_LABEL_PL2).CODE(),
 				Shm->Proc.Features.TDP_Unlock ? '<' : '[',
@@ -4015,12 +4020,13 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 			RSC(POWER_LABEL_PL2).CODE(), POWERED(0) );
 	    }
 	  } else if (Shm->Proc.Power.Domain[pw].PL2 > 0) {
+		digits = (unsigned short) log10(Shm->Proc.Power.Domain[pw].TW2);
 		/*	Some register may have garbage value	*/
 		GridCall( PUT(	SCANKEY_NULL, attrib[0], width, 3,
-				"%s (%2.0f sec)%.*s%s   [%5u W]",
+				"%s (%.0f sec)%.*s%s   [%5u W]",
 				RSC(POWER_THERMAL_TPL).CODE(),
 				Shm->Proc.Power.Domain[pw].TW2,
-				width - (OutFunc == NULL ? 30 : 28)
+				width - (OutFunc == NULL ? 29 : 27) - digits
 				 - RSZ(POWER_THERMAL_TPL), hSpace,
 				RSC(POWER_LABEL_PL2).CODE(),
 				Shm->Proc.Power.Domain[pw].PL2 ),
