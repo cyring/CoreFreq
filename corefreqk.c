@@ -12529,7 +12529,10 @@ static void Start_SandyBridge_EP(void *arg)
 
 /*	SandyBridge/EP Uncore PMU MSR for Xeon family 06_2Dh		*/
 static void Start_Uncore_SandyBridge_EP(void *arg)
-{	/*	Tables 2-20 , 2-23 , 2-24				*/
+{
+    if (PUBLIC(RO(Proc))->Features.PerfMon.EAX.Version > 3)
+    {
+	/*	Tables 2-20 , 2-23 , 2-24				*/
 	UNCORE_FIXED_PERF_CONTROL Uncore_FixedPerfControl;
 	UNCORE_PMON_GLOBAL_CONTROL Uncore_PMonGlobalControl;
 
@@ -12550,19 +12553,23 @@ static void Start_Uncore_SandyBridge_EP(void *arg)
 	Uncore_PMonGlobalControl.Unfreeze_All = 1;
 
 	WRMSR(Uncore_PMonGlobalControl, MSR_SNB_UNCORE_PERF_GLOBAL_CTRL);
+    }
 }
 
 static void Stop_Uncore_SandyBridge_EP(void *arg)
 {
-    if (PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl.SNB.EN_CTR0 == 0)
+    if (PUBLIC(RO(Proc))->Features.PerfMon.EAX.Version > 3)
     {
+      if (PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl.SNB.EN_CTR0 == 0)
+      {
 	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl.Freeze_All = 1;
-    }
+      }
 	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl,
 		MSR_SNB_UNCORE_PERF_GLOBAL_CTRL);
 
 	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl,
 		MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
+    }
 }
 
 static enum hrtimer_restart Cycle_IvyBridge_EP(struct hrtimer *pTimer)
