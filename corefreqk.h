@@ -1487,7 +1487,7 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 	[Zen{2,3}/Chagall]	AF/08h Stepping 2	 7 nm	HEDT/WS */
 #define _AMD_Family_19h {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 #define _AMD_Zen3_VMR	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x2, .Model=0x1}
-#define _AMD_Zen3_CZN	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x5, .Model=0x1}
+#define _AMD_Zen3_CZN	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x5, .Model=0x0}
 #define _AMD_EPYC_Milan {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x0, .Model=0x1}
 #define _AMD_Zen3_Chagall	\
 			{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x0, .Model=0x8}
