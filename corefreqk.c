@@ -6283,7 +6283,6 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	switch (PUBLIC(RO(Proc))->ArchID) {
 	case AMD_EPYC_Rome:
 	case AMD_Zen2_CPK:
-	case AMD_Zen2_Renoir:
 	case AMD_Zen2_MTS:
 	case AMD_Zen2_Xbox:
 	case AMD_Family_19h:
@@ -6306,6 +6305,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	case AMD_ZenPlus:
 	case AMD_ZenPlus_APU:
 	case AMD_Zen_Dali:
+	case AMD_Zen2_Renoir:
 	case AMD_Zen2_LCN:
 	case AMD_Zen3_CZN:
 	    {
