@@ -10006,7 +10006,8 @@ void Sys_DumpTask(SYSGATE_RO *SysGate)
 #else
 		SysGate->taskList[cnt].state    = (short int) thread->__state;
 #endif
-#if defined(CONFIG_SCHED_BMQ)
+#if defined(CONFIG_SCHED_BMQ) \
+ || defined(CONFIG_SCHED_PDS)
 		SysGate->taskList[cnt].wake_cpu = (short int) thread->cpu;
 #else
 		SysGate->taskList[cnt].wake_cpu = (short int) thread->wake_cpu;
