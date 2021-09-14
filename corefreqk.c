@@ -6288,7 +6288,6 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	case AMD_Zen2_Xbox:
 	case AMD_Family_19h:
 	case AMD_Zen3_VMR:
-	case AMD_Zen3_CZN:
 	case AMD_EPYC_Milan:
 	case AMD_Zen3_Chagall:
 	    {
@@ -6308,6 +6307,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	case AMD_ZenPlus_APU:
 	case AMD_Zen_Dali:
 	case AMD_Zen2_LCN:
+	case AMD_Zen3_CZN:
 	    {
 		Core_AMD_Family_17h_Temp = CTL_AMD_Family_17h_Temp;
 
