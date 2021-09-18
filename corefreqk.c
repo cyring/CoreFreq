@@ -2250,6 +2250,9 @@ void OverrideUnlockCapability(PROCESSOR_SPECIFIC *pSpecific)
     if (pSpecific->Latch & LATCH_UNCORE_UNLOCK) {
 	PUBLIC(RO(Proc))->Features.Uncore_Unlock = pSpecific->UncoreUnlocked;
     }
+    if (pSpecific->Latch & LATCH_HSMP_CAPABLE) {
+	PUBLIC(RO(Proc))->Features.HSMP_Capable = pSpecific->HSMP_Capable;
+    }
 }
 
 PROCESSOR_SPECIFIC *LookupProcessor(void)
@@ -5929,9 +5932,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	AMD_17_MTS_CPK_COF XtraCOF = {.value = 0};
 
 	switch (PUBLIC(RO(Proc))->ArchID) {
-	case AMD_Zen3_CZN:
 	case AMD_Zen3_VMR:
-	case AMD_Zen2_LCN:
 	case AMD_Zen2_MTS:
 	case AMD_Zen2_Xbox:
 		Core_AMD_SMN_Read(XtraCOF,
@@ -6280,43 +6281,8 @@ void Query_AMD_Family_17h(unsigned int cpu)
     }
 	Default_Unlock_Reset();
 
-	switch (PUBLIC(RO(Proc))->ArchID) {
-	case AMD_EPYC_Rome:
-	case AMD_Zen2_CPK:
-	case AMD_Zen2_MTS:
-	case AMD_Zen2_Xbox:
-	case AMD_Family_19h:
-	case AMD_Zen3_VMR:
-	case AMD_EPYC_Milan:
-	case AMD_Zen3_Chagall:
-	    {
-		Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Zen2_Temp;
+	Query_AMD_F17h_Power_Limits( PUBLIC(RO(Core, AT(cpu))) );
 
-		Query_AMD_F17h_Power_Limits( PUBLIC(RO(Core, AT(cpu))) );
-
-		PUBLIC(RO(Proc))->Features.HSMP_Capable = 1;
-	    }
-		break;
-	default:
-	case AMD_Family_17h:
-	case AMD_Family_18h:
-	case AMD_Zen:
-	case AMD_Zen_APU:
-	case AMD_ZenPlus:
-	case AMD_ZenPlus_APU:
-	case AMD_Zen_Dali:
-	case AMD_Zen2_Renoir:
-	case AMD_Zen2_LCN:
-	case AMD_Zen3_CZN:
-	    {
-		Core_AMD_Family_17h_Temp = CTL_AMD_Family_17h_Temp;
-
-		Query_AMD_F17h_Power_Limits( PUBLIC(RO(Core, AT(cpu))) );
-
-		PUBLIC(RO(Proc))->Features.HSMP_Capable = 0;
-	    }
-		break;
-	}
 	if (Compute_AMD_Zen_Boost(cpu) == true)
 	{	/*	Count the Xtra Boost ratios			*/
 		PUBLIC(RO(Proc))->Features.XtraCOF = 2;
@@ -6425,6 +6391,18 @@ void Query_AMD_Family_17h(unsigned int cpu)
 		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
 	    }
 	}
+}
+
+void Query_AMD_F17h_PerSocket(unsigned int cpu)
+{
+	Core_AMD_Family_17h_Temp = CTL_AMD_Family_17h_Temp;
+	Query_AMD_Family_17h(cpu);
+}
+
+void Query_AMD_F17h_PerCluster(unsigned int cpu)
+{
+	Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Zen2_Temp;
+	Query_AMD_Family_17h(cpu);
 }
 
 void Dump_CPUID(CORE_RO *Core)

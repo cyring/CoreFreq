@@ -743,11 +743,12 @@ enum CSTATES_CLASS {
 	CSTATES_SOC_GDM
 };
 
-#define LATCH_NONE		0b0000
-#define LATCH_TGT_RATIO_UNLOCK	0b0001	/* <T>	TgtRatioUnlocked	*/
-#define LATCH_CLK_RATIO_UNLOCK	0b0010	/* <X>	ClkRatioUnlocked	*/
-#define LATCH_TURBO_UNLOCK	0b0100	/* <B>	TurboUnlocked		*/
-#define LATCH_UNCORE_UNLOCK	0b1000	/* <U>	UncoreUnlocked		*/
+#define LATCH_NONE		0b000000000000
+#define LATCH_TGT_RATIO_UNLOCK	0b000000000001	/* <T>	TgtRatioUnlocked */
+#define LATCH_CLK_RATIO_UNLOCK	0b000000000010	/* <X>	ClkRatioUnlocked */
+#define LATCH_TURBO_UNLOCK	0b000000000100	/* <B>	TurboUnlocked	 */
+#define LATCH_UNCORE_UNLOCK	0b000000001000	/* <U>	UncoreUnlocked	 */
+#define LATCH_HSMP_CAPABLE	0b000000010000	/* <H>	HSMP Capability  */
 
 typedef struct {
 	char			*CodeName;
@@ -762,8 +763,10 @@ typedef struct {
 				ClkRatioUnlocked: 11-9,  /*	<X:2>	*/
 				TurboUnlocked	: 12-11, /*	<B:1>	*/
 				UncoreUnlocked	: 13-12, /*	<U:1>	*/
-				_UnusedSpecBits : 28-13,
-				Latch		: 32-28; /* <U>-<B>-<X>-<T> */
+				HSMP_Capable	: 14-13, /*	<H:1>	*/
+				_UnusedLatchBits: 20-14,
+				/* <H>-<U>-<B>-<X>-<T> */
+				Latch		: 32-20;
 } PROCESSOR_SPECIFIC;
 
 typedef struct {
@@ -1245,7 +1248,8 @@ static void PerCore_AMD_Family_16h_Query(void *arg) ;
 #define     Stop_AMD_Family_16h Stop_AMD_Family_15h
 #define     InitTimer_AMD_Family_16h InitTimer_AuthenticAMD
 
-extern void Query_AMD_Family_17h(unsigned int cpu) ;
+extern void Query_AMD_F17h_PerSocket(unsigned int cpu) ;
+extern void Query_AMD_F17h_PerCluster(unsigned int cpu) ;
 static void PerCore_AMD_Family_17h_Query(void *arg) ;
 static void Start_AMD_Family_17h(void *arg) ;
 static void Stop_AMD_Family_17h(void *arg) ;
@@ -1263,7 +1267,8 @@ static void CTL_AMD_Family_17h_Temp(CORE_RO *Core) ;
 static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core) ;
 void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 
-#define     Query_AMD_Family_19h Query_AMD_Family_17h
+#define     Query_AMD_F19h_PerSocket Query_AMD_F17h_PerSocket
+#define     Query_AMD_F19h_PerCluster Query_AMD_F17h_PerCluster
 #define     PerCore_AMD_Family_19h_Query PerCore_AMD_Family_17h_Query
 #define     Start_AMD_Family_19h Start_AMD_Family_17h
 #define     Stop_AMD_Family_19h Stop_AMD_Family_17h
@@ -4014,7 +4019,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 	.UncoreUnlocked = 0,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
-/*	[Zen/Snowy Owl]		8F_11h Stepping 0			*/
+/*	[Zen/Snowy Owl] 	8F_11h Stepping 0			*/
 	{	/* AMD EPYC Embedded Processors 			*/
 	.Brand = ZLIST( "AMD EPYC 31",	\
 			"AMD EPYC 32"	),
@@ -4349,7 +4354,9 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST( "AMD EPYC 7262",	\
@@ -4361,7 +4368,9 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD EPYC 7272"),
@@ -4372,7 +4381,9 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST( "AMD EPYC 7282",	\
@@ -4384,7 +4395,9 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST( "AMD EPYC 7302P",	\
@@ -4396,7 +4409,9 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST( "AMD EPYC 7402P",	\
@@ -4408,7 +4423,9 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST( "AMD EPYC 7352",	\
@@ -4421,7 +4438,9 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST( "AMD EPYC 7542",	\
@@ -4433,7 +4452,9 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD EPYC 7552"),
@@ -4444,7 +4465,9 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST( "AMD EPYC 7452",	\
@@ -4456,7 +4479,9 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD EPYC 7662"),
@@ -4467,7 +4492,9 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST( "AMD EPYC 7702P",	\
@@ -4479,7 +4506,9 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD EPYC 7742"),
@@ -4490,7 +4519,9 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD EPYC 7H12"),
@@ -4501,7 +4532,9 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{0}
 };
@@ -4516,7 +4549,9 @@ static PROCESSOR_SPECIFIC AMD_Zen2_CPK_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen Threadripper 3970X"),
@@ -4527,7 +4562,9 @@ static PROCESSOR_SPECIFIC AMD_Zen2_CPK_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen Threadripper 3960X"),
@@ -4538,7 +4575,9 @@ static PROCESSOR_SPECIFIC AMD_Zen2_CPK_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen Threadripper PRO 3995WX"),
@@ -4549,7 +4588,8 @@ static PROCESSOR_SPECIFIC AMD_Zen2_CPK_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen Threadripper PRO 3975WX"),
@@ -4560,7 +4600,8 @@ static PROCESSOR_SPECIFIC AMD_Zen2_CPK_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen Threadripper PRO 3955WX"),
@@ -4571,7 +4612,8 @@ static PROCESSOR_SPECIFIC AMD_Zen2_CPK_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen Threadripper PRO 3945WX"),
@@ -4582,7 +4624,8 @@ static PROCESSOR_SPECIFIC AMD_Zen2_CPK_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_HSMP_CAPABLE
 	},
 	{0}
 };
@@ -4808,7 +4851,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_Renoir_Specific[] = {
 static PROCESSOR_SPECIFIC AMD_Zen2_LCN_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 3 5300U"),
-	.Boost = {+12, 0},
+	.Boost = {+12, +1},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_LUCIENNE,
 	.TgtRatioUnlocked = 1,
@@ -4819,7 +4862,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_LCN_Specific[] = {
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen 5 5500U"),
-	.Boost = {+19, 0},
+	.Boost = {+19, +1},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_LUCIENNE,
 	.TgtRatioUnlocked = 1,
@@ -4830,7 +4873,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_LCN_Specific[] = {
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen 7 5700U"),
-	.Boost = {+25, 0},
+	.Boost = {+25, +1},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_LUCIENNE,
 	.TgtRatioUnlocked = 1,
@@ -4852,7 +4895,9 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen 5 PRO 3600"),
@@ -4863,7 +4908,9 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen 5 3600XT"),
@@ -4874,7 +4921,9 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 5 3600X",	\
@@ -4886,7 +4935,9 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen 7 PRO 3700"),
@@ -4897,7 +4948,9 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen 7 3800XT"),
@@ -4908,7 +4961,9 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 3 3300X",	\
@@ -4921,7 +4976,9 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen 9 PRO 3900"),
@@ -4932,7 +4989,9 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen 9 3900XT"),
@@ -4943,7 +5002,9 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 7 3700X",	\
@@ -4955,7 +5016,9 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen 9 3950X"),
@@ -4966,7 +5029,9 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{0}
 };
@@ -4981,7 +5046,9 @@ static PROCESSOR_SPECIFIC AMD_Zen3_VMR_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen 9 5900X"),
@@ -4992,7 +5059,9 @@ static PROCESSOR_SPECIFIC AMD_Zen3_VMR_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen 9 5950X"),
@@ -5003,7 +5072,9 @@ static PROCESSOR_SPECIFIC AMD_Zen3_VMR_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
 	},
 	{0}
 };
@@ -5967,7 +6038,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Family_17h] = {							/*  8*/
 	.Signature = _AMD_Family_17h,
-	.Query = Query_AMD_Family_17h,
+	.Query = Query_AMD_F17h_PerSocket,
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
@@ -5991,7 +6062,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Family_18h] = {							/*  9*/
 	.Signature = _AMD_Family_18h,
-	.Query = Query_AMD_Family_17h,
+	.Query = Query_AMD_F17h_PerSocket,
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
@@ -6015,7 +6086,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Family_19h] = {							/* 10*/
 	.Signature = _AMD_Family_19h,
-	.Query = Query_AMD_Family_19h,
+	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
@@ -7598,7 +7669,7 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [AMD_Zen] = {								/* 73*/
 	.Signature = _AMD_Zen,
-	.Query = Query_AMD_Family_17h,
+	.Query = Query_AMD_F17h_PerSocket,
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
@@ -7622,7 +7693,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen_APU] = {							/* 74*/
 	.Signature = _AMD_Zen_APU,
-	.Query = Query_AMD_Family_17h,
+	.Query = Query_AMD_F17h_PerSocket,
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
@@ -7646,7 +7717,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_ZenPlus] = {							/* 75*/
 	.Signature = _AMD_ZenPlus,
-	.Query = Query_AMD_Family_17h,
+	.Query = Query_AMD_F17h_PerSocket,
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
@@ -7670,7 +7741,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_ZenPlus_APU] = {							/* 76*/
 	.Signature = _AMD_ZenPlus_APU,
-	.Query = Query_AMD_Family_17h,
+	.Query = Query_AMD_F17h_PerSocket,
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
@@ -7694,7 +7765,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen_Dali] = {							/* 77*/
 	.Signature = _AMD_Zen_Dali,
-	.Query = Query_AMD_Family_17h,
+	.Query = Query_AMD_F17h_PerSocket,
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
@@ -7718,7 +7789,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_EPYC_Rome] = {							/* 78*/
 	.Signature = _AMD_EPYC_Rome,
-	.Query = Query_AMD_Family_17h,
+	.Query = Query_AMD_F17h_PerCluster,
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
@@ -7742,7 +7813,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen2_CPK] = {							/* 79*/
 	.Signature = _AMD_Zen2_CPK,
-	.Query = Query_AMD_Family_17h,
+	.Query = Query_AMD_F17h_PerCluster,
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
@@ -7766,7 +7837,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen2_Renoir] = {							/* 80*/
 	.Signature = _AMD_Zen2_Renoir,
-	.Query = Query_AMD_Family_17h,
+	.Query = Query_AMD_F17h_PerSocket,
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
@@ -7790,7 +7861,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen2_LCN] = {							/* 81*/
 	.Signature = _AMD_Zen2_LCN,
-	.Query = Query_AMD_Family_17h,
+	.Query = Query_AMD_F17h_PerSocket,
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
@@ -7814,7 +7885,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen2_MTS] = {							/* 82*/
 	.Signature = _AMD_Zen2_MTS,
-	.Query = Query_AMD_Family_17h,
+	.Query = Query_AMD_F17h_PerCluster,
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
@@ -7838,7 +7909,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen2_Xbox] = {							/* 83*/
 	.Signature = _AMD_Zen2_Xbox,
-	.Query = Query_AMD_Family_17h,
+	.Query = Query_AMD_F17h_PerCluster,
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
@@ -7862,7 +7933,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen3_VMR] = {							/* 84*/
 	.Signature = _AMD_Zen3_VMR,
-	.Query = Query_AMD_Family_19h,
+	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
@@ -7886,7 +7957,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen3_CZN] = {							/* 85*/
 	.Signature = _AMD_Zen3_CZN,
-	.Query = Query_AMD_Family_19h,
+	.Query = Query_AMD_F19h_PerSocket,
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
@@ -7910,7 +7981,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_EPYC_Milan] = {							/* 86*/
 	.Signature = _AMD_EPYC_Milan,
-	.Query = Query_AMD_Family_19h,
+	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
@@ -7934,7 +8005,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen3_Chagall] = {							/* 87*/
 	.Signature = _AMD_Zen3_Chagall,
-	.Query = Query_AMD_Family_19h,
+	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
