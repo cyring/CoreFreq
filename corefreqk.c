@@ -1834,7 +1834,7 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Zen2_Renoir:
 	case AMD_Zen2_LCN:
 	case AMD_Zen2_MTS:
-	case AMD_Zen2_Xbox:
+	case AMD_Zen2_Ariel:
 	case AMD_Zen3_VMR:
 	case AMD_Zen3_CZN:
 	case AMD_EPYC_Milan:
@@ -5934,7 +5934,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	switch (PUBLIC(RO(Proc))->ArchID) {
 	case AMD_Zen3_VMR:
 	case AMD_Zen2_MTS:
-	case AMD_Zen2_Xbox:
+	case AMD_Zen2_Ariel:
 		Core_AMD_SMN_Read(XtraCOF,
 				SMU_AMD_F17H_MATISSE_COF,
 				SMU_AMD_INDEX_REGISTER_F17H,

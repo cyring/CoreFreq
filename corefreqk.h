@@ -1478,7 +1478,7 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 #define _AMD_Zen2_Renoir {.ExtFamily=0x8,.Family=0xF, .ExtModel=0x6, .Model=0x0}
 #define _AMD_Zen2_LCN	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x6, .Model=0x8}
 #define _AMD_Zen2_MTS	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x7, .Model=0x1}
-#define _AMD_Zen2_Xbox	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x7, .Model=0x4}
+#define _AMD_Zen2_Ariel {.ExtFamily=0x8, .Family=0xF, .ExtModel=0x7, .Model=0x4}
 
 #define _AMD_Family_17h {.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
@@ -2736,6 +2736,8 @@ static MICRO_ARCH Arch_AMD_Zen2_MTS[] = {
 	[CN_MATISSE]		= {"Zen2/Matisse"},
 	{NULL}
 };
+static MICRO_ARCH Arch_AMD_Zen2_Ariel[] = {{"Zen2/Ariel"}, {NULL}};
+
 static MICRO_ARCH Arch_AMD_Zen3_VMR[] = {
 	[CN_VERMEER]		= {"Zen3/Vermeer"},
 	{NULL}
@@ -7907,8 +7909,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen2_MTS
 	},
-[AMD_Zen2_Xbox] = {							/* 83*/
-	.Signature = _AMD_Zen2_Xbox,
+[AMD_Zen2_Ariel] = {							/* 83*/
+	.Signature = _AMD_Zen2_Ariel,
 	.Query = Query_AMD_F17h_PerCluster,
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
@@ -7927,9 +7929,9 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
-	.Specific = AMD_Zen2_MTS_Specific,
+	.Specific = Void_Specific,
 	.SystemDriver = AMD_Zen_Driver,
-	.Architecture = Arch_AMD_Zen2_MTS
+	.Architecture = Arch_AMD_Zen2_Ariel
 	},
 [AMD_Zen3_VMR] = {							/* 84*/
 	.Signature = _AMD_Zen3_VMR,
