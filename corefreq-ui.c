@@ -1386,7 +1386,7 @@ void MotionReScale(Window *win)
 	{
 		col = rightSide + !(win->flag & WINFLAG_NO_BORDER);
 	}
-	if (bottomSide < 0 && !(win->flag & WINFLAG_NO_SCALE))
+	if (bottomSide <= 0 && !(win->flag & WINFLAG_NO_SCALE))
 	{
 		height	= win->matrix.size.hth + bottomSide
 			- !(win->flag & WINFLAG_NO_BORDER) * 2;
