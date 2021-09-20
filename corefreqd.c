@@ -1476,17 +1476,26 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
     }
     for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
     {
+      if (Proc_RO->PowerThermal.PowerLimit[pw].TimeWindow1 > 0)
+      {
 	unsigned long long duration;
-
 	duration = (1 << Proc_RO->PowerThermal.PowerLimit[pw].TimeWindow1_Y);
 	duration *= (4 + Proc_RO->PowerThermal.PowerLimit[pw].TimeWindow1_Z);
 	duration = duration >> 2;
 	Shm->Proc.Power.Domain[pw].TW1 = Shm->Proc.Power.Unit.Times * duration;
-
+      } else {
+	Shm->Proc.Power.Domain[pw].TW1 = 1;
+      }
+      if (Proc_RO->PowerThermal.PowerLimit[pw].TimeWindow2 > 0)
+      {
+	unsigned long long duration;
 	duration = (1 << Proc_RO->PowerThermal.PowerLimit[pw].TimeWindow2_Y);
 	duration *= (4 + Proc_RO->PowerThermal.PowerLimit[pw].TimeWindow2_Z);
 	duration = duration >> 2;
 	Shm->Proc.Power.Domain[pw].TW2 = Shm->Proc.Power.Unit.Times * duration;
+      } else {
+	Shm->Proc.Power.Domain[pw].TW2 = 1;
+      }
     }
 	Shm->Proc.Power.TDC = Proc_RO->PowerThermal.TDC;
 	Shm->Proc.Power.Feature.TDC = Proc_RO->PowerThermal.Enable_Limit.TDC;
