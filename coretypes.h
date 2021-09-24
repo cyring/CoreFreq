@@ -1445,8 +1445,10 @@ typedef struct
 	  unsigned int	GDM	:  1-0,
 			BGS	:  2-1,
 			BGS_ALT :  3-2,
-			PDM	:  4-3,
-			Unused	: 32-4;
+			PDM_EN	:  4-3,
+			PDM_MODE:  5-4,
+			PDM_AGGR:  6-5,
+			Unused	: 32-6;
 	  };
 	};
 	unsigned int	ECC;

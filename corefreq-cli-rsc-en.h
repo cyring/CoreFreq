@@ -1236,7 +1236,8 @@
 #define RSC_DDR4_ZEN_STAG_COMM_CODE_EN	\
 		" tSTAG ( Min timing between REF commands, Different CS ) "
 
-#define RSC_DDR4_ZEN_PDM_COMM_CODE_EN	" PDM ( DRAM Power Down Mode ) "
+#define RSC_DDR4_ZEN_PDM_COMM_CODE_EN	" PDM ( DRAM Power Down Mode ) " \
+					" [ Aggressive:Full|Partial:Enable ] "
 
 #define RSC_DDR4_ZEN_PHYWRD_COMM_CODE_EN \
 			" tPHYWRD ( dfi_wrdata_en to dfi_wrdata delay ) "
