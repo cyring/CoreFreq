@@ -5709,8 +5709,9 @@ void Timing_DDR4_Zen(Window *win,CELL_FUNC OutFunc,CUINT *nl, unsigned short mc)
 		PRT(IMC, attrib[1], "%4u ",	TIMING(mc, cha).tMOD);
 		PRT(IMC, attrib[1], " %-4u",	TIMING(mc, cha).tMOD_PDA);
 		PRT(IMC, attrib[1], "%4u ",	TIMING(mc, cha).tSTAG);
-		PRT(IMC,attrib[1],"%1u:%1u:%1u",TIMING(mc, cha).PDM_AGGR,
-						TIMING(mc, cha).PDM_MODE,
+		PRT(IMC, attrib[1],"%1u:%c:%1u",TIMING(mc, cha).PDM_AGGR,
+						TIMING(mc, cha).PDM_MODE ?
+								'P' : 'F',
 						TIMING(mc, cha).PDM_EN);
 		PRT(IMC, attrib[1], "%5u",	TIMING(mc, cha).tRDDATA);
 		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
