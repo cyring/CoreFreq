@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	87
-#define COREFREQ_REV	3
+#define COREFREQ_REV	4
 
 #if !defined(CORE_COUNT)
 	#define CORE_COUNT	256
@@ -1195,7 +1195,8 @@ typedef struct	/* Processor Capacity Leaf.				*/
 		Reserved2	:  8-7,
 		MCOMMIT 	:  9-8,  /* Memory Commit Instruction	*/
 		WBNOINVD	: 10-9,
-		Reserved3	: 12-10,
+		LBREXTN 	: 11-10, /* LBR Extensions		*/
+		Reserved3	: 12-11,
 		IBPB		: 13-12, /* Indirect Branch Prediction Barrier*/
 		INT_WBINVD	: 14-13, /* Interruptible WBINVD,WBNOINVD */
 		IBRS		: 15-14, /* IBR Speculation		*/
@@ -1209,9 +1210,10 @@ typedef struct	/* Processor Capacity Leaf.				*/
 		Reserved5	: 23-22,
 		PPIN		: 24-23, /* Protected Processor Inventory Num */
 		SSBD		: 25-24, /* Speculative Store Bypass Disable */
-		Reserved6	: 27-25,
+		Reserved6	: 26-25,
+		SSBD_NotNeeded	: 27-26,
 		CPPC		: 28-27,
-		PSFD		: 29-28,
+		PSFD		: 29-28, /* 1: SPEC_CTRL_MSR is supported */
 		Reserved7	: 31-29,
 		BranchSample	: 32-31;
 	} EBX;
