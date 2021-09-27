@@ -1004,14 +1004,12 @@ static const CPUID_STRUCT CpuIDforVendor[CPUID_MAX_FUNC] = {
 	= {.func = 0x40000006, .sub = 0x00000000},
 };
 
-#if defined(RHEL_RELEASE_CODE) && defined(RHEL_RELEASE_VERSION)
-	#if (RHEL_RELEASE_CODE > RHEL_RELEASE_VERSION(8, 0))
-		#define REDHAT	8
-	#else
-		#define REDHAT	0
-	#endif
-#else
-	#define REDHAT	0
+#if !defined(RHEL_MAJOR)
+	#define RHEL_MAJOR 0
+#endif
+
+#if !defined(RHEL_MINOR)
+	#define RHEL_MINOR 0
 #endif
 
 typedef struct {
@@ -5352,14 +5350,15 @@ static int CoreFreqK_Policy_Init(struct cpufreq_policy*) ;
 #if ((LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 19))	\
   && (LINUX_VERSION_CODE <= KERNEL_VERSION(5, 5, 0)))	\
   || (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 5, 3))	\
-  || (REDHAT == 8)
+  || (RHEL_MAJOR == 8)
 static int CoreFreqK_Policy_Verify(struct cpufreq_policy_data*) ;
 #else
 static int CoreFreqK_Policy_Verify(struct cpufreq_policy*) ;
 #endif
 static int CoreFreqK_SetPolicy(struct cpufreq_policy*) ;
 static int CoreFreqK_Bios_Limit(int, unsigned int*) ;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0) || (REDHAT == 8)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)	\
+  || ((RHEL_MAJOR == 8)  && (RHEL_MINOR > 3))
 static int CoreFreqK_SetBoost(struct cpufreq_policy*, int) ;
 #else
 static int CoreFreqK_SetBoost(int) ;

@@ -14638,7 +14638,8 @@ static int CoreFreqK_MWAIT_AMD_Handler(struct cpuidle_device *pIdleDevice,
     }
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0) && (REDHAT != 8)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)	\
+  || ((RHEL_MAJOR == 8) && (RHEL_MINOR < 4))
 static void CoreFreqK_S2_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 #else
@@ -14652,12 +14653,13 @@ static int CoreFreqK_S2_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 
 	mwait_idle_with_hints(MWAIT, 1UL);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0) || (REDHAT == 8)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	return index;
 #endif /* 5.9.0 */
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0) && (REDHAT != 8)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)	\
+  || ((RHEL_MAJOR == 8) && (RHEL_MINOR < 4))
 static void CoreFreqK_S2_MWAIT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
@@ -14719,7 +14721,8 @@ static int CoreFreqK_HALT_AMD_Handler(struct cpuidle_device *pIdleDevice,
     }
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0) && (REDHAT != 8)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)	\
+  || ((RHEL_MAJOR == 8) && (RHEL_MINOR < 4))
 static void CoreFreqK_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 #else
@@ -14744,13 +14747,14 @@ static int CoreFreqK_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
 		:
 		: "cc", "memory"
 	);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0) || (REDHAT == 8)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	return index;
 #endif /* 5.9.0 */
 }
 
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0) && (REDHAT != 8)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)	\
+  || ((RHEL_MAJOR == 8) && (RHEL_MINOR < 4))
 static void CoreFreqK_S2_HALT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
@@ -14813,7 +14817,8 @@ static int CoreFreqK_IO_AMD_Handler(struct cpuidle_device *pIdleDevice,
     }
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0) && (REDHAT != 8)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)	\
+  || ((RHEL_MAJOR == 8) && (RHEL_MINOR < 4))
 static void CoreFreqK_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 #else
@@ -14839,12 +14844,13 @@ static int CoreFreqK_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
 		: "ir" (Core->Query.CStateBaseAddr)
 		: "%ax", "%dx", "cc", "memory"
 	);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0) || (REDHAT == 8)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	return index;
 #endif /* 5.9.0 */
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0) && (REDHAT != 8)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)	\
+  || ((RHEL_MAJOR == 8) && (RHEL_MINOR < 4))
 static void CoreFreqK_S2_IO_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
@@ -14910,7 +14916,8 @@ static int Alternative_Computation_Of_Cycles(
 
 	return index;
 }
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0) && (REDHAT != 8)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)	\
+  || ((RHEL_MAJOR == 8) && (RHEL_MINOR < 4))
 static void Alternative_Computation_Of_Cycles_S2(
 	void (*S2_Handler)(struct cpuidle_device*, struct cpuidle_driver*, int),
 				struct cpuidle_device *pIdleDevice,
@@ -14956,7 +14963,7 @@ static int Alternative_Computation_Of_Cycles_S2(
 
 	Atomic_Write_VPMC(Core, TSC[2], lvl);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0) || (REDHAT == 8)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	return index;
 #endif /* 5.9.0 */
 }
@@ -15017,7 +15024,8 @@ static int CoreFreqK_Alt_IO_AMD_Handler(struct cpuidle_device *pIdleDevice,
 							index );
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0) && (REDHAT != 8)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)	\
+  || ((RHEL_MAJOR == 8) && (RHEL_MINOR < 4))
 static void CoreFreqK_Alt_S2_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
@@ -15074,7 +15082,7 @@ static void CoreFreqK_Alt_S2_IO_AMD_Handler(struct cpuidle_device *pIdleDevice,
 static int CoreFreqK_Alt_S2_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-#if (REDHAT == 8)
+#if (RHEL_MAJOR == 8)
 	int rx = index;
 #else
 	int rx =
@@ -15089,7 +15097,7 @@ static int CoreFreqK_Alt_S2_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 static int CoreFreqK_Alt_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-#if (REDHAT == 8)
+#if (RHEL_MAJOR == 8)
 	int rx = index;
 #else
 	int rx =
@@ -15104,7 +15112,7 @@ static int CoreFreqK_Alt_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
 static int CoreFreqK_Alt_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-#if (REDHAT == 8)
+#if (RHEL_MAJOR == 8)
 	int rx = index;
 #else
 	int rx =
@@ -15119,7 +15127,7 @@ static int CoreFreqK_Alt_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
 static int CoreFreqK_Alt_S2_MWAIT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-#if (REDHAT == 8)
+#if (RHEL_MAJOR == 8)
 	int rx = index;
 #else
 	int rx =
@@ -15134,7 +15142,7 @@ static int CoreFreqK_Alt_S2_MWAIT_AMD_Handler(struct cpuidle_device *pIdleDevice
 static int CoreFreqK_Alt_S2_HALT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-#if (REDHAT == 8)
+#if (RHEL_MAJOR == 8)
 	int rx = index;
 #else
 	int rx =
@@ -15149,7 +15157,7 @@ static int CoreFreqK_Alt_S2_HALT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 static int CoreFreqK_Alt_S2_IO_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-#if (REDHAT == 8)
+#if (RHEL_MAJOR == 8)
 	int rx = index;
 #else
 	int rx =
@@ -15484,7 +15492,7 @@ static int CoreFreqK_IdleDriver_Init(void)
 #ifdef CONFIG_CPU_IDLE
 static void CoreFreqK_Idle_State_Withdraw(int idx, bool disable)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 5, 0) || (REDHAT == 8)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 5, 0) || (RHEL_MAJOR == 8)
 	struct cpuidle_device *device;
 	unsigned int cpu;
   for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++)
@@ -15582,7 +15590,7 @@ static int CoreFreqK_Policy_Init(struct cpufreq_policy *policy)
 #if ((LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 19))	\
   && (LINUX_VERSION_CODE <= KERNEL_VERSION(5, 5, 0)))	\
   || (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 5, 3))	\
-  || (REDHAT == 8)
+  || (RHEL_MAJOR == 8)
 static int CoreFreqK_Policy_Verify(struct cpufreq_policy_data *policy)
 #else
 static int CoreFreqK_Policy_Verify(struct cpufreq_policy *policy)
@@ -15622,7 +15630,8 @@ void Policy_Aggregate_Turbo(void)
     }
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0) || (REDHAT == 8)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)	\
+  || ((RHEL_MAJOR == 8) && (RHEL_MINOR > 3))
 static int CoreFreqK_SetBoost(struct cpufreq_policy *policy, int state)
 {
 	UNUSED(policy);
