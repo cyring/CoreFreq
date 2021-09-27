@@ -9666,7 +9666,7 @@ static void PerCore_Skylake_X_Query(void *arg)
 		Intel_DomainPowerLimit( MSR_PP0_POWER_LIMIT,
 					PPn_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(CORES) );
-
+/*TODO(Unsupported MSR registers)
 		Intel_DomainPowerLimit( MSR_PLATFORM_POWER_LIMIT,
 					PKG_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(PLATFORM) );
@@ -9674,6 +9674,7 @@ static void PerCore_Skylake_X_Query(void *arg)
 		Intel_DomainPowerLimit( MSR_DRAM_POWER_LIMIT,
 					PPn_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(RAM) );
+*/
 		Intel_Watchdog(Core);
 	}
 }
