@@ -114,6 +114,14 @@ struct RULER_ST Ruler = {
 
 void AggregateRatio(void)
 {
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
+				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
+					.Toggle];
+
+	const unsigned int MaxRatio = MAXCLOCK_TO_RATIO(
+		unsigned int, CFlop->Clock.Hz
+	);
+
 	enum RATIO_BOOST lt, rt;
 	unsigned int cpu,
 		lowest = Shm->Cpu[Shm->Proc.Service.Core].Boost[BOOST(MAX)],
@@ -168,7 +176,9 @@ void AggregateRatio(void)
 	    }
 	    if (rt == Ruler.Count)
 	    {
-		Ruler.Uniq[Ruler.Count] = Shm->Cpu[cpu].Boost[lt];
+		if (Shm->Cpu[cpu].Boost[lt] <= MaxRatio) {
+			Ruler.Uniq[Ruler.Count] = Shm->Cpu[cpu].Boost[lt];
+		}
 		Ruler.Count++;
 	    }
 	  }
