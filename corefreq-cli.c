@@ -16552,7 +16552,7 @@ void Draw_Footer(Layer *layer, CUINT row)
 		_tmp = 3;
 	    }
 	}
-	register CUINT col[2] = {
+	CUINT col[2] = {
 		Draw.Area.Footer.VoltTemp.Hot[0],
 		Draw.Area.Footer.VoltTemp.Hot[1]
 	};
