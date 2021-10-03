@@ -66,6 +66,7 @@
 
 #define MSR_AMD_F17H_PMGT_MISC			0xc0010292
 #define MSR_AMD_F17H_HW_PSTATE_STATUS		0xc0010293
+#define MSR_AMD_F17H_CSTATE_POLICY		0xc0010294
 #define MSR_AMD_F17H_CSTATE_CONFIG		0xc0010296
 
 #ifndef MSR_AMD_RAPL_POWER_UNIT
@@ -537,7 +538,32 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* MSR 0xC0010296 (R/W)		*/
+	unsigned long long	 /* Per Core: MSR 0xC0010294 (R/W)	*/
+	CC1_TMRSEL	:  2-0,
+	CC1_TMRLEN	:  7-2,
+	HYST_TMRSEL	:  9-7,
+	HYST_TMRLEN	: 14-9,
+	CFOH_TMRLEN	: 21-14,
+	Reserved1	: 32-21,
+	CFSM_DURATION	: 39-32,
+	CFSM_THRESHOLD	: 42-39,
+	CFSM_MISPREDACT : 44-42,
+	IRM_DECRRATE	: 49-44,
+	IRM_BURSTEN	: 52-49,
+	IRM_THRESHOLD	: 56-52,
+	IRM_MAXDEPTH	: 60-56,
+	CIT_EN		: 61-60,
+	CIT_FASTSAMPLE	: 62-61,
+	Reserved2	: 64-62;
+    };
+} ZEN_CSTATE_POLICY;
+
+typedef union
+{
+	unsigned long long value;
+    struct
+    {
+	unsigned long long	 /* Per Core: MSR 0xC0010296 (R/W)	*/
 	CCR0_CC1DFSID	:  6-0,
 	CCR0_CC6EN	:  7-6,
 	Reserved1	:  8-7,
