@@ -31,6 +31,9 @@
 #include "corefreq-cli-json.h"
 #include "corefreq-cli-extra.h"
 
+#define StrFormat( _str, _size, _fmt, ... )				\
+	snprintf((char*) _str, (size_t) _size, (char*) _fmt, __VA_ARGS__)
+
 SHM_STRUCT *Shm = NULL;
 
 static Bit64 Shutdown __attribute__ ((aligned (8))) = 0x0;
@@ -65,7 +68,7 @@ char *BuildConfigFQN(char *dirPath)
 				homePath = ".";
 			}
 		}
-		snprintf(&ConfigFQN[1], 4095, "%s/.config", homePath);
+		StrFormat(&ConfigFQN[1], 4095, "%s/.config", homePath);
 
 		if ((stat(&ConfigFQN[1], &cfgStat) == 0)
 		 && (cfgStat.st_mode & S_IFDIR))
@@ -77,12 +80,12 @@ char *BuildConfigFQN(char *dirPath)
 	} else {
 		dotted = "/";
 	}
-	snprintf(&ConfigFQN[1], 4095, "%s%s%s/corefreq.cfg",
+	StrFormat(&ConfigFQN[1], 4095, "%s%s%s/corefreq.cfg",
 		homePath, dotted, dirPath);
 
 	ConfigFQN[0] = 1;
     }
-	return (&ConfigFQN[1]);
+	return &ConfigFQN[1];
 }
 
 int ClientFollowService(SERVICE_PROC *pSlave, SERVICE_PROC *pMaster, pid_t pid)
@@ -94,11 +97,11 @@ int ClientFollowService(SERVICE_PROC *pSlave, SERVICE_PROC *pMaster, pid_t pid)
 		CPU_ZERO(&cpuset);
 		CPU_SET(pSlave->Core, &cpuset);
 		if (pSlave->Thread != -1) {
-			CPU_SET(pSlave->Thread, &cpuset);
+			CPU_SET((unsigned int) pSlave->Thread, &cpuset);
 		}
-		return (sched_setaffinity(pid, sizeof(cpu_set_t), &cpuset));
+		return sched_setaffinity(pid, sizeof(cpu_set_t), &cpuset);
 	}
-	return (0);
+	return 0;
 }
 
 struct RULER_ST Ruler = {
@@ -224,7 +227,7 @@ ATTRIBUTE *StateToSymbol(short int state, char stateStr[])
 			stateAttr = symbAttr[1 + idx];
 		} while (!BITBSR(state, idx));
 	stateStr[jdx] = '\0';
-	return (stateAttr);
+	return stateAttr;
 }
 
 unsigned int Dec2Digit( const unsigned int length, unsigned int decimal,
@@ -236,7 +239,7 @@ unsigned int Dec2Digit( const unsigned int length, unsigned int decimal,
 		thisDigit[--j] = dec % 10;
 		dec /= 10;
 	}
-	return (length - j);
+	return length - j;
 }
 
 #define Cels2Fahr(cels)	(((cels * 117965) >> 16) + 32)
@@ -268,7 +271,7 @@ TGrid *Print_v1(CELL_FUNC OutFunc,
     } else {
 	ASCII *item = malloc(width + 1);
       if (item != NULL) {
-	snprintf((char *)item, width + 1, "%s%s%.*s", Indent[1][tab], line,
+	StrFormat(item, width + 1, "%s%s%.*s", Indent[1][tab], line,
 		(int)(width - strlen(line) - strlen(Indent[1][tab])), hSpace);
 
 	pGrid = OutFunc(win, key, attrib, item);
@@ -279,7 +282,7 @@ TGrid *Print_v1(CELL_FUNC OutFunc,
 	va_end(ap);
 	free(line);
   }
-	return (pGrid);
+	return pGrid;
 }
 
 TGrid *Print_v2(CELL_FUNC OutFunc,
@@ -311,7 +314,7 @@ TGrid *Print_v2(CELL_FUNC OutFunc,
 	va_end(ap);
 	free(item);
     }
-	return (pGrid);
+	return pGrid;
 }
 
 TGrid *Print_v3(CELL_FUNC OutFunc,
@@ -346,7 +349,7 @@ TGrid *Print_v3(CELL_FUNC OutFunc,
 	va_end(ap);
 	free(item);
     }
-	return (pGrid);
+	return pGrid;
 }
 
 #define PUT(key, attrib, width, tab, fmt, ...)				\
@@ -425,7 +428,7 @@ REASON_CODE SysInfoCPUID(Window *win, CUINT width, CELL_FUNC OutFunc)
 		}
 	    }
 	}
-	return (reason);
+	return reason;
 }
 
 REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
@@ -805,7 +808,7 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	    }
 	}
     }
-	return (reason);
+	return reason;
 }
 
 char SymbUnlock[2][2] = {{'[', ']'}, {'<', '>'}};
@@ -842,7 +845,7 @@ TGrid *PrintRatioFreq(	Window *win, struct FLIP_FLOP *CFlop,
 			SymbUnlock[syc][1]);
 	}
     }
-	return (pGrid);
+	return pGrid;
 }
 
 void RefreshBaseClock(TGrid *grid, DATA_TYPE data)
@@ -852,7 +855,7 @@ void RefreshBaseClock(TGrid *grid, DATA_TYPE data)
 	char item[8+1];
 	UNUSED(data);
 
-	snprintf(item, 8+1, "%7.3f", CLOCK_MHz(double, CFlop->Clock.Hz));
+	StrFormat(item, 8+1, "%7.3f", CLOCK_MHz(double, CFlop->Clock.Hz));
 
 	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
 }
@@ -862,7 +865,7 @@ void RefreshFactoryClock(TGrid *grid, DATA_TYPE data)
 	char item[8+1];
 	UNUSED(data);
 
-	snprintf(item, 8+1, "%7.3f",
+	StrFormat(item, 8+1, "%7.3f",
 		CLOCK_MHz(double, Shm->Proc.Features.Factory.Clock.Hz));
 
 	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
@@ -873,7 +876,7 @@ void RefreshFactoryFreq(TGrid *grid, DATA_TYPE data)
 	char item[11+11+1];
 	UNUSED(data);
 
-	snprintf(item, 11+11+1, "%5u" "%4d",
+	StrFormat(item, 11+11+1, "%5u" "%4d",
 		Shm->Proc.Features.Factory.Freq,
 		Shm->Proc.Features.Factory.Ratio);
 
@@ -886,9 +889,9 @@ void RefreshItemFreq(TGrid *grid, unsigned int ratio, double Freq_MHz)
 	char item[11+8+1];
 
     if ((Freq_MHz > 0.0) && (Freq_MHz < CLOCK_MHz(double, UNIT_GHz(10.0)))) {
-	snprintf(item,11+8+1,"%4u%7.2f", ratio, Freq_MHz);
+	StrFormat(item,11+8+1, "%4u%7.2f", ratio, Freq_MHz);
     } else {
-	snprintf(item,11+7+1,"%4u%7s", ratio, RSC(AUTOMATIC).CODE());
+	StrFormat(item,11+7+1, "%4u%7s", ratio, RSC(AUTOMATIC).CODE());
     }
 	memcpy(&grid->cell.item[23], &item[4], 7);
 	memcpy(&grid->cell.item[51], &item[0], 4);
@@ -924,7 +927,7 @@ void RefreshConfigTDP(TGrid *grid, DATA_TYPE data)
 	char item[11+11+1];
 	UNUSED(data);
 
-	snprintf(item, 11+11+1,"%3d:%-3d",
+	StrFormat(item, 11+11+1, "%3d:%-3d",
 		Shm->Proc.Features.TDP_Cfg_Level,
 		Shm->Proc.Features.TDP_Levels);
 
@@ -946,7 +949,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	PUT(	SCANKEY_NULL, attrib[0], width, 0,
 		"%s""%.*s[%s]", RSC(PROCESSOR).CODE(),
-		width - 2 - RSZ(PROCESSOR) - strlen(Shm->Proc.Brand),
+		width - 2 - RSZ(PROCESSOR) - (int) strlen(Shm->Proc.Brand),
 		hSpace, Shm->Proc.Brand );
 
     if (Shm->Proc.Features.Factory.PPIN > 0)
@@ -958,18 +961,21 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
     }
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s""%.*s[%s]", RSC(ARCHITECTURE).CODE(),
-		width - 5 - RSZ(ARCHITECTURE) - strlen(Shm->Proc.Architecture),
+		width - 5 - RSZ(ARCHITECTURE)
+		- (int) strlen(Shm->Proc.Architecture),
 		hSpace, Shm->Proc.Architecture );
 
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s""%.*s[%s]", RSC(VENDOR_ID).CODE(),
-	width - 5 - RSZ(VENDOR_ID) - strlen(Shm->Proc.Features.Info.Vendor.ID),
+		width - 5 - RSZ(VENDOR_ID)
+		- (int) strlen(Shm->Proc.Features.Info.Vendor.ID),
 		hSpace, Shm->Proc.Features.Info.Vendor.ID );
 
     if (Shm->Proc.Features.Factory.SMU.Version > 0)
     {
 	char version[15+1];
-	int len = snprintf(version, 15+1, "%u.%u.%u-%u",
+	int len;
+	CONV(len, StrFormat, version, 15+1, "%u.%u.%u-%u",
 				Shm->Proc.Features.Factory.SMU.Major,
 				Shm->Proc.Features.Factory.SMU.Minor,
 				Shm->Proc.Features.Factory.SMU.Revision,
@@ -1036,7 +1042,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				&Shm->Cpu[
 					Ruler.Top[ BOOST(MIN) ]
 				].Boost[ BOOST(MIN) ],
-				1, coreClock.sllong,
+				1, coreClock.ullong,
 				width, OutFunc, attrib[3] ),
 		RefreshTopFreq, BOOST(MIN) );
     }
@@ -1056,7 +1062,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				&Shm->Cpu[
 					Ruler.Top[ BOOST(MAX) ]
 				].Boost[ BOOST(MAX) ],
-				1, coreClock.sllong,
+				1, coreClock.ullong,
 				width, OutFunc, attrib[3] ),
 		RefreshTopFreq, BOOST(MAX) );
     }
@@ -1091,7 +1097,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				&Shm->Cpu[
 					Ruler.Top[ BOOST(TGT) ]
 				].Boost[ BOOST(TGT) ],
-				1, coreClock.sllong,
+				1, coreClock.ullong,
 				width, OutFunc, attrib[3] ),
 		RefreshTopFreq, BOOST(TGT) );
     }
@@ -1113,7 +1119,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				&Shm->Cpu[
 					Ruler.Top[ BOOST(HWP_MIN) ]
 				].Boost[ BOOST(HWP_MIN) ],
-				1, coreClock.sllong,
+				1, coreClock.ullong,
 				width, OutFunc, attrib[3] ),
 		RefreshTopFreq, BOOST(HWP_MIN) );
 
@@ -1130,7 +1136,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				&Shm->Cpu[
 					Ruler.Top[ BOOST(HWP_MAX) ]
 				].Boost[ BOOST(HWP_MAX) ],
-				1, coreClock.sllong,
+				1, coreClock.ullong,
 				width, OutFunc, attrib[3] ),
 		RefreshTopFreq, BOOST(HWP_MAX) );
 
@@ -1147,7 +1153,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				&Shm->Cpu[
 					Ruler.Top[ BOOST(HWP_TGT) ]
 				].Boost[ BOOST(HWP_TGT) ],
-				1, coreClock.sllong,
+				1, coreClock.ullong,
 				width, OutFunc, attrib[3] ),
 		RefreshTopFreq, BOOST(HWP_TGT) );
     }
@@ -1202,7 +1208,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 	CLOCK_ARG clockMod={.NC=BOXKEY_TURBO_CLOCK_NC | activeCores,.Offset=0};
 	char pfx[10+1+1];
-	snprintf(pfx, 10+1+1, "%2uC", activeCores);
+	StrFormat(pfx, 10+1+1, "%2uC", activeCores);
 
 	CFlop = &Shm->Cpu[
 			Ruler.Top[boost]
@@ -1214,7 +1220,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				0, pfx, &Shm->Cpu[
 						Ruler.Top[boost]
 					].Boost[boost],
-				1, clockMod.sllong,
+				1, clockMod.ullong,
 				width, OutFunc, attrib[3] ),
 		RefreshTopFreq, boost );
       }
@@ -1232,7 +1238,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	GridCall( PrintRatioFreq(win, CFlop,
 				0, (char*) RSC(MIN).CODE(),
 				&Shm->Uncore.Boost[UNCORE_BOOST(MIN)],
-				1, uncoreClock.sllong,
+				1, uncoreClock.ullong,
 				width, OutFunc, attrib[3] ),
 		RefreshRatioFreq, &Shm->Uncore.Boost[UNCORE_BOOST(MIN)] );
 
@@ -1240,7 +1246,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	GridCall( PrintRatioFreq(win, CFlop,
 				0, (char*) RSC(MAX).CODE(),
 				&Shm->Uncore.Boost[UNCORE_BOOST(MAX)],
-				1, uncoreClock.sllong,
+				1, uncoreClock.ullong,
 				width, OutFunc, attrib[3]),
 		RefreshRatioFreq, &Shm->Uncore.Boost[UNCORE_BOOST(MAX)] );
     } else {
@@ -1281,7 +1287,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
-	const size_t len = RSZ(LEVEL) + 1 + 1;
+	const size_t len = (size_t) RSZ(LEVEL) + 1 + 1;
 	char *pfx = malloc(len);
       if (pfx != NULL)
       {
@@ -1314,7 +1320,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				width, OutFunc, attrib[3] ),
 		RefreshTopFreq, BOOST(TDP) );
 
-	snprintf(pfx, len, "%s" "1", RSC(LEVEL).CODE());
+	StrFormat(pfx, len, "%s" "1", RSC(LEVEL).CODE());
 
 	CFlop = &Shm->Cpu[
 			Ruler.Top[ BOOST(TDP1) ]
@@ -1330,7 +1336,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				width, OutFunc, attrib[3] ),
 		RefreshTopFreq, BOOST(TDP1) );
 
-	snprintf(pfx, len, "%s" "2", RSC(LEVEL).CODE());
+	StrFormat(pfx, len, "%s" "2", RSC(LEVEL).CODE());
 
 	CFlop = &Shm->Cpu[
 			Ruler.Top[ BOOST(TDP2) ]
@@ -1361,7 +1367,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				].Boost[ BOOST(ACT) ],
 				(Shm->Proc.Features.TurboActiv_Lock == 0),
 				(Shm->Proc.Features.TurboActiv_Lock == 0) ?
-					coreClock.sllong : SCANKEY_NULL,
+					coreClock.ullong : SCANKEY_NULL,
 				width, OutFunc, attrib[3] ),
 		RefreshTopFreq, BOOST(ACT) );
 
@@ -1370,7 +1376,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	REASON_SET(reason, RC_MEM_ERR);
       }
     }
-	return (reason);
+	return reason;
 }
 
 REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
@@ -1864,7 +1870,7 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 			(char *)ISA[idx].comm );
 	}
     }
-	return (reason);
+	return reason;
 }
 
 REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
@@ -2562,7 +2568,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 			: FEAT[idx].state[ FEAT[idx].cond ] );
 	}
     }
-	return (reason);
+	return reason;
 }
 
 void TechUpdate(TGrid *grid,	const int unsigned bix, const signed int pos,
@@ -2930,7 +2936,7 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	},
 	{
 		NULL,
-		(snprintf(IOMMU_Version_String, 10+1+10+1+1, "%u.%u",
+		(StrFormat(IOMMU_Version_String, 10+1+10+1+1, "%u.%u",
 			Shm->Proc.Technology.IOMMU_Ver_Major,
 			Shm->Proc.Technology.IOMMU_Ver_Minor) > 0) & 0x0,
 		3, "%s%.*s""   [%12s]",
@@ -2998,7 +3004,7 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	}
     }
   }
-	return (reason);
+	return reason;
 }
 
 void PerfMonUpdate(TGrid *grid, const unsigned int bix, const signed int pos,
@@ -3602,7 +3608,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*s[%7s]", RSC(PERF_MON_CORE).CODE(),
 		width - 12 - RSZ(PERF_MON_CORE), hSpace, POWERED(bix) );
     }
-	return (reason);
+	return reason;
 }
 
 void PwrThermalUpdate(TGrid *grid, const unsigned int bix,const signed int pos,
@@ -3638,7 +3644,7 @@ void DutyCycle_Update(TGrid *grid, DATA_TYPE data)
 	char item[10+1];
 	UNUSED(data);
 
-	snprintf(item, 10+1, "%c%6.2f%%%c",
+	StrFormat(item, 10+1, "%c%6.2f%%%c",
 		bix ? '<' : '[',
 	(Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.Extended ?
 		6.25f : 12.5f)
@@ -3654,7 +3660,7 @@ void Hint_Update(TGrid *grid, DATA_TYPE data)
 	const signed int pos = grid->cell.length - 9;
 	char item[10+1];
 
-	snprintf(item, 10+1, "%7u", (*data.puint));
+	StrFormat(item, 10+1, "%7u", (*data.puint));
 	memcpy(&grid->cell.item[pos], item, 7);
 }
 
@@ -3669,7 +3675,7 @@ void TjMax_Update(TGrid *grid, DATA_TYPE data)
 	char item[10+1+10+1];
 	UNUSED(data);
 
-	snprintf(item, 10+1+10+1, "%2u:%3u",
+	StrFormat(item, 10+1+10+1, "%2u:%3u",
 		SFlop->Thermal.Param.Offset[1],
 		SFlop->Thermal.Param.Offset[0]);
 
@@ -3701,7 +3707,7 @@ void PCT_Update(TGrid *grid, const unsigned int bix, unsigned short value)
 	char item[6+1];
 
 	memcpy(&grid->cell.attr[pos], &attrib[ bix ? 3 : 5 ][pos], 7);
-	snprintf(item, 6+1, "%5u", value);
+	StrFormat(item, 6+1, "%5u", value);
 	memcpy(&grid->cell.item[pos], item, 5);
 }
 
@@ -3953,7 +3959,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
     {
 	struct {
 		const ASCII *code;
-		const size_t size;
+		const int size;
 	} label[] = {
 		{RSC(POWER_LABEL_PKG).CODE()	, RSZ(POWER_LABEL_PKG)},
 		{RSC(POWER_LABEL_CORE).CODE()	, RSZ(POWER_LABEL_CORE)},
@@ -4132,34 +4138,34 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		- RSZ(POWER_THERMAL_WINDOW) - RSZ(POWER_THERMAL_SECOND), hSpace,
 		RSC(POWER_THERMAL_SECOND).CODE(), POWERED(0) );
     }
-	return (reason);
+	return reason;
 }
 
 void KernelUpdate(TGrid *grid, DATA_TYPE data)
 {
 	char item[CPUFREQ_NAME_LEN+4+3];
-	size_t len = snprintf(  item, CPUFREQ_NAME_LEN+4+3,
-				"%18lu KB", (*data.pulong) );
+	size_t len;
+	CONV(len, StrFormat, item, CPUFREQ_NAME_LEN+4+3, "%18lu KB", (*data.pulong));
 	memcpy(&grid->cell.item[grid->cell.length - len - 1], item, len);
 }
 
 void IdleLimitUpdate(TGrid *grid, DATA_TYPE data)
 {
 	char item[CPUIDLE_NAME_LEN+1];
-	unsigned int idx = (*data.psint) - 1;
 	size_t len;
+	signed int idx = (*data.psint) - 1;
 
 	if (Shm->SysGate.OS.IdleDriver.stateCount > 0)
 	{
-		len = snprintf( item, CPUIDLE_NAME_LEN + 1,
+		CONV(len, StrFormat, item, CPUIDLE_NAME_LEN + 1,
 				COREFREQ_FORMAT_STR(CPUIDLE_NAME_LEN),
-				Shm->SysGate.OS.IdleDriver.State[idx].Name );
+				Shm->SysGate.OS.IdleDriver.State[idx].Name);
 	}
 	else
 	{
-		len = snprintf( item, CPUIDLE_NAME_LEN + 1,
+		CONV(len, StrFormat, item, CPUIDLE_NAME_LEN + 1,
 				COREFREQ_FORMAT_STR(CPUIDLE_NAME_LEN),
-				RSC(NOT_AVAILABLE).CODE() );
+				RSC(NOT_AVAILABLE).CODE());
 	}
 	memcpy(&grid->cell.item[grid->cell.length - len - 2], item, len);
 }
@@ -4167,11 +4173,10 @@ void IdleLimitUpdate(TGrid *grid, DATA_TYPE data)
 REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	REASON_INIT(reason);
-	size_t	len = (1 + width) * 5;
 	char	*item[5], str[CPUFREQ_NAME_LEN+4+1];
-	signed int idx;
+	signed int idx, len = (1 + width) * 5;
 	for (idx = 0; idx < 5; idx++) {
-		if ((item[idx] = malloc(len)) != NULL) {
+		if ((item[idx] = malloc((size_t) len)) != NULL) {
 			continue;
 		} else {
 			do {
@@ -4179,7 +4184,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 			} while (idx-- != 0);
 
 			REASON_SET(reason, RC_MEM_ERR);
-			return (reason);
+			return reason;
 		}
 	}
 /* Section Mark */
@@ -4188,71 +4193,74 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	PUT(	SCANKEY_NULL, RSC(KERNEL_RELEASE).ATTR(), width, 2,
 		"%s%.*s[%s]", RSC(KERNEL_RELEASE).CODE(),
-		width - 5 - RSZ(KERNEL_RELEASE)- strlen(Shm->SysGate.release),
+		width - 5 - RSZ(KERNEL_RELEASE)
+		- (int) strlen(Shm->SysGate.release),
 		hSpace, Shm->SysGate.release );
 
 	PUT(	SCANKEY_NULL, RSC(KERNEL_VERSION).ATTR(), width, 2,
 		"%s%.*s[%s]", RSC(KERNEL_VERSION).CODE(),
-		width - 5 - RSZ(KERNEL_VERSION) - strlen(Shm->SysGate.version),
+		width - 5 - RSZ(KERNEL_VERSION)
+		- (int) strlen(Shm->SysGate.version),
 		hSpace, Shm->SysGate.version );
 
 	PUT(	SCANKEY_NULL, RSC(KERNEL_MACHINE).ATTR(), width, 2,
 		"%s%.*s[%s]", RSC(KERNEL_MACHINE).CODE(),
-		width - 5 - RSZ(KERNEL_MACHINE) - strlen(Shm->SysGate.machine),
+		width - 5 - RSZ(KERNEL_MACHINE)
+		- (int) strlen(Shm->SysGate.machine),
 		hSpace, Shm->SysGate.machine );
 /* Section Mark */
 	PUT(	SCANKEY_NULL, RSC(KERNEL_MEMORY).ATTR(), width, 0,
 		"%s:%.*s", RSC(KERNEL_MEMORY).CODE(),
 		width - RSZ(KERNEL_MEMORY), hSpace );
 
-	len = snprintf( str,CPUFREQ_NAME_LEN+4+1, "%lu",
-			Shm->SysGate.memInfo.totalram );
+	CONV(len, StrFormat, str, CPUFREQ_NAME_LEN+4+1, "%lu",
+			Shm->SysGate.memInfo.totalram);
 
 	PUT(	SCANKEY_NULL, RSC(KERNEL_TOTAL_RAM).ATTR(), width, 2,
 		"%s%.*s" "%s KB", RSC(KERNEL_TOTAL_RAM).CODE(),
 		width - 6 - RSZ(KERNEL_TOTAL_RAM) - len, hSpace, str );
 
-	len = snprintf( str, CPUFREQ_NAME_LEN+4+1, "%lu",
-			Shm->SysGate.memInfo.sharedram );
+	CONV(len, StrFormat, str, CPUFREQ_NAME_LEN+4+1, "%lu",
+			Shm->SysGate.memInfo.sharedram);
 
 	GridCall( PUT(	SCANKEY_NULL, RSC(KERNEL_SHARED_RAM).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_SHARED_RAM).CODE(),
 			width - 6 - RSZ(KERNEL_SHARED_RAM) - len, hSpace, str ),
 		KernelUpdate, &Shm->SysGate.memInfo.sharedram );
 
-	len = snprintf( str, CPUFREQ_NAME_LEN+4+1,
-			"%lu", Shm->SysGate.memInfo.freeram );
+	CONV(len, StrFormat, str, CPUFREQ_NAME_LEN+4+1,
+			"%lu", Shm->SysGate.memInfo.freeram);
 
 	GridCall( PUT( SCANKEY_NULL, RSC(KERNEL_FREE_RAM).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_FREE_RAM).CODE(),
 			width - 6 - RSZ(KERNEL_FREE_RAM) - len, hSpace, str ),
 		KernelUpdate, &Shm->SysGate.memInfo.freeram );
 
-	len = snprintf( str, CPUFREQ_NAME_LEN+4+1,
-			"%lu", Shm->SysGate.memInfo.bufferram );
+	CONV(len, StrFormat, str, CPUFREQ_NAME_LEN+4+1,
+			"%lu", Shm->SysGate.memInfo.bufferram);
 
 	GridCall( PUT(	SCANKEY_NULL, RSC(KERNEL_BUFFER_RAM).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_BUFFER_RAM).CODE(),
 			width - 6 - RSZ(KERNEL_BUFFER_RAM) - len, hSpace, str ),
 		KernelUpdate, &Shm->SysGate.memInfo.bufferram );
 
-	len = snprintf( str, CPUFREQ_NAME_LEN+4+1,
-			"%lu", Shm->SysGate.memInfo.totalhigh );
+	CONV(len, StrFormat, str, CPUFREQ_NAME_LEN+4+1,
+			"%lu", Shm->SysGate.memInfo.totalhigh);
 
 	GridCall( PUT(	SCANKEY_NULL, RSC(KERNEL_TOTAL_HIGH).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_TOTAL_HIGH).CODE(),
 			width - 6 - RSZ(KERNEL_TOTAL_HIGH) - len, hSpace, str ),
 		KernelUpdate, &Shm->SysGate.memInfo.totalhigh );
 
-	len = snprintf( str, CPUFREQ_NAME_LEN+4+1,
-			"%lu", Shm->SysGate.memInfo.freehigh );
+	CONV(len, StrFormat, str, CPUFREQ_NAME_LEN+4+1,
+			"%lu", Shm->SysGate.memInfo.freehigh);
 
 	GridCall( PUT(	SCANKEY_NULL, RSC(KERNEL_FREE_HIGH).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_FREE_HIGH).CODE(),
 			width - 6 - RSZ(KERNEL_FREE_HIGH) - len, hSpace, str ),
 		KernelUpdate, &Shm->SysGate.memInfo.freehigh );
 /* Section Mark */
-	snprintf(item[0], 2+4+1+6+1+1, "%%s%%.*s[%%%d.*s]", CPUFREQ_NAME_LEN);
+	StrFormat(item[0], 2+4+1+6+1+1, "%%s%%.*s[%%%d.*s]", CPUFREQ_NAME_LEN);
 
     len = KMIN(strlen(Shm->SysGate.OS.FreqDriver.Name), CPUFREQ_NAME_LEN);
     if (len > 0)
@@ -4286,7 +4294,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 		CPUFREQ_NAME_LEN, RSC(MISSING).CODE() );
     }
 /* Row Mark */
-	snprintf(item[0], 2+4+1+6+1+1, "%%s%%.*s[%%%d.*s]", CPUIDLE_NAME_LEN);
+	StrFormat(item[0], 2+4+1+6+1+1, "%%s%%.*s[%%%d.*s]", CPUIDLE_NAME_LEN);
 
     len = KMIN(strlen(Shm->SysGate.OS.IdleDriver.Name), CPUIDLE_NAME_LEN);
     if (len > 0)
@@ -4306,7 +4314,8 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 /* Section Mark */
   if (Shm->SysGate.OS.IdleDriver.stateCount > 0)
   {
-	snprintf(item[0], 2+4+1+4+1+1, "%%s%%.*s%c%%%ds%c",
+	StrFormat(item[0], 2+4+1+4+1+1,
+		"%%s%%.*s%c%%%ds%c",
 	Shm->Registration.Driver.CPUidle & REGISTRATION_ENABLE ? '<' : '[',
 		CPUIDLE_NAME_LEN,
 	Shm->Registration.Driver.CPUidle & REGISTRATION_ENABLE ? '>' : ']');
@@ -4320,29 +4329,30 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 			Shm->SysGate.OS.IdleDriver.State[idx].Name ),
 		IdleLimitUpdate, &Shm->SysGate.OS.IdleDriver.stateLimit );
 /* Row Mark */
-	snprintf(item[0], 10+1, "%s%.*s" , RSC(KERNEL_STATE).CODE(),
-				10 - (int) RSZ(KERNEL_STATE), hSpace);
+	StrFormat(item[0], 10+1, "%s%.*s",
+		RSC(KERNEL_STATE).CODE(), 10 - RSZ(KERNEL_STATE), hSpace);
 
-	snprintf(item[1], 10+1, "%.*s", 10, hSpace);
+	StrFormat(item[1], 10+1, "%.*s", 10, hSpace);
 
-	snprintf(item[2], 10+1, "%s%.*s" , RSC(KERNEL_POWER).CODE(),
-				10 - (int) RSZ(KERNEL_POWER), hSpace);
+	StrFormat(item[2], 10+1, "%s%.*s",
+		RSC(KERNEL_POWER).CODE(), 10 - RSZ(KERNEL_POWER), hSpace);
 
-	snprintf(item[3], 10+1, "%s%.*s" , RSC(KERNEL_LATENCY).CODE(),
-				10 - (int) RSZ(KERNEL_LATENCY), hSpace);
+	StrFormat(item[3], 10+1, "%s%.*s",
+		RSC(KERNEL_LATENCY).CODE(), 10 - RSZ(KERNEL_LATENCY), hSpace);
 
-	snprintf(item[4], 10+1, "%s%.*s" , RSC(KERNEL_RESIDENCY).CODE(),
-				10 - (int) RSZ(KERNEL_RESIDENCY), hSpace);
+	StrFormat(item[4], 10+1, "%s%.*s",
+		RSC(KERNEL_RESIDENCY).CODE(), 10-RSZ(KERNEL_RESIDENCY), hSpace);
 
     for (idx = 0; idx < CPUIDLE_STATE_MAX; idx++)
     {
       if (idx < Shm->SysGate.OS.IdleDriver.stateCount)
       {
-	int n, cat;
+	ssize_t cat;
+	signed int n;
 
 	len = KMIN(strlen(Shm->SysGate.OS.IdleDriver.State[idx].Name), 7);
-	cat = snprintf( str, 7+1,"%7.*s", (int) len,
-			Shm->SysGate.OS.IdleDriver.State[idx].Name );
+	CONV(cat, StrFormat, str, 7+1,"%7.*s", (int) len,
+			Shm->SysGate.OS.IdleDriver.State[idx].Name);
 	len = strlen(item[0]);
 	for (n = 0; n < cat; n++) {
 		item[0][len + n] = str[n];
@@ -4350,32 +4360,32 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	item[0][len + n] = '\0';
 
 	len = KMIN(strlen(Shm->SysGate.OS.IdleDriver.State[idx].Desc), 7);
-	cat = snprintf( str, 7+1, "%7.*s", (int) len,
-			Shm->SysGate.OS.IdleDriver.State[idx].Desc );
+	CONV(cat, StrFormat, str, 7+1, "%7.*s", (int) len,
+			Shm->SysGate.OS.IdleDriver.State[idx].Desc);
 	len = strlen(item[1]);
 	for (n = 0; n < cat; n++) {
 		item[1][len + n] = str[n];
 	}
 	item[1][len + n] = '\0';
 
-	cat = snprintf( str, 10+1, "%7d",
-			Shm->SysGate.OS.IdleDriver.State[idx].powerUsage );
+	CONV(cat, StrFormat, str, 10+1, "%7d",
+			Shm->SysGate.OS.IdleDriver.State[idx].powerUsage);
 	len = strlen(item[2]);
 	for (n = 0; n < cat; n++) {
 		item[2][len + n] = str[n];
 	}
 	item[2][len + n] = '\0';
 
-	cat = snprintf( str, 10+1, "%7u",
-			Shm->SysGate.OS.IdleDriver.State[idx].exitLatency );
+	CONV(cat, StrFormat, str, 10+1, "%7u",
+			Shm->SysGate.OS.IdleDriver.State[idx].exitLatency);
 	len = strlen(item[3]);
 	for (n = 0; n < cat; n++) {
 		item[3][len + n] = str[n];
 	}
 	item[3][len + n] = '\0';
 
-	cat = snprintf( str, 10+1, "%7u",
-			Shm->SysGate.OS.IdleDriver.State[idx].targetResidency );
+	CONV(cat, StrFormat, str, 10+1, "%7u",
+			Shm->SysGate.OS.IdleDriver.State[idx].targetResidency);
 	len = strlen(item[4]);
 	for (n = 0; n < cat; n++) {
 		item[4][len + n] = str[n];
@@ -4420,7 +4430,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
     for (idx = 0; idx < 5; idx++) {
 	free(item[idx]);
     }
-	return (reason);
+	return reason;
 }
 
 char *ScrambleSMBIOS(enum SMB_STRING idx, int mod, char thing)
@@ -4445,15 +4455,15 @@ char *ScrambleSMBIOS(enum SMB_STRING idx, int mod, char thing)
 	};
 	if (smb[idx].secret && Setting.secret) {
 		static char outStr[MAX_UTS_LEN];
-		ssize_t len = strlen(smb[idx].pString);
+		size_t len = strlen(smb[idx].pString);
 		int i;
 		for (i = 0; i < len; i++) {
 			outStr[i] = (i % mod) ? thing : smb[idx].pString[i];
 		}
 		outStr[i] = '\0';
-		return (outStr);
+		return outStr;
 	} else {
-		return (smb[idx].pString);
+		return smb[idx].pString;
 	}
 }
 
@@ -4481,11 +4491,14 @@ REASON_CODE SysInfoSMBIOS(Window *win, CUINT width, CELL_FUNC OutFunc)
 
     for (idx = 0; idx < SMB_STRING_COUNT; idx ++)
     {
-	GridHover( PUT( SMBIOS_STRING_INDEX|idx, RSC(SMBIOS_ITEM).ATTR(),
-			width, 0, "[%2d] %s", idx, ScrambleSMBIOS(idx, 4, '-')),
+	const unsigned long long key	= SMBIOS_STRING_INDEX
+					| (unsigned long long) idx;
+
+	GridHover( PUT( key, RSC(SMBIOS_ITEM).ATTR(), width, 0,
+			"[%2d] %s", idx, ScrambleSMBIOS(idx, 4, '-')),
 		SMB_Comment[idx] );
     }
-	return (reason);
+	return reason;
 }
 
 void Package(unsigned int iter)
@@ -4493,7 +4506,7 @@ void Package(unsigned int iter)
 	char *out = malloc(8 + (Shm->Proc.CPU.Count + 10) * MIN_WIDTH);
   if (out != NULL)
   {
-	unsigned int sdx, idx;
+	int sdx, idx;
 
 	sdx = sprintf(out, "\t\t" "Cycles" "\t\t" "State(%%)" "\n");
 
@@ -4538,9 +4551,9 @@ void Package(unsigned int iter)
   }
 }
 
-unsigned int Core_Celsius(char *out, struct FLIP_FLOP *CFlop, unsigned int cpu)
+signed int Core_Celsius(char *out, struct FLIP_FLOP *CFlop, unsigned int cpu)
 {
-	return(sprintf(out,
+	return sprintf(out,
 		"%03u %7.2f (%5.2f)"				\
 		" %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
 		"  %-3u/%3u:%-3u/%3u\n",
@@ -4556,12 +4569,12 @@ unsigned int Core_Celsius(char *out, struct FLIP_FLOP *CFlop, unsigned int cpu)
 		Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST],
 		CFlop->Thermal.Temp,
 		CFlop->Thermal.Sensor,
-		Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_HIGHEST]));
+		Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_HIGHEST]);
 }
 
-unsigned int Core_Fahrenheit(char *out,struct FLIP_FLOP *CFlop,unsigned int cpu)
+signed int Core_Fahrenheit(char *out,struct FLIP_FLOP *CFlop,unsigned int cpu)
 {
-	return(sprintf(out,
+	return sprintf(out,
 		"%03u %7.2f (%5.2f)"				\
 		" %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
 		"  %-3u/%3u:%-3u/%3u\n",
@@ -4577,10 +4590,10 @@ unsigned int Core_Fahrenheit(char *out,struct FLIP_FLOP *CFlop,unsigned int cpu)
 		Cels2Fahr(Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST]),
 		Cels2Fahr(CFlop->Thermal.Temp),
 		Cels2Fahr(CFlop->Thermal.Sensor),
-		Cels2Fahr(Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_HIGHEST])));
+		Cels2Fahr(Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_HIGHEST]));
 }
 
-unsigned int Pkg_Celsius(char *out, struct PKG_FLIP_FLOP *PFlop)
+signed int Pkg_Celsius(char *out, struct PKG_FLIP_FLOP *PFlop)
 {
 	struct FLIP_FLOP *SFlop = &Shm->Cpu[
 		Shm->Proc.Service.Core
@@ -4588,7 +4601,7 @@ unsigned int Pkg_Celsius(char *out, struct PKG_FLIP_FLOP *PFlop)
 		!Shm->Cpu[Shm->Proc.Service.Core].Toggle
 	];
 
-	return(sprintf(out, "\n"					\
+	return sprintf(out, "\n"					\
 		"%.*s" "Averages:"					\
 		"%.*s" "Turbo  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
 		"%.*s" "TjMax:" "%.*s" "Pkg:\n"				\
@@ -4608,10 +4621,10 @@ unsigned int Pkg_Celsius(char *out, struct PKG_FLIP_FLOP *PFlop)
 		5, hSpace,
 		SFlop->Thermal.Param.Offset[0],
 		3, hSpace,
-		PFlop->Thermal.Temp));
+		PFlop->Thermal.Temp);
 }
 
-unsigned int Pkg_Fahrenheit(char *out, struct PKG_FLIP_FLOP *PFlop)
+signed int Pkg_Fahrenheit(char *out, struct PKG_FLIP_FLOP *PFlop)
 {
 	struct FLIP_FLOP *SFlop = &Shm->Cpu[
 		Shm->Proc.Service.Core
@@ -4619,7 +4632,7 @@ unsigned int Pkg_Fahrenheit(char *out, struct PKG_FLIP_FLOP *PFlop)
 		!Shm->Cpu[Shm->Proc.Service.Core].Toggle
 	];
 
-	return(sprintf(out, "\n"					\
+	return sprintf(out, "\n"					\
 		"%.*s" "Averages:"					\
 		"%.*s" "Turbo  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
 		"%.*s" "TjMax:" "%.*s" "Pkg:\n"				\
@@ -4639,21 +4652,22 @@ unsigned int Pkg_Fahrenheit(char *out, struct PKG_FLIP_FLOP *PFlop)
 		5, hSpace,
 		SFlop->Thermal.Param.Offset[0],
 		3, hSpace,
-		Cels2Fahr(PFlop->Thermal.Temp)));
+		Cels2Fahr(PFlop->Thermal.Temp));
 }
 
 void Counters(unsigned int iter)
 {
-	unsigned int (*Core_Temp)(char *, struct FLIP_FLOP *, unsigned int) = \
+	signed int (*Core_Temp)(char *, struct FLIP_FLOP *, unsigned int) = \
 		Setting.fahrCels ? Core_Fahrenheit : Core_Celsius;
 
-	unsigned int (*Pkg_Temp)(char *, struct PKG_FLIP_FLOP *) =	\
+	signed int (*Pkg_Temp)(char *, struct PKG_FLIP_FLOP *) = \
 		Setting.fahrCels ? Pkg_Fahrenheit : Pkg_Celsius;
 
 	char *out = malloc(8 + (Shm->Proc.CPU.Count + 3) * MIN_WIDTH);
   if (out != NULL)
   {
-	unsigned int cpu, sdx, idx;
+	unsigned int cpu;
+	signed int sdx, idx;
 
 	sdx=sprintf(out,"CPU Freq(MHz) Ratio  Turbo"			\
 			"  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
@@ -4699,7 +4713,8 @@ void Sensors(unsigned int iter)
   if (out && row)
   {
 	enum PWR_DOMAIN pw;
-	unsigned int cpu, sdx, ldx, idx;
+	unsigned int cpu;
+	signed int sdx, ldx, idx;
 
 	sdx=sprintf(out,"CPU Freq(MHz) VID  Vcore  TMP(%c)"		\
 			"    Accumulator       Energy(J)     Power(W)\n",
@@ -4744,7 +4759,7 @@ void Sensors(unsigned int iter)
 	   }
 	  }
 	}
-	memcpy(&out[idx], row, ldx);
+	memcpy(&out[idx], row, (size_t) ldx);
 	idx += ldx;
 
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++) {
@@ -4775,7 +4790,8 @@ void Voltage(unsigned int iter)
 	char *out = malloc(8 + (Shm->Proc.CPU.Count + 1) * MIN_WIDTH);
   if (out != NULL)
   {
-	unsigned int cpu, sdx, idx;
+	unsigned int cpu;
+	signed int sdx, idx;
 
 	sdx = sprintf(out, "CPU Freq(MHz) VID  Min     Vcore   Max\n");
 
@@ -4825,7 +4841,8 @@ void Power(unsigned int iter)
   if (out && row)
   {
 	enum PWR_DOMAIN pw;
-	unsigned int cpu, sdx, ldx, idx;
+	unsigned int cpu;
+	signed int sdx, ldx, idx;
 
 	sdx=sprintf(out,"CPU Freq(MHz)" 				\
 			"    Accumulator      Min  Energy(J) Max"	\
@@ -4869,7 +4886,7 @@ void Power(unsigned int iter)
 	   }
 	  }
 	}
-	memcpy(&out[idx], row, ldx);
+	memcpy(&out[idx], row, (size_t) ldx);
 	idx += ldx;
 
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(PLATFORM); pw++) {
@@ -4906,7 +4923,8 @@ void Instructions(unsigned int iter)
 	char *out = malloc(8 + (Shm->Proc.CPU.Count + 1) * MIN_WIDTH);
   if (out != NULL)
   {
-	unsigned int cpu, sdx, idx;
+	unsigned int cpu;
+	signed int sdx, idx;
 
 	sdx = sprintf(out, "CPU     IPS            IPC            CPI\n");
 
@@ -4952,16 +4970,16 @@ void Instructions(unsigned int iter)
 ASCII* Topology_Std(char *pStr, unsigned int cpu)
 {
     if (Shm->Cpu[cpu].Topology.MP.BSP) {
-	snprintf(&pStr[ 0], 4+(2*11)+1, "%03u:BSP%5d\x20",
+	StrFormat(&pStr[ 0], 4+(2*11)+1, "%03u:BSP%5d\x20",
 			cpu,
 			Shm->Cpu[cpu].Topology.ApicID);
-	return (RSC(TOPOLOGY_BSP_COMM).CODE());
+	return RSC(TOPOLOGY_BSP_COMM).CODE();
     } else {
-	snprintf(&pStr[ 0], 1+(3*11)+1, "%03u:%3d%5d\x20",
+	StrFormat(&pStr[ 0], 1+(3*11)+1, "%03u:%3d%5d\x20",
 			cpu,
 			Shm->Cpu[cpu].Topology.PackageID,
 			Shm->Cpu[cpu].Topology.ApicID);
-	return (NULL);
+	return NULL;
     }
 }
 
@@ -4969,33 +4987,33 @@ ASCII* Topology_SMT(char *pStr, unsigned int cpu)
 {
 	ASCII *comment = Topology_Std(pStr, cpu);
 
-	snprintf(&pStr[TOPO_MATX+1], 1+(2*11)+1, "%5d\x20\x20%5d\x20",
+	StrFormat(&pStr[TOPO_MATX+1], 1+(2*11)+1, "%5d\x20\x20%5d\x20",
 			Shm->Cpu[cpu].Topology.CoreID,
 			Shm->Cpu[cpu].Topology.ThreadID);
-	return (comment);
+	return comment;
 }
 
 ASCII* Topology_CMP(char *pStr, unsigned int cpu)
 {
 	ASCII *comment = Topology_Std(pStr, cpu);
 
-	snprintf(&pStr[TOPO_MATX+1], (3*11)+1, "%3u%4d%6d",
+	StrFormat(&pStr[TOPO_MATX+1], (3*11)+1, "%3u%4d%6d",
 			Shm->Cpu[cpu].Topology.Cluster.CMP,
 			Shm->Cpu[cpu].Topology.CoreID,
 			Shm->Cpu[cpu].Topology.ThreadID);
-	return (comment);
+	return comment;
 }
 
 ASCII* Topology_CCD(char *pStr, unsigned int cpu)
 {
 	ASCII *comment = Topology_Std(pStr, cpu);
 
-	snprintf(&pStr[TOPO_MATX+1], (4*11)+1, "%3u%3u%4d%3d",
+	StrFormat(&pStr[TOPO_MATX+1], (4*11)+1, "%3u%3u%4d%3d",
 			Shm->Cpu[cpu].Topology.Cluster.CCD,
 			Shm->Cpu[cpu].Topology.Cluster.CCX,
 			Shm->Cpu[cpu].Topology.CoreID,
 			Shm->Cpu[cpu].Topology.ThreadID);
-	return (comment);
+	return comment;
 }
 
 const char *TopologyStrOFF[] = {
@@ -5151,7 +5169,7 @@ const char *MEM_CTRL_FMT = "%*.s";
 
 void iSplit(unsigned int sInt, char hInt[]) {
 	char fInt[11+1];
-	snprintf(fInt, 11+1, "%10u", sInt);
+	StrFormat(fInt, 11+1, "%10u", sInt);
 	memcpy((hInt + 0), (fInt + 0), 5); *(hInt + 0 + 5) = '\0';
 	memcpy((hInt + 8), (fInt + 5), 5); *(hInt + 8 + 5) = '\0';
 }
@@ -5742,8 +5760,7 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 		RSC(MEMORY_CONTROLLER_COND0).ATTR(),
 		RSC(MEMORY_CONTROLLER_COND1).ATTR()
 	};
-	const ASCII *MC_Unit[4] =
-	{
+	const ASCII *MC_Unit[4] = {
 		[0b00] = RSC(MEM_CTRL_UNIT_MHZ).CODE(),
 		[0b01] = RSC(MEM_CTRL_UNIT_MTS).CODE(),
 		[0b10] = RSC(MEM_CTRL_UNIT_MBS).CODE(),
@@ -5758,15 +5775,15 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 
 	unsigned short mc, cha, slot;
 
-	li = snprintf(	str, CODENAME_LEN + 4 + 10, "%s  [%4hX]",
-			Shm->Uncore.Chipset.CodeName, Shm->Uncore.ChipID );
+	CONV(li, StrFormat, str, CODENAME_LEN + 4 + 10,
+		"%s  [%4hX]", Shm->Uncore.Chipset.CodeName, Shm->Uncore.ChipID);
 
 	nc = (MC_MATX * MC_MATY) - li;
 	ni = nc >> 1;
 	nc = ni + (nc & 0x1);
 
-	li = snprintf(	chipStr, (MC_MATX * MC_MATY) + 1, "%*.s" "%s" "%*.s",
-			nc, HSPACE, str, ni, HSPACE );
+	CONV(li, StrFormat, chipStr, (MC_MATX * MC_MATY) + 1,
+		"%*.s" "%s" "%*.s", nc, HSPACE, str, ni, HSPACE);
 
     for (nc = 0; nc < MC_MATX; nc++) {
 	memcpy(item, &chipStr[nc * MC_MATY], MC_MATY);
@@ -6004,9 +6021,9 @@ int ByteReDim(unsigned long ival, int constraint, unsigned long *oval)
 	(*oval) = ival;
 	if (base > constraint) {
 		(*oval) = (*oval) >> 10;
-		return (1 + ByteReDim((*oval), constraint, oval));
+		return 1 + ByteReDim((*oval), constraint, oval);
 	} else {
-		return (0);
+		return 0;
 	}
 }
 
@@ -6025,14 +6042,14 @@ int ByteReDim(unsigned long ival, int constraint, unsigned long *oval)
 
 #define frtostr(r, d, pStr)						\
 ({									\
-	int p = d - ((int) log10(fabs(r))) - 2;				\
-	snprintf(pStr, d+1, "%*.*f", d, p, r);				\
+	int p = d - ((int) log10(fabs(r))) - 2 ;			\
+	StrFormat(pStr, d+1, "%*.*f", d, p, r) ;			\
 	pStr;								\
 })
 
 #define Clock2LCD(layer, col, row, value1, value2)			\
 ({									\
-	snprintf(Buffer, 4+1, "%04.0f", value1);			\
+	StrFormat(Buffer, 4+1, "%04.0f", value1);			\
 	PrintLCD(layer, col, row, 4, Buffer,				\
 		Threshold(value2, Ruler.Minimum, Ruler.Median,		\
 			RSC(UI).ATTR()[UI_LAYOUT_LCD_CLOCK_LOW],	\
@@ -6042,7 +6059,7 @@ int ByteReDim(unsigned long ival, int constraint, unsigned long *oval)
 
 #define Counter2LCD(layer, col, row, value)				\
 ({									\
-	snprintf(Buffer, 4+1, "%04.0f" , value);			\
+	StrFormat(Buffer, 4+1, "%04.0f" , value);			\
 	PrintLCD(layer, col, row, 4, Buffer,				\
 		Threshold(value, 0.f, 1.f,				\
 			RSC(UI).ATTR()[UI_LAYOUT_LCD_COUNTER_LOW],	\
@@ -6075,7 +6092,7 @@ void ForEachCellPrint_Menu(Window *win, void *plist)
 {
 	WinList *list = (WinList *) plist;
 	CUINT col, row;
-	size_t len;
+	int len;
 
     if (win->lazyComp.rowLen == 0) {
 	for (col = 0; col < win->matrix.size.wth; col++) {
@@ -6099,7 +6116,10 @@ void ForEachCellPrint_Menu(Window *win, void *plist)
 			PrintContent(win, list, win->matrix.select.col, row);
 		}
     }
-    if ((len = Draw.Size.width-win->lazyComp.rowLen-win->matrix.origin.col) > 0)
+	len = Draw.Size.width
+	- (int) win->lazyComp.rowLen
+	- (int) win->matrix.origin.col;
+    if (len > 0)
     {
 	LayerFillAt(	win->layer,
 			(win->matrix.origin.col + win->lazyComp.rowLen),
@@ -6313,39 +6333,40 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 	StoreWindow(wMenu,	.key.Home,	MotionHome_Menu);
 	StoreWindow(wMenu,	.key.End,	MotionEnd_Menu);
     }
-	return (wMenu);
+	return wMenu;
 }
 
 void IntervalUpdate(TGrid *grid, DATA_TYPE data)
 {
 	UNUSED(data);
-	snprintf(Buffer, 10+1, "%4u", Shm->Sleep.Interval);
+	StrFormat(Buffer, 10+1, "%4u", Shm->Sleep.Interval);
 	memcpy(&grid->cell.item[grid->cell.length - 6], Buffer, 4);
 }
 
 void SysTickUpdate(TGrid *grid, DATA_TYPE data)
 {
 	UNUSED(data);
-	snprintf(Buffer, 10+1,"%4u",Shm->Sleep.Interval*Shm->SysGate.tickReset);
+	StrFormat(Buffer,10+1,"%4u",Shm->Sleep.Interval*Shm->SysGate.tickReset);
 	memcpy(&grid->cell.item[grid->cell.length - 6], Buffer, 4);
 }
 
 void SvrWaitUpdate(TGrid *grid, DATA_TYPE data)
 {
-	snprintf(Buffer, 21+1, "%4ld", (*data.pslong) / 1000000L);
+	StrFormat(Buffer, 21+1, "%4ld", (*data.pslong) / 1000000L);
 	memcpy(&grid->cell.item[grid->cell.length - 6], Buffer, 4);
 }
 
 void RecorderUpdate(TGrid *grid, DATA_TYPE data)
 {
-	int duration = RECORDER_SECONDS((*data.psint), Shm->Sleep.Interval);
+	unsigned int duration = RECORDER_SECONDS((*data.puint),
+						Shm->Sleep.Interval);
 	if (duration <= 9999) {
-		snprintf(Buffer, 11+1, "%4d", duration);
+		StrFormat(Buffer, 11+1, "%4u", duration);
 		memcpy(&grid->cell.item[grid->cell.length - 6], Buffer, 4);
 	}
 }
 
-void SettingUpdate(TGrid *grid, const int bix, const int pos,
+void SettingUpdate(TGrid *grid, const unsigned int bix, const int pos,
 				const size_t len, const char *item)
 {
 	ATTRIBUTE *attrib[2] = {
@@ -6402,9 +6423,9 @@ void IdleRoute_Update(TGrid *grid, DATA_TYPE data)
 	};
 	UNUSED(data);
 
-	memcpy(&grid->cell.item[grid->cell.length - RSZ(SETTINGS_ROUTE_DFLT)-2],
-		instructions[Shm->Registration.Driver.Route],
-		RSZ(SETTINGS_ROUTE_DFLT));
+	const size_t size = (size_t) RSZ(SETTINGS_ROUTE_DFLT);
+	memcpy(&grid->cell.item[grid->cell.length - size-2],
+		instructions[Shm->Registration.Driver.Route], size);
 }
 
 void NMI_Registration_Update(TGrid *grid, DATA_TYPE data)
@@ -6471,8 +6492,8 @@ void ScopeUpdate(TGrid *grid, DATA_TYPE data)
 		RSC(SCOPE_PACKAGE).CODE()
 	};
 	const enum FORMULA_SCOPE scope = SCOPE_OF_FORMULA(*data.psint);
-	memcpy(&grid->cell.item[grid->cell.length - RSZ(SCOPE_NONE) - 2],
-		code[scope], RSZ(SCOPE_NONE));
+	const size_t size = (size_t) RSZ(SCOPE_NONE);
+	memcpy(&grid->cell.item[grid->cell.length - size-2], code[scope], size);
 }
 
 Window *CreateSettings(unsigned long long id)
@@ -6635,7 +6656,7 @@ Window *CreateSettings(unsigned long long id)
 	StoreWindow(wSet,	.key.Shrink,	MotionShrink_Win);
 	StoreWindow(wSet,	.key.Expand,	MotionExpand_Win);
     }
-	return (wSet);
+	return wSet;
 }
 
 Window *CreateHelp(unsigned long long id)
@@ -6737,7 +6758,7 @@ Window *CreateHelp(unsigned long long id)
 	StoreWindow(wHelp,	.key.Shrink,	MotionShrink_Win);
 	StoreWindow(wHelp,	.key.Expand,	MotionExpand_Win);
     }
-	return (wHelp);
+	return wHelp;
 }
 
 Window *CreateAdvHelp(unsigned long long id)
@@ -6808,7 +6829,7 @@ Window *CreateAdvHelp(unsigned long long id)
 	StoreWindow(wHelp,	.key.Shrink,	MotionShrink_Win);
 	StoreWindow(wHelp,	.key.Expand,	MotionExpand_Win);
     }
-	return (wHelp);
+	return wHelp;
 }
 
 Window *CreateAbout(unsigned long long id)
@@ -6865,7 +6886,7 @@ Window *CreateAbout(unsigned long long id)
 		StoreWindow(wAbout,	.key.WinDown,	MotionOriginDown_Win);
 		StoreWindow(wAbout,	.key.WinUp,	MotionOriginUp_Win);
 	}
-	return (wAbout);
+	return wAbout;
 }
 
 /* >>> GLOBALS >>> */
@@ -6875,7 +6896,7 @@ int SysInfoCellPadding;
 TGrid *AddSysInfoCell(CELL_ARGS)
 {
 	SysInfoCellPadding++;
-	return (StoreTCell(win, key, item, attrib));
+	return StoreTCell(win, key, item, attrib);
 }
 
 Window *CreateSysInfo(unsigned long long id)
@@ -7029,12 +7050,12 @@ Window *CreateSysInfo(unsigned long long id)
 		StoreWindow(wSysInfo,	.key.Shrink,	MotionShrink_Win);
 		StoreWindow(wSysInfo,	.key.Expand,	MotionExpand_Win);
 	}
-	return (wSysInfo);
+	return wSysInfo;
 }
 
 TGrid *AddCell(CELL_ARGS)
 {
-	return (StoreTCell(win, key, item, attrib));
+	return StoreTCell(win, key, item, attrib);
 }
 
 Window *CreateTopology(unsigned long long id)
@@ -7068,7 +7089,7 @@ Window *CreateTopology(unsigned long long id)
 		StoreWindow(wTopology,	.key.Shrink,	MotionShrink_Win);
 		StoreWindow(wTopology,	.key.Expand,	MotionExpand_Win);
 	}
-	return (wTopology);
+	return wTopology;
 }
 
 Window *CreateISA(unsigned long long id)
@@ -7093,7 +7114,7 @@ Window *CreateISA(unsigned long long id)
 		StoreWindow(wISA,	.key.WinDown,	MotionOriginDown_Win);
 		StoreWindow(wISA,	.key.WinUp,	MotionOriginUp_Win);
 	}
-	return (wISA);
+	return wISA;
 }
 
 Window *CreateSysRegs(unsigned long long id)
@@ -7124,7 +7145,7 @@ Window *CreateSysRegs(unsigned long long id)
 		StoreWindow(wSR,	.key.Shrink,	MotionShrink_Win);
 		StoreWindow(wSR,	.key.Expand,	MotionExpand_Win);
 	}
-	return (wSR);
+	return wSR;
 }
 
 Window *CreateMemCtrl(unsigned long long id)
@@ -7191,7 +7212,7 @@ Window *CreateMemCtrl(unsigned long long id)
 	StoreWindow(wIMC,	.key.Shrink,	MotionShrink_Win);
 	StoreWindow(wIMC,	.key.Expand,	MotionExpand_Win);
     }
-	return (wIMC);
+	return wIMC;
 }
 
 Window *CreateSortByField(unsigned long long id)
@@ -7242,7 +7263,7 @@ Window *CreateSortByField(unsigned long long id)
 		StoreWindow(wSortBy,	.key.Home,	MotionReset_Win);
 		StoreWindow(wSortBy,	.key.End,	MotionEnd_Cell);
 	}
-	return (wSortBy);
+	return wSortBy;
 }
 
 int SortTaskListByForest(const void *p1, const void *p2)
@@ -7250,19 +7271,19 @@ int SortTaskListByForest(const void *p1, const void *p2)
 	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
 
 	if (task1->ppid < task2->ppid) {
-		return (-1);
+		return -1;
 	} else if (task1->ppid > task2->ppid) {
-		return (1);
+		return 1;
 	} else if (task1->tgid < task2->tgid) {
-		return (-1);
+		return -1;
 	} else if (task1->tgid > task2->tgid) {
-		return (1);
+		return 1;
 	} else if (task1->pid < task2->pid) {
-		return (-1);
+		return -1;
 	} else if (task1->pid > task2->pid) {
-		return (1);
+		return 1;
 	} else {
-		return (1);
+		return 1;
 	}
 }
 
@@ -7303,9 +7324,10 @@ void UpdateTracker(TGrid *grid, DATA_TYPE data)
 		usertime= 0.0;
 		systime = 0.0;
 	}
-	const size_t len = snprintf(	Buffer, 20+20+5+4+6+1,
-					"User:%3.0f%%   Sys:%3.0f%% ",
-					usertime, systime );
+	size_t len;
+	CONV(len, StrFormat, Buffer, 20+20+5+4+6+1,
+		"User:%3.0f%%   Sys:%3.0f%% ",
+		usertime, systime );
 
 	memcpy( &grid->cell.item[grid->cell.length - len], Buffer, len);
 	break;
@@ -7319,7 +7341,7 @@ void UpdateTracker(TGrid *grid, DATA_TYPE data)
 Window *CreateTracking(unsigned long long id)
 {
 	Window *wTrack = NULL;
-	const ssize_t tc = Shm->SysGate.taskCount;
+	const size_t tc = (size_t) Shm->SysGate.taskCount;
 
   if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) && (tc > 0))
   {
@@ -7360,7 +7382,7 @@ Window *CreateTracking(unsigned long long id)
 		} else {
 			qi = si + 2;
 		}
-		snprintf(Buffer, MAX_WIDTH-1,
+		StrFormat(Buffer, MAX_WIDTH-1,
 			"%.*s" "%-16s" "%.*s" "(%7d)",
 			qi,
 			hSpace,
@@ -7370,13 +7392,13 @@ Window *CreateTracking(unsigned long long id)
 			trackList[ti].pid);
 
 		StoreTCell(wTrack,
-			(TRACK_TASK | trackList[ti].pid),
+			(TRACK_TASK | (unsigned long long) trackList[ti].pid),
 			Buffer,
 			(trackList[ti].pid == trackList[ti].tgid) ?
 			  RSC(UI).ATTR()[UI_WIN_TRACKING_PARENT_PROCESS]
 			: RSC(UI).ATTR()[UI_WIN_TRACKING_CHILD_PROCESS]);
 
-		snprintf(Buffer, MAX_WIDTH-1, "%.*s", width, hSpace);
+		StrFormat(Buffer, MAX_WIDTH-1, "%.*s", width, hSpace);
 
 		GridCall(StoreTCell(wTrack, SCANKEY_NULL, Buffer,
 				RSC(UI).ATTR()[UI_WIN_TRACKING_COUNTERS]),
@@ -7411,7 +7433,7 @@ Window *CreateTracking(unsigned long long id)
 	free(trackList);
     }
   }
-	return (wTrack);
+	return wTrack;
 }
 
 void UpdateHotPlugCPU(TGrid *grid, DATA_TYPE data)
@@ -7422,8 +7444,8 @@ void UpdateHotPlugCPU(TGrid *grid, DATA_TYPE data)
 	{
 	    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
 	    {
-		snprintf(Buffer, 9+10+1,
-			(char*) RSC(CREATE_HOTPLUG_CPU_OFFLINE).CODE(), cpu);
+		StrFormat(Buffer, 9+10+1,
+			RSC(CREATE_HOTPLUG_CPU_OFFLINE).CODE(), cpu);
 
 		memcpy(grid->cell.item, Buffer, grid->cell.length);
 		memcpy(grid->cell.attr, RSC(CREATE_HOTPLUG_CPU_OFFLINE).ATTR(),
@@ -7436,8 +7458,8 @@ void UpdateHotPlugCPU(TGrid *grid, DATA_TYPE data)
 	{
 	    if ((data.ullong & CPU_STATE_MASK) == CPU_OFFLINE)
 	    {
-		snprintf(Buffer, 9+10+1,
-			(char*) RSC(CREATE_HOTPLUG_CPU_ONLINE).CODE(), cpu);
+		StrFormat(Buffer, 9+10+1,
+			RSC(CREATE_HOTPLUG_CPU_ONLINE).CODE(), cpu);
 
 		memcpy(grid->cell.item, Buffer, grid->cell.length);
 		memcpy(grid->cell.attr, RSC(CREATE_HOTPLUG_CPU_ONLINE).ATTR(),
@@ -7456,9 +7478,9 @@ void UpdateHotPlugTrigger(TGrid *grid, DATA_TYPE data)
 	{
 	    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
 	    {
-		memcpy(	grid->cell.item,
+		memcpy( grid->cell.item,
 			RSC(CREATE_HOTPLUG_CPU_ENABLE).CODE(),
-			RSZ(CREATE_HOTPLUG_CPU_ENABLE) );
+		(size_t)RSZ(CREATE_HOTPLUG_CPU_ENABLE) );
 
 		memcpy( grid->cell.attr,
 			RSC(CREATE_HOTPLUG_CPU_ENABLE).ATTR(),
@@ -7474,7 +7496,7 @@ void UpdateHotPlugTrigger(TGrid *grid, DATA_TYPE data)
 	    {
 		memcpy( grid->cell.item,
 			RSC(CREATE_HOTPLUG_CPU_DISABLE).CODE(),
-			RSZ(CREATE_HOTPLUG_CPU_DISABLE) );
+		(size_t)RSZ(CREATE_HOTPLUG_CPU_DISABLE) );
 
 		memcpy( grid->cell.attr,
 			RSC(CREATE_HOTPLUG_CPU_DISABLE).ATTR(),
@@ -7498,8 +7520,7 @@ Window *CreateHotPlugCPU(unsigned long long id)
     {
       if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
       {
-	snprintf(Buffer, 9+10+1,
-		(char*) RSC(CREATE_HOTPLUG_CPU_OFFLINE).CODE(), cpu);
+	StrFormat(Buffer, 9+10+1, RSC(CREATE_HOTPLUG_CPU_OFFLINE).CODE(), cpu);
 
 	GridCall( StoreTCell(	wCPU, SCANKEY_NULL, Buffer,
 				RSC(CREATE_HOTPLUG_CPU_OFFLINE).ATTR() ),
@@ -7512,8 +7533,7 @@ Window *CreateHotPlugCPU(unsigned long long id)
       }
     else
       {
-	snprintf(Buffer, 9+10+1,
-		(char*) RSC(CREATE_HOTPLUG_CPU_ONLINE).CODE(), cpu);
+	StrFormat(Buffer, 9+10+1, RSC(CREATE_HOTPLUG_CPU_ONLINE).CODE(), cpu);
 
 	GridCall( StoreTCell(	wCPU, SCANKEY_NULL, Buffer,
 				RSC(CREATE_HOTPLUG_CPU_ONLINE).ATTR() ),
@@ -7548,7 +7568,7 @@ Window *CreateHotPlugCPU(unsigned long long id)
 	StoreWindow(wCPU,	.key.Shrink,	MotionShrink_Win);
 	StoreWindow(wCPU,	.key.Expand,	MotionExpand_Win);
   }
-	return (wCPU);
+	return wCPU;
 }
 
 void UpdateRatioClock(TGrid *grid, DATA_TYPE data)
@@ -7559,9 +7579,9 @@ void UpdateRatioClock(TGrid *grid, DATA_TYPE data)
 
 	if (data.uint[0] > MAXCLOCK_TO_RATIO(unsigned int, CFlop->Clock.Hz))
 	{
-		snprintf(Buffer, 1+6+1, " %-6s", RSC(NOT_AVAILABLE).CODE());
+		StrFormat(Buffer, 1+6+1, " %-6s", RSC(NOT_AVAILABLE).CODE());
 	} else {
-		snprintf(Buffer, 8+1, "%7.2f",
+		StrFormat(Buffer, 8+1, "%7.2f",
 			ABS_FREQ_MHz(double, data.uint[0], CFlop->Clock));
 	}
 	memcpy(&grid->cell.item[1], Buffer, 7);
@@ -7569,13 +7589,12 @@ void UpdateRatioClock(TGrid *grid, DATA_TYPE data)
 
 void TitleForTurboClock(unsigned int NC, ASCII *title)
 {
-	snprintf((char *) title, 15+11+1,
-		(char *) RSC(TURBO_CLOCK_TITLE).CODE(), NC);
+	StrFormat(title, 15+11+1, RSC(TURBO_CLOCK_TITLE).CODE(), NC);
 }
 
 void TitleForRatioClock(unsigned int NC, ASCII *title)
 {
-	snprintf((char *) title,14+6+1,(char *) RSC(RATIO_CLOCK_TITLE).CODE(),
+	StrFormat(title, 14+6+1, RSC(RATIO_CLOCK_TITLE).CODE(),
 		(NC == CLOCK_MOD_TGT) || (NC == CLOCK_MOD_HWP_TGT) ?
 			RSC(TARGET).CODE() :
 		(NC == CLOCK_MOD_MAX) || (NC == CLOCK_MOD_HWP_MAX) ?
@@ -7588,7 +7607,7 @@ void TitleForRatioClock(unsigned int NC, ASCII *title)
 
 void TitleForUncoreClock(unsigned int NC, ASCII *title)
 {
-	snprintf((char *) title,15+3+1,(char *) RSC(UNCORE_CLOCK_TITLE).CODE(),
+	StrFormat(title, 15+3+1, RSC(UNCORE_CLOCK_TITLE).CODE(),
 			(NC == CLOCK_MOD_MAX) ? RSC(MAX).CODE() :
 			(NC == CLOCK_MOD_MIN) ? RSC(MIN).CODE() : (ASCII*) "");
 }
@@ -7613,11 +7632,11 @@ void ComputeRatioShifts(unsigned int COF,
 	if (COF > maxRatio) {
 		maxRatio = COF;
 	}
-	(*lowestShift)	= COF - minRatio;
-	(*highestShift) = maxRatio - COF;
+	(*lowestShift)	= (int) COF - (int) minRatio;
+	(*highestShift) = (int) maxRatio - (int) COF;
 }
 
-unsigned int MultiplierIsRatio(unsigned int cpu, unsigned int multiplier)
+unsigned int MultiplierIsRatio(unsigned int cpu, signed int multiplier)
 {
 	enum RATIO_BOOST boost;
 	for (boost = BOOST(MIN); boost < BOOST(SIZE); boost++)
@@ -7632,15 +7651,15 @@ unsigned int MultiplierIsRatio(unsigned int cpu, unsigned int multiplier)
 			fallthrough;
 		default:
 			if (Shm->Cpu[cpu].Boost[boost] == multiplier) {
-				return (1);
+				return 1;
 			}
 			break;
 		}
 	}
 	if (Shm->Proc.Features.Factory.Ratio == multiplier) {
-		return (1);
+		return 1;
 	}
-	return (0);
+	return 0;
 }
 
 Window *CreateRatioClock(unsigned long long id,
@@ -7667,7 +7686,7 @@ Window *CreateRatioClock(unsigned long long id,
 		RSC(CREATE_RATIO_CLOCK_COND5).ATTR(),
 		RSC(CREATE_RATIO_CLOCK_COND6).ATTR()
 	};
-	CLOCK_ARG clockMod = {.sllong = id};
+	CLOCK_ARG clockMod = {.ullong = id};
 
 	const CUINT hthMax = 1 + lowestShift + highestShift;
 	CUINT	oRow = CUMAX(1 + TOP_HEADER_ROW + TOP_FOOTER_ROW, 2);
@@ -7688,7 +7707,7 @@ Window *CreateRatioClock(unsigned long long id,
 	{
 		ATTRIBUTE *attr = attrib[3];
 
-		multiplier = COF + offset;
+		multiplier = (int) COF + offset;
 
 		clockMod.NC = NC | boxKey;
 		clockMod.cpu = any;
@@ -7700,15 +7719,15 @@ Window *CreateRatioClock(unsigned long long id,
 	    }
 
 	  if (multiplier == 0) {
-		snprintf(Buffer, 17+RSZ(AUTOMATIC)+11+11+1,
+		StrFormat(Buffer, RSZ(AUTOMATIC)+17+11+11+1,
 			"    %s       <%4d >  %+4d ",
 			RSC(AUTOMATIC).CODE(), multiplier, offset);
 
-		StoreTCell(wCK, clockMod.sllong, Buffer, attr);
+		StoreTCell(wCK, clockMod.ullong, Buffer, attr);
 	  } else {
 	    if (multiplier > MAXCLOCK_TO_RATIO(signed int, CFlop->Clock.Hz))
 	    {
-		snprintf(Buffer, 15+6+11+11+1,
+		StrFormat(Buffer, 15+6+11+11+1,
 			"  %-6s MHz   <%4d >  %+4d ",
 			RSC(NOT_AVAILABLE).CODE(), multiplier, offset);
 	    } else {
@@ -7719,12 +7738,12 @@ Window *CreateRatioClock(unsigned long long id,
 				2 + 4 * MultiplierIsRatio(cpu, multiplier)
 				: 0 + 4 * MultiplierIsRatio(cpu, multiplier) ];
 
-		snprintf(Buffer, 14+8+11+11+1,
+		StrFormat(Buffer, 14+8+11+11+1,
 			" %7.2f MHz   <%4d >  %+4d ",
-			ABS_FREQ_MHz(double, multiplier, CFlop->Clock),
+			ABS_FREQ_MHz(double,(unsigned)multiplier, CFlop->Clock),
 			multiplier, offset);
 	    }
-		GridCall(StoreTCell(wCK, clockMod.sllong, Buffer, attr),
+		GridCall(StoreTCell(wCK, clockMod.ullong, Buffer, attr),
 			UpdateRatioClock, multiplier);
 	  }
 	}
@@ -7756,7 +7775,7 @@ Window *CreateRatioClock(unsigned long long id,
 	StoreWindow(wCK,	.key.Shrink,	MotionShrink_Win);
 	StoreWindow(wCK,	.key.Expand,	MotionExpand_Win);
     }
-	return (wCK);
+	return wCK;
 }
 
 void UpdateRoomSchedule(TGrid *grid, DATA_TYPE data)
@@ -7835,7 +7854,7 @@ Window *CreateSelectCPU(unsigned long long id)
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
 	{
 		bix = BITVAL_CC(Shm->roomSched, cpu);
-		snprintf(Buffer, 7+10+11+11+11+1,
+		StrFormat(Buffer, 7+10+11+11+11+1,
 				"  %03u  %4d%6d%6d    <%3s>    ",
 				cpu,
 				Shm->Cpu[cpu].Topology.PackageID,
@@ -7886,20 +7905,20 @@ Window *CreateSelectCPU(unsigned long long id)
 	StoreWindow(wUSR,	.key.Shrink,	MotionShrink_Win);
 	StoreWindow(wUSR,	.key.Expand,	MotionExpand_Win);
     }
-	return (wUSR);
+	return wUSR;
 }
 
 void Pkg_Fmt_Turbo(ASCII *item, CLOCK *clock, unsigned int ratio, char *NC)
 {
     if (ratio == 0) {
-	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+1,
+	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+1,
 			(char *) RSC(CREATE_SELECT_AUTO_TURBO).CODE(),
 			NC, RSC(AUTOMATIC).CODE(),
 			Shm->Proc.Features.Turbo_Unlock ? '<' : '[',
 			ratio,
 			Shm->Proc.Features.Turbo_Unlock ? '>' : ']');
     } else {
-	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1,
+	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1,
 			(char *) RSC(CREATE_SELECT_FREQ_TURBO).CODE(),
 			NC, ABS_FREQ_MHz(double, ratio, (*clock)),
 			Shm->Proc.Features.Turbo_Unlock ? '<' : '[',
@@ -7912,12 +7931,12 @@ void Pkg_Fmt_Freq(	ASCII *item, ASCII *code, CLOCK *clock,
 			unsigned int ratio, unsigned char unlock )
 {
     if (ratio == 0) {
-	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+1,
+	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+1,
 			"%s" "   %s     %c%4u %c ",
 			code, RSC(AUTOMATIC).CODE(),
 			unlock ? '<' : '[', ratio, unlock ? '>' : ']');
     } else {
-	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1,
+	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1,
 			"%s" "%7.2f MHz %c%4u %c ",
 			code, ABS_FREQ_MHz(double, ratio, (*clock)),
 			unlock ? '<' : '[', ratio, unlock ? '>' : ']');
@@ -7927,8 +7946,7 @@ void Pkg_Fmt_Freq(	ASCII *item, ASCII *code, CLOCK *clock,
 void CPU_Item_Auto_Freq(unsigned int cpu, unsigned int ratio,
 			unsigned char unlock, ASCII *item)
 {
-	snprintf((char *) item,
-			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+10+1,
+	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+10+1,
 			"  %03u  %4d%6d%6d   " "   %s     %c%4u %c ",
 			cpu,
 			Shm->Cpu[cpu].Topology.PackageID,
@@ -8019,19 +8037,17 @@ void CPU_Item_Turbo_##_NC(unsigned int cpu, ASCII *item)		\
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[cpu].FlipFlop[		\
 					!Shm->Cpu[cpu].Toggle		\
 				];					\
-	snprintf((char *) item ,					\
-			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,\
-			"  %03u  %4d%6d%6d   " "%7.2f MHz %c%4u %c ",	\
-			cpu,						\
-			Shm->Cpu[cpu].Topology.PackageID,		\
-			Shm->Cpu[cpu].Topology.CoreID,			\
-			Shm->Cpu[cpu].Topology.ThreadID,		\
-			ABS_FREQ_MHz(double,				\
-					Shm->Cpu[cpu].Boost[BOOST(_NC)],\
-					CFlop->Clock),			\
-			Shm->Proc.Features.Turbo_Unlock ? '<' : '[',	\
-			Shm->Cpu[cpu].Boost[BOOST(_NC)],		\
-			Shm->Proc.Features.Turbo_Unlock ? '>' : ']');	\
+	StrFormat(item ,						\
+		RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,	\
+		"  %03u  %4d%6d%6d   " "%7.2f MHz %c%4u %c ",		\
+		cpu,							\
+		Shm->Cpu[cpu].Topology.PackageID,			\
+		Shm->Cpu[cpu].Topology.CoreID,				\
+		Shm->Cpu[cpu].Topology.ThreadID,			\
+	ABS_FREQ_MHz(double, Shm->Cpu[cpu].Boost[BOOST(_NC)], CFlop->Clock),\
+		Shm->Proc.Features.Turbo_Unlock ? '<' : '[',		\
+		Shm->Cpu[cpu].Boost[BOOST(_NC)],			\
+		Shm->Proc.Features.Turbo_Unlock ? '>' : ']');		\
     }									\
 }
 DECLARE_CPU_Item_Turbo( 1C)
@@ -8063,8 +8079,8 @@ void CPU_Update_Turbo_##_NC(TGrid *grid, DATA_TYPE data)		\
   {									\
     if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)			\
     {									\
-	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,\
-		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);	\
+	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,	\
+			RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);	\
 									\
 	memcpy(grid->cell.item, item, grid->cell.length);		\
 									\
@@ -8144,18 +8160,18 @@ void CPU_Item_Target_Freq(unsigned int cpu, ASCII *item)
 	CPU_Item_Auto_Freq(	cpu, Shm->Cpu[cpu].Boost[BOOST(TGT)],
 				Shm->Proc.Features.TgtRatio_Unlock, item );
     } else {
-	snprintf((char *) item,
-			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
-			"  %03u  %4d%6d  %-3d" "[%3u ]%5.0f MHz %c%4u %c ",
-			cpu,
-			Shm->Cpu[cpu].Topology.PackageID,
-			Shm->Cpu[cpu].Topology.CoreID,
-			Shm->Cpu[cpu].Topology.ThreadID,
-			CFlop->Absolute.Ratio.Perf,
-			CFlop->Absolute.Freq,
-			Shm->Proc.Features.TgtRatio_Unlock ? '<' : '[',
-			Shm->Cpu[cpu].Boost[BOOST(TGT)],
-			Shm->Proc.Features.TgtRatio_Unlock ? '>' : ']');
+	StrFormat(item,
+		RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
+		"  %03u  %4d%6d  %-3d" "[%3u ]%5.0f MHz %c%4u %c ",
+		cpu,
+		Shm->Cpu[cpu].Topology.PackageID,
+		Shm->Cpu[cpu].Topology.CoreID,
+		Shm->Cpu[cpu].Topology.ThreadID,
+		CFlop->Absolute.Ratio.Perf,
+		CFlop->Absolute.Freq,
+		Shm->Proc.Features.TgtRatio_Unlock ? '<' : '[',
+		Shm->Cpu[cpu].Boost[BOOST(TGT)],
+		Shm->Proc.Features.TgtRatio_Unlock ? '>' : ']');
     }
 }
 
@@ -8168,8 +8184,8 @@ void CPU_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
   {
     if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
     {
-	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,
-		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
+	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,
+			RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
 
 	memcpy(grid->cell.item, item, grid->cell.length);
 
@@ -8233,7 +8249,7 @@ void CPU_Item_HWP_Target_Freq(unsigned int cpu, ASCII *item)
 			Shm->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf,
 				Shm->Proc.Features.HWP_Enable, item );
     } else {
-	snprintf((char *) item,
+	StrFormat(item,
 			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
 			"  %03u  %4d%6d%6d   " "%7.2f MHz %c%4u %c ",
 			cpu,
@@ -8259,8 +8275,8 @@ void CPU_HWP_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
   {
     if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
     {
-	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,
-		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
+	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,
+			RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
 
 	memcpy(grid->cell.item, item, grid->cell.length);
 
@@ -8324,7 +8340,7 @@ void CPU_Item_HWP_Max_Freq(unsigned int cpu, ASCII *item)
 			Shm->Cpu[cpu].PowerThermal.HWP.Request.Maximum_Perf,
 				Shm->Proc.Features.HWP_Enable, item );
     } else {
-	snprintf((char *) item,
+	StrFormat(item,
 			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
 			"  %03u  %4d%6d%6d   " "%7.2f MHz %c%4u %c ",
 			cpu,
@@ -8350,8 +8366,8 @@ void CPU_HWP_Max_Freq_Update(TGrid *grid, DATA_TYPE data)
   {
     if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
     {
-	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,
-		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
+	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,
+			RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
 
 	memcpy(grid->cell.item, item, grid->cell.length);
 
@@ -8415,7 +8431,7 @@ void CPU_Item_HWP_Min_Freq(unsigned int cpu, ASCII *item)
 			Shm->Cpu[cpu].PowerThermal.HWP.Request.Minimum_Perf,
 				Shm->Proc.Features.HWP_Enable, item );
     } else {
-	snprintf((char *) item,
+	StrFormat(item,
 			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
 			"  %03u  %4d%6d%6d   " "%7.2f MHz %c%4u %c ",
 			cpu,
@@ -8441,8 +8457,8 @@ void CPU_HWP_Min_Freq_Update(TGrid *grid, DATA_TYPE data)
   {
     if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
     {
-	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,
-		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
+	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,
+			RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
 
 	memcpy(grid->cell.item, item, grid->cell.length);
 
@@ -8506,16 +8522,16 @@ void CPU_Item_Max_Freq(unsigned int cpu, ASCII *item)
 			(Shm->Proc.Features.ClkRatio_Unlock & 0b10) == 0b10,
 				item );
     } else {
-	snprintf((char *) item,
-			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
-			"  %03u  %4d%6d%6d   " "%7.2f MHz %c%4u %c ",
-			cpu,
-			Shm->Cpu[cpu].Topology.PackageID,
-			Shm->Cpu[cpu].Topology.CoreID,
-			Shm->Cpu[cpu].Topology.ThreadID,
-			ABS_FREQ_MHz(double,
-					Shm->Cpu[cpu].Boost[BOOST(MAX)],
-					CFlop->Clock),
+	StrFormat(item,
+		RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
+		"  %03u  %4d%6d%6d   " "%7.2f MHz %c%4u %c ",
+		cpu,
+		Shm->Cpu[cpu].Topology.PackageID,
+		Shm->Cpu[cpu].Topology.CoreID,
+		Shm->Cpu[cpu].Topology.ThreadID,
+		ABS_FREQ_MHz(double,
+				Shm->Cpu[cpu].Boost[BOOST(MAX)],
+				CFlop->Clock),
 		(Shm->Proc.Features.ClkRatio_Unlock & 0b10) == 0b10 ? '<':'[',
 			Shm->Cpu[cpu].Boost[BOOST(MAX)],
 		(Shm->Proc.Features.ClkRatio_Unlock & 0b10) == 0b10 ? '>':']');
@@ -8531,8 +8547,8 @@ void CPU_Max_Freq_Update(TGrid *grid, DATA_TYPE data)
   {
     if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
     {
-	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,
-		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
+	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,
+			RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
 
 	memcpy(grid->cell.item, item, grid->cell.length);
 
@@ -8596,16 +8612,16 @@ void CPU_Item_Min_Freq(unsigned int cpu, ASCII *item)
 			(Shm->Proc.Features.ClkRatio_Unlock & 0b01) == 0b01,
 				item );
     } else {
-	snprintf((char *) item,
-			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
-			"  %03u  %4d%6d%6d   " "%7.2f MHz %c%4u %c ",
-			cpu,
-			Shm->Cpu[cpu].Topology.PackageID,
-			Shm->Cpu[cpu].Topology.CoreID,
-			Shm->Cpu[cpu].Topology.ThreadID,
-			ABS_FREQ_MHz(double,
-					Shm->Cpu[cpu].Boost[BOOST(MIN)],
-					CFlop->Clock),
+	StrFormat(item,
+		RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
+		"  %03u  %4d%6d%6d   " "%7.2f MHz %c%4u %c ",
+		cpu,
+		Shm->Cpu[cpu].Topology.PackageID,
+		Shm->Cpu[cpu].Topology.CoreID,
+		Shm->Cpu[cpu].Topology.ThreadID,
+		ABS_FREQ_MHz(double,
+				Shm->Cpu[cpu].Boost[BOOST(MIN)],
+				CFlop->Clock),
 		(Shm->Proc.Features.ClkRatio_Unlock & 0b01) == 0b01 ? '<':'[',
 			Shm->Cpu[cpu].Boost[BOOST(MIN)],
 		(Shm->Proc.Features.ClkRatio_Unlock & 0b01) == 0b01 ? '>':']');
@@ -8621,8 +8637,8 @@ void CPU_Min_Freq_Update(TGrid *grid, DATA_TYPE data)
   {
     if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
     {
-	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+1,
-		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
+	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+1,
+			RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
 
 	memcpy(grid->cell.item, item, grid->cell.length);
 
@@ -8683,8 +8699,8 @@ Window *CreateSelectFreq(unsigned long long id,
     {
       if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
       {
-	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+1,
-		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
+	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+1,
+			RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
 
 	GridCall( StoreTCell(wFreq, SCANKEY_NULL,
 			item, RSC(CREATE_SELECT_FREQ_COND1).ATTR()),
@@ -8715,7 +8731,7 @@ Window *CreateSelectFreq(unsigned long long id,
 	StoreWindow(wFreq,	.key.WinDown,	MotionOriginDown_Win);
 	StoreWindow(wFreq,	.key.WinUp,	MotionOriginUp_Win);
   }
-	return (wFreq);
+	return wFreq;
 }
 
 Window *CreateSelectIdle(unsigned long long id)
@@ -8728,7 +8744,7 @@ Window *CreateSelectIdle(unsigned long long id)
 
     if (wIdle != NULL)
     {
-	int idx;
+	unsigned long long idx;
 
 	StoreTCell(wIdle, BOXKEY_LIMIT_IDLE_ST00,
 			RSC(BOX_IDLE_LIMIT_RESET).CODE(),
@@ -8736,8 +8752,8 @@ Window *CreateSelectIdle(unsigned long long id)
 
 	for (idx = 0; idx < Shm->SysGate.OS.IdleDriver.stateCount; idx++)
 	{
-		snprintf(Buffer, 12+11+10+1,
-				"           %2d%10.*s ", 1 + idx,
+		StrFormat(Buffer, 12+11+10+1,
+				"           %2d%10.*s ", (int) (1 + idx),
 				10, Shm->SysGate.OS.IdleDriver.State[idx].Name);
 
 		StoreTCell(wIdle, (BOXKEY_LIMIT_IDLE_ST00 | ((1 + idx) << 4)),
@@ -8777,7 +8793,7 @@ Window *CreateSelectIdle(unsigned long long id)
 	StoreWindow(wIdle,	.key.Shrink,	MotionShrink_Win);
 	StoreWindow(wIdle,	.key.Expand,	MotionExpand_Win);
     }
-	return (wIdle);
+	return wIdle;
 }
 
 Window *CreateRecorder(unsigned long long id)
@@ -8790,14 +8806,14 @@ Window *CreateRecorder(unsigned long long id)
 	unsigned int idx = 1;
 	do {
 		unsigned long long key = OPS_RECORDER | (idx << 4);
-		int	duration = Recorder.Ratios[idx] * RECORDER_DEFAULT,
-			remainder = duration % (60 * 60),
-			hours	= duration / (60 * 60),
-			minutes = remainder / 60,
-			seconds = remainder % 60;
+		unsigned int duration = Recorder.Ratios[idx] * RECORDER_DEFAULT,
+				remainder = duration % (60 * 60),
+				hours	= duration / (60 * 60),
+				minutes = remainder / 60,
+				seconds = remainder % 60;
 
-		snprintf(Buffer,6+11+11+11+1,
-				"\x20\x20%02d:%02d:%02d\x20\x20",
+		StrFormat(Buffer, 6+11+11+11+1,
+				"\x20\x20%02u:%02u:%02u\x20\x20",
 				hours, minutes, seconds);
 
 		StoreTCell(	wRec,
@@ -8824,7 +8840,7 @@ Window *CreateRecorder(unsigned long long id)
 	StoreWindow(wRec,	.key.Shrink,	MotionShrink_Win);
 	StoreWindow(wRec,	.key.Expand,	MotionExpand_Win);
     }
-	return (wRec);
+	return wRec;
 }
 
 #define POPUP_WIDTH (MIN_WIDTH - 2)
@@ -8882,7 +8898,7 @@ Window *PopUpMessage(ASCII *title, RING_CTRL *pCtrl)
 	    struct {
 		enum REASON_CLASS rc;
 		ASCII		*code;
-		size_t		len;
+		CUINT		len;
 	    } drvReason[] = {
 		{
 		RC_UNIMPLEMENTED,
@@ -8924,7 +8940,7 @@ Window *PopUpMessage(ASCII *title, RING_CTRL *pCtrl)
 	if ((hdrLen > 0) && (hdrLen < POPUP_WIDTH)) {
 		memcpy(&item[POPUP_WIDTH - hdrLen], outStr, hdrLen);
 	}
-	hdrLen = sprintf(outStr, "[%x:%lx]", pCtrl->cmd, pCtrl->arg);
+	hdrLen = (size_t) sprintf(outStr, "[%x:%lx]", pCtrl->cmd, pCtrl->arg);
 	if (hdrLen < POPUP_WIDTH) {
 		memcpy(item, outStr, hdrLen);
 	}
@@ -8980,7 +8996,7 @@ Window *PopUpMessage(ASCII *title, RING_CTRL *pCtrl)
   if (item != NULL) {
 	free(item);
   }
-	return (wMsg);
+	return wMsg;
 }
 #undef POPUP_ALLOC
 #undef POPUP_WIDTH
@@ -9008,10 +9024,11 @@ Window *_CreateBox(	unsigned long long id,
 	unsigned long long aKey = va_arg(ap, unsigned long long);
 	do {
 	    if (item != NULL) {
-		cnt = (pBox == NULL) ? 1: pBox->cnt + 1;
-		if ((pBox = realloc(pBox,
-					sizeof(struct PBOX)
-					+ cnt * sizeof(struct SBOX))) != NULL)
+		size_t size;
+		cnt	= (pBox == NULL) ? 1 : pBox->cnt + 1;
+		size	= sizeof(struct PBOX)
+			+ sizeof(struct SBOX) * (unsigned int) cnt;
+		if ((pBox = realloc(pBox, size)) != NULL)
 		{
 			size_t len = KMIN(strlen((char *) item), MIN_WIDTH);
 			memcpy((char*)pBox->btn[cnt - 1].item,(char *)item,len);
@@ -9055,7 +9072,7 @@ Window *_CreateBox(	unsigned long long id,
 	}
 	free(pBox);
     }
-	return (wBox);
+	return wBox;
 }
 
 #define CreateBox(id, origin, select, title, button, ...)		\
@@ -9121,7 +9138,7 @@ IssueList *FindIssues(CUINT *wth, CUINT *hth)
 	    }
 	  }
 	}
-	return (list);
+	return list;
 }
 
 Window *CreateExit(unsigned long long id, IssueList *issue, CUINT wth,CUINT hth)
@@ -9180,7 +9197,7 @@ Window *CreateExit(unsigned long long id, IssueList *issue, CUINT wth,CUINT hth)
 	StoreWindow(wExit,	.key.End,	MotionEnd_Cell);
 	StoreWindow(wExit,	.title, (char*) RSC(EXIT_TITLE).CODE());
     }
-	return (wExit);
+	return wExit;
 }
 
 void TrapScreenSize(int caught)
@@ -9261,7 +9278,7 @@ int Shortcut(SCANKEY *scan)
     switch (scan->key) {
     case SCANKEY_DOWN:
 	if (!IsDead(&winList)) {
-		return (-1);
+		return -1;
 	}
 	fallthrough;
     case SCANKEY_PLUS:
@@ -9275,7 +9292,7 @@ int Shortcut(SCANKEY *scan)
 
     case SCANKEY_UP:
 	if (!IsDead(&winList)) {
-		return (-1);
+		return -1;
 	}
 	fallthrough;
     case SCANKEY_MINUS:
@@ -9289,7 +9306,7 @@ int Shortcut(SCANKEY *scan)
     case SCANCON_HOME:
     case SCANSYM_HOME:
 	if (!IsDead(&winList)) {
-		return (-1);
+		return -1;
 	} else if (Draw.Disposal == D_MAINVIEW) {
 		Draw.cpuScroll = 0;
 		Draw.Flag.layout = 1;
@@ -9300,7 +9317,7 @@ int Shortcut(SCANKEY *scan)
     case SCANCON_END:
     case SCANSYM_END:
 	if (!IsDead(&winList)) {
-		return (-1);
+		return -1;
 	} else if (Draw.Disposal == D_MAINVIEW) {
 		Draw.cpuScroll = Shm->Proc.CPU.Count - Draw.Area.MaxRows;
 		Draw.Flag.layout = 1;
@@ -9309,7 +9326,7 @@ int Shortcut(SCANKEY *scan)
 
     case SCANKEY_PGDW:
 	if (!IsDead(&winList)) {
-		return (-1);
+		return -1;
 	} else if (Draw.Disposal == D_MAINVIEW) {
 	    if ( (Draw.cpuScroll + Draw.Area.MaxRows) < ( Shm->Proc.CPU.Count
 							- Draw.Area.MaxRows ) )
@@ -9324,7 +9341,7 @@ int Shortcut(SCANKEY *scan)
 
     case SCANKEY_PGUP:
 	if (!IsDead(&winList)) {
-		return (-1);
+		return -1;
 	} else if (Draw.Disposal == D_MAINVIEW) {
 	    if (Draw.cpuScroll >= Draw.Area.MaxRows) {
 		Draw.cpuScroll -= Draw.Area.MaxRows;
@@ -11130,7 +11147,8 @@ int Shortcut(SCANKEY *scan)
 		.row = TOP_HEADER_ROW + 3
 	}, select = {
 		.col = 0,
-		.row = CST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit]
+		.row = (CUINT)\
+			CST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit]
 	};
 	Window *wBox = CreateBox(scan->key, origin, select,
 				(char*) RSC(BOX_PKG_STATE_LIMIT_TITLE).CODE(),
@@ -11152,11 +11170,11 @@ int Shortcut(SCANKEY *scan)
 	{
 	    if(Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit != _UNSPEC)
 	    {
-		TCellAt(wBox, 0, select.row).attr[11] = 	\
-		TCellAt(wBox, 0, select.row).attr[12] = 	\
-		TCellAt(wBox, 0, select.row).attr[13] = 	\
-		TCellAt(wBox, 0, select.row).attr[14] = 	\
-		TCellAt(wBox, 0, select.row).attr[15] = 	\
+		TCellAt(wBox, 0, select.row).attr[11] = \
+		TCellAt(wBox, 0, select.row).attr[12] = \
+		TCellAt(wBox, 0, select.row).attr[13] = \
+		TCellAt(wBox, 0, select.row).attr[14] = \
+		TCellAt(wBox, 0, select.row).attr[15] = \
 		TCellAt(wBox, 0, select.row).attr[16] = stateAttr[1];
 		TCellAt(wBox, 0, select.row).item[11] = '<';
 		TCellAt(wBox, 0, select.row).item[16] = '>';
@@ -11273,8 +11291,9 @@ int Shortcut(SCANKEY *scan)
 		.row = TOP_HEADER_ROW + 4
 	}, select = {
 	.col = 0,
-	.row = CST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude] != -1 ?
-		CST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude] : 0
+	.row = (CUINT) \
+	( CST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude] != -1 ?
+		CST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude] : 0 )
 	};
 	Window *wBox = CreateBox(scan->key, origin, select,
 				(char*) RSC(BOX_MWAIT_MAX_STATE_TITLE).CODE(),
@@ -11289,11 +11308,11 @@ int Shortcut(SCANKEY *scan)
 	{
 	    if(Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude != _UNSPEC)
 	    {
-		TCellAt(wBox, 0, select.row).attr[11] = 	\
-		TCellAt(wBox, 0, select.row).attr[12] = 	\
-		TCellAt(wBox, 0, select.row).attr[13] = 	\
-		TCellAt(wBox, 0, select.row).attr[14] = 	\
-		TCellAt(wBox, 0, select.row).attr[15] = 	\
+		TCellAt(wBox, 0, select.row).attr[11] = \
+		TCellAt(wBox, 0, select.row).attr[12] = \
+		TCellAt(wBox, 0, select.row).attr[13] = \
+		TCellAt(wBox, 0, select.row).attr[14] = \
+		TCellAt(wBox, 0, select.row).attr[15] = \
 		TCellAt(wBox, 0, select.row).attr[16] = stateAttr[1];
 		TCellAt(wBox, 0, select.row).item[11] = '<';
 		TCellAt(wBox, 0, select.row).item[16] = '>';
@@ -11432,17 +11451,17 @@ int Shortcut(SCANKEY *scan)
 		RSC(BOX_DUTY_CYCLE_PCT7).CODE(), stateAttr[0],BOXKEY_ODCM_DC07);
 	}
 	if (wBox != NULL) {
-		TCellAt(wBox, 0, select.row).attr[ 8] = 	\
-		TCellAt(wBox, 0, select.row).attr[ 9] = 	\
-		TCellAt(wBox, 0, select.row).attr[10] = 	\
-		TCellAt(wBox, 0, select.row).attr[11] = 	\
-		TCellAt(wBox, 0, select.row).attr[12] = 	\
-		TCellAt(wBox, 0, select.row).attr[13] = 	\
-		TCellAt(wBox, 0, select.row).attr[14] = 	\
-		TCellAt(wBox, 0, select.row).attr[15] = 	\
-		TCellAt(wBox, 0, select.row).attr[16] = 	\
-		TCellAt(wBox, 0, select.row).attr[17] = 	\
-		TCellAt(wBox, 0, select.row).attr[18] = 	\
+		TCellAt(wBox, 0, select.row).attr[ 8] = \
+		TCellAt(wBox, 0, select.row).attr[ 9] = \
+		TCellAt(wBox, 0, select.row).attr[10] = \
+		TCellAt(wBox, 0, select.row).attr[11] = \
+		TCellAt(wBox, 0, select.row).attr[12] = \
+		TCellAt(wBox, 0, select.row).attr[13] = \
+		TCellAt(wBox, 0, select.row).attr[14] = \
+		TCellAt(wBox, 0, select.row).attr[15] = \
+		TCellAt(wBox, 0, select.row).attr[16] = \
+		TCellAt(wBox, 0, select.row).attr[17] = \
+		TCellAt(wBox, 0, select.row).attr[18] = \
 		TCellAt(wBox, 0, select.row).attr[19] = stateAttr[1];
 		TCellAt(wBox, 0, select.row).item[ 8] = '<';
 		TCellAt(wBox, 0, select.row).item[19] = '>';
@@ -11489,14 +11508,14 @@ int Shortcut(SCANKEY *scan)
 	      RSC(BOX_POWER_POLICY_HIGH).CODE(),stateAttr[0], BOXKEY_PWR_POL15);
 
 	if (wBox != NULL) {
-		TCellAt(wBox, 0, select.row).attr[ 8] = 	\
-		TCellAt(wBox, 0, select.row).attr[ 9] = 	\
-		TCellAt(wBox, 0, select.row).attr[10] = 	\
-		TCellAt(wBox, 0, select.row).attr[11] = 	\
-		TCellAt(wBox, 0, select.row).attr[12] = 	\
-		TCellAt(wBox, 0, select.row).attr[13] = 	\
-		TCellAt(wBox, 0, select.row).attr[14] = 	\
-		TCellAt(wBox, 0, select.row).attr[15] = 	\
+		TCellAt(wBox, 0, select.row).attr[ 8] = \
+		TCellAt(wBox, 0, select.row).attr[ 9] = \
+		TCellAt(wBox, 0, select.row).attr[10] = \
+		TCellAt(wBox, 0, select.row).attr[11] = \
+		TCellAt(wBox, 0, select.row).attr[12] = \
+		TCellAt(wBox, 0, select.row).attr[13] = \
+		TCellAt(wBox, 0, select.row).attr[14] = \
+		TCellAt(wBox, 0, select.row).attr[15] = \
 		TCellAt(wBox, 0, select.row).attr[16] = stateAttr[1];
 		TCellAt(wBox, 0, select.row).item[ 8] = '<';
 		if (select.row > 9) {
@@ -11601,24 +11620,24 @@ int Shortcut(SCANKEY *scan)
 	/*FF*/RSC(BOX_HWP_POLICY_MAX).CODE(), stateAttr[0], BOXKEY_HWP_EPP_MAX);
 
 	if (wBox != NULL) {
-		TCellAt(wBox, 0, select.row).attr[ 3] = 	\
-		TCellAt(wBox, 0, select.row).attr[ 4] = 	\
-		TCellAt(wBox, 0, select.row).attr[ 5] = 	\
-		TCellAt(wBox, 0, select.row).attr[ 6] = 	\
-		TCellAt(wBox, 0, select.row).attr[ 7] = 	\
-		TCellAt(wBox, 0, select.row).attr[ 8] = 	\
-		TCellAt(wBox, 0, select.row).attr[ 9] = 	\
-		TCellAt(wBox, 0, select.row).attr[10] = 	\
-		TCellAt(wBox, 0, select.row).attr[11] = 	\
-		TCellAt(wBox, 0, select.row).attr[12] = 	\
-		TCellAt(wBox, 0, select.row).attr[13] = 	\
-		TCellAt(wBox, 0, select.row).attr[14] = 	\
-		TCellAt(wBox, 0, select.row).attr[15] = 	\
-		TCellAt(wBox, 0, select.row).attr[16] = 	\
-		TCellAt(wBox, 0, select.row).attr[17] = 	\
-		TCellAt(wBox, 0, select.row).attr[18] = 	\
-		TCellAt(wBox, 0, select.row).attr[19] = 	\
-		TCellAt(wBox, 0, select.row).attr[20] = 	\
+		TCellAt(wBox, 0, select.row).attr[ 3] = \
+		TCellAt(wBox, 0, select.row).attr[ 4] = \
+		TCellAt(wBox, 0, select.row).attr[ 5] = \
+		TCellAt(wBox, 0, select.row).attr[ 6] = \
+		TCellAt(wBox, 0, select.row).attr[ 7] = \
+		TCellAt(wBox, 0, select.row).attr[ 8] = \
+		TCellAt(wBox, 0, select.row).attr[ 9] = \
+		TCellAt(wBox, 0, select.row).attr[10] = \
+		TCellAt(wBox, 0, select.row).attr[11] = \
+		TCellAt(wBox, 0, select.row).attr[12] = \
+		TCellAt(wBox, 0, select.row).attr[13] = \
+		TCellAt(wBox, 0, select.row).attr[14] = \
+		TCellAt(wBox, 0, select.row).attr[15] = \
+		TCellAt(wBox, 0, select.row).attr[16] = \
+		TCellAt(wBox, 0, select.row).attr[17] = \
+		TCellAt(wBox, 0, select.row).attr[18] = \
+		TCellAt(wBox, 0, select.row).attr[19] = \
+		TCellAt(wBox, 0, select.row).attr[20] = \
 		TCellAt(wBox, 0, select.row).attr[21] = stateAttr[1];
 		TCellAt(wBox, 0, select.row).item[ 3] = '<';
 		TCellAt(wBox, 0, select.row).item[21] = '>';
@@ -11925,17 +11944,17 @@ int Shortcut(SCANKEY *scan)
 		RSC(BOX_CFG_TDP_LVL2).CODE() , stateAttr[0],BOXKEY_CFG_TDP_LVL2,
 		RSC(BOX_CFG_TDP_BLANK).CODE(), blankAttr, SCANKEY_NULL);
 	if (wBox != NULL) {
-		TCellAt(wBox, 0, select.row).attr[ 3] = 	\
-		TCellAt(wBox, 0, select.row).attr[ 4] = 	\
-		TCellAt(wBox, 0, select.row).attr[ 5] = 	\
-		TCellAt(wBox, 0, select.row).attr[ 6] = 	\
-		TCellAt(wBox, 0, select.row).attr[ 7] = 	\
-		TCellAt(wBox, 0, select.row).attr[ 8] = 	\
-		TCellAt(wBox, 0, select.row).attr[ 9] = 	\
-		TCellAt(wBox, 0, select.row).attr[10] = 	\
-		TCellAt(wBox, 0, select.row).attr[11] = 	\
-		TCellAt(wBox, 0, select.row).attr[12] = 	\
-		TCellAt(wBox, 0, select.row).attr[13] = 	\
+		TCellAt(wBox, 0, select.row).attr[ 3] = \
+		TCellAt(wBox, 0, select.row).attr[ 4] = \
+		TCellAt(wBox, 0, select.row).attr[ 5] = \
+		TCellAt(wBox, 0, select.row).attr[ 6] = \
+		TCellAt(wBox, 0, select.row).attr[ 7] = \
+		TCellAt(wBox, 0, select.row).attr[ 8] = \
+		TCellAt(wBox, 0, select.row).attr[ 9] = \
+		TCellAt(wBox, 0, select.row).attr[10] = \
+		TCellAt(wBox, 0, select.row).attr[11] = \
+		TCellAt(wBox, 0, select.row).attr[12] = \
+		TCellAt(wBox, 0, select.row).attr[13] = \
 		TCellAt(wBox, 0, select.row).attr[14] = stateAttr[1];
 		TCellAt(wBox, 0, select.row).item[ 3] = '<';
 		TCellAt(wBox, 0, select.row).item[14] = '>';
@@ -12043,20 +12062,20 @@ int Shortcut(SCANKEY *scan)
 	const enum PWR_DOMAIN	pw = (scan->key >> 5) & BOXKEY_TDP_MASK;
 	const enum PWR_LIMIT	pl = scan->key & (PL1 | PL2);
 	const unsigned long long key[14] = {
-		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (+50U << 20),
-		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (+10U << 20),
-		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (+05U << 20),
-		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (+04U << 20),
-		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (+03U << 20),
-		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (+02U << 20),
-		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (+01U << 20),
-		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (-01U << 20),
-		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (-02U << 20),
-		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (-03U << 20),
-		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (-04U << 20),
-		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (-05U << 20),
-		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (-10U << 20),
-		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (-50U << 20)
+		(BOXKEY_PLX_OP | (0x8ULL << pl)) | (pw << 5) | (+50U << 20),
+		(BOXKEY_PLX_OP | (0x8ULL << pl)) | (pw << 5) | (+10U << 20),
+		(BOXKEY_PLX_OP | (0x8ULL << pl)) | (pw << 5) | (+05U << 20),
+		(BOXKEY_PLX_OP | (0x8ULL << pl)) | (pw << 5) | (+04U << 20),
+		(BOXKEY_PLX_OP | (0x8ULL << pl)) | (pw << 5) | (+03U << 20),
+		(BOXKEY_PLX_OP | (0x8ULL << pl)) | (pw << 5) | (+02U << 20),
+		(BOXKEY_PLX_OP | (0x8ULL << pl)) | (pw << 5) | (+01U << 20),
+		(BOXKEY_PLX_OP | (0x8ULL << pl)) | (pw << 5) | (-01U << 20),
+		(BOXKEY_PLX_OP | (0x8ULL << pl)) | (pw << 5) | (-02U << 20),
+		(BOXKEY_PLX_OP | (0x8ULL << pl)) | (pw << 5) | (-03U << 20),
+		(BOXKEY_PLX_OP | (0x8ULL << pl)) | (pw << 5) | (-04U << 20),
+		(BOXKEY_PLX_OP | (0x8ULL << pl)) | (pw << 5) | (-05U << 20),
+		(BOXKEY_PLX_OP | (0x8ULL << pl)) | (pw << 5) | (-10U << 20),
+		(BOXKEY_PLX_OP | (0x8ULL << pl)) | (pw << 5) | (-50U << 20)
 	};
 	const ASCII *title[] = {
 		RSC(BOX_TDP_PKG_TITLE).CODE(),
@@ -12103,11 +12122,11 @@ int Shortcut(SCANKEY *scan)
 
 		stateStr[1][Shm->Proc.Power.Domain[pw].Feature[pl].Enable],
 		stateAttr[Shm->Proc.Power.Domain[pw].Feature[pl].Enable],
-			(BOXKEY_PLX_OP | (0x8 << pl)) | ( pw << 5) | 1,
+			(BOXKEY_PLX_OP | (0x8U << pl)) | ( pw << 5) | 1,
 
 		stateStr[0][!Shm->Proc.Power.Domain[pw].Feature[pl].Enable],
 		stateAttr[!Shm->Proc.Power.Domain[pw].Feature[pl].Enable],
-			(BOXKEY_PLX_OP | (0x8 << pl)) | ( pw << 5) | 2,
+			(BOXKEY_PLX_OP | (0x8U << pl)) | ( pw << 5) | 2,
 
 			RSC(BOX_BLANK_DESC).CODE(),	blankAttr, SCANKEY_NULL,
 			RSC(BOX_PWR_OFFSET_07).CODE(),	stateAttr[0], key[ 7],
@@ -12121,11 +12140,11 @@ int Shortcut(SCANKEY *scan)
 
 		clampItem[1][Shm->Proc.Power.Domain[pw].Feature[pl].Clamping],
 		stateAttr[Shm->Proc.Power.Domain[pw].Feature[pl].Clamping],
-			(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | 5,
+			(BOXKEY_PLX_OP | (0x8U << pl)) | (pw << 5) | 5,
 
 		clampItem[0][!Shm->Proc.Power.Domain[pw].Feature[pl].Clamping],
 		stateAttr[!Shm->Proc.Power.Domain[pw].Feature[pl].Clamping],
-			(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | 6,
+			(BOXKEY_PLX_OP | (0x8U << pl)) | (pw << 5) | 6,
 
 			RSC(BOX_BLANK_DESC).CODE(),	blankAttr,SCANKEY_NULL),
 		&winList);
@@ -12598,7 +12617,7 @@ int Shortcut(SCANKEY *scan)
 	struct FLIP_FLOP *CFlop = &SProc->FlipFlop[
 				!Shm->Cpu[Shm->Proc.Service.Core].Toggle
 	];
-	CLOCK_ARG clockMod  = {.sllong = scan->key};
+	CLOCK_ARG clockMod  = {.ullong = scan->key};
 	const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 
 	signed int lowestShift, highestShift;
@@ -12615,12 +12634,12 @@ int Shortcut(SCANKEY *scan)
 			lowestShift,
 			highestShift,
 
-			( SProc->Boost[BOOST(MIN)]
-			+ Shm->Proc.Features.Factory.Ratio ) >> 1,
+		(int)	((SProc->Boost[BOOST(MIN)]
+			+ Shm->Proc.Features.Factory.Ratio) >> 1),
 
-			Shm->Proc.Features.Factory.Ratio
-			+ ((MAXCLOCK_TO_RATIO(signed int, CFlop->Clock.Hz)
-			- Shm->Proc.Features.Factory.Ratio ) >> 1),
+		(int)	(Shm->Proc.Features.Factory.Ratio
+			+ ((MAXCLOCK_TO_RATIO(unsigned int, CFlop->Clock.Hz)
+			- Shm->Proc.Features.Factory.Ratio) >> 1)),
 
 			BOXKEY_CFGTDP_CLOCK,
 			TitleForRatioClock,
@@ -12641,7 +12660,7 @@ int Shortcut(SCANKEY *scan)
 	struct FLIP_FLOP *CFlop = &SProc->FlipFlop[
 				!Shm->Cpu[Shm->Proc.Service.Core].Toggle
 	];
-	CLOCK_ARG clockMod  = {.sllong = scan->key};
+	CLOCK_ARG clockMod  = {.ullong = scan->key};
 	const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 
 	signed int lowestShift, highestShift;
@@ -12658,12 +12677,12 @@ int Shortcut(SCANKEY *scan)
 			lowestShift,
 			highestShift,
 
-			( Shm->Uncore.Boost[BOOST(MIN)]
-			+ Shm->Proc.Features.Factory.Ratio ) >> 1,
+		(int)	((Shm->Uncore.Boost[BOOST(MIN)]
+			+ Shm->Proc.Features.Factory.Ratio ) >> 1),
 
-			Shm->Proc.Features.Factory.Ratio
-			+ ((MAXCLOCK_TO_RATIO(signed int, CFlop->Clock.Hz)
-			- Shm->Proc.Features.Factory.Ratio ) >> 1),
+		(int)	(Shm->Proc.Features.Factory.Ratio
+			+ ((MAXCLOCK_TO_RATIO(unsigned int, CFlop->Clock.Hz)
+			- Shm->Proc.Features.Factory.Ratio) >> 1)),
 
 			BOXKEY_UNCORE_CLOCK,
 			TitleForUncoreClock,
@@ -12679,7 +12698,7 @@ int Shortcut(SCANKEY *scan)
     {
       Window *win = SearchWinListById(scan->key, &winList);
       if (win == NULL) {
-	CLOCK_ARG clockMod  = {.sllong = scan->key};
+	CLOCK_ARG clockMod  = {.ullong = scan->key};
 	const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 
 	signed int lowestShift, highestShift;
@@ -12696,10 +12715,10 @@ int Shortcut(SCANKEY *scan)
 				lowestShift,
 				highestShift,
 
-				( Shm->Uncore.Boost[BOOST(MIN)]
-				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
+			(int)	((Shm->Uncore.Boost[BOOST(MIN)]
+				+ Shm->Proc.Features.Factory.Ratio ) >> 1),
 
-				Shm->Proc.Features.Factory.Ratio - 1,
+			(int)	(Shm->Proc.Features.Factory.Ratio - 1),
 
 				BOXKEY_UNCORE_CLOCK,
 				TitleForUncoreClock,
@@ -12935,7 +12954,7 @@ int Shortcut(SCANKEY *scan)
 		AbortDump();
 	}
 	else if (StartDump(	"corefreq_%llx.cast",
-				Recorder.Reset - 1,
+				(int) (Recorder.Reset - 1),
 				DUMP_TO_JSON) == 0 )
 	{
 		Draw.Flag.layout = 1;
@@ -13060,14 +13079,16 @@ int Shortcut(SCANKEY *scan)
 	    if (win == NULL)
 	    {
 		struct FLIP_FLOP *CFlop;
-		CLOCK_ARG clockMod = {.sllong = scan->key};
+		CLOCK_ARG clockMod = {.ullong = scan->key};
 		unsigned int COF;
 		const unsigned int lowestOperating = 1;
 		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 		const enum RATIO_BOOST boost = BOOST(SIZE) - NC;
 		signed int lowestShift, highestShift;
 
-		const signed short cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
+		const signed short cpu = (signed short) (
+			(scan->key & RATIO_MASK) ^ CORE_COUNT
+		);
 	    if (cpu == -1) {
 		COF = Shm->Cpu[ Ruler.Top[boost] ].Boost[boost];
 		CFlop = &Shm->Cpu[ Ruler.Top[boost] ].FlipFlop[
@@ -13091,12 +13112,12 @@ int Shortcut(SCANKEY *scan)
 				lowestShift,
 				highestShift,
 
-				( lowestOperating
-				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
+			(int)	((lowestOperating
+				+ Shm->Proc.Features.Factory.Ratio) >> 1),
 
-				Shm->Proc.Features.Factory.Ratio
-			    + ((MAXCLOCK_TO_RATIO(signed int, CFlop->Clock.Hz)
-				- Shm->Proc.Features.Factory.Ratio ) >> 1),
+			(int)	(Shm->Proc.Features.Factory.Ratio
+			    + ((MAXCLOCK_TO_RATIO(unsigned int, CFlop->Clock.Hz)
+				- Shm->Proc.Features.Factory.Ratio) >> 1)),
 
 				BOXKEY_TURBO_CLOCK,
 				TitleForTurboClock,
@@ -13114,12 +13135,14 @@ int Shortcut(SCANKEY *scan)
 		Window *win = SearchWinListById(scan->key, &winList);
 	   if (win == NULL)
 	   {
-		CLOCK_ARG clockMod = {.sllong = scan->key};
+		CLOCK_ARG clockMod = {.ullong = scan->key};
 		unsigned int COF, lowestOperating, highestOperating;
 		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 		signed int lowestShift, highestShift;
 
-		const signed short cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
+		const signed short cpu = (signed short) (
+			(scan->key & RATIO_MASK) ^ CORE_COUNT
+		);
 	    if (cpu == -1) {
 		COF = Shm->Cpu[ Ruler.Top[BOOST(TGT)] ].Boost[BOOST(TGT)];
 		lowestOperating = Shm->Cpu[
@@ -13147,11 +13170,11 @@ int Shortcut(SCANKEY *scan)
 					lowestShift,
 					highestShift,
 
-					( lowestOperating
-					+ highestOperating ) >> 1,
+				(int)	((lowestOperating
+					+ highestOperating) >> 1),
 
-					CUMIN(Shm->Proc.Features.Factory.Ratio,
-						GetTopOfRuler() ),
+				(int)	(CUMIN(Shm->Proc.Features.Factory.Ratio,
+						GetTopOfRuler())),
 
 					BOXKEY_RATIO_CLOCK,
 					TitleForRatioClock,
@@ -13168,13 +13191,15 @@ int Shortcut(SCANKEY *scan)
 		Window *win = SearchWinListById(scan->key, &winList);
 	    if (win == NULL)
 	    {
-		CLOCK_ARG clockMod = {.sllong = scan->key};
+		CLOCK_ARG clockMod = {.ullong = scan->key};
 		struct HWP_STRUCT *pHWP;
 		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 		unsigned int COF;
 		signed int lowestShift, highestShift;
 
-		const signed short cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
+		const signed short cpu = (signed short) (
+			(scan->key & RATIO_MASK) ^ CORE_COUNT
+		);
 	      if (cpu == -1) {
 		pHWP = &Shm->Cpu[ Ruler.Top[BOOST(HWP_TGT)] ].PowerThermal.HWP;
 		COF = pHWP->Request.Desired_Perf;
@@ -13196,10 +13221,10 @@ int Shortcut(SCANKEY *scan)
 					lowestShift,
 					highestShift,
 
-					( pHWP->Capabilities.Most_Efficient
-					+ pHWP->Capabilities.Guaranteed ) >> 1,
+				(int)	((pHWP->Capabilities.Most_Efficient
+					+ pHWP->Capabilities.Guaranteed) >> 1),
 
-					pHWP->Capabilities.Guaranteed,
+				(int)	pHWP->Capabilities.Guaranteed,
 					BOXKEY_RATIO_CLOCK,
 					TitleForRatioClock,
 					38),
@@ -13215,13 +13240,15 @@ int Shortcut(SCANKEY *scan)
 		Window *win = SearchWinListById(scan->key, &winList);
 	    if (win == NULL)
 	    {
-		CLOCK_ARG clockMod = {.sllong = scan->key};
+		CLOCK_ARG clockMod = {.ullong = scan->key};
 		struct HWP_STRUCT *pHWP;
 		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 		unsigned int COF;
 		signed int lowestShift, highestShift;
 
-		const signed short cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
+		const signed short cpu = (signed short) (
+			(scan->key & RATIO_MASK) ^ CORE_COUNT
+		);
 	      if (cpu == -1) {
 		pHWP = &Shm->Cpu[ Ruler.Top[BOOST(HWP_MAX)] ].PowerThermal.HWP;
 		COF = pHWP->Request.Maximum_Perf;
@@ -13243,10 +13270,10 @@ int Shortcut(SCANKEY *scan)
 					lowestShift,
 					highestShift,
 
-					( pHWP->Capabilities.Most_Efficient
-					+ pHWP->Capabilities.Guaranteed ) >> 1,
+				(int)	((pHWP->Capabilities.Most_Efficient
+					+ pHWP->Capabilities.Guaranteed) >> 1),
 
-					pHWP->Capabilities.Guaranteed,
+				(int)	pHWP->Capabilities.Guaranteed,
 					BOXKEY_RATIO_CLOCK,
 					TitleForRatioClock,
 					39),
@@ -13262,13 +13289,15 @@ int Shortcut(SCANKEY *scan)
 		Window *win = SearchWinListById(scan->key, &winList);
 	    if (win == NULL)
 	    {
-		CLOCK_ARG clockMod = {.sllong = scan->key};
+		CLOCK_ARG clockMod = {.ullong = scan->key};
 		struct HWP_STRUCT *pHWP;
 		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 		unsigned int COF;
 		signed int lowestShift, highestShift;
 
-		const signed short cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
+		const signed short cpu = (signed short) (
+			(scan->key & RATIO_MASK) ^ CORE_COUNT
+		);
 	      if (cpu == -1) {
 		pHWP = &Shm->Cpu[ Ruler.Top[BOOST(HWP_MIN)] ].PowerThermal.HWP;
 		COF = pHWP->Request.Minimum_Perf;
@@ -13290,10 +13319,10 @@ int Shortcut(SCANKEY *scan)
 					lowestShift,
 					highestShift,
 
-					( pHWP->Capabilities.Most_Efficient
-					+ pHWP->Capabilities.Guaranteed ) >> 1,
+				(int)	((pHWP->Capabilities.Most_Efficient
+					+ pHWP->Capabilities.Guaranteed) >> 1),
 
-					pHWP->Capabilities.Guaranteed,
+				(int)	pHWP->Capabilities.Guaranteed,
 					BOXKEY_RATIO_CLOCK,
 					TitleForRatioClock,
 					40),
@@ -13311,12 +13340,14 @@ int Shortcut(SCANKEY *scan)
 	    if (win == NULL)
 	    {
 		struct FLIP_FLOP *CFlop;
-		CLOCK_ARG clockMod  = {.sllong = scan->key};
+		CLOCK_ARG clockMod  = {.ullong = scan->key};
 		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 		unsigned int COF, lowestOperating;
 		signed int lowestShift, highestShift;
 
-		const signed short cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
+		const signed short cpu = (signed short) (
+			(scan->key & RATIO_MASK) ^ CORE_COUNT
+		);
 	      if (cpu == -1) {
 		COF = Shm->Cpu[ Ruler.Top[BOOST(MAX)] ].Boost[BOOST(MAX)];
 		lowestOperating = KMIN( Shm->Cpu[
@@ -13346,12 +13377,12 @@ int Shortcut(SCANKEY *scan)
 				lowestShift,
 				highestShift,
 
-				( lowestOperating
-				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
+			(int)	((lowestOperating
+				+ Shm->Proc.Features.Factory.Ratio) >> 1),
 
-				Shm->Proc.Features.Factory.Ratio
-			    + ((MAXCLOCK_TO_RATIO(signed int, CFlop->Clock.Hz)
-				- Shm->Proc.Features.Factory.Ratio ) >> 1),
+			(int)	(Shm->Proc.Features.Factory.Ratio
+			    + ((MAXCLOCK_TO_RATIO(unsigned int, CFlop->Clock.Hz)
+				- Shm->Proc.Features.Factory.Ratio) >> 1)),
 
 				BOXKEY_RATIO_CLOCK,
 				TitleForRatioClock,
@@ -13368,12 +13399,14 @@ int Shortcut(SCANKEY *scan)
 		Window *win = SearchWinListById(scan->key, &winList);
 	    if (win == NULL)
 	    {
-		CLOCK_ARG clockMod  = {.sllong = scan->key};
+		CLOCK_ARG clockMod  = {.ullong = scan->key};
 		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 		unsigned int COF, lowestOperating;
 		signed int lowestShift, highestShift;
 
-		const signed short cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
+		const signed short cpu = (signed short) (
+			(scan->key & RATIO_MASK) ^ CORE_COUNT
+		);
 	      if (cpu == -1) {
 		COF = Shm->Cpu[ Ruler.Top[BOOST(MIN)] ].Boost[BOOST(MIN)];
 		lowestOperating = KMIN( Shm->Cpu[
@@ -13399,10 +13432,10 @@ int Shortcut(SCANKEY *scan)
 				lowestShift,
 				highestShift,
 
-				( lowestOperating
-				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
+			(int)	((lowestOperating
+				+ Shm->Proc.Features.Factory.Ratio) >> 1),
 
-				Shm->Proc.Features.Factory.Ratio - 1,
+			(int)	(Shm->Proc.Features.Factory.Ratio - 1),
 
 				BOXKEY_RATIO_CLOCK,
 				TitleForRatioClock,
@@ -13414,14 +13447,14 @@ int Shortcut(SCANKEY *scan)
 	  break;
 
 	default: {
-		CLOCK_ARG clockMod = {.sllong = scan->key};
+		CLOCK_ARG clockMod = {.ullong = scan->key};
 	    if (clockMod.NC & BOXKEY_TURBO_CLOCK)
 	    {
 			clockMod.NC &= CLOCKMOD_RATIO_MASK;
 
 		if (!RING_FULL(Shm->Ring[0])) {
 		    RING_WRITE( Shm->Ring[0],
-				COREFREQ_IOCTL_TURBO_CLOCK, clockMod.sllong );
+				COREFREQ_IOCTL_TURBO_CLOCK, clockMod.ullong );
 		}
 	    }
 	    else if (clockMod.NC & BOXKEY_RATIO_CLOCK)
@@ -13430,7 +13463,7 @@ int Shortcut(SCANKEY *scan)
 
 		if (!RING_FULL(Shm->Ring[0])) {
 		    RING_WRITE( Shm->Ring[0],
-				COREFREQ_IOCTL_RATIO_CLOCK, clockMod.sllong );
+				COREFREQ_IOCTL_RATIO_CLOCK, clockMod.ullong );
 		}
 	    }
 	    else if (clockMod.NC & BOXKEY_CFGTDP_CLOCK)
@@ -13439,7 +13472,7 @@ int Shortcut(SCANKEY *scan)
 
 		if (!RING_FULL(Shm->Ring[0])) {
 		    RING_WRITE( Shm->Ring[0],
-				COREFREQ_IOCTL_CONFIG_TDP, clockMod.sllong );
+				COREFREQ_IOCTL_CONFIG_TDP, clockMod.ullong );
 		}
 	    }
 	    else if (clockMod.NC & BOXKEY_UNCORE_CLOCK)
@@ -13448,10 +13481,10 @@ int Shortcut(SCANKEY *scan)
 
 		if (!RING_FULL(Shm->Ring[0])) {
 		    RING_WRITE( Shm->Ring[0],
-				COREFREQ_IOCTL_UNCORE_CLOCK, clockMod.sllong );
+				COREFREQ_IOCTL_UNCORE_CLOCK, clockMod.ullong );
 		}
 	    } else {
-		return (-1);
+		return -1;
 	    }
 	  }
 	  break;
@@ -13459,7 +13492,7 @@ int Shortcut(SCANKEY *scan)
       }
     break;
     }
-	return (0);
+	return 0;
 }
 
 #ifndef NO_FOOTER
@@ -13468,7 +13501,7 @@ void PrintTaskMemory(Layer *layer, CUINT row,
 			unsigned long freeRAM,
 			unsigned long totalRAM)
 {
-	snprintf(Buffer, 11+20+20+1,
+	StrFormat(Buffer, 11+20+20+1,
 			"%6d" "%9lu" "%-9lu",
 			taskCount,
 			freeRAM >> Draw.Unit.Memory,
@@ -13488,7 +13521,7 @@ void PrintTaskMemory(Layer *layer, CUINT row,
 #ifndef NO_HEADER
 void Layout_Header(Layer *layer, CUINT row)
 {
-	size_t len;
+	int len;
 	const CUINT	lProc0 = RSZ(LAYOUT_HEADER_PROC),
 			xProc0 = 12,
 			lProc1 = RSZ(LAYOUT_HEADER_CPU),
@@ -13521,18 +13554,18 @@ void Layout_Header(Layer *layer, CUINT row)
 
 	row++;
 
-	snprintf(Buffer, 10+10+1,
+	if (StrFormat(Buffer, 10+10+1,
 			"%3u" "%-3u",
 			Shm->Proc.CPU.OnLine,
-			Shm->Proc.CPU.Count);
-
-	hProc1.code[2] = Buffer[0];
-	hProc1.code[3] = Buffer[1];
-	hProc1.code[4] = Buffer[2];
-	hProc1.code[6] = Buffer[3];
-	hProc1.code[7] = Buffer[4];
-	hProc1.code[8] = Buffer[5];
-
+			Shm->Proc.CPU.Count) > 0)
+	{
+		hProc1.code[2] = (ASCII) Buffer[0];
+		hProc1.code[3] = (ASCII) Buffer[1];
+		hProc1.code[4] = (ASCII) Buffer[2];
+		hProc1.code[6] = (ASCII) Buffer[3];
+		hProc1.code[7] = (ASCII) Buffer[4];
+		hProc1.code[8] = (ASCII) Buffer[5];
+	}
 	unsigned int L1I_Size = 0, L1D_Size = 0, L2U_Size = 0, L3U_Size = 0;
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
@@ -13549,27 +13582,27 @@ void Layout_Header(Layer *layer, CUINT row)
 	L2U_Size=Shm->Cpu[Shm->Proc.Service.Core].Topology.Cache[2].Size;
 	L3U_Size=Shm->Cpu[Shm->Proc.Service.Core].Topology.Cache[3].Size;
     }
-	snprintf(Buffer, 10+10+1, "%-3u" "%-3u", L1I_Size, L1D_Size);
-
-	hArch1.code[17] = Buffer[0];
-	hArch1.code[18] = Buffer[1];
-	hArch1.code[19] = Buffer[2];
-	hArch1.code[25] = Buffer[3];
-	hArch1.code[26] = Buffer[4];
-	hArch1.code[27] = Buffer[5];
-
-	snprintf(Buffer, 10+10+1, "%-4u" "%-5u", L2U_Size, L3U_Size);
-
-	hArch2.code[ 3] = Buffer[0];
-	hArch2.code[ 4] = Buffer[1];
-	hArch2.code[ 5] = Buffer[2];
-	hArch2.code[ 6] = Buffer[3];
-	hArch2.code[13] = Buffer[4];
-	hArch2.code[14] = Buffer[5];
-	hArch2.code[15] = Buffer[6];
-	hArch2.code[16] = Buffer[7];
-	hArch2.code[17] = Buffer[8];
-
+	if (StrFormat(Buffer, 10+10+1, "%-3u" "%-3u", L1I_Size, L1D_Size) > 0)
+	{
+		hArch1.code[17] = (ASCII) Buffer[0];
+		hArch1.code[18] = (ASCII) Buffer[1];
+		hArch1.code[19] = (ASCII) Buffer[2];
+		hArch1.code[25] = (ASCII) Buffer[3];
+		hArch1.code[26] = (ASCII) Buffer[4];
+		hArch1.code[27] = (ASCII) Buffer[5];
+	}
+	if (StrFormat(Buffer, 10+10+1, "%-4u" "%-5u", L2U_Size, L3U_Size) > 0)
+	{
+		hArch2.code[ 3] = (ASCII) Buffer[0];
+		hArch2.code[ 4] = (ASCII) Buffer[1];
+		hArch2.code[ 5] = (ASCII) Buffer[2];
+		hArch2.code[ 6] = (ASCII) Buffer[3];
+		hArch2.code[13] = (ASCII) Buffer[4];
+		hArch2.code[14] = (ASCII) Buffer[5];
+		hArch2.code[15] = (ASCII) Buffer[6];
+		hArch2.code[16] = (ASCII) Buffer[7];
+		hArch2.code[17] = (ASCII) Buffer[8];
+	}
 	len = CUMIN(xProc1 - (hProc0.origin.col + hProc0.length),
 			(CUINT) strlen(Shm->Proc.Brand));
 	/* RED DOT */
@@ -13667,7 +13700,7 @@ void Layout_Ruler_Load(Layer *layer, CUINT row)
 		RSC(UI).ATTR()[UI_LAYOUT_RULER_LOAD_TAB_DIM],
 		RSC(UI).ATTR()[UI_LAYOUT_RULER_LOAD_TAB_BRIGHT]
 	};
-	int idx = Ruler.Count, bright = 1;
+	int idx = (int) Ruler.Count, bright = 1;
     while (idx-- > 0)
     {
 	int hPos = Ruler.Uniq[idx] * Draw.Area.LoadWidth / Ruler.Maximum;
@@ -13675,26 +13708,27 @@ void Layout_Ruler_Load(Layer *layer, CUINT row)
 	 || ((hLoad0.origin.col+hPos+3) > (hLoad1.origin.col+hLoad1.length)))
 	{
 		char tabStop[10+1] = "00";
-		snprintf(tabStop, 10+1, "%2u", Ruler.Uniq[idx]);
+		if (StrFormat(tabStop, 10+1, "%2u", Ruler.Uniq[idx]) > 0)
+		{
+		    if (tabStop[0] != 0x20) {
+			LayerAt(layer, code,
+				(hLoad0.origin.col + hPos + 2),
+				hLoad0.origin.row) = (ASCII) tabStop[0];
 
-	    if (tabStop[0] != 0x20) {
-		LayerAt(layer, code,
-			(hLoad0.origin.col + hPos + 2),
-			hLoad0.origin.row) = tabStop[0];
+			LayerAt(layer, attr,
+				(hLoad0.origin.col + hPos + 2),
+				hLoad0.origin.row) = attr[bright];
+		    }
+			LayerAt(layer, code,
+				(hLoad0.origin.col + hPos + 3),
+				hLoad0.origin.row) = (ASCII) tabStop[1];
 
-		LayerAt(layer, attr,
-			(hLoad0.origin.col + hPos + 2),
-			hLoad0.origin.row) = attr[bright];
-	    }
-		LayerAt(layer, code,
-			(hLoad0.origin.col + hPos + 3),
-			hLoad0.origin.row) = tabStop[1];
+			LayerAt(layer, attr,
+				(hLoad0.origin.col + hPos + 3),
+				hLoad0.origin.row) = attr[bright];
 
-		LayerAt(layer, attr,
-			(hLoad0.origin.col + hPos + 3),
-			hLoad0.origin.row) = attr[bright];
-
-		bright = !bright;
+			bright = !bright;
+		}
 	}
     }
 }
@@ -13710,7 +13744,7 @@ CUINT Layout_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 			hMon0.length, hMon0.attr, hMon0.code );
 	UNUSED(cpu);
 
-	return (0);
+	return 0;
 }
 
 CUINT Layout_Monitor_Instructions(Layer *layer,const unsigned int cpu,CUINT row)
@@ -13722,7 +13756,7 @@ CUINT Layout_Monitor_Instructions(Layer *layer,const unsigned int cpu,CUINT row)
 			hMon0.length, hMon0.attr, hMon0.code );
 	UNUSED(cpu);
 
-	return (0);
+	return 0;
 }
 
 CUINT Layout_Monitor_Common(Layer *layer, const unsigned int cpu, CUINT row)
@@ -13734,7 +13768,7 @@ CUINT Layout_Monitor_Common(Layer *layer, const unsigned int cpu, CUINT row)
 			hMon0.length, hMon0.attr, hMon0.code );
 	UNUSED(cpu);
 
-	return (0);
+	return 0;
 }
 
 CUINT Layout_Monitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
@@ -13743,7 +13777,7 @@ CUINT Layout_Monitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(cpu);
 	UNUSED(row);
 
-	return (0);
+	return 0;
 }
 
 CUINT Layout_Monitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
@@ -13757,7 +13791,7 @@ CUINT Layout_Monitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	cTask[cpu].col = LOAD_LEAD + 8;
 	cTask[cpu].row = hMon0.origin.row;
 
-	return (0);
+	return 0;
 }
 
 CUINT Layout_Monitor_Slice(Layer *layer, const unsigned int cpu, CUINT row)
@@ -13769,7 +13803,7 @@ CUINT Layout_Monitor_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 			hMon0.length, hMon0.attr, hMon0.code );
 	UNUSED(cpu);
 
-	return (0);
+	return 0;
 }
 
 CUINT Layout_Monitor_Custom(Layer *layer, const unsigned int cpu, CUINT row)
@@ -13781,7 +13815,7 @@ CUINT Layout_Monitor_Custom(Layer *layer, const unsigned int cpu, CUINT row)
 			hCustom0.length, hCustom0.attr, hCustom0.code );
 	UNUSED(cpu);
 
-	return (0);
+	return 0;
 }
 
 CUINT Layout_Ruler_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
@@ -13807,7 +13841,7 @@ CUINT Layout_Ruler_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 				hPkg0.length, hPkg0.attr, hPkg0.code );
 	}
 	row += Draw.Area.MaxRows + 2;
-	return (row);
+	return row;
 }
 
 CUINT Layout_Ruler_Instructions(Layer *layer, const unsigned int cpu,CUINT row)
@@ -13824,7 +13858,7 @@ CUINT Layout_Ruler_Instructions(Layer *layer, const unsigned int cpu,CUINT row)
 	UNUSED(cpu);
 
 	row += Draw.Area.MaxRows + 2;
-	return (row);
+	return row;
 }
 
 CUINT Layout_Ruler_Cycles(Layer *layer, const unsigned int cpu, CUINT row)
@@ -13841,7 +13875,7 @@ CUINT Layout_Ruler_Cycles(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(cpu);
 
 	row += Draw.Area.MaxRows + 2;
-	return (row);
+	return row;
 }
 
 CUINT Layout_Ruler_CStates(Layer *layer, const unsigned int cpu, CUINT row)
@@ -13858,7 +13892,7 @@ CUINT Layout_Ruler_CStates(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(cpu);
 
 	row += Draw.Area.MaxRows + 2;
-	return (row);
+	return row;
 }
 
 CUINT Layout_Ruler_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
@@ -13875,7 +13909,7 @@ CUINT Layout_Ruler_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(cpu);
 
 	row += Draw.Area.MaxRows + 2;
-	return (row);
+	return row;
 }
 
 CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
@@ -13923,7 +13957,7 @@ CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 			RSC(UI).ATTR()[UI_LAYOUT_RULER_PACKAGE] );
 
 	row += 2 + 10;
-	return (row);
+	return row;
 }
 
 CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
@@ -14051,14 +14085,14 @@ CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 
 	if (Shm->SysGate.trackTask)
 	{
-		snprintf(Buffer, 11+1, "%7d", Shm->SysGate.trackTask);
+		StrFormat(Buffer, 11+1, "%7d", Shm->SysGate.trackTask);
 		LayerFillAt(	layer,
 				(hTrack0.origin.col + 15), hTrack0.origin.row,
 				7, Buffer,
 				RSC(UI).ATTR()[UI_LAYOUT_RULER_TASKS_TRACKING]);
 	}
 	row += Draw.Area.MaxRows + 2;
-	return (row);
+	return row;
 }
 
 CUINT Layout_Ruler_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
@@ -14121,7 +14155,7 @@ CUINT Layout_Ruler_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 	LayerAt(layer,code, 77, oRow) = Setting.jouleWatt ? 'W':'J';
 
 	row += Draw.Area.MaxRows + 2;
-	return (row);
+	return row;
 }
 
 CUINT Layout_Ruler_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
@@ -14140,7 +14174,7 @@ CUINT Layout_Ruler_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 			hVPkg.length, hVPkg.attr, hVPkg.code );
 
 	row += Draw.Area.MaxRows + 2;
-	return (row);
+	return row;
 }
 
 CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
@@ -14213,7 +14247,7 @@ CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 	LayerAt(layer,code, 77, oRow) = Setting.jouleWatt ? 'W':'J';
 
 	row += Draw.Area.MaxRows + 2;
-	return (row);
+	return row;
 }
 
 CUINT Layout_Ruler_Slice(Layer *layer, const unsigned int cpu, CUINT row)
@@ -14230,7 +14264,7 @@ CUINT Layout_Ruler_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 			RSC(UI).ATTR()[UI_LAYOUT_RULER_SLICE] );
 
 	row += Draw.Area.MaxRows + 2;
-	return (row);
+	return row;
 }
 
 CUINT Layout_Ruler_Custom(Layer *layer, const unsigned int cpu, CUINT row)
@@ -14251,14 +14285,14 @@ CUINT Layout_Ruler_Custom(Layer *layer, const unsigned int cpu, CUINT row)
 						Setting.jouleWatt ? 'W':'J';
 
 	row += Draw.Area.MaxRows + 2;
-	return (row);
+	return row;
 }
 #endif /* NO_LOWER */
 
 #ifndef NO_FOOTER
 void Layout_Footer(Layer *layer, CUINT row)
 {
-	ssize_t len;
+	size_t len;
 	CUINT col = 0;
 
 	LayerDeclare(	LAYOUT_FOOTER_TECH_X86, RSZ(LAYOUT_FOOTER_TECH_X86),
@@ -14304,7 +14338,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 			hTech0.length, hTech0.origin.row,
 			hTech1 );
 
-	hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =		\
+	hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] = \
 					EN[Shm->Proc.Features.HyperThreading];
 
 	const ATTRIBUTE TM[] = {
@@ -14314,40 +14348,40 @@ void Layout_Footer(Layer *layer, CUINT row)
 		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TM_3]
 	};
 
-	hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[6] =		\
+	hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[6] = \
 	hTech1.attr[7] = EN[Shm->Proc.Technology.EIST];
 
-	hTech1.attr[9] = hTech1.attr[10] = hTech1.attr[11] =		\
+	hTech1.attr[9] = hTech1.attr[10] = hTech1.attr[11] = \
 				EN[Shm->Proc.Features.Power.EAX.TurboIDA];
 
-	hTech1.attr[13] = hTech1.attr[14] = hTech1.attr[15] =		\
+	hTech1.attr[13] = hTech1.attr[14] = hTech1.attr[15] = \
 	hTech1.attr[16] = hTech1.attr[17] = EN[Shm->Proc.Technology.Turbo];
 
-	hTech1.attr[19] = hTech1.attr[20] = hTech1.attr[21] =		\
+	hTech1.attr[19] = hTech1.attr[20] = hTech1.attr[21] = \
 						EN[Shm->Proc.Technology.C1E];
 
-	snprintf(Buffer, 2+10+1, "PM%1u", Shm->Proc.PM_version);
+	StrFormat(Buffer, 2+10+1, "PM%1u", Shm->Proc.PM_version);
 
-	hTech1.code[23] = Buffer[0];
-	hTech1.code[24] = Buffer[1];
-	hTech1.code[25] = Buffer[2];
+	hTech1.code[23] = (ASCII) Buffer[0];
+	hTech1.code[24] = (ASCII) Buffer[1];
+	hTech1.code[25] = (ASCII) Buffer[2];
 
-	hTech1.attr[23] = hTech1.attr[24] = hTech1.attr[25] =		\
+	hTech1.attr[23] = hTech1.attr[24] = hTech1.attr[25] = \
 						EN[(Shm->Proc.PM_version > 0)];
 
-	hTech1.attr[27] = hTech1.attr[28] = hTech1.attr[29] =		\
+	hTech1.attr[27] = hTech1.attr[28] = hTech1.attr[29] = \
 						EN[Shm->Proc.Technology.C3A];
 
-	hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] =		\
+	hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] = \
 						EN[Shm->Proc.Technology.C1A];
 
-	hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] =		\
+	hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] = \
 						EN[Shm->Proc.Technology.C3U];
 
-	hTech1.attr[39] = hTech1.attr[40] = hTech1.attr[41] =		\
+	hTech1.attr[39] = hTech1.attr[40] = hTech1.attr[41] = \
 						EN[Shm->Proc.Technology.C1U];
 
-	hTech1.attr[43] = hTech1.attr[44] = 				\
+	hTech1.attr[43] = hTech1.attr[44] = \
 			TM[Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1
 			  |Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2];
 
@@ -14371,34 +14405,34 @@ void Layout_Footer(Layer *layer, CUINT row)
 			hTech0.length, hTech0.origin.row,
 			hTech1 );
 
-	hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =		\
+	hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] = \
 					EN[Shm->Proc.Features.HyperThreading];
 
-	hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[6] =		\
+	hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[6] = \
 					EN[(Shm->Proc.PowerNow == 0b11)];
 
-	hTech1.attr[8] = hTech1.attr[9] = hTech1.attr[10] =		\
+	hTech1.attr[8] = hTech1.attr[9] = hTech1.attr[10] = \
 				EN[Shm->Proc.Features.AdvPower.EDX.HwPstate];
 
-	hTech1.attr[12] = hTech1.attr[13] = hTech1.attr[14] =		\
+	hTech1.attr[12] = hTech1.attr[13] = hTech1.attr[14] = \
 	hTech1.attr[15] = hTech1.attr[16] = EN[Shm->Proc.Technology.Turbo];
 
-	hTech1.attr[18] = hTech1.attr[19] = hTech1.attr[20] =		\
+	hTech1.attr[18] = hTech1.attr[19] = hTech1.attr[20] = \
 						EN[Shm->Proc.Technology.C1E];
 
-	hTech1.attr[22] = hTech1.attr[23] = hTech1.attr[24] =		\
+	hTech1.attr[22] = hTech1.attr[23] = hTech1.attr[24] = \
 						EN[Shm->Proc.Technology.CC6];
 
-	hTech1.attr[26] = hTech1.attr[27] = hTech1.attr[28] =		\
+	hTech1.attr[26] = hTech1.attr[27] = hTech1.attr[28] = \
 						EN[Shm->Proc.Technology.PC6];
 
-	hTech1.attr[30] = hTech1.attr[31] = hTech1.attr[32] =		\
+	hTech1.attr[30] = hTech1.attr[31] = hTech1.attr[32] = \
 	EN[(Shm->Cpu[Shm->Proc.Service.Core].Query.CStateBaseAddr != 0)];
 
-	hTech1.attr[34] = hTech1.attr[35] = hTech1.attr[36] =		\
+	hTech1.attr[34] = hTech1.attr[35] = hTech1.attr[36] = \
 				EN[(Shm->Proc.Features.AdvPower.EDX.TS != 0)];
 
-	hTech1.attr[38] = hTech1.attr[39] = hTech1.attr[40] =		\
+	hTech1.attr[38] = hTech1.attr[39] = hTech1.attr[40] = \
 				EN[(Shm->Proc.Features.AdvPower.EDX.TTP != 0)];
 
 	LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
@@ -14421,9 +14455,9 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 	row++;
 
-	len = snprintf( Buffer, MAX_UTS_LEN, "%s",
+	CONV(len, StrFormat, Buffer, MAX_UTS_LEN, "%s",
 			BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) ?
-			Shm->SysGate.sysname : (char *) RSC(SYSGATE).CODE() );
+			Shm->SysGate.sysname : (char *) RSC(SYSGATE).CODE());
 
 	LayerFillAt(	layer, col, row,
 			len, Buffer,
@@ -14443,10 +14477,10 @@ void Layout_Footer(Layer *layer, CUINT row)
 	col++;
 
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
-		len = snprintf( Buffer, 2+5+5+5+1, "%hu.%hu.%hu",
+		CONV(len, StrFormat, Buffer, 2+5+5+5+1, "%hu.%hu.%hu",
 				Shm->SysGate.kernel.version,
 				Shm->SysGate.kernel.major,
-				Shm->SysGate.kernel.minor );
+				Shm->SysGate.kernel.minor);
 
 		LayerFillAt(	layer, col, row,
 				len, Buffer,
@@ -14473,8 +14507,11 @@ void Layout_Footer(Layer *layer, CUINT row)
 			hSys1.length, hSys1.attr, hSys1.code );
 	/* Center the DMI string					*/
 	if ((len = strlen(Shm->SMB.String[Draw.SmbIndex])) > 0) {
-		CSINT	can = CUMIN(hSys1.origin.col - col - 1, len),
-			ctr = ((hSys1.origin.col + col) - can) / 2;
+		const CSINT	mlt = (CSINT) (hSys1.origin.col - col - 1),
+				mrt = (CSINT) len,
+				can = CUMIN(mlt, mrt),
+				ctr = ((hSys1.origin.col + col) - can) / 2;
+
 		LayerFillAt(	layer, ctr, hSys1.origin.row,
 				can, ScrambleSMBIOS(Draw.SmbIndex, 4, '-'),
 				RSC(UI).ATTR()[UI_LAYOUT_FOOTER_DMI_STRING] );
@@ -14501,14 +14538,14 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 void Layout_CPU_To_String(const unsigned int cpu)
 {
-	snprintf(Buffer, 10+1, "%03u", cpu);
+	StrFormat(Buffer, 10+1, "%03u", cpu);
 }
 
 void Layout_CPU_To_View(Layer *layer, const CUINT col, const CUINT row)
 {
-	LayerAt(layer, code, col + 0, row) = Buffer[0];
-	LayerAt(layer, code, col + 1, row) = Buffer[1];
-	LayerAt(layer, code, col + 2, row) = Buffer[2];
+	LayerAt(layer, code, col + 0, row) = (ASCII) Buffer[0];
+	LayerAt(layer, code, col + 1, row) = (ASCII) Buffer[1];
+	LayerAt(layer, code, col + 2, row) = (ASCII) Buffer[2];
 }
 
 void Layout_BCLK_To_View(Layer *layer, const CUINT col, const CUINT row)
@@ -14548,21 +14585,21 @@ CUINT Draw_Frequency_Load(	Layer *layer, CUINT row,
     }
 	Draw.Bar[cpu].col = col;
 
-	return (0);
+	return 0;
 }
 
 CUINT Draw_Relative_Load(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	/*		Draw the relative Core frequency ratio		*/
-	return (Draw_Frequency_Load(layer,row, cpu,CFlop->Relative.Ratio));
+	return Draw_Frequency_Load(layer,row, cpu,CFlop->Relative.Ratio);
 }
 
 CUINT Draw_Absolute_Load(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	/*		Draw the absolute Core frequency ratio		*/
-	return (Draw_Frequency_Load(layer,row, cpu,CFlop->Absolute.Ratio.Perf));
+	return Draw_Frequency_Load(layer,row, cpu,CFlop->Absolute.Ratio.Perf);
 }
 #endif /* NO_UPPER */
 
@@ -14574,7 +14611,8 @@ size_t Draw_Relative_Freq_Spaces(	struct FLIP_FLOP *CFlop,
 	UNUSED(Cpu);
 	UNUSED(cpu);
 
-	return (snprintf(Buffer, 17+8+6+7+7+7+7+7+7+11+1,
+	size_t len;
+	CONV(len, StrFormat, Buffer, 17+8+6+7+7+7+7+7+7+11+1,
 		"%7.2f" " (" "%5.2f" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
@@ -14587,7 +14625,9 @@ size_t Draw_Relative_Freq_Spaces(	struct FLIP_FLOP *CFlop,
 		100.f * CFlop->State.C3,
 		100.f * CFlop->State.C6,
 		100.f * CFlop->State.C7,
-		11, hSpace));
+		11, hSpace);
+
+	return len;
 }
 
 size_t Draw_Absolute_Freq_Spaces(	struct FLIP_FLOP *CFlop,
@@ -14597,8 +14637,9 @@ size_t Draw_Absolute_Freq_Spaces(	struct FLIP_FLOP *CFlop,
 	UNUSED(Cpu);
 	UNUSED(cpu);
 
-	return (snprintf(Buffer, 17+8+10+7+7+7+7+7+7+11+1,
-		"%7.2f" " (" "%5u" ") "			\
+	size_t len;
+	CONV(len, StrFormat, Buffer, 17+8+10+7+7+7+7+7+7+11+1,
+		"%7.2f" " (" "%5u" ") " 			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
 		"%.*s",
@@ -14610,7 +14651,9 @@ size_t Draw_Absolute_Freq_Spaces(	struct FLIP_FLOP *CFlop,
 		100.f * CFlop->State.C3,
 		100.f * CFlop->State.C6,
 		100.f * CFlop->State.C7,
-		11, hSpace));
+		11, hSpace);
+
+	return len > 0;
 }
 
 size_t (*Draw_Freq_Spaces_Matrix[2])(	struct FLIP_FLOP*,
@@ -14625,7 +14668,7 @@ size_t Draw_Freq_Spaces(struct FLIP_FLOP *CFlop,
 			CPU_STRUCT *Cpu,
 			const unsigned int cpu)
 {
-	return (Draw_Freq_Spaces_Matrix[Draw.Load](CFlop, Cpu, cpu));
+	return Draw_Freq_Spaces_Matrix[Draw.Load](CFlop, Cpu, cpu);
 }
 
 size_t Draw_Relative_Freq_Celsius(	struct FLIP_FLOP *CFlop,
@@ -14634,7 +14677,8 @@ size_t Draw_Relative_Freq_Celsius(	struct FLIP_FLOP *CFlop,
 {
 	UNUSED(cpu);
 
-	return (snprintf(Buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
+	size_t len;
+	CONV(len, StrFormat, Buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
 		"%7.2f" " (" "%5.2f" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
@@ -14649,7 +14693,9 @@ size_t Draw_Relative_Freq_Celsius(	struct FLIP_FLOP *CFlop,
 		100.f * CFlop->State.C7,
 		Cpu->PowerThermal.Limit[SENSOR_LOWEST],
 		CFlop->Thermal.Temp,
-		Cpu->PowerThermal.Limit[SENSOR_HIGHEST]));
+		Cpu->PowerThermal.Limit[SENSOR_HIGHEST]);
+
+	return len;
 }
 
 size_t Draw_Absolute_Freq_Celsius(	struct FLIP_FLOP *CFlop,
@@ -14658,8 +14704,9 @@ size_t Draw_Absolute_Freq_Celsius(	struct FLIP_FLOP *CFlop,
 {
 	UNUSED(cpu);
 
-	return (snprintf(Buffer, 19+8+10+7+7+7+7+7+7+10+10+10+1,
-		"%7.2f" " (" "%5u" ") "			\
+	size_t len;
+	CONV(len, StrFormat, Buffer, 19+8+10+7+7+7+7+7+7+10+10+10+1,
+		"%7.2f" " (" "%5u" ") " 			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
 		"%-3u" "/" "%3u" "/" "%3u",
@@ -14673,7 +14720,9 @@ size_t Draw_Absolute_Freq_Celsius(	struct FLIP_FLOP *CFlop,
 		100.f * CFlop->State.C7,
 		Cpu->PowerThermal.Limit[SENSOR_LOWEST],
 		CFlop->Thermal.Temp,
-		Cpu->PowerThermal.Limit[SENSOR_HIGHEST]));
+		Cpu->PowerThermal.Limit[SENSOR_HIGHEST]);
+
+	return len;
 }
 
 size_t (*Draw_Freq_Celsius_Matrix[2])(	struct FLIP_FLOP*,
@@ -14688,7 +14737,7 @@ size_t Draw_Freq_Celsius(	struct FLIP_FLOP *CFlop,
 				CPU_STRUCT *Cpu,
 				const unsigned int cpu )
 {
-	return (Draw_Freq_Celsius_Matrix[Draw.Load](CFlop, Cpu, cpu));
+	return Draw_Freq_Celsius_Matrix[Draw.Load](CFlop, Cpu, cpu);
 };
 
 size_t Draw_Relative_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
@@ -14697,7 +14746,8 @@ size_t Draw_Relative_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
 {
 	UNUSED(cpu);
 
-	return (snprintf(Buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
+	size_t len;
+	CONV(len, StrFormat, Buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
 		"%7.2f" " (" "%5.2f" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
@@ -14712,7 +14762,9 @@ size_t Draw_Relative_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
 		100.f * CFlop->State.C7,
 		Cels2Fahr(Cpu->PowerThermal.Limit[SENSOR_LOWEST]),
 		Cels2Fahr(CFlop->Thermal.Temp),
-		Cels2Fahr(Cpu->PowerThermal.Limit[SENSOR_HIGHEST])));
+		Cels2Fahr(Cpu->PowerThermal.Limit[SENSOR_HIGHEST]));
+
+	return len;
 }
 
 size_t Draw_Absolute_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
@@ -14721,8 +14773,9 @@ size_t Draw_Absolute_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
 {
 	UNUSED(cpu);
 
-	return (snprintf(Buffer, 19+8+10+7+7+7+7+7+7+10+10+10+1,
-		"%7.2f" " (" "%5u" ") "			\
+	size_t len;
+	CONV(len, StrFormat, Buffer, 19+8+10+7+7+7+7+7+7+10+10+10+1,
+		"%7.2f" " (" "%5u" ") " 			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
 		"%-3u" "/" "%3u" "/" "%3u",
@@ -14736,7 +14789,9 @@ size_t Draw_Absolute_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
 		100.f * CFlop->State.C7,
 		Cels2Fahr(Cpu->PowerThermal.Limit[SENSOR_LOWEST]),
 		Cels2Fahr(CFlop->Thermal.Temp),
-		Cels2Fahr(Cpu->PowerThermal.Limit[SENSOR_HIGHEST])));
+		Cels2Fahr(Cpu->PowerThermal.Limit[SENSOR_HIGHEST]));
+
+	return len;
 }
 
 size_t (*Draw_Freq_Fahrenheit_Matrix[2])(	struct FLIP_FLOP*,
@@ -14751,7 +14806,7 @@ size_t Draw_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
 				CPU_STRUCT *Cpu,
 				const unsigned int cpu )
 {
-	return (Draw_Freq_Fahrenheit_Matrix[Draw.Load](CFlop, Cpu, cpu));
+	return Draw_Freq_Fahrenheit_Matrix[Draw.Load](CFlop, Cpu, cpu);
 };
 
 size_t Draw_Freq_Celsius_PerCore(	struct FLIP_FLOP *CFlop,
@@ -14762,9 +14817,9 @@ size_t Draw_Freq_Celsius_PerCore(	struct FLIP_FLOP *CFlop,
 
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Freq_Celsius(CFlop, &Shm->Cpu[cpu], cpu));
+		return Draw_Freq_Celsius(CFlop, &Shm->Cpu[cpu], cpu);
 	} else {
-		return (Draw_Freq_Spaces(CFlop, NULL, cpu));
+		return Draw_Freq_Spaces(CFlop, NULL, cpu);
 	}
 }
 
@@ -14776,9 +14831,9 @@ size_t Draw_Freq_Fahrenheit_PerCore(	struct FLIP_FLOP *CFlop,
 
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Freq_Fahrenheit(CFlop, &Shm->Cpu[cpu], cpu));
+		return Draw_Freq_Fahrenheit(CFlop, &Shm->Cpu[cpu], cpu);
 	} else {
-		return (Draw_Freq_Spaces(CFlop, NULL, cpu));
+		return Draw_Freq_Spaces(CFlop, NULL, cpu);
 	}
 }
 
@@ -14789,9 +14844,9 @@ size_t Draw_Freq_Celsius_PerPkg(	struct FLIP_FLOP *CFlop,
 	UNUSED(Cpu);
 
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Freq_Celsius(CFlop, &Shm->Cpu[cpu], cpu));
+		return Draw_Freq_Celsius(CFlop, &Shm->Cpu[cpu], cpu);
 	} else {
-		return (Draw_Freq_Spaces(CFlop, NULL, cpu));
+		return Draw_Freq_Spaces(CFlop, NULL, cpu);
 	}
 }
 
@@ -14802,9 +14857,9 @@ size_t Draw_Freq_Fahrenheit_PerPkg(	struct FLIP_FLOP *CFlop,
 	UNUSED(Cpu);
 
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Freq_Fahrenheit(CFlop, &Shm->Cpu[cpu], cpu));
+		return Draw_Freq_Fahrenheit(CFlop, &Shm->Cpu[cpu], cpu);
 	} else {
-		return (Draw_Freq_Spaces(CFlop, NULL, cpu));
+		return Draw_Freq_Spaces(CFlop, NULL, cpu);
 	}
 }
 
@@ -14857,19 +14912,19 @@ CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 	{
 		warning = RSC(UI).ATTR()[UI_DRAW_MONITOR_FREQUENCY_HOT];
 	}
-	LayerAt(layer, attr, (LOAD_LEAD + 69), row) =			\
-		LayerAt(layer, attr, (LOAD_LEAD + 70), row) =		\
+	LayerAt(layer, attr, (LOAD_LEAD + 69), row) = \
+		LayerAt(layer, attr, (LOAD_LEAD + 70), row) = \
 			LayerAt(layer, attr, (LOAD_LEAD + 71), row) = warning;
 
-	return (0);
+	return 0;
 }
 
 CUINT Draw_Monitor_Instructions(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	size_t len;
 
-	len = snprintf( Buffer, 6+18+18+18+20+1,
+	size_t len;
+	CONV(len, StrFormat, Buffer, 6+18+18+18+20+1,
 			"%17.6f" "/s"					\
 			"%17.6f" "/c"					\
 			"%17.6f" "/i"					\
@@ -14877,42 +14932,45 @@ CUINT Draw_Monitor_Instructions(Layer *layer, const unsigned int cpu, CUINT row)
 			CFlop->State.IPS,
 			CFlop->State.IPC,
 			CFlop->State.CPI,
-			CFlop->Delta.INST );
+			CFlop->Delta.INST);
+
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
-	return (0);
+	return 0;
 }
 
 CUINT Draw_Monitor_Cycles(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	size_t len;
 
-	len = snprintf( Buffer, 20+20+20+20+1,
+	size_t len;
+	CONV(len, StrFormat, Buffer, 20+20+20+20+1,
 			"%18llu%18llu%18llu%18llu",
 			CFlop->Delta.C0.UCC,
 			CFlop->Delta.C0.URC,
 			CFlop->Delta.C1,
-			CFlop->Delta.TSC );
+			CFlop->Delta.TSC);
+
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
-	return (0);
+	return 0;
 }
 
 CUINT Draw_Monitor_CStates(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	size_t len;
 
-	len = snprintf( Buffer, 20+20+20+20+1,
+	size_t len;
+	CONV(len, StrFormat, Buffer, 20+20+20+20+1,
 			"%18llu%18llu%18llu%18llu",
 			CFlop->Delta.C1,
 			CFlop->Delta.C3,
 			CFlop->Delta.C6,
-			CFlop->Delta.C7 );
+			CFlop->Delta.C7);
+
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
-	return (0);
+	return 0;
 }
 
 CUINT Draw_Monitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
@@ -14921,17 +14979,21 @@ CUINT Draw_Monitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(cpu);
 	UNUSED(row);
 
-	return (0);
+	return 0;
 }
 
 size_t Draw_Monitor_Tasks_Relative_Freq(struct FLIP_FLOP *CFlop)
 {
-	return (snprintf(Buffer, 8+1, "%7.2f", CFlop->Relative.Freq));
+	size_t len;
+	CONV(len, StrFormat, Buffer, 8+1, "%7.2f", CFlop->Relative.Freq);
+	return len;
 }
 
 size_t Draw_Monitor_Tasks_Absolute_Freq(struct FLIP_FLOP *CFlop)
 {
-	return (snprintf(Buffer, 8+1, "%7.2f", CFlop->Absolute.Freq));
+	size_t len;
+	CONV(len, StrFormat, Buffer, 8+1, "%7.2f", CFlop->Absolute.Freq);
+	return len;
 }
 
 size_t (*Draw_Monitor_Tasks_Matrix[2])(struct FLIP_FLOP *CFlop) = \
@@ -14949,7 +15011,7 @@ CUINT Draw_Monitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 	cTask[cpu].col = LOAD_LEAD + 8;
 
-	return (0);
+	return 0;
 }
 
 CUINT Draw_Monitor_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
@@ -14957,34 +15019,34 @@ CUINT Draw_Monitor_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	size_t len;
 
-	len = snprintf(Buffer, 10+1, "%10u", CFlop->Counter.SMI);
+	CONV(len, StrFormat, Buffer, 10+1, "%10u", CFlop->Counter.SMI);
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
-	if (BITVAL(Shm->Registration.NMI, BIT_NMI_LOCAL) == 1) {
-		len = snprintf(Buffer, 10+1, "%10u", CFlop->Counter.NMI.LOCAL);
-		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 24),row), Buffer, len);
-	} else {
-		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 24),row), hSpace, 10);
-	}
-	if (BITVAL(Shm->Registration.NMI, BIT_NMI_UNKNOWN) == 1) {
-		len = snprintf(Buffer, 10+1,"%10u",CFlop->Counter.NMI.UNKNOWN);
-		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 34),row), Buffer, len);
-	} else {
-		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 34),row), hSpace, 10);
-	}
-	if (BITVAL(Shm->Registration.NMI, BIT_NMI_SERR) == 1) {
-		len = snprintf(Buffer, 10+1,"%10u",CFlop->Counter.NMI.PCISERR);
-		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 44),row), Buffer, len);
-	} else {
-		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 44),row), hSpace, 10);
-	}
-	if (BITVAL(Shm->Registration.NMI, BIT_NMI_IO_CHECK) == 1) {
-		len = snprintf(Buffer, 10+1,"%10u",CFlop->Counter.NMI.IOCHECK);
-		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 54),row), Buffer, len);
-	} else {
-		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 54),row), hSpace, 10);
-	}
-	return (0);
+    if (BITVAL(Shm->Registration.NMI, BIT_NMI_LOCAL) == 1) {
+	CONV(len, StrFormat, Buffer, 10+1, "%10u", CFlop->Counter.NMI.LOCAL);
+	memcpy(&LayerAt(layer,code,(LOAD_LEAD + 24),row), Buffer, len);
+    } else {
+	memcpy(&LayerAt(layer,code,(LOAD_LEAD + 24),row), hSpace, 10);
+    }
+    if (BITVAL(Shm->Registration.NMI, BIT_NMI_UNKNOWN) == 1) {
+	CONV(len, StrFormat, Buffer, 10+1,"%10u",CFlop->Counter.NMI.UNKNOWN);
+	memcpy(&LayerAt(layer,code,(LOAD_LEAD + 34),row), Buffer, len);
+    } else {
+	memcpy(&LayerAt(layer,code,(LOAD_LEAD + 34),row), hSpace, 10);
+    }
+    if (BITVAL(Shm->Registration.NMI, BIT_NMI_SERR) == 1) {
+	CONV(len, StrFormat, Buffer, 10+1,"%10u",CFlop->Counter.NMI.PCISERR);
+	memcpy(&LayerAt(layer,code,(LOAD_LEAD + 44),row), Buffer, len);
+    } else {
+	memcpy(&LayerAt(layer,code,(LOAD_LEAD + 44),row), hSpace, 10);
+    }
+    if (BITVAL(Shm->Registration.NMI, BIT_NMI_IO_CHECK) == 1) {
+	CONV(len, StrFormat, Buffer, 10+1,"%10u",CFlop->Counter.NMI.IOCHECK);
+	memcpy(&LayerAt(layer,code,(LOAD_LEAD + 54),row), Buffer, len);
+    } else {
+	memcpy(&LayerAt(layer,code,(LOAD_LEAD + 54),row), hSpace, 10);
+    }
+	return 0;
 }
 
 size_t Draw_Sensors_V0_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
@@ -14993,10 +15055,12 @@ size_t Draw_Sensors_V0_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(layer);
 	UNUSED(row);
 
-	return (snprintf(Buffer, 80+1,
+	size_t len;
+	CONV(len, StrFormat, Buffer, 80+1,
 			"%7.2f%.*s",
 			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
-			69, hSpace) );
+			69, hSpace);
+	return len;
 }
 
 size_t Draw_Sensors_V0_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
@@ -15005,33 +15069,35 @@ size_t Draw_Sensors_V0_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(layer);
 	UNUSED(row);
 
-	return (snprintf(Buffer, 80+1,
+	size_t len;
+	CONV(len, StrFormat, Buffer, 80+1,
 			"%7.2f%.*s"					\
-			"%8.4f\x20\x20\x20\x20\x20\x20" 	 	\
+			"%8.4f\x20\x20\x20\x20\x20\x20" 		\
 			"%8.4f%.*s",
 			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			26, hSpace,
 			CFlop->State.Energy,
 			CFlop->State.Power,
-			21, hSpace) );
+			21, hSpace);
+	return len;
 }
 
 size_t Draw_Sensors_V0_T0_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V0_T0_P1(layer, cpu, row));
+		return Draw_Sensors_V0_T0_P1(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T0_P0(layer, cpu, row));
+		return Draw_Sensors_V0_T0_P0(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V0_T0_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V0_T0_P1(layer, cpu, row));
+		return Draw_Sensors_V0_T0_P1(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T0_P0(layer, cpu, row));
+		return Draw_Sensors_V0_T0_P0(layer, cpu, row);
 	}
 }
 
@@ -15041,14 +15107,16 @@ size_t Draw_Sensors_V0_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(layer);
 	UNUSED(row);
 
-	return (snprintf(Buffer, 80+1,
+	size_t len;
+	CONV(len, StrFormat, Buffer, 80+1,
 			"%7.2f%.*s"					\
 			"%3u%.*s",
 			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			17, hSpace,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					 : CFlop->Thermal.Temp,
-			49, hSpace) );
+			49, hSpace);
+	return len;
 }
 
 size_t Draw_Sensors_V0_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
@@ -15057,10 +15125,11 @@ size_t Draw_Sensors_V0_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(layer);
 	UNUSED(row);
 
-	return (snprintf(Buffer, 80+1,
-			"%7.2f%.*s"		\
+	size_t len;
+	CONV(len, StrFormat, Buffer, 80+1,
+			"%7.2f%.*s"					\
 			"%3u\x20\x20\x20\x20\x20\x20"			\
-			"%8.4f\x20\x20\x20\x20\x20\x20" 	 	\
+			"%8.4f\x20\x20\x20\x20\x20\x20" 		\
 			"%8.4f%.*s",
 			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			17, hSpace,
@@ -15068,25 +15137,26 @@ size_t Draw_Sensors_V0_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 					 : CFlop->Thermal.Temp,
 			CFlop->State.Energy,
 			CFlop->State.Power,
-			21, hSpace) );
+			21, hSpace);
+	return len;
 }
 
 size_t Draw_Sensors_V0_T1_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V0_T1_P1(layer, cpu, row));
+		return Draw_Sensors_V0_T1_P1(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T1_P0(layer, cpu, row));
+		return Draw_Sensors_V0_T1_P0(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V0_T1_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V0_T1_P1(layer, cpu, row));
+		return Draw_Sensors_V0_T1_P1(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T1_P0(layer, cpu, row));
+		return Draw_Sensors_V0_T1_P0(layer, cpu, row);
 	}
 }
 
@@ -15094,9 +15164,9 @@ size_t Draw_Sensors_V0_T2_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V0_T1_P0(layer, cpu, row));
+		return Draw_Sensors_V0_T1_P0(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T0_P0(layer, cpu, row));
+		return Draw_Sensors_V0_T0_P0(layer, cpu, row);
 	}
 }
 
@@ -15104,9 +15174,9 @@ size_t Draw_Sensors_V0_T2_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V0_T1_P1(layer, cpu, row));
+		return Draw_Sensors_V0_T1_P1(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T0_P1(layer, cpu, row));
+		return Draw_Sensors_V0_T0_P1(layer, cpu, row);
 	}
 }
 
@@ -15114,9 +15184,9 @@ size_t Draw_Sensors_V0_T2_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V0_T1_P1(layer, cpu, row));
+		return Draw_Sensors_V0_T1_P1(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T0_P0(layer, cpu, row));
+		return Draw_Sensors_V0_T0_P0(layer, cpu, row);
 	}
 }
 
@@ -15124,45 +15194,45 @@ size_t Draw_Sensors_V0_T2_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V0_T1_P3(layer, cpu, row));
+		return Draw_Sensors_V0_T1_P3(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T0_P0(layer, cpu, row));
+		return Draw_Sensors_V0_T0_P0(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V0_T3_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V0_T1_P0(layer, cpu, row));
+		return Draw_Sensors_V0_T1_P0(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T0_P0(layer, cpu, row));
+		return Draw_Sensors_V0_T0_P0(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V0_T3_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V0_T1_P1(layer, cpu, row));
+		return Draw_Sensors_V0_T1_P1(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T0_P1(layer, cpu, row));
+		return Draw_Sensors_V0_T0_P1(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V0_T3_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V0_T1_P2(layer, cpu, row));
+		return Draw_Sensors_V0_T1_P2(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T0_P2(layer, cpu, row));
+		return Draw_Sensors_V0_T0_P2(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V0_T3_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V0_T1_P3(layer, cpu, row));
+		return Draw_Sensors_V0_T1_P3(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T0_P3(layer, cpu, row));
+		return Draw_Sensors_V0_T0_P3(layer, cpu, row);
 	}
 }
 
@@ -15172,12 +15242,14 @@ size_t Draw_Sensors_V1_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(layer);
 	UNUSED(row);
 
-	return (snprintf(Buffer, 80+1,
+	size_t len;
+	CONV(len, StrFormat, Buffer, 80+1,
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f%.*s",
 			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Voltage.Vcore,
-			56, hSpace) );
+			56, hSpace);
+	return len;
 }
 
 size_t Draw_Sensors_V1_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
@@ -15186,7 +15258,8 @@ size_t Draw_Sensors_V1_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(layer);
 	UNUSED(row);
 
-	return (snprintf(Buffer, 80+1,
+	size_t len;
+	CONV(len, StrFormat, Buffer, 80+1,
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f\x20\x20\x20\x20" 			\
 			"\x20\x20\x20\x20\x20\x20\x20\x20\x20"		\
@@ -15196,25 +15269,26 @@ size_t Draw_Sensors_V1_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 			CFlop->Voltage.Vcore,
 			CFlop->State.Energy,
 			CFlop->State.Power,
-			21, hSpace) );
+			21, hSpace);
+	return len;
 }
 
 size_t Draw_Sensors_V1_T0_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T0_P1(layer, cpu, row));
+		return Draw_Sensors_V1_T0_P1(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V1_T0_P0(layer, cpu, row));
+		return Draw_Sensors_V1_T0_P0(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V1_T0_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T0_P1(layer, cpu, row));
+		return Draw_Sensors_V1_T0_P1(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V1_T0_P0(layer, cpu, row));
+		return Draw_Sensors_V1_T0_P0(layer, cpu, row);
 	}
 }
 
@@ -15224,7 +15298,8 @@ size_t Draw_Sensors_V1_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(layer);
 	UNUSED(row);
 
-	return (snprintf(Buffer, 80+1,
+	size_t len;
+	CONV(len, StrFormat, Buffer, 80+1,
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f\x20\x20\x20\x20" 			\
 			"%3u%.*s",					\
@@ -15232,7 +15307,8 @@ size_t Draw_Sensors_V1_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 			CFlop->Voltage.Vcore,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					 : CFlop->Thermal.Temp,
-			49, hSpace) );
+			49, hSpace);
+	return len;
 }
 
 size_t Draw_Sensors_V1_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
@@ -15241,7 +15317,8 @@ size_t Draw_Sensors_V1_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(layer);
 	UNUSED(row);
 
-	return (snprintf(Buffer, 80+1,
+	size_t len;
+	CONV(len, StrFormat, Buffer, 80+1,
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f\x20\x20\x20\x20" 			\
 			"%3u\x20\x20\x20\x20\x20\x20"			\
@@ -15253,25 +15330,26 @@ size_t Draw_Sensors_V1_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 					 : CFlop->Thermal.Temp,
 			CFlop->State.Energy,
 			CFlop->State.Power,
-			21, hSpace) );
+			21, hSpace);
+	return len;
 }
 
 size_t Draw_Sensors_V1_T1_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T1_P1(layer, cpu, row));
+		return Draw_Sensors_V1_T1_P1(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V1_T1_P0(layer, cpu, row));
+		return Draw_Sensors_V1_T1_P0(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V1_T1_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T1_P1(layer, cpu, row));
+		return Draw_Sensors_V1_T1_P1(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V1_T1_P0(layer, cpu, row));
+		return Draw_Sensors_V1_T1_P0(layer, cpu, row);
 	}
 }
 
@@ -15279,9 +15357,9 @@ size_t Draw_Sensors_V1_T2_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T1_P0(layer, cpu, row));
+		return Draw_Sensors_V1_T1_P0(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V1_T0_P0(layer, cpu, row));
+		return Draw_Sensors_V1_T0_P0(layer, cpu, row);
 	}
 }
 
@@ -15289,9 +15367,9 @@ size_t Draw_Sensors_V1_T2_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T1_P1(layer, cpu, row));
+		return Draw_Sensors_V1_T1_P1(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V1_T0_P1(layer, cpu, row));
+		return Draw_Sensors_V1_T0_P1(layer, cpu, row);
 	}
 }
 
@@ -15299,9 +15377,9 @@ size_t Draw_Sensors_V1_T2_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T1_P2(layer, cpu, row));
+		return Draw_Sensors_V1_T1_P2(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V1_T0_P2(layer, cpu, row));
+		return Draw_Sensors_V1_T0_P2(layer, cpu, row);
 	}
 }
 
@@ -15309,45 +15387,45 @@ size_t Draw_Sensors_V1_T2_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T1_P3(layer, cpu, row));
+		return Draw_Sensors_V1_T1_P3(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V1_T0_P3(layer, cpu, row));
+		return Draw_Sensors_V1_T0_P3(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V1_T3_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T1_P0(layer, cpu, row));
+		return Draw_Sensors_V1_T1_P0(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V1_T0_P0(layer, cpu, row));
+		return Draw_Sensors_V1_T0_P0(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V1_T3_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T1_P1(layer, cpu, row));
+		return Draw_Sensors_V1_T1_P1(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V1_T0_P1(layer, cpu, row));
+		return Draw_Sensors_V1_T0_P1(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V1_T3_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T1_P2(layer, cpu, row));
+		return Draw_Sensors_V1_T1_P2(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V1_T0_P2(layer, cpu, row));
+		return Draw_Sensors_V1_T0_P2(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V1_T3_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T1_P3(layer, cpu, row));
+		return Draw_Sensors_V1_T1_P3(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V1_T0_P3(layer, cpu, row));
+		return Draw_Sensors_V1_T0_P3(layer, cpu, row);
 	}
 }
 
@@ -15355,9 +15433,9 @@ size_t Draw_Sensors_V2_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T0_P0(layer, cpu, row));
+		return Draw_Sensors_V1_T0_P0(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T0_P0(layer, cpu, row));
+		return Draw_Sensors_V0_T0_P0(layer, cpu, row);
 	}
 }
 
@@ -15365,9 +15443,9 @@ size_t Draw_Sensors_V2_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T0_P1(layer, cpu, row));
+		return Draw_Sensors_V1_T0_P1(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T0_P1(layer, cpu, row));
+		return Draw_Sensors_V0_T0_P1(layer, cpu, row);
 	}
 }
 
@@ -15375,9 +15453,9 @@ size_t Draw_Sensors_V2_T0_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T0_P2(layer, cpu, row));
+		return Draw_Sensors_V1_T0_P2(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T0_P2(layer, cpu, row));
+		return Draw_Sensors_V0_T0_P2(layer, cpu, row);
 	}
 }
 
@@ -15385,9 +15463,9 @@ size_t Draw_Sensors_V2_T0_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T0_P3(layer, cpu, row));
+		return Draw_Sensors_V1_T0_P3(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T0_P3(layer, cpu, row));
+		return Draw_Sensors_V0_T0_P3(layer, cpu, row);
 	}
 }
 
@@ -15395,9 +15473,9 @@ size_t Draw_Sensors_V2_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T1_P0(layer, cpu, row));
+		return Draw_Sensors_V1_T1_P0(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T1_P0(layer, cpu, row));
+		return Draw_Sensors_V0_T1_P0(layer, cpu, row);
 	}
 }
 
@@ -15405,9 +15483,9 @@ size_t Draw_Sensors_V2_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T1_P1(layer, cpu, row));
+		return Draw_Sensors_V1_T1_P1(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T1_P1(layer, cpu, row));
+		return Draw_Sensors_V0_T1_P1(layer, cpu, row);
 	}
 }
 
@@ -15415,9 +15493,9 @@ size_t Draw_Sensors_V2_T1_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T1_P2(layer, cpu, row));
+		return Draw_Sensors_V1_T1_P2(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T1_P2(layer, cpu, row));
+		return Draw_Sensors_V0_T1_P2(layer, cpu, row);
 	}
 }
 
@@ -15425,9 +15503,9 @@ size_t Draw_Sensors_V2_T1_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T1_P3(layer, cpu, row));
+		return Draw_Sensors_V1_T1_P3(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T1_P3(layer, cpu, row));
+		return Draw_Sensors_V0_T1_P3(layer, cpu, row);
 	}
 }
 
@@ -15435,9 +15513,9 @@ size_t Draw_Sensors_V2_T2_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T2_P0(layer, cpu, row));
+		return Draw_Sensors_V1_T2_P0(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T2_P0(layer, cpu, row));
+		return Draw_Sensors_V0_T2_P0(layer, cpu, row);
 	}
 }
 
@@ -15445,9 +15523,9 @@ size_t Draw_Sensors_V2_T2_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T2_P1(layer, cpu, row));
+		return Draw_Sensors_V1_T2_P1(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T2_P1(layer, cpu, row));
+		return Draw_Sensors_V0_T2_P1(layer, cpu, row);
 	}
 }
 
@@ -15455,9 +15533,9 @@ size_t Draw_Sensors_V2_T2_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T2_P2(layer, cpu, row));
+		return Draw_Sensors_V1_T2_P2(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T2_P2(layer, cpu, row));
+		return Draw_Sensors_V0_T2_P2(layer, cpu, row);
 	}
 }
 
@@ -15465,9 +15543,9 @@ size_t Draw_Sensors_V2_T2_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T2_P3(layer, cpu, row));
+		return Draw_Sensors_V1_T2_P3(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T2_P3(layer, cpu, row));
+		return Draw_Sensors_V0_T2_P3(layer, cpu, row);
 	}
 }
 
@@ -15475,9 +15553,9 @@ size_t Draw_Sensors_V2_T3_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T3_P0(layer, cpu, row));
+		return Draw_Sensors_V1_T3_P0(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T3_P0(layer, cpu, row));
+		return Draw_Sensors_V0_T3_P0(layer, cpu, row);
 	}
 }
 
@@ -15485,9 +15563,9 @@ size_t Draw_Sensors_V2_T3_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T3_P1(layer, cpu, row));
+		return Draw_Sensors_V1_T3_P1(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T3_P1(layer, cpu, row));
+		return Draw_Sensors_V0_T3_P1(layer, cpu, row);
 	}
 }
 
@@ -15495,9 +15573,9 @@ size_t Draw_Sensors_V2_T3_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T3_P2(layer, cpu, row));
+		return Draw_Sensors_V1_T3_P2(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T3_P2(layer, cpu, row));
+		return Draw_Sensors_V0_T3_P2(layer, cpu, row);
 	}
 }
 
@@ -15505,153 +15583,153 @@ size_t Draw_Sensors_V2_T3_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Sensors_V1_T3_P3(layer, cpu, row));
+		return Draw_Sensors_V1_T3_P3(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T3_P3(layer, cpu, row));
+		return Draw_Sensors_V0_T3_P3(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V3_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T0_P0(layer, cpu, row));
+		return Draw_Sensors_V1_T0_P0(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T0_P0(layer, cpu, row));
+		return Draw_Sensors_V0_T0_P0(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V3_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T0_P1(layer, cpu, row));
+		return Draw_Sensors_V1_T0_P1(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T0_P1(layer, cpu, row));
+		return Draw_Sensors_V0_T0_P1(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V3_T0_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T0_P2(layer, cpu, row));
+		return Draw_Sensors_V1_T0_P2(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T0_P2(layer, cpu, row));
+		return Draw_Sensors_V0_T0_P2(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V3_T0_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T0_P3(layer, cpu, row));
+		return Draw_Sensors_V1_T0_P3(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T0_P3(layer, cpu, row));
+		return Draw_Sensors_V0_T0_P3(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V3_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T1_P0(layer, cpu, row));
+		return Draw_Sensors_V1_T1_P0(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T1_P0(layer, cpu, row));
+		return Draw_Sensors_V0_T1_P0(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V3_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T1_P1(layer, cpu, row));
+		return Draw_Sensors_V1_T1_P1(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T1_P1(layer, cpu, row));
+		return Draw_Sensors_V0_T1_P1(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V3_T1_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T1_P2(layer, cpu, row));
+		return Draw_Sensors_V1_T1_P2(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T1_P2(layer, cpu, row));
+		return Draw_Sensors_V0_T1_P2(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V3_T1_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T1_P3(layer, cpu, row));
+		return Draw_Sensors_V1_T1_P3(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T1_P3(layer, cpu, row));
+		return Draw_Sensors_V0_T1_P3(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V3_T2_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T2_P0(layer, cpu, row));
+		return Draw_Sensors_V1_T2_P0(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T2_P0(layer, cpu, row));
+		return Draw_Sensors_V0_T2_P0(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V3_T2_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T2_P1(layer, cpu, row));
+		return Draw_Sensors_V1_T2_P1(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T2_P1(layer, cpu, row));
+		return Draw_Sensors_V0_T2_P1(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V3_T2_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T2_P2(layer, cpu, row));
+		return Draw_Sensors_V1_T2_P2(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T2_P2(layer, cpu, row));
+		return Draw_Sensors_V0_T2_P2(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V3_T2_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T2_P3(layer, cpu, row));
+		return Draw_Sensors_V1_T2_P3(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T2_P3(layer, cpu, row));
+		return Draw_Sensors_V0_T2_P3(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V3_T3_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T3_P0(layer, cpu, row));
+		return Draw_Sensors_V1_T3_P0(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T3_P0(layer, cpu, row));
+		return Draw_Sensors_V0_T3_P0(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V3_T3_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T3_P1(layer, cpu, row));
+		return Draw_Sensors_V1_T3_P1(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T3_P1(layer, cpu, row));
+		return Draw_Sensors_V0_T3_P1(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V3_T3_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T3_P2(layer, cpu, row));
+		return Draw_Sensors_V1_T3_P2(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T3_P2(layer, cpu, row));
+		return Draw_Sensors_V0_T3_P2(layer, cpu, row);
 	}
 }
 
 size_t Draw_Sensors_V3_T3_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Sensors_V1_T3_P3(layer, cpu, row));
+		return Draw_Sensors_V1_T3_P3(layer, cpu, row);
 	} else {
-		return (Draw_Sensors_V0_T3_P3(layer, cpu, row));
+		return Draw_Sensors_V0_T3_P3(layer, cpu, row);
 	}
 }
 
@@ -15777,7 +15855,7 @@ CUINT Draw_Monitor_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
-	return (0);
+	return 0;
 }
 
 #define Draw_Voltage_None	Draw_Sensors_V0_T0_P0
@@ -15788,7 +15866,8 @@ size_t Draw_Voltage_SMT(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(layer);
 	UNUSED(row);
 
-	return (snprintf(Buffer, 80+1,
+	size_t len;
+	CONV(len, StrFormat, Buffer, 80+1,
 			"%7.2f\x20%7d"					\
 			"\x20\x20\x20\x20\x20%5.4f"			\
 			"\x20\x20\x20%5.4f"				\
@@ -15799,25 +15878,26 @@ size_t Draw_Voltage_SMT(Layer *layer, const unsigned int cpu, CUINT row)
 			Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST],
 			CFlop->Voltage.Vcore,
 			Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_HIGHEST],
-			32, hSpace) );
+			32, hSpace);
+	return len;
 }
 
 size_t Draw_Voltage_Core(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Voltage_SMT(layer, cpu, row));
+		return Draw_Voltage_SMT(layer, cpu, row);
 	} else {
-		return (Draw_Voltage_None(layer, cpu, row));
+		return Draw_Voltage_None(layer, cpu, row);
 	}
 }
 
 size_t Draw_Voltage_Pkg(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Voltage_SMT(layer, cpu, row));
+		return Draw_Voltage_SMT(layer, cpu, row);
 	} else {
-		return (Draw_Voltage_None(layer, cpu, row));
+		return Draw_Voltage_None(layer, cpu, row);
 	}
 }
 
@@ -15839,7 +15919,7 @@ CUINT Draw_Monitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
-	return (0);
+	return 0;
 }
 
 #define Draw_Energy_None	Draw_Sensors_V0_T0_P0
@@ -15850,14 +15930,16 @@ size_t Draw_Energy_Joule(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(layer);
 	UNUSED(row);
 
-	return (snprintf(Buffer, 80+1,
+	size_t len;
+	CONV(len, StrFormat, Buffer, 80+1,
 			"%7.2f\x20\x20\x20%018llu\x20\x20\x20\x20"	\
 			"%10.6f\x20\x20%10.6f\x20\x20%10.6f",
 			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Delta.Power.ACCU,
 			Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST],
 			CFlop->State.Energy,
-			Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_HIGHEST]) );
+			Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_HIGHEST]);
+	return len;
 }
 
 size_t Draw_Power_Watt(Layer *layer, const unsigned int cpu, CUINT row)
@@ -15866,14 +15948,16 @@ size_t Draw_Power_Watt(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(layer);
 	UNUSED(row);
 
-	return (snprintf(Buffer, 80+1,
+	size_t len;
+	CONV(len, StrFormat, Buffer, 80+1,
 			"%7.2f\x20\x20\x20%018llu\x20\x20\x20\x20"	\
 			"%10.6f\x20\x20%10.6f\x20\x20%10.6f",
 			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Delta.Power.ACCU,
 			Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST],
 			CFlop->State.Power,
-			Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_HIGHEST]) );
+			Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_HIGHEST]);
+	return len;
 }
 
 size_t (*Draw_Energy_Power_Matrix[])(Layer*, const unsigned int, CUINT) = {
@@ -15883,25 +15967,25 @@ size_t (*Draw_Energy_Power_Matrix[])(Layer*, const unsigned int, CUINT) = {
 
 size_t Draw_Energy_SMT(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	return (Draw_Energy_Power_Matrix[Setting.jouleWatt](layer, cpu, row));
+	return Draw_Energy_Power_Matrix[Setting.jouleWatt](layer, cpu, row);
 }
 
 size_t Draw_Energy_Core(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Energy_SMT(layer, cpu, row));
+		return Draw_Energy_SMT(layer, cpu, row);
 	} else {
-		return (Draw_Energy_None(layer, cpu, row));
+		return Draw_Energy_None(layer, cpu, row);
 	}
 }
 
 size_t Draw_Energy_Pkg(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Energy_SMT(layer, cpu, row));
+		return Draw_Energy_SMT(layer, cpu, row);
 	} else {
-		return (Draw_Energy_None(layer, cpu, row));
+		return Draw_Energy_None(layer, cpu, row);
 	}
 }
 
@@ -15923,13 +16007,14 @@ CUINT Draw_Monitor_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
-	return (0);
+	return 0;
 }
 
 size_t Draw_Monitor_Slice_Error_Relative_Freq(	struct FLIP_FLOP *CFlop,
 						struct SLICE_STRUCT *pSlice )
 {
-	return (snprintf(Buffer, 8+20+20+20+20+20+1,
+	size_t len;
+	CONV(len, StrFormat, Buffer, 8+20+20+20+20+20+1,
 			"%7.2f "					\
 			"%16llu%16llu%18llu%18llu%18llu",
 			CFlop->Relative.Freq,
@@ -15937,13 +16022,15 @@ size_t Draw_Monitor_Slice_Error_Relative_Freq(	struct FLIP_FLOP *CFlop,
 			pSlice->Delta.INST,
 			pSlice->Counter[1].TSC,
 			pSlice->Counter[1].INST,
-			pSlice->Error));
+			pSlice->Error);
+	return len;
 }
 
 size_t Draw_Monitor_Slice_Error_Absolute_Freq(	struct FLIP_FLOP *CFlop,
 						struct SLICE_STRUCT *pSlice )
 {
-	return (snprintf(Buffer, 8+20+20+20+20+20+1,
+	size_t len;
+	CONV(len, StrFormat, Buffer, 8+20+20+20+20+20+1,
 			"%7.2f "					\
 			"%16llu%16llu%18llu%18llu%18llu",
 			CFlop->Absolute.Freq,
@@ -15951,13 +16038,15 @@ size_t Draw_Monitor_Slice_Error_Absolute_Freq(	struct FLIP_FLOP *CFlop,
 			pSlice->Delta.INST,
 			pSlice->Counter[1].TSC,
 			pSlice->Counter[1].INST,
-			pSlice->Error));
+			pSlice->Error);
+	return len;
 }
 
 size_t Draw_Monitor_Slice_NoError_Relative_Freq(struct FLIP_FLOP *CFlop,
 						struct SLICE_STRUCT *pSlice)
 {
-	return (snprintf(Buffer, 8+20+20+20+20+18+1,
+	size_t len;
+	CONV(len, StrFormat, Buffer, 8+20+20+20+20+18+1,
 			"%7.2f "					\
 			"%16llu%16llu%18llu%18llu%.*s",
 			CFlop->Relative.Freq,
@@ -15965,13 +16054,15 @@ size_t Draw_Monitor_Slice_NoError_Relative_Freq(struct FLIP_FLOP *CFlop,
 			pSlice->Delta.INST,
 			pSlice->Counter[1].TSC,
 			pSlice->Counter[1].INST,
-			18, hSpace));
+			18, hSpace);
+	return len;
 }
 
 size_t Draw_Monitor_Slice_NoError_Absolute_Freq(struct FLIP_FLOP *CFlop,
 						struct SLICE_STRUCT *pSlice)
 {
-	return (snprintf(Buffer, 8+20+20+20+20+18+1,
+	size_t len;
+	CONV(len, StrFormat, Buffer, 8+20+20+20+20+18+1,
 			"%7.2f "					\
 			"%16llu%16llu%18llu%18llu%.*s",
 			CFlop->Absolute.Freq,
@@ -15979,7 +16070,8 @@ size_t Draw_Monitor_Slice_NoError_Absolute_Freq(struct FLIP_FLOP *CFlop,
 			pSlice->Delta.INST,
 			pSlice->Counter[1].TSC,
 			pSlice->Counter[1].INST,
-			18, hSpace));
+			18, hSpace);
+	return len;
 }
 
 size_t (*Draw_Monitor_Slice_Matrix[2][2])(struct FLIP_FLOP *CFlop,
@@ -16006,7 +16098,7 @@ CUINT Draw_Monitor_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
-	return (0);
+	return 0;
 }
 
 CUINT Draw_Monitor_Custom(Layer *layer, const unsigned int cpu, CUINT row)
@@ -16015,7 +16107,7 @@ CUINT Draw_Monitor_Custom(Layer *layer, const unsigned int cpu, CUINT row)
 	struct FLIP_FLOP *CFlop = &Cpu->FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 	size_t len;
-	len = snprintf(Buffer, MAX_WIDTH,
+	CONV(len, StrFormat, Buffer, MAX_WIDTH,
 		"%7.2f %7.2f %7.2f"					\
 		"\x20\x20\x20" "%7.2f %7.2f %7.2f"			\
 		"\x20\x20" "%3u %3u %3u"				\
@@ -16073,7 +16165,7 @@ CUINT Draw_Monitor_Custom(Layer *layer, const unsigned int cpu, CUINT row)
 
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
-	return (0);
+	return 0;
 }
 
 CUINT Draw_AltMonitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
@@ -16083,7 +16175,7 @@ CUINT Draw_AltMonitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 
 	row += 1 + Draw.Area.MaxRows;
 	if (!Draw.Flag.avgOrPC) {
-		len = snprintf( Buffer, ((5*2)+1)+(6*7)+1,
+		CONV(len, StrFormat, Buffer, ((5*2)+1)+(6*7)+1,
 				"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% " \
 				"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%",
 				100.f * Shm->Proc.Avg.Turbo,
@@ -16091,10 +16183,11 @@ CUINT Draw_AltMonitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 				100.f * Shm->Proc.Avg.C1,
 				100.f * Shm->Proc.Avg.C3,
 				100.f * Shm->Proc.Avg.C6,
-				100.f * Shm->Proc.Avg.C7 );
+				100.f * Shm->Proc.Avg.C7);
+
 		memcpy(&LayerAt(layer, code, 20, row), Buffer, len);
 	} else {
-		len = snprintf( Buffer, ((6*4)+3+5)+(8*6)+1,
+		CONV(len, StrFormat, Buffer, ((6*4)+3+5)+(8*6)+1,
 				"c2:%-5.1f"	" c3:%-5.1f"	" c4:%-5.1f" \
 				" c6:%-5.1f"	" c7:%-5.1f"	" c8:%-5.1f" \
 				" c9:%-5.1f"	" c10:%-5.1f",
@@ -16105,11 +16198,12 @@ CUINT Draw_AltMonitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 				100.f * Shm->Proc.State.PC07,
 				100.f * Shm->Proc.State.PC08,
 				100.f * Shm->Proc.State.PC09,
-				100.f * Shm->Proc.State.PC10 );
+				100.f * Shm->Proc.State.PC10);
+
 		memcpy(&LayerAt(layer, code, 7, row), Buffer, len);
 	}
 	row += 1;
-	return (row);
+	return row;
 }
 
 CUINT Draw_AltMonitor_Common(Layer *layer, const unsigned int cpu, CUINT row)
@@ -16118,7 +16212,7 @@ CUINT Draw_AltMonitor_Common(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(cpu);
 
 	row += 2 + Draw.Area.MaxRows;
-	return (row);
+	return row;
 }
 
 CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
@@ -16130,94 +16224,104 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 
 	row += 1;
 /* PC02 */
-	bar0 = Shm->Proc.State.PC02 * margin;
+	bar0 = (CUINT) (Shm->Proc.State.PC02 * margin);
 	bar1 = margin - bar0;
 
-	len = snprintf( Buffer, Draw.Area.LoadWidth,
+	CONV(len, StrFormat, Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC02, 100.f * Shm->Proc.State.PC02,
-			bar0, hBar, bar1, hSpace );
+			bar0, hBar, bar1, hSpace);
+
 	memcpy(&LayerAt(layer, code, 5, row), Buffer, len);
 /* PC03 */
-	bar0 = Shm->Proc.State.PC03 * margin;
+	bar0 = (CUINT) (Shm->Proc.State.PC03 * margin);
 	bar1 = margin - bar0;
 
-	len = snprintf( Buffer, Draw.Area.LoadWidth,
+	CONV(len, StrFormat, Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC03, 100.f * Shm->Proc.State.PC03,
-			bar0, hBar, bar1, hSpace );
+			bar0, hBar, bar1, hSpace);
+
 	memcpy(&LayerAt(layer, code, 5, (row + 1)), Buffer, len);
 /* PC04 */
-	bar0 = Shm->Proc.State.PC04 * margin;
+	bar0 = (CUINT) (Shm->Proc.State.PC04 * margin);
 	bar1 = margin - bar0;
 
-	len = snprintf( Buffer, Draw.Area.LoadWidth,
+	CONV(len, StrFormat, Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC04, 100.f * Shm->Proc.State.PC04,
-			bar0, hBar, bar1, hSpace );
+			bar0, hBar, bar1, hSpace);
+
 	memcpy(&LayerAt(layer, code, 5, (row + 2)), Buffer, len);
 /* PC06 */
-	bar0 = Shm->Proc.State.PC06 * margin;
+	bar0 = (CUINT) (Shm->Proc.State.PC06 * margin);
 	bar1 = margin - bar0;
 
-	len = snprintf( Buffer, Draw.Area.LoadWidth,
+	CONV(len, StrFormat, Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC06, 100.f * Shm->Proc.State.PC06,
-			bar0, hBar, bar1, hSpace );
+			bar0, hBar, bar1, hSpace);
+
 	memcpy(&LayerAt(layer, code, 5, (row + 3)), Buffer, len);
 /* PC07 */
-	bar0 = Shm->Proc.State.PC07 * margin;
+	bar0 = (CUINT) (Shm->Proc.State.PC07 * margin);
 	bar1 = margin - bar0;
 
-	len = snprintf( Buffer, Draw.Area.LoadWidth,
+	CONV(len, StrFormat, Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC07, 100.f * Shm->Proc.State.PC07,
-			bar0, hBar, bar1, hSpace );
+			bar0, hBar, bar1, hSpace);
+
 	memcpy(&LayerAt(layer, code, 5, (row + 4)), Buffer, len);
 /* PC08 */
-	bar0 = Shm->Proc.State.PC08 * margin;
+	bar0 = (CUINT) (Shm->Proc.State.PC08 * margin);
 	bar1 = margin - bar0;
 
-	len = snprintf( Buffer, Draw.Area.LoadWidth,
+	CONV(len, StrFormat, Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC08, 100.f * Shm->Proc.State.PC08,
-			bar0, hBar, bar1, hSpace );
+			bar0, hBar, bar1, hSpace);
+
 	memcpy(&LayerAt(layer, code, 5, (row + 5)), Buffer, len);
 /* PC09 */
-	bar0 = Shm->Proc.State.PC09 * margin;
+	bar0 = (CUINT) (Shm->Proc.State.PC09 * margin);
 	bar1 = margin - bar0;
 
-	len = snprintf( Buffer, Draw.Area.LoadWidth,
+	CONV(len, StrFormat, Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC09, 100.f * Shm->Proc.State.PC09,
-			bar0, hBar, bar1, hSpace );
+			bar0, hBar, bar1, hSpace);
+
 	memcpy(&LayerAt(layer, code, 5, (row + 6)), Buffer, len);
 /* PC10 */
-	bar0 = Shm->Proc.State.PC10 * margin;
+	bar0 = (CUINT) (Shm->Proc.State.PC10 * margin);
 	bar1 = margin - bar0;
 
-	len = snprintf( Buffer, Draw.Area.LoadWidth,
+	CONV(len, StrFormat, Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC10, 100.f * Shm->Proc.State.PC10,
-			bar0, hBar, bar1, hSpace );
+			bar0, hBar, bar1, hSpace);
+
 	memcpy(&LayerAt(layer, code, 5, (row + 7)), Buffer, len);
 /* MC6 */
-	bar0 = Shm->Proc.State.MC6 * margin;
+	bar0 = (CUINT) (Shm->Proc.State.MC6 * margin);
 	bar1 = margin - bar0;
 
-	len = snprintf( Buffer, Draw.Area.LoadWidth,
+	CONV(len, StrFormat, Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.MC6, 100.f * Shm->Proc.State.MC6,
-			bar0, hBar, bar1, hSpace );
+			bar0, hBar, bar1, hSpace);
+
 	memcpy(&LayerAt(layer, code, 5, (row + 8)), Buffer, len);
 /* TSC & UNCORE */
-	len = snprintf( Buffer, Draw.Area.LoadWidth,
+	CONV(len, StrFormat, Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%.*s" "UNCORE:%18llu",
-			PFlop->Delta.PTSC, 7+2+18, hSpace, PFlop->Uncore.FC0 );
+			PFlop->Delta.PTSC, 7+2+18, hSpace, PFlop->Uncore.FC0);
+
 	memcpy(&LayerAt(layer, code, 5, (row + 9)), Buffer, len);
 
 	row += 1 + 10;
-	return (row);
+	return row;
 }
 
 CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
@@ -16255,36 +16359,41 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 		stateAttr = RSC(TRACKER_STATE_COLOR).ATTR();
 	    }
 	    if (!Draw.Flag.taskVal) {
-		len = snprintf( Buffer, TASK_COMM_LEN, "%s",
-				Shm->SysGate.taskList[idx].comm );
+		CONV(len, StrFormat, Buffer, TASK_COMM_LEN, "%s",
+				Shm->SysGate.taskList[idx].comm);
 	    } else {
 		switch (Shm->SysGate.sortByField) {
 		case F_STATE:
-			len = snprintf( Buffer, 2*TASK_COMM_LEN+2, "%s(%s)",
+			CONV(len, StrFormat, Buffer, 2 * TASK_COMM_LEN + 2,
+					"%s(%s)",
 					Shm->SysGate.taskList[idx].comm,
-					stateStr );
+					stateStr);
 			break;
 		case F_RTIME:
-			len = snprintf( Buffer, TASK_COMM_LEN+20+2, "%s(%llu)",
+			CONV(len, StrFormat, Buffer, TASK_COMM_LEN + 20 + 2,
+					"%s(%llu)",
 					Shm->SysGate.taskList[idx].comm,
-					Shm->SysGate.taskList[idx].runtime );
+					Shm->SysGate.taskList[idx].runtime);
 			break;
 		case F_UTIME:
-			len = snprintf( Buffer, TASK_COMM_LEN+20+2, "%s(%llu)",
+			CONV(len, StrFormat, Buffer, TASK_COMM_LEN + 20 + 2,
+					"%s(%llu)",
 					Shm->SysGate.taskList[idx].comm,
-					Shm->SysGate.taskList[idx].usertime );
+					Shm->SysGate.taskList[idx].usertime);
 			break;
 		case F_STIME:
-			len = snprintf( Buffer, TASK_COMM_LEN+20+2, "%s(%llu)",
+			CONV(len, StrFormat, Buffer, TASK_COMM_LEN + 20 + 2,
+					"%s(%llu)",
 					Shm->SysGate.taskList[idx].comm,
-					Shm->SysGate.taskList[idx].systime );
+					Shm->SysGate.taskList[idx].systime);
 			break;
 		case F_PID:
 			fallthrough;
 		case F_COMM:
-			len = snprintf( Buffer, TASK_COMM_LEN+11+2, "%s(%d)",
+			CONV(len, StrFormat, Buffer, TASK_COMM_LEN + 11 + 2,
+					"%s(%d)",
 					Shm->SysGate.taskList[idx].comm,
-					Shm->SysGate.taskList[idx].pid );
+					Shm->SysGate.taskList[idx].pid);
 			break;
 		}
 	    }
@@ -16323,12 +16432,12 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
     }
   }
   row += 2 + Draw.Area.MaxRows;
-  return (row);
+  return row;
 }
 
 void Draw_AltMonitor_Energy_Joule(void)
 {
-	snprintf(Buffer, 9+9+9+9+1,
+	StrFormat(Buffer, 9+9+9+9+1,
 		"%8.4f" "%8.4f" "%8.4f" "%8.4f",
 		Shm->Proc.State.Energy[PWR_DOMAIN(PKG)].Current,
 		Shm->Proc.State.Energy[PWR_DOMAIN(CORES)].Current,
@@ -16338,7 +16447,7 @@ void Draw_AltMonitor_Energy_Joule(void)
 
 void Draw_AltMonitor_Power_Watt(void)
 {
-	snprintf(Buffer, 9+9+9+9+1,
+	StrFormat(Buffer, 9+9+9+9+1,
 		"%8.4f" "%8.4f" "%8.4f" "%8.4f",
 		Shm->Proc.State.Power[PWR_DOMAIN(PKG)].Current,
 		Shm->Proc.State.Power[PWR_DOMAIN(CORES)].Current,
@@ -16366,7 +16475,7 @@ CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
 	memcpy(&LayerAt(layer, code, col + 64,	row), &Buffer[ 8], 8);
 
 	row += 1;
-	return (row);
+	return row;
 }
 
 CUINT Draw_AltMonitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
@@ -16378,14 +16487,14 @@ CUINT Draw_AltMonitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 
-	snprintf( Buffer, 2*11+4*6+1,
+	StrFormat(Buffer, 2*11+4*6+1,
 			"%7d" "%05.4f" "%05.4f" "%05.4f" "%7d" "%05.4f",
 			PFlop->Voltage.VID.CPU,
 			Shm->Proc.State.Voltage.Limit[SENSOR_LOWEST],
 			PFlop->Voltage.CPU,
 			Shm->Proc.State.Voltage.Limit[SENSOR_HIGHEST],
 			PFlop->Voltage.VID.SOC,
-			PFlop->Voltage.SOC );
+			PFlop->Voltage.SOC);
 
 	memcpy(&LayerAt(layer, code, col,	row), &Buffer[ 0], 7);
 	memcpy(&LayerAt(layer, code, col + 12,	row), &Buffer[ 7], 6);
@@ -16395,14 +16504,15 @@ CUINT Draw_AltMonitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 	memcpy(&LayerAt(layer, code, col + 59,	row), &Buffer[32], 6);
 
 	row += 1;
-	return (row);
+	return row;
 }
 
 size_t Draw_AltMonitor_Custom_Energy_Joule(void)
 {
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 
-	return snprintf(Buffer, MAX_WIDTH,
+	size_t len;
+	CONV(len, StrFormat, Buffer, MAX_WIDTH,
 			" RAM:%8.4f(J) -" " SoC:%8.4f(J)/%5.4f(V)"	\
 			" - Pkg:%8.4f(J) - "				\
 			"%5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f -"	\
@@ -16431,13 +16541,16 @@ size_t Draw_AltMonitor_Custom_Energy_Joule(void)
 			100.f * Shm->Proc.State.PC08,
 			100.f * Shm->Proc.State.PC09,
 			100.f * Shm->Proc.State.PC10);
+
+	return len;
 }
 
 size_t Draw_AltMonitor_Custom_Power_Watt(void)
 {
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 
-	return snprintf(Buffer, MAX_WIDTH,
+	size_t len;
+	CONV(len, StrFormat, Buffer, MAX_WIDTH,
 			" RAM:%8.4f(W) -" " SoC:%8.4f(W)/%5.4f(V)"	\
 			" - Pkg:%8.4f(W) - "				\
 			"%5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f -"	\
@@ -16466,6 +16579,8 @@ size_t Draw_AltMonitor_Custom_Power_Watt(void)
 			100.f * Shm->Proc.State.PC08,
 			100.f * Shm->Proc.State.PC09,
 			100.f * Shm->Proc.State.PC10);
+
+	return len;
 }
 
 size_t (*Draw_AltMonitor_Custom_Matrix[])(void) = {
@@ -16484,7 +16599,7 @@ CUINT Draw_AltMonitor_Custom(Layer *layer, const unsigned int cpu, CUINT row)
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), &Buffer[ 0], len);
 
 	row += 1;
-	return (row);
+	return row;
 }
 #endif /* NO_LOWER */
 
@@ -16502,7 +16617,8 @@ void Draw_Footer_Voltage_Fahrenheit(struct PKG_FLIP_FLOP *PFlop)
 	(SCOPE_OF_FORMULA(Shm->Proc.thermalFormula) != FORMULA_SCOPE_NONE),
 	(SCOPE_OF_FORMULA(Shm->Proc.voltageFormula) != FORMULA_SCOPE_NONE)
 	};
-	snprintf(Buffer, 10+5+1, Format_Temp_Voltage[ fmt[0] ] [ fmt[1] ],
+
+	StrFormat(Buffer, 10+5+1, Format_Temp_Voltage[ fmt[0] ] [ fmt[1] ],
 			Cels2Fahr(PFlop->Thermal.Temp),
 			PFlop->Voltage.CPU);
 }
@@ -16513,7 +16629,8 @@ void Draw_Footer_Voltage_Celsius(struct PKG_FLIP_FLOP *PFlop)
 	(SCOPE_OF_FORMULA(Shm->Proc.thermalFormula) != FORMULA_SCOPE_NONE),
 	(SCOPE_OF_FORMULA(Shm->Proc.voltageFormula) != FORMULA_SCOPE_NONE)
 	};
-	snprintf(Buffer, 10+5+1, Format_Temp_Voltage[ fmt[0] ] [ fmt[1] ],
+
+	StrFormat(Buffer, 10+5+1, Format_Temp_Voltage[ fmt[0] ] [ fmt[1] ],
 			PFlop->Thermal.Temp,
 			PFlop->Voltage.CPU);
 }
@@ -16566,13 +16683,13 @@ void Draw_Footer(Layer *layer, CUINT row)
 
 	Draw_Footer_Voltage_Temp[Setting.fahrCels](PFlop);
 
-	LayerAt(layer, code, col[0] + 8 , row) = Buffer[0];
-	LayerAt(layer, code, col[0] + 9 , row) = Buffer[1];
-	LayerAt(layer, code, col[0] + 10, row) = Buffer[2];
-	LayerAt(layer, code, col[0]	, row) = Buffer[3];
-	LayerAt(layer, code, col[0] + 1 , row) = Buffer[4];
-	LayerAt(layer, code, col[0] + 2 , row) = Buffer[5];
-	LayerAt(layer, code, col[0] + 3 , row) = Buffer[6];
+	LayerAt(layer, code, col[0] + 8 , row) = (ASCII) Buffer[0];
+	LayerAt(layer, code, col[0] + 9 , row) = (ASCII) Buffer[1];
+	LayerAt(layer, code, col[0] + 10, row) = (ASCII) Buffer[2];
+	LayerAt(layer, code, col[0]	, row) = (ASCII) Buffer[3];
+	LayerAt(layer, code, col[0] + 1 , row) = (ASCII) Buffer[4];
+	LayerAt(layer, code, col[0] + 2 , row) = (ASCII) Buffer[5];
+	LayerAt(layer, code, col[0] + 3 , row) = (ASCII) Buffer[6];
 
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)
 	&& (Shm->SysGate.tickStep == Shm->SysGate.tickReset)) {
@@ -16964,10 +17081,10 @@ void Layout_Card_Uncore(Layer *layer, Card *card)
 			card->origin.col, (card->origin.row + 3),
 			hUncore);
 
-	snprintf(Buffer, 10+1, "x%2u", Shm->Uncore.Boost[UNCORE_BOOST(MAX)]);
-	hUncore.code[ 8] = Buffer[0];
-	hUncore.code[ 9] = Buffer[1];
-	hUncore.code[10] = Buffer[2];
+	StrFormat(Buffer, 10+1, "x%2u", Shm->Uncore.Boost[UNCORE_BOOST(MAX)]);
+	hUncore.code[ 8] = (ASCII) Buffer[0];
+	hUncore.code[ 9] = (ASCII) Buffer[1];
+	hUncore.code[10] = (ASCII) Buffer[2];
 
 	LayerCopyAt(	layer, hUncore.origin.col, hUncore.origin.row,
 			hUncore.length, hUncore.attr, hUncore.code);
@@ -16979,11 +17096,11 @@ void Layout_Card_Bus(Layer *layer, Card *card)
 			card->origin.col, (card->origin.row + 3),
 			hBus);
 
-	snprintf(Buffer, 10+1, "%4u", Shm->Uncore.Bus.Rate);
-	hBus.code[5] = Buffer[0];
-	hBus.code[6] = Buffer[1];
-	hBus.code[7] = Buffer[2];
-	hBus.code[8] = Buffer[3];
+	StrFormat(Buffer, 10+1, "%4u", Shm->Uncore.Bus.Rate);
+	hBus.code[5] = (ASCII) Buffer[0];
+	hBus.code[6] = (ASCII) Buffer[1];
+	hBus.code[7] = (ASCII) Buffer[2];
+	hBus.code[8] = (ASCII) Buffer[3];
 
 	switch (Shm->Uncore.Unit.Bus_Rate) {
 	case 0b00:
@@ -17016,13 +17133,16 @@ void Layout_Card_MC(Layer *layer, Card *card)
 			hRAM);
 
 	card->data.dword.lo = 0;
-	card->data.dword.hi = snprintf(	Card_MC_Timing, 11+(4*10)+5+1,
-					"% d-%u-%u-%u-%uT",
-				Shm->Uncore.MC[0].Channel[0].Timing.tCL,
-				Shm->Uncore.MC[0].Channel[0].Timing.tRCD,
-				Shm->Uncore.MC[0].Channel[0].Timing.tRP,
-				Shm->Uncore.MC[0].Channel[0].Timing.tRAS,
-				Shm->Uncore.MC[0].Channel[0].Timing.CMD_Rate );
+
+	CONV(card->data.dword.hi, StrFormat,
+		Card_MC_Timing,
+		11+(4*10)+5+1,
+		"% d-%u-%u-%u-%uT",
+		Shm->Uncore.MC[0].Channel[0].Timing.tCL,
+		Shm->Uncore.MC[0].Channel[0].Timing.tRCD,
+		Shm->Uncore.MC[0].Channel[0].Timing.tRP,
+		Shm->Uncore.MC[0].Channel[0].Timing.tRAS,
+		Shm->Uncore.MC[0].Channel[0].Timing.CMD_Rate);
 
 	LayerCopyAt(	layer, hRAM.origin.col, hRAM.origin.row,
 			hRAM.length, hRAM.attr, hRAM.code);
@@ -17085,10 +17205,10 @@ void Layout_Card_RAM(Layer *layer, Card *card)
       }
       if (totalRAM > 99) {
 	hMem.attr[hMem.length-2] = RSC(UI).ATTR()[UI_LAYOUT_CARD_RAM_3DIGITS];
-	snprintf(Buffer, 20+1+1, "%3lu", totalRAM);
+	StrFormat(Buffer, 20+1+1, "%3lu", totalRAM);
       } else {
 	hMem.attr[hMem.length-2] = RSC(UI).ATTR()[UI_LAYOUT_CARD_RAM_2DIGITS];
-	snprintf(Buffer, 20+1+1, "%2lu%c", totalRAM, symbol);
+	StrFormat(Buffer, 20+1+1, "%2lu%c", totalRAM, symbol);
       }
 	memcpy(&hMem.code[8], Buffer, 3);
 
@@ -17126,9 +17246,9 @@ unsigned int MoveDashboardCursor(Coordinate *coord)
 		coord->row += marginHeight;
 	}
 	if (coord->row > bottomEdge) {
-		return (RENDER_KO);
+		return RENDER_KO;
 	}
-	return (RENDER_OK);
+	return RENDER_OK;
 }
 
 void Layout_Dashboard(Layer *layer)
@@ -17229,8 +17349,8 @@ void Draw_Card_Core(Layer *layer, Card *card)
 
 void Draw_Card_CLK(Layer *layer, Card *card)
 {
-	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
-				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core]\
+				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core]\
 					.Toggle];
 
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
@@ -17239,7 +17359,7 @@ void Draw_Card_CLK(Layer *layer, Card *card)
 
 	Counter2LCD(layer, card->origin.col, card->origin.row, clock);
 
-	snprintf(Buffer, 6+1, "%5.1f", CLOCK_MHz(double, CFlop->Clock.Hz));
+	StrFormat(Buffer, 6+1, "%5.1f", CLOCK_MHz(double, CFlop->Clock.Hz));
 
 	memcpy(&LayerAt(layer, code, (card->origin.col+2),(card->origin.row+3)),
 		Buffer, 5);
@@ -17295,7 +17415,7 @@ void Draw_Card_RAM(Layer *layer, Card *card)
 	Sys2LCD(layer, card->origin.col, card->origin.row, percent);
 
 	unit = ByteReDim(Shm->SysGate.memInfo.freeram, 6, &freeRAM);
-	snprintf(Buffer, 20+1+1, "%5lu%c", freeRAM, symbol[unit]);
+	StrFormat(Buffer, 20+1+1, "%5lu%c", freeRAM, symbol[unit]);
 	memcpy(&LayerAt(layer,code, (card->origin.col+1), (card->origin.row+3)),
 		Buffer, 6);
       }
@@ -17317,13 +17437,14 @@ void Draw_Card_Task(Layer *layer, Card *card)
     if (card->data.dword.hi == RENDER_OK)
     {
       if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
+	size_t	pb, pe;
 	int	cl = (int) strnlen(Shm->SysGate.taskList[0].comm, 12),
-		hl = (12 - cl) / 2, hr = hl + (cl & 1), pb, pe;
+		hl = (12 - cl) / 2, hr = hl + (cl & 1);
 	char	stateStr[TASK_COMM_LEN];
 	ATTRIBUTE *stateAttr;
 	stateAttr = StateToSymbol(Shm->SysGate.taskList[0].state, stateStr);
 
-	snprintf(Buffer, 12+10+3+10+1, "%.*s%.*s%.*s%n%7u(%c)%n%5u",
+	StrFormat(Buffer, 12+10+3+10+1, "%.*s%.*s%.*s%zn%7u(%c)%zn%5u",
 				hl, hSpace,
 				cl, Shm->SysGate.taskList[0].comm,
 				hr, hSpace,
@@ -17634,7 +17755,7 @@ REASON_CODE Top(char option)
   }
 	DestroyAllCards(&cardList);
 
-	return (reason);
+	return reason;
 }
 
 REASON_CODE Help(REASON_CODE reason, ...)
@@ -17680,7 +17801,7 @@ REASON_CODE Help(REASON_CODE reason, ...)
 		break;
 	}
 	va_end(ap);
-	return (reason);
+	return reason;
 }
 
 void Emergency(int caught)
@@ -17754,7 +17875,7 @@ int main(int argc, char *argv[])
 	int	fd = -1, idx = 0;
 	char	*program = strdup(argv[0]),
 		*appName = program != NULL ? basename(program) : argv[idx],
-		option = 't', trailing =  '\0';
+		option = 't', trailing = '\0';
 
 	REASON_INIT(reason);
 
@@ -17773,7 +17894,8 @@ int main(int argc, char *argv[])
   {
     if (fstat(fd, &shmStat) != -1)
     {
-      if ((Shm = mmap(NULL, shmStat.st_size,
+	const size_t shmSize = (size_t) shmStat.st_size;
+      if ((Shm = mmap(	NULL, shmSize,
 			PROT_READ|PROT_WRITE, MAP_SHARED,
 			fd, 0)) != MAP_FAILED)
       {
@@ -17936,7 +18058,7 @@ int main(int argc, char *argv[])
 		break;
 	    case 'i':
 		{
-			int iter = -1U;
+			int iter = -1;
 		    if (++idx < argc) {
 			if ((sscanf(argv[idx], "%d%c", &iter, &trailing) != 1)
 				|| (iter <= 0))
@@ -17945,13 +18067,13 @@ int main(int argc, char *argv[])
 			}
 		    }
 			TrapSignal(1);
-			Instructions(iter);
+			Instructions((unsigned int) iter);
 			TrapSignal(0);
 		}
 		break;
 	    case 'c':
 		{
-			int iter = -1U;
+			int iter = -1;
 		    if (++idx < argc) {
 			if ((sscanf(argv[idx], "%d%c", &iter, &trailing) != 1)
 				|| (iter <= 0))
@@ -17960,13 +18082,13 @@ int main(int argc, char *argv[])
 			}
 		    }
 			TrapSignal(1);
-			Counters(iter);
+			Counters((unsigned int) iter);
 			TrapSignal(0);
 		}
 		break;
 	    case 'C':
 		{
-			int iter = -1U;
+			int iter = -1;
 		    if (++idx < argc) {
 			if ((sscanf(argv[idx], "%d%c", &iter, &trailing) != 1)
 				|| (iter <= 0))
@@ -17975,13 +18097,13 @@ int main(int argc, char *argv[])
 			}
 		    }
 			TrapSignal(1);
-			Sensors(iter);
+			Sensors((unsigned int) iter);
 			TrapSignal(0);
 		}
 		break;
 	    case 'V':
 		{
-			int iter = -1U;
+			int iter = -1;
 		    if (++idx < argc) {
 			if ((sscanf(argv[idx], "%d%c", &iter, &trailing) != 1)
 				|| (iter <= 0))
@@ -17990,13 +18112,13 @@ int main(int argc, char *argv[])
 			}
 		    }
 			TrapSignal(1);
-			Voltage(iter);
+			Voltage((unsigned int) iter);
 			TrapSignal(0);
 		}
 		break;
 	    case 'W':
 		{
-			int iter = -1U;
+			int iter = -1;
 		    if (++idx < argc) {
 			if ((sscanf(argv[idx], "%d%c", &iter, &trailing) != 1)
 				|| (iter <= 0))
@@ -18005,13 +18127,13 @@ int main(int argc, char *argv[])
 			}
 		    }
 			TrapSignal(1);
-			Power(iter);
+			Power((unsigned int) iter);
 			TrapSignal(0);
 		}
 		break;
 	    case 'g':
 		{
-			int iter = -1U;
+			int iter = -1;
 		    if (++idx < argc) {
 			if ((sscanf(argv[idx], "%d%c", &iter, &trailing) != 1)
 				|| (iter <= 0))
@@ -18020,7 +18142,7 @@ int main(int argc, char *argv[])
 			}
 		    }
 			TrapSignal(1);
-			Package(iter);
+			Package((unsigned int) iter);
 			TrapSignal(0);
 		}
 		break;
@@ -18049,7 +18171,7 @@ int main(int argc, char *argv[])
 		    {
 			const size_t llen = strlen(pOpt->first);
 			const size_t rlen = strlen(argv[idx]);
-			const ssize_t nlen = llen - rlen;
+			const ssize_t nlen = (ssize_t) llen - (ssize_t) rlen;
 			if ((nlen >= 0)
 			&& (strncmp(pOpt->first, argv[idx], rlen) == 0))
 			{
@@ -18082,7 +18204,7 @@ int main(int argc, char *argv[])
 		&& (argv[idx][0] == '-')
 		&& ((option = argv[idx][1]) != '\0') );
 
-	if (munmap(Shm, shmStat.st_size) == -1) {
+	if (munmap(Shm, shmSize) == -1) {
 		REASON_SET(reason, RC_SHM_MMAP);
 		reason = Help(reason, SHM_FILENAME);
 	}
@@ -18090,7 +18212,7 @@ int main(int argc, char *argv[])
 		char *wrongVersion = malloc(10+5+5+5+1);
 		REASON_SET(reason, RC_SHM_MMAP, EPERM);
 		if (wrongVersion != NULL) {
-			snprintf(wrongVersion, 10+5+5+5+1,
+			StrFormat(wrongVersion, 10+5+5+5+1,
 				"Version %hu.%hu.%hu",
 				Shm->FootPrint.major,
 				Shm->FootPrint.minor,
@@ -18098,7 +18220,7 @@ int main(int argc, char *argv[])
 			reason = Help(reason, wrongVersion);
 			free(wrongVersion);
 		}
-		munmap(Shm, shmStat.st_size);
+		munmap(Shm, shmSize);
        }
       } else {
 		REASON_SET(reason, RC_SHM_MMAP);
@@ -18121,5 +18243,5 @@ int main(int argc, char *argv[])
     if (program != NULL) {
 	free(program);
     }
-    return (reason.rc);
+    return reason.rc;
 }

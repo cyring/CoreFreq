@@ -598,12 +598,12 @@ int GetKey(SCANKEY *scan, struct timespec *tsec)
 
 	if ((rp = ppoll(&fds, 1, tsec, NULL)) > 0) {
 		if (fds.revents & POLLIN) {
-			size_t lc = read(STDIN_FILENO, &scan->key, 8);
+			ssize_t lc = read(STDIN_FILENO, &scan->key, 8);
 			for (rz = lc; rz < 8; rz++)
 				scan->code[rz] = 0;
 		}
 	}
-	return (rp);
+	return rp;
 }
 
 SCREEN_SIZE GetScreenSize(void)
@@ -615,7 +615,7 @@ SCREEN_SIZE GetScreenSize(void)
 	_screenSize.width  = (int) ts.ws_col;
 	_screenSize.height = (int) ts.ws_row;
 
-	return (_screenSize);
+	return _screenSize;
 }
 
 TGrid *GridHover(TGrid *pGrid, const char *comment)
@@ -634,7 +634,7 @@ TGrid *GridHover(TGrid *pGrid, const char *comment)
 	    }
 	}
     }
-	return (pGrid);
+	return pGrid;
 }
 
 __inline__ void Set_pVOID(TGrid *pGrid, void *pVOID)
@@ -804,7 +804,7 @@ Stock *CreateStock(unsigned long long id, Coordinate origin)
 		stock->id = id;
 		stock->geometry.origin = origin;
 	}
-	return (stock);
+	return stock;
 }
 
 Stock *AppendStock(Stock *stock)
@@ -817,7 +817,7 @@ Stock *AppendStock(Stock *stock)
 			stockList.tail = stock;
 		}
 	}
-	return (stock);
+	return stock;
 }
 
 void DestroyFullStock(void)
@@ -840,7 +840,7 @@ Stock *SearchStockById(unsigned long long id)
 		}
 		walker = GetNext(walker);
 	}
-	return (walker);
+	return walker;
 }
 
 #define ComputeLazyBottomRow(_win, withBorder)				\
@@ -857,12 +857,12 @@ Stock *SearchStockById(unsigned long long id)
     }									\
 })
 
-CUINT LazyCompBottomRow(Window *win)
+CSINT LazyCompBottomRow(Window *win)
 {
     if ((win->dim > 0) && win->matrix.size.wth) {
-	return ((win->dim / win->matrix.size.wth) - win->matrix.size.hth);
+	return (win->dim / win->matrix.size.wth) - win->matrix.size.hth;
     } else {
-	return (1);
+	return 1;
     }
 }
 
@@ -933,24 +933,22 @@ Window *_CreateWindow(	Layer *layer, unsigned long long id,
 		win->hook.color[idx].title  = title[idx];
 	    }
 	}
-	return (win);
+	return win;
 }
 
 Window *CreateWindow_7xArg(	Layer *layer, unsigned long long id,
 				CUINT width, CUINT height,
 				CUINT oCol, CUINT oRow, WINDOW_FLAG flag )
 {
-	return ( _CreateWindow(layer, id,
-				width, height, oCol, oRow, flag) );
+	return _CreateWindow(layer, id, width, height, oCol, oRow, flag);
 }
 
 Window *CreateWindow_6xArg(	Layer *layer, unsigned long long id,
 				CUINT width, CUINT height,
 				CUINT oCol, CUINT oRow )
 {
-	return ( _CreateWindow(layer, id,
-				width, height, oCol, oRow,
-				WINFLAG_NO_FLAGS) );
+	return _CreateWindow(layer, id, width, height, oCol, oRow,
+				WINFLAG_NO_FLAGS);
 }
 
 void RemoveWindow(Window *win, WinList *list)
@@ -1006,7 +1004,7 @@ Window *SearchWinListById(unsigned long long id, WinList *list)
 			walker = GetPrev(walker);
 		} while (!IsHead(list, walker) && (win == NULL));
 	}
-	return (win);
+	return win;
 }
 
 void PrintContent(Window *win, WinList *list, CUINT col, CUINT row)
@@ -1234,8 +1232,8 @@ void LazyCompWindow(Window *win)
 
 void MotionReset_Win(Window *win)
 {
-	win->matrix.scroll.horz = win->matrix.select.col = 0;
-	win->matrix.scroll.vert = win->matrix.select.row = 0;
+	win->matrix.scroll.horz = 0;	win->matrix.select.col = 0;
+	win->matrix.scroll.vert = 0;	win->matrix.select.row = 0;
 }
 
 void MotionLeft_Win(Window *win)
@@ -1286,7 +1284,7 @@ void MotionEnd_Win(Window *win)
 
 void MotionTop_Win(Window *win)
 {
-	win->matrix.scroll.vert = win->matrix.select.row = 0;
+	win->matrix.scroll.vert = 0;	win->matrix.select.row = 0;
 }
 
 void MotionBottom_Win(Window *win)
@@ -1324,8 +1322,9 @@ void MotionOriginLeft_Win(Window *win)
 
 void MotionOriginRight_Win(Window *win)
 {	/* Care about the right-side window border.			*/
-	const CUINT maxVisibleCol = CUMIN(MAX_WIDTH - 1, GetScreenSize().width)
-				  - win->lazyComp.rowLen;
+	const CUINT
+	maxVisibleCol	= CUMIN(MAX_WIDTH - 1, (CUINT) GetScreenSize().width)
+			- win->lazyComp.rowLen;
 
 	if (win->matrix.origin.col <= maxVisibleCol) {
 		EraseWindowWithBorder(win);
@@ -1378,7 +1377,7 @@ void MotionExpand_Win(Window *win)
 void MotionReScale(Window *win)
 {
 	CSINT	col = -1, row = -1, height = -1;
-	CSINT	rightSide = CUMAX(MIN_WIDTH, GetScreenSize().width)
+	CSINT	rightSide = CUMAX(MIN_WIDTH, (CUINT) GetScreenSize().width)
 				- win->lazyComp.rowLen,
 		bottomSide = GetScreenSize().height - win->matrix.size.hth;
 
@@ -1398,13 +1397,13 @@ void MotionReScale(Window *win)
 		row = bottomSide - !(win->flag & WINFLAG_NO_BORDER);
 	}
 	if (col > 0 && win->matrix.origin.col != col) {
-		win->matrix.origin.col = col;
+		win->matrix.origin.col = (CUINT) col;
 	}
 	if (row > 0 && win->matrix.origin.row != row) {
-		win->matrix.origin.row = row;
+		win->matrix.origin.row = (CUINT) row;
 	}
 	if (height > 0 && win->matrix.size.hth != height) {
-		win->matrix.size.hth = height;
+		win->matrix.size.hth = (CUINT) height;
 		LazyCompWindow(win);
 	}
 }
@@ -1514,12 +1513,12 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 		break;
 	case SCANKEY_ENTER:
 		if (win->hook.key.Enter != NULL)
-			return (win->hook.key.Enter(scan, win));
+			return win->hook.key.Enter(scan, win);
 		fallthrough;
 	default:
-		return (-1);
+		return -1;
 	}
-	return (0);
+	return 0;
 }
 
 void ForEachCellPrint_Drop(Window *win, void *plist)
@@ -1547,9 +1546,9 @@ int Enter_StickyCell(SCANKEY *scan, Window *win)
 				+ win->matrix.scroll.vert)
 				).quick.key) != SCANKEY_NULL)
 				{
-					return (1);
+					return 1;
 				} else {
-					return (0);
+					return 0;
 				}
 }
 
@@ -1564,9 +1563,9 @@ int MotionEnter_Cell(SCANKEY *scan, Window *win)
 				{
 					SCANKEY closeKey = {.key = SCANKEY_ESC};
 					Motion_Trigger(&closeKey, win,&winList);
-					return (1);
+					return 1;
 				} else {
-					return (0);
+					return 0;
 				}
 }
 
@@ -1748,7 +1747,7 @@ Card *CreateCard(void)
 	if (card != NULL) {
 		GetNext(card) = NULL;
 	}
-	return (card);
+	return card;
 }
 
 void AppendCard(Card *card, CardList *list)
@@ -1824,13 +1823,13 @@ __typeof__ (errno) AllocAll(char **buffer)
 {	/* Alloc 10 times to include the ANSI cursor strings.		*/
 
 	if ((*buffer = malloc(MAX_ANSI_WIDTH)) == NULL) {
-		return (ENOMEM);
+		return ENOMEM;
 	}
 	if ((Console = malloc(MAX_ANSI_SCREEN)) == NULL) {
-		return (ENOMEM);
+		return ENOMEM;
 	}
 	if ((StreamBuf = malloc(MAX_ANSI_SCREEN)) == NULL) {
-		return (ENOMEM);
+		return ENOMEM;
 	} else {
 		setvbuf(stdout, StreamBuf, _IOFBF, MAX_ANSI_SCREEN);
 	}
@@ -1840,16 +1839,16 @@ __typeof__ (errno) AllocAll(char **buffer)
 	};
 
 	if ((sLayer = calloc(1, sizeof(Layer))) == NULL) {
-		return (ENOMEM);
+		return ENOMEM;
 	}
 	if ((dLayer = calloc(1, sizeof(Layer))) == NULL) {
-		return (ENOMEM);
+		return ENOMEM;
 	}
 	if ((wLayer = calloc(1, sizeof(Layer))) == NULL) {
-		return (ENOMEM);
+		return ENOMEM;
 	}
 	if ((Fuse   = calloc(1, sizeof(Layer))) == NULL) {
-		return (ENOMEM);
+		return ENOMEM;
 	}
 	CreateLayer(sLayer, layerSize);
 	CreateLayer(dLayer, layerSize);
@@ -1857,10 +1856,10 @@ __typeof__ (errno) AllocAll(char **buffer)
 	CreateLayer(Fuse, layerSize);
 
 	UBENCH_SETUP(1, 0);
-	return (0);
+	return 0;
 }
 
-unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize)
+signed int FuseAll(ASCII stream[], SCREEN_SIZE drawSize)
 {
 	register ATTRIBUTE	*fa, *sa, *da, *wa;
 	register ASCII		*fc, *sc, *dc, *wc;
@@ -1876,7 +1875,7 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize)
 	cursor = _row + 1;
 	sdx += cursor >= 100 ? 3 : cursor >= 10 ? 2 : 1;
 	for (idx = sdx; cursor > 0; cursor /= 10) {
-		stream[--idx] = '0' + (cursor % 10);
+		stream[--idx] = '0' + (ASCII) (cursor % 10);
 	}
 	stream[sdx++] = ';';
 	stream[sdx++] = '1';
@@ -1951,7 +1950,7 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize)
 	    }
 	}
     }
-	return (sdx);
+	return sdx;
 }
 
 __typeof__ (errno) StartDump(	char *dumpFormat, int tickReset,
@@ -2003,7 +2002,7 @@ __typeof__ (errno) StartDump(	char *dumpFormat, int tickReset,
 		rc = ENOMEM;
 	}
     }
-	return (rc);
+	return rc;
 }
 
 void AbortDump(void)
@@ -2013,18 +2012,19 @@ void AbortDump(void)
 
 unsigned char DumpStatus(void)
 {
-	return (BITVAL(Dump.Status, 0));
+	return BITVAL(Dump.Status, 0);
 }
 
 unsigned int WriteConsole(SCREEN_SIZE drawSize)
 {
-	unsigned int writeSize, layout = 0;
+	signed int writeSize;
+	unsigned int layout = 0;
 
 	UI_Draw_uBenchmark(dLayer);
 
 	UBENCH_RDCOUNTER(1);
 
-	writeSize = FuseAll(Console, drawSize);
+	writeSize = FuseAll((ASCII*) Console, drawSize);
 
 	UBENCH_RDCOUNTER(2);
 	UBENCH_COMPUTE();
@@ -2056,7 +2056,7 @@ unsigned int WriteConsole(SCREEN_SIZE drawSize)
 			}
 		}
 	}
-	return (layout);
+	return layout;
 }
 
 void ANSI_Header(void)
@@ -2133,7 +2133,9 @@ void _TERMINAL_IN(void)
 
 	tcgetattr(STDIN_FILENO, &oldt);
 	newt = oldt;
-	newt.c_lflag &= ~( ICANON | ECHO );
+	__typeof__(newt.c_lflag) flags = ICANON | ECHO;
+	flags = ~flags;
+	newt.c_lflag &= flags;
 	newt.c_cc[VTIME] = 0;
 	newt.c_cc[VMIN] = 0;
 	tcsetattr(STDIN_FILENO, TCSANOW, &newt);
@@ -2226,7 +2228,7 @@ __typeof__ (errno) SaveGeometries(char *cfgFQN)
     } else {
 	rc = errno;
     }
-	return (rc);
+	return rc;
 }
 
 __typeof__ (errno) LoadGeometries(char *cfgFQN)
@@ -2260,5 +2262,5 @@ __typeof__ (errno) LoadGeometries(char *cfgFQN)
     } else {
 	rc = errno;
     }
-	return (rc);
+	return rc;
 }

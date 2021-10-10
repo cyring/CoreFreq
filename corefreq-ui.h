@@ -599,19 +599,21 @@ extern void HookPointer(REGPTR *with, REGPTR what) ;
 					GridCall_2xArg ,		\
 					NULL)( __VA_ARGS__ )
 
+#define IndexAt(col, row)	((CUINT) col + (CUINT) row)
+
 #define LayerAt( layer, plane, col, row )				\
-	layer->plane[col + (row * layer->size.wth)]
+	layer->plane[IndexAt(col, (row * layer->size.wth))]
 
 #define LayerFillAt(layer, col, row, len, source, attrib)		\
 ({									\
-	memset(&LayerAt(layer, attr, col, row), attrib.value, len);	\
-	memcpy(&LayerAt(layer, code, col, row), source, len);		\
+	memset(&LayerAt(layer, attr, col, row), attrib.value, (size_t) len); \
+	memcpy(&LayerAt(layer, code, col, row), source, (size_t) len);	\
 })
 
 #define LayerCopyAt(layer, col, row, len, attrib, source)		\
 ({									\
-	memcpy(&LayerAt(layer, attr, col, row), attrib, len);		\
-	memcpy(&LayerAt(layer, code, col, row), source, len);		\
+	memcpy(&LayerAt(layer, attr, col, row), attrib, (size_t) len);	\
+	memcpy(&LayerAt(layer, code, col, row), source, (size_t) len);	\
 })
 
 #define TGridAt(win, col, row)						\
@@ -632,7 +634,7 @@ extern void CreateLayer(Layer *layer, CoordSize size) ;
 
 #define ClearGarbage(_layer, _plane, _col, _row, _len, _value)		\
 ({									\
-	memset(&LayerAt(_layer, _plane, _col, _row), _value, _len);	\
+	memset(&LayerAt(_layer, _plane, _col, _row), _value, (size_t) _len); \
 })
 
 extern void FillLayerArea(Layer *layer,CUINT col, CUINT row,
@@ -915,7 +917,8 @@ extern __typeof__ (errno) LoadGeometries(char*) ;
   #define UI_Draw_uBenchmark(layer)					\
   ({									\
 	char str[32];							\
-	size_t len = snprintf(str, 20+1, "%llu", UBENCH_METRIC(0));	\
+	int len = snprintf(str, 20+1, "%llu", UBENCH_METRIC(0));	\
+    if (len > 0)							\
 	LayerFillAt(layer, 0, 2, len, str, RSC(UI).ATTR()[UI_LAYOUT_UBENCH]); \
   })
 #else

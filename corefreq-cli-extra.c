@@ -31,7 +31,7 @@ int json_writer_stdout(struct json_state * state, const char *str, size_t len)
 	return fwrite(str, len, 1, stdout);
 }
 
-int get_utf8_char_len(unsigned char ch)
+size_t get_utf8_char_len(unsigned char ch)
 {
 	if ((ch & 0x80) == 0)
 		return 1;
@@ -56,9 +56,10 @@ int get_utf8_char_len(unsigned char ch)
 
 int json_escape(struct json_state *state, const char *p, size_t len)
 {
-	size_t i, cl, n = 0;
+	size_t i, cl;
 	const char *hex_digits = "0123456789abcdef";
 	const char *specials = "btnvfr";
+	int n = 0;
 
     for (i = 0; i < len; i++) {
 	unsigned char ch = ((unsigned char *) p)[i];
@@ -103,7 +104,7 @@ void json_start_object(struct json_state *state)
 void json_end_object(struct json_state *state)
 {
 	assert(state->depth >= 0);
-	assert(state->nested_state[state->depth] ==			\
+	assert(state->nested_state[state->depth] == \
 		IN_OBJECT || state->nested_state[state->depth] == IN_OBJECT2);
 
 	state->write(state, "}", 1);
@@ -131,7 +132,7 @@ void json_start_arr(struct json_state *state)
 void json_end_arr(struct json_state *state)
 {
 	assert(state->depth >= 0);
-	assert(state->nested_state[state->depth] ==			\
+	assert(state->nested_state[state->depth] == \
 		IN_ARRAY || state->nested_state[state->depth] == IN_ARRAY2);
 
 	state->write(state, "]", 1);
@@ -140,7 +141,7 @@ void json_end_arr(struct json_state *state)
 
 void json_key(struct json_state *state, char * key)
 {
-	assert(state->nested_state[state->depth] ==			\
+	assert(state->nested_state[state->depth] == \
 		IN_OBJECT || state->nested_state[state->depth] == IN_OBJECT2);
 
 	if (state->nested_state[state->depth] == IN_OBJECT2) {
@@ -185,7 +186,8 @@ void json_literal(struct json_state *state, char * format, ...)
 	va_list args;
 	va_start(args, format);
 	char buf[JSON_MAX_VALUE];
-	size_t bufsz = vsprintf(buf, format, args);
+	const int rc = vsprintf(buf, format, args);
+	const size_t bufsz = rc > 0 ? (size_t) rc : 0;
 	state->write(state, buf, bufsz);
 	va_end(args);
 }

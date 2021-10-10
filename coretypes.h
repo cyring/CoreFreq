@@ -445,6 +445,7 @@ typedef struct
 
 typedef union {
 	signed long long	sllong;
+	unsigned long long	ullong;
 	struct {
 	    struct {
 		union {
@@ -1942,6 +1943,12 @@ typedef union {
 	size_t _min = KMIN((_max - 1), strlen(_src));			\
 	memcpy(_dest, _src, _min);					\
 	_dest[_min] = '\0';						\
+})
+
+#define CONV( _ret ,_func,  ... )					\
+({									\
+	int ret = _func ( __VA_ARGS__ );				\
+	_ret = ret > 0 ? (__typeof__ (_ret)) ret : 0;			\
 })
 
 #define ZLIST( ... ) (char *[]) { __VA_ARGS__ , NULL }
