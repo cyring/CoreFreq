@@ -34,7 +34,10 @@
 #define RO( _ptr_ , ...)	OF( _ptr_##_RO , __VA_ARGS__ )
 #define RW( _ptr_ , ...)	OF( _ptr_##_RW , __VA_ARGS__ )
 
-#define PAGE_SIZE (sysconf(_SC_PAGESIZE))
+#define PAGE_SIZE							\
+(									\
+	sysconf(_SC_PAGESIZE) > 0 ? sysconf(_SC_PAGESIZE) : 4096	\
+)
 
 /* §8.10.6.7 Place Locks and Semaphores in Aligned, 128-Byte Blocks of Memory */
 static BitCC roomSeed	__attribute__ ((aligned (16))) = InitCC(0x0);
@@ -68,7 +71,7 @@ typedef struct {
 	RW(PROC)		*RW(Proc);
 	RO(CORE)		**RO(Core);
 	RW(CORE)		**RW(Core);
-	SYSGATE_RO		*SysGate;
+	RO(SYSGATE)		*RO(SysGate);
 } REF;
 
 void Core_ResetSensorLimits(CPU_STRUCT *Cpu)
@@ -5673,7 +5676,7 @@ void SysGate_OS_Driver(REF *Ref)
 void SysGate_Kernel(REF *Ref)
 {
 	SHM_STRUCT *Shm = Ref->Shm;
-	SYSGATE_RO *SysGate = Ref->SysGate;
+	RO(SYSGATE) *SysGate = Ref->RO(SysGate);
 
 	Shm->SysGate.kernel.version = SysGate->kernelVersionNumber >> 16;
 	Shm->SysGate.kernel.major = (SysGate->kernelVersionNumber >> 8) & 0xff;
@@ -5766,7 +5769,7 @@ static int SortByTracker(const void *p1, const void *p2, void *arg)
 void SysGate_Update(REF *Ref)
 {
 	SHM_STRUCT *Shm = Ref->Shm;
-	SYSGATE_RO *SysGate = Ref->SysGate;
+	RO(SYSGATE) *SysGate = Ref->RO(SysGate);
 	RO(PROC) *RO(Proc) = Ref->RO(Proc);
 
 	Shm->SysGate.taskCount = SysGate->taskCount;
@@ -5820,22 +5823,22 @@ int SysGate_OnDemand(REF *Ref, int operation)
 	int rc = -1;
 	const size_t allocPages = PAGE_SIZE << Ref->RO(Proc)->Gate.ReqMem.Order;
 	if (operation == 0) {
-	    if (Ref->SysGate != NULL) {
-		if ((rc = munmap(Ref->SysGate, allocPages)) == 0) {
-			Ref->SysGate = NULL;
+	    if (Ref->RO(SysGate) != NULL) {
+		if ((rc = munmap(Ref->RO(SysGate), allocPages)) == 0) {
+			Ref->RO(SysGate) = NULL;
 		}
 	    } else {
 		rc = -1;
 	    }
 	} else {
-	    if (Ref->SysGate == NULL) {
+	    if (Ref->RO(SysGate) == NULL) {
 		const off_t vm_pgoff = ID_RO_VMA_GATE * PAGE_SIZE;
-		SYSGATE_RO *MapGate = mmap(NULL, allocPages,
+		RO(SYSGATE) *MapGate = mmap(NULL, allocPages,
 						PROT_READ,
 						MAP_SHARED,
 						Ref->fd->Drv, vm_pgoff);
 		if (MapGate != MAP_FAILED) {
-			Ref->SysGate = MapGate;
+			Ref->RO(SysGate) = MapGate;
 			rc = 0;
 		}
 	    } else {
@@ -6805,14 +6808,19 @@ REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
 	RO(CORE)	**RO(Core);
 	RW(CORE)	**RW(Core);
 	SHM_STRUCT	*Shm = NULL;
-	const size_t	Core_RO_Size = ROUND_TO_PAGES(sizeof(RO(CORE))),
-			Core_RW_Size = ROUND_TO_PAGES(sizeof(RW(CORE)));
+	struct {
+		const size_t	RO(Core),
+				RW(Core);
+	} Size = {
+		ROUND_TO_PAGES(sizeof(RO(CORE))),
+		ROUND_TO_PAGES(sizeof(RW(CORE)))
+	};
 	REASON_INIT(reason);
 
-    if ((Core_RO = calloc(RO(Proc)->CPU.Count, sizeof(RO(Core)))) == NULL) {
+    if ((RO(Core) = calloc(RO(Proc)->CPU.Count, sizeof(RO(Core)))) == NULL) {
 	REASON_SET(reason, RC_MEM_ERR, (errno == 0 ? ENOMEM : errno));
     }
-    if ((Core_RW = calloc(RO(Proc)->CPU.Count, sizeof(RW(Core)))) == NULL) {
+    if ((RW(Core) = calloc(RO(Proc)->CPU.Count, sizeof(RW(Core)))) == NULL) {
 	REASON_SET(reason, RC_MEM_ERR, (errno == 0 ? ENOMEM : errno));
     }
     for(cpu = 0;(reason.rc == RC_SUCCESS) && (cpu < RO(Proc)->CPU.Count); cpu++)
@@ -6820,14 +6828,14 @@ REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
 	const off_t	vm_ro_pgoff = (ID_RO_VMA_CORE + cpu) * PAGE_SIZE,
 			vm_rw_pgoff = (ID_RW_VMA_CORE + cpu) * PAGE_SIZE;
 
-	if ((RO(Core, AT(cpu)) = mmap(NULL, Core_RO_Size,
+	if ((RO(Core, AT(cpu)) = mmap(NULL, Size.RO(Core),
 				PROT_READ,
 				MAP_SHARED,
 				fd->Drv, vm_ro_pgoff)) == MAP_FAILED)
 	{
 		REASON_SET(reason, RC_SHM_MMAP);
 	}
-	if ((RW(Core, AT(cpu)) = mmap(NULL, Core_RW_Size,
+	if ((RW(Core, AT(cpu)) = mmap(NULL, Size.RW(Core),
 				PROT_READ|PROT_WRITE,
 				MAP_SHARED,
 				fd->Drv, vm_rw_pgoff)) == MAP_FAILED)
@@ -6902,7 +6910,7 @@ REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
 			.RW(Proc)	= RW(Proc),
 			.RO(Core)	= RO(Core),
 			.RW(Core)	= RW(Core),
-			.SysGate	= NULL
+			.RO(SysGate)	= NULL
 		};
 		sigemptyset(&Ref.Signal);
 
@@ -7014,12 +7022,12 @@ REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
     for (cpu = 0; cpu < RO(Proc)->CPU.Count; cpu++)
     {
 	if (RO(Core, AT(cpu)) != NULL) {
-	    if (munmap(RO(Core, AT(cpu)), Core_RO_Size) == -1) {
+	    if (munmap(RO(Core, AT(cpu)), Size.RO(Core)) == -1) {
 		REASON_SET(reason, RC_SHM_MMAP);
 	    }
 	}
 	if (RW(Core, AT(cpu)) != NULL) {
-	    if (munmap(RW(Core, AT(cpu)), Core_RW_Size) == -1) {
+	    if (munmap(RW(Core, AT(cpu)), Size.RW(Core)) == -1) {
 		REASON_SET(reason, RC_SHM_MMAP);
 	    }
 	}
@@ -7213,8 +7221,8 @@ int main(int argc, char *argv[])
 	    if ((fd.Drv = open(DRV_FILENAME, O_RDWR|O_SYNC)) != -1)
 	    {
 		const size_t packageSize[] = {
-			ROUND_TO_PAGES(sizeof(PROC_RO)),
-			ROUND_TO_PAGES(sizeof(PROC_RW))
+			ROUND_TO_PAGES(sizeof(RO(PROC))),
+			ROUND_TO_PAGES(sizeof(RW(PROC)))
 		};
 		const off_t vm_pgoff[] = {
 			ID_RO_VMA_PROC * PAGE_SIZE,

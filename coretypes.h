@@ -1932,8 +1932,10 @@ typedef union {
 	};
 } SMBIOS_ST;
 
-#define ROUND_TO_PAGES(Size)	PAGE_SIZE * ((Size / PAGE_SIZE) 	\
-				+ ((Size % PAGE_SIZE)? 1:0))
+#define ROUND_TO_PAGES(Size)						\
+(									\
+	PAGE_SIZE * ((Size / PAGE_SIZE) + ((Size % PAGE_SIZE) ? 1 : 0)) \
+)
 
 #define KMAX(M, m)	((M) > (m) ? (M) : (m))
 #define KMIN(m, M)	((m) < (M) ? (m) : (M))

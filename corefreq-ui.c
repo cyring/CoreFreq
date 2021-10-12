@@ -1943,7 +1943,7 @@ signed int FuseAll(ASCII stream[], SCREEN_SIZE drawSize)
 		break;
 	    case 0x80 ... 0xbf:
 		stream[sdx++] = 0xc3;	/* Control C3 Unicode UTF-8	*/
-		/* Fallthrough */
+		fallthrough;
 	    default:
 		stream[sdx++] = *fc;
 		break;
