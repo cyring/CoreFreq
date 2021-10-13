@@ -1196,7 +1196,7 @@
 				" tRTR[DLR] ( tRTR, Different Logical Rank ) "
 
 #define RSC_DDR4_ZEN_WTW_DLR_COMM_CODE_EN \
-				" tWTW[DLR] ( tWTR, Different Logical Rank ) "
+				" tWTW[DLR] ( tWTW, Different Logical Rank ) "
 
 #define RSC_DDR4_ZEN_WTR_DLR_COMM_CODE_EN \
 				" tWTR[DLR] ( tWTR, Different Logical Rank ) "
