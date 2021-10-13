@@ -867,9 +867,9 @@ typedef struct
 	    };
 	    struct {
 /*64-bits*/	unsigned long long	_pad64[PWR_DOMAIN(SIZE)];
-/*32-bits*/	AMD_17_MTS_CPK_PWR	PWR;
-/*32-bits*/	AMD_17_MTS_CPK_TDP	TDP;
-/*32-bits*/	AMD_17_MTS_CPK_EDC	EDC;
+/*32-bits*/	AMD_17_MTS_MCM_PWR	PWR;
+/*32-bits*/	AMD_17_MTS_MCM_TDP	TDP;
+/*32-bits*/	AMD_17_MTS_MCM_EDC	EDC;
 /*32-bits*/	unsigned int		_pad32;
 	    } Zen;
 	  };

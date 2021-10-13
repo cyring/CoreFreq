@@ -136,12 +136,12 @@
 /* UNDOCUMENTED REGISTERS */
 #define SMU_AMD_THM_TCTL_CCD_REGISTER_F17H	0x00059954
 
-#define SMU_AMD_F17H_MTS_CPK_PWR		0x0005d2b4
-#define SMU_AMD_F17H_MTS_CPK_TDP		0x0005d2b8
-#define SMU_AMD_F17H_MTS_CPK_EDC		0x0005d2bc
+#define SMU_AMD_F17H_ZEN2_MCM_PWR		0x0005d2b4
+#define SMU_AMD_F17H_ZEN2_MCM_TDP		0x0005d2b8
+#define SMU_AMD_F17H_ZEN2_MCM_EDC		0x0005d2bc
 
 #define SMU_AMD_F17H_MATISSE_COF		0x0005d2c4
-#define SMU_AMD_F17H_CASTLEPEAK_COF		0x0005d324
+#define SMU_AMD_F17H_ZEN2_MCM_COF		0x0005d324
 
 /* Sources: PPR Vol 2 for AMD Family 19h Model 01h B1			*/
 #define SMU_HSMP_F19H	/*Cmd:*/0x3b10534, /*Arg:*/0x3b109e0, /*Rsp:*/0x3b10980
@@ -1643,7 +1643,7 @@ typedef union
 		PPT		: 26-17,
 		ReservedBits2	: 32-26;
 	};
-} AMD_17_MTS_CPK_PWR;
+} AMD_17_MTS_MCM_PWR;
 
 typedef union
 {	/* SMU: address = { 0x5d2b8 , 0x5d2b9 , 0x5d2ba , 0x5d2bb }	*/
@@ -1656,7 +1656,7 @@ typedef union
 		TDP3		: 30-21, /* Same value returned as TDP! */
 		ReservedBits2	: 32-30;
 	};
-} AMD_17_MTS_CPK_TDP;
+} AMD_17_MTS_MCM_TDP;
 
 typedef union
 {	/* SMU: address = { 0x5d2bc , 0x5d2bd , 0x5d2be , 0x5d2bf }	*/
@@ -1668,7 +1668,7 @@ typedef union
 		TDC		: 25-16,
 		ReservedBits2	: 32-25;
 	};
-} AMD_17_MTS_CPK_EDC;
+} AMD_17_MTS_MCM_EDC;
 
 typedef union
 {	/* SMU: address = { 0x5d2c4 , 0x5d2c5 , 0x5d2c6 , 0x5d2c7 }	*/
@@ -1679,7 +1679,7 @@ typedef union
 		BoostRatio	: 25-17, /* Frequence ID of Boosted P-State */
 		MinRatio	: 32-25; /* Computed COF of P-State P2	*/
 	};
-} AMD_17_MTS_CPK_COF;
+} AMD_17_ZEN2_COF;
 
 #ifndef SMU_AMD_F17H_SVI
 	#define SMU_AMD_F17H_SVI(_plane)	(0x0005a00c + (_plane << 2))

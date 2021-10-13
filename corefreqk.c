@@ -1829,8 +1829,7 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_ZenPlus:
 	case AMD_ZenPlus_APU:
 	case AMD_Zen_Dali:
-	case AMD_EPYC_Rome:
-	case AMD_Zen2_CPK:
+	case AMD_EPYC_Rome_CPK:
 	case AMD_Zen2_Renoir:
 	case AMD_Zen2_LCN:
 	case AMD_Zen2_MTS:
@@ -1910,10 +1909,10 @@ static void Map_AMD_Topology(void *arg)
 			|| (leaf80000008.ECX.NC == 0x2f)
 
 			|| ((leaf80000008.ECX.NC == 0x1f)
-			 && ((PUBLIC(RO(Proc))->ArchID == AMD_Zen2_CPK)))
+			 && ((PUBLIC(RO(Proc))->ArchID == AMD_EPYC_Rome_CPK)))
 
 			|| ((leaf80000008.ECX.NC == 0x17)
-			 && ((PUBLIC(RO(Proc))->ArchID == AMD_Zen2_CPK)
+			 && ((PUBLIC(RO(Proc))->ArchID == AMD_EPYC_Rome_CPK)
 			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Chagall)));
 	      }
 	      else
@@ -1926,10 +1925,10 @@ static void Map_AMD_Topology(void *arg)
 			|| (leaf80000008.ECX.NC == 0x17)
 
 			|| ((leaf80000008.ECX.NC == 0x0f)
-			 && ((PUBLIC(RO(Proc))->ArchID == AMD_Zen2_CPK)))
+			 && ((PUBLIC(RO(Proc))->ArchID == AMD_EPYC_Rome_CPK)))
 
 			|| ((leaf80000008.ECX.NC == 0x0b)
-			 && ((PUBLIC(RO(Proc))->ArchID == AMD_Zen2_CPK)
+			 && ((PUBLIC(RO(Proc))->ArchID == AMD_EPYC_Rome_CPK)
 			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Chagall)));
 	      }
 
@@ -5929,7 +5928,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
     if (HwCfgRegister.Family_17h.CpbDis == 0)
     {
-	AMD_17_MTS_CPK_COF XtraCOF = {.value = 0};
+	AMD_17_ZEN2_COF XtraCOF = {.value = 0};
 
 	switch (PUBLIC(RO(Proc))->ArchID) {
 	case AMD_Zen3_VMR:
@@ -5940,9 +5939,9 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 				SMU_AMD_INDEX_REGISTER_F17H,
 				SMU_AMD_DATA_REGISTER_F17H);
 		break;
-	case AMD_Zen2_CPK:
+	case AMD_EPYC_Rome_CPK:
 		Core_AMD_SMN_Read(XtraCOF,
-				SMU_AMD_F17H_CASTLEPEAK_COF,
+				SMU_AMD_F17H_ZEN2_MCM_COF,
 				SMU_AMD_INDEX_REGISTER_F17H,
 				SMU_AMD_DATA_REGISTER_F17H);
 		break;
@@ -6245,7 +6244,7 @@ long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 void Query_AMD_F17h_Power_Limits(CORE_RO *Core)
 {	/*		Package Power Tracking				*/
 	Core_AMD_SMN_Read( PUBLIC(RO(Proc))->PowerThermal.Zen.PWR,
-				SMU_AMD_F17H_MTS_CPK_PWR,
+				SMU_AMD_F17H_ZEN2_MCM_PWR,
 				SMU_AMD_INDEX_REGISTER_F17H,
 				SMU_AMD_DATA_REGISTER_F17H );
 	/*		Junction Temperature				*/
@@ -6253,12 +6252,12 @@ void Query_AMD_F17h_Power_Limits(CORE_RO *Core)
 				PUBLIC(RO(Proc))->PowerThermal.Zen.PWR.TjMax;
 	/*		Thermal Design Power				*/
 	Core_AMD_SMN_Read( PUBLIC(RO(Proc))->PowerThermal.Zen.TDP,
-				SMU_AMD_F17H_MTS_CPK_TDP,
+				SMU_AMD_F17H_ZEN2_MCM_TDP,
 				SMU_AMD_INDEX_REGISTER_F17H,
 				SMU_AMD_DATA_REGISTER_F17H );
 	/*		Electric Design Current				*/
 	Core_AMD_SMN_Read( PUBLIC(RO(Proc))->PowerThermal.Zen.EDC,
-				SMU_AMD_F17H_MTS_CPK_EDC,
+				SMU_AMD_F17H_ZEN2_MCM_EDC,
 				SMU_AMD_INDEX_REGISTER_F17H,
 				SMU_AMD_DATA_REGISTER_F17H );
 }
