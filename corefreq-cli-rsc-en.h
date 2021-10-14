@@ -1589,6 +1589,7 @@
 		"\t-u\tPrint CPUID\n"					\
 		"\t-B\tPrint SMBIOS\n"					\
 		"\t-k\tPrint Kernel\n"					\
+		"\t-n\tNew line\n"					\
 		"\t-h\tPrint out this message\n"			\
 		"\t-v\tPrint the version number\n"			\
 		"\nExit status:\n"					\

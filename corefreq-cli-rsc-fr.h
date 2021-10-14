@@ -1224,7 +1224,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 		"\t-m\tImprimer la Topologie\n" 			\
 		"\t-B\tImprimer SMBIOS\n"				\
 		"\t-u\tImprimer CPUID\n"				\
-		"\t-k\tImprimer les données du Kernel\n"		\
+		"\t-k\tImprimer le Kernel\n"				\
+		"\t-n\tNouvelle ligne\n"				\
 		"\t-h\tAfficher ce message\n"				\
 		"\t-v\tAfficher le numéro de version\n"			\
 		"\nCode d'exécution:\n"					\

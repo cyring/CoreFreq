@@ -8940,7 +8940,7 @@ Window *PopUpMessage(ASCII *title, RING_CTRL *pCtrl)
 		memcpy(&item[POPUP_WIDTH - hdrLen], outStr, hdrLen);
 	}
 	hdrLen = (size_t) sprintf(outStr, "[%x:%lx]", pCtrl->cmd, pCtrl->arg);
-	if (hdrLen < POPUP_WIDTH) {
+	if ((hdrLen > 0) && (hdrLen < POPUP_WIDTH)) {
 		memcpy(item, outStr, hdrLen);
 	}
 	StoreTCell(wMsg, SCANKEY_NULL, item,
@@ -17923,6 +17923,9 @@ int main(int argc, char *argv[])
 
 	do {
 	    switch (option) {
+	    case 'n':
+		printf("\n");
+		break;
 	    case 'O':
 		switch (argv[idx][2]) {
 		case 'k':
