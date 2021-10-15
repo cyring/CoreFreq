@@ -1946,9 +1946,9 @@ typedef union {
 	_dest[_min] = '\0';						\
 })
 
-#define CONV( _ret ,_func,  ... )					\
+#define CONV( _ret, _func, ... )					\
 ({									\
-	int ret = _func ( __VA_ARGS__ );				\
+	__auto_type ret = _func ( __VA_ARGS__ );			\
 	_ret = ret > 0 ? (__typeof__ (_ret)) ret : 0;			\
 })
 

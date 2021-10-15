@@ -31,7 +31,7 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 	signed int i = 0, i2 = 0, i3 = 0;
 	unsigned int cpu;
 	enum CRC_MANUFACTURER vendor = Shm->Proc.Features.Info.Vendor.CRC;
-	struct json_state s = { .depth = 0, .nested_state = {},
+	struct json_state s = { .depth = 0, .nested_state = {0},
 				.write = json_writer_stdout };
 	UNUSED(OutFunc);
 

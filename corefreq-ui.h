@@ -885,6 +885,13 @@ extern  locale_t	SysLoc;
 	LocaleTo(LC_ALL);						\
 })
 
+enum THEMES {
+	THM_DFLT,
+	THM_USR1,
+	THM_USR2,
+	THM_CNT
+};
+
 extern enum THEMES	AppThm;
 
 #define GET_THEME()		(AppThm)

@@ -3530,7 +3530,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT7 );
 /* Section Mark */
 	bix = (Shm->Proc.Features.PerfMon.EBX.CoreCycles == 0)
-	   || (Shm->Proc.Features.PerfMon.EAX.VectorSz >= 0) ? 2 : 0;
+	   || (Shm->Proc.Features.PerfMon.EAX.VectorSz > 0) ? 2 : 0;
 
 	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_CORE_CYCLE).CODE(),
@@ -4433,7 +4433,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	return reason;
 }
 
-char *ScrambleSMBIOS(enum SMB_STRING idx, int mod, char thing)
+char *ScrambleSMBIOS(enum SMB_STRING idx, const size_t mod, const char thing)
 {
 	struct {
 		char		*pString;
@@ -4455,12 +4455,11 @@ char *ScrambleSMBIOS(enum SMB_STRING idx, int mod, char thing)
 	};
 	if (smb[idx].secret && Setting.secret) {
 		static char outStr[MAX_UTS_LEN];
-		size_t len = strlen(smb[idx].pString);
-		int i;
-		for (i = 0; i < len; i++) {
-			outStr[i] = (i % mod) ? thing : smb[idx].pString[i];
-		}
-		outStr[i] = '\0';
+		size_t len = strlen(smb[idx].pString), dst;
+	    for (dst = 0; dst < len; dst++) {
+		outStr[dst] = (dst % mod) ? thing : smb[idx].pString[dst];
+	    }
+		outStr[dst] = '\0';
 		return outStr;
 	} else {
 		return smb[idx].pString;
@@ -6168,12 +6167,13 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 	StoreTCell(wMenu, SCANKEY_s,	RSC(MENU_ITEM_SETTINGS).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
+#ifndef NO_LOWER
 	StoreTCell(wMenu, SCANKEY_i,	RSC(MENU_ITEM_INST_CYCLES).CODE(),
-			#ifndef NO_LOWER
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
-			#else
+#else
+	StoreTCell(wMenu, SCANKEY_i,	RSC(MENU_ITEM_INST_CYCLES).CODE(),
 					RSC(CREATE_MENU_DISABLE).ATTR());
-			#endif
+#endif
 
 	StoreTCell(wMenu, SCANKEY_e,	RSC(MENU_ITEM_FEATURES).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
@@ -6181,12 +6181,13 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 	StoreTCell(wMenu, SCANKEY_SHIFT_b, RSC(MENU_ITEM_SMBIOS).CODE(),
 					   RSC(CREATE_MENU_SHORTKEY).ATTR());
 
+#ifndef NO_LOWER
 	StoreTCell(wMenu, SCANKEY_c,	RSC(MENU_ITEM_CORE_CYCLES).CODE(),
-			#ifndef NO_LOWER
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
-			#else
+#else
+	StoreTCell(wMenu, SCANKEY_c,	RSC(MENU_ITEM_CORE_CYCLES).CODE(),
 					RSC(CREATE_MENU_DISABLE).ATTR());
-			#endif
+#endif
 
 	StoreTCell(wMenu, SCANKEY_SHIFT_i, RSC(MENU_ITEM_ISA_EXT).CODE(),
 					   RSC(CREATE_MENU_SHORTKEY).ATTR());
@@ -6196,12 +6197,13 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					RSC(CREATE_MENU_SHORTKEY).ATTR()
 					: RSC(CREATE_MENU_DISABLE).ATTR());
 
+#ifndef NO_LOWER
 	StoreTCell(wMenu, SCANKEY_l,	RSC(MENU_ITEM_IDLE_STATES).CODE(),
-			#ifndef NO_LOWER
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
-			#else
+#else
+	StoreTCell(wMenu, SCANKEY_l,	RSC(MENU_ITEM_IDLE_STATES).CODE(),
 					RSC(CREATE_MENU_DISABLE).ATTR());
-			#endif
+#endif
 
 	StoreTCell(wMenu, SCANKEY_t,	RSC(MENU_ITEM_TECH).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
@@ -6209,12 +6211,13 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 	StoreTCell(wMenu, SCANKEY_HASH, RSC(MENU_ITEM_HOTPLUG).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
+#ifndef NO_LOWER
 	StoreTCell(wMenu, SCANKEY_g,	RSC(MENU_ITEM_PKG_CYCLES).CODE(),
-			#ifndef NO_LOWER
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
-			#else
+#else
+	StoreTCell(wMenu, SCANKEY_g,	RSC(MENU_ITEM_PKG_CYCLES).CODE(),
 					RSC(CREATE_MENU_DISABLE).ATTR());
-			#endif
+#endif
 
 	StoreTCell(wMenu, SCANKEY_o,	RSC(MENU_ITEM_PERF_MON).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
@@ -6222,14 +6225,15 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 	StoreTCell(wMenu, SCANKEY_SHIFT_o, RSC(MENU_ITEM_TOOLS).CODE(),
 					   RSC(CREATE_MENU_SHORTKEY).ATTR());
 
+#ifndef NO_LOWER
 	StoreTCell(wMenu, SCANKEY_x,	RSC(MENU_ITEM_TASKS_MON).CODE(),
-			#ifndef NO_LOWER
 			BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) ?
 					RSC(CREATE_MENU_SHORTKEY).ATTR()
 					: RSC(CREATE_MENU_DISABLE).ATTR());
-			#else
+#else
+	StoreTCell(wMenu, SCANKEY_x,	RSC(MENU_ITEM_TASKS_MON).CODE(),
 					RSC(CREATE_MENU_DISABLE).ATTR());
-			#endif
+#endif
 
 	StoreTCell(wMenu, SCANKEY_w,	RSC(MENU_ITEM_POW_THERM).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
@@ -6237,12 +6241,13 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 	StoreTCell(wMenu, SCANKEY_SHIFT_e, RSC(MENU_ITEM_THEME).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
+#ifndef NO_LOWER
 	StoreTCell(wMenu, SCANKEY_q,	RSC(MENU_ITEM_SYS_INTER).CODE(),
-			#ifndef NO_LOWER
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
-			#else
+#else
+	StoreTCell(wMenu, SCANKEY_q,	RSC(MENU_ITEM_SYS_INTER).CODE(),
 					RSC(CREATE_MENU_DISABLE).ATTR());
-			#endif
+#endif
 
 	StoreTCell(wMenu, SCANKEY_u,	RSC(MENU_ITEM_CPUID).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
@@ -6250,12 +6255,13 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 	StoreTCell(wMenu, SCANKEY_a,	RSC(MENU_ITEM_ABOUT).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
+#ifndef NO_LOWER
 	StoreTCell(wMenu, SCANKEY_SHIFT_c, RSC(MENU_ITEM_SENSORS).CODE(),
-			#ifndef NO_LOWER
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
-			#else
+#else
+	StoreTCell(wMenu, SCANKEY_SHIFT_c, RSC(MENU_ITEM_SENSORS).CODE(),
 					RSC(CREATE_MENU_DISABLE).ATTR());
-			#endif
+#endif
 
 	StoreTCell(wMenu, SCANKEY_SHIFT_r, RSC(MENU_ITEM_SYS_REGS).CODE(),
 					   RSC(CREATE_MENU_SHORTKEY).ATTR());
@@ -6263,12 +6269,13 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 	StoreTCell(wMenu, SCANKEY_h,	RSC(MENU_ITEM_HELP).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
+#ifndef NO_LOWER
 	StoreTCell(wMenu, SCANKEY_SHIFT_v, RSC(MENU_ITEM_VOLTAGE).CODE(),
-			#ifndef NO_LOWER
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
-			#else
+#else
+	StoreTCell(wMenu, SCANKEY_SHIFT_v, RSC(MENU_ITEM_VOLTAGE).CODE(),
 					RSC(CREATE_MENU_DISABLE).ATTR());
-			#endif
+#endif
 
 	StoreTCell(wMenu, SCANKEY_SHIFT_m, RSC(MENU_ITEM_MEM_CTRL).CODE(),
 				Shm->Uncore.CtrlCount > 0 ?
@@ -6278,34 +6285,37 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 	StoreTCell(wMenu, SCANKEY_CTRL_x, RSC(MENU_ITEM_QUIT).CODE(),
 					  RSC(CREATE_MENU_CTRL_KEY).ATTR());
 
+#ifndef NO_LOWER
 	StoreTCell(wMenu, SCANKEY_SHIFT_w, RSC(MENU_ITEM_POWER).CODE(),
-			#ifndef NO_LOWER
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
-			#else
+#else
+	StoreTCell(wMenu, SCANKEY_SHIFT_w, RSC(MENU_ITEM_POWER).CODE(),
 					RSC(CREATE_MENU_DISABLE).ATTR());
-			#endif
+#endif
 
 	StoreTCell(wMenu, SCANKEY_VOID, "", RSC(VOID).ATTR());
 /* Row 12 */
 	StoreTCell(wMenu, SCANKEY_VOID, "", RSC(VOID).ATTR());
 
+#ifndef NO_LOWER
 	StoreTCell(wMenu, SCANKEY_SHIFT_t, RSC(MENU_ITEM_SLICE_CTRS).CODE(),
-			#ifndef NO_LOWER
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
-			#else
+#else
+	StoreTCell(wMenu, SCANKEY_SHIFT_t, RSC(MENU_ITEM_SLICE_CTRS).CODE(),
 					RSC(CREATE_MENU_DISABLE).ATTR());
-			#endif
+#endif
 
 	StoreTCell(wMenu, SCANKEY_VOID, "", RSC(VOID).ATTR());
 /* Row 13 */
 	StoreTCell(wMenu, SCANKEY_VOID, "", RSC(VOID).ATTR());
 
+#ifndef NO_LOWER
 	StoreTCell(wMenu, SCANKEY_y,	RSC(MENU_ITEM_CUSTOM).CODE(),
-			#ifndef NO_LOWER
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
-			#else
+#else
+	StoreTCell(wMenu, SCANKEY_y,	RSC(MENU_ITEM_CUSTOM).CODE(),
 					RSC(CREATE_MENU_DISABLE).ATTR());
-			#endif
+#endif
 
 	StoreTCell(wMenu, SCANKEY_VOID, "", RSC(VOID).ATTR());
 /* Bottom Menu */
@@ -7216,16 +7226,16 @@ Window *CreateMemCtrl(unsigned long long id)
 
 Window *CreateSortByField(unsigned long long id)
 {
+	const CUINT oRow = TOP_HEADER_ROW
+	#ifndef NO_UPPER
+			+ Draw.Area.MaxRows
+			+ 2;
+	#else
+			+ 1;
+	#endif
 	Window *wSortBy = CreateWindow( wLayer, id,
 					1, SORTBYCOUNT,
-					33,
-					TOP_HEADER_ROW
-				#ifndef NO_UPPER
-					+ Draw.Area.MaxRows
-					+ 2,
-				#else
-					+ 1,
-				#endif
+					33, oRow,
 					WINFLAG_NO_STOCK
 					| WINFLAG_NO_SCALE
 					| WINFLAG_NO_BORDER );
@@ -7364,7 +7374,9 @@ Window *CreateTracking(unsigned long long id)
 				| WINFLAG_NO_BORDER );
 	if (wTrack != NULL)
 	{
-		signed int ti, si = 0, qi = 0;
+		size_t ti;
+		ssize_t si = 0;
+		signed int qi = 0;
 		pid_t previd = (pid_t) -1;
 
 	    for (ti = 0; ti < tc; ti++)
@@ -7635,7 +7647,7 @@ void ComputeRatioShifts(unsigned int COF,
 	(*highestShift) = (int) maxRatio - (int) COF;
 }
 
-unsigned int MultiplierIsRatio(unsigned int cpu, signed int multiplier)
+unsigned int MultiplierIsRatio(unsigned int cpu, unsigned int multiplier)
 {
 	enum RATIO_BOOST boost;
 	for (boost = BOOST(MIN); boost < BOOST(SIZE); boost++)
@@ -7730,16 +7742,17 @@ Window *CreateRatioClock(unsigned long long id,
 			"  %-6s MHz   <%4d >  %+4d ",
 			RSC(NOT_AVAILABLE).CODE(), multiplier, offset);
 	    } else {
+		const unsigned int _multiplier = (unsigned int)multiplier;
 		attr = attrib[
 			multiplier < medianColdZone ?
-				1 + 4 * MultiplierIsRatio(cpu, multiplier)
+				1 + 4 * MultiplierIsRatio(cpu, _multiplier)
 			: multiplier >= startingHotZone ?
-				2 + 4 * MultiplierIsRatio(cpu, multiplier)
-				: 0 + 4 * MultiplierIsRatio(cpu, multiplier) ];
-
+				2 + 4 * MultiplierIsRatio(cpu, _multiplier)
+				: 0 + 4 * MultiplierIsRatio(cpu, _multiplier)
+			];
 		StrFormat(Buffer, 14+8+11+11+1,
 			" %7.2f MHz   <%4d >  %+4d ",
-			ABS_FREQ_MHz(double,(unsigned)multiplier, CFlop->Clock),
+			ABS_FREQ_MHz(double, _multiplier, CFlop->Clock),
 			multiplier, offset);
 	    }
 		GridCall(StoreTCell(wCK, clockMod.ullong, Buffer, attr),
@@ -8743,7 +8756,7 @@ Window *CreateSelectIdle(unsigned long long id)
 
     if (wIdle != NULL)
     {
-	unsigned long long idx;
+	signed int idx;
 
 	StoreTCell(wIdle, BOXKEY_LIMIT_IDLE_ST00,
 			RSC(BOX_IDLE_LIMIT_RESET).CODE(),
@@ -8752,10 +8765,11 @@ Window *CreateSelectIdle(unsigned long long id)
 	for (idx = 0; idx < Shm->SysGate.OS.IdleDriver.stateCount; idx++)
 	{
 		StrFormat(Buffer, 12+11+10+1,
-				"           %2d%10.*s ", (int) (1 + idx),
+				"           %2d%10.*s ", 1 + idx,
 				10, Shm->SysGate.OS.IdleDriver.State[idx].Name);
 
-		StoreTCell(wIdle, (BOXKEY_LIMIT_IDLE_ST00 | ((1 + idx) << 4)),
+		StoreTCell(wIdle, (BOXKEY_LIMIT_IDLE_ST00
+				| ((1 + (unsigned long long)idx) << 4)),
 				Buffer,
 				RSC(UI).ATTR()[UI_WIN_SELECT_IDLE_POLL]);
 	}

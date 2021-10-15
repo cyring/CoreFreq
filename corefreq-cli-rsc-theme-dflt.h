@@ -1872,5 +1872,6 @@
 	HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK				\
 }
 
-_Static_assert(strlen(RSC_THEME_DFLT_CODE) == strlen(RSC_BOX_THEME_BLANK_CODE),
+_Static_assert( __builtin_strlen(RSC_THEME_DFLT_CODE)
+	==	__builtin_strlen(RSC_BOX_THEME_BLANK_CODE),
 "Mandatory string length");

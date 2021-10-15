@@ -4,13 +4,6 @@
  * Licenses: GPL2
  */
 
-enum THEMES {
-	THM_DFLT,
-	THM_USR1,
-	THM_USR2,
-	THM_CNT
-};
-
 enum UI_THEME {
 	UI_FUSE_RESET_LAYER,
 	UI_FUSE_PAINT_LAYER,

@@ -15440,8 +15440,9 @@ static int CoreFreqK_IdleDriver_Init(void)
 		}
 	    }
 	    else {
-		pr_warn("CoreFreq: "	\
-			"No Idle implementation for this architecture");
+		pr_warn("CoreFreq: "					\
+			"No Idle implementation for Vendor CRC 0x%x\n",
+			PUBLIC(RO(Proc))->Features.Info.Vendor.CRC);
 	    }
 		break;
 	  }
@@ -18168,7 +18169,8 @@ static int CoreFreqK_User_Ops_Level_Up(INIT_ARG *pArg)
 	  }
 	} else {
 		pr_warn("CoreFreq: "					\
-			"Unsupported architecture for 'PState_FID'\n");
+			"Unsupported architecture #%d for 'PState_FID'\n",
+			PUBLIC(RO(Proc))->ArchID);
 	}
       } else {
 	pr_warn("CoreFreq: "						\
@@ -18294,5 +18296,5 @@ static void __exit CoreFreqK_Exit(void)
 	CoreFreqK_ShutDown();
 }
 
-module_init(CoreFreqK_Init);
-module_exit(CoreFreqK_Exit);
+module_init(CoreFreqK_Init)
+module_exit(CoreFreqK_Exit)
