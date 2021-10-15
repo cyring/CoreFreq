@@ -34,6 +34,12 @@
 #define StrFormat( _str, _size, _fmt, ... )				\
 	snprintf((char*) _str, (size_t) _size, (char*) _fmt, __VA_ARGS__)
 
+#define CONV( _ret, _func, ... )					\
+({									\
+	int lret = _func ( __VA_ARGS__ );				\
+	_ret = lret > 0 ? (__typeof__ (_ret)) lret : 0;			\
+})
+
 SHM_STRUCT *Shm = NULL;
 
 static Bit64 Shutdown __attribute__ ((aligned (8))) = 0x0;

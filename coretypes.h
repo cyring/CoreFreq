@@ -1946,12 +1946,6 @@ typedef union {
 	_dest[_min] = '\0';						\
 })
 
-#define CONV( _ret, _func, ... )					\
-({									\
-	__auto_type ret = _func ( __VA_ARGS__ );			\
-	_ret = ret > 0 ? (__typeof__ (_ret)) ret : 0;			\
-})
-
 #define ZLIST( ... ) (char *[]) { __VA_ARGS__ , NULL }
 
 #define TIMESPEC(nsec)							\
