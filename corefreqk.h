@@ -6574,13 +6574,16 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Nehalem_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #if defined(HWM_CHIPSET)
 #if (HWM_CHIPSET == W83627)
 	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
 #elif (HWM_CHIPSET == IT8720)
 	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
+#else
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #endif
+#else
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #endif
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Nehalem_QPI_ids,
@@ -6605,13 +6608,16 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Nehalem_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #if defined(HWM_CHIPSET)
 #if (HWM_CHIPSET == W83627)
 	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
 #elif (HWM_CHIPSET == IT8720)
 	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
+#else
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #endif
+#else
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #endif
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Nehalem_DMI_ids,
@@ -6636,13 +6642,16 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Nehalem_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #if defined(HWM_CHIPSET)
 #if (HWM_CHIPSET == W83627)
 	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
 #elif (HWM_CHIPSET == IT8720)
 	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
+#else
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #endif
+#else
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #endif
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Nehalem_DMI_ids,
@@ -6667,13 +6676,16 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Nehalem_PPC,
 	.TurboClock = NULL, /* Attempt to read/write MSR 0x1ad will cause #UD */
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #if defined(HWM_CHIPSET)
 #if (HWM_CHIPSET == W83627)
 	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
 #elif (HWM_CHIPSET == IT8720)
 	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
+#else
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #endif
+#else
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #endif
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Nehalem_QPI_ids,
@@ -6699,13 +6711,16 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Nehalem_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #if defined(HWM_CHIPSET)
 #if (HWM_CHIPSET == W83627)
 	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
 #elif (HWM_CHIPSET == IT8720)
 	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
+#else
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #endif
+#else
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #endif
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Nehalem_DMI_ids,
@@ -6730,13 +6745,16 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Nehalem_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #if defined(HWM_CHIPSET)
 #if (HWM_CHIPSET == W83627)
 	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
 #elif (HWM_CHIPSET == IT8720)
 	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
+#else
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #endif
+#else
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #endif
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Westmere_EP_ids,
@@ -6761,13 +6779,16 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Nehalem_PPC,
 	.TurboClock = NULL, /* Attempt to read/write MSR 0x1ad will cause #UD */
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #if defined(HWM_CHIPSET)
 #if (HWM_CHIPSET == W83627)
 	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
 #elif (HWM_CHIPSET == IT8720)
 	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
+#else
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #endif
+#else
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #endif
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Nehalem_QPI_ids,
