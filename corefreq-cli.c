@@ -123,14 +123,9 @@ struct RULER_ST Ruler = {
 
 void AggregateRatio(void)
 {
-	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
-				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
-					.Toggle];
-
-	const unsigned int MaxRatio = MAXCLOCK_TO_RATIO(
-		unsigned int, CFlop->Clock.Hz
+	const unsigned int highestFactory = MAXCLOCK_TO_RATIO(
+		unsigned int, Shm->Proc.Features.Factory.Clock.Hz
 	);
-
 	enum RATIO_BOOST lt, rt;
 	unsigned int cpu,
 		lowest = Shm->Cpu[Shm->Proc.Service.Core].Boost[BOOST(MAX)],
@@ -185,7 +180,7 @@ void AggregateRatio(void)
 	    }
 	    if (rt == Ruler.Count)
 	    {
-		if (Shm->Cpu[cpu].Boost[lt] <= MaxRatio) {
+		if (Shm->Cpu[cpu].Boost[lt] <= highestFactory) {
 			Ruler.Uniq[Ruler.Count] = Shm->Cpu[cpu].Boost[lt];
 		}
 		Ruler.Count++;
@@ -17668,6 +17663,8 @@ REASON_CODE Top(char option)
 
 	Draw.Disposal = (option == 'd') ? D_DASHBOARD : D_MAINVIEW;
 
+	AggregateRatio();
+
 	RECORDER_COMPUTE(Recorder, Shm->Sleep.Interval);
 
 	LoadGeometries(BuildConfigFQN("CoreFreq"));
@@ -17926,8 +17923,6 @@ int main(int argc, char *argv[])
 					COREFREQ_REV)	)
        {
 	ClientFollowService(&localService, &Shm->Proc.Service, 0);
-
-	AggregateRatio();
 
   #define CONDITION_RDTSCP()						\
 	(  (Shm->Proc.Features.AdvPower.EDX.Inv_TSC == 1)		\

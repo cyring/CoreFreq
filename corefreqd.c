@@ -43,6 +43,7 @@
 static BitCC roomSeed	__attribute__ ((aligned (16))) = InitCC(0x0);
 static BitCC roomCore	__attribute__ ((aligned (16))) = InitCC(0x0);
 static BitCC roomClear	__attribute__ ((aligned (16))) = InitCC(0x0);
+static BitCC roomReady	__attribute__ ((aligned (16))) = InitCC(0x0);
 static Bit64 Shutdown	__attribute__ ((aligned (8))) = 0x0;
 static Bit64 PendingSync __attribute__ ((aligned (8))) = 0x0;
 unsigned int Quiet = 0x001, SysGateStartUp = 1;
@@ -6431,6 +6432,20 @@ REASON_CODE Core_Manager(REF *Ref)
 		break;
 	}
 
+    #if defined(LEGACY) && LEGACY > 0
+	#define ROOM_CLEAR(_room_)					\
+		BITZERO(BUS_LOCK, _room_##Core[CORE_WORD_TOP(CORE_COUNT)])
+    #else
+	#define ROOM_CLEAR(_room_)					\
+		BITCMP_CC(BUS_LOCK, _room_##Core, _room_##Clear)
+    #endif
+
+    #define ROOM_RESET(_room_)						\
+	BITSTOR_CC(BUS_LOCK, _room_##Core, _room_##Seed)
+
+    #define ROOM_READY(_room_)						\
+	BITCMP_CC(BUS_LOCK, _room_##Ready, _room_##Seed)
+
     #define CONDITION_RDTSCP()						\
 	(  (RO(Proc)->Features.AdvPower.EDX.Inv_TSC == 1)		\
 	|| (RO(Proc)->Features.ExtInfo.EDX.RDTSCP == 1) )
@@ -6446,13 +6461,7 @@ REASON_CODE Core_Manager(REF *Ref)
 
     while (!BITVAL(Shutdown, SYNC))
     {	/* Loop while all the cpu room bits are not cleared.		*/
-	while ( !BITVAL(Shutdown, SYNC) &&
-	    #if defined(LEGACY) && LEGACY > 0
-		!BITZERO(BUS_LOCK, roomCore[CORE_WORD_TOP(CORE_COUNT)])
-	    #else
-		!BITCMP_CC(BUS_LOCK, roomCore, roomClear)
-	    #endif
-	)
+	while (!BITVAL(Shutdown, SYNC) && !ROOM_CLEAR(room))
 	{
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
 	}
@@ -6486,7 +6495,9 @@ REASON_CODE Core_Manager(REF *Ref)
 	    {
 		if (Arg[cpu].TID)
 		{	/* Remove this cpu.				*/
-			pthread_join(Arg[cpu].TID, NULL);
+		  if (pthread_join(Arg[cpu].TID, NULL) == 0)
+		  {
+			BITCLR_CC(BUS_LOCK, roomReady, cpu);
 			Arg[cpu].TID = 0;
 
 			PerCore_Update(Shm, RO(Proc), RO(Core), cpu);
@@ -6500,6 +6511,7 @@ REASON_CODE Core_Manager(REF *Ref)
 		    }
 			/* Raise these bits up to notify a platform change. */
 			BITWISESET(LOCKLESS, PendingSync, BIT_MASK_NTFY);
+		  }
 		}
 		BITSET(LOCKLESS, Shm->Cpu[cpu].OffLine, OS);
 	    } else {
@@ -6508,14 +6520,16 @@ REASON_CODE Core_Manager(REF *Ref)
 
 		if (!Arg[cpu].TID)
 		{	/* Add this cpu.				*/
-			PerCore_Update(Shm, RO(Proc), RO(Core), cpu);
-
 			Arg[cpu].Ref  = Ref;
 			Arg[cpu].Bind = cpu;
-			pthread_create( &Arg[cpu].TID,
+		  if (pthread_create( &Arg[cpu].TID,
 					NULL,
 					Core_Cycle,
-					&Arg[cpu]);
+					&Arg[cpu]) == 0)
+		  {
+			BITSET_CC(BUS_LOCK, roomReady, cpu);
+
+			PerCore_Update(Shm, RO(Proc), RO(Core), cpu);
 
 		    if (ServerFollowService(&localService,
 						&Shm->Proc.Service,
@@ -6531,6 +6545,7 @@ REASON_CODE Core_Manager(REF *Ref)
 		    }
 			/* Notify a CPU has been brought up		*/
 			BITWISESET(LOCKLESS, PendingSync, BIT_MASK_NTFY);
+		  }
 		}
 		BITCLR(LOCKLESS, Shm->Cpu[cpu].OffLine, OS);
 
@@ -6562,8 +6577,7 @@ REASON_CODE Core_Manager(REF *Ref)
 		Shm->Proc.Avg.C1    += CFlop->State.C1;
 	    }
 	}
-
-	if (!BITVAL(Shutdown, SYNC))
+	if (!BITVAL(Shutdown, SYNC) && ROOM_READY(room))
 	{
 		unsigned char fRESET = 0;
 		/* Compute the counters averages.			*/
@@ -6717,8 +6731,8 @@ REASON_CODE Core_Manager(REF *Ref)
 	    }
 	    if (Quiet & 0x100) {
 		printf("\t%s || %s\n",
-			BITVAL(PendingSync, NTFY0)?"NTFY":"....",
-			BITVAL(PendingSync, COMP0)?"COMP":"....");
+			BITVAL(PendingSync, NTFY0) ? "NTFY":"....",
+			BITVAL(PendingSync, COMP0) ? "COMP":"....");
 	    }
 	  }
 		/* All aggregations done: Notify Clients.		*/
@@ -6727,13 +6741,18 @@ REASON_CODE Core_Manager(REF *Ref)
 		BITWISECLR(LOCKLESS, PendingSync);
 	}
 	/* Reset the Room mask						*/
-	BITSTOR_CC(BUS_LOCK, roomCore, roomSeed);
+	ROOM_RESET(room);
 
 	UBENCH_RDCOUNTER(2);
 
 	UBENCH_COMPUTE();
 	Print_uBenchmark((Quiet & 0x100));
     }
+    #undef CONDITION_RDPMC
+    #undef CONDITION_RDTSCP
+    #undef ROOM_RESET
+    #undef ROOM_READY
+    #undef ROOM_CLEAR
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
 	if (Arg[cpu].TID) {
 		pthread_join(Arg[cpu].TID, NULL);
@@ -6917,13 +6936,12 @@ REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
 		Uncore_Update(Shm,RO(Proc),RO(Core,AT(RO(Proc)->Service.Core)));
 		memcpy(&Shm->SMB, &RO(Proc)->SMB, sizeof(SMBIOS_ST));
 
-		/* Initialize notifications.				*/
-		BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0);
-		BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC1);
+		/*		Clear notification.			*/
+		BITWISECLR(LOCKLESS, Shm->Proc.Sync);
 
 		SysGate_Toggle(&Ref, SysGateStartUp);
 
-		/* Welcomes with brand and per CPU base clock.		*/
+		/*	Welcomes with brand and per CPU base clock.	*/
 	      if (Quiet & 0x001) {
 		printf( "CoreFreq Daemon %s"		\
 				"  Copyright (C) 2015-2021 CYRIL INGENIERIE\n",
