@@ -187,7 +187,8 @@ help:
 	"|    where <N> is the memory page unit of kernel allocation     |\n"\
 	"|                                                               |\n"\
 	"|  FEAT_DBG=<N>                                                 |\n"\
-	"|    where <N> is 0 or 1 for FEATURE DEBUG level                |\n"\
+	"|    where <N> is 0 or N for FEATURE DEBUG level                |\n"\
+	"|    3: XMM assembly in RING operations                         |\n"\
 	"|                                                               |\n"\
 	"|  DELAY_TSC=<N>                                                |\n"\
 	"|    where <N> is 1 to build a TSC implementation of udelay()   |\n"\

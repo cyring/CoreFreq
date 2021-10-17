@@ -383,7 +383,8 @@ o---------------------------------------------------------------o
 |    where <N> is the memory page unit of kernel allocation     |
 |                                                               |
 |  FEAT_DBG=<N>                                                 |
-|    where <N> is 0 or 1 for FEATURE DEBUG level                |
+|    where <N> is 0 or N for FEATURE DEBUG level                |
+|    3: XMM assembly in RING operations                         |
 |                                                               |
 |  DELAY_TSC=<N>                                                |
 |    where <N> is 1 to build a TSC implementation of udelay()   |
