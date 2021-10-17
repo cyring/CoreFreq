@@ -264,22 +264,24 @@ TGrid *Print_v1(CELL_FUNC OutFunc,
   {
 	va_list ap;
 	va_start(ap, fmt);
-	vsnprintf(line, width + 1, fmt, ap);
-
+	if (vsnprintf(line, width + 1, fmt, ap) < 0) {
+		goto EXIT_v1;
+	}
     if (OutFunc == NULL) {
 	printf("%s%s%.*s\n", Indent[0][tab], line,
 		(int)(width - strlen(line) - strlen(Indent[0][tab])), hSpace);
     } else {
 	ASCII *item = malloc(width + 1);
       if (item != NULL) {
-	StrFormat(item, width + 1, "%s%s%.*s", Indent[1][tab], line,
-		(int)(width - strlen(line) - strlen(Indent[1][tab])), hSpace);
-
-	pGrid = OutFunc(win, key, attrib, item);
-
+	if (0 < StrFormat(item, width + 1, "%s%s%.*s", Indent[1][tab], line,
+		(int)(width - strlen(line) - strlen(Indent[1][tab])), hSpace))
+	{
+		pGrid = OutFunc(win, key, attrib, item);
+	}
 	free(item);
       }
     }
+EXIT_v1:
 	va_end(ap);
 	free(line);
   }
@@ -300,7 +302,9 @@ TGrid *Print_v2(CELL_FUNC OutFunc,
 	va_start(ap, attrib);
 	if ((fmt = va_arg(ap, char*)) != NULL)
 	{
-		vsnprintf((char*) item, MIN_WIDTH, fmt, ap);
+		if (vsnprintf((char*) item, MIN_WIDTH, fmt, ap) < 0) {
+			goto EXIT_v2;
+		}
 		if (OutFunc == NULL) {
 			(*nl)--;
 			if ((*nl) == 0) {
@@ -312,6 +316,7 @@ TGrid *Print_v2(CELL_FUNC OutFunc,
 			pGrid = OutFunc(win, SCANKEY_NULL, attrib, item);
 		}
 	}
+EXIT_v2:
 	va_end(ap);
 	free(item);
     }
@@ -332,8 +337,9 @@ TGrid *Print_v3(CELL_FUNC OutFunc,
 	va_start(ap, attrib);
 	if ((fmt = va_arg(ap, char*)) != NULL)
 	{
-		vsnprintf((char*) item, MIN_WIDTH, fmt, ap);
-		if (OutFunc == NULL) {
+		if (!(vsnprintf((char*) item, MIN_WIDTH, fmt, ap) < 0))
+		{
+		    if (OutFunc == NULL) {
 			(*nl)--;
 			if ((*nl) == (win->matrix.size.wth - 1)) {
 				printf("|-%s", item);
@@ -343,8 +349,9 @@ TGrid *Print_v3(CELL_FUNC OutFunc,
 			} else {
 				printf("%s", item);
 			}
-		} else {
+		    } else {
 			pGrid = OutFunc(win, SCANKEY_NULL, attrib, item);
+		    }
 		}
 	}
 	va_end(ap);
@@ -4506,11 +4513,10 @@ void Package(unsigned int iter)
 	char *out = malloc(8 + (Shm->Proc.CPU.Count + 10) * MIN_WIDTH);
   if (out != NULL)
   {
-	int sdx, idx;
+	int idx, rdx;
+	const int sdx = sprintf(out, "\t\t" "Cycles" "\t\t" "State(%%)" "\n");
 
-	sdx = sprintf(out, "\t\t" "Cycles" "\t\t" "State(%%)" "\n");
-
-    while (!BITVAL(Shutdown, SYNC) && (iter-- > 0))
+    while (!BITVAL(Shutdown, SYNC) && (iter-- > 0) && (sdx > 0))
     {
 	while (!BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0)
 	    && !BITVAL(Shutdown, SYNC)) {
@@ -4520,8 +4526,9 @@ void Package(unsigned int iter)
 		ClientFollowService(&localService, &Shm->Proc.Service, 0);
 	}
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+
 	idx = sdx;
-	idx+= sprintf(&out[idx],
+	if ((rdx = sprintf(&out[idx],
 		"PC02" "\t" "%18llu" "\t" "%7.2f" "\n"	\
 		"PC03" "\t" "%18llu" "\t" "%7.2f" "\n"	\
 		"PC04" "\t" "%18llu" "\t" "%7.2f" "\n"	\
@@ -4543,8 +4550,10 @@ void Package(unsigned int iter)
 		PFlop->Delta.PC10, 100.f * Shm->Proc.State.PC10,
 		PFlop->Delta.MC6,  100.f * Shm->Proc.State.MC6,
 		PFlop->Delta.PTSC,
-		PFlop->Uncore.FC0);
-
+		PFlop->Uncore.FC0)) > 0)
+	{
+		idx += rdx;
+	}
 	fwrite(out, (size_t) idx, 1, stdout);
     }
 	free(out);
@@ -4667,13 +4676,13 @@ void Counters(unsigned int iter)
   if (out != NULL)
   {
 	unsigned int cpu;
-	signed int sdx, idx;
-
-	sdx=sprintf(out,"CPU Freq(MHz) Ratio  Turbo"			\
+	signed int idx, rdx;
+	const int sdx = \
+	sprintf( out,	"CPU Freq(MHz) Ratio  Turbo"			\
 			"  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
-			"  Min TMP:TS  Max\n");
+			"  Min TMP:TS  Max\n" );
 
-    while (!BITVAL(Shutdown, SYNC) && (iter-- > 0))
+    while (!BITVAL(Shutdown, SYNC) && (iter-- > 0) && (sdx > 0))
     {
 	while (!BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0)
 	    && !BITVAL(Shutdown, SYNC)) {
@@ -4690,16 +4699,20 @@ void Counters(unsigned int iter)
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 		if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-			idx += Core_Temp(&out[idx], CFlop, cpu);
+			rdx = Core_Temp(&out[idx], CFlop, cpu);
 		} else {
-			idx += sprintf(&out[idx], "%03u        OFF\n", cpu);
+			rdx = sprintf(&out[idx], "%03u        OFF\n", cpu);
+		}
+		if (rdx > 0) {
+			idx += rdx;
 		}
 	    }
 	}
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 
-	idx += Pkg_Temp(&out[idx], PFlop);
-
+	if ((rdx = Pkg_Temp(&out[idx], PFlop)) > 0) {
+		idx += rdx;
+	}
 	fwrite(out, (size_t) idx, 1, stdout);
     }
 	free(out);
@@ -4714,17 +4727,18 @@ void Sensors(unsigned int iter)
   {
 	enum PWR_DOMAIN pw;
 	unsigned int cpu;
-	signed int sdx, ldx, idx;
-
-	sdx=sprintf(out,"CPU Freq(MHz) VID  Vcore  TMP(%c)"		\
+	signed int idx, rdx;
+	const int sdx = \
+	sprintf( out,	"CPU Freq(MHz) VID  Vcore  TMP(%c)"		\
 			"    Accumulator       Energy(J)     Power(W)\n",
-			Setting.fahrCels ? 'F' : 'C' );
+			Setting.fahrCels ? 'F' : 'C'  );
 
-	ldx=sprintf(row,"\n" "%.*sPackage%.*sCores%.*sUncore%.*sMemory" \
+	const int ldx = \
+	sprintf( row,	"\n" "%.*sPackage%.*sCores%.*sUncore%.*sMemory" \
 			"%.*sPlatform" "\n" "Energy(J):",
 			13, hSpace, 7, hSpace, 9, hSpace, 8, hSpace, 8, hSpace);
 
-    while (!BITVAL(Shutdown, SYNC) && (iter-- > 0))
+    while (!BITVAL(Shutdown, SYNC) && (iter-- > 0) && (sdx > 0) && (ldx > 0))
     {
 	while (!BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0)
 	    && !BITVAL(Shutdown, SYNC)) {
@@ -4741,10 +4755,9 @@ void Sensors(unsigned int iter)
 		struct FLIP_FLOP *CFlop = \
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-	   if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-	    idx+=sprintf(&out[idx],
-			"%03u %7.2f %5d  %5.4f  %3u"			\
-			"  %018llu  %13.9f %13.9f\n",
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
+		rdx = sprintf(&out[idx],"%03u %7.2f %5d  %5.4f  %3u"	\
+					"  %018llu  %13.9f %13.9f\n",
 			cpu,
 			CFlop->Relative.Freq,
 			CFlop->Voltage.VID,
@@ -4754,23 +4767,32 @@ void Sensors(unsigned int iter)
 			CFlop->Delta.Power.ACCU,
 			CFlop->State.Energy,
 			CFlop->State.Power);
-	   } else {
-		idx += sprintf(&out[idx], "%03u        OFF\n", cpu);
-	   }
+	    } else {
+		rdx = sprintf(&out[idx], "%03u        OFF\n", cpu);
+	    }
+	    if (rdx > 0) {
+		idx += rdx;
+	    }
 	  }
 	}
 	memcpy(&out[idx], row, (size_t) ldx);
 	idx += ldx;
 
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++) {
-		idx += sprintf(&out[idx], "%.*s" "%13.9f", 1, hSpace,
+		rdx = sprintf(&out[idx], "%.*s" "%13.9f", 1, hSpace,
 				Shm->Proc.State.Energy[pw].Current);
+		if (rdx > 0) {
+			idx += rdx;
+		}
 	}
 	memcpy(&out[idx], "\n" "Power(W) :", 11);
 	idx += 11;
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++) {
-		idx += sprintf(&out[idx], "%.*s" "%13.9f", 1, hSpace,
+		rdx = sprintf(&out[idx], "%.*s" "%13.9f", 1, hSpace,
 				Shm->Proc.State.Power[pw].Current);
+		if (rdx > 0) {
+			idx += rdx;
+		}
 	}
 	out[idx++] = '\n'; out[idx++] = '\n';
 
@@ -4791,11 +4813,10 @@ void Voltage(unsigned int iter)
   if (out != NULL)
   {
 	unsigned int cpu;
-	signed int sdx, idx;
+	signed int idx, rdx;
+	const int sdx=sprintf(out, "CPU Freq(MHz) VID  Min     Vcore   Max\n");
 
-	sdx = sprintf(out, "CPU Freq(MHz) VID  Min     Vcore   Max\n");
-
-    while (!BITVAL(Shutdown, SYNC) && (iter-- > 0))
+    while (!BITVAL(Shutdown, SYNC) && (iter-- > 0) && (sdx > 0))
     {
 	while (!BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0)
 	    && !BITVAL(Shutdown, SYNC)) {
@@ -4812,8 +4833,8 @@ void Voltage(unsigned int iter)
 		struct FLIP_FLOP *CFlop = \
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-	   if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-	    idx+=sprintf(&out[idx],
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
+		rdx = sprintf(&out[idx],
 			"%03u %7.2f %5d  %5.4f  %5.4f  %5.4f\n",
 			cpu,
 			CFlop->Relative.Freq,
@@ -4821,9 +4842,12 @@ void Voltage(unsigned int iter)
 			Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST],
 			CFlop->Voltage.Vcore,
 			Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_HIGHEST]);
-	   } else {
-		idx += sprintf(&out[idx], "%03u        OFF\n", cpu);
-	   }
+	    } else {
+		rdx = sprintf(&out[idx], "%03u        OFF\n", cpu);
+	    }
+	    if (rdx > 0) {
+		idx += rdx;
+	    }
 	  }
 	}
 	out[idx++] = '\n';
@@ -4842,16 +4866,16 @@ void Power(unsigned int iter)
   {
 	enum PWR_DOMAIN pw;
 	unsigned int cpu;
-	signed int sdx, ldx, idx;
-
-	sdx=sprintf(out,"CPU Freq(MHz)" 				\
+	signed int idx, rdx;
+	const int sdx = \
+	sprintf( out,	"CPU Freq(MHz)" 				\
 			"    Accumulator      Min  Energy(J) Max"	\
 			"    Min  Power(W)  Max\n" );
+	const int ldx = \
+	sprintf( row, "\nEnergy(J)  Package%.*sCores%.*sUncore%.*sMemory\n",
+			12, hSpace, 15, hSpace, 14, hSpace );
 
-	ldx=sprintf(row,"\nEnergy(J)  Package%.*sCores%.*sUncore%.*sMemory\n",
-			12, hSpace, 15, hSpace, 14, hSpace);
-
-    while (!BITVAL(Shutdown, SYNC) && (iter-- > 0))
+    while (!BITVAL(Shutdown, SYNC) && (iter-- > 0) && (sdx > 0) && (ldx > 0))
     {
 	while (!BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0)
 	    && !BITVAL(Shutdown, SYNC)) {
@@ -4868,8 +4892,8 @@ void Power(unsigned int iter)
 		struct FLIP_FLOP *CFlop = \
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-	   if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-	    idx+=sprintf(&out[idx],
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
+		rdx = sprintf(&out[idx],
 			"%03u %7.2f"					\
 			"  %018llu  %6.2f %6.2f %6.2f  %6.2f %6.2f %6.2f\n",
 			cpu,
@@ -4881,29 +4905,39 @@ void Power(unsigned int iter)
 			Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST],
 			CFlop->State.Power,
 			Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_HIGHEST]);
-	   } else {
-		idx += sprintf(&out[idx], "%03u        OFF\n", cpu);
-	   }
+	    } else {
+		rdx = sprintf(&out[idx], "%03u        OFF\n", cpu);
+	    }
+	    if (rdx > 0) {
+		idx += rdx;
+	    }
 	  }
 	}
 	memcpy(&out[idx], row, (size_t) ldx);
 	idx += ldx;
 
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(PLATFORM); pw++) {
-		idx+=sprintf(&out[idx], "%.*s" "%6.2f%6.2f%6.2f",
+		rdx = sprintf(&out[idx], "%.*s" "%6.2f%6.2f%6.2f",
 			pw == PWR_DOMAIN(PKG) ? 1 : 2, hSpace,
 			Shm->Proc.State.Energy[pw].Limit[SENSOR_LOWEST],
 			Shm->Proc.State.Energy[pw].Current,
 			Shm->Proc.State.Energy[pw].Limit[SENSOR_HIGHEST]);
+		if (rdx > 0) {
+			idx += rdx;
+		}
 	}
-	memcpy(&out[idx], "\n" "Power(W)\n", 11);
-	idx += 11;
+	memcpy(&out[idx], "\n" "Power(W)\n", 10);
+	idx += 10;
+
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(PLATFORM); pw++) {
-		idx+=sprintf(&out[idx], "%.*s" "%6.2f%6.2f%6.2f",
+		rdx = sprintf(&out[idx], "%.*s" "%6.2f%6.2f%6.2f",
 			pw == PWR_DOMAIN(PKG) ? 1 : 2, hSpace,
 			Shm->Proc.State.Power[pw].Limit[SENSOR_LOWEST],
 			Shm->Proc.State.Power[pw].Current,
 			Shm->Proc.State.Power[pw].Limit[SENSOR_HIGHEST]);
+		if (rdx > 0) {
+			idx += rdx;
+		}
 	}
 	out[idx++] = '\n'; out[idx++] = '\n';
 
@@ -4924,11 +4958,11 @@ void Instructions(unsigned int iter)
   if (out != NULL)
   {
 	unsigned int cpu;
-	signed int sdx, idx;
+	signed int idx, rdx;
+	const int sdx = \
+		sprintf(out, "CPU     IPS            IPC            CPI\n");
 
-	sdx = sprintf(out, "CPU     IPS            IPC            CPI\n");
-
-    while (!BITVAL(Shutdown, SYNC) && (iter-- > 0))
+    while (!BITVAL(Shutdown, SYNC) && (iter-- > 0) && (sdx > 0))
     {
 	while (!BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0)
 	    && !BITVAL(Shutdown, SYNC)) {
@@ -4945,14 +4979,17 @@ void Instructions(unsigned int iter)
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 		if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-			idx += sprintf(&out[idx],
+			rdx = sprintf(&out[idx],
 					"%03u %12.6f/s %12.6f/c %12.6f/i\n",
 					cpu,
 					CFlop->State.IPS,
 					CFlop->State.IPC,
 					CFlop->State.CPI);
 		} else {
-			idx += sprintf(&out[idx], "%03u\n", cpu);
+			rdx = sprintf(&out[idx], "%03u\n", cpu);
+		}
+		if (rdx > 0) {
+			idx += rdx;
 		}
 	    }
 	}
