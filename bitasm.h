@@ -707,6 +707,10 @@ _lock	"cmpxchg16b " #_off0 "(%%" #_reg1 ")"		"\n\t"		\
 
 #if defined(LEGACY) && (LEGACY > 0)
 FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
+
+#if (CORE_COUNT == 64)
+#error "LEGACY Level 1: Unimplemented BITCMP_CC() and CORE_COUNT(64)"
+#else
 #define BITCMP_CC(_lock, _opl, _opr)					\
 ({									\
 	unsigned char ret = 1;						\
@@ -729,7 +733,8 @@ FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
 	} while (++cw <= CORE_WORD_TOP(CORE_COUNT));			\
 	ret;								\
 })
-
+#endif
+/*	---	---	---	cmpxchg16b	---	---	---	*/
 #elif (CORE_COUNT == 64)
 
 #define BITCMP_CC(_lock, _opl, _opr)					\
