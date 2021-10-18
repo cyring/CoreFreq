@@ -981,17 +981,17 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 
     if (Shm->Proc.Features.Factory.SMU.Version > 0)
     {
-	char version[15+1];
+	char version[17+1];
 	int len;
-	CONV(len, StrFormat, version, 15+1, "%u.%u.%u-%u",
+	CONV(len, StrFormat, version, 17+1, "[%3u.%u.%u-%u]",
 				Shm->Proc.Features.Factory.SMU.Major,
 				Shm->Proc.Features.Factory.SMU.Minor,
 				Shm->Proc.Features.Factory.SMU.Revision,
 				Shm->Proc.Features.Factory.SMU.Interface);
 
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
-		"%s""%.*s[%10.*s]", RSC(FIRMWARE).CODE(),
-		width - 6 - RSZ(FIRMWARE) - len , hSpace, len, version );
+		"%s""%.*s%s", RSC(FIRMWARE).CODE(),
+		width - 3 - RSZ(FIRMWARE) - len , hSpace, version );
     }
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s""%.*s[0x%08x]", RSC(MICROCODE).CODE(),
