@@ -17406,9 +17406,9 @@ void Draw_Card_CLK(Layer *layer, Card *card)
 
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 
-	double clock = CLOCK_MHz(double, PFlop->Delta.PTSC);
+	double bclk = (double)(PFlop->Delta.PTSC / Shm->Sleep.Interval);
 
-	Counter2LCD(layer, card->origin.col, card->origin.row, clock);
+	Counter2LCD(layer, card->origin.col, card->origin.row, bclk);
 
 	StrFormat(Buffer, 6+1, "%5.1f", CLOCK_MHz(double, CFlop->Clock.Hz));
 
