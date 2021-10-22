@@ -873,8 +873,8 @@ static void ComputePower_AMD_17h( struct FLIP_FLOP *CFlip,
 					SHM_STRUCT *Shm,
 					unsigned int cpu)
 {
-	CFlip->State.Energy	= CFlip->Delta.Power.ACCU;
-	CFlip->State.Energy	*= Shm->Proc.Power.Unit.Joules;
+	CFlip->State.Energy	= (double)CFlip->Delta.Power.ACCU
+				* Shm->Proc.Power.Unit.Joules;
 
 	CFlip->State.Power	= 1000.0 * CFlip->State.Energy;
 	CFlip->State.Power	/= Shm->Sleep.Interval;
@@ -1080,53 +1080,54 @@ static void *Core_Cycle(void *arg)
 	CFlip->Absolute.Ratio.Perf = RO(Core)->Ratio.Perf;
 
 	/* Compute IPS=Instructions per TSC				*/
-	CFlip->State.IPS = CFlip->Delta.INST;
-	CFlip->State.IPS /= CFlip->Delta.TSC;
+	CFlip->State.IPS = (double)CFlip->Delta.INST
+			 / (double)CFlip->Delta.TSC;
 
 	/* Compute IPC=Instructions per non-halted reference cycle.
 	   ( Protect against a division by zero )			*/
 	if (CFlip->Delta.C0.URC != 0) {
-		CFlip->State.IPC = CFlip->Delta.INST;
-		CFlip->State.IPC /= CFlip->Delta.C0.URC;
+		CFlip->State.IPC = (double)CFlip->Delta.INST
+				 / (double)CFlip->Delta.C0.URC;
 	} else {
 		CFlip->State.IPC = 0.0f;
 	}
 	/* Compute CPI=Non-halted reference cycles per instruction.
 	   ( Protect against a division by zero )			*/
 	if (CFlip->Delta.INST != 0) {
-		CFlip->State.CPI = CFlip->Delta.C0.URC;
-		CFlip->State.CPI /= CFlip->Delta.INST;
+		CFlip->State.CPI = (double)CFlip->Delta.C0.URC
+				 / (double)CFlip->Delta.INST;
 	} else {
 		CFlip->State.CPI = 0.0f;
 	}
 	/* Compute the Turbo State.					*/
-	CFlip->State.Turbo = CFlip->Delta.C0.UCC;
-	CFlip->State.Turbo /= CFlip->Delta.TSC;
+	CFlip->State.Turbo	= (double)CFlip->Delta.C0.UCC
+				/ (double)CFlip->Delta.TSC;
 
 	/* Compute the C-States.					*/
-	CFlip->State.C0 = CFlip->Delta.C0.URC;
-	CFlip->State.C0 /= CFlip->Delta.TSC;
+	CFlip->State.C0 = (double)CFlip->Delta.C0.URC
+			/ (double)CFlip->Delta.TSC;
 
-	CFlip->State.C3 = CFlip->Delta.C3;
-	CFlip->State.C3 /= CFlip->Delta.TSC;
+	CFlip->State.C3 = (double)CFlip->Delta.C3
+			/ (double)CFlip->Delta.TSC;
 
-	CFlip->State.C6 = CFlip->Delta.C6;
-	CFlip->State.C6 /= CFlip->Delta.TSC;
+	CFlip->State.C6 = (double)CFlip->Delta.C6
+			/ (double)CFlip->Delta.TSC;
 
-	CFlip->State.C7 = CFlip->Delta.C7;
-	CFlip->State.C7 /= CFlip->Delta.TSC;
+	CFlip->State.C7 = (double)CFlip->Delta.C7
+			/ (double)CFlip->Delta.TSC;
 
-	CFlip->State.C1 = CFlip->Delta.C1;
-	CFlip->State.C1 /= CFlip->Delta.TSC;
+	CFlip->State.C1 = (double)CFlip->Delta.C1
+			/ (double)CFlip->Delta.TSC;
 
 	/* Relative Frequency = Relative Ratio x Bus Clock Frequency	*/
-	CFlip->Relative.Ratio = CFlip->Delta.C0.UCC;
-	CFlip->Relative.Ratio *= Cpu->Boost[BOOST(MAX)];
-	CFlip->Relative.Ratio /= CFlip->Delta.TSC;
+	CFlip->Relative.Ratio	= (double)(CFlip->Delta.C0.UCC
+					* Cpu->Boost[BOOST(MAX)])
+				/ (double)CFlip->Delta.TSC;
 
-	CFlip->Relative.Freq = REL_FREQ_MHz(	CFlip->Relative.Ratio,
+	CFlip->Relative.Freq	= REL_FREQ_MHz(__typeof__(CFlip->Relative.Freq),
+						CFlip->Relative.Ratio,
 						CFlip->Clock,
-						Shm->Sleep.Interval );
+						Shm->Sleep.Interval);
 
 	/* Per Core, compute the Relative Frequency limits.		*/
 	TEST_AND_SET_SENSOR( REL_FREQ, LOWEST,	CFlip->Relative.Freq,
@@ -1135,10 +1136,9 @@ static void *Core_Cycle(void *arg)
 	TEST_AND_SET_SENSOR( REL_FREQ, HIGHEST, CFlip->Relative.Freq,
 						Cpu->Relative.Freq );
 	/* Per Core, compute the Absolute Frequency limits.		*/
-	CFlip->Absolute.Freq	= ABS_FREQ_MHz(
-					__typeof__(CFlip->Absolute.Freq),
-					CFlip->Absolute.Ratio.Perf, CFlip->Clock
-				);
+	CFlip->Absolute.Freq	= ABS_FREQ_MHz(__typeof__(CFlip->Absolute.Freq),
+						CFlip->Absolute.Ratio.Perf,
+						CFlip->Clock);
 
 	TEST_AND_SET_SENSOR( ABS_FREQ, LOWEST,	CFlip->Absolute.Freq,
 						Cpu->Absolute.Freq );
@@ -1493,7 +1493,8 @@ void PowerInterface(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 	duration *= (4 + RO(Proc)->PowerThermal.PowerLimit[pw].TimeWindow1_Z);
 	duration = duration >> 2;
 
-	Shm->Proc.Power.Domain[pw].TW1 = Shm->Proc.Power.Unit.Times * duration;
+	Shm->Proc.Power.Domain[pw].TW1	= Shm->Proc.Power.Unit.Times
+					* (double)duration;
 	if (Shm->Proc.Power.Domain[pw].TW1 < 1.0)
 		Shm->Proc.Power.Domain[pw].TW1 = 1.0;
       } else {
@@ -1506,7 +1507,8 @@ void PowerInterface(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 	duration *= (4 + RO(Proc)->PowerThermal.PowerLimit[pw].TimeWindow2_Z);
 	duration = duration >> 2;
 
-	Shm->Proc.Power.Domain[pw].TW2 = Shm->Proc.Power.Unit.Times * duration;
+	Shm->Proc.Power.Domain[pw].TW2	= Shm->Proc.Power.Unit.Times
+					* (double)duration;
 	if (Shm->Proc.Power.Domain[pw].TW2 < 1.0)
 		Shm->Proc.Power.Domain[pw].TW2 = 1.0;
       } else {
@@ -1849,7 +1851,8 @@ void P945_MCH(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >> 20;
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+						(unsigned int)(DIMM_Size >> 20);
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
 
@@ -1928,7 +1931,8 @@ void P955_MCH(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = DIMM_Size;
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+							(unsigned int)DIMM_Size;
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
       }
@@ -2065,7 +2069,9 @@ void P965_MCH(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >> 20;
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+						(unsigned int)(DIMM_Size >> 20);
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
 
@@ -2401,7 +2407,9 @@ void G965_MCH(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >> 20;
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+						(unsigned int)(DIMM_Size >> 20);
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
 
@@ -2576,7 +2584,8 @@ void P35_MCH(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >> 20;
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+						(unsigned int)(DIMM_Size >> 20);
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
       }
@@ -2618,7 +2627,8 @@ void P4S_MCH(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >> 20;
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+						(unsigned int)(DIMM_Size >> 20);
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
       }
@@ -2811,7 +2821,8 @@ void SLM_PTR(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >> 20;
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+						(unsigned int)(DIMM_Size >> 20);
 	}
 /* Error Correcting Code */
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = \
@@ -3029,7 +3040,8 @@ void NHM_IMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >> 20;
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+						(unsigned int)(DIMM_Size >> 20);
 	  }
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = (unsigned int)\
@@ -3425,7 +3437,8 @@ void SNB_EP_IMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >> 20;
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+						(unsigned int)(DIMM_Size >> 20);
 	    }
 	}
 
@@ -4622,7 +4635,8 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = \
 	1 << (5 + RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DAC.NumCol);
 
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = DIMM_Size >> 10;
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+						(unsigned int)(DIMM_Size >> 10);
     }
    }
 	Shm->Uncore.MC[mc].SlotCount = slotCount;
@@ -5821,7 +5835,9 @@ void PerCore_Update(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 int SysGate_OnDemand(REF *Ref, int operation)
 {
 	int rc = -1;
-	const size_t allocPages = PAGE_SIZE << Ref->RO(Proc)->Gate.ReqMem.Order;
+	const size_t allocPages = \
+			(size_t)PAGE_SIZE << Ref->RO(Proc)->Gate.ReqMem.Order;
+
 	if (operation == 0) {
 	    if (Ref->RO(SysGate) != NULL) {
 		if ((rc = munmap(Ref->RO(SysGate), allocPages)) == 0) {
@@ -6599,32 +6615,32 @@ REASON_CODE Core_Manager(REF *Ref)
 		PFlip->Delta.PC10 = RO(Proc)->Delta.PC10;
 		PFlip->Delta.MC6  = RO(Proc)->Delta.MC6;
 		/* Package C-state Residency counters			*/
-		Shm->Proc.State.PC02 = PFlip->Delta.PC02;
-		Shm->Proc.State.PC02 /= PFlip->Delta.PTSC;
+		Shm->Proc.State.PC02	= (double)PFlip->Delta.PC02
+					/ (double)PFlip->Delta.PTSC;
 
-		Shm->Proc.State.PC03 = PFlip->Delta.PC03;
-		Shm->Proc.State.PC03 /= PFlip->Delta.PTSC;
+		Shm->Proc.State.PC03	= (double)PFlip->Delta.PC03
+					/ (double)PFlip->Delta.PTSC;
 
-		Shm->Proc.State.PC04 = PFlip->Delta.PC04;
-		Shm->Proc.State.PC04 /= PFlip->Delta.PTSC;
+		Shm->Proc.State.PC04	= (double)PFlip->Delta.PC04
+					/ (double)PFlip->Delta.PTSC;
 
-		Shm->Proc.State.PC06 = PFlip->Delta.PC06;
-		Shm->Proc.State.PC06 /= PFlip->Delta.PTSC;
+		Shm->Proc.State.PC06	= (double)PFlip->Delta.PC06
+					/ (double)PFlip->Delta.PTSC;
 
-		Shm->Proc.State.PC07 = PFlip->Delta.PC07;
-		Shm->Proc.State.PC07 /= PFlip->Delta.PTSC;
+		Shm->Proc.State.PC07	= (double)PFlip->Delta.PC07
+					/ (double)PFlip->Delta.PTSC;
 
-		Shm->Proc.State.PC08 = PFlip->Delta.PC08;
-		Shm->Proc.State.PC08 /= PFlip->Delta.PTSC;
+		Shm->Proc.State.PC08	= (double)PFlip->Delta.PC08
+					/ (double)PFlip->Delta.PTSC;
 
-		Shm->Proc.State.PC09 = PFlip->Delta.PC09;
-		Shm->Proc.State.PC09 /= PFlip->Delta.PTSC;
+		Shm->Proc.State.PC09	= (double)PFlip->Delta.PC09
+					/ (double)PFlip->Delta.PTSC;
 
-		Shm->Proc.State.PC10 = PFlip->Delta.PC10;
-		Shm->Proc.State.PC10 /= PFlip->Delta.PTSC;
+		Shm->Proc.State.PC10	= (double)PFlip->Delta.PC10
+					/ (double)PFlip->Delta.PTSC;
 
-		Shm->Proc.State.MC6 = PFlip->Delta.MC6;
-		Shm->Proc.State.MC6 /= PFlip->Delta.PTSC;
+		Shm->Proc.State.MC6	= (double)PFlip->Delta.MC6
+					/ (double)PFlip->Delta.PTSC;
 		/* Uncore scope counters				*/
 		PFlip->Uncore.FC0 = RO(Proc)->Delta.Uncore.FC0;
 		/* Power & Energy counters				*/

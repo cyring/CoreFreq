@@ -399,9 +399,9 @@ enum PWR_DOMAIN {
 #define UNIT_KHz(_f)		(_f * 10 * PRECISION)
 #define UNIT_MHz(_f)		(_f * UNIT_KHz(1000))
 #define UNIT_GHz(_f)		(_f * UNIT_MHz(1000))
-#define CLOCK_KHz(_t, _f)	(_f / UNIT_KHz((_t) 1))
-#define CLOCK_MHz(_t, _f)	(_f / UNIT_MHz((_t) 1))
-#define CLOCK_GHz(_t, _f)	(_f / UNIT_GHz((_t) 1))
+#define CLOCK_KHz(_t, _f)	((_t)(_f) / (_t)UNIT_KHz(1))
+#define CLOCK_MHz(_t, _f)	((_t)(_f) / (_t)UNIT_MHz(1))
+#define CLOCK_GHz(_t, _f)	((_t)(_f) / (_t)UNIT_GHz(1))
 
 #if !defined(MAX_FREQ_HZ)
 	#define MAX_FREQ_HZ	5250000000
@@ -434,8 +434,11 @@ typedef struct
 	clock.R  = clock.Hz % (1000LLU * 1000LLU);			\
 })
 
-#define REL_FREQ_MHz(this_ratio, clock, interval)			\
-	(clock.Hz * this_ratio * interval) / UNIT_MHz(interval)
+#define REL_FREQ_MHz(this_type, this_ratio, clock, interval)		\
+	( (this_type)(clock.Hz)						\
+	* (this_type)(this_ratio)					\
+	* (this_type)(interval))					\
+	/ (this_type)UNIT_MHz(interval)
 
 #define ABS_FREQ_MHz(this_type, this_ratio, this_clock) 		\
 (									\
@@ -1931,9 +1934,11 @@ typedef union {
 	};
 } SMBIOS_ST;
 
-#define ROUND_TO_PAGES(Size)						\
+#define ROUND_TO_PAGES(_size)						\
 (									\
-	PAGE_SIZE * ((Size / PAGE_SIZE) + ((Size % PAGE_SIZE) ? 1 : 0)) \
+	(__typeof__(_size)) PAGE_SIZE					\
+	* (((_size) + (__typeof__(_size)) PAGE_SIZE - 1)		\
+	/ (__typeof__(_size)) PAGE_SIZE)				\
 )
 
 #define KMAX(M, m)	((M) > (m) ? (M) : (m))
