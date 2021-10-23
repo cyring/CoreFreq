@@ -213,7 +213,7 @@ typedef struct
 		struct {
 			double		Freq;
 		    struct {
-			unsigned int	Perf;	/* STATUS or BOOST P-State */
+			double		Perf;	/* STATUS or BOOST P-State */
 		    } Ratio;
 		} Absolute;
 

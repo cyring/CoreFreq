@@ -420,6 +420,17 @@ enum OFFLINE
 
 typedef struct
 {
+	unsigned short	Q,
+			R;
+} COF_ST;
+
+typedef union {
+	unsigned int	Perf;	/* STATUS or BOOST P-State */
+	COF_ST		COF;
+} COF_UNION;
+
+typedef struct
+{
 	unsigned long long	Q,
 				R,
 				Hz;

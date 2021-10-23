@@ -1077,7 +1077,8 @@ static void *Core_Cycle(void *arg)
 	/* Update all clock ratios.					*/
 	memcpy(Cpu->Boost, RO(Core)->Boost, (BOOST(SIZE))*sizeof(unsigned int));
 
-	CFlip->Absolute.Ratio.Perf = RO(Core)->Ratio.Perf;
+	CFlip->Absolute.Ratio.Perf = (double)RO(Core)->Ratio.COF.Q;
+	CFlip->Absolute.Ratio.Perf +=(double)RO(Core)->Ratio.COF.R /UNIT_KHz(1);
 
 	/* Compute IPS=Instructions per TSC				*/
 	CFlip->State.IPS = (double)CFlip->Delta.INST
@@ -1124,10 +1125,10 @@ static void *Core_Cycle(void *arg)
 					* Cpu->Boost[BOOST(MAX)])
 				/ (double)CFlip->Delta.TSC;
 
-	CFlip->Relative.Freq	= REL_FREQ_MHz(__typeof__(CFlip->Relative.Freq),
+	CFlip->Relative.Freq	= REL_FREQ_MHz( double,
 						CFlip->Relative.Ratio,
 						CFlip->Clock,
-						Shm->Sleep.Interval);
+						Shm->Sleep.Interval );
 
 	/* Per Core, compute the Relative Frequency limits.		*/
 	TEST_AND_SET_SENSOR( REL_FREQ, LOWEST,	CFlip->Relative.Freq,
@@ -1136,9 +1137,8 @@ static void *Core_Cycle(void *arg)
 	TEST_AND_SET_SENSOR( REL_FREQ, HIGHEST, CFlip->Relative.Freq,
 						Cpu->Relative.Freq );
 	/* Per Core, compute the Absolute Frequency limits.		*/
-	CFlip->Absolute.Freq	= ABS_FREQ_MHz(__typeof__(CFlip->Absolute.Freq),
-						CFlip->Absolute.Ratio.Perf,
-						CFlip->Clock);
+	CFlip->Absolute.Freq = ABS_FREQ_MHz(double, CFlip->Absolute.Ratio.Perf,
+						(double)CFlip->Clock);
 
 	TEST_AND_SET_SENSOR( ABS_FREQ, LOWEST,	CFlip->Absolute.Freq,
 						Cpu->Absolute.Freq );

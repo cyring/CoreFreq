@@ -5829,14 +5829,16 @@ void Query_AMD_Family_15h(unsigned int cpu)
 	Default_Unlock_Reset();
 }
 
-inline unsigned int AMD_Zen_CoreCOF(unsigned int FID, unsigned int DID)
+inline COF_ST AMD_Zen_CoreCOF(unsigned int FID, unsigned int DID)
 {/* Source: PPR for AMD Family 17h Model 01h, Revision B1 Processors
     CoreCOF = (PStateDef[CpuFid[7:0]] / PStateDef[CpuDfsId]) * 200	*/
-	unsigned int COF;
+	COF_ST COF;
 	if (DID != 0) {
-		COF = (FID << 1) / DID;
+		COF.Q = (FID << 1) / DID;
+		COF.R = (UNIT_KHz(1) * (FID - ((COF.Q * DID) >> 1))) >> 2;
 	} else {
-		COF = FID >> 2;
+		COF.Q = FID >> 2;
+		COF.R = 0;
 	}
 	return COF;
 }
@@ -5874,7 +5876,8 @@ inline unsigned short AMD_Zen_CoreFID(	unsigned int COF,
 
 bool Compute_AMD_Zen_Boost(unsigned int cpu)
 {
-	unsigned int COF = 0, pstate, sort[8] = { /* P[0..7]-States */
+	COF_ST COF = {.Q = 0, .R = 0};
+	unsigned int pstate, sort[8] = { /* P[0..7]-States */
 		BOOST(MAX), BOOST(1C), BOOST(2C), BOOST(3C),
 		BOOST(4C) , BOOST(5C), BOOST(6C), BOOST(7C)
 	};
@@ -5897,7 +5900,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 				PstateDef.Family_17h.CpuDfsId );
 
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = COF;
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = COF.Q;
     } else {
 	/*Core & L3 frequencies < 400MHz are not supported by the architecture*/
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = 4;
@@ -5912,7 +5915,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 		COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 					PstateDef.Family_17h.CpuDfsId );
 
-		PUBLIC(RO(Core, AT(cpu)))->Boost[sort[pstate]] = COF;
+		PUBLIC(RO(Core, AT(cpu)))->Boost[sort[pstate]] = COF.Q;
 	}
     }
 	PUBLIC(RO(Proc))->Features.SpecTurboRatio = pstate;
@@ -5924,7 +5927,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 				PstateDef.Family_17h.CpuDfsId );
 
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(TGT)] = COF;
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(TGT)] = COF.Q;
 
 	/*	If CPB is enabled then add Boost + XFR to the P0 ratio. */
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
@@ -5998,7 +6001,8 @@ static void TargetClock_AMD_Zen_PerCore(void *arg)
 {
 	CLOCK_ZEN_ARG *pClockZen = (CLOCK_ZEN_ARG *) arg;
 	unsigned int cpu = smp_processor_id();
-	unsigned int COF, pstate,
+	COF_ST COF = {.Q = 0, .R = 0};
+	unsigned int pstate,
 		target	= (pClockZen->pClockMod->cpu == -1) ?
 			pClockZen->pClockMod->Ratio
 		:
@@ -6021,7 +6025,7 @@ static void TargetClock_AMD_Zen_PerCore(void *arg)
 	    {
 		COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 					PstateDef.Family_17h.CpuDfsId );
-		if (COF == target) {
+		if (COF.Q == target) {
 			RdWrMSR = 1;
 			break;
 		}
@@ -6046,7 +6050,8 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 	CLOCK_ZEN_ARG *pClockZen = (CLOCK_ZEN_ARG *) arg;
 	PSTATEDEF PstateDef = {.value = 0};
 	HWCR HwCfgRegister = {.value = 0};
-	unsigned int COF, FID, DID;
+	COF_ST COF = {.Q = 0, .R = 0};
+	unsigned int FID, DID;
 	/*	Make sure the Core Performance Boost is disabled.	*/
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
   if (HwCfgRegister.Family_17h.CpbDis)
@@ -6056,17 +6061,17 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
     if (PstateDef.Family_17h.PstateEn)
     {
 	if (pClockZen->pClockMod->cpu == -1) { /* Request an absolute COF */
-		COF = pClockZen->pClockMod->Ratio;
+		COF.Q = pClockZen->pClockMod->Ratio;
 	} else { /* Compute the requested COF based on a frequency offset */
 		COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 					PstateDef.Family_17h.CpuDfsId );
 
-		COF = COF + pClockZen->pClockMod->Offset;
+		COF.Q = COF.Q + pClockZen->pClockMod->Offset;
 	}
 	FID = PstateDef.Family_17h.CpuFid;
 	DID = PstateDef.Family_17h.CpuDfsId;
 	/*	Attempt to write the P-State MSR with new FID and DID	*/
-	if (AMD_Zen_CoreFID(COF, &FID, &DID) == 0)
+	if (AMD_Zen_CoreFID(COF.Q, &FID, &DID) == 0)
 	{
 		PstateDef.Family_17h.CpuFid = FID;
 		PstateDef.Family_17h.CpuDfsId = DID;
@@ -6108,7 +6113,7 @@ static void BaseClock_AMD_Zen_PerCore(void *arg)
 
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = \
 			AMD_Zen_CoreCOF(PstateDef.Family_17h.CpuFid,
-					PstateDef.Family_17h.CpuDfsId);
+					PstateDef.Family_17h.CpuDfsId).Q;
 
 	cpu_data(cpu).loops_per_jiffy = \
 		COMPUTE_LPJ(	PUBLIC(RO(Core, AT(cpu)))->Clock.Hz,
@@ -6126,7 +6131,7 @@ static void BaseClock_AMD_Zen_PerCore(void *arg)
 
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = \
 			AMD_Zen_CoreCOF(PstateDef.Family_17h.CpuFid,
-					PstateDef.Family_17h.CpuDfsId);
+					PstateDef.Family_17h.CpuDfsId).Q;
 
 	cpu_data(cpu).loops_per_jiffy = \
 		COMPUTE_LPJ(	PUBLIC(RO(Core, AT(cpu)))->Clock.Hz,
@@ -14225,7 +14230,7 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
 {
 	PSTATEDEF PstateDef;
 	PSTATECTRL PstateCtrl;
-	unsigned int COF;
+	COF_ST COF;
 
 	SMT_Counters_AMD_Family_17h(Core, 1);
 
@@ -14236,13 +14241,13 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
 	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 				PstateDef.Family_17h.CpuDfsId );
 
-	PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(TGT)] = COF;
+	PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(TGT)] = COF.Q;
 
 	/*	Read the Boosted Frequency and voltage VID.		*/
 	RDMSR(PstateDef, MSR_AMD_F17H_HW_PSTATE_STATUS);
 	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 				PstateDef.Family_17h.CpuDfsId );
-	Core->Ratio.Perf = COF;
+	Core->Ratio.COF = COF;
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
@@ -15903,7 +15908,8 @@ static void Policy_Zen_SetTarget(void *arg)
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
 	PSTATEDEF PstateDef;
-	unsigned int COF, pstate;
+	COF_ST COF = {.Q = 0, .R = 0};
+	unsigned int pstate;
 	unsigned short WrModRd = 0;
 	/* Look-up for the first enabled P-State with the same target ratio */
 	for (pstate = 0; pstate <= 7; pstate++)
@@ -15915,7 +15921,7 @@ static void Policy_Zen_SetTarget(void *arg)
 	    {
 		COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 					PstateDef.Family_17h.CpuDfsId );
-		if (COF == (*ratio)) {
+		if (COF.Q == (*ratio)) {
 			WrModRd = 1;
 			break;
 		}
@@ -15938,7 +15944,7 @@ static void Policy_Zen_SetTarget(void *arg)
 		COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 					PstateDef.Family_17h.CpuDfsId );
 
-		Core->Boost[BOOST(TGT)] = COF;
+		Core->Boost[BOOST(TGT)] = COF.Q;
 	}
 #endif /* CONFIG_CPU_FREQ */
 }

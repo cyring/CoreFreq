@@ -8211,8 +8211,8 @@ void CPU_Item_Target_Freq(unsigned int cpu, ASCII *item)
 				Shm->Proc.Features.TgtRatio_Unlock, item );
     } else {
 	StrFormat(item,
-		RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
-		"  %03u  %4d%6d  %-3d" "[%3u ]%5.0f MHz %c%4u %c ",
+		RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+4+6+10+1,
+		"  %03u  %4d%6d  %-3d" "[%3.0f ]%5.0f MHz %c%4u %c ",
 		cpu,
 		Shm->Cpu[cpu].Topology.PackageID,
 		Shm->Cpu[cpu].Topology.CoreID,
@@ -14689,8 +14689,8 @@ size_t Draw_Absolute_Freq_Spaces(	struct FLIP_FLOP *CFlop,
 	UNUSED(cpu);
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 17+8+10+7+7+7+7+7+7+11+1,
-		"%7.2f" " (" "%5u" ") " 			\
+	CONV(len, StrFormat, Buffer, 17+8+6+7+7+7+7+7+7+11+1,
+		"%7.2f" " (" "%5.2f" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
 		"%.*s",
@@ -14756,8 +14756,8 @@ size_t Draw_Absolute_Freq_Celsius(	struct FLIP_FLOP *CFlop,
 	UNUSED(cpu);
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 19+8+10+7+7+7+7+7+7+10+10+10+1,
-		"%7.2f" " (" "%5u" ") " 			\
+	CONV(len, StrFormat, Buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
+		"%7.2f" " (" "%5.2f" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
 		"%-3u" "/" "%3u" "/" "%3u",
@@ -14825,8 +14825,8 @@ size_t Draw_Absolute_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
 	UNUSED(cpu);
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 19+8+10+7+7+7+7+7+7+10+10+10+1,
-		"%7.2f" " (" "%5u" ") " 			\
+	CONV(len, StrFormat, Buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
+		"%7.2f" " (" "%5.2f" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
 		"%-3u" "/" "%3u" "/" "%3u",
