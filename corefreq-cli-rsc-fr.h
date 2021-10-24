@@ -1199,6 +1199,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 		"  Copyright (C) 2015-2021 CYRIL INGENIERIE\n\n"	\
 		"Usage:\t%s [-Option <argument>] [-Commande <argument>]\n"\
 		"\n    Options de l'interface\n"			\
+		"\t-Oa\tFréquence absolue\n"				\
 		"\t-Ok\tUnité mémoire en kilo-octet\n"			\
 		"\t-Om\tUnité mémoire en méga-octet\n"			\
 		"\t-Og\tUnité mémoire en giga-octet\n"			\

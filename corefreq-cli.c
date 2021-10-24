@@ -17980,6 +17980,9 @@ int main(int argc, char *argv[])
 		break;
 	    case 'O':
 		switch (argv[idx][2]) {
+		case 'a':
+			Draw.Load = 1;
+			break;
 		case 'k':
 			Draw.Unit.Memory = 10 * 0;
 			break;

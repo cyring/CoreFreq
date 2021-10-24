@@ -1563,6 +1563,7 @@
 		"  Copyright (C) 2015-2021 CYRIL INGENIERIE\n\n"	\
 		"Usage:\t%s [-Option <argument>] [-Command <argument>]\n"\
 		"\n    Interface options\n"				\
+		"\t-Oa\tAbsolute frequency\n"				\
 		"\t-Ok\tMemory unit in kilobyte\n"			\
 		"\t-Om\tMemory unit in megabyte\n"			\
 		"\t-Og\tMemory unit in gigabyte\n"			\
