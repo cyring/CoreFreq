@@ -9847,6 +9847,7 @@ static void PerCore_AMD_Family_16h_Query(void *arg)
 static void PerCore_AMD_Family_17h_Query(void *arg)
 {
 	CORE_RO *Core = (CORE_RO *) arg;
+	TCTL_HTC HTC = {.value = 0};
 	PM16 PM = {.value = 0};
 	int ToggleFeature = 0;
 	bool CPB_State;
@@ -9854,7 +9855,14 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	/*	Query the Min, Max, Target & Turbo P-States		*/
 	PerCore_Query_AMD_Zen_Features(Core);
 	CPB_State = Compute_AMD_Zen_Boost(Core->Bind);
+	/*	Query the HTC feature enable from SMUTHM		*/
+	Core_AMD_SMN_Read(	HTC,
+				SMU_AMD_THM_TCTL_REGISTER_F17H + 0x4,
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H );
 
+	Core->PowerThermal.TM2_Enable = HTC.HTC_EN;
+	/*	Query and set features per Package			*/
     if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
     {
 	unsigned int rx;

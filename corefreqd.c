@@ -5593,12 +5593,14 @@ void PowerThermal(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 		RO(Core, AT(cpu))->PowerThermal.PerfEnergyBias.PowerPolicy;
 
 								/* 000v */
-	Shm->Cpu[cpu].PowerThermal.TM1 = RO(Proc)->Features.Std.EDX.TM1;
+	Shm->Cpu[cpu].PowerThermal.TM1	= RO(Proc)->Features.Std.EDX.TM1
+					| RO(Proc)->Features.AdvPower.EDX.TTP;
 								/* 00v0 */
 	Shm->Cpu[cpu].PowerThermal.TM1 |= (unsigned int) \
 		(RO(Core, AT(cpu))->PowerThermal.TCC_Enable << 1);
 								/* 000v */
-	Shm->Cpu[cpu].PowerThermal.TM2 = RO(Proc)->Features.Std.ECX.TM2;
+	Shm->Cpu[cpu].PowerThermal.TM2	= RO(Proc)->Features.Std.ECX.TM2
+					| RO(Proc)->Features.AdvPower.EDX.TM;
 								/* 00v0 */
 	Shm->Cpu[cpu].PowerThermal.TM2 |= (unsigned int) \
 		(RO(Core, AT(cpu))->PowerThermal.TM2_Enable << 1);

@@ -3912,14 +3912,14 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
     else if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	 || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
-	bix = Shm->Proc.Features.AdvPower.EDX.TTP;
+	bix = Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1;
 
 	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_TM1).CODE(),
 		width - 18 - RSZ(POWER_THERMAL_TM1), hSpace,
 		RSC(POWER_LABEL_TTP).CODE(), TM[bix] );
 
-	bix = Shm->Proc.Features.AdvPower.EDX.TM;
+	bix = Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2;
 
 	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_TM2).CODE(),
