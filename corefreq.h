@@ -131,9 +131,7 @@ typedef struct
 	} Topology;
 
 	struct {
-		unsigned int		TM1,
-					TM2,
-					Limit[SENSOR_LIMITS_DIM];
+		unsigned int		Limit[SENSOR_LIMITS_DIM];
 		struct {
 			unsigned int	ClockMod : 16-0,
 					Extended : 32-16;
@@ -310,7 +308,9 @@ typedef struct
 				IOMMU_Ver_Major : 24-20,
 				IOMMU_Ver_Minor : 28-24,
 				WDT		: 29-28,
-				_pad64		: 64-29;
+				TM1		: 31-29,
+				TM2		: 33-31,
+				_pad64		: 64-33;
 	} Technology;
 
 	struct {

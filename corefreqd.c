@@ -1597,6 +1597,22 @@ void Technology_Update(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc))
 	Shm->Proc.Technology.WDT = BITCMP_CC(	LOCKLESS,
 						RW(Proc)->WDT,
 						RO(Proc)->WDT_Mask );
+
+								/* 000v */
+	Shm->Proc.Technology.TM1 = RO(Proc)->Features.Std.EDX.TM1
+				 | RO(Proc)->Features.AdvPower.EDX.TTP;
+								/* 00v0 */
+	Shm->Proc.Technology.TM1 |= BITCMP_CC(	LOCKLESS,
+						RW(Proc)->TM1,
+						RO(Proc)->TM_Mask ) << 1;
+
+								/* 000v */
+	Shm->Proc.Technology.TM2 = RO(Proc)->Features.Std.ECX.TM2
+				 | RO(Proc)->Features.AdvPower.EDX.TM;
+								/* 00v0 */
+	Shm->Proc.Technology.TM2 |= BITCMP_CC(	LOCKLESS,
+						RW(Proc)->TM2,
+						RO(Proc)->TM_Mask ) << 1;
 }
 
 void Mitigation_2nd_Stage(SHM_STRUCT *Shm,RO(PROC) *RO(Proc),RW(PROC) *RW(Proc))
@@ -5591,19 +5607,6 @@ void PowerThermal(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 
 	Shm->Cpu[cpu].PowerThermal.PowerPolicy = \
 		RO(Core, AT(cpu))->PowerThermal.PerfEnergyBias.PowerPolicy;
-
-								/* 000v */
-	Shm->Cpu[cpu].PowerThermal.TM1	= RO(Proc)->Features.Std.EDX.TM1
-					| RO(Proc)->Features.AdvPower.EDX.TTP;
-								/* 00v0 */
-	Shm->Cpu[cpu].PowerThermal.TM1 |= (unsigned int) \
-		(RO(Core, AT(cpu))->PowerThermal.TCC_Enable << 1);
-								/* 000v */
-	Shm->Cpu[cpu].PowerThermal.TM2	= RO(Proc)->Features.Std.ECX.TM2
-					| RO(Proc)->Features.AdvPower.EDX.TM;
-								/* 00v0 */
-	Shm->Cpu[cpu].PowerThermal.TM2 |= (unsigned int) \
-		(RO(Core, AT(cpu))->PowerThermal.TM2_Enable << 1);
 
 	Shm->Cpu[cpu].PowerThermal.HWP.Capabilities.Highest = \
 		RO(Core, AT(cpu))->PowerThermal.HWP_Capabilities.Highest;

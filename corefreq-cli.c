@@ -3895,14 +3895,14 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
-	bix = Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1;
+	bix = Shm->Proc.Technology.TM1;
 
 	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_TM1).CODE(),
 		width - 18 - RSZ(POWER_THERMAL_TM1), hSpace,
 		RSC(POWER_LABEL_TM1).CODE(), TM[bix] );
 
-	bix = Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2;
+	bix = Shm->Proc.Technology.TM2;
 
 	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_TM2).CODE(),
@@ -3912,14 +3912,14 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
     else if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	 || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
-	bix = Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1;
+	bix = Shm->Proc.Technology.TM1;
 
 	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_TM1).CODE(),
 		width - 18 - RSZ(POWER_THERMAL_TM1), hSpace,
 		RSC(POWER_LABEL_TTP).CODE(), TM[bix] );
 
-	bix = Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2;
+	bix = Shm->Proc.Technology.TM2;
 
 	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_TM2).CODE(),
@@ -14359,6 +14359,12 @@ void Layout_Footer(Layer *layer, CUINT row)
 		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_ENABLE_1],
 		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_ENABLE_2]
 	};
+	const ATTRIBUTE TM[] = {
+		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TM_0],
+		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TM_1],
+		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TM_2],
+		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TM_3]
+	};
 	const struct { ASCII *code; ATTRIBUTE attr; } TSC[] = {
 		{RSC(LAYOUT_FOOTER_TSC_NONE).CODE(),
 				RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TSC_NONE]},
@@ -14391,13 +14397,6 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 	hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] = \
 					EN[Shm->Proc.Features.HyperThreading];
-
-	const ATTRIBUTE TM[] = {
-		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TM_0],
-		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TM_1],
-		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TM_2],
-		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TM_3]
-	};
 
 	hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[6] = \
 	hTech1.attr[7] = EN[Shm->Proc.Technology.EIST];
@@ -14433,8 +14432,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 						EN[Shm->Proc.Technology.C1U];
 
 	hTech1.attr[43] = hTech1.attr[44] = \
-			TM[Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1
-			  |Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2];
+			TM[Shm->Proc.Technology.TM1|Shm->Proc.Technology.TM2];
 
 	LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
 			hTech1.length, hTech1.attr, hTech1.code);
@@ -14484,7 +14482,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 				EN[(Shm->Proc.Features.AdvPower.EDX.TS != 0)];
 
 	hTech1.attr[38] = hTech1.attr[39] = hTech1.attr[40] = \
-				EN[(Shm->Proc.Features.AdvPower.EDX.TTP != 0)];
+			TM[Shm->Proc.Technology.TM1|Shm->Proc.Technology.TM2];
 
 	LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
 			hTech1.length, hTech1.attr, hTech1.code);

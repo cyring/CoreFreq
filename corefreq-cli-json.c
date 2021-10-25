@@ -1321,6 +1321,10 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_start_object(&s);
 			json_key(&s, "PowerNow");
 			json_literal(&s, "%llu", Shm->Proc.Technology.PowerNow);
+			json_key(&s, "TM1");
+			json_literal(&s, "%u", Shm->Proc.Technology.TM1);
+			json_key(&s, "TM2");
+			json_literal(&s, "%u", Shm->Proc.Technology.TM2);
 			json_key(&s, "ODCM");
 			json_literal(&s, "%llu", Shm->Proc.Technology.ODCM);
 			json_key(&s, "PowerMgmt");
@@ -1716,10 +1720,6 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 		json_key(&s, "PowerThermal");
 		{
 			json_start_object(&s);
-			json_key(&s, "TM1");
-			json_literal(&s, "%u", Shm->Cpu[cpu].PowerThermal.TM1);
-			json_key(&s, "TM2");
-			json_literal(&s, "%u", Shm->Cpu[cpu].PowerThermal.TM2);
 			json_key(&s, "Limit");
 			json_start_arr(&s);
 			{

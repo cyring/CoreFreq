@@ -7207,6 +7207,7 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 
 	/*	Enable or Disable the Core C6 State. Bit[22,14,16]	*/
 	RDMSR(CStateCfg, MSR_AMD_F17H_CSTATE_CONFIG);
+
 	switch (CC6_Enable) {
 	case COREFREQ_TOGGLE_OFF:
 		CStateCfg.CCR2_CC6EN = 0;
@@ -7243,6 +7244,7 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
     {
 	ZEN_PMGT_MISC PmgtMisc = {.value = 0};
 	RDMSR(PmgtMisc, MSR_AMD_F17H_PMGT_MISC);
+
 	switch (PC6_Enable) {
 	case COREFREQ_TOGGLE_OFF:
 		PmgtMisc.PC6En = 0;
@@ -7433,8 +7435,8 @@ void Query_AMD_Family_0Fh_C1E(CORE_RO *Core)			/* Per Core */
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask, Core->Bind);
 }
 
-void ThermalMonitor2_Set( CORE_RO *Core )	/* Intel Core Solo Duo. */
-{
+void ThermalMonitor2_Set(CORE_RO *Core, MISC_PROC_FEATURES MiscFeatures)
+{	/* Intel Core Solo Duo. */
 	struct SIGNATURE whiteList[] = {
 		_Core_Yonah,		/* 06_0E */
 		_Core_Conroe,		/* 06_0F */
@@ -7453,7 +7455,7 @@ void ThermalMonitor2_Set( CORE_RO *Core )	/* Intel Core Solo Duo. */
     && (whiteList[id].ExtModel == PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
     && (whiteList[id].Model == PUBLIC(RO(Proc))->Features.Std.EAX.Model))
     {
-	if (Core->PowerThermal.TCC_Enable)
+	if (MiscFeatures.TCC)
 	{
 		THERM2_CONTROL Therm2Control = {.value = 0};
 
@@ -7461,10 +7463,10 @@ void ThermalMonitor2_Set( CORE_RO *Core )	/* Intel Core Solo Duo. */
 
 		if (Therm2Control.TM_SELECT)
 		{
-			Core->PowerThermal.TCC_Enable = 0;
-			Core->PowerThermal.TM2_Enable = 1;
+			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TM1, Core->Bind);
+			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TM2, Core->Bind);
 		} else {
-			Core->PowerThermal.TM2_Enable = 0;
+			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TM2, Core->Bind);
 		}
 	}
 	break;
@@ -7479,7 +7481,6 @@ void ThermalMonitor_Set(CORE_RO *Core)
 	THERM_STATUS ThermStatus = {.value = 0};
 	PLATFORM_INFO PfInfo = {.value = 0};
 	int ClearBit;
-
 	/* Silvermont + Xeon[06_57] + Nehalem + Sandy Bridge & superior arch. */
 	RDMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
 
@@ -7488,15 +7489,22 @@ void ThermalMonitor_Set(CORE_RO *Core)
 	{
 		Core->PowerThermal.Param.Offset[0] = 100;
 	}
-
+	/*		Query the TM1 and TM2 features state.		*/
 	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
+	if (MiscFeatures.TCC) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TM1, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TM1, Core->Bind);
+	}
+	if (MiscFeatures.TM2_Enable) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TM2, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TM2, Core->Bind);
+	}
+	ThermalMonitor2_Set(Core, MiscFeatures);
 
-	Core->PowerThermal.TCC_Enable = MiscFeatures.TCC;	/* alias TM1 */
-	Core->PowerThermal.TM2_Enable = MiscFeatures.TM2_Enable;
-
-	ThermalMonitor2_Set(Core);
-
-	/* Clear Thermal Events if requested. */
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask, Core->Bind);
+	/*	Clear Thermal Events if requested by User.		*/
 	ClearBit = 0;
 	RDMSR(ThermStatus, MSR_IA32_THERM_STATUS);
 
@@ -8805,6 +8813,7 @@ void AMD_Microcode(CORE_RO *Core)
 
 void PerCore_Reset(CORE_RO *Core)
 {
+	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->DCU_Mask  , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
@@ -8888,6 +8897,7 @@ static void PerCore_VirtualMachine(void *arg)
 
 	Dump_CPUID(Core);
 
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask	, Core->Bind);
@@ -8957,6 +8967,7 @@ static void PerCore_AuthenticAMD_Query(void *arg)
 	}
 	Dump_CPUID(Core);
 
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
@@ -9717,6 +9728,7 @@ static void PerCore_AMD_Family_0Fh_Query(void *arg)
 
 	Query_AMD_Family_0Fh_C1E(Core);
 
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
@@ -9751,6 +9763,7 @@ static void PerCore_AMD_Family_Same_Query(void *arg)
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
     }
 
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
@@ -9847,8 +9860,6 @@ static void PerCore_AMD_Family_16h_Query(void *arg)
 static void PerCore_AMD_Family_17h_Query(void *arg)
 {
 	CORE_RO *Core = (CORE_RO *) arg;
-	TCTL_THERM_TRIP ThermTrip = {.value = 0};
-	TCTL_HTC HTC = {.value = 0};
 	PM16 PM = {.value = 0};
 	int ToggleFeature = 0;
 	bool CPB_State;
@@ -9856,28 +9867,36 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	/*	Query the Min, Max, Target & Turbo P-States		*/
 	PerCore_Query_AMD_Zen_Features(Core);
 	CPB_State = Compute_AMD_Zen_Boost(Core->Bind);
+	/*	Query and set features per Package			*/
+    if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+    {
+	TCTL_THERM_TRIP ThermTrip = {.value = 0};
+	TCTL_HTC HTC = {.value = 0};
+	unsigned int rx;
+	HSMP_ARG arg[8];
 	/*	Query the HTC and THERM_TRIP features from SMUTHM	*/
 	Core_AMD_SMN_Read(	HTC,
 				SMU_AMD_THM_TCTL_REGISTER_F17H + 0x4,
 				SMU_AMD_INDEX_REGISTER_F17H,
 				SMU_AMD_DATA_REGISTER_F17H );
-
-	Core->PowerThermal.TM2_Enable = HTC.HTC_EN;
-
+	if (HTC.HTC_EN) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TM2, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TM2, Core->Bind);
+	}
 	Core_AMD_SMN_Read(	ThermTrip,
 				SMU_AMD_THM_TCTL_REGISTER_F17H + 0x8,
 				SMU_AMD_INDEX_REGISTER_F17H,
 				SMU_AMD_DATA_REGISTER_F17H );
-
-	Core->PowerThermal.TCC_Enable = ThermTrip.THERM_TP_EN;
-	/*	Query and set features per Package			*/
-    if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
-    {
-	unsigned int rx;
-	HSMP_ARG arg[8];
-
+	if (ThermTrip.THERM_TP_EN) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TM1, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TM1, Core->Bind);
+	}
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask, Core->Bind);
+	/*		Count CPB and XFR ratios			*/
 	if (CPB_State == true)
-	{	/*	Count CPB and XFR ratios		*/
+	{
 		PUBLIC(RO(Proc))->Features.XtraCOF = 2;
 	}
 	else {

@@ -281,10 +281,6 @@ typedef struct
 	signed int			VID;
 	struct {
 		enum THERM_PWR_EVENTS	Events;
-		unsigned int
-					TCC_Enable:  1-0,
-					TM2_Enable:  2-1,
-					Unused    : 32-2;
 	};
 	PERF_CONTROL			PerfControl;
 	CLOCK_MODULATION		ClockModulation;
@@ -800,6 +796,7 @@ typedef struct
 	FEATURES		Features;
 
 	BitCC			CR_Mask 	__attribute__ ((aligned (16)));
+	BitCC			TM_Mask 	__attribute__ ((aligned (16)));
 	BitCC			ODCM_Mask	__attribute__ ((aligned (16)));
 	BitCC			DCU_Mask	__attribute__ ((aligned (16)));
 	BitCC			PowerMgmt_Mask	__attribute__ ((aligned (16)));
@@ -909,6 +906,8 @@ typedef struct
 	  } Power;
 	} Delta __attribute__ ((aligned (8)));
 
+	BitCC			TM1		__attribute__ ((aligned (16)));
+	BitCC			TM2		__attribute__ ((aligned (16)));
 	BitCC			ODCM		__attribute__ ((aligned (16)));
 	BitCC			L1_HW_Prefetch __attribute__ ((aligned (16)));
 	BitCC			L1_HW_IP_Prefetch __attribute__((aligned (16)));
