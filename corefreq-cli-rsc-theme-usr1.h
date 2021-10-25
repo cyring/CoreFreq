@@ -5,7 +5,7 @@
  */
 
 #define RSC_THEME_USR1_CODE		/* 72 chars */			\
-"        Strawberry theme by CyrIng.  Updated by CyrIng, Jul. 2021       "
+"        Strawberry theme by CyrIng.  Updated by CyrIng, Oct. 2021       "
 
 #define RSC_UI_THM_USR1_ATTR						\
 {									\
@@ -1169,7 +1169,7 @@
 	HKW,HKW,HKW,LKW,HKW,HKW,HKW,LKW,HKW,HKW,HKW,LKW,		\
 	HKW,HKW,HKW,HKW,HKW,LKW,HKW,HKW,HKW,LKW,HKW,HKW,HKW,		\
 	LKW,HKW,HKW,HKW,LKW,HKW,HKW,HKW,LKW,HKW,HKW,HKW,LKW,		\
-	HKW,HKW,HKW,LKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW		\
+	HKW,HKW,LKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW		\
 }
 
 #define RSC_LAYOUT_FOOTER_VOLT_TEMP_THM_USR1_ATTR			\

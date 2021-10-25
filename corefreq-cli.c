@@ -14481,7 +14481,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 	hTech1.attr[34] = hTech1.attr[35] = hTech1.attr[36] = \
 				EN[(Shm->Proc.Features.AdvPower.EDX.TS != 0)];
 
-	hTech1.attr[38] = hTech1.attr[39] = hTech1.attr[40] = \
+	hTech1.attr[38] = hTech1.attr[39] = \
 			TM[Shm->Proc.Technology.TM1|Shm->Proc.Technology.TM2];
 
 	LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
@@ -14493,7 +14493,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 			hSpace,
 			RSC(UI).ATTR()[UI_LAYOUT_FOOTER_FILL]);
 
-	Draw.Area.Footer.VoltTemp.Hot[1] = hTech1.origin.col + 42;
+	Draw.Area.Footer.VoltTemp.Hot[1] = hTech1.origin.col + 41;
       }
     }
 	LayerCopyAt(layer, hVoltTemp0.origin.col, hVoltTemp0.origin.row,
