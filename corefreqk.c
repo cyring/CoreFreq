@@ -4062,8 +4062,9 @@ void Query_HSW_IMC(void __iomem *mchmap, unsigned short mc)
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = \
 			(PUBLIC(RO(Proc))->Uncore.Bus.SNB_Cap.DDPCD == 1) ?
 			1 : PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount;
-
+    if (mc == 0) {
 	Query_Turbo_TDP_Config(mchmap);
+    }
 }
 
 void Query_SKL_IMC(void __iomem *mchmap, unsigned short mc)
@@ -4126,7 +4127,9 @@ void Query_SKL_IMC(void __iomem *mchmap, unsigned short mc)
 	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SKL.Refresh.value = \
 					readl(mchmap + 0x423c + 0x400 * cha);
     }
+    if (mc == 0) {
 	Query_Turbo_TDP_Config(mchmap);
+    }
 }
 
 void Query_RKL_IMC(void __iomem *mchmap, unsigned short mc)
@@ -4192,7 +4195,9 @@ void Query_RKL_IMC(void __iomem *mchmap, unsigned short mc)
 	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].RKL.Refresh.value = \
 					readl(mchmap + 0x423c + 0x400 * cha);
     }
+    if (mc == 0) {
 	Query_Turbo_TDP_Config(mchmap);
+    }
 }
 
 void Query_TGL_IMC(void __iomem *mchmap, unsigned short mc)
@@ -4259,7 +4264,9 @@ void Query_TGL_IMC(void __iomem *mchmap, unsigned short mc)
 	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.Refresh.value = \
 					readl(mchmap + 0x423c + 0x400 * cha);
     }
+    if (mc == 0) {
 	Query_Turbo_TDP_Config(mchmap);
+    }
 }
 
 static PCI_CALLBACK P945(struct pci_dev *dev)
