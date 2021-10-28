@@ -97,7 +97,7 @@
 #endif
 
 #ifndef MSR_MC6_DEMOTION_POLICY_CONFIG
-	#define MSR_MC6_DEMOTION_POLICY_CONFIG  0x00000669
+	#define MSR_MC6_DEMOTION_POLICY_CONFIG	0x00000669
 #endif
 
 #define MSR_NHM_UNCORE_PERF_GLOBAL_CTRL 	0x00000391
@@ -873,7 +873,7 @@ typedef union
 		C4E		: 34-32, /* Broadwell Mobile		*/
 		XD_Bit_Disable	: 35-34,
 		ReservedBits7	: 37-35,
-		DCU_L1_Prefetch	: 38-37, /* Core (R/W) Disable=1	*/
+		DCU_L1_Prefetch : 38-37, /* Core (R/W) Disable=1	*/
 		Turbo_IDA	: 39-38, /* Disable=1 -> CPUID(0x6).IDA=0 */
 		IP_Prefetcher	: 40-39,
 		ReservedBits8	: 64-40;

@@ -14702,7 +14702,7 @@ size_t Draw_Absolute_Freq_Spaces(	struct FLIP_FLOP *CFlop,
 		100.f * CFlop->State.C7,
 		11, hSpace);
 
-	return len > 0;
+	return len;
 }
 
 size_t (*Draw_Freq_Spaces_Matrix[2])(	struct FLIP_FLOP*,

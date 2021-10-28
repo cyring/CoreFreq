@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	88
-#define COREFREQ_REV	0
+#define COREFREQ_REV	1
 
 #if !defined(CORE_COUNT)
 	#define CORE_COUNT	256
@@ -1341,7 +1341,6 @@ typedef struct	/* BSP CPUID features.					*/
 			_pad64		: 64-40;
 	};
 } FEATURES;
-
 
 /* Memory Controller' structures dimensions.				*/
 #define MC_MAX_CTRL	2

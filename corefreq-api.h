@@ -302,7 +302,7 @@ typedef struct
 
 	struct
 	{
-		unsigned long long 	INST;
+		unsigned long long	INST;
 		struct
 		{
 		unsigned long long
@@ -462,7 +462,7 @@ typedef struct
 	/* 40Ch */		P945_MC_DRAM_RANK_WIDTH WIDTH;	/* 16 bits    */
 			} P955;
 			struct {
-	/* 29Ch */		P965_MC_ODTCTRL		DRT0;	/* 32 bits    */
+	/* 29Ch */		P965_MC_ODTCTRL 	DRT0;	/* 32 bits    */
 	/* 250h */		P965_MC_CYCTRK_PCHG	DRT1;	/* 16 bits    */
 	/* 252h */		P965_MC_CYCTRK_ACT	DRT2;	/* 32 bits    */
 	/* 256h */		P965_MC_CYCTRK_WR	DRT3;	/* 16 bits    */

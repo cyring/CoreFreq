@@ -1072,7 +1072,7 @@ typedef union
 
 typedef union
 {
-	unsigned int		value;	/* Family: 17h, 19h @ SMU(0x59008) */
+	unsigned int		value;	/* Family: 17h, 19h @ SMU(0x59808) */
 	struct
 	{
 		unsigned int
