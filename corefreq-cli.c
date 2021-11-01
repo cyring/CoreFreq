@@ -5868,12 +5868,13 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 		PRT(IMC, attrib[1], RSC(MEM_CTRL_EIGHT_CHA_2).CODE());
 		break;
 	default:
-		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
-		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
-		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_DISABLED_0).CODE());
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_DISABLED_1).CODE());
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_DISABLED_2).CODE());
 		break;
 	}
-
+      if (Shm->Uncore.MC[mc].ChannelCount > 0)
+      {
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_BUS_RATE_0).CODE());
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_BUS_RATE_1).CODE());
 	PRT(IMC, attrib[1], "%5llu", Shm->Uncore.Bus.Rate);
@@ -5966,6 +5967,7 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 	    }
 	  }
 	}
+      }
 	if (mc < (Shm->Uncore.CtrlCount - 1)) {
 		for (nc = 0; nc < MC_MATX; nc++) {
 			PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
@@ -7228,7 +7230,7 @@ Window *CreateMemCtrl(unsigned long long id)
 		break;
 	}
    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
-	rows += ctrlHeaders;
+	rows += ctrlHeaders * (Shm->Uncore.MC[mc].ChannelCount > 0);
 	rows += channelHeaders * Shm->Uncore.MC[mc].ChannelCount;
 	rows += Shm->Uncore.MC[mc].SlotCount * Shm->Uncore.MC[mc].ChannelCount;
     }
@@ -17182,24 +17184,30 @@ void Layout_Card_MC(Layer *layer, Card *card)
 			hRAM);
 
 	card->data.dword.lo = 0;
-
-	CONV(card->data.dword.hi, StrFormat,
-		Card_MC_Timing,
-		11+(4*10)+5+1,
-		"% d-%u-%u-%u-%uT",
-		Shm->Uncore.MC[0].Channel[0].Timing.tCL,
-		Shm->Uncore.MC[0].Channel[0].Timing.tRCD,
-		Shm->Uncore.MC[0].Channel[0].Timing.tRP,
-		Shm->Uncore.MC[0].Channel[0].Timing.tRAS,
-		Shm->Uncore.MC[0].Channel[0].Timing.CMD_Rate);
-
-	LayerCopyAt(	layer, hRAM.origin.col, hRAM.origin.row,
-			hRAM.length, hRAM.attr, hRAM.code);
+	card->data.dword.hi = 0;
 
 	if (Shm->Uncore.CtrlCount > 0) {
+		unsigned short mc;
+	    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+		if (Shm->Uncore.MC[mc].ChannelCount > 0)
+		{
+			CONV(card->data.dword.hi, StrFormat,
+				Card_MC_Timing,
+				11+(4*10)+5+1,
+				"% d-%u-%u-%u-%uT",
+				Shm->Uncore.MC[mc].Channel[0].Timing.tCL,
+				Shm->Uncore.MC[mc].Channel[0].Timing.tRCD,
+				Shm->Uncore.MC[mc].Channel[0].Timing.tRP,
+				Shm->Uncore.MC[mc].Channel[0].Timing.tRAS,
+				Shm->Uncore.MC[mc].Channel[0].Timing.CMD_Rate);
+			break;
+		}
+	    }
 		Counter2LCD(layer, card->origin.col, card->origin.row,
 				(double) Shm->Uncore.CtrlSpeed);
 	}
+	LayerCopyAt(	layer, hRAM.origin.col, hRAM.origin.row,
+			hRAM.length, hRAM.attr, hRAM.code);
 }
 
 void Layout_Card_Load(Layer *layer, Card *card)
