@@ -813,9 +813,12 @@ extern void MotionEnd_Menu(Window *win) ;
 typedef union {
 	unsigned long long	qword;
 	struct {
-	unsigned int	hi, lo;
-	}			dword;
-	unsigned short		word[4];
+		unsigned int	lo, hi;
+	} dword;
+	struct {
+		unsigned short	lo[2],
+				hi[2];
+	} word;
 } DATA;
 
 typedef struct _Card {

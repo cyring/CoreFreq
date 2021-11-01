@@ -17183,15 +17183,16 @@ void Layout_Card_MC(Layer *layer, Card *card)
 			card->origin.col, (card->origin.row + 3),
 			hRAM);
 
-	card->data.dword.lo = 0;
-	card->data.dword.hi = 0;
+	card->data.word.lo[0] = 0;
+	CONV(card->data.word.lo[1], StrFormat, Card_MC_Timing,
+		11+(4*10)+5+1, "%s", " -  -  -  -  - ");
 
 	if (Shm->Uncore.CtrlCount > 0) {
 		unsigned short mc;
 	    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
 		if (Shm->Uncore.MC[mc].ChannelCount > 0)
 		{
-			CONV(card->data.dword.hi, StrFormat,
+			CONV(card->data.word.lo[1], StrFormat,
 				Card_MC_Timing,
 				11+(4*10)+5+1,
 				"% d-%u-%u-%u-%uT",
@@ -17433,11 +17434,11 @@ void Draw_Card_Uncore(Layer *layer, Card *card)
 void Draw_Card_MC(Layer *layer, Card *card)
 {
 	memcpy( &LayerAt(layer,code, (card->origin.col+1),(card->origin.row+3)),
-		&Card_MC_Timing[card->data.dword.lo], 10);
+		&Card_MC_Timing[card->data.word.lo[0]], 10);
 
-	card->data.dword.lo++;
-	if ((card->data.dword.lo + 10) > card->data.dword.hi) {
-		card->data.dword.lo = 0;
+	card->data.word.lo[0]++;
+	if ((card->data.word.lo[0] + 10) > card->data.word.lo[1]) {
+		card->data.word.lo[0] = 0;
 	}
 }
 
