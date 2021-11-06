@@ -2668,10 +2668,12 @@ enum {
 	CN_COLFAX
 };
 enum {
-	CN_PICASSO
+	CN_PICASSO,
+	CN_GOOGLE_ZORK
 };
 enum {
-	CN_DALI
+	CN_DALI,
+	CN_POLLOCK
 };
 enum {
 	CN_ROME,
@@ -2717,10 +2719,12 @@ static MICRO_ARCH Arch_AMD_ZenPlus[] = {
 };
 static MICRO_ARCH Arch_AMD_ZenPlus_APU[] = {
 	[CN_PICASSO]		= {"Zen+ Picasso"},
+	[CN_GOOGLE_ZORK]	= {"Zen+ Google Zork"},
 	{NULL}
 };
 static MICRO_ARCH Arch_AMD_Zen_Dali[] = {
 	[CN_DALI]		= {"Zen/Dali"},
+	[CN_POLLOCK]		= {"Zen/Pollock"},
 	{NULL}
 };
 static MICRO_ARCH Arch_AMD_EPYC_Rome_CPK[] = {
@@ -4331,15 +4335,75 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	.UncoreUnlocked = 0,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
+	{
+	.Brand = ZLIST("AMD Ryzen 7 3700C"),
+	.Boost = {+17, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GOOGLE_ZORK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 5 3500C"),
+	.Boost = {+16, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GOOGLE_ZORK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 3 3250C",		\
+			"AMD Athlon Gold 3150C",	\
+			"AMD Athlon Silver 3050C"	),
+	.Boost = {+9, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GOOGLE_ZORK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
 	{0}
 };
 static PROCESSOR_SPECIFIC AMD_Zen_Dali_Specific[] = {
 	{
-	.Brand = ZLIST( "AMD Athlon",	\
-			"AMD Ryzen 3"),
+	.Brand = ZLIST( "AMD Athlon Gold 3150U",	\
+			"AMD Athlon Silver 3050U",	\
+			"AMD Ryzen 3"			),
 	.Boost = {+9, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_DALI,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Athlon Silver 3050e"),
+	.Boost = {+14, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_POLLOCK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD 3020e",	\
+			"AMD 3015Ce",	\
+			"AMD 3015e"	),
+	.Boost = {+11, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_POLLOCK,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
