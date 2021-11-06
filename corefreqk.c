@@ -2274,6 +2274,26 @@ PROCESSOR_SPECIFIC *LookupProcessor(void)
 	return NULL;
 }
 
+void Solve_CodeNameString_From_Arch_Stepping(signed int architectureID)
+{
+	switch (architectureID) {
+	case AMD_Zen:
+		switch (PUBLIC(RO(Proc))->Features.Std.EAX.Stepping) {
+		case 0x1:	/* [Zen/Summit Ridge] 8F_01h Stepping 1 */
+			StrCopy(PUBLIC(RO(Proc))->Architecture,
+				Arch_AMD_Zen[CN_SUMMIT_RIDGE].CodeName,
+				CODENAME_LEN);
+			break;
+		case 0x2:	/* [EPYC/Naples] 8F_01h Stepping 2	*/
+			StrCopy(PUBLIC(RO(Proc))->Architecture,
+				Arch_AMD_Zen[CN_NAPLES].CodeName,
+				CODENAME_LEN);
+			break;
+		}
+		break;
+	}
+}
+
 int Intel_MaxBusRatio(PLATFORM_ID *PfID)
 {
 	struct SIGNATURE whiteList[] = {
@@ -5492,6 +5512,8 @@ void Query_VirtualMachine(unsigned int cpu)
 	||  (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON) )
     {	/* Lowest frequency according to BKDG				*/
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = 8;
+
+	Solve_CodeNameString_From_Arch_Stepping(SearchArchitectureID());
 
       if (PRIVATE(OF(Specific)) != NULL) {
 	/*	Save the thermal parameters if specified		*/
