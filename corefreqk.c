@@ -2291,6 +2291,20 @@ void Solve_CodeNameString_From_Arch_Stepping(signed int architectureID)
 			break;
 		}
 		break;
+	case AMD_Zen_APU:
+		switch (PUBLIC(RO(Proc))->Features.Std.EAX.Stepping) {
+		case 0x0:	/* [Zen/Raven Ridge] 8F_11h Stepping 0	*/
+			StrCopy(PUBLIC(RO(Proc))->Architecture,
+				Arch_AMD_Zen_APU[CN_RAVEN_RIDGE].CodeName,
+				CODENAME_LEN);
+			break;
+		case 0x2:	/* [Zen/Snowy Owl] 8F_11h Stepping 2	*/
+			StrCopy(PUBLIC(RO(Proc))->Architecture,
+				Arch_AMD_Zen_APU[CN_SNOWY_OWL].CodeName,
+				CODENAME_LEN);
+			break;
+		}
+		break;
 	}
 }
 

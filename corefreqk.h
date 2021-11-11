@@ -1467,7 +1467,7 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 	[Zen+ Pinnacle Ridge] 	8F_08h Stepping 2	12 nm
 	[Zen+ Colfax]		8F_08h Stepping 2	12 nm	HEDT
 	[Zen/Raven Ridge]	8F_11h Stepping 0	14 nm	APU
-	[Zen/Snowy Owl] 	8F_11h Stepping 0	14 nm	SOC
+	[Zen/Snowy Owl] 	8F_11h Stepping 2	14 nm	SVR
 	[Zen+ Picasso]		8F_18h Stepping 1	12 nm	APU
 	[Zen/Dali]		8F_20h Stepping 1	14 nm	APU/Raven2
 	[EPYC/Rome]		8F_31h Stepping 0	 7 nm	SVR
@@ -4028,7 +4028,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 	.UncoreUnlocked = 0,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
-/*	[Zen/Snowy Owl] 	8F_11h Stepping 0			*/
+/*	[Zen/Snowy Owl] 	8F_11h Stepping 2			*/
 	{	/* AMD EPYC Embedded Processors 			*/
 	.Brand = ZLIST( "AMD EPYC 31",	\
 			"AMD EPYC 32"	),
@@ -4309,6 +4309,19 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
+	.Brand = ZLIST( "AMD Ryzen 3 3350U",	\
+			"AMD Ryzen 3 3300U",	\
+			"AMD Ryzen 5 3450U"	),
+	.Boost = {+14, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PICASSO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
 	.Brand = ZLIST( "AMD Ryzen 5 3580U",	\
 			"AMD Ryzen 5 3550H",	\
 			"AMD Ryzen 5 3500U"	),
@@ -4363,6 +4376,18 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	.Boost = {+9, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_GOOGLE_ZORK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 3 3250U",	\
+			"AMD Ryzen 3 3200U"	),
+	.Boost = {+9, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PICASSO,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
