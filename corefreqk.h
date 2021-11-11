@@ -4511,8 +4511,9 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_CPK_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD EPYC 7502P",	\
-			"AMD EPYC 7502" 	),
-	.Boost = {+8, +1},
+			"AMD EPYC 7502",	\
+			"AMD EPYC 7532" 	),
+	.Boost = {+9, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 1,
