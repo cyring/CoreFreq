@@ -8878,6 +8878,10 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TM1	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TM2	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->ODCM	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_Prefetch	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch , Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_Prefetch	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_CL_Prefetch , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PowerMgmt , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SpeedStep , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
