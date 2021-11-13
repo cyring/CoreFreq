@@ -893,7 +893,9 @@ typedef union
 		EEO_Disable	: 21-20, /* SKL,KBL,CFL: Energy opt. Disable=1*/
 		ReservedBits3	: 25-21,
 		EBP_OS_Control	: 26-25, /* SNB: 0=EBP controlled by OS */
-		ReservedBits4	: 64-26;
+		ReservedBits4	: 30-26,
+		CST_PreWake_Dis : 31-30, /* 1=disable Cstate Pre-Wake [CFL/S] */
+		ReservedBits5	: 64-31;
 	};
 } POWER_CONTROL;
 
