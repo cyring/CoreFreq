@@ -3396,7 +3396,8 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Brand = ZLIST( "Intel(R) Pentium(R) Gold G56", \
 			"Intel(R) Pentium(R) Gold G55", \
 			"Intel(R) Pentium(R) Gold G54", \
-			"Intel(R) Celeron(R) G49"	),
+			"Intel(R) Celeron(R) G49",	\
+			"Intel(R) Xeon(R) E-2"		),
 	.Boost = {0, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_S,
