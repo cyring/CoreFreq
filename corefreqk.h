@@ -655,6 +655,81 @@ FEAT_MSG("LEGACY Level 2: built with amd_smn_read(), amd_smn_write()")
 })
 #endif /* CONFIG_AMD_NB and LEGACY */
 
+#if defined(CONFIG_AMD_NB)
+#include <asm/amd_nb.h>
+
+static int AMD_SMN_RW(u16 node, u32 address, u32 *value, bool write)
+{
+	struct pci_dev *root;
+	int err = -ENODEV;
+
+	if (node >= amd_nb_num())
+		goto out;
+
+	root = node_to_amd_nb(node)->root;
+	if (!root)
+		goto out;
+
+/*	mutex_lock(&smn_mutex);*/
+
+	err = pci_write_config_dword(root, 0x60, address);
+	if (err) {
+		pr_warn("Error programming SMN address 0x%x.\n", address);
+		goto out_unlock;
+	}
+
+	err = (write ? pci_write_config_dword(root, 0x64, *value)
+		     : pci_read_config_dword(root, 0x64, value));
+	if (err)
+		pr_warn("Error %s SMN address 0x%x.\n",
+			(write ? "writing to" : "reading from"), address);
+
+out_unlock:
+/*	mutex_unlock(&smn_mutex);*/
+
+out:
+	return err;
+}
+
+int AMD_SMN_READ(u16 node, u32 address, u32 *value)
+{
+	return AMD_SMN_RW(node, address, value, false);
+}
+
+int AMD_SMN_WRITE(u16 node, u32 address, u32 value)
+{
+	return AMD_SMN_RW(node, address, &value, true);
+}
+
+#define Kernel_AMD_SMN_Read(	SMN_Register,				\
+				SMN_Address,				\
+				ZenIF_dev )				\
+({									\
+    if (ZenIF_dev != NULL)						\
+    {									\
+	if (AMD_SMN_READ(amd_pci_dev_to_node_id(ZenIF_dev),		\
+			SMN_Address, &SMN_Register.value))		\
+	{								\
+		pr_warn("CoreFreq: Kernel_AMD_SMN_Read() : Failed\n");	\
+	}								\
+    }									\
+})
+
+#define Kernel_AMD_SMN_Write(	SMN_Register,				\
+				SMN_Address,				\
+				ZenIF_dev )				\
+({									\
+    if (ZenIF_dev != NULL)						\
+    {									\
+	if (AMD_SMN_WRITE(amd_pci_dev_to_node_id(ZenIF_dev),		\
+			SMN_Address, &SMN_Register.value))		\
+	{								\
+		pr_warn("CoreFreq: Kernel_AMD_SMN_Write() : Failed\n"); \
+	}								\
+    }									\
+})
+#endif /* CONFIG_AMD_NB */
+
 typedef union
 {
 	unsigned int		value;
@@ -1563,7 +1638,15 @@ static PCI_CALLBACK AMD_17h_ZenIF(struct pci_dev *dev) ;
 #define AMD_19h_ZenIF AMD_17h_ZenIF
 #endif
 static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev) ;
-static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev) ;
+static PCI_CALLBACK AMD_17h_UMC0(struct pci_dev *dev) ;
+static PCI_CALLBACK AMD_17h_UMC1(struct pci_dev *dev) ;
+static PCI_CALLBACK AMD_17h_UMC2(struct pci_dev *dev) ;
+static PCI_CALLBACK AMD_17h_UMC3(struct pci_dev *dev) ;
+static PCI_CALLBACK AMD_17h_UMC4(struct pci_dev *dev) ;
+static PCI_CALLBACK AMD_17h_UMC5(struct pci_dev *dev) ;
+static PCI_CALLBACK AMD_17h_UMC6(struct pci_dev *dev) ;
+static PCI_CALLBACK AMD_17h_UMC7(struct pci_dev *dev) ;
+#define AMD_17h_UMC AMD_17h_UMC0
 #define AMD_19h_UMC AMD_17h_UMC
 
 static struct pci_device_id PCI_Void_ids[] = {
@@ -2346,16 +2429,72 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 	},
 	/* Source: SMU > Data Fabric > UMC				*/
 	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_F3),
-		.driver_data = (kernel_ulong_t) AMD_17h_UMC
+		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_F3 + 0),
+		.driver_data = (kernel_ulong_t) AMD_17h_UMC0
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_F3 + 1),
+		.driver_data = (kernel_ulong_t) AMD_17h_UMC1
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_F3 + 2),
+		.driver_data = (kernel_ulong_t) AMD_17h_UMC2
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_F3 + 3),
+		.driver_data = (kernel_ulong_t) AMD_17h_UMC3
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_F3 + 4),
+		.driver_data = (kernel_ulong_t) AMD_17h_UMC4
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_F3 + 5),
+		.driver_data = (kernel_ulong_t) AMD_17h_UMC5
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_F3 + 6),
+		.driver_data = (kernel_ulong_t) AMD_17h_UMC6
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_F3 + 7),
+		.driver_data = (kernel_ulong_t) AMD_17h_UMC7
 	},
 	{
 		PCI_VDEVICE(AMD, DID_AMD_17H_RAVEN_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC
 	},
 	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_F3),
-		.driver_data = (kernel_ulong_t) AMD_17h_UMC
+		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_F3 + 0),
+		.driver_data = (kernel_ulong_t) AMD_17h_UMC0
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_F3 + 1),
+		.driver_data = (kernel_ulong_t) AMD_17h_UMC1
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_F3 + 2),
+		.driver_data = (kernel_ulong_t) AMD_17h_UMC2
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_F3 + 3),
+		.driver_data = (kernel_ulong_t) AMD_17h_UMC3
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_F3 + 4),
+		.driver_data = (kernel_ulong_t) AMD_17h_UMC4
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_F3 + 5),
+		.driver_data = (kernel_ulong_t) AMD_17h_UMC5
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_F3 + 6),
+		.driver_data = (kernel_ulong_t) AMD_17h_UMC6
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_F3 + 7),
+		.driver_data = (kernel_ulong_t) AMD_17h_UMC7
 	},
 	{
 		PCI_VDEVICE(AMD, DID_AMD_17H_STARSHIP_DF_F3),

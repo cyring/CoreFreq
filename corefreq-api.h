@@ -1263,9 +1263,9 @@ typedef struct
 #define DID_AMD_17H_FIREFLIGHT_NB_IOMMU 0x15f9	/*	FireFlight	*/
 #define DID_AMD_17H_ARDEN_NB_IOMMU	0x1627	/*	Arden		*/
 /* Source: /include/linux/pci_ids.h					*/
-#define DID_AMD_17H_ZEPPELIN_DF_F3	0x1463	/*	Zeppelin	*/
+#define DID_AMD_17H_ZEPPELIN_DF_F3	0x1460	/*	Zeppelin	*/
 #define DID_AMD_17H_RAVEN_DF_F3 	0x15eb	/*	Raven		*/
-#define DID_AMD_17H_MATISSE_DF_F3	0x1443	/*	Matisse 	*/
+#define DID_AMD_17H_MATISSE_DF_F3	0x1440	/*	Matisse 	*/
 #define DID_AMD_17H_STARSHIP_DF_F3	0x1493	/*	Starship	*/
 #define DID_AMD_17H_RENOIR_DF_F3	0x144b	/*	Renoir		*/
 #define DID_AMD_17H_ARIEL_DF_F3 	0x13f3	/*	Ariel		*/
