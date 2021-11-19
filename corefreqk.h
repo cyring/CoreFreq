@@ -561,41 +561,6 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
  * where context is interrupt; and where mutexes will freeze the kernel.
 */
 
-#if defined(CONFIG_AMD_NB) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0))\
- && defined(LEGACY) && (LEGACY > 1)
-FEAT_MSG("LEGACY Level 2: built with amd_smn_read(), amd_smn_write()")
-#define Core_AMD_SMN_Read(	SMN_Register,				\
-				SMN_Address,				\
-				SMU_IndexRegister,			\
-				SMU_DataRegister )			\
-({									\
-    if (PRIVATE(OF(ZenIF_dev)) != NULL)					\
-    {									\
-	if (amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),\
-			SMN_Address, &SMN_Register.value))		\
-	{								\
-		pr_warn("CoreFreq: Failed to read amd_smn_read()\n");	\
-	}								\
-    }									\
-})
-
-#define Core_AMD_SMN_Write(	SMN_Register,				\
-				SMN_Address,				\
-				SMU_IndexRegister,			\
-				SMU_DataRegister )			\
-({									\
-    if (PRIVATE(OF(ZenIF_dev)) != NULL)					\
-    {									\
-	if (amd_smn_write(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),\
-			SMN_Address, &SMN_Register.value))		\
-	{								\
-		pr_warn("CoreFreq: Failed to write amd_smn_write()\n"); \
-	}								\
-    }									\
-})
-
-#else
-
 #define Core_AMD_SMN_Read(	SMN_Register,				\
 				SMN_Address,				\
 				SMU_IndexRegister,			\
@@ -653,81 +618,98 @@ FEAT_MSG("LEGACY Level 2: built with amd_smn_read(), amd_smn_write()")
 		SMN_Register.value, SMN_Address);			\
     }									\
 })
-#endif /* CONFIG_AMD_NB and LEGACY */
 
 #if defined(CONFIG_AMD_NB)
-#include <asm/amd_nb.h>
-
-static int AMD_SMN_RW(u16 node, u32 address, u32 *value, bool write)
+static void AMD_SMN_RW(u16 node, u32 address, u32 *value, bool write)
 {
 	struct pci_dev *root;
-	int err = -ENODEV;
 
-	if (node >= amd_nb_num())
-		goto out;
-
-	root = node_to_amd_nb(node)->root;
-	if (!root)
-		goto out;
-
-/*	mutex_lock(&smn_mutex);*/
-
-	err = pci_write_config_dword(root, 0x60, address);
-	if (err) {
-		pr_warn("Error programming SMN address 0x%x.\n", address);
-		goto out_unlock;
+	if (node >= amd_nb_num()) {
+		goto OUT;
 	}
+	root = node_to_amd_nb(node)->root;
+	if (!root) {
+		goto OUT;
+	}
+	pci_write_config_dword(root, SMU_AMD_INDEX_PORT_F17H, address);
 
-	err = (write ? pci_write_config_dword(root, 0x64, *value)
-		     : pci_read_config_dword(root, 0x64, value));
-	if (err)
-		pr_warn("Error %s SMN address 0x%x.\n",
-			(write ? "writing to" : "reading from"), address);
-
-out_unlock:
-/*	mutex_unlock(&smn_mutex);*/
-
-out:
-	return err;
+	if (write == true) {
+		pci_write_config_dword(root, SMU_AMD_DATA_PORT_F17H, *value);
+	} else {
+		pci_read_config_dword(root, SMU_AMD_DATA_PORT_F17H, value);
+	}
+OUT:
+	return;
 }
 
-int AMD_SMN_READ(u16 node, u32 address, u32 *value)
-{
-	return AMD_SMN_RW(node, address, value, false);
-}
-
-int AMD_SMN_WRITE(u16 node, u32 address, u32 value)
-{
-	return AMD_SMN_RW(node, address, &value, true);
-}
-
-#define Kernel_AMD_SMN_Read(	SMN_Register,				\
-				SMN_Address,				\
-				ZenIF_dev )				\
+#define UMC_SMN_Read(SMN_Register, SMN_Address, UMC_device)		\
 ({									\
-    if (ZenIF_dev != NULL)						\
-    {									\
-	if (AMD_SMN_READ(amd_pci_dev_to_node_id(ZenIF_dev),		\
-			SMN_Address, &SMN_Register.value))		\
-	{								\
-		pr_warn("CoreFreq: Kernel_AMD_SMN_Read() : Failed\n");	\
+	unsigned int tries = BIT_IO_RETRIES_COUNT;			\
+	unsigned char ret;						\
+    do {								\
+	ret = BIT_ATOM_TRYLOCK( BUS_LOCK,				\
+				PRIVATE(OF(AMD_SMN_LOCK)),		\
+				ATOMIC_SEED );				\
+	if ( ret == 0 ) {						\
+		udelay(BIT_IO_DELAY_INTERVAL);				\
+	} else {							\
+		AMD_SMN_RW(	amd_pci_dev_to_node_id(UMC_device),	\
+				SMN_Address, &SMN_Register.value,	\
+				false );				\
+									\
+		BIT_ATOM_UNLOCK(BUS_LOCK,				\
+				PRIVATE(OF(AMD_SMN_LOCK)),		\
+				ATOMIC_SEED);				\
 	}								\
+	tries--;							\
+    } while ( (tries != 0) && (ret != 1) );				\
+    if (tries == 0) {							\
+	pr_warn("CoreFreq: Core_AMD_SMN_Read(%x, %x) TryLock\n",	\
+		SMN_Register.value, SMN_Address);			\
     }									\
 })
 
-#define Kernel_AMD_SMN_Write(	SMN_Register,				\
-				SMN_Address,				\
-				ZenIF_dev )				\
+#define UMC_SMN_Write(SMN_Register, SMN_Address, UMC_device)		\
 ({									\
-    if (ZenIF_dev != NULL)						\
-    {									\
-	if (AMD_SMN_WRITE(amd_pci_dev_to_node_id(ZenIF_dev),		\
-			SMN_Address, &SMN_Register.value))		\
-	{								\
-		pr_warn("CoreFreq: Kernel_AMD_SMN_Write() : Failed\n"); \
+	unsigned int tries = BIT_IO_RETRIES_COUNT;			\
+	unsigned char ret;						\
+    do {								\
+	ret = BIT_ATOM_TRYLOCK( BUS_LOCK,				\
+				PRIVATE(OF(AMD_SMN_LOCK)),		\
+				ATOMIC_SEED );				\
+	if ( ret == 0 ) {						\
+		udelay(BIT_IO_DELAY_INTERVAL);				\
+	} else {							\
+		AMD_SMN_RW(	amd_pci_dev_to_node_id(UMC_device),	\
+				SMN_Address, &SMN_Register.value,	\
+				true ) ;				\
+									\
+		BIT_ATOM_UNLOCK(BUS_LOCK,				\
+				PRIVATE(OF(AMD_SMN_LOCK)),		\
+				ATOMIC_SEED);				\
 	}								\
+	tries--;							\
+    } while ( (tries != 0) && (ret != 1) );				\
+    if (tries == 0) {							\
+	pr_warn("CoreFreq: Core_AMD_SMN_Write(%x, %x) TryLock\n",	\
+		SMN_Register.value, SMN_Address);			\
     }									\
 })
+
+#else /* CONFIG_AMD_NB */
+
+#define UMC_SMN_Read(SMN_Register, SMN_Address, UMC_device)		\
+	Core_AMD_SMN_Read(	SMN_Register,				\
+				SMN_Address,				\
+				SMU_AMD_INDEX_REGISTER_F17H,		\
+				SMU_AMD_DATA_REGISTER_F17H )
+
+#define UMC_SMN_Write(SMN_Register, SMN_Address, UMC_device)		\
+	Core_AMD_SMN_Write(	SMN_Register,				\
+				SMN_Address,				\
+				SMU_AMD_INDEX_REGISTER_F17H,		\
+				SMU_AMD_DATA_REGISTER_F17H )
+
 #endif /* CONFIG_AMD_NB */
 
 typedef union
@@ -1638,14 +1620,7 @@ static PCI_CALLBACK AMD_17h_ZenIF(struct pci_dev *dev) ;
 #define AMD_19h_ZenIF AMD_17h_ZenIF
 #endif
 static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev) ;
-static PCI_CALLBACK AMD_17h_UMC0(struct pci_dev *dev) ;
-static PCI_CALLBACK AMD_17h_UMC1(struct pci_dev *dev) ;
-static PCI_CALLBACK AMD_17h_UMC2(struct pci_dev *dev) ;
-static PCI_CALLBACK AMD_17h_UMC3(struct pci_dev *dev) ;
-static PCI_CALLBACK AMD_17h_UMC4(struct pci_dev *dev) ;
-static PCI_CALLBACK AMD_17h_UMC5(struct pci_dev *dev) ;
-static PCI_CALLBACK AMD_17h_UMC6(struct pci_dev *dev) ;
-static PCI_CALLBACK AMD_17h_UMC7(struct pci_dev *dev) ;
+static PCI_CALLBACK AMD_17h_UMC0(struct pci_dev *pdev) ;
 #define AMD_17h_UMC AMD_17h_UMC0
 #define AMD_19h_UMC AMD_17h_UMC
 
@@ -2433,68 +2408,12 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC0
 	},
 	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_F3 + 1),
-		.driver_data = (kernel_ulong_t) AMD_17h_UMC1
-	},
-	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_F3 + 2),
-		.driver_data = (kernel_ulong_t) AMD_17h_UMC2
-	},
-	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_F3 + 3),
-		.driver_data = (kernel_ulong_t) AMD_17h_UMC3
-	},
-	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_F3 + 4),
-		.driver_data = (kernel_ulong_t) AMD_17h_UMC4
-	},
-	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_F3 + 5),
-		.driver_data = (kernel_ulong_t) AMD_17h_UMC5
-	},
-	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_F3 + 6),
-		.driver_data = (kernel_ulong_t) AMD_17h_UMC6
-	},
-	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_F3 + 7),
-		.driver_data = (kernel_ulong_t) AMD_17h_UMC7
-	},
-	{
 		PCI_VDEVICE(AMD, DID_AMD_17H_RAVEN_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC
 	},
 	{
 		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_F3 + 0),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC0
-	},
-	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_F3 + 1),
-		.driver_data = (kernel_ulong_t) AMD_17h_UMC1
-	},
-	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_F3 + 2),
-		.driver_data = (kernel_ulong_t) AMD_17h_UMC2
-	},
-	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_F3 + 3),
-		.driver_data = (kernel_ulong_t) AMD_17h_UMC3
-	},
-	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_F3 + 4),
-		.driver_data = (kernel_ulong_t) AMD_17h_UMC4
-	},
-	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_F3 + 5),
-		.driver_data = (kernel_ulong_t) AMD_17h_UMC5
-	},
-	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_F3 + 6),
-		.driver_data = (kernel_ulong_t) AMD_17h_UMC6
-	},
-	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_F3 + 7),
-		.driver_data = (kernel_ulong_t) AMD_17h_UMC7
 	},
 	{
 		PCI_VDEVICE(AMD, DID_AMD_17H_STARSHIP_DF_F3),

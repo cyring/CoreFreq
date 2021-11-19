@@ -35,6 +35,9 @@
 #include <xen/xen.h>
 #endif /* CONFIG_XEN */
 #include <asm/mwait.h>
+#ifdef CONFIG_AMD_NB
+#include <asm/amd_nb.h>
+#endif
 
 #include "bitasm.h"
 #include "amdmsr.h"
@@ -42,10 +45,6 @@
 #include "coretypes.h"
 #include "corefreq-api.h"
 #include "corefreqk.h"
-
-#ifdef CONFIG_AMD_NB
-#include <asm/amd_nb.h>
-#endif
 
 MODULE_AUTHOR ("CYRIL INGENIERIE <labs[at]cyring[dot]fr>");
 MODULE_DESCRIPTION ("CoreFreq Processor Driver");
@@ -4983,54 +4982,39 @@ static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev)
 	return (PCI_CALLBACK) 0;
 }
 
-static PCI_CALLBACK AMD_Zen_UMC(struct pci_dev *dev, unsigned short mc)
+static PCI_CALLBACK AMD_Zen_UMC(struct pci_dev *dev, unsigned short pair)
 {
 	AMD_17_UMC_SDP_CTRL SDP_CTRL;
-	unsigned short /*mc, */cha, chip, sec;
-/*	UNUSED(dev);	*/
-/*TODO( Query the number of UMC )					*/
-/*
-	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
-  for (mc = 0; mc < PUBLIC(RO(Proc))->Uncore.CtrlCount; mc++)
-  {
-*/
 	unsigned int UMC_BAR[MC_MAX_CHA] = { 0,0,0,0,0,0,0,0 };
-
+	const unsigned short mc = pair >> 1;
+	unsigned short cha, chip, sec;
 	unsigned short count = 0;
 
-	if (PUBLIC(RO(Proc))->Uncore.CtrlCount <= mc) {
-		PUBLIC(RO(Proc))->Uncore.CtrlCount++;
-	}
+    if (PUBLIC(RO(Proc))->Uncore.CtrlCount <= mc) {
+	PUBLIC(RO(Proc))->Uncore.CtrlCount++;
+    }
 
-    for (cha = 0; cha < MC_MAX_CHA; cha++)
+    for (cha = 0; cha < 2; cha++)
     {
 	SDP_CTRL.value = 0;
 
-    Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.ECC,
-			(SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xdf4),
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read(	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.ECC,
+			(SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xdf4), dev );
 
-	Kernel_AMD_SMN_Read(	SDP_CTRL,
-				(SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x104),
-			/*	SMU_AMD_INDEX_REGISTER_F17H,
-				SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read(	SDP_CTRL,
+			(SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x104), dev );
 
 	if ((SDP_CTRL.value != 0xffffffff) && (SDP_CTRL.INIT))
 	{
 		UMC_BAR[count++] = SMU_AMD_UMC_BASE_CHA_F17H(cha);
 
-		Kernel_AMD_SMN_Read(
-		    PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[0].DAC,
-			(SMU_AMD_UMC_BASE_CHA_F17H(0) + 0x30),
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
-
-		Kernel_AMD_SMN_Read(
-		    PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[1].DAC,
-			(SMU_AMD_UMC_BASE_CHA_F17H(0) + 0x34),
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	  for (chip = 0; chip < 2; chip++)
+	  {
+	    UMC_SMN_Read(
+		    PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[chip].DAC,
+			(SMU_AMD_UMC_BASE_CHA_F17H(0) + 0x30 + (chip << 2)),
+			dev );
+	  }
 	}
     }
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = count;
@@ -5052,14 +5036,14 @@ static PCI_CALLBACK AMD_Zen_UMC(struct pci_dev *dev, unsigned short mc)
 	  for (sec = 0; sec < 2; sec++)
 	  {
 		unsigned int addr[2], ranks = 0;
-
+/*
 		addr[1] = CHIP_BAR[sec][1] + 4 * (chip >> 1);
+*/
+		addr[1] = CHIP_BAR[sec][1] + ((chip >> 1) << 2);
 
-		Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
+		UMC_SMN_Read(	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
 				.AMD17h.CHIP[chip][sec].Mask,
-				addr[1],
-			/*	SMU_AMD_INDEX_REGISTER_F17H,
-				SMU_AMD_DATA_REGISTER_F17H */dev);
+				addr[1], dev );
 
 	    if ( (ranks == 0)
 		&& (PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
@@ -5068,16 +5052,18 @@ static PCI_CALLBACK AMD_Zen_UMC(struct pci_dev *dev, unsigned short mc)
 		ranks = BITVAL(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
 				.AMD17h.CHIP[chip][sec].Mask.value, 9) ? 1 : 2;
 	    }
+/*
 	    if (ranks == 2) {
 		addr[0] = CHIP_BAR[sec][0] + 4 * chip;
 	    } else {
 		addr[0] = CHIP_BAR[sec][0] + 4 * (chip - (chip > 2));
 	    }
-		Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
+*/
+		addr[0] = CHIP_BAR[sec][0] + ((chip - (chip > 2)) << 2);
+
+		UMC_SMN_Read(	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
 				.AMD17h.CHIP[chip][sec].Chip,
-				addr[0],
-			/*	SMU_AMD_INDEX_REGISTER_F17H,
-				SMU_AMD_DATA_REGISTER_F17H */dev);
+				addr[0], dev );
 
 	    if (PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.Ranks == 0)
 	    {
@@ -5085,114 +5071,69 @@ static PCI_CALLBACK AMD_Zen_UMC(struct pci_dev *dev, unsigned short mc)
 	    }
 	  }
 	}
-    Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.SPAZ,
-			UMC_BAR[cha] + 0x12c,
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.SPAZ,
+			UMC_BAR[cha] + 0x12c, dev );
 
-    Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.MISC,
-			UMC_BAR[cha] + 0x200,
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.MISC,
+			UMC_BAR[cha] + 0x200, dev );
 
-    Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR1,
-			UMC_BAR[cha] + 0x204,
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR1,
+			UMC_BAR[cha] + 0x204, dev );
 
-    Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR2,
-			UMC_BAR[cha] + 0x208,
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR2,
+			UMC_BAR[cha] + 0x208, dev );
 
-    Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR3,
-			UMC_BAR[cha] + 0x20c,
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR3,
+			UMC_BAR[cha] + 0x20c, dev );
 
-    Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR4,
-			UMC_BAR[cha] + 0x210,
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR4,
+			UMC_BAR[cha] + 0x210, dev );
 
-    Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR5,
-			UMC_BAR[cha] + 0x214,
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR5,
+			UMC_BAR[cha] + 0x214, dev );
 
-    Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR6,
-			UMC_BAR[cha] + 0x218,
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR6,
+			UMC_BAR[cha] + 0x218, dev );
 
-    Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR7,
-			UMC_BAR[cha] + 0x21c,
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR7,
+			UMC_BAR[cha] + 0x21c, dev );
 
-    Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR8,
-			UMC_BAR[cha] + 0x220,
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR8,
+			UMC_BAR[cha] + 0x220, dev);
 
-    Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR9,
-			UMC_BAR[cha] + 0x224,
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR9,
+			UMC_BAR[cha] + 0x224, dev );
 
-    Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR10,
-			UMC_BAR[cha] + 0x228,
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR10,
+			UMC_BAR[cha] + 0x228, dev );
 
-    Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR12,
-			UMC_BAR[cha] + 0x230,
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR12,
+			UMC_BAR[cha] + 0x230, dev );
 
-    Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR13,
-			UMC_BAR[cha] + 0x234,
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR13,
+			UMC_BAR[cha] + 0x234, dev );
 
-    Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR20,
-			UMC_BAR[cha] + 0x250,
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR20,
+			UMC_BAR[cha] + 0x250, dev );
 
-    Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR21,
-			UMC_BAR[cha] + 0x254,
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR21,
+			UMC_BAR[cha] + 0x254, dev );
 
-    Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR22,
-			UMC_BAR[cha] + 0x258,
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR22,
+			UMC_BAR[cha] + 0x258, dev );
 
-    Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTRFC,
-			UMC_BAR[cha] + 0x260,
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTRFC,
+			UMC_BAR[cha] + 0x260, dev );
 
-    Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR35,
-			UMC_BAR[cha] + 0x28c,
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR35,
+			UMC_BAR[cha] + 0x28c, dev );
 
-    Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.BGS,
-			UMC_BAR[cha] + 0x58,
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.BGS,
+			UMC_BAR[cha] + 0x58, dev );
 
-  Kernel_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.BGS_ALT,
-			UMC_BAR[cha] + 0xd0,
-		/*	SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H */dev);
+	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.BGS_ALT,
+			UMC_BAR[cha] + 0xd0, dev );
     }
-/*
-  }
-*/
 	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MAX)] = \
 	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] = \
 		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[0].AMD17h.MISC.MEMCLK/3;
@@ -5200,37 +5141,22 @@ static PCI_CALLBACK AMD_Zen_UMC(struct pci_dev *dev, unsigned short mc)
 	return (PCI_CALLBACK) 0;
 }
 
-static PCI_CALLBACK AMD_17h_UMC0(struct pci_dev *dev)
+static PCI_CALLBACK AMD_17h_UMC0(struct pci_dev *pdev)
 {
-	return AMD_Zen_UMC(dev, 0);
-}
-static PCI_CALLBACK AMD_17h_UMC1(struct pci_dev *dev)
-{
-	return AMD_Zen_UMC(dev, 1);
-}
-static PCI_CALLBACK AMD_17h_UMC2(struct pci_dev *dev)
-{
-	return AMD_Zen_UMC(dev, 2);
-}
-static PCI_CALLBACK AMD_17h_UMC3(struct pci_dev *dev)
-{
-	return AMD_Zen_UMC(dev, 3);
-}
-static PCI_CALLBACK AMD_17h_UMC4(struct pci_dev *dev)
-{
-	return AMD_Zen_UMC(dev, 4);
-}
-static PCI_CALLBACK AMD_17h_UMC5(struct pci_dev *dev)
-{
-	return AMD_Zen_UMC(dev, 5);
-}
-static PCI_CALLBACK AMD_17h_UMC6(struct pci_dev *dev)
-{
-	return AMD_Zen_UMC(dev, 6);
-}
-static PCI_CALLBACK AMD_17h_UMC7(struct pci_dev *dev)
-{
-	return AMD_Zen_UMC(dev, 7);
+	PCI_CALLBACK rc = 0;
+	struct pci_dev *dev;
+	unsigned short pair;
+	for (pair = 0; pair < 4; pair++)
+	{
+		dev = pci_get_domain_bus_and_slot(pci_domain_nr(pdev->bus),
+					0x0, PCI_DEVFN(0x18 + pair, 0x0));
+		if (dev != NULL)
+		{
+			rc = AMD_Zen_UMC(dev, pair);
+			pci_dev_put(dev);
+		}
+	}
+	return rc;
 }
 
 static void CoreFreqK_ResetChip(struct pci_dev *dev)
