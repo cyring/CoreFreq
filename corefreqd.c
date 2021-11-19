@@ -4597,12 +4597,13 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
  for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
  {
 	Shm->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
+	Shm->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
 
 	unsigned short cha;
   for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
   {
 	unsigned long long DIMM_Size = 0;
-	unsigned short chip, slotCount = 0;
+	unsigned short chip;
    for (chip = 0; chip < 4; chip++)
    {
 	const unsigned short slot = chip / 2;
@@ -4634,7 +4635,6 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 		: "cc", "memory", "%ecx", "%edx"
 	);
 	DIMM_Size += chipSize;
-	slotCount++;
      }
     }
     if (DIMM_Size > 0)
@@ -4655,8 +4655,6 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 						(unsigned int)(DIMM_Size >> 10);
     }
    }
-	Shm->Uncore.MC[mc].SlotCount = slotCount;
-
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR1.tCL;
 

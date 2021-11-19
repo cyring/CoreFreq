@@ -4982,11 +4982,10 @@ static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev)
 	return (PCI_CALLBACK) 0;
 }
 
-static PCI_CALLBACK AMD_Zen_UMC(struct pci_dev *dev, unsigned short pair)
+static PCI_CALLBACK AMD_Zen_UMC(struct pci_dev *dev, unsigned short mc)
 {
 	AMD_17_UMC_SDP_CTRL SDP_CTRL;
 	unsigned int UMC_BAR[MC_MAX_CHA] = { 0,0,0,0,0,0,0,0 };
-	const unsigned short mc = pair >> 1;
 	unsigned short cha, chip, sec;
 	unsigned short count = 0;
 
@@ -4999,25 +4998,20 @@ static PCI_CALLBACK AMD_Zen_UMC(struct pci_dev *dev, unsigned short pair)
 	SDP_CTRL.value = 0;
 
 	UMC_SMN_Read(	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.ECC,
-			(SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xdf4), dev );
+			SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xdf4, dev );
 
 	UMC_SMN_Read(	SDP_CTRL,
-			(SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x104), dev );
+			SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x104, dev );
 
-	if ((SDP_CTRL.value != 0xffffffff) && (SDP_CTRL.INIT))
+	if ((SDP_CTRL.value != 0xffffffff) && (SDP_CTRL.SdpInit))
 	{
 		UMC_BAR[count++] = SMU_AMD_UMC_BASE_CHA_F17H(cha);
-
-	  for (chip = 0; chip < 2; chip++)
-	  {
-	    UMC_SMN_Read(
-		    PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[chip].DAC,
-			(SMU_AMD_UMC_BASE_CHA_F17H(0) + 0x30 + (chip << 2)),
-			dev );
-	  }
 	}
     }
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = count;
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.ECC.Enable ? 4 : 2;
 
     for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
     {
@@ -5036,9 +5030,12 @@ static PCI_CALLBACK AMD_Zen_UMC(struct pci_dev *dev, unsigned short pair)
 	  for (sec = 0; sec < 2; sec++)
 	  {
 		unsigned int addr[2], ranks = 0;
-/*
-		addr[1] = CHIP_BAR[sec][1] + 4 * (chip >> 1);
-*/
+
+		UMC_SMN_Read(
+		    PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[chip].DAC,
+			SMU_AMD_UMC_BASE_CHA_F17H(cha)+0x30 +((chip >> 1) << 2),
+				dev);
+
 		addr[1] = CHIP_BAR[sec][1] + ((chip >> 1) << 2);
 
 		UMC_SMN_Read(	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
@@ -5052,13 +5049,7 @@ static PCI_CALLBACK AMD_Zen_UMC(struct pci_dev *dev, unsigned short pair)
 		ranks = BITVAL(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
 				.AMD17h.CHIP[chip][sec].Mask.value, 9) ? 1 : 2;
 	    }
-/*
-	    if (ranks == 2) {
-		addr[0] = CHIP_BAR[sec][0] + 4 * chip;
-	    } else {
-		addr[0] = CHIP_BAR[sec][0] + 4 * (chip - (chip > 2));
-	    }
-*/
+
 		addr[0] = CHIP_BAR[sec][0] + ((chip - (chip > 2)) << 2);
 
 		UMC_SMN_Read(	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
@@ -5145,14 +5136,14 @@ static PCI_CALLBACK AMD_17h_UMC0(struct pci_dev *pdev)
 {
 	PCI_CALLBACK rc = 0;
 	struct pci_dev *dev;
-	unsigned short pair;
-	for (pair = 0; pair < 4; pair++)
+	unsigned short umc;
+	for (umc = 0; umc < 4; umc++)
 	{
 		dev = pci_get_domain_bus_and_slot(pci_domain_nr(pdev->bus),
-					0x0, PCI_DEVFN(0x18 + pair, 0x0));
+					0x0, PCI_DEVFN(0x18 + umc, 0x0));
 		if (dev != NULL)
 		{
-			rc = AMD_Zen_UMC(dev, pair);
+			rc = AMD_Zen_UMC(dev, umc);
 			pci_dev_put(dev);
 		}
 	}

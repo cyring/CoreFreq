@@ -1230,12 +1230,18 @@ typedef union
 	struct
 	{
 		unsigned int
-		ReservedBits1	:  4-0,
+		OnDimmMirror	:  1-0,
+		OutputInvert	:  2-1,
+		DRAM_3DS	:  3-2,
+		CIsCS		:  4-3,
 		R_DDR4		:  5-4,
 		LR_DDR4 	:  6-5, /* DDR4 iff not LR_DDR4 and not R_DDR4*/
 		X4_DIMMS	:  7-6,
 		X16_DIMMS	:  8-7,
-		ReservedBits2	: 32-8;
+		DqMapSwapDis	:  9-8,
+		DimmRefDis	: 10-9,
+		PkgRnkTimingAlign:11-10,
+		ReservedBits	: 32-11;
 	};
 } AMD_17_UMC_DIMM_CFG;
 
@@ -1245,11 +1251,12 @@ typedef union
 	struct
 	{
 		unsigned int
-		ReservedBits1	:  9-0,
-		Bit09		: 12-9,  /* when DIMM populated ?	*/
+		ReservedBits1	:  8-0,
+		BurstLength	: 10-8,
+		BurstCtrl	: 12-10,
 		ECC_Support	: 13-12,
 		ReservedBits2	: 31-13,
-		Bit31		: 32-31; /* when DIMM populated ?	*/
+		DramReady	: 32-31;
 	};
 } AMD_17_UMC_CONFIG;
 
@@ -1259,8 +1266,15 @@ typedef union
 	struct
 	{
 		unsigned int
-		ReservedBits	: 31-0,
-		INIT		: 32-31;
+		SdpFatalDatErr	:  1-0,
+		SdpParityEn	:  2-1,
+		ReservedBits1	:  3-2,
+		SdpCancelEn	:  4-3,
+		ReservedBits2	: 16-4,
+		CmdBufferCount	: 23-16,
+		ReservedBits3	: 24-23,
+		DatBufferCount	: 31-24,
+		SdpInit 	: 32-31;
 	};
 } AMD_17_UMC_SDP_CTRL;
 
