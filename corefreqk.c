@@ -4992,8 +4992,10 @@ static PCI_CALLBACK AMD_Zen_UMC(struct pci_dev *dev, unsigned short mc)
     if (PUBLIC(RO(Proc))->Uncore.CtrlCount <= mc) {
 	PUBLIC(RO(Proc))->Uncore.CtrlCount++;
     }
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 2;
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
 
-    for (cha = 0; cha < 2; cha++)
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
     {
 	SDP_CTRL.value = 0;
 
@@ -5008,33 +5010,31 @@ static PCI_CALLBACK AMD_Zen_UMC(struct pci_dev *dev, unsigned short mc)
 		UMC_BAR[count++] = SMU_AMD_UMC_BASE_CHA_F17H(cha);
 	}
     }
-	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = count;
-
-	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = \
-	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.ECC.Enable ? 4 : 2;
 
     for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
+    if (UMC_BAR[cha] != 0)
     {
-	unsigned int CHIP_BAR[2][2];
+	unsigned int CHIP_BAR[2][2] = {
+	[0] =	{
+		[0] = UMC_BAR[cha] + 0x0,
+		[1] = UMC_BAR[cha] + 0x20
+		},
+	[1] =	{
+		[0] = UMC_BAR[cha] + 0x10,
+		[1] = UMC_BAR[cha] + 0x28
+		}
+	};
+      for (chip = 0; chip < 4; chip++)
+      {
+	const unsigned short slot = chip & 1;
 
-	CHIP_BAR[0][0] = UMC_BAR[cha] + 0x0;
+	UMC_SMN_Read(
+		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[slot].DAC,
+		SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x30 + (slot << 2), dev);
 
-	CHIP_BAR[0][1] = UMC_BAR[cha] + 0x20;
-
-	CHIP_BAR[1][0] = UMC_BAR[cha] + 0x10;
-
-	CHIP_BAR[1][1] = UMC_BAR[cha] + 0x28;
-
-	for (chip = 0; chip < 4; chip++)
+	for (sec = 0; sec < 2; sec++)
 	{
-	  for (sec = 0; sec < 2; sec++)
-	  {
 		unsigned int addr[2], ranks = 0;
-
-		UMC_SMN_Read(
-		    PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[chip].DAC,
-			SMU_AMD_UMC_BASE_CHA_F17H(cha)+0x30 +((chip >> 1) << 2),
-				dev);
 
 		addr[1] = CHIP_BAR[sec][1] + ((chip >> 1) << 2);
 
@@ -5060,8 +5060,8 @@ static PCI_CALLBACK AMD_Zen_UMC(struct pci_dev *dev, unsigned short mc)
 	    {
 		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.Ranks=ranks;
 	    }
-	  }
 	}
+      }
 	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.SPAZ,
 			UMC_BAR[cha] + 0x12c, dev );
 

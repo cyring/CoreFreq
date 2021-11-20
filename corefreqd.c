@@ -4606,14 +4606,14 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 	unsigned short chip;
    for (chip = 0; chip < 4; chip++)
    {
-	const unsigned short slot = chip / 2;
+	const unsigned short slot = chip >> 1;
 	unsigned short sec;
     for (sec = 0; sec < 2; sec++)
     {
 	unsigned int chipSize = 0;
      if (BITVAL(RO(Proc)->Uncore.MC[mc].Channel[cha]\
 		.AMD17h.CHIP[chip][sec].Chip.value, 0))
-     {
+     {	/*			CSEnable				*/
 	__asm__ volatile
 	(
 		"xorl	%%edx, %%edx"		"\n\t"
