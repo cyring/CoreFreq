@@ -4982,51 +4982,24 @@ static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev)
 	return (PCI_CALLBACK) 0;
 }
 
-static PCI_CALLBACK AMD_Zen_UMC(struct pci_dev *dev, unsigned short mc)
+static void AMD_Zen_UMC(struct pci_dev *dev, unsigned int UMC_BAR,
+			unsigned short mc, unsigned short cha)
 {
-	AMD_17_UMC_SDP_CTRL SDP_CTRL;
-	unsigned int UMC_BAR[MC_MAX_CHA] = { 0,0,0,0,0,0,0,0 };
-	unsigned short cha, chip, sec;
-	unsigned short count = 0;
-
-    if (PUBLIC(RO(Proc))->Uncore.CtrlCount <= mc) {
-	PUBLIC(RO(Proc))->Uncore.CtrlCount++;
-    }
-	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 2;
-	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
-
-    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
-    {
-	SDP_CTRL.value = 0;
-
-	UMC_SMN_Read(	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.ECC,
-			SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xdf4, dev );
-
-	UMC_SMN_Read(	SDP_CTRL,
-			SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x104, dev );
-
-	if ((SDP_CTRL.value != 0xffffffff) && (SDP_CTRL.SdpInit))
-	{
-		UMC_BAR[count++] = SMU_AMD_UMC_BASE_CHA_F17H(cha);
-	}
-    }
-
-    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
-    if (UMC_BAR[cha] != 0)
-    {
 	unsigned int CHIP_BAR[2][2] = {
 	[0] =	{
-		[0] = UMC_BAR[cha] + 0x0,
-		[1] = UMC_BAR[cha] + 0x20
+		[0] = UMC_BAR + 0x0,
+		[1] = UMC_BAR + 0x20
 		},
 	[1] =	{
-		[0] = UMC_BAR[cha] + 0x10,
-		[1] = UMC_BAR[cha] + 0x28
+		[0] = UMC_BAR + 0x10,
+		[1] = UMC_BAR + 0x28
 		}
 	};
-      for (chip = 0; chip < 4; chip++)
-      {
+	unsigned short chip;
+    for (chip = 0; chip < 4; chip++)
+    {
 	const unsigned short slot = chip & 1;
+	unsigned short sec;
 
 	UMC_SMN_Read(
 		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[slot].DAC,
@@ -5061,93 +5034,116 @@ static PCI_CALLBACK AMD_Zen_UMC(struct pci_dev *dev, unsigned short mc)
 		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.Ranks=ranks;
 	    }
 	}
-      }
+    }
 	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.SPAZ,
-			UMC_BAR[cha] + 0x12c, dev );
+			UMC_BAR + 0x12c, dev );
 
 	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.MISC,
-			UMC_BAR[cha] + 0x200, dev );
+			UMC_BAR + 0x200, dev );
 
 	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR1,
-			UMC_BAR[cha] + 0x204, dev );
+			UMC_BAR + 0x204, dev );
 
 	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR2,
-			UMC_BAR[cha] + 0x208, dev );
+			UMC_BAR + 0x208, dev );
 
 	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR3,
-			UMC_BAR[cha] + 0x20c, dev );
+			UMC_BAR + 0x20c, dev );
 
 	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR4,
-			UMC_BAR[cha] + 0x210, dev );
+			UMC_BAR + 0x210, dev );
 
 	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR5,
-			UMC_BAR[cha] + 0x214, dev );
+			UMC_BAR + 0x214, dev );
 
 	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR6,
-			UMC_BAR[cha] + 0x218, dev );
+			UMC_BAR + 0x218, dev );
 
 	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR7,
-			UMC_BAR[cha] + 0x21c, dev );
+			UMC_BAR + 0x21c, dev );
 
 	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR8,
-			UMC_BAR[cha] + 0x220, dev);
+			UMC_BAR + 0x220, dev);
 
 	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR9,
-			UMC_BAR[cha] + 0x224, dev );
+			UMC_BAR + 0x224, dev );
 
 	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR10,
-			UMC_BAR[cha] + 0x228, dev );
+			UMC_BAR + 0x228, dev );
 
 	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR12,
-			UMC_BAR[cha] + 0x230, dev );
+			UMC_BAR + 0x230, dev );
 
 	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR13,
-			UMC_BAR[cha] + 0x234, dev );
+			UMC_BAR + 0x234, dev );
 
 	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR20,
-			UMC_BAR[cha] + 0x250, dev );
+			UMC_BAR + 0x250, dev );
 
 	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR21,
-			UMC_BAR[cha] + 0x254, dev );
+			UMC_BAR + 0x254, dev );
 
 	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR22,
-			UMC_BAR[cha] + 0x258, dev );
+			UMC_BAR + 0x258, dev );
 
 	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTRFC,
-			UMC_BAR[cha] + 0x260, dev );
+			UMC_BAR + 0x260, dev );
 
 	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR35,
-			UMC_BAR[cha] + 0x28c, dev );
+			UMC_BAR + 0x28c, dev );
 
 	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.BGS,
-			UMC_BAR[cha] + 0x58, dev );
+			UMC_BAR + 0x58, dev );
 
 	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.BGS_ALT,
-			UMC_BAR[cha] + 0xd0, dev );
-    }
-	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MAX)] = \
-	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] = \
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[0].AMD17h.MISC.MEMCLK/3;
-
-	return (PCI_CALLBACK) 0;
+			UMC_BAR + 0xd0, dev );
 }
 
-static PCI_CALLBACK AMD_17h_UMC0(struct pci_dev *pdev)
+static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *pdev)
 {
-	PCI_CALLBACK rc = 0;
 	struct pci_dev *dev;
 	unsigned short umc;
-	for (umc = 0; umc < 4; umc++)
-	{
-		dev = pci_get_domain_bus_and_slot(pci_domain_nr(pdev->bus),
+	bool UMC_Clock = false;
+
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 0;
+  for (umc = 0; umc < 4; umc++)
+  {
+	unsigned short cha;
+
+	dev = pci_get_domain_bus_and_slot(pci_domain_nr(pdev->bus),
 					0x0, PCI_DEVFN(0x18 + umc, 0x0));
-		if (dev != NULL)
-		{
-			rc = AMD_Zen_UMC(dev, umc);
-			pci_dev_put(dev);
-		}
+    if (dev != NULL)
+    {
+		PUBLIC(RO(Proc))->Uncore.CtrlCount++;
+		PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount = 2;
+		PUBLIC(RO(Proc))->Uncore.MC[umc].SlotCount = 2;
+
+      for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount; cha++)
+      {
+	AMD_17_UMC_SDP_CTRL SDP_CTRL = {.value = 0};
+
+	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha].AMD17h.ECC,
+			SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xdf4, dev);
+
+	UMC_SMN_Read(SDP_CTRL, SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x104, dev);
+
+	if ((SDP_CTRL.value != 0xffffffff) && (SDP_CTRL.SdpInit))
+	{
+		AMD_Zen_UMC(dev, SMU_AMD_UMC_BASE_CHA_F17H(cha), umc, cha);
 	}
-	return rc;
+	if ((UMC_Clock == false)
+	&& PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha].AMD17h.MISC.MEMCLK)
+	{
+	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MAX)] = \
+	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] = \
+	    PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha].AMD17h.MISC.MEMCLK/3;
+	UMC_Clock = true;
+	}
+      }
+	pci_dev_put(dev);
+    }
+  }
+	return (PCI_CALLBACK) 0;
 }
 
 static void CoreFreqK_ResetChip(struct pci_dev *dev)

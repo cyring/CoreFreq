@@ -4844,18 +4844,24 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 
 void AMD_17h_CAP(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
+	unsigned short mc, clock_done = 0;
+  for (mc = 0; mc < Shm->Uncore.CtrlCount && !clock_done; mc++) {
+	unsigned short cha;
+    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount && !clock_done; cha++) {
+      if (RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.MEMCLK)
+      {
 	Shm->Uncore.Bus.Rate = \
-			(RO(Proc)->Uncore.MC[0].Channel[0].AMD17h.MISC.MEMCLK
+			(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.MEMCLK
 			*  Shm->Proc.Features.Factory.Clock.Q) / 3;
 
 	Shm->Uncore.Bus.Speed = \
-			(RO(Proc)->Uncore.MC[0].Channel[0].AMD17h.MISC.MEMCLK
+			(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.MEMCLK
 			* RO(Core)->Clock.Hz * 333333333LLU)
 			/ (Shm->Proc.Features.Factory.Clock.Hz
 			* (1000LLU * PRECISION * PRECISION));
 
 	Shm->Uncore.CtrlSpeed = \
-			(RO(Proc)->Uncore.MC[0].Channel[0].AMD17h.MISC.MEMCLK
+			(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.MEMCLK
 			* RO(Core)->Clock.Hz * 666666666LLU)
 			/ (Shm->Proc.Features.Factory.Clock.Hz
 			* (1000LLU * PRECISION * PRECISION));
@@ -4865,6 +4871,11 @@ void AMD_17h_CAP(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	Shm->Uncore.Unit.DDR_Rate = 0b11;
 	Shm->Uncore.Unit.DDRSpeed = 0b00;
 	Shm->Uncore.Unit.DDR_Ver  = 4;
+
+	clock_done = 1;
+      }
+    }
+  }
 }
 
 void AMD_17h_IOMMU(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
@@ -5378,16 +5389,16 @@ void PCI_AMD(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 	case DID_AMD_17H_ZEN2_APU_NB_IOMMU:
 		AMD_17h_IOMMU(Shm, RO(Proc));
 		break;
-	case DID_AMD_17H_ZEPPELIN_DF_F3:
-	case DID_AMD_17H_RAVEN_DF_F3:
-	case DID_AMD_17H_MATISSE_DF_F3:
-	case DID_AMD_17H_STARSHIP_DF_F3:
-	case DID_AMD_17H_RENOIR_DF_F3:
-	case DID_AMD_17H_ARIEL_DF_F3:
-	case DID_AMD_17H_FIREFLIGHT_DF_F3:
-	case DID_AMD_17H_ARDEN_DF_F3:
-		AMD_17h_CAP(Shm, RO(Proc), RO(Core));
+	case DID_AMD_17H_ZEPPELIN_DF_UMC:
+	case DID_AMD_17H_RAVEN_DF_UMC:
+	case DID_AMD_17H_MATISSE_DF_UMC:
+	case DID_AMD_17H_STARSHIP_DF_UMC:
+	case DID_AMD_17H_RENOIR_DF_UMC:
+	case DID_AMD_17H_ARIEL_DF_UMC:
+	case DID_AMD_17H_FIREFLIGHT_DF_UMC:
+	case DID_AMD_17H_ARDEN_DF_UMC:
 		AMD_17h_UMC(Shm, RO(Proc));
+		AMD_17h_CAP(Shm, RO(Proc), RO(Core));
 		SET_CHIPSET(IC_ZEN);
 		break;
 	}

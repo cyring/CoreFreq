@@ -1620,8 +1620,7 @@ static PCI_CALLBACK AMD_17h_ZenIF(struct pci_dev *dev) ;
 #define AMD_19h_ZenIF AMD_17h_ZenIF
 #endif
 static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev) ;
-static PCI_CALLBACK AMD_17h_UMC0(struct pci_dev *pdev) ;
-#define AMD_17h_UMC AMD_17h_UMC0
+static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *pdev) ;
 #define AMD_19h_UMC AMD_17h_UMC
 
 static struct pci_device_id PCI_Void_ids[] = {
@@ -2314,45 +2313,45 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 #ifdef CONFIG_AMD_NB
 	/* Source: /drivers/hwmon/k10temp.c				*/
 	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
 	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_RAVEN_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_RAVEN_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
 	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
 	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_STARSHIP_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_STARSHIP_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
 	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_RENOIR_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_RENOIR_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
 	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_ARIEL_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_ARIEL_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
 	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_FIREFLIGHT_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_FIREFLIGHT_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
 	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_ARDEN_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_ARDEN_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
 	/* Source: HYGON: /arch/x86/kernel/amd_nb.c: DF_F3 = 0x1463	*/
 	{
-		PCI_VDEVICE(HYGON, DID_AMD_17H_ZEPPELIN_DF_F3),
+		PCI_VDEVICE(HYGON, DID_AMD_17H_ZEPPELIN_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
 /* AMD Family 19h							*/
 	{
-		PCI_VDEVICE(AMD, DID_AMD_19H_VERMEER_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_19H_VERMEER_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_19h_ZenIF
 	},
 #endif /* CONFIG_AMD_NB */
@@ -2404,45 +2403,45 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 	},
 	/* Source: SMU > Data Fabric > UMC				*/
 	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_F3 + 0),
-		.driver_data = (kernel_ulong_t) AMD_17h_UMC0
-	},
-	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_RAVEN_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC
 	},
 	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_F3 + 0),
-		.driver_data = (kernel_ulong_t) AMD_17h_UMC0
-	},
-	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_STARSHIP_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_RAVEN_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC
 	},
 	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_RENOIR_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC
 	},
 	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_ARIEL_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_STARSHIP_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC
 	},
 	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_RAVEN2_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_RENOIR_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC
 	},
 	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_FIREFLIGHT_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_ARIEL_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC
 	},
 	{
-		PCI_VDEVICE(AMD, DID_AMD_17H_ARDEN_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_17H_RAVEN2_DF_UMC),
+		.driver_data = (kernel_ulong_t) AMD_17h_UMC
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_17H_FIREFLIGHT_DF_UMC),
+		.driver_data = (kernel_ulong_t) AMD_17h_UMC
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_17H_ARDEN_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC
 	},
 /* AMD Family 19h							*/
 	/* Source: SMU > Data Fabric > UMC				*/
 	{
-		PCI_VDEVICE(AMD, DID_AMD_19H_VERMEER_DF_F3),
+		PCI_VDEVICE(AMD, DID_AMD_19H_VERMEER_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_19h_UMC
 	},
 	{0, }

@@ -94,7 +94,7 @@
 #endif
 
 #ifndef MSR_AMD_CU_CFG3
-	#define MSR_AMD_CU_CFG3			0xc001102b
+	#define MSR_AMD_CU_CFG3 		0xc001102b
 #endif
 
 /* Sources: BKDG for AMD Family 0Fh,15_00h-15_0Fh,15_10h-15_1Fh,15_30-15_3Fh */
