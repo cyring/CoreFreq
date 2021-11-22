@@ -17187,26 +17187,34 @@ void Layout_Card_MC(Layer *layer, Card *card)
 	CONV(card->data.word.lo[1], StrFormat, Card_MC_Timing,
 		11+(4*10)+5+1, "%s", " -  -  -  -  - ");
 
-	if (Shm->Uncore.CtrlCount > 0) {
-		unsigned short mc;
-	    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
-		if (Shm->Uncore.MC[mc].ChannelCount > 0)
-		{
-			CONV(card->data.word.lo[1], StrFormat,
-				Card_MC_Timing,
-				11+(4*10)+5+1,
-				"% d-%u-%u-%u-%uT",
-				Shm->Uncore.MC[mc].Channel[0].Timing.tCL,
-				Shm->Uncore.MC[mc].Channel[0].Timing.tRCD,
-				Shm->Uncore.MC[mc].Channel[0].Timing.tRP,
-				Shm->Uncore.MC[mc].Channel[0].Timing.tRAS,
-				Shm->Uncore.MC[mc].Channel[0].Timing.CMD_Rate);
-			break;
-		}
-	    }
-		Counter2LCD(layer, card->origin.col, card->origin.row,
-				(double) Shm->Uncore.CtrlSpeed);
+	unsigned short mc, cha, gotTimings = 0;
+  if (Shm->Uncore.CtrlCount > 0) {
+    for (mc = 0; mc < Shm->Uncore.CtrlCount && !gotTimings; mc++) {
+      if (Shm->Uncore.MC[mc].ChannelCount > 0) {
+	for(cha=0; cha < Shm->Uncore.MC[mc].ChannelCount && !gotTimings;cha++) {
+	  if (Shm->Uncore.MC[mc].Channel[cha].Timing.tCL
+	   || Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD
+	   || Shm->Uncore.MC[mc].Channel[cha].Timing.tRP
+	   || Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS)
+	  {
+		CONV(card->data.word.lo[1], StrFormat,
+			Card_MC_Timing,
+			11+(4*10)+5+1,
+			"% d-%u-%u-%u-%uT",
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tCL,
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD,
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tRP,
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS,
+			Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate);
+
+		gotTimings = 1;
+	  }
 	}
+      }
+    }
+	Counter2LCD(layer, card->origin.col, card->origin.row,
+			(double) Shm->Uncore.CtrlSpeed);
+  }
 	LayerCopyAt(	layer, hRAM.origin.col, hRAM.origin.row,
 			hRAM.length, hRAM.attr, hRAM.code);
 }
