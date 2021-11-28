@@ -176,9 +176,8 @@ help:
 	"|    where <N> is 64, 128, 256, 512 or 1024 builtin CPU         |\n"\
 	"|                                                               |\n"\
 	"|  LEGACY=<L>                                                   |\n"\
-	"|    where level <L> is 1 or 2                                  |\n"\
+	"|    where level <L>                                            |\n"\
 	"|    1: assembly level restriction such as CMPXCHG16            |\n"\
-	"|    2:   kernel level restriction like amd_smn_read()          |\n"\
 	"|                                                               |\n"\
 	"|  UBENCH=<N>                                                   |\n"\
 	"|    where <N> is 0 to disable or 1 to enable micro-benchmark   |\n"\
