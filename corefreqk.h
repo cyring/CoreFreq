@@ -881,10 +881,7 @@ typedef union
 	signed int status = i2c_smbus_write_byte_data(cli, cmd, data.value); \
 	status ;							\
 })
-/*
-static int AMD_SBRMI_Probe(struct platform_device*) ;
-static int AMD_SBRMI_Remove(struct platform_device*) ;
-*/
+
 static int AMD_SBRMI_Probe(struct i2c_client*) ;
 static int AMD_SBRMI_Remove(struct i2c_client*) ;
 #endif
@@ -3969,9 +3966,11 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
-	.TurboUnlocked = 0,
+	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
+	.SBRMI_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+		|LATCH_SBRMI_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD EPYC 7261"),
@@ -3980,9 +3979,11 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
-	.TurboUnlocked = 0,
+	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
+	.SBRMI_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+		|LATCH_SBRMI_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD EPYC 7281"),
@@ -3991,7 +3992,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
-	.TurboUnlocked = 0,
+	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
 	.SBRMI_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
@@ -4006,9 +4007,11 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
-	.TurboUnlocked = 0,
+	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
+	.SBRMI_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+		|LATCH_SBRMI_CAPABLE
 	},
 	{
 	.Brand = ZLIST( "AMD EPYC 7401P",	\
@@ -4018,9 +4021,11 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
-	.TurboUnlocked = 0,
+	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
+	.SBRMI_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+		|LATCH_SBRMI_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD EPYC 7451"),
@@ -4029,9 +4034,11 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
-	.TurboUnlocked = 0,
+	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
+	.SBRMI_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+		|LATCH_SBRMI_CAPABLE
 	},
 	{
 	.Brand = ZLIST( "AMD EPYC 7551P",	\
@@ -4042,9 +4049,11 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
-	.TurboUnlocked = 0,
+	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
+	.SBRMI_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+		|LATCH_SBRMI_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD EPYC 7601"),
@@ -4053,9 +4062,11 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
-	.TurboUnlocked = 0,
+	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
+	.SBRMI_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+		|LATCH_SBRMI_CAPABLE
 	},
 	{0}
 };

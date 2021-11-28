@@ -359,11 +359,7 @@ FEAT_MSG("DEVICE-TREE built-in");
 #endif
 
 #ifdef CONFIG_I2C
-/* The SB-RMI address is normally 78h for socket 0 and 70h for socket 1 **
-static struct i2c_board_info I2C_Board = {
-	I2C_BOARD_INFO(DRV_DEVNAME, 0x78)
-};
-*/
+/* The SB-RMI address is normally 78h for socket 0 and 70h for socket 1 */
 static const struct i2c_device_id I2C_Device[] = {
 	{DRV_DEVNAME, 0},
 	{ }
@@ -3698,11 +3694,10 @@ void AMD_SBRMI_Exit(void)
     }
     if (PUBLIC(RO(Proc))->Registration.PFM)
     {
-//	platform_driver_unregister(&SBRMI_Driver);
 	i2c_del_driver(&SBRMI_Driver);
 	PUBLIC(RO(Proc))->Registration.PFM = 0;
     }
-	printk("AMD_SBRMI_Exit() > %d:%d",
+	pr_debug("AMD_SBRMI_Exit() > %d:%d",
 		PUBLIC(RO(Proc))->Registration.I2C,
 		PUBLIC(RO(Proc))->Registration.PFM);
 }
@@ -3712,11 +3707,6 @@ signed int AMD_SBRMI_Init(void)
 	signed int rc = 0;
     if (PUBLIC(RO(Proc))->Features.SBRMI_Capable) {
 	if (PUBLIC(RO(Proc))->Registration.PFM == 0) {
-/*		if (platform_driver_register(&SBRMI_Driver) == 0) {
-			PUBLIC(RO(Proc))->Registration.PFM = 1;
-		} else {
-			rc = -ENODEV;
-		}	*/
 		if (i2c_add_driver(&SBRMI_Driver) == 0) {
 			PUBLIC(RO(Proc))->Registration.PFM = 1;
 		} else {
@@ -3728,28 +3718,13 @@ signed int AMD_SBRMI_Init(void)
     } else {
 	rc = -EPERM;
     }
-	printk("AMD_SBRMI_Init() > %d",rc);
+	pr_debug("AMD_SBRMI_Init() > %d",rc);
 	return rc;
 }
 
-//static int AMD_SBRMI_Probe(struct platform_device *pfmdev)
 static int AMD_SBRMI_Probe(struct i2c_client *client)
 {
 	signed int rc = 0;
-/*
-  if (PUBLIC(RO(Proc))->Registration.I2C == 0)
-  {
-	struct device *dev = &(pfmdev->dev);
-    if((CoreFreqK.I2C_Client = i2c_acpi_new_device(dev, 0, &I2C_Board)) != NULL)
-    {
-	PUBLIC(RO(Proc))->Registration.I2C = 1;
-    } else {
-	rc = -ENODEV;
-    }
-  } else {
-	rc = -EPERM;
-  }
-*/
   if ((CoreFreqK.I2C_Client = client) != NULL)
   {
 	PUBLIC(RO(Proc))->Registration.I2C = 1;
@@ -3777,14 +3752,13 @@ static int AMD_SBRMI_Probe(struct i2c_client *client)
 	PUBLIC(RO(Proc))->Features.Factory.SMU.Revision = Revision.value;
     }
   }
-	printk("AMD_SBRMI_Probe() > %d",rc);
+	pr_debug("AMD_SBRMI_Probe() > %d",rc);
 	return rc;
 }
 
-//static int AMD_SBRMI_Remove(struct platform_device *pfmdev)
 static int AMD_SBRMI_Remove(struct i2c_client *client)
 {
-	printk("AMD_SBRMI_Remove()");
+	pr_debug("AMD_SBRMI_Remove()");
 	return 0;
 }
 #else
