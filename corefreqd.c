@@ -1753,6 +1753,8 @@ void Package_Update(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc))
 	Shm->Registration.Experimental = RO(Proc)->Registration.Experimental;
 	Shm->Registration.HotPlug = RO(Proc)->Registration.HotPlug;
 	Shm->Registration.PCI = RO(Proc)->Registration.PCI;
+	Shm->Registration.PFM = RO(Proc)->Registration.PFM;
+	Shm->Registration.I2C = RO(Proc)->Registration.I2C;
 	BITSTOR(LOCKLESS, Shm->Registration.NMI, RO(Proc)->Registration.NMI);
 	Shm->Registration.Driver = RO(Proc)->Registration.Driver;
 	/* Copy the timer interval delay.				*/

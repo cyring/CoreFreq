@@ -546,6 +546,84 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 	);								\
 })
 
+/* Sources: PPR for AMD Family 17h					*/
+#define AMD_FCH_PM_CSTATE_EN	0x0000007e
+
+#define AMD_FCH_READ16(_data, _reg)					\
+({									\
+	__asm__ volatile						\
+	(								\
+		"movl	%1	,	%%eax"		"\n\t"		\
+		"movl	$0xcd6	,	%%edx"		"\n\t"		\
+		"outl	%%eax	,	%%dx"		"\n\t"		\
+		"movl	$0xcd7	,	%%edx"		"\n\t"		\
+		"inw	%%dx	,	%%ax"		"\n\t"		\
+		"movw	%%ax	,	%0"				\
+		: "=m"	(_data) 					\
+		: "i"	(_reg)						\
+		: "%rax", "%rdx", "memory"				\
+	);								\
+})
+
+#define AMD_FCH_WRITE16(_data, _reg)					\
+({									\
+	__asm__ volatile						\
+	(								\
+		"movl	%1	,	%%eax"		"\n\t"		\
+		"movl	$0xcd6	,	%%edx"		"\n\t"		\
+		"outl	%%eax	,	%%dx"		"\n\t"		\
+		"movw	%0	,	%%ax" 		"\n\t"		\
+		"movl	$0xcd7	,	%%edx"		"\n\t"		\
+		"outw	%%ax	,	%%dx"		"\n\t"		\
+		:							\
+		: "im"	(_data),					\
+		  "i"	(_reg)						\
+		: "%rax", "%rdx", "memory"				\
+	);								\
+})
+
+#define AMD_FCH_PM_Read16(IndexRegister, DataRegister)			\
+({									\
+	unsigned int tries = BIT_IO_RETRIES_COUNT;			\
+	unsigned char ret;						\
+    do {								\
+	ret = BIT_ATOM_TRYLOCK( BUS_LOCK,				\
+				PRIVATE(OF(AMD_FCH_LOCK)),		\
+				ATOMIC_SEED) ;				\
+	if (ret == 0) {							\
+		udelay(BIT_IO_DELAY_INTERVAL);				\
+	} else {							\
+		AMD_FCH_READ16(DataRegister.value, IndexRegister);	\
+									\
+		BIT_ATOM_UNLOCK(BUS_LOCK,				\
+				PRIVATE(OF(AMD_FCH_LOCK)),		\
+				ATOMIC_SEED);				\
+	}								\
+	tries--;							\
+    } while ( (tries != 0) && (ret != 1) );				\
+})
+
+#define AMD_FCH_PM_Write16(IndexRegister , DataRegister)		\
+({									\
+	unsigned int tries = BIT_IO_RETRIES_COUNT;			\
+	unsigned char ret;						\
+    do {								\
+	ret = BIT_ATOM_TRYLOCK( BUS_LOCK,				\
+				PRIVATE(OF(AMD_FCH_LOCK)),		\
+				ATOMIC_SEED );				\
+	if (ret == 0) {							\
+		udelay(BIT_IO_DELAY_INTERVAL);				\
+	} else {							\
+		AMD_FCH_WRITE16(DataRegister.value, IndexRegister);	\
+									\
+		BIT_ATOM_UNLOCK(BUS_LOCK,				\
+				PRIVATE(OF(AMD_FCH_LOCK)),		\
+				ATOMIC_SEED);				\
+	}								\
+	tries--;							\
+    } while ( (tries != 0) && (ret != 1) );				\
+})
+
 /* Hardware Monitoring: Super I/O chipset identifiers			*/
 #define COMPATIBLE		0xffff
 #define W83627			0x5ca3
@@ -790,6 +868,33 @@ typedef union
 	MSG_RSP.value;							\
 })
 
+#ifdef CONFIG_I2C
+#define SBRMI_Read8(cli, cmd, data)					\
+({									\
+	signed int status = i2c_smbus_read_byte_data(cli, cmd); 	\
+	data.value = (unsigned char) status;				\
+	status ;							\
+})
+
+#define SBRMI_Write8(cli, cmd, data)					\
+({									\
+	signed int status = i2c_smbus_write_byte_data(cli, cmd, data.value); \
+	status ;							\
+})
+/*
+static int AMD_SBRMI_Probe(struct platform_device*) ;
+static int AMD_SBRMI_Remove(struct platform_device*) ;
+*/
+static int AMD_SBRMI_Probe(struct i2c_client*) ;
+static int AMD_SBRMI_Remove(struct i2c_client*) ;
+#endif
+
+typedef struct
+{
+	unsigned char		value;
+	enum SBRMI_REGISTER	reg;
+} SBRMI_MSG;
+
 /* Driver' private and public data definitions.				*/
 enum CSTATES_CLASS {
 	CSTATES_NHM,
@@ -806,6 +911,7 @@ enum CSTATES_CLASS {
 #define LATCH_TURBO_UNLOCK	0b000000000100	/* <B>	TurboUnlocked	 */
 #define LATCH_UNCORE_UNLOCK	0b000000001000	/* <U>	UncoreUnlocked	 */
 #define LATCH_HSMP_CAPABLE	0b000000010000	/* <H>	HSMP Capability  */
+#define LATCH_SBRMI_CAPABLE	0b000000100000	/* <R>  SB-RMI Capability*/
 
 typedef struct {
 	char			*CodeName;
@@ -821,8 +927,9 @@ typedef struct {
 				TurboUnlocked	: 12-11, /*	<B:1>	*/
 				UncoreUnlocked	: 13-12, /*	<U:1>	*/
 				HSMP_Capable	: 14-13, /*	<H:1>	*/
-				_UnusedLatchBits: 20-14,
-				/* <H>-<U>-<B>-<X>-<T> */
+				SBRMI_Capable	: 15-14, /*	<R:1>	*/
+				_UnusedLatchBits: 20-15,
+				/* <R>-<H>-<U>-<B>-<X>-<T> */
 				Latch		: 32-20;
 } PROCESSOR_SPECIFIC;
 
@@ -1313,6 +1420,7 @@ static void PerCore_AMD_Family_16h_Query(void *arg) ;
 #define     Stop_AMD_Family_16h Stop_AMD_Family_15h
 #define     InitTimer_AMD_Family_16h InitTimer_AuthenticAMD
 
+extern void Exit_AMD_Family_17h(void) ;
 extern void Query_AMD_F17h_PerSocket(unsigned int cpu) ;
 extern void Query_AMD_F17h_PerCluster(unsigned int cpu) ;
 static void PerCore_AMD_Family_17h_Query(void *arg) ;
@@ -3885,7 +3993,9 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
+	.SBRMI_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+		|LATCH_SBRMI_CAPABLE
 	},
 	{
 	.Brand = ZLIST( "AMD EPYC 7351P",	\
@@ -5661,6 +5771,7 @@ static int CoreFreqK_SetBoost(int) ;
 static ssize_t CoreFreqK_Show_SetSpeed(struct cpufreq_policy*, char*);
 static int CoreFreqK_Store_SetSpeed(struct cpufreq_policy*, unsigned int) ;
 #endif /* CONFIG_CPU_FREQ */
+
 static unsigned int Policy_GetFreq(unsigned int cpu) ;
 static void Policy_Core2_SetTarget(void *arg) ;
 static void Policy_Nehalem_SetTarget(void *arg) ;
@@ -8001,7 +8112,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
-	.Exit = NULL,
+	.Exit = Exit_AMD_Family_17h,
 	.Timer = InitTimer_AMD_F17h_Zen,
 	.BaseClock = BaseClock_AMD_Family_17h,
 	.ClockMod = ClockMod_AMD_Zen,

@@ -38,6 +38,15 @@
 #ifdef CONFIG_AMD_NB
 #include <asm/amd_nb.h>
 #endif
+#ifdef CONFIG_ACPI
+#include <linux/acpi.h>
+#endif
+#ifdef CONFIG_OF
+#include <linux/of.h>
+#endif
+#ifdef CONFIG_I2C
+#include <linux/i2c.h>
+#endif
 
 #include "bitasm.h"
 #include "amdmsr.h"
@@ -328,6 +337,54 @@ static signed short WDT_Enable = -1;
 module_param(WDT_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(WDT_Enable, "Watchdog Hardware Timer");
 
+#ifdef CONFIG_ACPI
+static const struct acpi_device_id SBRMI_ACPI[] = {
+/* Sources: acpidump -b -n DSDT -z && iasl -d dsdt.dat && cat dsdt.dsl */
+	{ "AMDI0010" },
+	{ }
+};
+MODULE_DEVICE_TABLE(acpi, SBRMI_ACPI);
+
+FEAT_MSG("ACPI built-in");
+#endif
+
+#ifdef CONFIG_OF
+static const struct of_device_id SBRMI_DT[] = {
+	{ .compatible = "amd,sbrmi" },
+	{ }
+};
+MODULE_DEVICE_TABLE(of, SBRMI_DT);
+
+FEAT_MSG("DEVICE-TREE built-in");
+#endif
+
+#ifdef CONFIG_I2C
+/* The SB-RMI address is normally 78h for socket 0 and 70h for socket 1 **
+static struct i2c_board_info I2C_Board = {
+	I2C_BOARD_INFO(DRV_DEVNAME, 0x78)
+};
+*/
+static const struct i2c_device_id I2C_Device[] = {
+	{DRV_DEVNAME, 0},
+	{ }
+};
+MODULE_DEVICE_TABLE(i2c, I2C_Device);
+
+static struct i2c_driver SBRMI_Driver = {
+	.probe_new = AMD_SBRMI_Probe,
+	.remove = AMD_SBRMI_Remove,
+	.driver = {
+		.owner = THIS_MODULE,
+		.name = DRV_DEVNAME,
+		.acpi_match_table = ACPI_PTR(SBRMI_ACPI),
+		.of_match_table = of_match_ptr(SBRMI_DT),
+	},
+	.id_table = I2C_Device
+};
+
+FEAT_MSG("I2C built-in");
+#endif
+
 static struct {
 	signed int		Major;
 	struct cdev		*kcdev;
@@ -341,6 +398,9 @@ static struct {
 	struct cpufreq_driver	FreqDriver;
 	struct cpufreq_governor FreqGovernor;
 #endif /* CONFIG_CPU_FREQ */
+#ifdef CONFIG_I2C
+	struct i2c_client	*I2C_Client;
+#endif /* CONFIG_I2C */
 } CoreFreqK = {
 #ifdef CONFIG_CPU_IDLE
 	.IdleDriver = {
@@ -364,8 +424,11 @@ static struct {
 			.owner	= THIS_MODULE,
 			.show_setspeed	= CoreFreqK_Show_SetSpeed,
 			.store_setspeed = CoreFreqK_Store_SetSpeed
-	}
+	},
 #endif /* CONFIG_CPU_FREQ */
+#ifdef CONFIG_I2C
+	.I2C_Client	= NULL
+#endif /* CONFIG_I2C */
 };
 
 static KPUBLIC *KPublic = NULL;
@@ -2251,6 +2314,9 @@ void OverrideUnlockCapability(PROCESSOR_SPECIFIC *pSpecific)
     if (pSpecific->Latch & LATCH_HSMP_CAPABLE) {
 	PUBLIC(RO(Proc))->Features.HSMP_Capable = pSpecific->HSMP_Capable;
     }
+    if (pSpecific->Latch & LATCH_SBRMI_CAPABLE) {
+	PUBLIC(RO(Proc))->Features.SBRMI_Capable = pSpecific->SBRMI_Capable;
+    }
 }
 
 PROCESSOR_SPECIFIC *LookupProcessor(void)
@@ -3550,6 +3616,182 @@ unsigned int AMD_HSMP_Exec(	enum HSMP_FUNC MSG_FUNC,
 				SMU_IndexRegister,
 				SMU_DataRegister));
 }
+
+#ifdef CONFIG_I2C
+void AMD_SBRMI_Exec(	struct i2c_client *cli,
+			enum SBRMI_FUNC MSG_FUNC,
+			unsigned int *MSG_DATA )
+{
+	unsigned int idx;
+	signed int rc = 0;
+	SBRMI_MSG OutBnd[8];
+	SBRMI_MSG InBnd[8];
+	RESET_ARRAY(OutBnd, 8, 0, .value);
+	RESET_ARRAY(InBnd , 8, 0, .value);
+
+	OutBnd[0].reg = SBRMI_OUT_BOUND + 0;
+	OutBnd[1].reg = SBRMI_OUT_BOUND + 1;
+	OutBnd[2].reg = SBRMI_OUT_BOUND + 2;
+	OutBnd[3].reg = SBRMI_OUT_BOUND + 3;
+	OutBnd[4].reg = SBRMI_OUT_BOUND + 4;
+	OutBnd[5].reg = SBRMI_OUT_BOUND + 7;
+
+	InBnd[0].value=0x80;			InBnd[0].reg=SBRMI_IN_BOUND + 7;
+	InBnd[1].value=MSG_FUNC;		InBnd[1].reg=SBRMI_IN_BOUND + 0;
+	InBnd[2].value=(*MSG_DATA) & 0xff;	InBnd[2].reg=SBRMI_IN_BOUND + 1;
+	InBnd[3].value=(*MSG_DATA >> 8) & 0xff; InBnd[3].reg=SBRMI_IN_BOUND + 2;
+	InBnd[4].value=(*MSG_DATA >>16) & 0xff; InBnd[4].reg=SBRMI_IN_BOUND + 3;
+	InBnd[5].value=(*MSG_DATA >>24) & 0xff; InBnd[5].reg=SBRMI_IN_BOUND + 4;
+	InBnd[6].value=0x1;			InBnd[6].reg=SBRMI_INTERRUPT;
+
+  for (idx = 0; (idx < 7) && (rc >= 0); idx++) {
+	rc = SBRMI_Write8(cli, InBnd[idx].reg, InBnd[idx]);
+  }
+  if (rc >= 0)
+  {
+	AMD_SBRMI_STATUS Status = {.value = 0};
+	unsigned char wait;
+
+	idx = BIT_IO_RETRIES_COUNT;
+    do {
+	rc = SBRMI_Read8(cli, SBRMI_STATUS, Status);
+
+	idx--;
+	wait = (idx != 0) && (rc >= 0) && (Status.SwAlertSts != 0x1) ? 1 : 0;
+	if (wait == 1) {
+		udelay(BIT_IO_DELAY_INTERVAL);
+	}
+    } while (wait == 1);
+    if (idx == 0) {
+	pr_warn("CoreFreq: SBRMI Mailbox Timeout. Error %d\n", rc);
+    }
+    else if ((Status.SwAlertSts == 0x1) && (rc >= 0))
+    {
+	rc = 0;
+      for (idx = 0; (idx < 6) && (rc >= 0); idx++) {
+	rc = SBRMI_Read8(cli, OutBnd[idx].reg, OutBnd[idx]);
+      }
+	Status.SwAlertSts = 1;
+	rc = SBRMI_Write8(cli, SBRMI_STATUS, Status);
+
+	(*MSG_DATA)	= OutBnd[1].value
+			| OutBnd[2].value << 8
+			| OutBnd[3].value << 16
+			| OutBnd[4].value << 24;
+    } else {
+	pr_warn("CoreFreq: SBRMI Mailbox SwAlert at #%u Error %d\n", idx, rc);
+    }
+  } else {
+	pr_warn("CoreFreq: SBRMI Mailbox InBound at #%u Error %d\n", idx, rc);
+  }
+}
+
+void AMD_SBRMI_Exit(void)
+{
+    if (PUBLIC(RO(Proc))->Registration.I2C)
+    {
+	SBRMI_Write8(	CoreFreqK.I2C_Client, SBRMI_CONTROL,
+			PUBLIC(RO(Proc))->SaveArea.AMD.SBRMI_Control );
+
+	i2c_unregister_device(CoreFreqK.I2C_Client);
+	PUBLIC(RO(Proc))->Registration.I2C = 0;
+    }
+    if (PUBLIC(RO(Proc))->Registration.PFM)
+    {
+//	platform_driver_unregister(&SBRMI_Driver);
+	i2c_del_driver(&SBRMI_Driver);
+	PUBLIC(RO(Proc))->Registration.PFM = 0;
+    }
+	printk("AMD_SBRMI_Exit() > %d:%d",
+		PUBLIC(RO(Proc))->Registration.I2C,
+		PUBLIC(RO(Proc))->Registration.PFM);
+}
+
+signed int AMD_SBRMI_Init(void)
+{
+	signed int rc = 0;
+    if (PUBLIC(RO(Proc))->Features.SBRMI_Capable) {
+	if (PUBLIC(RO(Proc))->Registration.PFM == 0) {
+/*		if (platform_driver_register(&SBRMI_Driver) == 0) {
+			PUBLIC(RO(Proc))->Registration.PFM = 1;
+		} else {
+			rc = -ENODEV;
+		}	*/
+		if (i2c_add_driver(&SBRMI_Driver) == 0) {
+			PUBLIC(RO(Proc))->Registration.PFM = 1;
+		} else {
+			rc = -ENODEV;
+		}
+	} else {
+		rc = -EBUSY;
+	}
+    } else {
+	rc = -EPERM;
+    }
+	printk("AMD_SBRMI_Init() > %d",rc);
+	return rc;
+}
+
+//static int AMD_SBRMI_Probe(struct platform_device *pfmdev)
+static int AMD_SBRMI_Probe(struct i2c_client *client)
+{
+	signed int rc = 0;
+/*
+  if (PUBLIC(RO(Proc))->Registration.I2C == 0)
+  {
+	struct device *dev = &(pfmdev->dev);
+    if((CoreFreqK.I2C_Client = i2c_acpi_new_device(dev, 0, &I2C_Board)) != NULL)
+    {
+	PUBLIC(RO(Proc))->Registration.I2C = 1;
+    } else {
+	rc = -ENODEV;
+    }
+  } else {
+	rc = -EPERM;
+  }
+*/
+  if ((CoreFreqK.I2C_Client = client) != NULL)
+  {
+	PUBLIC(RO(Proc))->Registration.I2C = 1;
+  } else {
+	rc = -ENODEV;
+  }
+  if (PUBLIC(RO(Proc))->Registration.I2C && (rc == 0))
+  {
+	AMD_SBRMI_REVISION Revision;
+	AMD_SBRMI_CONTROL Control;
+
+    if ((rc = SBRMI_Read8(CoreFreqK.I2C_Client, SBRMI_CONTROL, Control)) >= 0)
+    {
+	PUBLIC(RO(Proc))->SaveArea.AMD.SBRMI_Control = Control;
+
+      if (Control.SwAlertMask == 1)
+      {
+	Control.SwAlertMask = 0;
+
+	SBRMI_Write8(CoreFreqK.I2C_Client, SBRMI_CONTROL, Control);
+      }
+    }
+    if (SBRMI_Read8(CoreFreqK.I2C_Client, SBRMI_REVISION, Revision) >= 0)
+    {
+	PUBLIC(RO(Proc))->Features.Factory.SMU.Revision = Revision.value;
+    }
+  }
+	printk("AMD_SBRMI_Probe() > %d",rc);
+	return rc;
+}
+
+//static int AMD_SBRMI_Remove(struct platform_device *pfmdev)
+static int AMD_SBRMI_Remove(struct i2c_client *client)
+{
+	printk("AMD_SBRMI_Remove()");
+	return 0;
+}
+#else
+void AMD_SBRMI_Exec(struct i2c_client*, enum SBRMI_FUNC, unsigned int*) {}
+void AMD_SBRMI_Exit(void) {}
+signed int AMD_SBRMI_Init(void) {}
+#endif /* CONFIG_I2C */
 
 
 typedef void (*ROUTER)(void __iomem *mchmap, unsigned short mc);
@@ -6398,16 +6640,51 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	}
 }
 
+void Exit_AMD_Family_17h(void)
+{
+	AMD_SBRMI_Exit();
+}
+
+void Query_AMD_SBRMI(void)
+{
+	if (PUBLIC(RO(Proc))->Registration.I2C)
+	{
+		unsigned int cTDP = 0;
+
+		AMD_SBRMI_Exec(CoreFreqK.I2C_Client, SBRMI_RD_PKG_TDP, &cTDP);
+
+		PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
+			PWR_DOMAIN(PKG)
+		].Domain_Limit1 = cTDP / 1000;
+	}
+}
+
 void Query_AMD_F17h_PerSocket(unsigned int cpu)
 {
+	int rc;
+
 	Core_AMD_Family_17h_Temp = CTL_AMD_Family_17h_Temp;
 	Query_AMD_Family_17h(cpu);
+
+	if ((rc = AMD_SBRMI_Init()) == 0) {
+		Query_AMD_SBRMI();
+	} else {
+		pr_warn("CoreFreq: SBRMI Unreachable. Error %d\n", rc);
+	}
 }
 
 void Query_AMD_F17h_PerCluster(unsigned int cpu)
 {
+	int rc;
+
 	Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Zen2_Temp;
 	Query_AMD_Family_17h(cpu);
+
+	if ((rc = AMD_SBRMI_Init()) == 0) {
+		Query_AMD_SBRMI();
+	} else {
+		pr_warn("CoreFreq: SBRMI Unreachable. Error %d\n", rc);
+	}
 }
 
 void Dump_CPUID(CORE_RO *Core)
@@ -10350,7 +10627,7 @@ void Intel_Core_Counters_Set(CORE_RO *Core)
 	RDMSR(	Uncore_GlobalPerfControl,				\
 		MSR_##PMU##_UNCORE_PERF_GLOBAL_CTRL );			\
 									\
-	PUBLIC(RO(Proc))->SaveArea.Uncore_GlobalPerfControl =		\
+	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_GlobalPerfControl =	\
 						Uncore_GlobalPerfControl;\
 									\
 	Uncore_GlobalPerfControl.PMU.EN_FIXED_CTR0  = 1;		\
@@ -10360,7 +10637,7 @@ void Intel_Core_Counters_Set(CORE_RO *Core)
 	RDMSR(	Uncore_FixedPerfControl,				\
 		MSR_##PMU##_UNCORE_PERF_FIXED_CTR_CTRL );		\
 									\
-	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl =		\
+	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl =	\
 						Uncore_FixedPerfControl;\
 									\
 	Uncore_FixedPerfControl.PMU.EN_CTR0 = 1;			\
@@ -10401,10 +10678,10 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 ({									\
     if (PUBLIC(RO(Proc))->Features.PerfMon.EAX.Version >= 3)		\
     {									\
-	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl,	\
+	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl,\
 		MSR_##PMU##_UNCORE_PERF_FIXED_CTR_CTRL );		\
 									\
-	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_GlobalPerfControl,	\
+	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_GlobalPerfControl,\
 		MSR_##PMU##_UNCORE_PERF_GLOBAL_CTRL );			\
     }									\
 })
@@ -12603,7 +12880,7 @@ static void Start_Uncore_SandyBridge_EP(void *arg)
 
 	RDMSR(Uncore_FixedPerfControl, MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
 
-	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl = \
+	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl = \
 						Uncore_FixedPerfControl;
 
 	Uncore_FixedPerfControl.SNB.EN_CTR0 = 1;
@@ -12612,7 +12889,7 @@ static void Start_Uncore_SandyBridge_EP(void *arg)
 
 	RDMSR(Uncore_PMonGlobalControl, MSR_SNB_UNCORE_PERF_GLOBAL_CTRL);
 
-	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl = \
+	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_PMonGlobalControl = \
 						Uncore_PMonGlobalControl;
 
 	Uncore_PMonGlobalControl.Unfreeze_All = 1;
@@ -12625,18 +12902,18 @@ static void Stop_Uncore_SandyBridge_EP(void *arg)
 {
 	UNUSED(arg);
 
-    if (PUBLIC(RO(Proc))->Features.PerfMon.EAX.Version > 3)
+  if (PUBLIC(RO(Proc))->Features.PerfMon.EAX.Version > 3)
+  {
+    if(PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl.SNB.EN_CTR0==0)
     {
-      if (PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl.SNB.EN_CTR0 == 0)
-      {
-	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl.Freeze_All = 1;
-      }
-	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl,
+	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_PMonGlobalControl.Freeze_All=1;
+    }
+	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_PMonGlobalControl,
 		MSR_SNB_UNCORE_PERF_GLOBAL_CTRL);
 
-	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl,
+	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl,
 		MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
-    }
+  }
 }
 
 static enum hrtimer_restart Cycle_IvyBridge_EP(struct hrtimer *pTimer)
@@ -12663,7 +12940,7 @@ static void Start_Uncore_IvyBridge_EP(void *arg)
 
 	RDMSR(Uncore_FixedPerfControl, MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
 
-	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl = \
+	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl = \
 						Uncore_FixedPerfControl;
 
 	Uncore_FixedPerfControl.SNB.EN_CTR0 = 1;
@@ -12672,7 +12949,7 @@ static void Start_Uncore_IvyBridge_EP(void *arg)
 
 	RDMSR(Uncore_PMonGlobalControl, MSR_IVB_EP_PMON_GLOBAL_CTRL);
 
-	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl = \
+	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_PMonGlobalControl = \
 						Uncore_PMonGlobalControl;
 
 	Uncore_PMonGlobalControl.Unfreeze_All = 1;
@@ -12684,14 +12961,14 @@ static void Stop_Uncore_IvyBridge_EP(void *arg)
 {
 	UNUSED(arg);
 	/* If fixed counter was disable at entry, force freezing	*/
-    if (PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl.SNB.EN_CTR0 == 0)
-    {
-	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl.Freeze_All = 1;
-    }
-	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl,
+  if (PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl.SNB.EN_CTR0 == 0)
+  {
+	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_PMonGlobalControl.Freeze_All=1;
+  }
+	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_PMonGlobalControl,
 		MSR_IVB_EP_PMON_GLOBAL_CTRL);
 
-	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl,
+	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl,
 		MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
 }
 
@@ -13356,7 +13633,7 @@ static void Start_Uncore_Haswell_EP(void *arg)
 
 	RDMSR(Uncore_FixedPerfControl, MSR_HSW_EP_UNCORE_PERF_FIXED_CTR_CTRL);
 
-	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl = \
+	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl = \
 						Uncore_FixedPerfControl;
 
 	Uncore_FixedPerfControl.HSW_EP.EN_CTR0 = 1;
@@ -13365,7 +13642,7 @@ static void Start_Uncore_Haswell_EP(void *arg)
 
 	RDMSR(Uncore_PMonGlobalControl, MSR_HSW_EP_PMON_GLOBAL_CTRL);
 
-	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl = \
+	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_PMonGlobalControl = \
 						Uncore_PMonGlobalControl;
 
 	Uncore_PMonGlobalControl.Unfreeze_All = 1;
@@ -13377,14 +13654,14 @@ static void Stop_Uncore_Haswell_EP(void *arg)
 {
 	UNUSED(arg);
 
-    if (PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl.HSW_EP.EN_CTR0 == 0)
-    {
-	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl.Freeze_All = 1;
-    }
-	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl,
+  if(PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl.HSW_EP.EN_CTR0==0)
+  {
+	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_PMonGlobalControl.Freeze_All=1;
+  }
+	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_PMonGlobalControl,
 		MSR_HSW_EP_PMON_GLOBAL_CTRL );
 
-	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl,
+	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl,
 		MSR_HSW_EP_UNCORE_PERF_FIXED_CTR_CTRL );
 }
 
