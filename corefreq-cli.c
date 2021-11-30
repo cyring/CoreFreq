@@ -2411,6 +2411,30 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		MECH
 	},
 	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Features.leaf80000008.EBX.IBRS_AlwaysOn,
+		attr_Feat,
+		3, "%s%.*s[%7s]", RSC(MECH_IBRS_ALWAYS_ON).CODE(),
+		width - (OutFunc == NULL ? 15:13) - RSZ(MECH_IBRS_ALWAYS_ON),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Features.leaf80000008.EBX.IBRS_Preferred,
+		attr_Feat,
+		3, "%s%.*s[%7s]", RSC(MECH_IBRS_PREFERRED).CODE(),
+		width - (OutFunc == NULL ? 15:13) - RSZ(MECH_IBRS_PREFERRED),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Features.leaf80000008.EBX.IBRS_SameMode,
+		attr_Feat,
+		3, "%s%.*s[%7s]", RSC(MECH_IBRS_SAME_MODE).CODE(),
+		width - (OutFunc == NULL ? 15:13) - RSZ(MECH_IBRS_SAME_MODE),
+		MECH
+	},
+	{
 		NULL,
 		( Shm->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap == 1 )
 		|| ( Shm->Proc.Features.leaf80000008.EBX.IBPB == 1 ),
@@ -2433,6 +2457,22 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sSSBD   [%7s]", RSC(MECH_SSBD).CODE(),
 		width - 19 - RSZ(MECH_SSBD),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Features.leaf80000008.EBX.SSBD_VirtSpecCtrl,
+		attr_Feat,
+		3, "%s%.*s[%7s]", RSC(MECH_SSBD_VIRTSPECCTRL).CODE(),
+		width - (OutFunc == NULL ? 15:13) - RSZ(MECH_SSBD_VIRTSPECCTRL),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Features.leaf80000008.EBX.SSBD_NotRequired,
+		attr_Feat,
+		3, "%s%.*s[%7s]", RSC(MECH_SSBD_NOT_REQUIRED).CODE(),
+		width - (OutFunc == NULL ? 15:13) - RSZ(MECH_SSBD_NOT_REQUIRED),
 		MECH
 	},
 	{

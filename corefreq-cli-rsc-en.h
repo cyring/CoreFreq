@@ -1656,6 +1656,11 @@
 #define RSC_MECH_SPLA_CODE_EN	"Architectural - Split Locked Access Exception"
 #define RSC_MECH_SNOOP_FILTER_CODE_EN "Architectural - Snoop Filter QoS Mask"
 #define RSC_MECH_PSFD_CODE_EN	"Architectural - Predictive Store Forwarding"
+#define RSC_MECH_IBRS_ALWAYS_ON_CODE_EN "IBRS Always-On preferred by processor"
+#define RSC_MECH_IBRS_PREFERRED_CODE_EN "IBRS preferred over software solution"
+#define RSC_MECH_IBRS_SAME_MODE_CODE_EN "IBRS provides same speculation limits"
+#define RSC_MECH_SSBD_VIRTSPECCTRL_CODE_EN "SSBD use VIRT SPEC_CTRL register"
+#define RSC_MECH_SSBD_NOT_REQUIRED_CODE_EN "SSBD not needed on this processor"
 
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_EN	"  %3s       Processor     " \
 						"   %s     %c%4u %c "

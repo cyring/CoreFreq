@@ -1225,14 +1225,14 @@ typedef struct	/* Processor Capacity Leaf.				*/
 		IBRS_AlwaysOn	: 17-16,
 		STIBP_AlwaysOn	: 18-17,
 		IBRS_Preferred	: 19-18,
-		IBRS_ProtectMode: 20-19,
+		IBRS_SameMode	: 20-19,
 		MSR_EFER_LMSLE	: 21-20,
 		TlbFlushNested	: 22-21,
 		Reserved4	: 23-22,
 		PPIN		: 24-23, /* Protected Processor Inventory Num */
 		SSBD		: 25-24, /* Speculative Store Bypass Disable */
-		SsbdVirtSpecCtrl: 26-25, /* Use VIRT_SPEC_CTL for SSBD */
-		SSBD_NotNeeded	: 27-26,
+		SSBD_VirtSpecCtrl:26-25, /* Use VIRT_SPEC_CTL for SSBD */
+		SSBD_NotRequired: 27-26,
 		CPPC		: 28-27,
 		PSFD		: 29-28, /* 1: SPEC_CTRL_MSR is supported */
 		Reserved5	: 31-29,

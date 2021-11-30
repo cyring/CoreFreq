@@ -1231,8 +1231,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.IBRS_AlwaysOn);
 					json_key(&s, "IBRS_Preferred");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.IBRS_Preferred);
-					json_key(&s, "IBRS_ProtectMode");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.IBRS_ProtectMode);
+					json_key(&s, "IBRS_SameMode");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.IBRS_SameMode);
 					json_key(&s, "MSR_EFER_LMSLE");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.MSR_EFER_LMSLE);
 					json_key(&s, "TlbFlushNested");
@@ -1241,6 +1241,10 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.PPIN);
 					json_key(&s, "SSBD");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.SSBD);
+					json_key(&s, "SSBD_VirtSpecCtrl");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.SSBD_VirtSpecCtrl);
+					json_key(&s, "SSBD_NotRequired");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.SSBD_NotRequired);
 					json_key(&s, "CPPC");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.CPPC);
 					json_key(&s, "PSFD");
