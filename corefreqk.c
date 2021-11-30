@@ -1801,7 +1801,7 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Family_10h:
 	    {
 		CPUID_0x80000001 leaf80000001 = {
-			.EAX = {0}, .EBX = {0}, .ECX = {{0}}, .EDX = {{0}}
+			.EAX = {0}, .EBX = {{0}}, .ECX = {{0}}, .EDX = {{0}}
 		};
 
 		__asm__ volatile

@@ -1962,6 +1962,14 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	},
 	{
 		NULL,
+		Shm->Proc.Features.Power.EAX.ARAT == 1,
+		attr_Feat,
+		2, "%s%.*sARAT   [%7s]", RSC(FEATURES_ARAT).CODE(),
+		width - 19 - RSZ(FEATURES_ARAT),
+		NULL
+	},
+	{
+		NULL,
 		Shm->Proc.Features.ExtInfo.ECX.MP_Mode == 1,
 		attr_Feat,
 		2, "%s%.*sCMP Legacy   [%7s]", RSC(FEATURES_CORE_MP).CODE(),
@@ -2063,6 +2071,14 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sINVLPGB   [%7s]", RSC(FEATURES_INVLPGB).CODE(),
 		width - 22 - RSZ(FEATURES_INVLPGB),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.ExtFeature.EBX.INVPCID == 1,
+		attr_Feat,
+		2, "%s%.*sINVPCID   [%7s]", RSC(FEATURES_INVPCID).CODE(),
+		width - 22 - RSZ(FEATURES_INVPCID),
 		NULL
 	},
 	{

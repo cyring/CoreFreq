@@ -842,7 +842,7 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 		SMEP		:  8-7, /* x86: Supervisor-Mode exec.	*/
 		BMI2		:  9-8, /* Common x86			*/
 		FastStrings	: 10-9, /* Enhanced REP MOVSB/STOSB	*/
-		INVPCID		: 11-10, /* Process-Context Identifiers */
+		INVPCID 	: 11-10, /* Invalidate TLB in Specified PCID*/
 		RTM		: 12-11, /* Restricted Transactional Memory */
 		PQM		: 13-12, /* Intel RDT-M capability ?	*/
 		FPU_CS_DS	: 14-13,
@@ -1008,12 +1008,19 @@ typedef struct
 		ExtFamily	: 28-20,
 		Unused2 	: 32-28;
 	} EAX;
-	struct { /* AMD reserved, same as CPUID(0x00000001)		*/
+	union { /* AMD reserved, same as CPUID(0x00000001)		*/
+	    struct {
 		unsigned int
 		Brand_ID	:  8-0,
 		CLFSH_Size	: 16-8,
 		Max_SMT_ID	: 24-16,
-		Init_APIC_ID	: 32-24; /* [31-28] PkgType:0=FP6,2=AM4 */
+		Init_APIC_ID	: 32-24;
+	    };
+	    struct {			/*	AMD Zen families	*/
+		unsigned int
+		Reserved	: 28-0,
+		PackageType	: 32-28; /* [31-28] PkgType:0=FP6,2=AM4 */
+	    };
 	} EBX;
     union
     {
@@ -1038,7 +1045,7 @@ typedef struct
 		SSE4A	:  7-6,
 		AlignSSE:  8-7,  /* Misaligned SSE mode.		*/
 		PREFETCH:  9-8,  /* 3DNow PREFETCH, PREFETCHW instruction. */
-		/* Families [15h - 17h]:				*/
+		/* Families [10h, 15h - 17h]:				*/
 		OSVW	: 10-9,  /* OS-visible workaround support.	*/
 		IBS	: 11-10, /* Instruction based sampling.		*/
 		XOP	: 12-11, /* Extended operation support.		*/
@@ -1215,20 +1222,20 @@ typedef struct	/* Processor Capacity Leaf.				*/
 		INT_WBINVD	: 14-13, /* Interruptible WBINVD,WBNOINVD */
 		IBRS		: 15-14, /* IBR Speculation		*/
 		STIBP		: 16-15, /* Single Thread Indirect Branch Pred*/
-		Reserved4	: 17-16,
+		IBRS_AlwaysOn	: 17-16,
 		STIBP_AlwaysOn	: 18-17,
 		IBRS_Preferred	: 19-18,
 		IBRS_ProtectMode: 20-19,
 		MSR_EFER_LMSLE	: 21-20,
 		TlbFlushNested	: 22-21,
-		Reserved5	: 23-22,
+		Reserved4	: 23-22,
 		PPIN		: 24-23, /* Protected Processor Inventory Num */
 		SSBD		: 25-24, /* Speculative Store Bypass Disable */
-		Reserved6	: 26-25,
+		SsbdVirtSpecCtrl: 26-25, /* Use VIRT_SPEC_CTL for SSBD */
 		SSBD_NotNeeded	: 27-26,
 		CPPC		: 28-27,
 		PSFD		: 29-28, /* 1: SPEC_CTRL_MSR is supported */
-		Reserved7	: 31-29,
+		Reserved5	: 31-29,
 		BranchSample	: 32-31;
 	} EBX;
 	struct { /* AMD reserved					*/

@@ -1227,6 +1227,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.STIBP);
 					json_key(&s, "STIBP_AlwaysOn");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.STIBP_AlwaysOn);
+					json_key(&s, "IBRS_AlwaysOn");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.IBRS_AlwaysOn);
 					json_key(&s, "IBRS_Preferred");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.leaf80000008.EBX.IBRS_Preferred);
 					json_key(&s, "IBRS_ProtectMode");

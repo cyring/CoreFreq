@@ -492,6 +492,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_100MHZ_CODE_FR	"100 MHz multiplier Control"
 #define RSC_FEATURES_ACPI_CODE_FR   "Advanced Configuration & Power Interface"
 #define RSC_FEATURES_APIC_CODE_FR   "Advanced Programmable Interrupt Controller"
+#define RSC_FEATURES_ARAT_CODE_FR	"APIC Timer Invariance"
 #define RSC_FEATURES_CORE_MP_CODE_FR	"Core Multi-Processing"
 #define RSC_FEATURES_CNXT_ID_CODE_FR	"L1 Data Cache Context ID"
 #define RSC_FEATURES_CPPC_CODE_FR	\
@@ -510,6 +511,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_HLE_CODE_FR	"Hardware Lock Elision"
 #define RSC_FEATURES_IBS_CODE_FR	"Instruction Based Sampling"
 #define RSC_FEATURES_INVLPGB_CODE_FR	"Instruction INVLPGB"
+#define RSC_FEATURES_INVPCID_CODE_FR	"Instruction INVPCID"
 #define RSC_FEATURES_LM_CODE_FR 	"Long Mode 64 bits"
 #define RSC_FEATURES_LWP_CODE_FR	"LightWeight Profiling"
 #define RSC_FEATURES_MBE_CODE_FR	"Memory Bandwidth Enforcement"
