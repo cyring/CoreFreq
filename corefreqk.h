@@ -1370,7 +1370,7 @@ static void Stop_Uncore_Skylake_X(void *arg) ;
 
 static void Power_ACCU_SKL_DEFAULT(PROC_RO *Pkg, unsigned int T) ;
 static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T) ;
-void (*Power_ACCU_Skylake)(PROC_RO*, unsigned int) = Power_ACCU_SKL_DEFAULT;
+static void (*Power_ACCU_Skylake)(PROC_RO*,unsigned int)=Power_ACCU_SKL_DEFAULT;
 
 extern void Query_Kaby_Lake(unsigned int cpu) ;
 static void PerCore_Kaby_Lake_Query(void *arg) ;
@@ -1429,13 +1429,13 @@ extern void InitTimer_AMD_F17h_Zen2_SP(unsigned int cpu) ;
 extern void InitTimer_AMD_F17h_Zen2_MP(unsigned int cpu) ;
 extern void InitTimer_AMD_F17h_Zen2_APU(unsigned int cpu) ;
 
-void Core_AMD_F17h_No_Thermal(CORE_RO *Core)
+static void Core_AMD_F17h_No_Thermal(CORE_RO *Core)
 {
 	UNUSED(Core);
 }
 static void CTL_AMD_Family_17h_Temp(CORE_RO *Core) ;
 static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core) ;
-void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
+static void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 
 #define     Query_AMD_F19h_PerSocket Query_AMD_F17h_PerSocket
 #define     Query_AMD_F19h_PerCluster Query_AMD_F17h_PerCluster
