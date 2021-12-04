@@ -1303,7 +1303,7 @@ void ClockToHz(CLOCK *clock)
 }
 
 /* [Genuine Intel] */
-CLOCK BaseClock_GenuineIntel(unsigned int ratio)
+static CLOCK BaseClock_GenuineIntel(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 100, .R = 0, .Hz = 100000000L};
 
@@ -1321,7 +1321,7 @@ CLOCK BaseClock_GenuineIntel(unsigned int ratio)
 };
 
 /* [Authentic AMD] */
-CLOCK BaseClock_AuthenticAMD(unsigned int ratio)
+static CLOCK BaseClock_AuthenticAMD(unsigned int ratio)
 {	/* For AMD Families 0Fh, 10h up to 16h */
 	CLOCK clock = {.Q = 100, .R = 0, .Hz = 100000000L};
 	UNUSED(ratio);
@@ -1329,7 +1329,7 @@ CLOCK BaseClock_AuthenticAMD(unsigned int ratio)
 };
 
 /* [Core] */
-CLOCK BaseClock_Core(unsigned int ratio)
+static CLOCK BaseClock_Core(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 100, .R = 0};
 	FSB_FREQ FSB = {.value = 0};
@@ -1358,7 +1358,7 @@ CLOCK BaseClock_Core(unsigned int ratio)
 };
 
 /* [Core2] */
-CLOCK BaseClock_Core2(unsigned int ratio)
+static CLOCK BaseClock_Core2(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 100, .R = 0};
 	FSB_FREQ FSB = {.value = 0};
@@ -1407,7 +1407,7 @@ CLOCK BaseClock_Core2(unsigned int ratio)
 };
 
 /* [Atom] */
-CLOCK BaseClock_Atom(unsigned int ratio)
+static CLOCK BaseClock_Atom(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 83, .R = 0};
 	FSB_FREQ FSB = {.value = 0};
@@ -1446,7 +1446,7 @@ CLOCK BaseClock_Atom(unsigned int ratio)
 };
 
 /* [Airmont] */
-CLOCK BaseClock_Airmont(unsigned int ratio)
+static CLOCK BaseClock_Airmont(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 87, .R = 5};
 	FSB_FREQ FSB = {.value = 0};
@@ -1500,7 +1500,7 @@ CLOCK BaseClock_Airmont(unsigned int ratio)
 };
 
 /* [Silvermont] */
-CLOCK BaseClock_Silvermont(unsigned int ratio)
+static CLOCK BaseClock_Silvermont(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 83, .R = 3};
 	FSB_FREQ FSB = {.value = 0};
@@ -1540,7 +1540,7 @@ CLOCK BaseClock_Silvermont(unsigned int ratio)
 };
 
 /* [Nehalem] */
-CLOCK BaseClock_Nehalem(unsigned int ratio)
+static CLOCK BaseClock_Nehalem(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 133, .R = 3333};
 	ClockToHz(&clock);
@@ -1549,7 +1549,7 @@ CLOCK BaseClock_Nehalem(unsigned int ratio)
 };
 
 /* [Westmere] */
-CLOCK BaseClock_Westmere(unsigned int ratio)
+static CLOCK BaseClock_Westmere(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 133, .R = 3333};
 	ClockToHz(&clock);
@@ -1558,7 +1558,7 @@ CLOCK BaseClock_Westmere(unsigned int ratio)
 };
 
 /* [SandyBridge] */
-CLOCK BaseClock_SandyBridge(unsigned int ratio)
+static CLOCK BaseClock_SandyBridge(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 100, .R = 0};
 	ClockToHz(&clock);
@@ -1567,7 +1567,7 @@ CLOCK BaseClock_SandyBridge(unsigned int ratio)
 };
 
 /* [IvyBridge] */
-CLOCK BaseClock_IvyBridge(unsigned int ratio)
+static CLOCK BaseClock_IvyBridge(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 100, .R = 0};
 	ClockToHz(&clock);
@@ -1576,7 +1576,7 @@ CLOCK BaseClock_IvyBridge(unsigned int ratio)
 };
 
 /* [Haswell] */
-CLOCK BaseClock_Haswell(unsigned int ratio)
+static CLOCK BaseClock_Haswell(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 100, .R = 0};
 	ClockToHz(&clock);
@@ -1585,7 +1585,7 @@ CLOCK BaseClock_Haswell(unsigned int ratio)
 };
 
 /* [Skylake] */
-CLOCK BaseClock_Skylake(unsigned int ratio)
+static CLOCK BaseClock_Skylake(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 100, .R = 0};
 
@@ -1619,7 +1619,7 @@ CLOCK BaseClock_Skylake(unsigned int ratio)
 	return clock;
 };
 
-CLOCK BaseClock_AMD_Family_17h(unsigned int ratio)
+static CLOCK BaseClock_AMD_Family_17h(unsigned int ratio)
 {	/* Source: AMD PPR Family 17h § 1.4/ Table 11: REFCLK = 100 MHz */
 	CLOCK clock = {.Q = 100, .R = 0, .Hz = 100000000L};
 	UNUSED(ratio);
@@ -2664,7 +2664,7 @@ static void Intel_Turbo_Cfg8C_PerCore(void *arg)
   }
 }
 
-long Intel_Turbo_Config8C(CLOCK_ARG *pClockMod)
+static long Intel_Turbo_Config8C(CLOCK_ARG *pClockMod)
 {
 	long rc = For_All_Turbo_Clock(pClockMod, Intel_Turbo_Cfg8C_PerCore);
 
@@ -3061,7 +3061,7 @@ long Skylake_X_Turbo_Config16C(CLOCK_ARG *pClockMod)
 	return rc;
 }
 
-long TurboClock_IvyBridge_EP(CLOCK_ARG *pClockMod)
+static long TurboClock_IvyBridge_EP(CLOCK_ARG *pClockMod)
 {
 	long rc = Intel_Turbo_Config8C(pClockMod);
 	if (rc >= RC_SUCCESS)
@@ -3078,7 +3078,7 @@ long TurboClock_IvyBridge_EP(CLOCK_ARG *pClockMod)
 	return rc;
 }
 
-long TurboClock_Haswell_EP(CLOCK_ARG *pClockMod)
+static long TurboClock_Haswell_EP(CLOCK_ARG *pClockMod)
 {
 	long rc = Intel_Turbo_Config8C(pClockMod);
 	if (rc >= RC_SUCCESS) {
@@ -3098,7 +3098,7 @@ long TurboClock_Haswell_EP(CLOCK_ARG *pClockMod)
 	return rc;
 }
 
-long TurboClock_Broadwell_EP(CLOCK_ARG *pClockMod)
+static long TurboClock_Broadwell_EP(CLOCK_ARG *pClockMod)
 {
 	long rc = Intel_Turbo_Config8C(pClockMod);
 	if (rc >= RC_SUCCESS) {
@@ -3118,7 +3118,7 @@ long TurboClock_Broadwell_EP(CLOCK_ARG *pClockMod)
 	return rc;
 }
 
-long TurboClock_Skylake_X(CLOCK_ARG *pClockMod)
+static long TurboClock_Skylake_X(CLOCK_ARG *pClockMod)
 {
 	long rc = Intel_Turbo_Config8C(pClockMod);
 	if (rc >= RC_SUCCESS) {
@@ -3278,7 +3278,7 @@ void SandyBridge_Uncore_Ratio(unsigned int cpu)
 				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)];
 }
 
-long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod)
+static long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod)
 {
 	long rc = RC_SUCCESS;
 	UNCORE_RATIO_LIMIT UncoreRatio = {.value = 0};
@@ -3697,9 +3697,6 @@ void AMD_SBRMI_Exit(void)
 	i2c_del_driver(&SBRMI_Driver);
 	PUBLIC(RO(Proc))->Registration.PFM = 0;
     }
-	pr_debug("AMD_SBRMI_Exit() > %d:%d",
-		PUBLIC(RO(Proc))->Registration.I2C,
-		PUBLIC(RO(Proc))->Registration.PFM);
 }
 
 signed int AMD_SBRMI_Init(void)
@@ -3715,10 +3712,7 @@ signed int AMD_SBRMI_Init(void)
 	} else {
 		rc = -EBUSY;
 	}
-    } else {
-	rc = -EPERM;
     }
-	pr_debug("AMD_SBRMI_Init() > %d",rc);
 	return rc;
 }
 
@@ -3764,7 +3758,7 @@ static int AMD_SBRMI_Remove(struct i2c_client *client)
 #else
 void AMD_SBRMI_Exec(struct i2c_client*, enum SBRMI_FUNC, unsigned int*) {}
 void AMD_SBRMI_Exit(void) {}
-signed int AMD_SBRMI_Init(void) {}
+signed int AMD_SBRMI_Init(void) { return 0; }
 #endif /* CONFIG_I2C */
 
 
@@ -5436,22 +5430,23 @@ void Query_Same_Genuine_Features(void)
 	}
 }
 
-void Query_GenuineIntel(unsigned int cpu)
+static void Query_GenuineIntel(unsigned int cpu)
 {
 	Query_Same_Genuine_Features();
 	Intel_Core_Platform_Info(cpu);
 	HyperThreading_Technology();
 }
 
-void Query_Core2(unsigned int cpu)
+static void Query_Core2(unsigned int cpu)
 {
 	Query_Same_Genuine_Features();
 	Intel_Core_Platform_Info(cpu);
 	HyperThreading_Technology();
 }
 
-void Query_Silvermont(unsigned int cpu) /* Tables 2-6, 2-7, 2-8(BT), 2-9(BT) */
-{	/*	Query the Min and Max frequency ratios			*/
+static void Query_Silvermont(unsigned int cpu)
+{					/* Tables 2-6, 2-7, 2-8(BT), 2-9(BT) */
+	/*	Query the Min and Max frequency ratios			*/
 	PLATFORM_INFO PfInfo = {.value = 0};
 	RDMSR(PfInfo, MSR_PLATFORM_INFO);
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = PfInfo.MinimumRatio;
@@ -5471,7 +5466,7 @@ void Query_Silvermont(unsigned int cpu) /* Tables 2-6, 2-7, 2-8(BT), 2-9(BT) */
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.Unit, MSR_RAPL_POWER_UNIT);
 }
 
-void Query_Goldmont(unsigned int cpu)	/* Tables 2-6, 2-12		*/
+static void Query_Goldmont(unsigned int cpu) /* Tables 2-6, 2-12	*/
 {
 	PLATFORM_INFO PfInfo = {.value = 0};
 	RDMSR(PfInfo, MSR_PLATFORM_INFO);
@@ -5489,25 +5484,25 @@ void Query_Goldmont(unsigned int cpu)	/* Tables 2-6, 2-12		*/
 	Intel_PowerInterface();
 }
 
-void Query_Airmont(unsigned int cpu)	/* Tables 2-6, 2-7, 2-8, 2-11	*/
+static void Query_Airmont(unsigned int cpu) /* Tables 2-6, 2-7, 2-8, 2-11 */
 {
 	Query_Silvermont(cpu);
 }
 
-void Query_Nehalem(unsigned int cpu)	/* Table 2-15			*/
+static void Query_Nehalem(unsigned int cpu)	/*	Table 2-15	*/
 {
 	Nehalem_Platform_Info(cpu);
 	HyperThreading_Technology();
 }
 
-void Query_Nehalem_EX(unsigned int cpu) /* Tables 2-15, 2-17		*/
+static void Query_Nehalem_EX(unsigned int cpu) /* Tables 2-15, 2-17	*/
 {
 	Query_Same_Genuine_Features();
 	Intel_Core_Platform_Info(cpu);
 	HyperThreading_Technology();
 }
 
-void Query_Avoton(unsigned int cpu)	/* Table 2-10			*/
+static void Query_Avoton(unsigned int cpu)	/*	Table 2-10	*/
 {
 	Nehalem_Platform_Info(cpu);
 	HyperThreading_Technology();
@@ -5515,7 +5510,7 @@ void Query_Avoton(unsigned int cpu)	/* Table 2-10			*/
 	Intel_PowerInterface();
 }
 
-void Query_SandyBridge(unsigned int cpu)
+static void Query_SandyBridge(unsigned int cpu)
 {
 	Nehalem_Platform_Info(cpu);
 	HyperThreading_Technology();
@@ -5523,12 +5518,12 @@ void Query_SandyBridge(unsigned int cpu)
 	Intel_PowerInterface();
 }
 
-void Query_SandyBridge_EP(unsigned int cpu)
+static void Query_SandyBridge_EP(unsigned int cpu)
 {
 	Query_SandyBridge(cpu);
 }
 
-void Query_IvyBridge(unsigned int cpu)
+static void Query_IvyBridge(unsigned int cpu)
 {
 	Nehalem_Platform_Info(cpu);
 	HyperThreading_Technology();
@@ -5536,7 +5531,7 @@ void Query_IvyBridge(unsigned int cpu)
 	Intel_PowerInterface();
 }
 
-void Query_IvyBridge_EP(unsigned int cpu)
+static void Query_IvyBridge_EP(unsigned int cpu)
 {
 	IvyBridge_EP_Platform_Info(cpu);
 	HyperThreading_Technology();
@@ -5544,7 +5539,7 @@ void Query_IvyBridge_EP(unsigned int cpu)
 	Intel_PowerInterface();
 }
 
-void Query_Haswell(unsigned int cpu)
+static void Query_Haswell(unsigned int cpu)
 {
 	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA)
 	{
@@ -5556,7 +5551,7 @@ void Query_Haswell(unsigned int cpu)
 	Intel_PowerInterface();
 }
 
-void Query_Haswell_EP(unsigned int cpu)
+static void Query_Haswell_EP(unsigned int cpu)
 {
 	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA)
 	{
@@ -5568,17 +5563,17 @@ void Query_Haswell_EP(unsigned int cpu)
 	Intel_PowerInterface();
 }
 
-void Query_Haswell_ULT(unsigned int cpu)
+static void Query_Haswell_ULT(unsigned int cpu)
 {
 	Query_IvyBridge(cpu);
 }
 
-void Query_Haswell_ULX(unsigned int cpu)
+static void Query_Haswell_ULX(unsigned int cpu)
 {
 	Query_IvyBridge(cpu);
 }
 
-void Query_Broadwell(unsigned int cpu)
+static void Query_Broadwell(unsigned int cpu)
 {
 	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA)
 	{
@@ -5591,13 +5586,13 @@ void Query_Broadwell(unsigned int cpu)
 	Intel_Hardware_Performance();
 }
 
-void Query_Broadwell_EP(unsigned int cpu)
+static void Query_Broadwell_EP(unsigned int cpu)
 {
 	Query_Haswell_EP(cpu);
 	Intel_Hardware_Performance();
 }
 
-void Query_Skylake(unsigned int cpu)
+static void Query_Skylake(unsigned int cpu)
 {
 	Query_Broadwell(cpu);
 
@@ -5606,13 +5601,13 @@ void Query_Skylake(unsigned int cpu)
 	Skylake_PowerControl();
 }
 
-void Query_Kaby_Lake(unsigned int cpu)
+static void Query_Kaby_Lake(unsigned int cpu)
 {
 	Power_ACCU_Skylake = Power_ACCU_SKL_PLATFORM;
 	Query_Skylake(cpu);
 }
 
-void Query_Skylake_X(unsigned int cpu)
+static void Query_Skylake_X(unsigned int cpu)
 {
 	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA)
 	{
@@ -5709,7 +5704,7 @@ void Query_VirtualMachine(unsigned int cpu)
 	HyperThreading_Technology();
 }
 
-void Query_AuthenticAMD(unsigned int cpu)
+static void Query_AuthenticAMD(unsigned int cpu)
 {	/*	Fallback algorithm for unspecified AMD architectures.	*/
 	PRIVATE(OF(Specific)) = LookupProcessor();
     if (PRIVATE(OF(Specific)) != NULL) {
@@ -5773,7 +5768,7 @@ unsigned short Compute_AMD_Family_0Fh_Boost(unsigned int cpu)
 	return SpecTurboRatio;
 }
 
-void Query_AMD_Family_0Fh(unsigned int cpu)
+static void Query_AMD_Family_0Fh(unsigned int cpu)
 {
 	PRIVATE(OF(Specific)) = LookupProcessor();
     if (PRIVATE(OF(Specific)) != NULL)
@@ -5807,7 +5802,7 @@ void Compute_AMD_Family_10h_Boost(unsigned int cpu)
 	}
 }
 
-void Query_AMD_Family_10h(unsigned int cpu)
+static void Query_AMD_Family_10h(unsigned int cpu)
 {
 	PRIVATE(OF(Specific)) = LookupProcessor();
     if (PRIVATE(OF(Specific)) != NULL)
@@ -5843,7 +5838,7 @@ void Compute_AMD_Family_11h_Boost(unsigned int cpu)
 	}
 }
 
-void Query_AMD_Family_11h(unsigned int cpu)
+static void Query_AMD_Family_11h(unsigned int cpu)
 {
 	PRIVATE(OF(Specific)) = LookupProcessor();
     if (PRIVATE(OF(Specific)) != NULL)
@@ -5879,7 +5874,7 @@ void Compute_AMD_Family_12h_Boost(unsigned int cpu)
 	}
 }
 
-void Query_AMD_Family_12h(unsigned int cpu)
+static void Query_AMD_Family_12h(unsigned int cpu)
 {
 	PRIVATE(OF(Specific)) = LookupProcessor();
     if (PRIVATE(OF(Specific)) != NULL)
@@ -5924,7 +5919,7 @@ void Compute_AMD_Family_14h_Boost(unsigned int cpu)
 	}	/*	Frequency @ MainPllOpFidMax (MHz)		*/
 }
 
-void Query_AMD_Family_14h(unsigned int cpu)
+static void Query_AMD_Family_14h(unsigned int cpu)
 {
 	PRIVATE(OF(Specific)) = LookupProcessor();
     if (PRIVATE(OF(Specific)) != NULL)
@@ -5980,7 +5975,7 @@ void Compute_AMD_Family_15h_Boost(unsigned int cpu)
     }
 }
 
-void Query_AMD_Family_15h(unsigned int cpu)
+static void Query_AMD_Family_15h(unsigned int cpu)
 {
 	Compute_AMD_Family_15h_Boost(cpu);
 	PUBLIC(RO(Proc))->Features.SpecTurboRatio = 6;
@@ -6409,7 +6404,7 @@ long For_All_AMD_Zen_BaseClock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void*))
 	return rc;
 }
 
-long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod)
+static long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod)
 {
   if (pClockMod != NULL) {
     if ((pClockMod->NC >= 1) && (pClockMod->NC <= 7))
@@ -6429,7 +6424,7 @@ long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod)
   }
 }
 
-long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
+static long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 {
   if (pClockMod != NULL) {
     switch (pClockMod->NC) {
@@ -6614,7 +6609,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	}
 }
 
-void Exit_AMD_Family_17h(void)
+static void Exit_AMD_Family_17h(void)
 {
 	AMD_SBRMI_Exit();
 }
@@ -6633,31 +6628,23 @@ void Query_AMD_SBRMI(void)
 	}
 }
 
-void Query_AMD_F17h_PerSocket(unsigned int cpu)
+static void Query_AMD_F17h_PerSocket(unsigned int cpu)
 {
-	int rc;
-
 	Core_AMD_Family_17h_Temp = CTL_AMD_Family_17h_Temp;
 	Query_AMD_Family_17h(cpu);
 
-	if ((rc = AMD_SBRMI_Init()) == 0) {
+	if (AMD_SBRMI_Init() == 0) {
 		Query_AMD_SBRMI();
-	} else {
-		pr_warn("CoreFreq: SBRMI Unreachable. Error %d\n", rc);
 	}
 }
 
-void Query_AMD_F17h_PerCluster(unsigned int cpu)
+static void Query_AMD_F17h_PerCluster(unsigned int cpu)
 {
-	int rc;
-
 	Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Zen2_Temp;
 	Query_AMD_Family_17h(cpu);
 
-	if ((rc = AMD_SBRMI_Init()) == 0) {
+	if (AMD_SBRMI_Init() == 0) {
 		Query_AMD_SBRMI();
-	} else {
-		pr_warn("CoreFreq: SBRMI Unreachable. Error %d\n", rc);
 	}
 }
 
@@ -7218,7 +7205,7 @@ long For_All_PPC_Clock(CLOCK_PPC_ARG *pClockPPC)
 	return rc;
 }
 
-long ClockMod_Core2_PPC(CLOCK_ARG *pClockMod)
+static long ClockMod_Core2_PPC(CLOCK_ARG *pClockMod)
 {
 	if (pClockMod != NULL) {
 		if (pClockMod->NC == CLOCK_MOD_TGT)
@@ -7238,7 +7225,7 @@ long ClockMod_Core2_PPC(CLOCK_ARG *pClockMod)
 	}
 }
 
-long ClockMod_Nehalem_PPC(CLOCK_ARG *pClockMod)
+static long ClockMod_Nehalem_PPC(CLOCK_ARG *pClockMod)
 {
 	if (pClockMod != NULL) {
 		if (pClockMod->NC == CLOCK_MOD_TGT)
@@ -7258,7 +7245,7 @@ long ClockMod_Nehalem_PPC(CLOCK_ARG *pClockMod)
 	}
 }
 
-long ClockMod_SandyBridge_PPC(CLOCK_ARG *pClockMod)
+static long ClockMod_SandyBridge_PPC(CLOCK_ARG *pClockMod)
 {
 	if (pClockMod != NULL) {
 		if (pClockMod->NC == CLOCK_MOD_TGT)
@@ -7351,7 +7338,7 @@ long For_All_HWP_Clock(CLOCK_HWP_ARG *pClockHWP)
 	return rc;
 }
 
-long ClockMod_Intel_HWP(CLOCK_ARG *pClockMod)
+static long ClockMod_Intel_HWP(CLOCK_ARG *pClockMod)
 {
 	if (PUBLIC(RO(Proc))->Features.HWP_Enable) {
 		if (pClockMod != NULL) {
@@ -11530,7 +11517,7 @@ static enum hrtimer_restart Cycle_VirtualMachine(struct hrtimer *pTimer)
 		return HRTIMER_NORESTART;
 }
 
-void InitTimer_VirtualMachine(unsigned int cpu)
+static void InitTimer_VirtualMachine(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_VirtualMachine, 1);
 }
@@ -11654,7 +11641,7 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 		return HRTIMER_NORESTART;
 }
 
-void InitTimer_GenuineIntel(unsigned int cpu)
+static void InitTimer_GenuineIntel(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_GenuineIntel, 1);
 }
@@ -11758,7 +11745,7 @@ static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
 		return HRTIMER_NORESTART;
 }
 
-void InitTimer_AuthenticAMD(unsigned int cpu)
+static void InitTimer_AuthenticAMD(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_AuthenticAMD, 1);
 }
@@ -11915,7 +11902,7 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 	return HRTIMER_NORESTART;
 }
 
-void InitTimer_Core2(unsigned int cpu)
+static void InitTimer_Core2(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_Core2, 1);
 }
@@ -12115,7 +12102,7 @@ static enum hrtimer_restart Cycle_Silvermont(struct hrtimer *pTimer)
 	return HRTIMER_NORESTART;
 }
 
-void InitTimer_Silvermont(unsigned int cpu)
+static void InitTimer_Silvermont(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_Silvermont, 1);
 }
@@ -12325,7 +12312,7 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 	return HRTIMER_NORESTART;
 }
 
-void InitTimer_Nehalem(unsigned int cpu)
+static void InitTimer_Nehalem(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_Nehalem, 1);
 }
@@ -12547,7 +12534,7 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 	return HRTIMER_NORESTART;
 }
 
-void InitTimer_SandyBridge(unsigned int cpu)
+static void InitTimer_SandyBridge(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_SandyBridge, 1);
 }
@@ -12776,7 +12763,7 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 	return Cycle_Intel_Xeon_EP(pTimer, PKG_Counters_SandyBridge_EP);
 }
 
-void InitTimer_SandyBridge_EP(unsigned int cpu)
+static void InitTimer_SandyBridge_EP(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_SandyBridge_EP, 1);
 }
@@ -12895,7 +12882,7 @@ static enum hrtimer_restart Cycle_IvyBridge_EP(struct hrtimer *pTimer)
 	return Cycle_Intel_Xeon_EP(pTimer, PKG_Counters_IvyBridge_EP);
 }
 
-void InitTimer_IvyBridge_EP(unsigned int cpu)
+static void InitTimer_IvyBridge_EP(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_IvyBridge_EP, 1);
 }
@@ -13108,7 +13095,7 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 	return HRTIMER_NORESTART;
 }
 
-void InitTimer_Haswell_ULT(unsigned int cpu)
+static void InitTimer_Haswell_ULT(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_Haswell_ULT, 1);
 }
@@ -13331,7 +13318,7 @@ static enum hrtimer_restart Cycle_Goldmont(struct hrtimer *pTimer)
 	return HRTIMER_NORESTART;
 }
 
-void InitTimer_Goldmont(unsigned int cpu)
+static void InitTimer_Goldmont(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_Goldmont, 1);
 }
@@ -13540,7 +13527,7 @@ static enum hrtimer_restart Cycle_Haswell_EP(struct hrtimer *pTimer)
 	return HRTIMER_NORESTART;
 }
 
-void InitTimer_Haswell_EP(unsigned int cpu)
+static void InitTimer_Haswell_EP(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_Haswell_EP, 1);
 }
@@ -13793,7 +13780,7 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 	return HRTIMER_NORESTART;
 }
 
-void InitTimer_Skylake(unsigned int cpu)
+static void InitTimer_Skylake(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_Skylake, 1);
 }
@@ -14016,7 +14003,7 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 	return HRTIMER_NORESTART;
 }
 
-void InitTimer_Skylake_X(unsigned int cpu)
+static void InitTimer_Skylake_X(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_Skylake_X, 1);
 }
@@ -14187,7 +14174,7 @@ static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 	return HRTIMER_NORESTART;
 }
 
-void InitTimer_AMD_Family_0Fh(unsigned int cpu)
+static void InitTimer_AMD_Family_0Fh(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_0Fh, 1);
 }
@@ -14483,7 +14470,7 @@ static enum hrtimer_restart Cycle_AMD_Family_15h(struct hrtimer *pTimer)
 	return HRTIMER_NORESTART;
 }
 
-void InitTimer_AMD_Family_15h(unsigned int cpu)
+static void InitTimer_AMD_Family_15h(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_15h, 1);
 }
@@ -14762,27 +14749,27 @@ static enum hrtimer_restart Cycle_AMD_F17h(struct hrtimer *pTimer)
 	return Entry_AMD_F17h(pTimer, Call_DFLT, 0, 0, 0LLU);
 }
 
-void InitTimer_AMD_Family_17h(unsigned int cpu)
+static void InitTimer_AMD_Family_17h(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h, 1);
 }
 
-void InitTimer_AMD_F17h_Zen(unsigned int cpu)
+static void InitTimer_AMD_F17h_Zen(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h_Zen, 1);
 }
 
-void InitTimer_AMD_F17h_Zen2_SP(unsigned int cpu)
+static void InitTimer_AMD_F17h_Zen2_SP(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h_Zen2_SP, 1);
 }
 
-void InitTimer_AMD_F17h_Zen2_MP(unsigned int cpu)
+static void InitTimer_AMD_F17h_Zen2_MP(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h_Zen2_MP, 1);
 }
 
-void InitTimer_AMD_F17h_Zen2_APU(unsigned int cpu)
+static void InitTimer_AMD_F17h_Zen2_APU(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h_Zen2_APU, 1);
 }

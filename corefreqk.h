@@ -1215,136 +1215,136 @@ typedef struct
 	MICRO_ARCH		*Architecture;
 } ARCH;
 
-extern CLOCK BaseClock_GenuineIntel(unsigned int ratio) ;
-extern CLOCK BaseClock_AuthenticAMD(unsigned int ratio) ;
-extern CLOCK BaseClock_Core(unsigned int ratio) ;
-extern CLOCK BaseClock_Core2(unsigned int ratio) ;
-extern CLOCK BaseClock_Atom(unsigned int ratio) ;
-extern CLOCK BaseClock_Airmont(unsigned int ratio) ;
-extern CLOCK BaseClock_Silvermont(unsigned int ratio) ;
-extern CLOCK BaseClock_Nehalem(unsigned int ratio) ;
-extern CLOCK BaseClock_Westmere(unsigned int ratio) ;
-extern CLOCK BaseClock_SandyBridge(unsigned int ratio) ;
-extern CLOCK BaseClock_IvyBridge(unsigned int ratio) ;
-extern CLOCK BaseClock_Haswell(unsigned int ratio) ;
-extern CLOCK BaseClock_Skylake(unsigned int ratio) ;
-extern CLOCK BaseClock_AMD_Family_17h(unsigned int ratio) ;
+static CLOCK BaseClock_GenuineIntel(unsigned int ratio) ;
+static CLOCK BaseClock_AuthenticAMD(unsigned int ratio) ;
+static CLOCK BaseClock_Core(unsigned int ratio) ;
+static CLOCK BaseClock_Core2(unsigned int ratio) ;
+static CLOCK BaseClock_Atom(unsigned int ratio) ;
+static CLOCK BaseClock_Airmont(unsigned int ratio) ;
+static CLOCK BaseClock_Silvermont(unsigned int ratio) ;
+static CLOCK BaseClock_Nehalem(unsigned int ratio) ;
+static CLOCK BaseClock_Westmere(unsigned int ratio) ;
+static CLOCK BaseClock_SandyBridge(unsigned int ratio) ;
+static CLOCK BaseClock_IvyBridge(unsigned int ratio) ;
+static CLOCK BaseClock_Haswell(unsigned int ratio) ;
+static CLOCK BaseClock_Skylake(unsigned int ratio) ;
+static CLOCK BaseClock_AMD_Family_17h(unsigned int ratio) ;
 #define BaseClock_AMD_Family_19h BaseClock_AMD_Family_17h
 
-extern long Intel_Turbo_Config8C(CLOCK_ARG *pClockMod) ;
-extern long TurboClock_IvyBridge_EP(CLOCK_ARG *pClockMod) ;
-extern long TurboClock_Haswell_EP(CLOCK_ARG *pClockMod) ;
-extern long TurboClock_Broadwell_EP(CLOCK_ARG *pClockMod) ;
-extern long TurboClock_Skylake_X(CLOCK_ARG *pClockMod) ;
-extern long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod) ;
+static long Intel_Turbo_Config8C(CLOCK_ARG *pClockMod) ;
+static long TurboClock_IvyBridge_EP(CLOCK_ARG *pClockMod) ;
+static long TurboClock_Haswell_EP(CLOCK_ARG *pClockMod) ;
+static long TurboClock_Broadwell_EP(CLOCK_ARG *pClockMod) ;
+static long TurboClock_Skylake_X(CLOCK_ARG *pClockMod) ;
+static long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod) ;
 
-extern long ClockMod_Core2_PPC(CLOCK_ARG *pClockMod) ;
-extern long ClockMod_Nehalem_PPC(CLOCK_ARG *pClockMod) ;
-extern long ClockMod_SandyBridge_PPC(CLOCK_ARG *pClockMod) ;
-extern long ClockMod_Intel_HWP(CLOCK_ARG *pClockMod) ;
+static long ClockMod_Core2_PPC(CLOCK_ARG *pClockMod) ;
+static long ClockMod_Nehalem_PPC(CLOCK_ARG *pClockMod) ;
+static long ClockMod_SandyBridge_PPC(CLOCK_ARG *pClockMod) ;
+static long ClockMod_Intel_HWP(CLOCK_ARG *pClockMod) ;
 #define     ClockMod_Broadwell_EP_HWP ClockMod_Intel_HWP
 #define     ClockMod_Skylake_HWP ClockMod_Intel_HWP
-extern long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod) ;
+static long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod) ;
 
-extern long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod) ;
+static long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod) ;
 
-extern void Query_GenuineIntel(unsigned int cpu) ;
+static void Query_GenuineIntel(unsigned int cpu) ;
 static void PerCore_Intel_Query(void *arg) ;
 static void Start_GenuineIntel(void *arg) ;
 static void Stop_GenuineIntel(void *arg) ;
-extern void InitTimer_GenuineIntel(unsigned int cpu) ;
+static void InitTimer_GenuineIntel(unsigned int cpu) ;
 
-extern void Query_AuthenticAMD(unsigned int cpu) ;
+static void Query_AuthenticAMD(unsigned int cpu) ;
 static void PerCore_AuthenticAMD_Query(void *arg) ;
 static void Start_AuthenticAMD(void *arg) ;
 static void Stop_AuthenticAMD(void *arg) ;
-extern void InitTimer_AuthenticAMD(unsigned int cpu) ;
+static void InitTimer_AuthenticAMD(unsigned int cpu) ;
 
-extern void Query_Core2(unsigned int cpu) ;
+static void Query_Core2(unsigned int cpu) ;
 static void PerCore_Core2_Query(void *arg) ;
 static void Start_Core2(void *arg) ;
 static void Stop_Core2(void *arg) ;
-extern void InitTimer_Core2(unsigned int cpu) ;
+static void InitTimer_Core2(unsigned int cpu) ;
 
-extern void Query_Silvermont(unsigned int cpu) ;
+static void Query_Silvermont(unsigned int cpu) ;
 static void PerCore_Silvermont_Query(void *arg) ;
 static void Start_Silvermont(void *arg) ;
 static void Stop_Silvermont(void *arg) ;
-extern void InitTimer_Silvermont(unsigned int cpu) ;
+static void InitTimer_Silvermont(unsigned int cpu) ;
 
-extern void Query_Goldmont(unsigned int cpu) ;
+static void Query_Goldmont(unsigned int cpu) ;
 static void PerCore_Goldmont_Query(void *arg) ;
 static void Start_Goldmont(void *arg) ;
 static void Stop_Goldmont(void *arg) ;
-extern void InitTimer_Goldmont(unsigned int cpu) ;
+static void InitTimer_Goldmont(unsigned int cpu) ;
 
-extern void Query_Airmont(unsigned int cpu) ;
+static void Query_Airmont(unsigned int cpu) ;
 static void PerCore_Airmont_Query(void *arg) ;
 
-extern void Query_Nehalem(unsigned int cpu) ;
+static void Query_Nehalem(unsigned int cpu) ;
 static void PerCore_Nehalem_Query(void *arg) ;
 static void PerCore_Nehalem_EX_Query(void *arg) ;
 static void Start_Nehalem(void *arg) ;
 static void Stop_Nehalem(void *arg) ;
-extern void InitTimer_Nehalem(unsigned int cpu) ;
+static void InitTimer_Nehalem(unsigned int cpu) ;
 static void Start_Uncore_Nehalem(void *arg) ;
 static void Stop_Uncore_Nehalem(void *arg) ;
 
-extern void Query_Nehalem_EX(unsigned int cpu) ;
+static void Query_Nehalem_EX(unsigned int cpu) ;
 
-extern void Query_Avoton(unsigned int cpu) ;
+static void Query_Avoton(unsigned int cpu) ;
 static void PerCore_Avoton_Query(void *arg) ;
 
-extern void Query_SandyBridge(unsigned int cpu) ;
+static void Query_SandyBridge(unsigned int cpu) ;
 static void PerCore_SandyBridge_Query(void *arg) ;
 static void Start_SandyBridge(void *arg) ;
 static void Stop_SandyBridge(void *arg) ;
-extern void InitTimer_SandyBridge(unsigned int cpu) ;
+static void InitTimer_SandyBridge(unsigned int cpu) ;
 static void Start_Uncore_SandyBridge(void *arg) ;
 static void Stop_Uncore_SandyBridge(void *arg) ;
 
-extern void Query_SandyBridge_EP(unsigned int cpu) ;
+static void Query_SandyBridge_EP(unsigned int cpu) ;
 static void PerCore_SandyBridge_EP_Query(void *arg) ;
 static void Start_SandyBridge_EP(void *arg) ;
 static void Stop_SandyBridge_EP(void *arg) ;
-extern void InitTimer_SandyBridge_EP(unsigned int cpu) ;
+static void InitTimer_SandyBridge_EP(unsigned int cpu) ;
 static void Start_Uncore_SandyBridge_EP(void *arg) ;
 static void Stop_Uncore_SandyBridge_EP(void *arg) ;
 
-extern void Query_IvyBridge(unsigned int cpu) ;
+static void Query_IvyBridge(unsigned int cpu) ;
 static void PerCore_IvyBridge_Query(void *arg) ;
 
-extern void Query_IvyBridge_EP(unsigned int cpu) ;
+static void Query_IvyBridge_EP(unsigned int cpu) ;
 static void PerCore_IvyBridge_EP_Query(void *arg) ;
 static void Start_IvyBridge_EP(void *arg) ;
 #define     Stop_IvyBridge_EP Stop_SandyBridge_EP
-extern void InitTimer_IvyBridge_EP(unsigned int cpu) ;
+static void InitTimer_IvyBridge_EP(unsigned int cpu) ;
 static void Start_Uncore_IvyBridge_EP(void *arg) ;
 static void Stop_Uncore_IvyBridge_EP(void *arg) ;
 
-extern void Query_Haswell(unsigned int cpu) ;
+static void Query_Haswell(unsigned int cpu) ;
 static void PerCore_Haswell_Query(void *arg) ;
 
-extern void Query_Haswell_EP(unsigned int cpu) ;
+static void Query_Haswell_EP(unsigned int cpu) ;
 static void PerCore_Haswell_EP_Query(void *arg) ;
 static void Start_Haswell_EP(void *arg) ;
 static void Stop_Haswell_EP(void *arg) ;
-extern void InitTimer_Haswell_EP(unsigned int cpu) ;
+static void InitTimer_Haswell_EP(unsigned int cpu) ;
 static void Start_Uncore_Haswell_EP(void *arg) ;
 static void Stop_Uncore_Haswell_EP(void *arg) ;
 
-extern void Query_Haswell_ULT(unsigned int cpu) ;
+static void Query_Haswell_ULT(unsigned int cpu) ;
 static void PerCore_Haswell_ULT_Query(void *arg) ;
 static void Start_Haswell_ULT(void *arg) ;
 static void Stop_Haswell_ULT(void *arg) ;
-extern void InitTimer_Haswell_ULT(unsigned int cpu) ;
+static void InitTimer_Haswell_ULT(unsigned int cpu) ;
 static void Start_Uncore_Haswell_ULT(void *arg) ;
 static void Stop_Uncore_Haswell_ULT(void *arg) ;
 
-extern void Query_Haswell_ULX(unsigned int cpu) ;
+static void Query_Haswell_ULX(unsigned int cpu) ;
 static void PerCore_Haswell_ULX(void *arg) ;
 
-extern void Query_Broadwell(unsigned int cpu) ;
+static void Query_Broadwell(unsigned int cpu) ;
 static void PerCore_Broadwell_Query(void *arg) ;
 #define     Start_Broadwell Start_SandyBridge
 #define     Stop_Broadwell Stop_SandyBridge
@@ -1352,21 +1352,21 @@ static void PerCore_Broadwell_Query(void *arg) ;
 #define     Start_Uncore_Broadwell Start_Uncore_SandyBridge
 #define     Stop_Uncore_Broadwell Stop_Uncore_SandyBridge
 
-extern void Query_Broadwell_EP(unsigned int cpu) ;
+static void Query_Broadwell_EP(unsigned int cpu) ;
 
-extern void Query_Skylake(unsigned int cpu) ;
+static void Query_Skylake(unsigned int cpu) ;
 static void PerCore_Skylake_Query(void *arg) ;
 static void Start_Skylake(void *arg) ;
 static void Stop_Skylake(void *arg) ;
-extern void InitTimer_Skylake(unsigned int cpu) ;
+static void InitTimer_Skylake(unsigned int cpu) ;
 static void Start_Uncore_Skylake(void *arg) ;
 static void Stop_Uncore_Skylake(void *arg) ;
 
-extern void Query_Skylake_X(unsigned int cpu) ;
+static void Query_Skylake_X(unsigned int cpu) ;
 static void PerCore_Skylake_X_Query(void *arg) ;
 static void Start_Skylake_X(void *arg) ;
 static void Stop_Skylake_X(void *arg) ;
-extern void InitTimer_Skylake_X(unsigned int cpu) ;
+static void InitTimer_Skylake_X(unsigned int cpu) ;
 static void Start_Uncore_Skylake_X(void *arg) ;
 static void Stop_Uncore_Skylake_X(void *arg) ;
 
@@ -1374,44 +1374,44 @@ static void Power_ACCU_SKL_DEFAULT(PROC_RO *Pkg, unsigned int T) ;
 static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T) ;
 static void (*Power_ACCU_Skylake)(PROC_RO*,unsigned int)=Power_ACCU_SKL_DEFAULT;
 
-extern void Query_Kaby_Lake(unsigned int cpu) ;
+static void Query_Kaby_Lake(unsigned int cpu) ;
 static void PerCore_Kaby_Lake_Query(void *arg) ;
 
-extern void Query_AMD_Family_0Fh(unsigned int cpu) ;
+static void Query_AMD_Family_0Fh(unsigned int cpu) ;
 static void PerCore_AMD_Family_0Fh_Query(void *arg) ;
 static void Start_AMD_Family_0Fh(void *arg) ;
 static void Stop_AMD_Family_0Fh(void *arg) ;
-extern void InitTimer_AMD_Family_0Fh(unsigned int cpu) ;
+static void InitTimer_AMD_Family_0Fh(unsigned int cpu) ;
 
-extern void Query_AMD_Family_10h(unsigned int cpu) ;
+static void Query_AMD_Family_10h(unsigned int cpu) ;
 static void PerCore_AMD_Family_10h_Query(void *arg) ;
 static void Start_AMD_Family_10h(void *arg) ;
 static void Stop_AMD_Family_10h(void *arg) ;
 #define     InitTimer_AMD_Family_10h InitTimer_AuthenticAMD
 
-extern void Query_AMD_Family_11h(unsigned int cpu) ;
+static void Query_AMD_Family_11h(unsigned int cpu) ;
 static void PerCore_AMD_Family_11h_Query(void *arg) ;
 static void Start_AMD_Family_11h(void *arg) ;
 #define     Stop_AMD_Family_11h Stop_AMD_Family_10h
 #define     InitTimer_AMD_Family_11h InitTimer_AuthenticAMD
 
-extern void Query_AMD_Family_12h(unsigned int cpu) ;
+static void Query_AMD_Family_12h(unsigned int cpu) ;
 static void PerCore_AMD_Family_12h_Query(void *arg) ;
 static void Start_AMD_Family_12h(void *arg) ;
 #define     Stop_AMD_Family_12h Stop_AMD_Family_10h
 #define     InitTimer_AMD_Family_12h InitTimer_AuthenticAMD
 
-extern void Query_AMD_Family_14h(unsigned int cpu) ;
+static void Query_AMD_Family_14h(unsigned int cpu) ;
 static void PerCore_AMD_Family_14h_Query(void *arg) ;
 static void Start_AMD_Family_14h(void *arg) ;
 #define     Stop_AMD_Family_14h Stop_AMD_Family_10h
 #define     InitTimer_AMD_Family_14h InitTimer_AuthenticAMD
 
-extern void Query_AMD_Family_15h(unsigned int cpu) ;
+static void Query_AMD_Family_15h(unsigned int cpu) ;
 static void PerCore_AMD_Family_15h_Query(void *arg) ;
 static void Start_AMD_Family_15h(void *arg) ;
 #define     Stop_AMD_Family_15h Stop_AMD_Family_10h
-extern void InitTimer_AMD_Family_15h(unsigned int cpu) ;
+static void InitTimer_AMD_Family_15h(unsigned int cpu) ;
 
 #define     Query_AMD_Family_16h Query_AMD_Family_15h
 static void PerCore_AMD_Family_16h_Query(void *arg) ;
@@ -1419,17 +1419,17 @@ static void PerCore_AMD_Family_16h_Query(void *arg) ;
 #define     Stop_AMD_Family_16h Stop_AMD_Family_15h
 #define     InitTimer_AMD_Family_16h InitTimer_AuthenticAMD
 
-extern void Exit_AMD_Family_17h(void) ;
-extern void Query_AMD_F17h_PerSocket(unsigned int cpu) ;
-extern void Query_AMD_F17h_PerCluster(unsigned int cpu) ;
+static void Exit_AMD_Family_17h(void) ;
+static void Query_AMD_F17h_PerSocket(unsigned int cpu) ;
+static void Query_AMD_F17h_PerCluster(unsigned int cpu) ;
 static void PerCore_AMD_Family_17h_Query(void *arg) ;
 static void Start_AMD_Family_17h(void *arg) ;
 static void Stop_AMD_Family_17h(void *arg) ;
-extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
-extern void InitTimer_AMD_F17h_Zen(unsigned int cpu) ;
-extern void InitTimer_AMD_F17h_Zen2_SP(unsigned int cpu) ;
-extern void InitTimer_AMD_F17h_Zen2_MP(unsigned int cpu) ;
-extern void InitTimer_AMD_F17h_Zen2_APU(unsigned int cpu) ;
+static void InitTimer_AMD_Family_17h(unsigned int cpu) ;
+static void InitTimer_AMD_F17h_Zen(unsigned int cpu) ;
+static void InitTimer_AMD_F17h_Zen2_SP(unsigned int cpu) ;
+static void InitTimer_AMD_F17h_Zen2_MP(unsigned int cpu) ;
+static void InitTimer_AMD_F17h_Zen2_APU(unsigned int cpu) ;
 
 static void Core_AMD_F17h_No_Thermal(CORE_RO *Core)
 {
