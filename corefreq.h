@@ -466,7 +466,8 @@ typedef struct
 	    struct {			/*  = 0: Disable, 1: Enable	*/
 		unsigned int	PFM	:  1-0,
 				I2C	:  2-1,
-				_pad32	: 32-2;
+				HSMP	:  3-2,
+				_pad32	: 32-3;
 	    };
 		KERNEL_DRIVER	Driver; /*0:Disable, 1:Enable, 2:Full-control*/
 	} Registration;

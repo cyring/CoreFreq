@@ -6518,6 +6518,15 @@ void PCI_Probe_Update(TGrid *grid, DATA_TYPE data)
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
+void HSMP_Registration_Update(TGrid *grid, DATA_TYPE data)
+{
+	const unsigned int bix = Shm->Registration.HSMP == 1;
+	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
+
+	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
+}
+
 void IdleRoute_Update(TGrid *grid, DATA_TYPE data)
 {
 	const ASCII *instructions[ROUTE_SIZE] = {
@@ -6685,6 +6694,15 @@ Window *CreateSettings(unsigned long long id)
 				attrib[bix] ),
 		PCI_Probe_Update );
 
+    if ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+     || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+    {
+	bix = (Shm->Registration.HSMP == 1);
+	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+				RSC(SETTINGS_HSMP_ENABLED).CODE(),
+				attrib[bix] ),
+		HSMP_Registration_Update );
+    }
 	bix = BITWISEAND(LOCKLESS, Shm->Registration.NMI, BIT_NMI_MASK) != 0;
 	GridCall( StoreTCell(	wSet, OPS_INTERRUPTS,
 				RSC(SETTINGS_NMI_REGISTERED).CODE(),

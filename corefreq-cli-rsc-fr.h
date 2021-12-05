@@ -871,6 +871,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_SETTINGS_CPU_HOTPLUG_CODE_FR    " Hot-Plug CPU             [   ] "
 #define RSC_SETTINGS_PCI_ENABLED_CODE_FR    " Activation PCI           [   ] "
+#define RSC_SETTINGS_HSMP_ENABLED_CODE_FR   " Activation HSMP          <   > "
 #define RSC_SETTINGS_NMI_REGISTERED_CODE_FR " Activation NMI           <   > "
 #define RSC_SETTINGS_CPUIDLE_REGISTERED_CODE_FR \
 					    " Pilote CPU-IDLE          <   > "
