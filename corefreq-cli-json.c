@@ -28,6 +28,7 @@ double timespecFloat(struct timespec time)
 
 void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 {
+	char hexStr[32];
 	signed int i = 0, i2 = 0, i3 = 0;
 	unsigned int cpu;
 	enum CRC_MANUFACTURER vendor = Shm->Proc.Features.Info.Vendor.CRC;
@@ -39,12 +40,16 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 	json_key(&s, "Registration");
 	{
 		json_start_object(&s);
+		json_key(&s, "AutoClock");
+		json_literal(&s, "%d", Shm->Registration.AutoClock);
 		json_key(&s, "Experimental");
 		json_literal(&s, "%d", Shm->Registration.Experimental);
 		json_key(&s, "HotPlug");
-		json_literal(&s, "%d", Shm->Registration.HotPlug);
+		json_literal(&s, "%d", !(Shm->Registration.HotPlug < 0));
 		json_key(&s, "PCI");
 		json_literal(&s, "%d", Shm->Registration.PCI);
+		json_key(&s, "HSMP");
+		json_literal(&s, "%d", Shm->Registration.HSMP);
 		json_key(&s, "Interrupt");
 		{
 			json_start_object(&s);
@@ -66,6 +71,20 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 		json_literal(&s, "%hu", Shm->Registration.Driver.Governor);
 		json_key(&s, "ClockSource");
 		json_literal(&s, "%hu", Shm->Registration.Driver.CS);
+		json_key(&s, "Scope");
+		{
+			json_start_object(&s);
+			snprintf(hexStr, 32, "0x%x", Shm->Proc.thermalFormula);
+			json_key(&s, "Thermal");
+			json_string(&s, hexStr);
+			snprintf(hexStr, 32, "0x%x", Shm->Proc.voltageFormula);
+			json_key(&s, "Voltage");
+			json_string(&s, hexStr);
+			snprintf(hexStr, 32, "0x%x", Shm->Proc.powerFormula);
+			json_key(&s, "Power");
+			json_string(&s, hexStr);
+			json_end_object(&s);
+		}
 		json_end_object(&s);
 	}
     if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
@@ -1814,7 +1833,7 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			{
 				json_start_object(&s);
 				json_key(&s, "Ratio");
-				json_literal(&s, "%u", Shm->Cpu[cpu].FlipFlop[i2].Absolute.Ratio.Perf);
+				json_literal(&s, "%f", Shm->Cpu[cpu].FlipFlop[i2].Absolute.Ratio.Perf);
 				json_key(&s, "Freq");
 				json_literal(&s, "%f", Shm->Cpu[cpu].FlipFlop[i2].Absolute.Freq);
 				json_end_object(&s);
@@ -1895,34 +1914,44 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 		json_key(&s, "SystemRegister");
 		{
 			json_start_object(&s);
+			snprintf(hexStr, 32, "0x%llx", Shm->Cpu[cpu].SystemRegister.RFLAGS);
 			json_key(&s, "RFLAGS");
-			json_literal(&s, "%llu", Shm->Cpu[cpu].SystemRegister.RFLAGS);
+			json_string(&s, hexStr);
+			snprintf(hexStr, 32, "0x%llx", Shm->Cpu[cpu].SystemRegister.CR0);
 			json_key(&s, "CR0");
-			json_literal(&s, "%llu", Shm->Cpu[cpu].SystemRegister.CR0);
+			json_string(&s, hexStr);
+			snprintf(hexStr, 32, "0x%llx", Shm->Cpu[cpu].SystemRegister.CR3);
 			json_key(&s, "CR3");
-			json_literal(&s, "%llu", Shm->Cpu[cpu].SystemRegister.CR3);
+			json_string(&s, hexStr);
+			snprintf(hexStr, 32, "0x%llx", Shm->Cpu[cpu].SystemRegister.CR4);
 			json_key(&s, "CR4");
-			json_literal(&s, "%llu", Shm->Cpu[cpu].SystemRegister.CR4);
+			json_string(&s, hexStr);
+			snprintf(hexStr, 32, "0x%llx", Shm->Cpu[cpu].SystemRegister.CR8);
 			json_key(&s, "CR8");
-			json_literal(&s, "%llu", Shm->Cpu[cpu].SystemRegister.CR8);
+			json_string(&s, hexStr);
+			snprintf(hexStr, 32, "0x%llx", Shm->Cpu[cpu].SystemRegister.EFCR);
 			json_key(&s, "EFCR");
-			json_literal(&s, "%llu", Shm->Cpu[cpu].SystemRegister.EFCR);
+			json_string(&s, hexStr);
+			snprintf(hexStr, 32, "0x%llx", Shm->Cpu[cpu].SystemRegister.EFER);
 			json_key(&s, "EFER");
-			json_literal(&s, "%llu", Shm->Cpu[cpu].SystemRegister.EFER);
+			json_string(&s, hexStr);
 			json_end_object(&s);
 		}
 		json_key(&s, "CpuID");
 		json_start_arr(&s);
 		for (i2 = 0; i2 < CPUID_MAX_FUNC; i2++) {
 			json_start_object(&s);
+			snprintf(hexStr, 32, "0x%x", Shm->Cpu[cpu].CpuID[i2].func);
 			json_key(&s, "func");
-			json_literal(&s, "%u", Shm->Cpu[cpu].CpuID[i2].func);
+			json_string(&s, hexStr);
+			snprintf(hexStr, 32, "0x%x", Shm->Cpu[cpu].CpuID[i2].sub);
 			json_key(&s, "sub");
-			json_literal(&s, "%u", Shm->Cpu[cpu].CpuID[i2].sub);
+			json_string(&s, hexStr);
 			json_key(&s, "reg");
 			json_start_arr(&s);
 			for (i3 = 0; i3 < 4; i3++) {
-				json_literal(&s, "%u", Shm->Cpu[cpu].CpuID[i2].reg[i3]);
+				snprintf(hexStr, 32, "0x%x", Shm->Cpu[cpu].CpuID[i2].reg[i3]);
+				json_string(&s, hexStr);
 			}
 			json_end_arr(&s);
 			json_end_object(&s);
