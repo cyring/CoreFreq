@@ -3596,23 +3596,6 @@ void Skylake_X_Platform_Info(unsigned int cpu)
     }
 }
 
-unsigned int AMD_HSMP_Exec(	enum HSMP_FUNC MSG_FUNC,
-				HSMP_ARG MSG_ARG[],
-				unsigned int HSMP_CmdRegister,
-				unsigned int HSMP_ArgRegister,
-				unsigned int HSMP_RspRegister,
-				unsigned int SMU_IndexRegister,
-				unsigned int SMU_DataRegister )
-{
-	return(AMD_HSMP_Mailbox(MSG_FUNC,
-				MSG_ARG,
-				HSMP_CmdRegister,
-				HSMP_ArgRegister,
-				HSMP_RspRegister,
-				SMU_IndexRegister,
-				SMU_DataRegister));
-}
-
 #ifdef CONFIG_I2C
 void AMD_SBRMI_Exec(	struct i2c_client *cli,
 			enum SBRMI_FUNC MSG_FUNC,
@@ -3761,6 +3744,23 @@ void AMD_SBRMI_Exit(void) {}
 signed int AMD_SBRMI_Init(void) { return 0; }
 #endif /* CONFIG_I2C */
 
+void Probe_AMD_DataFabric(void)
+{
+#ifdef CONFIG_AMD_NB
+    if (PUBLIC(RO(Proc))->Registration.Experimental) {
+	if (PRIVATE(OF(Zen)).Device.DF == NULL)
+	{
+		struct pci_dev *dev;
+		dev = pci_get_domain_bus_and_slot(0x0,0x0,PCI_DEVFN(0x18, 0x0));
+		if (dev != NULL)
+		{
+			PRIVATE(OF(Zen)).Device.DF = dev;
+			pci_dev_put(dev);
+		}
+	}
+    }
+#endif /* CONFIG_AMD_NB */
+}
 
 typedef void (*ROUTER)(void __iomem *mchmap, unsigned short mc);
 
@@ -5143,16 +5143,6 @@ static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev)
 	return (PCI_CALLBACK) 0;
 }
 
-#ifdef CONFIG_AMD_NB
-static PCI_CALLBACK AMD_17h_ZenIF(struct pci_dev *dev)
-{
-	if (PRIVATE(OF(ZenIF_dev)) == NULL) {
-		PRIVATE(OF(ZenIF_dev)) = dev;
-	}
-	return (PCI_CALLBACK) 0;
-}
-#endif /* CONFIG_AMD_NB */
-
 static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev)
 {
 /* Sources:
@@ -5211,7 +5201,7 @@ static void AMD_Zen_UMC(struct pci_dev *dev, unsigned int UMC_BAR,
 	const unsigned short slot = chip & 1;
 	unsigned short sec;
 
-	UMC_SMN_Read(
+	Core_AMD_SMN_Read(
 		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[slot].DAC,
 		SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x30 + (slot << 2), dev);
 
@@ -5221,7 +5211,7 @@ static void AMD_Zen_UMC(struct pci_dev *dev, unsigned int UMC_BAR,
 
 		addr[1] = CHIP_BAR[sec][1] + ((chip >> 1) << 2);
 
-		UMC_SMN_Read(	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
+		Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
 				.AMD17h.CHIP[chip][sec].Mask,
 				addr[1], dev );
 
@@ -5235,7 +5225,7 @@ static void AMD_Zen_UMC(struct pci_dev *dev, unsigned int UMC_BAR,
 
 		addr[0] = CHIP_BAR[sec][0] + ((chip - (chip > 2)) << 2);
 
-		UMC_SMN_Read(	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
+		Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
 				.AMD17h.CHIP[chip][sec].Chip,
 				addr[0], dev );
 
@@ -5245,71 +5235,71 @@ static void AMD_Zen_UMC(struct pci_dev *dev, unsigned int UMC_BAR,
 	    }
 	}
     }
-	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.SPAZ,
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.SPAZ,
 			UMC_BAR + 0x12c, dev );
 
-	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.MISC,
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.MISC,
 			UMC_BAR + 0x200, dev );
 
-	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR1,
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR1,
 			UMC_BAR + 0x204, dev );
 
-	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR2,
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR2,
 			UMC_BAR + 0x208, dev );
 
-	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR3,
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR3,
 			UMC_BAR + 0x20c, dev );
 
-	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR4,
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR4,
 			UMC_BAR + 0x210, dev );
 
-	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR5,
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR5,
 			UMC_BAR + 0x214, dev );
 
-	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR6,
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR6,
 			UMC_BAR + 0x218, dev );
 
-	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR7,
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR7,
 			UMC_BAR + 0x21c, dev );
 
-	UMC_SMN_Read( PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR8,
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR8,
 			UMC_BAR + 0x220, dev);
 
-	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR9,
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR9,
 			UMC_BAR + 0x224, dev );
 
-	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR10,
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR10,
 			UMC_BAR + 0x228, dev );
 
-	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR12,
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR12,
 			UMC_BAR + 0x230, dev );
 
-	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR13,
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR13,
 			UMC_BAR + 0x234, dev );
 
-	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR20,
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR20,
 			UMC_BAR + 0x250, dev );
 
-	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR21,
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR21,
 			UMC_BAR + 0x254, dev );
 
-	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR22,
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR22,
 			UMC_BAR + 0x258, dev );
 
-	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTRFC,
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTRFC,
 			UMC_BAR + 0x260, dev );
 
-	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR35,
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR35,
 			UMC_BAR + 0x28c, dev );
 
-	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.BGS,
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.BGS,
 			UMC_BAR + 0x58, dev );
 
-	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.BGS_ALT,
+  Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.BGS_ALT,
 			UMC_BAR + 0xd0, dev );
 }
 
-static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *pdev)
+static PCI_CALLBACK AMD_17h_DataFabric(struct pci_dev *pdev)
 {
 	struct pci_dev *dev;
 	unsigned short umc;
@@ -5322,36 +5312,36 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *pdev)
 
 	dev = pci_get_domain_bus_and_slot(pci_domain_nr(pdev->bus),
 					0x0, PCI_DEVFN(0x18 + umc, 0x0));
-    if (dev != NULL)
-    {
+   if (dev != NULL)
+   {
 		PUBLIC(RO(Proc))->Uncore.CtrlCount++;
 		PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount = 2;
 		PUBLIC(RO(Proc))->Uncore.MC[umc].SlotCount = 2;
 
-      for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount; cha++)
-      {
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount; cha++)
+    {
 	AMD_17_UMC_SDP_CTRL SDP_CTRL = {.value = 0};
 
-	UMC_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha].AMD17h.ECC,
+     Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha].AMD17h.ECC,
 			SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xdf4, dev);
 
-	UMC_SMN_Read(SDP_CTRL, SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x104, dev);
+     Core_AMD_SMN_Read(SDP_CTRL, SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x104, dev);
 
-	if ((SDP_CTRL.value != 0xffffffff) && (SDP_CTRL.SdpInit))
-	{
-		AMD_Zen_UMC(dev, SMU_AMD_UMC_BASE_CHA_F17H(cha), umc, cha);
-	}
-	if ((UMC_Clock == false)
-	&& PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha].AMD17h.MISC.MEMCLK)
-	{
+     if ((SDP_CTRL.value != 0xffffffff) && (SDP_CTRL.SdpInit))
+     {
+	AMD_Zen_UMC(dev, SMU_AMD_UMC_BASE_CHA_F17H(cha), umc, cha);
+     }
+     if ((UMC_Clock == false)
+      && PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha].AMD17h.MISC.MEMCLK)
+     {
 	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MAX)] = \
 	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] = \
 	    PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha].AMD17h.MISC.MEMCLK/3;
 	UMC_Clock = true;
-	}
-      }
-	pci_dev_put(dev);
+     }
     }
+	pci_dev_put(dev);
+   }
   }
 	return (PCI_CALLBACK) 0;
 }
@@ -6149,14 +6139,12 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	case AMD_Zen2_Ariel:
 		Core_AMD_SMN_Read(XtraCOF,
 				SMU_AMD_F17H_MATISSE_COF,
-				SMU_AMD_INDEX_REGISTER_F17H,
-				SMU_AMD_DATA_REGISTER_F17H);
+				PRIVATE(OF(Zen)).Device.DF);
 		break;
 	case AMD_EPYC_Rome_CPK:
 		Core_AMD_SMN_Read(XtraCOF,
 				SMU_AMD_F17H_ZEN2_MCM_COF,
-				SMU_AMD_INDEX_REGISTER_F17H,
-				SMU_AMD_DATA_REGISTER_F17H);
+				PRIVATE(OF(Zen)).Device.DF);
 		break;
 	}
 	if (XtraCOF.value != 0)
@@ -6462,21 +6450,18 @@ void Query_AMD_F17h_Power_Limits(CORE_RO *Core)
 	/*		Package Power Tracking				*/
 	Core_AMD_SMN_Read( PUBLIC(RO(Proc))->PowerThermal.Zen.PWR,
 				SMU_AMD_F17H_ZEN2_MCM_PWR,
-				SMU_AMD_INDEX_REGISTER_F17H,
-				SMU_AMD_DATA_REGISTER_F17H );
+				PRIVATE(OF(Zen)).Device.DF );
 	/*		Junction Temperature				*/
 	PUBLIC(RO(Proc))->PowerThermal.Param.Offset[0] = \
 				PUBLIC(RO(Proc))->PowerThermal.Zen.PWR.TjMax;
 	/*		Thermal Design Power				*/
 	Core_AMD_SMN_Read( PUBLIC(RO(Proc))->PowerThermal.Zen.TDP,
 				SMU_AMD_F17H_ZEN2_MCM_TDP,
-				SMU_AMD_INDEX_REGISTER_F17H,
-				SMU_AMD_DATA_REGISTER_F17H );
+				PRIVATE(OF(Zen)).Device.DF );
 	/*		Electric Design Current				*/
 	Core_AMD_SMN_Read( PUBLIC(RO(Proc))->PowerThermal.Zen.EDC,
 				SMU_AMD_F17H_ZEN2_MCM_EDC,
-				SMU_AMD_INDEX_REGISTER_F17H,
-				SMU_AMD_DATA_REGISTER_F17H );
+				PRIVATE(OF(Zen)).Device.DF );
 }
 
 void Query_AMD_Family_17h(unsigned int cpu)
@@ -6516,9 +6501,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	if (PUBLIC(RO(Proc))->Features.HSMP_Capable)
 	{ /* Mark the SMU as Enable if the reachability test is successful */
 		RESET_ARRAY(arg, 8, 0, .value);
-		rx = AMD_HSMP_Exec(	HSMP_TEST_MSG, arg, SMU_HSMP_F19H,
-					SMU_AMD_INDEX_REGISTER_F17H,
-					SMU_AMD_DATA_REGISTER_F17H );
+		rx = AMD_HSMP_Exec(HSMP_TEST_MSG, arg);
 	    if (rx == HSMP_RESULT_OK)
 	    {
 		PUBLIC(RO(Proc))->Features.HSMP_Enable = 1;
@@ -6533,9 +6516,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
 	{
 		RESET_ARRAY(arg, 8, 0, .value);
-		rx = AMD_HSMP_Exec(	HSMP_RD_SMU_VER, arg, SMU_HSMP_F19H,
-					SMU_AMD_INDEX_REGISTER_F17H,
-					SMU_AMD_DATA_REGISTER_F17H );
+		rx = AMD_HSMP_Exec(HSMP_RD_SMU_VER, arg);
 	    if (rx == HSMP_RESULT_OK)
 	    {
 		PUBLIC(RO(Proc))->Features.Factory.SMU.Version = arg[0].value;
@@ -6548,9 +6529,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
 	{
 		RESET_ARRAY(arg, 8, 0, .value);
-		rx = AMD_HSMP_Exec(	HSMP_RD_VERSION, arg, SMU_HSMP_F19H,
-					SMU_AMD_INDEX_REGISTER_F17H,
-					SMU_AMD_DATA_REGISTER_F17H );
+		rx = AMD_HSMP_Exec(HSMP_RD_VERSION, arg);
 	    if (rx == HSMP_RESULT_OK)
 	    {
 		PUBLIC(RO(Proc))->Features.Factory.SMU.Interface = arg[0].value;
@@ -6563,9 +6542,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
 	{
 		RESET_ARRAY(arg, 8, 0, .value);
-		rx = AMD_HSMP_Exec(	HSMP_RD_PKG_PL1, arg, SMU_HSMP_F19H,
-					SMU_AMD_INDEX_REGISTER_F17H,
-					SMU_AMD_DATA_REGISTER_F17H );
+		rx = AMD_HSMP_Exec(HSMP_RD_PKG_PL1, arg);
 	    if (rx == HSMP_RESULT_OK)
 	    {
 		PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
@@ -6578,16 +6555,14 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	    }
 	    else if (IS_HSMP_OOO(rx))
 	    {
-		PUBLIC(RO(Proc))->Features.HSMP_Enable =	\
-		PUBLIC(RO(Proc))->Features.TDP_Unlock = 0;
+		PUBLIC(RO(Proc))->Features.HSMP_Enable = \
+				PUBLIC(RO(Proc))->Features.TDP_Unlock = 0;
 	    }
 	}
 	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
 	{
 		RESET_ARRAY(arg, 8, 0, .value);
-		rx = AMD_HSMP_Exec(	HSMP_RD_MAX_PPT, arg, SMU_HSMP_F19H,
-					SMU_AMD_INDEX_REGISTER_F17H,
-					SMU_AMD_DATA_REGISTER_F17H );
+		rx = AMD_HSMP_Exec(HSMP_RD_MAX_PPT, arg);
 	    if (rx == HSMP_RESULT_OK)
 	    {
 		PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
@@ -6631,6 +6606,9 @@ void Query_AMD_SBRMI(void)
 static void Query_AMD_F17h_PerSocket(unsigned int cpu)
 {
 	Core_AMD_Family_17h_Temp = CTL_AMD_Family_17h_Temp;
+
+	Probe_AMD_DataFabric();
+
 	Query_AMD_Family_17h(cpu);
 
 	if (AMD_SBRMI_Init() == 0) {
@@ -6641,6 +6619,9 @@ static void Query_AMD_F17h_PerSocket(unsigned int cpu)
 static void Query_AMD_F17h_PerCluster(unsigned int cpu)
 {
 	Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Zen2_Temp;
+
+	Probe_AMD_DataFabric();
+
 	Query_AMD_Family_17h(cpu);
 
 	if (AMD_SBRMI_Init() == 0) {
@@ -7510,9 +7491,7 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 		unsigned int rx;
 		HSMP_ARG arg[8];
 		RESET_ARRAY(arg, 8, 0, .value);
-		rx = AMD_HSMP_Exec(	HSMP_RD_PROCHOT, arg, SMU_HSMP_F19H,
-					SMU_AMD_INDEX_REGISTER_F17H,
-					SMU_AMD_DATA_REGISTER_F17H );
+		rx = AMD_HSMP_Exec(HSMP_RD_PROCHOT, arg);
 	    if (rx == HSMP_RESULT_OK)
 	    {
 		PUBLIC(RO(Proc))->PowerThermal.Events=((arg[0].value & 0x1)<<1);
@@ -10120,20 +10099,21 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	TCTL_HTC HTC = {.value = 0};
 	unsigned int rx;
 	HSMP_ARG arg[8];
+
 	/*	Query the HTC and THERM_TRIP features from SMUTHM	*/
 	Core_AMD_SMN_Read(	HTC,
 				SMU_AMD_THM_TCTL_REGISTER_F17H + 0x4,
-				SMU_AMD_INDEX_REGISTER_F17H,
-				SMU_AMD_DATA_REGISTER_F17H );
+				PRIVATE(OF(Zen)).Device.DF );
 	if (HTC.HTC_EN) {
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TM2, Core->Bind);
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TM2, Core->Bind);
 	}
+
 	Core_AMD_SMN_Read(	ThermTrip,
 				SMU_AMD_THM_TCTL_REGISTER_F17H + 0x8,
-				SMU_AMD_INDEX_REGISTER_F17H,
-				SMU_AMD_DATA_REGISTER_F17H );
+				PRIVATE(OF(Zen)).Device.DF );
+
 	if (ThermTrip.THERM_TP_EN) {
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TM1, Core->Bind);
 	} else {
@@ -10163,15 +10143,11 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 		{
 			RESET_ARRAY(arg, 8, 0, .value);
 			arg[0].value = 1000 * TDP_Limit;
-			rx = AMD_HSMP_Exec(HSMP_WR_PKG_PL1, arg, SMU_HSMP_F19H,
-						SMU_AMD_INDEX_REGISTER_F17H,
-						SMU_AMD_DATA_REGISTER_F17H);
+			rx = AMD_HSMP_Exec(HSMP_WR_PKG_PL1, arg);
 		    if (rx == HSMP_RESULT_OK)
 		    {
 			RESET_ARRAY(arg, 8, 0, .value);
-			rx = AMD_HSMP_Exec(HSMP_RD_PKG_PL1, arg, SMU_HSMP_F19H,
-						SMU_AMD_INDEX_REGISTER_F17H,
-						SMU_AMD_DATA_REGISTER_F17H);
+			rx = AMD_HSMP_Exec(HSMP_RD_PKG_PL1, arg);
 		    }
 		    if (rx == HSMP_RESULT_OK)
 		    {
@@ -10181,8 +10157,8 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 		    }
 		    else if (IS_HSMP_OOO(rx))
 		    {
-			PUBLIC(RO(Proc))->Features.HSMP_Enable =	\
-			PUBLIC(RO(Proc))->Features.TDP_Unlock = 0;
+			PUBLIC(RO(Proc))->Features.HSMP_Enable = \
+				PUBLIC(RO(Proc))->Features.TDP_Unlock = 0;
 		    }
 		}
 	    }
@@ -11338,7 +11314,7 @@ void Core_AMD_Family_15_60h_Temp(CORE_RO *Core)
 {
 	TCTL_REGISTER TctlSensor = {.value = 0};
 
-	Core_AMD_SMN_Read(	TctlSensor,
+	PCI_AMD_SMN_Read(	TctlSensor,
 				SMU_AMD_THM_TCTL_REGISTER_F15H,
 				SMU_AMD_INDEX_REGISTER_F15H,
 				SMU_AMD_DATA_REGISTER_F15H );
@@ -11381,8 +11357,7 @@ static void CTL_AMD_Family_17h_Temp(CORE_RO *Core)
 
 	Core_AMD_SMN_Read(	TctlSensor,
 				SMU_AMD_THM_TCTL_REGISTER_F17H,
-				SMU_AMD_INDEX_REGISTER_F17H,
-				SMU_AMD_DATA_REGISTER_F17H );
+				PRIVATE(OF(Zen)).Device.DF );
 
 	Core->PowerThermal.Sensor = TctlSensor.CurTmp;
 
@@ -11399,8 +11374,7 @@ static void CTL_AMD_Family_17h_Temp(CORE_RO *Core)
 
 	Core_AMD_SMN_Read(	ThermTrip,
 				SMU_AMD_THM_TCTL_REGISTER_F17H + 0x8,
-				SMU_AMD_INDEX_REGISTER_F17H,
-				SMU_AMD_DATA_REGISTER_F17H );
+				PRIVATE(OF(Zen)).Device.DF );
 
 	if (ThermTrip.THERM_TP_EN) {
 		Core->PowerThermal.Events = ThermTrip.THERM_TP << 0;
@@ -11415,8 +11389,7 @@ static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 	Core_AMD_SMN_Read(	TccdSensor,
 				(SMU_AMD_THM_TCTL_CCD_REGISTER_F17H
 				+ (Core->T.Cluster.CCD << 2)),
-				SMU_AMD_INDEX_REGISTER_F17H,
-				SMU_AMD_DATA_REGISTER_F17H );
+				PRIVATE(OF(Zen)).Device.DF );
 
 	Core->PowerThermal.Sensor = TccdSensor.CurTmp;
 
@@ -11429,8 +11402,7 @@ static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 
 	Core_AMD_SMN_Read(	ThermTrip,
 				SMU_AMD_THM_TCTL_REGISTER_F17H + 0x8,
-				SMU_AMD_INDEX_REGISTER_F17H,
-				SMU_AMD_DATA_REGISTER_F17H );
+				PRIVATE(OF(Zen)).Device.DF );
 
 	if (ThermTrip.THERM_TP_EN) {
 		Core->PowerThermal.Events = ThermTrip.THERM_TP << 0;
@@ -11451,9 +11423,7 @@ static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 	unsigned int rx;						\
 	HSMP_ARG arg[8];						\
 	RESET_ARRAY(arg, 8, 0, .value);					\
-	rx = AMD_HSMP_Exec(	HSMP_RD_PROCHOT, arg, SMU_HSMP_F19H,	\
-				SMU_AMD_INDEX_REGISTER_F17H,		\
-				SMU_AMD_DATA_REGISTER_F17H );		\
+	rx = AMD_HSMP_Exec(HSMP_RD_PROCHOT, arg);			\
 	if (rx == HSMP_RESULT_OK)					\
 	{								\
 		Pkg->PowerThermal.Events = ((arg[0].value & 0x1) << 1); \
@@ -14655,15 +14625,13 @@ void Call_SVI(	const unsigned int plane0, const unsigned int plane1,
 
 	Core_AMD_SMN_Read(	SVI,
 				SMU_AMD_F17H_SVI(plane0),
-				SMU_AMD_INDEX_REGISTER_F17H,
-				SMU_AMD_DATA_REGISTER_F17H );
+				PRIVATE(OF(Zen)).Device.DF );
 
 	PUBLIC(RO(Proc))->PowerThermal.VID.CPU = SVI.VID;
 
 	Core_AMD_SMN_Read(	SVI,
 				SMU_AMD_F17H_SVI(plane1),
-				SMU_AMD_INDEX_REGISTER_F17H,
-				SMU_AMD_DATA_REGISTER_F17H );
+				PRIVATE(OF(Zen)).Device.DF );
 
 	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.VID;
 
@@ -14677,15 +14645,13 @@ void Call_SVI_APU(	const unsigned int plane0, const unsigned int plane1,
 
 	Core_AMD_SMN_Read(	SVI,
 				SMU_AMD_F17_60H_SVI(plane0),
-				SMU_AMD_INDEX_REGISTER_F17H,
-				SMU_AMD_DATA_REGISTER_F17H );
+				PRIVATE(OF(Zen)).Device.DF );
 
 	PUBLIC(RO(Proc))->PowerThermal.VID.CPU = SVI.VID;
 
 	Core_AMD_SMN_Read(	SVI,
 				SMU_AMD_F17_60H_SVI(plane1),
-				SMU_AMD_INDEX_REGISTER_F17H,
-				SMU_AMD_DATA_REGISTER_F17H );
+				PRIVATE(OF(Zen)).Device.DF );
 
 	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.VID;
 
@@ -15417,8 +15383,10 @@ static void CoreFreqK_Alt_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
 							pIdleDriver,
 							index );
 }
-static void CoreFreqK_Alt_S2_MWAIT_AMD_Handler(struct cpuidle_device *pIdleDevice,
-				struct cpuidle_driver *pIdleDriver, int index)
+static void CoreFreqK_Alt_S2_MWAIT_AMD_Handler(
+					struct cpuidle_device *pIdleDevice,
+					struct cpuidle_driver *pIdleDriver,
+						int index)
 {
 	Alternative_Computation_Of_Cycles_S2( CoreFreqK_S2_MWAIT_AMD_Handler,
 							pIdleDevice,
@@ -15426,8 +15394,10 @@ static void CoreFreqK_Alt_S2_MWAIT_AMD_Handler(struct cpuidle_device *pIdleDevic
 							index );
 }
 
-static void CoreFreqK_Alt_S2_HALT_AMD_Handler(struct cpuidle_device *pIdleDevice,
-				struct cpuidle_driver *pIdleDriver, int index)
+static void CoreFreqK_Alt_S2_HALT_AMD_Handler(
+					struct cpuidle_device *pIdleDevice,
+					struct cpuidle_driver *pIdleDriver,
+						int index)
 {
 	Alternative_Computation_Of_Cycles_S2( CoreFreqK_S2_HALT_AMD_Handler,
 							pIdleDevice,
@@ -15489,8 +15459,10 @@ static int CoreFreqK_Alt_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
 	return rx;
 }
 
-static int CoreFreqK_Alt_S2_MWAIT_AMD_Handler(struct cpuidle_device *pIdleDevice,
-				struct cpuidle_driver *pIdleDriver, int index)
+static int CoreFreqK_Alt_S2_MWAIT_AMD_Handler(
+					struct cpuidle_device *pIdleDevice,
+					struct cpuidle_driver *pIdleDriver,
+						int index)
 {
 #if (RHEL_MAJOR == 8)
 	int rx = index;
@@ -18330,8 +18302,8 @@ static void CoreFreqK_Ignition_Level_Down(void)
 
 static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 {
-	BIT_ATOM_INIT(PRIVATE(OF(AMD_SMN_LOCK)), ATOMIC_SEED);
-	BIT_ATOM_INIT(PRIVATE(OF(AMD_FCH_LOCK)), ATOMIC_SEED);
+	BIT_ATOM_INIT(PRIVATE(OF(Zen)).AMD_SMN_LOCK, ATOMIC_SEED);
+	BIT_ATOM_INIT(PRIVATE(OF(Zen)).AMD_FCH_LOCK, ATOMIC_SEED);
 
 	switch (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC) {
 	case CRC_INTEL: {
