@@ -625,7 +625,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_POWER_THERMAL_DUTY_CODE_FR	"Cycle de service"
 #define RSC_POWER_THERMAL_MGMT_CODE_FR	"Gestion de la puissance"
 #define RSC_POWER_THERMAL_BIAS_CODE_FR	"R""\xa8""gle ""\xa9""nerg""\xa9""tique"
-#define RSC_POWER_THERMAL_TJMAX_CODE_FR "Temp""\xa9""rature de jonction"
+#define RSC_POWER_THERMAL_TJMAX_CODE_FR "Temp""\xa9""rature Offset:Jonction"
 #define RSC_POWER_THERMAL_DTS_CODE_FR	"Capteur thermique num""\xa9""rique"
 #define RSC_POWER_THERMAL_PLN_CODE_FR	"Notification de puissance"
 #define RSC_POWER_THERMAL_PTM_CODE_FR	"Gestion thermique du Package"

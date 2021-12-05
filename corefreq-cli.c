@@ -7041,7 +7041,7 @@ Window *CreateSysInfo(unsigned long long id)
 		winOrigin.col = 23;
 		matrixSize.hth = 14;
 		winOrigin.row = TOP_HEADER_ROW + 5;
-		winWidth = 50;
+		winWidth = 60;
 		SysInfoFunc = SysInfoTech;
 		title = RSC(TECHNOLOGIES_TITLE).CODE();
 		}
@@ -7059,7 +7059,7 @@ Window *CreateSysInfo(unsigned long long id)
 		winOrigin.col = 25;
 		matrixSize.hth = 21;
 		winOrigin.row = TOP_HEADER_ROW + 2;
-		winWidth = 50;
+		winWidth = 60;
 		SysInfoFunc = SysInfoPwrThermal;
 		title = RSC(POWER_THERMAL_TITLE).CODE();
 		}
