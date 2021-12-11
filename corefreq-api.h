@@ -697,6 +697,7 @@ typedef struct
 			SKL_CAPID_A		SKL_Cap_A;
 			SKL_CAPID_B		SKL_Cap_B;
 			SKL_CAPID_C		SKL_Cap_C;
+			SKL_SA_PLL_RATIOS	SKL_SA_Pll;
 		};
 		struct {
 			RKL_CAPID_A		RKL_Cap_A;

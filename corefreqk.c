@@ -4310,6 +4310,11 @@ void Query_HSW_IMC(void __iomem *mchmap, unsigned short mc)
     }
 }
 
+inline void SKL_SA(void __iomem *mchmap)
+{
+	PUBLIC(RO(Proc))->Uncore.Bus.SKL_SA_Pll.value = readl(mchmap+0x5918);
+}
+
 void Query_SKL_IMC(void __iomem *mchmap, unsigned short mc)
 {	/*Source: 6th & 7th Generation Intel® Processor for S-Platforms Vol 2*/
 	unsigned short cha;
@@ -4372,6 +4377,7 @@ void Query_SKL_IMC(void __iomem *mchmap, unsigned short mc)
     }
     if (mc == 0) {
 	Query_Turbo_TDP_Config(mchmap);
+	SKL_SA(mchmap);
     }
 }
 
@@ -5021,27 +5027,6 @@ static PCI_CALLBACK SKL_IMC(struct pci_dev *dev)
 	return SKL_HOST(dev, Query_SKL_IMC, 0x8000, 0);
 }
 
-/* TODO(Hardware missing)
-static PCI_CALLBACK SKL_SA(struct pci_dev *dev)
-{
-	SKL_SA_PLL_RATIOS PllRatios = {.value = 0};
-
-	pci_read_config_dword(dev, 0x5918, &PllRatios.value);
-
-	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MAX)] = PllRatios.UCLK;
-	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] = 0;
-
-	pci_read_config_dword(dev, 0xe4,
-				&PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_A.value);
-
-	pci_read_config_dword(dev, 0xe8,
-				&PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_B.value);
-
-	return Router(dev, 0x48, 64, 0x8000, Query_SKL_IMC, 0);
-
-	return 0;
-}
-*/
 static PCI_CALLBACK CML_PCH(struct pci_dev *dev)
 {
 	UNUSED(dev);

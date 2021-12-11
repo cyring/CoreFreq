@@ -3362,7 +3362,7 @@ typedef union
 		ICLK		: 24-16,
 		UCLK		: 32-24;
 	};
-} SKL_SA_PLL_RATIOS;	/* 06_4E/06_5E					*/
+} SKL_SA_PLL_RATIOS;	/* 06_4E/06_5E/06_9E				*/
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset E4h 			*/

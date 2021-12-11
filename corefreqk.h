@@ -1844,9 +1844,6 @@ static PCI_CALLBACK SNB_EP_TAD_CTRL1_CHA2(struct pci_dev *dev) ;
 static PCI_CALLBACK SNB_EP_TAD_CTRL1_CHA3(struct pci_dev *dev) ;
 static PCI_CALLBACK HSW_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK SKL_IMC(struct pci_dev *dev) ;
-/* TODO:
-static PCI_CALLBACK SKL_SA(struct pci_dev *dev) ;
-*/
 static PCI_CALLBACK CML_PCH(struct pci_dev *dev) ;
 #define RKL_PCH CML_PCH
 static PCI_CALLBACK RKL_IMC(struct pci_dev *dev) ;

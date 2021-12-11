@@ -3936,7 +3936,8 @@ void SKL_CAP(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		Shm->Uncore.Bus.Rate = 8000;	/* 8 GT/s DMI3 */
 		break;
 	}
-
+    if (RO(Proc)->Uncore.Bus.SKL_SA_Pll.QCLK == 0)
+    {
 	switch (DMFC) {
 	case 0b111:
 		Shm->Uncore.CtrlSpeed = 1067;
@@ -3961,7 +3962,17 @@ void SKL_CAP(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		Shm->Uncore.CtrlSpeed = 2667;
 		break;
 	}
+    } else {
+	unsigned long long Freq_Hz;
 
+	if (RO(Proc)->Uncore.Bus.SKL_SA_Pll.QCLK_REF == 0) {
+		Freq_Hz = 133333333LLU * RO(Proc)->Uncore.Bus.SKL_SA_Pll.QCLK;
+		Freq_Hz = Freq_Hz / 1000000LLU;
+	} else {
+		Freq_Hz = 100LLU * RO(Proc)->Uncore.Bus.SKL_SA_Pll.QCLK;
+	}
+	Shm->Uncore.CtrlSpeed = (unsigned short) Freq_Hz;
+    }
 	Shm->Uncore.Bus.Speed = (RO(Core)->Clock.Hz * Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.Factory.Clock.Hz;
 
