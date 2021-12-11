@@ -1961,7 +1961,7 @@ static void Map_AMD_Topology(void *arg)
 	      { 	/*		SMT is enabled .		*/
 			Core->T.ThreadID  = leaf8000001e.EAX.ExtApicId & 1;
 
-		/* CCD factor for [x24 ... x128] SMT Core Threadripper	*/
+		/* CCD factor for [x24 ... x128] SMT EPYC & Threadripper */
 		factor	=  (leaf80000008.ECX.NC == 0x7f)
 			|| (leaf80000008.ECX.NC == 0x3f)
 			|| (leaf80000008.ECX.NC == 0x2f)
@@ -1977,7 +1977,7 @@ static void Map_AMD_Topology(void *arg)
 	      { 	/*		SMT is disabled.		*/
 			Core->T.ThreadID  = 0;
 
-		/* CCD factor for [x12 ... x64] physical Core Threadripper */
+		/* CCD factor for [x12 ... x64] physical EPYC & Threadripper */
 		factor	=  (leaf80000008.ECX.NC == 0x3f)
 			|| (leaf80000008.ECX.NC == 0x1f)
 			|| (leaf80000008.ECX.NC == 0x17)
@@ -1989,6 +1989,8 @@ static void Map_AMD_Topology(void *arg)
 			 && ((PUBLIC(RO(Proc))->ArchID == AMD_EPYC_Rome_CPK)
 			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Chagall)));
 	      }
+		/* CCD has to remain within range values from 0 to 7	*/
+		factor = factor & (Core->T.CoreID < 32);
 
 		Core->T.Cluster.Node=leaf8000001e.ECX.NodeId;
 		Core->T.Cluster.CCD = (Core->T.CoreID >> 3) << factor;
