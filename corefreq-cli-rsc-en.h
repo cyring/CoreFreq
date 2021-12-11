@@ -1317,7 +1317,7 @@
 #define RSC_SETTINGS_EXPERIMENTAL_CODE_EN   " Experimental             <   > "
 #define RSC_SETTINGS_CPU_HOTPLUG_CODE_EN    " CPU Hot-Plug             [   ] "
 #define RSC_SETTINGS_PCI_ENABLED_CODE_EN    " PCI enablement           [   ] "
-#define RSC_SETTINGS_HSMP_ENABLED_CODE_EN   " HSMP enablement          <   > "
+#define RSC_SETTINGS_HSMP_ENABLED_CODE_EN   " HSMP enablement          [   ] "
 #define RSC_SETTINGS_NMI_REGISTERED_CODE_EN " NMI registered           <   > "
 #define RSC_SETTINGS_CPUIDLE_REGISTERED_CODE_EN \
 					    " CPU-IDLE driver          <   > "
