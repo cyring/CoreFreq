@@ -5946,7 +5946,23 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
 	}
 
+      switch (Shm->Uncore.Unit.DDR_Ver) {
+      case 2:
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_DRAM_DDR2_0).CODE());
+	break;
+      case 3:
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_DRAM_DDR3_0).CODE());
+	break;
+      case 4:
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_DRAM_DDR4_0).CODE());
+	break;
+      case 5:
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_DRAM_DDR5_0).CODE());
+	break;
+      default:
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_DRAM_SPEED_0).CODE());
+	break;
+      }
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_DRAM_SPEED_1).CODE());
 	PRT(IMC, attrib[1], "%5llu", Shm->Uncore.CtrlSpeed);
 	PRT(IMC, attrib[0], MC_Unit[Shm->Uncore.Unit.DDRSpeed], MC_MATY,HSPACE);
