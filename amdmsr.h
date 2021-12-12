@@ -1103,7 +1103,7 @@ typedef union
 
 /* Sources: drivers/edac/amd64_edac.h					*/
 #ifndef SMU_AMD_UMC_BASE_CHA_F17H
-	#define SMU_AMD_UMC_BASE_CHA_F17H(_cha)	(0x00050000 + (_cha << 20))
+	#define SMU_AMD_UMC_BASE_CHA_F17H(_cha) (0x00050000 + (_cha << 20))
 #endif
 
 /*
@@ -1264,17 +1264,18 @@ typedef union
 } AMD_17_UMC_ECC_CTRL;
 
 typedef union
-{	/* SMU: address = { 0x50df0 , 0x50df1 , 0x50df2 , 0x50df3 }	*/
+{	/* SMU: address = 0x50df0					*/
 	unsigned int		value;
 	struct
 	{
 		unsigned int
-		ReservedBits1	:  4-0,
-		Bit04		:  5-4,  /* when DIMM populated ?	*/
-		Bit05		:  6-5,  /* when DIMM populated ?	*/
-		ReservedBits2	: 16-6,
-		Bit16		: 17-16, /* when DIMM populated ?	*/
-		ReservedBits3	: 32-17;
+		DDR_MaxRate	:  8-0,
+		ReservedBits1	: 16-8,
+		Reg_DIMM_Dis	: 17-16, /* 1: RDIMM/LRDIMM support	*/
+		Disable 	: 18-17, /* 1: ECC Support disabled	*/
+		Encryption_Dis	: 19-18,
+		MemChannel_Dis	: 20-19,
+		ReservedBits2	: 32-20;
 	};
 } AMD_17_UMC_ECC_CAP;
 
@@ -1284,9 +1285,10 @@ typedef union
 	struct
 	{
 		unsigned int
-		ReservedBits	: 30-0,
-		Enable		: 31-30,
-		ChipKill	: 32-31;
+		DDR_MaxRateEnf	:  8-0,
+		ReservedBits	: 30-8,
+		Enable		: 31-30, /* 1: ECC logic configured	*/
+		ChipKill	: 32-31; /* 1: ECC chipkill configured	*/
 	};
 } AMD_17_UMC_ECC_CAP_HI;
 
