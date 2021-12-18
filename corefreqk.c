@@ -7681,7 +7681,6 @@ void ThermalMonitor_Set(CORE_RO *Core)
 	MISC_PROC_FEATURES MiscFeatures = {.value = 0};
 	THERM_STATUS ThermStatus = {.value = 0};
 	PLATFORM_INFO PfInfo = {.value = 0};
-	int ClearBit;
 	/* Silvermont + Xeon[06_57] + Nehalem + Sandy Bridge & superior arch. */
 	RDMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
 
@@ -7705,8 +7704,11 @@ void ThermalMonitor_Set(CORE_RO *Core)
 	ThermalMonitor2_Set(Core, MiscFeatures);
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask, Core->Bind);
-	/*	Clear Thermal Events if requested by User.		*/
-	ClearBit = 0;
+
+    if (PUBLIC(RO(Proc))->Features.Std.EDX.ACPI)
+    {	/*	Clear Thermal Events if requested by User.		*/
+	THERM_INTERRUPT ThermInterrupt = {.value = 0};
+	int ClearBit = 0;
 	RDMSR(ThermStatus, MSR_IA32_THERM_STATUS);
 
 	if (Clear_Events & EVENT_THERM_SENSOR) {
@@ -7738,10 +7740,32 @@ void ThermalMonitor_Set(CORE_RO *Core)
 		ThermStatus.XDomLimitLog = 0;
 		ClearBit = 1;
 	}
+
+	RDMSR(ThermInterrupt, MSR_IA32_THERM_INTERRUPT);
+
+	Core->ThermalPoint.Value[THM_THRESHOLD_1] = \
+						ThermInterrupt.Threshold1_Value;
+
+	Core->ThermalPoint.Value[THM_THRESHOLD_2] = \
+						ThermInterrupt.Threshold2_Value;
+	if (ThermInterrupt.Threshold1_Int) {
+		BITSET(LOCKLESS, Core->ThermalPoint.State, THM_THRESHOLD_1);
+	} else {
+		BITCLR(LOCKLESS, Core->ThermalPoint.State, THM_THRESHOLD_1);
+	}
+	BITSET(LOCKLESS, Core->ThermalPoint.Mask, THM_THRESHOLD_1);
+	BITCLR(LOCKLESS, Core->ThermalPoint.Kind, THM_THRESHOLD_1);
+
+	if (ThermInterrupt.Threshold2_Int) {
+		BITSET(LOCKLESS, Core->ThermalPoint.State, THM_THRESHOLD_2);
+	} else {
+		BITCLR(LOCKLESS, Core->ThermalPoint.State, THM_THRESHOLD_2);
+	}
+	BITSET(LOCKLESS, Core->ThermalPoint.Mask, THM_THRESHOLD_2);
+	BITCLR(LOCKLESS, Core->ThermalPoint.Kind, THM_THRESHOLD_2);
+
 	if (ClearBit)
 	{
-		THERM_INTERRUPT ThermInterrupt = {.value = 0};
-		RDMSR(ThermInterrupt, MSR_IA32_THERM_INTERRUPT);
 		if (!(ThermInterrupt.High_Temp_Int|ThermInterrupt.Low_Temp_Int))
 		{
 			WRMSR(ThermStatus, MSR_IA32_THERM_STATUS);
@@ -7757,9 +7781,9 @@ void ThermalMonitor_Set(CORE_RO *Core)
 		| (ThermStatus.CurLimitLog << 5)
 		| (ThermStatus.XDomLimitLog << 6);
 
-    if (PUBLIC(RO(Proc))->Features.Power.EAX.PTM
-    && (Core->Bind == PUBLIC(RO(Proc))->Service.Core))
-    {
+      if (PUBLIC(RO(Proc))->Features.Power.EAX.PTM
+      && (Core->Bind == PUBLIC(RO(Proc))->Service.Core))
+      {
 	ClearBit = 0;
 	ThermStatus.value = 0;
 	RDMSR(ThermStatus, MSR_IA32_PACKAGE_THERM_STATUS);
@@ -7785,10 +7809,36 @@ void ThermalMonitor_Set(CORE_RO *Core)
 		ThermStatus.PwrLimitLog = 0;
 		ClearBit = 1;
 	}
+
+	RDMSR(ThermInterrupt, MSR_IA32_PACKAGE_THERM_INTERRUPT);
+
+	PUBLIC(RO(Proc))->ThermalPoint.Value[THM_THRESHOLD_1] = \
+						ThermInterrupt.Threshold1_Value;
+
+	PUBLIC(RO(Proc))->ThermalPoint.Value[THM_THRESHOLD_2] = \
+						ThermInterrupt.Threshold2_Value;
+	if (ThermInterrupt.Threshold1_Int) {
+		BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State,
+				 THM_THRESHOLD_1);
+	} else {
+		BITCLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State,
+				 THM_THRESHOLD_1);
+	}
+	BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask, THM_THRESHOLD_1);
+	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind, THM_THRESHOLD_1);
+
+	if (ThermInterrupt.Threshold2_Int) {
+		BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State,
+				 THM_THRESHOLD_2);
+	} else {
+		BITCLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State,
+				 THM_THRESHOLD_2);
+	}
+	BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask, THM_THRESHOLD_2);
+	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind, THM_THRESHOLD_2);
+
 	if (ClearBit)
 	{
-		THERM_INTERRUPT ThermInterrupt = {.value = 0};
-		RDMSR(ThermInterrupt, MSR_IA32_PACKAGE_THERM_INTERRUPT);
 		if (!(ThermInterrupt.High_Temp_Int|ThermInterrupt.Low_Temp_Int))
 		{
 			WRMSR(ThermStatus, MSR_IA32_PACKAGE_THERM_STATUS);
@@ -7801,8 +7851,8 @@ void ThermalMonitor_Set(CORE_RO *Core)
 		| (ThermStatus.CriticalTempLog << 2)
 		| ((ThermStatus.Threshold1Log | ThermStatus.Threshold2Log) << 3)
 		| (ThermStatus.PwrLimitLog << 4);
+      }
     }
-
 	RDMSR(PfInfo, MSR_PLATFORM_INFO);
 
 	if (PfInfo.ProgrammableTj)
@@ -9075,6 +9125,10 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SMM	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->VM	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT	, Core->Bind);
+
+	BITWISECLR(LOCKLESS, Core->ThermalPoint.Mask);
+	BITWISECLR(LOCKLESS, Core->ThermalPoint.Kind);
+	BITWISECLR(LOCKLESS, Core->ThermalPoint.State);
 }
 
 static void PerCore_VirtualMachine(void *arg)
@@ -10091,22 +10145,48 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	Core_AMD_SMN_Read(	HTC,
 				SMU_AMD_THM_TCTL_REGISTER_F17H + 0x4,
 				PRIVATE(OF(Zen)).Device.DF );
+
+	PUBLIC(RO(Proc))->ThermalPoint.Value[THM_HTC_LIMIT] = HTC.HTC_TMP_LIMIT;
+	PUBLIC(RO(Proc))->ThermalPoint.Value[THM_HTC_HYST] = HTC.HTC_HYST_LIMIT;
+
 	if (HTC.HTC_EN) {
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TM2, Core->Bind);
+
+		BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State,
+				 THM_HTC_LIMIT);
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TM2, Core->Bind);
+
+		BITCLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State,
+				 THM_HTC_LIMIT);
 	}
+	BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask, THM_HTC_LIMIT);
+	BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind, THM_HTC_LIMIT);
+
+	BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State, THM_HTC_HYST);
+	BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask, THM_HTC_HYST);
+	BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind, THM_HTC_HYST);
 
 	Core_AMD_SMN_Read(	ThermTrip,
 				SMU_AMD_THM_TCTL_REGISTER_F17H + 0x8,
 				PRIVATE(OF(Zen)).Device.DF );
 
+	PUBLIC(RO(Proc))->ThermalPoint.Value[THM_TRIP_LIMIT] = \
+					ThermTrip.THERM_TP_LIMIT - 49;
 	if (ThermTrip.THERM_TP_EN) {
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TM1, Core->Bind);
+
+		BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State,
+				 THM_TRIP_LIMIT);
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TM1, Core->Bind);
+
+		BITCLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State,
+				 THM_TRIP_LIMIT);
 	}
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask, Core->Bind);
+	BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask, THM_TRIP_LIMIT);
+	BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind, THM_TRIP_LIMIT);
 	/*		Count CPB and XFR ratios			*/
 	if (CPB_State == true)
 	{
@@ -11521,6 +11601,9 @@ static void Stop_VirtualMachine(void *arg)
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
 		}
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State);
 	}
 	PerCore_Reset(Core);
 
@@ -11645,6 +11728,9 @@ static void Stop_GenuineIntel(void *arg)
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
 		}
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State);
 	}
 	PerCore_Reset(Core);
 
@@ -11749,6 +11835,9 @@ static void Stop_AuthenticAMD(void *arg)
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
 		}
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State);
 	}
 	PerCore_Reset(Core);
 
@@ -11909,6 +11998,9 @@ static void Stop_Core2(void *arg)
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
 		}
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State);
 	}
 	PerCore_Reset(Core);
 
@@ -12117,6 +12209,9 @@ static void Stop_Silvermont(void *arg)
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
 		}
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State);
 	}
 	PerCore_Reset(Core);
 
@@ -12321,6 +12416,9 @@ static void Stop_Nehalem(void *arg)
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
 		}
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State);
 	}
 	PerCore_Reset(Core);
 
@@ -12544,6 +12642,9 @@ static void Stop_SandyBridge(void *arg)
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
 		}
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State);
 	}
 	PerCore_Reset(Core);
 
@@ -12774,6 +12875,9 @@ static void Stop_SandyBridge_EP(void *arg)
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
 		}
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State);
 	}
 	PerCore_Reset(Core);
 
@@ -13105,6 +13209,9 @@ static void Stop_Haswell_ULT(void *arg)
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
 		}
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State);
 	}
 	PerCore_Reset(Core);
 
@@ -13328,6 +13435,9 @@ static void Stop_Goldmont(void *arg)
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
 		}
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State);
 	}
 	PerCore_Reset(Core);
 
@@ -13537,6 +13647,9 @@ static void Stop_Haswell_EP(void *arg)
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
 		}
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State);
 	}
 	PerCore_Reset(Core);
 
@@ -13791,6 +13904,9 @@ static void Stop_Skylake(void *arg)
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
 		}
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State);
 	}
 	PerCore_Reset(Core);
 
@@ -14013,6 +14129,9 @@ static void Stop_Skylake_X(void *arg)
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
 		}
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State);
 	}
 	PerCore_Reset(Core);
 
@@ -14176,6 +14295,9 @@ static void Stop_AMD_Family_0Fh(void *arg)
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
 		}
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State);
 	}
 	PerCore_Reset(Core);
 
@@ -14224,6 +14346,9 @@ static void Stop_AMD_Family_10h(void *arg)
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
 		}
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State);
 	}
 	PerCore_Reset(Core);
 
@@ -14781,6 +14906,9 @@ static void Stop_AMD_Family_17h(void *arg)
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
 		}
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind);
+		BITWISECLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State);
 	}
 	PerCore_Reset(Core);
 

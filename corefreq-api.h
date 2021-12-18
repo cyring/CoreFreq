@@ -361,6 +361,7 @@ typedef struct
 	} Delta __attribute__ ((aligned (8)));
 
 	POWER_THERMAL			PowerThermal;
+	THERMAL_POINT			ThermalPoint;
 
 	struct
 	{
@@ -876,6 +877,8 @@ typedef struct
 	    } Zen;
 	  };
 	} PowerThermal;
+
+	THERMAL_POINT		ThermalPoint;
 
 	struct {
 		struct {

@@ -1776,6 +1776,9 @@ void Package_Update(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc))
 	PowerInterface(Shm, RO(Proc));
 
 	Mitigation_1st_Stage(Shm, RO(Proc), RW(Proc));
+
+	memcpy(&Shm->Proc.ThermalPoint, &RO(Proc)->ThermalPoint,
+		sizeof(THERMAL_POINT));
 }
 
 typedef struct {
@@ -5654,6 +5657,9 @@ void PowerThermal(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 
 	Shm->Cpu[cpu].PowerThermal.HWP.Request.Energy_Pref = \
 		RO(Core, AT(cpu))->PowerThermal.HWP_Request.Energy_Pref;
+
+	memcpy(&Shm->Cpu[cpu].ThermalPoint, &RO(Core, AT(cpu))->ThermalPoint,
+		sizeof(THERMAL_POINT));
 }
 
 void SystemRegisters(SHM_STRUCT *Shm, RO(CORE) **RO(Core), unsigned int cpu)

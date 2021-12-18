@@ -153,6 +153,8 @@ typedef struct
 		} HWP;
 	} PowerThermal;
 
+	THERMAL_POINT			ThermalPoint;
+
 	struct {
 		struct {
 			double		Limit[SENSOR_LIMITS_DIM];
@@ -444,6 +446,8 @@ typedef struct
 					_Unused : 16-1;
 		} Feature;
 	} Power;
+
+	THERMAL_POINT			ThermalPoint;
 
 	signed int			ArchID;
 	enum HYPERVISOR 		HypervisorID;

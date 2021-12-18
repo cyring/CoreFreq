@@ -645,6 +645,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_POWER_THERMAL_TPL_CODE_FR	"Limite de puissance"
 #define RSC_POWER_THERMAL_EDC_CODE_FR	"Limite de courant sup""\xa9""rieure"
 #define RSC_POWER_THERMAL_TDC_CODE_FR	"Limite de courant sup""\xa9""rieure"
+#define RSC_POWER_THERMAL_POINT_CODE_FR "Seuil thermique"
+#define RSC_THERMAL_POINT_THRESHOLD_CODE_FR "Threshold"
+#define RSC_THERMAL_POINT_LIMIT_CODE_FR "Limite"
 
 #define RSC_KERNEL_TITLE_CODE_FR	" Noyau "
 #define RSC_KERNEL_TOTAL_RAM_CODE_FR	"RAM totale"

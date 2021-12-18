@@ -4020,7 +4020,6 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		 - RSZ(POWER_THERMAL_MAX), hSpace,
 		RSC(POWER_LABEL_MAX).CODE(), POWERED(0) );
     }
-    {
 	struct {
 		const ASCII *code;
 		const int size;
@@ -4113,7 +4112,6 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 			PL2_Update, pw );
 	  }
 	}
-    }
     if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	 || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
@@ -4158,6 +4156,60 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 18 - RSZ(POWER_THERMAL_TDC), hSpace,
 		RSC(POWER_LABEL_TDC).CODE(), POWERED(0) );
     }
+
+	PUT(	SCANKEY_NULL, attrib[0], width, 2, "%s %s",
+		RSC(POWER_LABEL_CORE).CODE(), RSC(POWER_THERMAL_POINT).CODE() );
+
+	enum THM_POINTS tp;
+    for (tp = THM_THRESHOLD_1; tp < THM_POINTS_DIM; tp++)
+    {
+	if (BITVAL(Shm->Cpu[Shm->Proc.Service.Core].ThermalPoint.Mask, tp)
+	  & BITVAL(Shm->Cpu[Shm->Proc.Service.Core].ThermalPoint.State, tp))
+	{
+	ASCII *code;
+	int size;
+	if (BITVAL(Shm->Cpu[Shm->Proc.Service.Core].ThermalPoint.Kind, tp)) {
+		code = RSC(THERMAL_POINT_LIMIT).CODE();
+		size = RSZ(THERMAL_POINT_LIMIT);
+	} else {
+		code = RSC(THERMAL_POINT_THRESHOLD).CODE();
+		size = RSZ(THERMAL_POINT_THRESHOLD);
+	}
+	PUT(	SCANKEY_NULL, attrib[5], width, 3,
+		"%s%.*s%s   [%5u %c]",
+		RSC(POWER_THERMAL_POINT).CODE(),
+		width - (OutFunc == NULL ? 18 : 16)
+		- RSZ(POWER_THERMAL_POINT) - size, hSpace, code,
+		Shm->Cpu[Shm->Proc.Service.Core].ThermalPoint.Value[tp], 'C');
+	}
+    }
+
+	PUT(	SCANKEY_NULL, attrib[0], width, 2, "%s %s",
+		RSC(POWER_LABEL_PKG).CODE(), RSC(POWER_THERMAL_POINT).CODE() );
+
+    for (tp = THM_THRESHOLD_1; tp < THM_POINTS_DIM; tp++)
+    {
+	if (BITVAL(Shm->Proc.ThermalPoint.Mask, tp)
+	  & BITVAL(Shm->Proc.ThermalPoint.State, tp))
+	{
+	ASCII *code;
+	int size;
+	if (BITVAL(Shm->Proc.ThermalPoint.Kind, tp)) {
+		code = RSC(THERMAL_POINT_LIMIT).CODE();
+		size = RSZ(THERMAL_POINT_LIMIT);
+	} else {
+		code = RSC(THERMAL_POINT_THRESHOLD).CODE();
+		size = RSZ(THERMAL_POINT_THRESHOLD);
+	}
+	PUT(	SCANKEY_NULL, attrib[5], width, 3,
+		"%s%.*s%s   [%5u %c]",
+		RSC(POWER_THERMAL_POINT).CODE(),
+		width - (OutFunc == NULL ? 18 : 16)
+		- RSZ(POWER_THERMAL_POINT) - size, hSpace, code,
+		Shm->Proc.ThermalPoint.Value[tp], 'C');
+	}
+    }
+
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		(char*) RSC(POWER_THERMAL_UNITS).CODE(), NULL );
 

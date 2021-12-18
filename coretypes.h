@@ -225,6 +225,23 @@ enum CSTATES_ENCODING {
 
 #define CSTATES_ENCODING_COUNT	12
 
+enum THM_POINTS {
+	THM_THRESHOLD_1,
+	THM_THRESHOLD_2,
+	THM_TRIP_LIMIT,
+	THM_HTC_LIMIT,
+	THM_HTC_HYST,
+	THM_POINTS_DIM
+};
+
+typedef struct
+{
+	Bit64		Mask,	/*	1=Thermal Point is specified	*/
+			Kind,	/*	0=Threshold ; 1=Limit		*/
+			State __attribute__ ((aligned (8))); /*1=Enabled*/
+	unsigned short	Value[THM_POINTS_DIM];
+} THERMAL_POINT;
+
 enum THERM_PWR_EVENTS {
 	EVENT_THERM_NONE	= 0b0000000,
 	EVENT_THERM_SENSOR	= 0b0000001,
