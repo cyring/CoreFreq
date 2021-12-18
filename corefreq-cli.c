@@ -3678,13 +3678,14 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 void PwrThermalUpdate(TGrid *grid, const unsigned int bix,const signed int pos,
 				const size_t len, const char *item)
 {
-	ATTRIBUTE *attrib[6] = {
+	ATTRIBUTE *attrib[7] = {
 		RSC(SYSINFO_PWR_THERMAL_COND0).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND1).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND2).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND3).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND4).ATTR(),
-		RSC(SYSINFO_PWR_THERMAL_COND5).ATTR()
+		RSC(SYSINFO_PWR_THERMAL_COND5).ATTR(),
+		RSC(SYSINFO_PWR_THERMAL_COND6).ATTR()
 	};
 	memcpy(&grid->cell.attr[pos], &attrib[bix][pos], len);
 	memcpy(&grid->cell.item[pos], item, len);
@@ -3735,15 +3736,20 @@ void TjMax_Update(TGrid *grid, DATA_TYPE data)
 	].FlipFlop[
 		!Shm->Cpu[Shm->Proc.Service.Core].Toggle
 	];
-	const signed int pos = grid->cell.length - 9;
-	char item[10+1+10+1];
+	const signed int pos = grid->cell.length - 11;
+	char item[10+1+10+2+1];
 	UNUSED(data);
 
-	StrFormat(item, 10+1+10+1, "%2u:%3u",
-		SFlop->Thermal.Param.Offset[1],
-		SFlop->Thermal.Param.Offset[0]);
-
-	memcpy(&grid->cell.item[pos], item, 6);
+	if (Setting.fahrCels) {
+		StrFormat(item, 10+1+10+2+1, "%3u:%3u F",
+			Cels2Fahr(SFlop->Thermal.Param.Offset[1]),
+			Cels2Fahr(SFlop->Thermal.Param.Offset[0]));
+	} else {
+		StrFormat(item, 10+1+10+2+1, "%3u:%3u C",
+			SFlop->Thermal.Param.Offset[1],
+			SFlop->Thermal.Param.Offset[0]);
+	}
+	memcpy(&grid->cell.item[pos], item, 9);
 }
 
 void TDP_State(TGrid *grid, DATA_TYPE data)
@@ -3759,13 +3765,14 @@ void TDP_State(TGrid *grid, DATA_TYPE data)
 
 void PCT_Update(TGrid *grid, const unsigned int bix, unsigned short value)
 {
-	ATTRIBUTE *attrib[6] = {
+	ATTRIBUTE *attrib[7] = {
 		RSC(SYSINFO_PWR_THERMAL_COND0).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND1).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND2).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND3).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND4).ATTR(),
-		RSC(SYSINFO_PWR_THERMAL_COND5).ATTR()
+		RSC(SYSINFO_PWR_THERMAL_COND5).ATTR(),
+		RSC(SYSINFO_PWR_THERMAL_COND6).ATTR()
 	};
 	const signed int pos = grid->cell.length - 9;
 	char item[6+1];
@@ -3808,13 +3815,14 @@ void TDC_Update(TGrid *grid, DATA_TYPE data)
 REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	REASON_INIT(reason);
-	ATTRIBUTE *attrib[6] = {
+	ATTRIBUTE *attrib[7] = {
 		RSC(SYSINFO_PWR_THERMAL_COND0).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND1).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND2).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND3).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND4).ATTR(),
-		RSC(SYSINFO_PWR_THERMAL_COND5).ATTR()
+		RSC(SYSINFO_PWR_THERMAL_COND5).ATTR(),
+		RSC(SYSINFO_PWR_THERMAL_COND6).ATTR()
 	};
 	const ASCII *TM[] = {
 		RSC(MISSING).CODE(),
@@ -3918,13 +3926,18 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		].PowerThermal.HWP.Request.Energy_Pref );
     }
   }
-	GridCall( PUT(	SCANKEY_NULL, attrib[5], width, 2,
-			"%s%.*s%s   [%2u:%3uC]",
+	GridCall( PUT(	SCANKEY_NULL, attrib[6], width, 2,
+			"%s%.*s%s [%3u:%3u %c]",
 			RSC(POWER_THERMAL_TJMAX).CODE(),
 			width - 20 - RSZ(POWER_THERMAL_TJMAX), hSpace,
 			RSC(POWER_LABEL_TJ).CODE(),
-			SFlop->Thermal.Param.Offset[1],
-			SFlop->Thermal.Param.Offset[0] ),
+			Setting.fahrCels ? Cels2Fahr(
+				SFlop->Thermal.Param.Offset[1]
+			) : SFlop->Thermal.Param.Offset[1],
+			Setting.fahrCels ? Cels2Fahr(
+				SFlop->Thermal.Param.Offset[0]
+			) : SFlop->Thermal.Param.Offset[0],
+			Setting.fahrCels ? 'F' : 'C' ),
 		TjMax_Update );
 
 	bix = (Shm->Proc.Features.Power.EAX.DTS == 1)
@@ -4157,6 +4170,32 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RSC(POWER_LABEL_TDC).CODE(), POWERED(0) );
     }
 
+	struct {
+		const ASCII *code;
+		const int size;
+	} thmPt[THM_POINTS_DIM] = {
+	[THM_THRESHOLD_1] = {
+		RSC(THERMAL_POINT_THRESHOLD_1).CODE(),
+		RSZ(THERMAL_POINT_THRESHOLD_1)
+		},
+	[THM_THRESHOLD_2] = {
+		RSC(THERMAL_POINT_THRESHOLD_2).CODE(),
+		RSZ(THERMAL_POINT_THRESHOLD_2)
+		},
+	[THM_TRIP_LIMIT] = {
+		RSC(THERMAL_POINT_TRIP_LIMIT).CODE(),
+		RSZ(THERMAL_POINT_TRIP_LIMIT)
+		},
+	[THM_HTC_LIMIT] = {
+		RSC(THERMAL_POINT_HTC_LIMIT).CODE(),
+		RSZ(THERMAL_POINT_HTC_LIMIT)
+		},
+	[THM_HTC_HYST] = {
+		RSC(THERMAL_POINT_HTC_HYST).CODE(),
+		RSZ(THERMAL_POINT_HTC_HYST)
+		},
+	};
+
 	PUT(	SCANKEY_NULL, attrib[0], width, 2, "%s %s",
 		RSC(POWER_LABEL_CORE).CODE(), RSC(POWER_THERMAL_POINT).CODE() );
 
@@ -4177,10 +4216,13 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	}
 	PUT(	SCANKEY_NULL, attrib[5], width, 3,
 		"%s%.*s%s   [%5u %c]",
-		RSC(POWER_THERMAL_POINT).CODE(),
-		width - (OutFunc == NULL ? 18 : 16)
-		- RSZ(POWER_THERMAL_POINT) - size, hSpace, code,
-		Shm->Cpu[Shm->Proc.Service.Core].ThermalPoint.Value[tp], 'C');
+		thmPt[tp].code,
+		width - (OutFunc == NULL ? 18 : 16) - thmPt[tp].size - size,
+		hSpace, code,
+		Setting.fahrCels ? Cels2Fahr(
+			Shm->Cpu[Shm->Proc.Service.Core].ThermalPoint.Value[tp]
+		) : Shm->Cpu[Shm->Proc.Service.Core].ThermalPoint.Value[tp],
+		Setting.fahrCels ? 'F' : 'C');
 	}
     }
 
@@ -4203,10 +4245,12 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	}
 	PUT(	SCANKEY_NULL, attrib[5], width, 3,
 		"%s%.*s%s   [%5u %c]",
-		RSC(POWER_THERMAL_POINT).CODE(),
-		width - (OutFunc == NULL ? 18 : 16)
-		- RSZ(POWER_THERMAL_POINT) - size, hSpace, code,
-		Shm->Proc.ThermalPoint.Value[tp], 'C');
+		thmPt[tp].code,
+		width - (OutFunc == NULL ? 18 : 16) - thmPt[tp].size - size,
+		hSpace, code,
+		Setting.fahrCels ? Cels2Fahr(Shm->Proc.ThermalPoint.Value[tp])
+				 : Shm->Proc.ThermalPoint.Value[tp],
+		Setting.fahrCels ? 'F' : 'C');
 	}
     }
 

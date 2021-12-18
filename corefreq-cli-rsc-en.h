@@ -998,8 +998,14 @@
 #define RSC_POWER_THERMAL_EDC_CODE_EN	"Electrical Design Current"
 #define RSC_POWER_THERMAL_TDC_CODE_EN	"Thermal Design Current"
 #define RSC_POWER_THERMAL_POINT_CODE_EN "Thermal Point"
-#define RSC_THERMAL_POINT_THRESHOLD_CODE_EN "Threshold"
-#define RSC_THERMAL_POINT_LIMIT_CODE_EN "Limit"
+
+#define RSC_THERMAL_POINT_THRESHOLD_CODE_EN	"Threshold"
+#define RSC_THERMAL_POINT_LIMIT_CODE_EN 	"Limit"
+#define RSC_THERMAL_POINT_THRESHOLD_1_CODE_EN	"DTS Threshold #1"
+#define RSC_THERMAL_POINT_THRESHOLD_2_CODE_EN	"DTS Threshold #2"
+#define RSC_THERMAL_POINT_TRIP_LIMIT_CODE_EN	"Thermal Monitor Trip"
+#define RSC_THERMAL_POINT_HTC_LIMIT_CODE_EN	"HTC Temperature Limit"
+#define RSC_THERMAL_POINT_HTC_HYST_CODE_EN	"HTC Temperature Hysteresis"
 
 #define RSC_KERNEL_TITLE_CODE_EN	" Kernel "
 #define RSC_KERNEL_TOTAL_RAM_CODE_EN	"Total RAM"

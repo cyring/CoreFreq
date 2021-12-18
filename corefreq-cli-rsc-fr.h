@@ -646,8 +646,19 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_POWER_THERMAL_EDC_CODE_FR	"Limite de courant sup""\xa9""rieure"
 #define RSC_POWER_THERMAL_TDC_CODE_FR	"Limite de courant sup""\xa9""rieure"
 #define RSC_POWER_THERMAL_POINT_CODE_FR "Seuil thermique"
-#define RSC_THERMAL_POINT_THRESHOLD_CODE_FR "Threshold"
-#define RSC_THERMAL_POINT_LIMIT_CODE_FR "Limite"
+
+#define RSC_THERMAL_POINT_THRESHOLD_CODE_FR	"Seuil"
+#define RSC_THERMAL_POINT_LIMIT_CODE_FR 	"Limite"
+#define RSC_THERMAL_POINT_THRESHOLD_1_CODE_FR	"Seuil DTS #1"
+#define RSC_THERMAL_POINT_THRESHOLD_2_CODE_FR	"Seuil DTS #2"
+#define RSC_THERMAL_POINT_TRIP_LIMIT_CODE_FR	"D""\xa9""clencheur du" \
+						" moniteur thermique"
+
+#define RSC_THERMAL_POINT_HTC_LIMIT_CODE_FR	"Limite de temp"	\
+						"\xa9""rature HTC"
+
+#define RSC_THERMAL_POINT_HTC_HYST_CODE_FR	"Hyst""\xa9""r""\xa9""sis" \
+						" de temp""\xa9""rature HTC"
 
 #define RSC_KERNEL_TITLE_CODE_FR	" Noyau "
 #define RSC_KERNEL_TOTAL_RAM_CODE_FR	"RAM totale"

@@ -1180,9 +1180,9 @@ typedef union
 	struct
 	{
 		unsigned long long
-		ReservedBits1	: 16-0,
+		TM2_Target	: 16-0,  /* TM2 Transition Target Ratio/Vcore */
 		TM_SELECT	: 17-16, /* Unique(Core2), Shared(Xeon, Atom) */
-		ReservedBits2	: 64-17;
+		ReservedBits	: 64-17;
 	};
 } THERM2_CONTROL;
 
