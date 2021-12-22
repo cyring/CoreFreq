@@ -795,9 +795,11 @@ typedef struct
 		};
 			UNCORE_FIXED_PERF_CONTROL  Uncore_FixedPerfControl;
 	    } Intel;
+#if defined(FEAT_DBG) && (FEAT_DBG > 1)
 	    struct {
 		AMD_SBRMI_CONTROL	SBRMI_Control;
 	    } AMD;
+#endif /* FEAT_DBG */
 	} SaveArea;
 
 	FEATURES		Features;

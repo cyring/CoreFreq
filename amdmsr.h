@@ -195,6 +195,7 @@ enum {
 #define IS_HSMP_OOO(_rx) (_rx == HSMP_UNSPECIFIED			\
 			|| (_rx >= HSMP_FAIL_BGN && _rx <= HSMP_FAIL_END))
 
+#if defined(FEAT_DBG) && (FEAT_DBG > 1)
 enum SBRMI_REGISTER {
 	SBRMI_REVISION	= 0x0,
 	SBRMI_CONTROL	= 0x1,
@@ -208,6 +209,7 @@ enum SBRMI_FUNC {
 	SBRMI_RD_PKG_TDP= 0x1,	/* Package power cTDP[31:0] (mWatts)	*/
 	SBRMI_WR_PKG_TDP= 0x2,	/* SoC package power [31:0] (mWatts)	*/
 };
+#endif /* FEAT_DBG */
 
 /* Sources: BKDG for AMD Families 0Fh, 10h up to 16h			*/
 const struct {
@@ -1697,6 +1699,7 @@ typedef union
 	};
 } AMD_17_CORE_VID;
 
+#if defined(FEAT_DBG) && (FEAT_DBG > 1)
 /* Sources: Advanced Platform Management Link (APML) Specification	*/
 typedef union
 {	/* I2C: address = 0x0						*/
@@ -1732,3 +1735,4 @@ typedef union
 		ReservedBits	:  8-2;
 	};
 } AMD_SBRMI_STATUS;
+#endif /* FEAT_DBG */

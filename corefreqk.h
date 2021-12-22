@@ -996,6 +996,7 @@ typedef union
 	rx;								\
 })
 
+#if defined(FEAT_DBG) && (FEAT_DBG > 1)
 #ifdef CONFIG_I2C
 #define SBRMI_Read8(cli, cmd, data)					\
 ({									\
@@ -1019,6 +1020,7 @@ typedef struct
 	unsigned char		value;
 	enum SBRMI_REGISTER	reg;
 } SBRMI_MSG;
+#endif /* FEAT_DBG */
 
 /* Driver' private and public data definitions.				*/
 enum CSTATES_CLASS {

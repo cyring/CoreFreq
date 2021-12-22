@@ -337,6 +337,7 @@ static signed short WDT_Enable = -1;
 module_param(WDT_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(WDT_Enable, "Watchdog Hardware Timer");
 
+#if defined(FEAT_DBG) && (FEAT_DBG > 1)
 #ifdef CONFIG_ACPI
 static const struct acpi_device_id SBRMI_ACPI[] = {
 /* Sources: acpidump -b -n DSDT -z && iasl -d dsdt.dat && cat dsdt.dsl */
@@ -356,7 +357,7 @@ static const struct of_device_id SBRMI_DT[] = {
 MODULE_DEVICE_TABLE(of, SBRMI_DT);
 
 FEAT_MSG("DEVICE-TREE built-in");
-#endif
+#endif /* CONFIG_OF */
 
 #ifdef CONFIG_I2C
 /* The SB-RMI address is normally 78h for socket 0 and 70h for socket 1 */
@@ -379,7 +380,8 @@ static struct i2c_driver SBRMI_Driver = {
 };
 
 FEAT_MSG("I2C built-in");
-#endif
+#endif /* CONFIG_I2C */
+#endif /* FEAT_DBG */
 
 static struct {
 	signed int		Major;
@@ -3598,6 +3600,7 @@ void Skylake_X_Platform_Info(unsigned int cpu)
     }
 }
 
+#if defined(FEAT_DBG) && (FEAT_DBG > 1)
 #ifdef CONFIG_I2C
 void AMD_SBRMI_Exec(	struct i2c_client *cli,
 			enum SBRMI_FUNC MSG_FUNC,
@@ -3745,6 +3748,7 @@ void AMD_SBRMI_Exec(struct i2c_client*, enum SBRMI_FUNC, unsigned int*) {}
 void AMD_SBRMI_Exit(void) {}
 signed int AMD_SBRMI_Init(void) { return 0; }
 #endif /* CONFIG_I2C */
+#endif /* FEAT_DBG */
 
 void Probe_AMD_DataFabric(void)
 {
@@ -6573,9 +6577,12 @@ void Query_AMD_Family_17h(unsigned int cpu)
 
 static void Exit_AMD_Family_17h(void)
 {
+#if defined(FEAT_DBG) && (FEAT_DBG > 1)
 	AMD_SBRMI_Exit();
+#endif
 }
 
+#if defined(FEAT_DBG) && (FEAT_DBG > 1)
 void Query_AMD_SBRMI(void)
 {
 	if (PUBLIC(RO(Proc))->Registration.I2C)
@@ -6589,6 +6596,7 @@ void Query_AMD_SBRMI(void)
 		].Domain_Limit1 = cTDP / 1000;
 	}
 }
+#endif /* FEAT_DBG */
 
 static void Query_AMD_F17h_PerSocket(unsigned int cpu)
 {
@@ -6597,10 +6605,11 @@ static void Query_AMD_F17h_PerSocket(unsigned int cpu)
 	Probe_AMD_DataFabric();
 
 	Query_AMD_Family_17h(cpu);
-
+#if defined(FEAT_DBG) && (FEAT_DBG > 1)
 	if (AMD_SBRMI_Init() == 0) {
 		Query_AMD_SBRMI();
 	}
+#endif
 }
 
 static void Query_AMD_F17h_PerCluster(unsigned int cpu)
@@ -6610,10 +6619,11 @@ static void Query_AMD_F17h_PerCluster(unsigned int cpu)
 	Probe_AMD_DataFabric();
 
 	Query_AMD_Family_17h(cpu);
-
+#if defined(FEAT_DBG) && (FEAT_DBG > 1)
 	if (AMD_SBRMI_Init() == 0) {
 		Query_AMD_SBRMI();
 	}
+#endif
 }
 
 void Dump_CPUID(CORE_RO *Core)
