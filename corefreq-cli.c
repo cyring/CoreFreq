@@ -7549,12 +7549,15 @@ int SortTaskListByForest(const void *p1, const void *p2)
 
 void UpdateTracker(TGrid *grid, DATA_TYPE data)
 {
+	signed int *tracked = &data.sint[1];
+  if ((*tracked) == 1)
+  {
 	const pid_t pid = data.sint[0];
 	signed int idx;
-  for (idx = 0; idx < Shm->SysGate.taskCount; idx++)
-  {
-    if (Shm->SysGate.taskList[idx].pid == pid)
+    for (idx = 0; idx < Shm->SysGate.taskCount; idx++)
     {
+      if (((*tracked) = (Shm->SysGate.taskList[idx].pid == pid)) == 1)
+      {
 	double runtime, usertime, systime;
 	/*
 	 * Source: kernel/sched/cputime.c
@@ -7591,10 +7594,11 @@ void UpdateTracker(TGrid *grid, DATA_TYPE data)
 
 	memcpy( &grid->cell.item[grid->cell.length - len], Buffer, len);
 	break;
+      }
     }
-  }
-  if (!(idx < Shm->SysGate.taskCount)) {
+    if (!(idx < Shm->SysGate.taskCount)) {
 	memcpy(grid->cell.item, hSpace, grid->cell.length);
+    }
   }
 }
 
@@ -7662,12 +7666,15 @@ Window *CreateTracking(unsigned long long id)
 
 		StrFormat(Buffer, MAX_WIDTH-1, "%.*s", width, hSpace);
 
+		DATA_TYPE data = {
+			.sint = { [0] = (pid_t) trackList[ti].pid, [1] = 1 }
+		};
 		GridCall(StoreTCell(wTrack, SCANKEY_NULL, Buffer,
 				RSC(UI).ATTR()[UI_WIN_TRACKING_COUNTERS]),
-			UpdateTracker, (pid_t) trackList[ti].pid);
+			UpdateTracker, data);
 	    }
 		StoreWindow(wTrack,	.color[0].select,
-					RSC(UI).ATTR()[UI_MAKE_SELECT_UNFOCUS]);
+					RSC(UI).ATTR()[UI_WIN_TRACKING_COUNTERS]);
 
 		StoreWindow(wTrack,	.color[1].select,
 					RSC(UI).ATTR()[UI_MAKE_SELECT_FOCUS]);
