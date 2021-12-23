@@ -637,6 +637,11 @@ TGrid *GridHover(TGrid *pGrid, const char *comment)
 	return pGrid;
 }
 
+__inline__ void Set_Data(TGrid *pGrid, DATA_TYPE data)
+{
+	pGrid->data = data;
+}
+
 __inline__ void Set_pVOID(TGrid *pGrid, void *pVOID)
 {
 	pGrid->data.pvoid = pVOID;

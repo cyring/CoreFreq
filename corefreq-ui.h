@@ -386,6 +386,7 @@ typedef struct _Grid {
 	void		(*Update)(struct _Grid *grid, DATA_TYPE data);
 } TGrid;
 
+extern void Set_Data(TGrid *pGrid	, DATA_TYPE data) ;
 extern void Set_pVOID(TGrid *pGrid	, void *pVOID) ;
 extern void Set_pULLONG(TGrid *pGrid	, unsigned long long *pULLONG) ;
 extern void Set_pSLLONG(TGrid *pGrid	, signed long long *pSLLONG) ;
@@ -401,6 +402,9 @@ extern void Set_UINT(TGrid *pGrid	, unsigned int _UINT) ;
 extern void Set_SINT(TGrid *pGrid	, signed int _SINT) ;
 
 #define SET_DATA(_pGrid , _data)					\
+	__builtin_choose_expr(__builtin_types_compatible_p (		\
+		__typeof__(_data), __typeof__(DATA_TYPE)),		\
+			Set_Data,					\
 	__builtin_choose_expr(__builtin_types_compatible_p (		\
 		__typeof__(_data), __typeof__(void *)) ,		\
 			Set_pVOID,					\
@@ -440,7 +444,7 @@ extern void Set_SINT(TGrid *pGrid	, signed int _SINT) ;
 	__builtin_choose_expr(__builtin_types_compatible_p (		\
 		__typeof__(_data), __typeof__(signed int)) ,		\
 			Set_SINT,					\
-	(void)0)))))))))))))(_pGrid, _data)
+	(void)0))))))))))))))(_pGrid, _data)
 
 typedef struct _Stock {
 	struct _Stock	*next;
