@@ -6749,7 +6749,11 @@ void ScopeUpdate(TGrid *grid, DATA_TYPE data)
 
 Window *CreateSettings(unsigned long long id)
 {
-	Window *wSet = CreateWindow(wLayer, id, 1, 25, 8, TOP_HEADER_ROW+2);
+	const CUINT height = \
+			(Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+		||	(Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) ?
+			26 : 25;
+	Window *wSet = CreateWindow(wLayer, id, 1, height, 8, TOP_HEADER_ROW+2);
     if (wSet != NULL)
     {
 	ATTRIBUTE *attrib[2] = {
