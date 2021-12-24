@@ -97,6 +97,27 @@
 	#define MSR_AMD_CU_CFG3 		0xc001102b
 #endif
 
+/* Sources: 56569-A1 Rev 3.03 - PPR for AMD Family 19h Model 51h A1	*/
+#ifndef MSR_AMD_CPPC_CAP1
+	#define MSR_AMD_CPPC_CAP1		0xc00102b0
+#endif
+
+#ifndef MSR_AMD_CPPC_ENABLE
+	#define MSR_AMD_CPPC_ENABLE		0xc00102b1
+#endif
+
+#ifndef MSR_AMD_CPPC_CAP2
+	#define MSR_AMD_CPPC_CAP2		0xc00102b2
+#endif
+
+#ifndef MSR_AMD_CPPC_REQ
+	#define MSR_AMD_CPPC_REQ		0xc00102b3
+#endif
+
+#ifndef MSR_AMD_CPPC_STATUS
+	#define MSR_AMD_CPPC_STATUS		0xc00102b4
+#endif
+
 /* Sources: BKDG for AMD Family 0Fh,15_00h-15_0Fh,15_10h-15_1Fh,15_30-15_3Fh */
 #define PCI_AMD_TEMPERATURE_TCTL	PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0xa4)
 #define PCI_AMD_THERMTRIP_STATUS	PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0xe4)
@@ -976,6 +997,68 @@ typedef union
 	Reserved2	: 64-10;
     };
 } AMD_CPU_WDT_CFG;
+
+typedef union
+{
+	unsigned long long value;
+    struct
+    {
+	unsigned long long	 /* Per SMT: MSR 0xC00102B0 (RO)	*/
+	Lowest		:  8-0,
+	LowNonlinear	: 16-8,
+	Nominal 	: 24-16,
+	Highest 	: 32-24,
+	Reserved	: 64-32;
+    };
+} AMD_CPPC_CAP1;
+
+typedef union
+{
+	unsigned long long value;
+    struct
+    {
+	unsigned long long	 /* Package: MSR 0xC00102B1 (RW)	*/
+	CPPC_Enable	:  1-0,
+	Reserved	: 64-1;
+    };
+} AMD_CPPC_ENABLE;
+
+typedef union
+{
+	unsigned long long value;
+    struct
+    {
+	unsigned long long	 /* Per SMT: MSR 0xC00102B2 (RO)	*/
+	ConstrainedMax	:  8-0,
+	Reserved	: 64-8;
+    };
+} AMD_CPPC_CAP2;
+
+typedef union
+{
+	unsigned long long value;
+    struct
+    {
+	unsigned long long	 /* Per SMT: MSR 0xC00102B3 (RW)	*/
+	Maximum_Perf	:  8-0,
+	Minimum_Perf	: 16-8,
+	Desired_Perf	: 24-16,
+	Energy_Pref	: 32-24,
+	Reserved	: 64-32;
+    };
+} AMD_CPPC_REQUEST;
+
+typedef union
+{
+	unsigned long long value;
+    struct
+    {
+	unsigned long long	 /* Package: MSR 0xC00102B4 (RW)	*/
+	Reserved1	:  1-0,
+	Min_Excursion	:  2-1,
+	Reserved2	: 64-2;
+    };
+} AMD_CPPC_STATUS;
 
 typedef union
 {
