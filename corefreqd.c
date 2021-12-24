@@ -6013,6 +6013,11 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 	    break;
 	}
 	break;
+   case COREFREQ_TRACK_PROCESS:
+	Ref->Shm->SysGate.trackTask = (pid_t) ctrl.arg;
+
+	BITWISESET(LOCKLESS, Ref->Shm->Proc.Sync, BIT_MASK_NTFY);
+	break;
    default:
     {
 	RING_SLICE *porder = order_list;

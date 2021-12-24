@@ -7038,6 +7038,7 @@ Window *CreateAdvHelp(unsigned long long id)
 	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	},
 	{0, RSC(ADV_HELP_SECT_TASK).CODE(),	{SCANKEY_NULL}	},
 	{1, RSC(ADV_HELP_ITEM_ORDER).CODE(),	{SCANKEY_b}	},
+	{1, RSC(ADV_HELP_ITEM_RST).CODE(),	{SCANKEY_SHIFT_n}},
 	{1, RSC(ADV_HELP_ITEM_SEL).CODE(),	{SCANKEY_n}	},
 	{1, RSC(ADV_HELP_ITEM_REV).CODE(),	{SCANKEY_r}	},
 	{1, RSC(ADV_HELP_ITEM_HIDE).CODE(),	{SCANKEY_v}	},
@@ -7673,15 +7674,17 @@ Window *CreateTracking(unsigned long long id)
 				RSC(UI).ATTR()[UI_WIN_TRACKING_COUNTERS]),
 			UpdateTracker, data);
 	    }
-		StoreWindow(wTrack,	.color[0].select,
-					RSC(UI).ATTR()[UI_WIN_TRACKING_COUNTERS]);
+		StoreWindow(	wTrack, .color[0].select,
+				RSC(UI).ATTR()[UI_WIN_TRACKING_COUNTERS] );
 
-		StoreWindow(wTrack,	.color[1].select,
-					RSC(UI).ATTR()[UI_MAKE_SELECT_FOCUS]);
+		StoreWindow(	wTrack, .color[1].select,
+				RSC(UI).ATTR()[UI_MAKE_SELECT_FOCUS] );
 
-		StoreWindow(wTrack,	.color[0].title, MAKE_PRINT_DROP);
-		StoreWindow(wTrack,	.color[1].title,
-					RSC(UI).ATTR()[UI_WIN_TRACKING_TITLE]);
+		StoreWindow(	wTrack, .color[0].title,
+				MAKE_PRINT_DROP );
+
+		StoreWindow(	wTrack, .color[1].title,
+				RSC(UI).ATTR()[UI_WIN_TRACKING_TITLE] );
 
 		StoreWindow(wTrack,	.Print, 	ForEachCellPrint_Drop);
 		StoreWindow(wTrack,	.key.Enter,	MotionEnter_Cell);
@@ -10312,6 +10315,12 @@ int Shortcut(SCANKEY *scan)
     }
     break;
 
+    case SCANKEY_SHIFT_n:
+	if ((Draw.View == V_TASKS) && (Draw.Disposal == D_MAINVIEW)) {
+		RING_WRITE(Shm->Ring[1], COREFREQ_TRACK_PROCESS, (pid_t) 0);
+	}
+	break;
+
     case SCANKEY_n:
 	if ((Draw.View == V_TASKS) && (Draw.Disposal == D_MAINVIEW)) {
 		Window *win = SearchWinListById(scan->key, &winList);
@@ -10670,7 +10679,6 @@ int Shortcut(SCANKEY *scan)
 #ifndef NO_LOWER
     case SCANKEY_x:
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
-		Shm->SysGate.trackTask = 0;
 		Draw.Disposal = D_MAINVIEW;
 		Draw.View = V_TASKS;
 		Draw.Size.height = 0;
@@ -13259,9 +13267,10 @@ int Shortcut(SCANKEY *scan)
     break;
 
     default:
-      if (scan->key & TRACK_TASK) {
-	Shm->SysGate.trackTask = scan->key & TRACK_MASK;
-	Draw.Flag.layout = 1;
+      if ((scan->key & TRACK_TASK) && !RING_FULL(Shm->Ring[1])) {
+	RING_WRITE(	Shm->Ring[1],
+			COREFREQ_TRACK_PROCESS,
+		(pid_t) scan->key & TRACK_MASK );
       }
       else if (scan->key & SMBIOS_STRING_INDEX)
       {

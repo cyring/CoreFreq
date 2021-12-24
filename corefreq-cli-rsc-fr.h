@@ -955,6 +955,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_ADV_HELP_ITEM_ORDER_CODE_FR " b          Crit""\xa8""re de tri" \
 					" des t""\xa2""ches "
 
+#define RSC_ADV_HELP_ITEM_RST_CODE_FR	" N          Effacer la t""\xa2""che " \
+					"\xa0"" suivre "
+
 #define RSC_ADV_HELP_ITEM_SEL_CODE_FR	" n          Choisir la t""\xa2""che " \
 					"\xa0"" suivre "
 

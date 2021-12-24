@@ -1385,6 +1385,7 @@
 #define RSC_ADV_HELP_ITEM_AVG_CODE_EN	" %         Averages | Package C-States"
 #define RSC_ADV_HELP_SECT_TASK_CODE_EN	" Task Monitoring view:                "
 #define RSC_ADV_HELP_ITEM_ORDER_CODE_EN " b                Sorting tasks order "
+#define RSC_ADV_HELP_ITEM_RST_CODE_EN	" N                Reset task tracking "
 #define RSC_ADV_HELP_ITEM_SEL_CODE_EN	" n               Select task tracking "
 #define RSC_ADV_HELP_ITEM_REV_CODE_EN	" r              Reverse tasks sorting "
 #define RSC_ADV_HELP_ITEM_HIDE_CODE_EN	" v          Show | Hide Kernel values "
