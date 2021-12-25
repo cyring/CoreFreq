@@ -31,15 +31,6 @@
 #include "corefreq-cli-json.h"
 #include "corefreq-cli-extra.h"
 
-#define StrFormat( _str, _size, _fmt, ... )				\
-	snprintf((char*) _str, (size_t) _size, (char*) _fmt, __VA_ARGS__)
-
-#define CONV( _ret, _func, ... )					\
-({									\
-	int lret = _func ( __VA_ARGS__ );				\
-	_ret = lret > 0 ? (__typeof__ (_ret)) lret : 0;			\
-})
-
 SHM_STRUCT *Shm = NULL;
 
 static Bit64 Shutdown __attribute__ ((aligned (8))) = 0x0;
@@ -884,7 +875,7 @@ void RefreshFactoryFreq(TGrid *grid, DATA_TYPE data)
 	char item[11+11+1];
 	UNUSED(data);
 
-	StrFormat(item, 11+11+1, "%5u" "%4d",
+	StrFormat(item, 11+11+1, "%5u" "%4u",
 		Shm->Proc.Features.Factory.Freq,
 		Shm->Proc.Features.Factory.Ratio);
 
@@ -983,11 +974,11 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
     {
 	char version[17+1];
 	int len;
-	CONV(len, StrFormat, version, 17+1, "[%3u.%u.%u-%u]",
-				Shm->Proc.Features.Factory.SMU.Major,
-				Shm->Proc.Features.Factory.SMU.Minor,
-				Shm->Proc.Features.Factory.SMU.Revision,
-				Shm->Proc.Features.Factory.SMU.Interface);
+	StrLenFormat(len, version, 17+1, "[%3u.%u.%u-%u]",
+			Shm->Proc.Features.Factory.SMU.Major,
+			Shm->Proc.Features.Factory.SMU.Minor,
+			Shm->Proc.Features.Factory.SMU.Revision,
+			Shm->Proc.Features.Factory.SMU.Interface);
 
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s""%.*s%s", RSC(FIRMWARE).CODE(),
@@ -3000,7 +2991,7 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	},
 	{
 		NULL,
-		(StrFormat(IOMMU_Version_String, 10+1+10+1+1, "%u.%u",
+		(StrFormat(IOMMU_Version_String, 10+1+10+1+1, "%d.%d",
 			Shm->Proc.Technology.IOMMU_Ver_Major,
 			Shm->Proc.Technology.IOMMU_Ver_Minor) > 0) & 0x0,
 		3, "%s%.*s""   [%12s]",
@@ -3737,15 +3728,15 @@ void TjMax_Update(TGrid *grid, DATA_TYPE data)
 		!Shm->Cpu[Shm->Proc.Service.Core].Toggle
 	];
 	const signed int pos = grid->cell.length - 11;
-	char item[10+1+10+2+1];
+	char item[11+1+11+2+1];
 	UNUSED(data);
 
 	if (Setting.fahrCels) {
-		StrFormat(item, 10+1+10+2+1, "%3u:%3u F",
+		StrFormat(item, 11+1+11+2+1, "%3d:%3d F",
 			Cels2Fahr(SFlop->Thermal.Param.Offset[1]),
 			Cels2Fahr(SFlop->Thermal.Param.Offset[0]));
 	} else {
-		StrFormat(item, 10+1+10+2+1, "%3u:%3u C",
+		StrFormat(item, 10+1+10+2+1, "%3hu:%3hu C",
 			SFlop->Thermal.Param.Offset[1],
 			SFlop->Thermal.Param.Offset[0]);
 	}
@@ -4069,7 +4060,8 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 			TDP_State, pw );
 
 	    if (Shm->Proc.Power.Domain[pw].PL1 > 0) {
-		digits = (unsigned short) log10(Shm->Proc.Power.Domain[pw].TW1);
+		digits = Shm->Proc.Power.Domain[pw].TW1 > 0 ?
+		(unsigned short) log10(Shm->Proc.Power.Domain[pw].TW1) : 0;
 
 		GridCall( PUT(	Shm->Proc.Features.TDP_Unlock ?
 				(BOXKEY_TDP_OR | (pw << 5) | PL1) :SCANKEY_NULL,
@@ -4094,7 +4086,8 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	  if (pw == PWR_DOMAIN(PKG) || pw == PWR_DOMAIN(PLATFORM))
 	  {
 	    if (Shm->Proc.Power.Domain[pw].PL2 > 0) {
-		digits = (unsigned short) log10(Shm->Proc.Power.Domain[pw].TW2);
+		digits = Shm->Proc.Power.Domain[pw].TW2 > 0 ?
+		(unsigned short) log10(Shm->Proc.Power.Domain[pw].TW2) : 0;
 
 		GridCall( PUT(	Shm->Proc.Features.TDP_Unlock ?
 				(BOXKEY_TDP_OR | (pw << 5) | PL2) :SCANKEY_NULL,
@@ -4117,7 +4110,8 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 			RSC(POWER_LABEL_PL2).CODE(), POWERED(0) );
 	    }
 	  } else if (Shm->Proc.Power.Domain[pw].PL2 > 0) {
-		digits = (unsigned short) log10(Shm->Proc.Power.Domain[pw].TW2);
+		digits = Shm->Proc.Power.Domain[pw].TW2 > 0 ?
+		(unsigned short) log10(Shm->Proc.Power.Domain[pw].TW2) : 0;
 		/*	Some register may have garbage value	*/
 		GridCall( PUT(	SCANKEY_NULL, attrib[0], width, 3,
 				"%s (%.0f sec)%.*s%s   [%5u W]",
@@ -4330,7 +4324,10 @@ void KernelUpdate(TGrid *grid, DATA_TYPE data)
 {
 	char item[CPUFREQ_NAME_LEN+4+3];
 	size_t len;
-	CONV(len, StrFormat, item, CPUFREQ_NAME_LEN+4+3, "%18lu KB", (*data.pulong));
+
+	StrLenFormat(len, item, CPUFREQ_NAME_LEN+4+3,
+			"%18lu KB", (*data.pulong));
+
 	memcpy(&grid->cell.item[grid->cell.length - len - 1], item, len);
 }
 
@@ -4342,13 +4339,13 @@ void IdleLimitUpdate(TGrid *grid, DATA_TYPE data)
 
 	if (Shm->SysGate.OS.IdleDriver.stateCount > 0)
 	{
-		CONV(len, StrFormat, item, CPUIDLE_NAME_LEN + 1,
+		StrLenFormat(len, item, CPUIDLE_NAME_LEN + 1,
 				COREFREQ_FORMAT_STR(CPUIDLE_NAME_LEN),
 				Shm->SysGate.OS.IdleDriver.State[idx].Name);
 	}
 	else
 	{
-		CONV(len, StrFormat, item, CPUIDLE_NAME_LEN + 1,
+		StrLenFormat(len, item, CPUIDLE_NAME_LEN + 1,
 				COREFREQ_FORMAT_STR(CPUIDLE_NAME_LEN),
 				RSC(NOT_AVAILABLE).CODE());
 	}
@@ -4398,14 +4395,14 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s:%.*s", RSC(KERNEL_MEMORY).CODE(),
 		width - RSZ(KERNEL_MEMORY), hSpace );
 
-	CONV(len, StrFormat, str, CPUFREQ_NAME_LEN+4+1, "%lu",
+	StrLenFormat(len, str, CPUFREQ_NAME_LEN+4+1, "%lu",
 			Shm->SysGate.memInfo.totalram);
 
 	PUT(	SCANKEY_NULL, RSC(KERNEL_TOTAL_RAM).ATTR(), width, 2,
 		"%s%.*s" "%s KB", RSC(KERNEL_TOTAL_RAM).CODE(),
 		width - 6 - RSZ(KERNEL_TOTAL_RAM) - len, hSpace, str );
 
-	CONV(len, StrFormat, str, CPUFREQ_NAME_LEN+4+1, "%lu",
+	StrLenFormat(len, str, CPUFREQ_NAME_LEN+4+1, "%lu",
 			Shm->SysGate.memInfo.sharedram);
 
 	GridCall( PUT(	SCANKEY_NULL, RSC(KERNEL_SHARED_RAM).ATTR(), width, 2,
@@ -4413,7 +4410,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 			width - 6 - RSZ(KERNEL_SHARED_RAM) - len, hSpace, str ),
 		KernelUpdate, &Shm->SysGate.memInfo.sharedram );
 
-	CONV(len, StrFormat, str, CPUFREQ_NAME_LEN+4+1,
+	StrLenFormat(len, str, CPUFREQ_NAME_LEN+4+1,
 			"%lu", Shm->SysGate.memInfo.freeram);
 
 	GridCall( PUT( SCANKEY_NULL, RSC(KERNEL_FREE_RAM).ATTR(), width, 2,
@@ -4421,7 +4418,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 			width - 6 - RSZ(KERNEL_FREE_RAM) - len, hSpace, str ),
 		KernelUpdate, &Shm->SysGate.memInfo.freeram );
 
-	CONV(len, StrFormat, str, CPUFREQ_NAME_LEN+4+1,
+	StrLenFormat(len, str, CPUFREQ_NAME_LEN+4+1,
 			"%lu", Shm->SysGate.memInfo.bufferram);
 
 	GridCall( PUT(	SCANKEY_NULL, RSC(KERNEL_BUFFER_RAM).ATTR(), width, 2,
@@ -4429,7 +4426,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 			width - 6 - RSZ(KERNEL_BUFFER_RAM) - len, hSpace, str ),
 		KernelUpdate, &Shm->SysGate.memInfo.bufferram );
 
-	CONV(len, StrFormat, str, CPUFREQ_NAME_LEN+4+1,
+	StrLenFormat(len, str, CPUFREQ_NAME_LEN+4+1,
 			"%lu", Shm->SysGate.memInfo.totalhigh);
 
 	GridCall( PUT(	SCANKEY_NULL, RSC(KERNEL_TOTAL_HIGH).ATTR(), width, 2,
@@ -4437,7 +4434,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 			width - 6 - RSZ(KERNEL_TOTAL_HIGH) - len, hSpace, str ),
 		KernelUpdate, &Shm->SysGate.memInfo.totalhigh );
 
-	CONV(len, StrFormat, str, CPUFREQ_NAME_LEN+4+1,
+	StrLenFormat(len, str, CPUFREQ_NAME_LEN+4+1,
 			"%lu", Shm->SysGate.memInfo.freehigh);
 
 	GridCall( PUT(	SCANKEY_NULL, RSC(KERNEL_FREE_HIGH).ATTR(), width, 2,
@@ -4536,7 +4533,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	signed int n;
 
 	len = KMIN(strlen(Shm->SysGate.OS.IdleDriver.State[idx].Name), 7);
-	CONV(cat, StrFormat, str, 7+1,"%7.*s", (int) len,
+	StrLenFormat(cat, str, 7+1, "%7.*s", (int) len,
 			Shm->SysGate.OS.IdleDriver.State[idx].Name);
 	len = strlen(item[0]);
 	for (n = 0; n < cat; n++) {
@@ -4545,7 +4542,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	item[0][len + n] = '\0';
 
 	len = KMIN(strlen(Shm->SysGate.OS.IdleDriver.State[idx].Desc), 7);
-	CONV(cat, StrFormat, str, 7+1, "%7.*s", (int) len,
+	StrLenFormat(cat, str, 7+1, "%7.*s", (int) len,
 			Shm->SysGate.OS.IdleDriver.State[idx].Desc);
 	len = strlen(item[1]);
 	for (n = 0; n < cat; n++) {
@@ -4553,7 +4550,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	}
 	item[1][len + n] = '\0';
 
-	CONV(cat, StrFormat, str, 10+1, "%7d",
+	StrLenFormat(cat, str, 10+1, "%7d",
 			Shm->SysGate.OS.IdleDriver.State[idx].powerUsage);
 	len = strlen(item[2]);
 	for (n = 0; n < cat; n++) {
@@ -4561,7 +4558,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	}
 	item[2][len + n] = '\0';
 
-	CONV(cat, StrFormat, str, 10+1, "%7u",
+	StrLenFormat(cat, str, 10+1, "%7u",
 			Shm->SysGate.OS.IdleDriver.State[idx].exitLatency);
 	len = strlen(item[3]);
 	for (n = 0; n < cat; n++) {
@@ -4569,7 +4566,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	}
 	item[3][len + n] = '\0';
 
-	CONV(cat, StrFormat, str, 10+1, "%7u",
+	StrLenFormat(cat, str, 10+1, "%7u",
 			Shm->SysGate.OS.IdleDriver.State[idx].targetResidency);
 	len = strlen(item[4]);
 	for (n = 0; n < cat; n++) {
@@ -5988,15 +5985,17 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 
 	unsigned short mc, cha, slot;
 
-	CONV(li, StrFormat, str, CODENAME_LEN + 4 + 10,
-		"%s  [%4hX]", Shm->Uncore.Chipset.CodeName, Shm->Uncore.ChipID);
+	StrLenFormat(li, str, CODENAME_LEN + 4 + 10,
+			"%s  [%4hX]",
+			Shm->Uncore.Chipset.CodeName, Shm->Uncore.ChipID);
 
 	nc = (MC_MATX * MC_MATY) - li;
 	ni = nc >> 1;
 	nc = ni + (nc & 0x1);
 
-	CONV(li, StrFormat, chipStr, (MC_MATX * MC_MATY) + 1,
-		"%*.s" "%s" "%*.s", nc, HSPACE, str, ni, HSPACE);
+	StrLenFormat(li, chipStr, (MC_MATX * MC_MATY) + 1,
+			"%*.s" "%s" "%*.s",
+			nc, HSPACE, str, ni, HSPACE);
 
     for (nc = 0; nc < MC_MATX; nc++) {
 	memcpy(item, &chipStr[nc * MC_MATY], MC_MATY);
@@ -6247,6 +6246,8 @@ struct RECORDER_ST Recorder = {
 
 int ByteReDim(unsigned long ival, int constraint, unsigned long *oval)
 {
+    if (ival > 0)
+    {
 	int base = 1 + (int) log10(ival);
 
 	(*oval) = ival;
@@ -6256,6 +6257,10 @@ int ByteReDim(unsigned long ival, int constraint, unsigned long *oval)
 	} else {
 		return 0;
 	}
+    } else {
+	(*oval) = 0;
+	return 0;
+    }
 }
 
 #define Threshold(value, threshold1, threshold2, _low, _medium, _high)	\
@@ -6273,8 +6278,12 @@ int ByteReDim(unsigned long ival, int constraint, unsigned long *oval)
 
 #define frtostr(r, d, pStr)						\
 ({									\
-	int p = d - ((int) log10(fabs(r))) - 2 ;			\
+    if (r > 0) {							\
+	int p = d - ((int) log10(r)) - 2 ;				\
 	StrFormat(pStr, d+1, "%*.*f", d, p, r) ;			\
+    } else {								\
+	StrFormat(pStr, d+1, "%.*s", d, HSPACE);			\
+    }									\
 	pStr;								\
 })
 
@@ -7593,9 +7602,9 @@ void UpdateTracker(TGrid *grid, DATA_TYPE data)
 		systime = 0.0;
 	}
 	size_t len;
-	CONV(len, StrFormat, Buffer, 20+20+5+4+6+1,
-		"User:%3.0f%%   Sys:%3.0f%% ",
-		usertime, systime );
+	StrLenFormat(len, Buffer, 20+20+5+4+6+1,
+			"User:%3.0f%%   Sys:%3.0f%% ",
+			usertime, systime);
 
 	memcpy( &grid->cell.item[grid->cell.length - len], Buffer, len);
 	break;
@@ -14737,7 +14746,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 	row++;
 
-	CONV(len, StrFormat, Buffer, MAX_UTS_LEN, "%s",
+	StrLenFormat(len, Buffer, MAX_UTS_LEN, "%s",
 			BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) ?
 			Shm->SysGate.sysname : (char *) RSC(SYSGATE).CODE());
 
@@ -14759,7 +14768,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 	col++;
 
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
-		CONV(len, StrFormat, Buffer, 2+5+5+5+1, "%hu.%hu.%hu",
+		StrLenFormat(len, Buffer, 2+5+5+5+1, "%hu.%hu.%hu",
 				Shm->SysGate.kernel.version,
 				Shm->SysGate.kernel.major,
 				Shm->SysGate.kernel.minor);
@@ -14894,7 +14903,7 @@ size_t Draw_Relative_Freq_Spaces(	struct FLIP_FLOP *CFlop,
 	UNUSED(cpu);
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 17+8+6+7+7+7+7+7+7+11+1,
+	StrLenFormat(len, Buffer, 17+8+6+7+7+7+7+7+7+11+1,
 		"%7.2f" " (" "%5.2f" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
@@ -14920,7 +14929,7 @@ size_t Draw_Absolute_Freq_Spaces(	struct FLIP_FLOP *CFlop,
 	UNUSED(cpu);
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 17+8+6+7+7+7+7+7+7+11+1,
+	StrLenFormat(len, Buffer, 17+8+6+7+7+7+7+7+7+11+1,
 		"%7.2f" " (" "%5.2f" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
@@ -14960,7 +14969,7 @@ size_t Draw_Relative_Freq_Celsius(	struct FLIP_FLOP *CFlop,
 	UNUSED(cpu);
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
+	StrLenFormat(len, Buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
 		"%7.2f" " (" "%5.2f" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
@@ -14987,7 +14996,7 @@ size_t Draw_Absolute_Freq_Celsius(	struct FLIP_FLOP *CFlop,
 	UNUSED(cpu);
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
+	StrLenFormat(len, Buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
 		"%7.2f" " (" "%5.2f" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
@@ -15029,7 +15038,7 @@ size_t Draw_Relative_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
 	UNUSED(cpu);
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
+	StrLenFormat(len, Buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
 		"%7.2f" " (" "%5.2f" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
@@ -15056,7 +15065,7 @@ size_t Draw_Absolute_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
 	UNUSED(cpu);
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
+	StrLenFormat(len, Buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
 		"%7.2f" " (" "%5.2f" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
@@ -15206,7 +15215,7 @@ CUINT Draw_Monitor_Instructions(Layer *layer, const unsigned int cpu, CUINT row)
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 6+18+18+18+20+1,
+	StrLenFormat(len, Buffer, 6+18+18+18+20+1,
 			"%17.6f" "/s"					\
 			"%17.6f" "/c"					\
 			"%17.6f" "/i"					\
@@ -15226,7 +15235,7 @@ CUINT Draw_Monitor_Cycles(Layer *layer, const unsigned int cpu, CUINT row)
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 20+20+20+20+1,
+	StrLenFormat(len, Buffer, 20+20+20+20+1,
 			"%18llu%18llu%18llu%18llu",
 			CFlop->Delta.C0.UCC,
 			CFlop->Delta.C0.URC,
@@ -15243,7 +15252,7 @@ CUINT Draw_Monitor_CStates(Layer *layer, const unsigned int cpu, CUINT row)
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 20+20+20+20+1,
+	StrLenFormat(len, Buffer, 20+20+20+20+1,
 			"%18llu%18llu%18llu%18llu",
 			CFlop->Delta.C1,
 			CFlop->Delta.C3,
@@ -15267,14 +15276,14 @@ CUINT Draw_Monitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Monitor_Tasks_Relative_Freq(struct FLIP_FLOP *CFlop)
 {
 	size_t len;
-	CONV(len, StrFormat, Buffer, 8+1, "%7.2f", CFlop->Relative.Freq);
+	StrLenFormat(len, Buffer, 8+1, "%7.2f", CFlop->Relative.Freq);
 	return len;
 }
 
 size_t Draw_Monitor_Tasks_Absolute_Freq(struct FLIP_FLOP *CFlop)
 {
 	size_t len;
-	CONV(len, StrFormat, Buffer, 8+1, "%7.2f", CFlop->Absolute.Freq);
+	StrLenFormat(len, Buffer, 8+1, "%7.2f", CFlop->Absolute.Freq);
 	return len;
 }
 
@@ -15301,29 +15310,29 @@ CUINT Draw_Monitor_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	size_t len;
 
-	CONV(len, StrFormat, Buffer, 10+1, "%10u", CFlop->Counter.SMI);
+	StrLenFormat(len, Buffer, 10+1, "%10u", CFlop->Counter.SMI);
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
     if (BITVAL(Shm->Registration.NMI, BIT_NMI_LOCAL) == 1) {
-	CONV(len, StrFormat, Buffer, 10+1, "%10u", CFlop->Counter.NMI.LOCAL);
+	StrLenFormat(len, Buffer, 10+1, "%10u", CFlop->Counter.NMI.LOCAL);
 	memcpy(&LayerAt(layer,code,(LOAD_LEAD + 24),row), Buffer, len);
     } else {
 	memcpy(&LayerAt(layer,code,(LOAD_LEAD + 24),row), hSpace, 10);
     }
     if (BITVAL(Shm->Registration.NMI, BIT_NMI_UNKNOWN) == 1) {
-	CONV(len, StrFormat, Buffer, 10+1,"%10u",CFlop->Counter.NMI.UNKNOWN);
+	StrLenFormat(len, Buffer, 10+1,"%10u",CFlop->Counter.NMI.UNKNOWN);
 	memcpy(&LayerAt(layer,code,(LOAD_LEAD + 34),row), Buffer, len);
     } else {
 	memcpy(&LayerAt(layer,code,(LOAD_LEAD + 34),row), hSpace, 10);
     }
     if (BITVAL(Shm->Registration.NMI, BIT_NMI_SERR) == 1) {
-	CONV(len, StrFormat, Buffer, 10+1,"%10u",CFlop->Counter.NMI.PCISERR);
+	StrLenFormat(len, Buffer, 10+1,"%10u",CFlop->Counter.NMI.PCISERR);
 	memcpy(&LayerAt(layer,code,(LOAD_LEAD + 44),row), Buffer, len);
     } else {
 	memcpy(&LayerAt(layer,code,(LOAD_LEAD + 44),row), hSpace, 10);
     }
     if (BITVAL(Shm->Registration.NMI, BIT_NMI_IO_CHECK) == 1) {
-	CONV(len, StrFormat, Buffer, 10+1,"%10u",CFlop->Counter.NMI.IOCHECK);
+	StrLenFormat(len, Buffer, 10+1,"%10u",CFlop->Counter.NMI.IOCHECK);
 	memcpy(&LayerAt(layer,code,(LOAD_LEAD + 54),row), Buffer, len);
     } else {
 	memcpy(&LayerAt(layer,code,(LOAD_LEAD + 54),row), hSpace, 10);
@@ -15338,7 +15347,7 @@ size_t Draw_Sensors_V0_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(row);
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 80+1,
+	StrLenFormat(len, Buffer, 80+1,
 			"%7.2f%.*s",
 			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			69, hSpace);
@@ -15352,7 +15361,7 @@ size_t Draw_Sensors_V0_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(row);
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 80+1,
+	StrLenFormat(len, Buffer, 80+1,
 			"%7.2f%.*s"					\
 			"%8.4f\x20\x20\x20\x20\x20\x20" 		\
 			"%8.4f%.*s",
@@ -15390,7 +15399,7 @@ size_t Draw_Sensors_V0_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(row);
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 80+1,
+	StrLenFormat(len, Buffer, 80+1,
 			"%7.2f%.*s"					\
 			"%3u%.*s",
 			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
@@ -15408,7 +15417,7 @@ size_t Draw_Sensors_V0_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(row);
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 80+1,
+	StrLenFormat(len, Buffer, 80+1,
 			"%7.2f%.*s"					\
 			"%3u\x20\x20\x20\x20\x20\x20"			\
 			"%8.4f\x20\x20\x20\x20\x20\x20" 		\
@@ -15525,7 +15534,7 @@ size_t Draw_Sensors_V1_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(row);
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 80+1,
+	StrLenFormat(len, Buffer, 80+1,
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f%.*s",
 			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
@@ -15541,7 +15550,7 @@ size_t Draw_Sensors_V1_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(row);
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 80+1,
+	StrLenFormat(len, Buffer, 80+1,
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f\x20\x20\x20\x20" 			\
 			"\x20\x20\x20\x20\x20\x20\x20\x20\x20"		\
@@ -15581,7 +15590,7 @@ size_t Draw_Sensors_V1_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(row);
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 80+1,
+	StrLenFormat(len, Buffer, 80+1,
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f\x20\x20\x20\x20" 			\
 			"%3u%.*s",					\
@@ -15600,7 +15609,7 @@ size_t Draw_Sensors_V1_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(row);
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 80+1,
+	StrLenFormat(len, Buffer, 80+1,
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f\x20\x20\x20\x20" 			\
 			"%3u\x20\x20\x20\x20\x20\x20"			\
@@ -16149,7 +16158,7 @@ size_t Draw_Voltage_SMT(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(row);
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 80+1,
+	StrLenFormat(len, Buffer, 80+1,
 			"%7.2f\x20%7d"					\
 			"\x20\x20\x20\x20\x20%5.4f"			\
 			"\x20\x20\x20%5.4f"				\
@@ -16213,7 +16222,7 @@ size_t Draw_Energy_Joule(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(row);
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 80+1,
+	StrLenFormat(len, Buffer, 80+1,
 			"%7.2f\x20\x20\x20%018llu\x20\x20\x20\x20"	\
 			"%10.6f\x20\x20%10.6f\x20\x20%10.6f",
 			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
@@ -16231,7 +16240,7 @@ size_t Draw_Power_Watt(Layer *layer, const unsigned int cpu, CUINT row)
 	UNUSED(row);
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, 80+1,
+	StrLenFormat(len, Buffer, 80+1,
 			"%7.2f\x20\x20\x20%018llu\x20\x20\x20\x20"	\
 			"%10.6f\x20\x20%10.6f\x20\x20%10.6f",
 			Draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
@@ -16296,7 +16305,7 @@ size_t Draw_Monitor_Slice_Error_Relative_Freq(	struct FLIP_FLOP *CFlop,
 						struct SLICE_STRUCT *pSlice )
 {
 	size_t len;
-	CONV(len, StrFormat, Buffer, 8+20+20+20+20+20+1,
+	StrLenFormat(len, Buffer, 8+20+20+20+20+20+1,
 			"%7.2f "					\
 			"%16llu%16llu%18llu%18llu%18llu",
 			CFlop->Relative.Freq,
@@ -16312,7 +16321,7 @@ size_t Draw_Monitor_Slice_Error_Absolute_Freq(	struct FLIP_FLOP *CFlop,
 						struct SLICE_STRUCT *pSlice )
 {
 	size_t len;
-	CONV(len, StrFormat, Buffer, 8+20+20+20+20+20+1,
+	StrLenFormat(len, Buffer, 8+20+20+20+20+20+1,
 			"%7.2f "					\
 			"%16llu%16llu%18llu%18llu%18llu",
 			CFlop->Absolute.Freq,
@@ -16328,7 +16337,7 @@ size_t Draw_Monitor_Slice_NoError_Relative_Freq(struct FLIP_FLOP *CFlop,
 						struct SLICE_STRUCT *pSlice)
 {
 	size_t len;
-	CONV(len, StrFormat, Buffer, 8+20+20+20+20+18+1,
+	StrLenFormat(len, Buffer, 8+20+20+20+20+18+1,
 			"%7.2f "					\
 			"%16llu%16llu%18llu%18llu%.*s",
 			CFlop->Relative.Freq,
@@ -16344,7 +16353,7 @@ size_t Draw_Monitor_Slice_NoError_Absolute_Freq(struct FLIP_FLOP *CFlop,
 						struct SLICE_STRUCT *pSlice)
 {
 	size_t len;
-	CONV(len, StrFormat, Buffer, 8+20+20+20+20+18+1,
+	StrLenFormat(len, Buffer, 8+20+20+20+20+18+1,
 			"%7.2f "					\
 			"%16llu%16llu%18llu%18llu%.*s",
 			CFlop->Absolute.Freq,
@@ -16389,7 +16398,7 @@ CUINT Draw_Monitor_Custom(Layer *layer, const unsigned int cpu, CUINT row)
 	struct FLIP_FLOP *CFlop = &Cpu->FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, MAX_WIDTH,
+	StrLenFormat(len, Buffer, MAX_WIDTH,
 		"%7.2f %7.2f %7.2f"					\
 		"\x20\x20\x20" "%7.2f %7.2f %7.2f"			\
 		"\x20\x20" "%3u %3u %3u"				\
@@ -16457,7 +16466,7 @@ CUINT Draw_AltMonitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 
 	row += 1 + Draw.Area.MaxRows;
 	if (!Draw.Flag.avgOrPC) {
-		CONV(len, StrFormat, Buffer, ((5*2)+1)+(6*7)+1,
+		StrLenFormat(len, Buffer, ((5*2)+1)+(6*7)+1,
 				"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% " \
 				"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%",
 				100.f * Shm->Proc.Avg.Turbo,
@@ -16469,7 +16478,7 @@ CUINT Draw_AltMonitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 
 		memcpy(&LayerAt(layer, code, 20, row), Buffer, len);
 	} else {
-		CONV(len, StrFormat, Buffer, ((6*4)+3+5)+(8*6)+1,
+		StrLenFormat(len, Buffer, ((6*4)+3+5)+(8*6)+1,
 				"c2:%-5.1f"	" c3:%-5.1f"	" c4:%-5.1f" \
 				" c6:%-5.1f"	" c7:%-5.1f"	" c8:%-5.1f" \
 				" c9:%-5.1f"	" c10:%-5.1f",
@@ -16509,7 +16518,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = (CUINT) (Shm->Proc.State.PC02 * margin);
 	bar1 = margin - bar0;
 
-	CONV(len, StrFormat, Buffer, Draw.Area.LoadWidth,
+	StrLenFormat(len, Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC02, 100.f * Shm->Proc.State.PC02,
 			bar0, hBar, bar1, hSpace);
@@ -16519,7 +16528,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = (CUINT) (Shm->Proc.State.PC03 * margin);
 	bar1 = margin - bar0;
 
-	CONV(len, StrFormat, Buffer, Draw.Area.LoadWidth,
+	StrLenFormat(len, Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC03, 100.f * Shm->Proc.State.PC03,
 			bar0, hBar, bar1, hSpace);
@@ -16529,7 +16538,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = (CUINT) (Shm->Proc.State.PC04 * margin);
 	bar1 = margin - bar0;
 
-	CONV(len, StrFormat, Buffer, Draw.Area.LoadWidth,
+	StrLenFormat(len, Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC04, 100.f * Shm->Proc.State.PC04,
 			bar0, hBar, bar1, hSpace);
@@ -16539,7 +16548,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = (CUINT) (Shm->Proc.State.PC06 * margin);
 	bar1 = margin - bar0;
 
-	CONV(len, StrFormat, Buffer, Draw.Area.LoadWidth,
+	StrLenFormat(len, Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC06, 100.f * Shm->Proc.State.PC06,
 			bar0, hBar, bar1, hSpace);
@@ -16549,7 +16558,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = (CUINT) (Shm->Proc.State.PC07 * margin);
 	bar1 = margin - bar0;
 
-	CONV(len, StrFormat, Buffer, Draw.Area.LoadWidth,
+	StrLenFormat(len, Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC07, 100.f * Shm->Proc.State.PC07,
 			bar0, hBar, bar1, hSpace);
@@ -16559,7 +16568,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = (CUINT) (Shm->Proc.State.PC08 * margin);
 	bar1 = margin - bar0;
 
-	CONV(len, StrFormat, Buffer, Draw.Area.LoadWidth,
+	StrLenFormat(len, Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC08, 100.f * Shm->Proc.State.PC08,
 			bar0, hBar, bar1, hSpace);
@@ -16569,7 +16578,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = (CUINT) (Shm->Proc.State.PC09 * margin);
 	bar1 = margin - bar0;
 
-	CONV(len, StrFormat, Buffer, Draw.Area.LoadWidth,
+	StrLenFormat(len, Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC09, 100.f * Shm->Proc.State.PC09,
 			bar0, hBar, bar1, hSpace);
@@ -16579,7 +16588,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = (CUINT) (Shm->Proc.State.PC10 * margin);
 	bar1 = margin - bar0;
 
-	CONV(len, StrFormat, Buffer, Draw.Area.LoadWidth,
+	StrLenFormat(len, Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC10, 100.f * Shm->Proc.State.PC10,
 			bar0, hBar, bar1, hSpace);
@@ -16589,14 +16598,14 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = (CUINT) (Shm->Proc.State.MC6 * margin);
 	bar1 = margin - bar0;
 
-	CONV(len, StrFormat, Buffer, Draw.Area.LoadWidth,
+	StrLenFormat(len, Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.MC6, 100.f * Shm->Proc.State.MC6,
 			bar0, hBar, bar1, hSpace);
 
 	memcpy(&LayerAt(layer, code, 5, (row + 8)), Buffer, len);
 /* TSC & UNCORE */
-	CONV(len, StrFormat, Buffer, Draw.Area.LoadWidth,
+	StrLenFormat(len, Buffer, Draw.Area.LoadWidth,
 			"%18llu" "%.*s" "UNCORE:%18llu",
 			PFlop->Delta.PTSC, 7+2+18, hSpace, PFlop->Uncore.FC0);
 
@@ -16641,30 +16650,30 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 		stateAttr = RSC(TRACKER_STATE_COLOR).ATTR();
 	    }
 	    if (!Draw.Flag.taskVal) {
-		CONV(len, StrFormat, Buffer, TASK_COMM_LEN, "%s",
+		StrLenFormat(len, Buffer, TASK_COMM_LEN, "%s",
 				Shm->SysGate.taskList[idx].comm);
 	    } else {
 		switch (Shm->SysGate.sortByField) {
 		case F_STATE:
-			CONV(len, StrFormat, Buffer, 2 * TASK_COMM_LEN + 2,
+			StrLenFormat(len, Buffer, 2 * TASK_COMM_LEN + 2,
 					"%s(%s)",
 					Shm->SysGate.taskList[idx].comm,
 					stateStr);
 			break;
 		case F_RTIME:
-			CONV(len, StrFormat, Buffer, TASK_COMM_LEN + 20 + 2,
+			StrLenFormat(len, Buffer, TASK_COMM_LEN + 20 + 2,
 					"%s(%llu)",
 					Shm->SysGate.taskList[idx].comm,
 					Shm->SysGate.taskList[idx].runtime);
 			break;
 		case F_UTIME:
-			CONV(len, StrFormat, Buffer, TASK_COMM_LEN + 20 + 2,
+			StrLenFormat(len, Buffer, TASK_COMM_LEN + 20 + 2,
 					"%s(%llu)",
 					Shm->SysGate.taskList[idx].comm,
 					Shm->SysGate.taskList[idx].usertime);
 			break;
 		case F_STIME:
-			CONV(len, StrFormat, Buffer, TASK_COMM_LEN + 20 + 2,
+			StrLenFormat(len, Buffer, TASK_COMM_LEN + 20 + 2,
 					"%s(%llu)",
 					Shm->SysGate.taskList[idx].comm,
 					Shm->SysGate.taskList[idx].systime);
@@ -16672,7 +16681,7 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 		case F_PID:
 			fallthrough;
 		case F_COMM:
-			CONV(len, StrFormat, Buffer, TASK_COMM_LEN + 11 + 2,
+			StrLenFormat(len, Buffer, TASK_COMM_LEN + 11 + 2,
 					"%s(%d)",
 					Shm->SysGate.taskList[idx].comm,
 					Shm->SysGate.taskList[idx].pid);
@@ -16794,7 +16803,7 @@ size_t Draw_AltMonitor_Custom_Energy_Joule(void)
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, MAX_WIDTH,
+	StrLenFormat(len, Buffer, MAX_WIDTH,
 			" RAM:%8.4f(J) -" " SoC:%8.4f(J)/%5.4f(V)"	\
 			" - Pkg:%8.4f(J) - "				\
 			"%5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f -"	\
@@ -16832,7 +16841,7 @@ size_t Draw_AltMonitor_Custom_Power_Watt(void)
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 
 	size_t len;
-	CONV(len, StrFormat, Buffer, MAX_WIDTH,
+	StrLenFormat(len, Buffer, MAX_WIDTH,
 			" RAM:%8.4f(W) -" " SoC:%8.4f(W)/%5.4f(V)"	\
 			" - Pkg:%8.4f(W) - "				\
 			"%5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f -"	\
@@ -17406,7 +17415,7 @@ void Layout_Card_Bus(Layer *layer, Card *card)
 			(double) Shm->Uncore.Bus.Speed);
 }
 
-static char Card_MC_Timing[11+(4*10)+5+1];
+static char Card_MC_Timing[(5*10)+5+1];
 
 void Layout_Card_MC(Layer *layer, Card *card)
 {
@@ -17415,8 +17424,8 @@ void Layout_Card_MC(Layer *layer, Card *card)
 			hRAM);
 
 	card->data.word.lo[0] = 0;
-	CONV(card->data.word.lo[1], StrFormat, Card_MC_Timing,
-		11+(4*10)+5+1, "%s", " -  -  -  -  - ");
+	StrLenFormat(card->data.word.lo[1], Card_MC_Timing,
+			(5*10)+5+1, "%s", " -  -  -  -  - " );
 
 	unsigned short mc, cha, gotTimings = 0;
   if (Shm->Uncore.CtrlCount > 0) {
@@ -17428,10 +17437,8 @@ void Layout_Card_MC(Layer *layer, Card *card)
 	   || Shm->Uncore.MC[mc].Channel[cha].Timing.tRP
 	   || Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS)
 	  {
-		CONV(card->data.word.lo[1], StrFormat,
-			Card_MC_Timing,
-			11+(4*10)+5+1,
-			"% d-%u-%u-%u-%uT",
+		StrLenFormat(card->data.word.lo[1],
+			Card_MC_Timing, (5*10)+5+1, "%u-%u-%u-%u-%uT",
 			Shm->Uncore.MC[mc].Channel[cha].Timing.tCL,
 			Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD,
 			Shm->Uncore.MC[mc].Channel[cha].Timing.tRP,
@@ -17741,14 +17748,14 @@ void Draw_Card_Task(Layer *layer, Card *card)
 	ATTRIBUTE *stateAttr;
 	stateAttr = StateToSymbol(Shm->SysGate.taskList[0].state, stateStr);
 
-	StrFormat(Buffer, 12+10+3+10+1, "%.*s%.*s%.*s%zn%7u(%c)%zn%5u",
+	StrFormat(Buffer, 12+11+3+11+1, "%.*s%.*s%.*s%zn%7d(%c)%zn%5d",
 				hl, hSpace,
 				cl, Shm->SysGate.taskList[0].comm,
 				hr, hSpace,
-				&pb,
+			(ssize_t*)&pb,
 				Shm->SysGate.taskList[0].pid,
 				stateStr[0],
-				&pe,
+			(ssize_t*)&pe,
 				Shm->SysGate.taskCount);
 
 	LayerCopyAt(layer,	(card->origin.col + 0),
@@ -18037,7 +18044,7 @@ REASON_CODE Top(char option)
 	UBENCH_RDCOUNTER(2);
 	UBENCH_COMPUTE();
       } else {
-	fprintf(stderr, CUH RoK "Term(%u x %u) < View(%u x %u)\n",
+	fprintf(stderr, CUH RoK "Term(%d x %d) < View(%d x %u)\n",
 		Draw.Size.width,Draw.Size.height,MIN_WIDTH,Draw.Area.MinHeight);
       }
     }

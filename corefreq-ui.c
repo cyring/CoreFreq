@@ -2101,8 +2101,8 @@ void JSON_Page(char *inStr, int outSize)
 
 	fractional = modf(difftime(now, Dump.StartedAt), &integral);
 	fprintf(Dump.Handle, "[%lld.%lld, \"o\", \"",
-		(unsigned long long) integral,
-		(unsigned long long) fractional);
+		(signed long long) integral,
+		(signed long long) fractional);
 
 	for (pChr = pFirst; pChr < pLast; pChr++) {
 		switch (*pChr) {
