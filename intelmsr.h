@@ -2888,7 +2888,7 @@ typedef union
 } TGL_IMC_CR_TC_PRE;
 
 typedef union
-{	/* Device: 0 - Function: 0 - Offset Channel0: E000h & Channel1: XX00h */
+{	/* Device: 0 - Function: 0 - Offset Channel0: E000h & Channel1: E800h */
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -2936,7 +2936,7 @@ typedef union
 } TGL_IMC_CR_TC_ACT;
 
 typedef union
-{	/* Device: 0 - Function: 0 - Offset Channel0: E008h & Channel1: XX08h */
+{	/* Device: 0 - Function: 0 - Offset Channel0: E008h & Channel1: E808h */
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -2983,7 +2983,7 @@ typedef union
 } TGL_IMC_CR_TC_RDRD;
 
 typedef union
-{	/* Device: 0 - Function: 0 - Offset Channel0: E00Ch & Channel1: XX0Ch */
+{	/* Device: 0 - Function: 0 - Offset Channel0: E00Ch & Channel1: E80Ch */
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -3031,7 +3031,7 @@ typedef union
 } TGL_IMC_CR_TC_RDWR;
 
 typedef union
-{	/* Device: 0 - Function: 0 - Offset Channel0: E010h & Channel1: XX10h */
+{	/* Device: 0 - Function: 0 - Offset Channel0: E010h & Channel1: E810h */
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -3074,7 +3074,7 @@ typedef union
 } TGL_IMC_CR_TC_WRRD;
 
 typedef union
-{	/* Device: 0 - Function: 0 - Offset Channel0: E014h & Channel1: XX14h */
+{	/* Device: 0 - Function: 0 - Offset Channel0: E014h & Channel1: E814h */
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -3120,7 +3120,7 @@ typedef union
 } TGL_IMC_CR_TC_WRWR;
 
 typedef union
-{	/* Device: 0 - Function: 0 - Offset Channel0: E018h & Channel1: XX18h */
+{	/* Device: 0 - Function: 0 - Offset Channel0: E018h & Channel1: E818h */
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -3203,7 +3203,7 @@ typedef union
 } TGL_IMC_SC_GS_CFG;	/* Scheduler configuration			*/
 
 typedef union
-{	/* Device: 0 - Function: 0 - Offset Channel0: E088h & Channel1: XX88h */
+{	/* Device: 0 - Function: 0 - Offset Channel0: E088h & Channel1: E888h */
 	unsigned long long	value;
 	struct {
 		unsigned long long
@@ -3271,7 +3271,7 @@ typedef union
 } TGL_IMC_TC_PWDEN;	/* Power Down Timing				*/
 
 typedef union
-{	/* Device: 0 - Function: 0 - Offset Channel0: E050h & Channel1: XX50h */
+{	/* Device: 0 - Function: 0 - Offset Channel0: E050h & Channel1: E850h */
 	unsigned long long	value;
 	struct {
 		unsigned long long
@@ -3333,7 +3333,7 @@ typedef union
 } TGL_IMC_CR_TC_ODT;	/* ODT timing parameters			*/
 
 typedef union
-{	/* Device: 0 - Function: 0 - Offset Channel0: E070h & Channel1: XX70h */
+{	/* Device: 0 - Function: 0 - Offset Channel0: E070h & Channel1: E870h */
 	unsigned long long	value;
 	struct {
 		unsigned long long
@@ -3370,7 +3370,7 @@ typedef union
 } TGL_IMC_REFRESH_TC;	/* Refresh timing parameters			*/
 
 typedef union
-{	/* Device: 0 - Function: 0 - Offset Channel0: E43Ch & Channel1: XX3Ch */
+{	/* Device: 0 - Function: 0 - Offset Channel0: E43Ch & Channel1: EC3Ch */
 	unsigned int		value;
 	struct {
 		unsigned int

@@ -4343,13 +4343,7 @@ void Query_SKL_IMC(void __iomem *mchmap, unsigned short mc)
 	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADD0.Dimm_S_Size != 0))
 	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADD1.Dimm_L_Size != 0)
 	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADD1.Dimm_S_Size != 0));
-	/*		Count of populated DIMMs L and DIMMs S	TODO
-	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = \
-	  ((PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADD0.Dimm_L_Size != 0)
-	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADD1.Dimm_L_Size != 0))
-	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADD0.Dimm_S_Size != 0)
-	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADD1.Dimm_S_Size != 0));
-	*/
+
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
 
     for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
@@ -4409,13 +4403,7 @@ void Query_RKL_IMC(void __iomem *mchmap, unsigned short mc)
 	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADD0.Dimm_S_Size != 0))
 	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADD1.Dimm_L_Size != 0)
 	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADD1.Dimm_S_Size != 0));
-	/*		Count of populated DIMMs L and DIMMs S	TODO
-	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = \
-	  ((PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADD0.Dimm_L_Size != 0)
-	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADD1.Dimm_L_Size != 0))
-	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADD0.Dimm_S_Size != 0)
-	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADD1.Dimm_S_Size != 0));
-	*/
+
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
 
     for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
@@ -4456,7 +4444,7 @@ void Query_RKL_IMC(void __iomem *mchmap, unsigned short mc)
 }
 
 void Query_TGL_IMC(void __iomem *mchmap, unsigned short mc)
-{	/*Source: 11th Generation Intel® Core Processor Datasheet Vol 2*/
+{	/*Source: 11th Generation Intel® Core Processor Datasheet Vol 2 */
 	unsigned short cha;
 
 	/*		Intra channel configuration			*/
@@ -4478,19 +4466,13 @@ void Query_TGL_IMC(void __iomem *mchmap, unsigned short mc)
 	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD0.Dimm_S_Size != 0))
 	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD1.Dimm_L_Size != 0)
 	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD1.Dimm_S_Size != 0));
-	/*		TODO(Count of populated DIMMs L and DIMMs S)
-	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = \
-	  ((PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD0.Dimm_L_Size != 0)
-	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD1.Dimm_L_Size != 0))
-	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD0.Dimm_S_Size != 0)
-	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD1.Dimm_S_Size != 0));
-	*/
+
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
 
     for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
     {
 	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.Timing.value = \
-					readl(mchmap + 0x4000 + 0x400 * cha);
+					readq(mchmap + 0x4000 + 0x400 * cha);
 
 	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.ACT.value = \
 					readl(mchmap + 0x4008 + 0x400 * cha);
@@ -4518,6 +4500,69 @@ void Query_TGL_IMC(void __iomem *mchmap, unsigned short mc)
 
 	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.Refresh.value = \
 					readl(mchmap + 0x423c + 0x400 * cha);
+    }
+    if (mc == 0) {
+	Query_Turbo_TDP_Config(mchmap);
+    }
+}
+
+void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
+{	/*Source: 12th Generation Intel® Core Processor Datasheet Vol 2 */
+	unsigned short cha;
+
+	/*		Intra channel configuration			*/
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADCH.value = readl(mchmap+0xd800);
+    if (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADCH.CH_L_MAP)
+    {
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADC0.value = readl(mchmap+0xd808);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADC1.value = readl(mchmap+0xd804);
+    } else {
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADC0.value = readl(mchmap+0xd804);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADC1.value = readl(mchmap+0xd808);
+    }
+	/*		DIMM parameters					*/
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.value = readl(mchmap+0xd80c);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.value = readl(mchmap+0xd810);
+	/*		Sum up any present DIMM per channel.		*/
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
+	  ((PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.Dimm_L_Size != 0)
+	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.Dimm_S_Size != 0))
+	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.Dimm_L_Size != 0)
+	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.Dimm_S_Size != 0));
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
+
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
+    {
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.Timing.value = \
+					readq(mchmap + 0xe000 + 0x800 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.ACT.value = \
+					readl(mchmap + 0xe008 + 0x800 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.RDRD.value = \
+					readl(mchmap + 0xe00c + 0x800 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.RDWR.value = \
+					readl(mchmap + 0xe010 + 0x800 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.WRRD.value = \
+					readl(mchmap + 0xe014 + 0x800 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.WRWR.value = \
+					readl(mchmap + 0xe018 + 0x800 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.Sched.value = \
+					readq(mchmap + 0xe088 + 0x800 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.PWDEN.value = \
+					readq(mchmap + 0xe050 + 0x800 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.ODT.value = \
+					readq(mchmap + 0xe070 + 0x800 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.Refresh.value = \
+					readl(mchmap + 0xe43c + 0x800 * cha);
     }
     if (mc == 0) {
 	Query_Turbo_TDP_Config(mchmap);
@@ -5058,6 +5103,21 @@ static PCI_CALLBACK TGL_IMC(struct pci_dev *dev)
 	}
 	pci_read_config_dword(dev, 0xf0,
 				&PUBLIC(RO(Proc))->Uncore.Bus.TGL_Cap_E.value);
+	return rc;
+}
+
+static PCI_CALLBACK ADL_IMC(struct pci_dev *dev)
+{	/* Source: 12th Generation Intel Core Processors datasheet, vol 2 */
+	PCI_CALLBACK rc = 0;
+	unsigned short mc;
+
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 2;
+	/* MCHBAR corresponds to bits 41 to 17 ; two MC x 64KB memory space */
+	for (mc = 0; mc < PUBLIC(RO(Proc))->Uncore.CtrlCount; mc++) {
+		rc = SKL_HOST(dev, Query_ADL_IMC, 0x10000, mc);
+	}
+	pci_read_config_dword(dev, 0xf0,
+				&PUBLIC(RO(Proc))->Uncore.Bus.ADL_Cap_E.value);
 	return rc;
 }
 
@@ -7963,7 +8023,7 @@ void PowerThermal(CORE_RO *Core)
 		{_Tigerlake,		1, 1, 1, 0},
 		{_Tigerlake_U,		1, 1, 0, 0},	/* 06_8C */
 		{_Cometlake,		1, 1, 1, 0},
-		{_Cometlake_UY,		1, 1, 1, 0},
+		{_Cometlake_UY ,	1, 1, 1, 0},
 		{_Atom_Denverton,	1, 1, 1, 0},
 		{_Tremont_Jacobsville,	1, 1, 1, 0},
 		{_Tremont_Lakefield,	1, 1, 1, 0},
@@ -7971,7 +8031,9 @@ void PowerThermal(CORE_RO *Core)
 		{_Tremont_Jasperlake,	1, 1, 1, 0},
 		{_Sapphire_Rapids,	1, 1, 1, 0},
 		{_Rocketlake,		1, 1, 1, 0},
-		{_Rocketlake_U,		1, 1, 1, 0}
+		{_Rocketlake_U ,	1, 1, 1, 0},
+		{_Alderlake_S,		1, 1, 1, 0},
+		{_Alderlake_H,		1, 1, 1, 0}
 	};
 	unsigned int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
  for (id = 0; id < ids; id++)

@@ -536,7 +536,7 @@ typedef struct
 	/* 423Ch */		RKL_IMC_REFRESH_TC	Refresh; /*32 bits    */
 			} RKL;
 			struct {
-	/* 4000h */		TGL_IMC_CR_TC_PRE	Timing; /* 32 bits    */
+	/* 4000h */		TGL_IMC_CR_TC_PRE	Timing; /* 64 bits    */
 	/* 4008h */		TGL_IMC_CR_TC_ACT	ACT;	/* 32 bits    */
 	/* 400Ch */		TGL_IMC_CR_TC_RDRD	RDRD;	/* 32 bits    */
 	/* 4010h */		TGL_IMC_CR_TC_RDWR	RDWR;	/* 32 bits    */
@@ -547,6 +547,18 @@ typedef struct
 	/* 4088h */		TGL_IMC_SC_GS_CFG	Sched;	/* 64 bits    */
 	/* 423Ch */		TGL_IMC_REFRESH_TC	Refresh; /*32 bits    */
 			} TGL;
+			struct {
+	/* E000h */		ADL_IMC_CR_TC_PRE	Timing; /* 64 bits    */
+	/* E008h */		ADL_IMC_CR_TC_ACT	ACT;	/* 32 bits    */
+	/* E00Ch */		ADL_IMC_CR_TC_RDRD	RDRD;	/* 32 bits    */
+	/* E010h */		ADL_IMC_CR_TC_RDWR	RDWR;	/* 32 bits    */
+	/* E014h */		ADL_IMC_CR_TC_WRRD	WRRD;	/* 32 bits    */
+	/* E018h */		ADL_IMC_CR_TC_WRWR	WRWR;	/* 32 bits    */
+	/* E050h */		ADL_IMC_TC_PWDEN	PWDEN;	/* 64-bits    */
+	/* E070h */		ADL_IMC_CR_TC_ODT	ODT;	/* 64 bits    */
+	/* E088h */		ADL_IMC_SC_GS_CFG	Sched;	/* 64 bits    */
+	/* E43Ch */		ADL_IMC_REFRESH_TC	Refresh; /*32 bits    */
+			} ADL;
 			struct {
 	/* 88h */		AMD_0F_DRAM_TIMING_LOW	DTRL;	/* 32 bits    */
 			} AMD0Fh;
@@ -656,6 +668,13 @@ typedef struct
 	/* 5010h */				MADD1;		/* 32 bits    */
 		} TGL;
 		struct {
+	/* D800h */	ADL_IMC_MAD_MAPPING	MADCH;		/* 32 bits    */
+	/* D804h */	ADL_IMC_MAD_CHANNEL	MADC0,		/* 32 bits    */
+	/* D808h */				MADC1;		/* 32 bits    */
+	/* D80Ch */	ADL_IMC_MAD_DIMM	MADD0,		/* 32 bits    */
+	/* D810h */				MADD1;		/* 32 bits    */
+		} ADL;
+		struct {
 	/* 90h */	AMD_0F_DRAM_CONFIG_LOW	DCRL;		/* 32 bits    */
 	/* 94h */	AMD_0F_DRAM_CONFIG_HIGH DCRH;		/* 32 bits    */
 		} AMD0Fh;
@@ -710,6 +729,12 @@ typedef struct
 			TGL_CAPID_B		TGL_Cap_B;
 			TGL_CAPID_C		TGL_Cap_C;
 			TGL_CAPID_E		TGL_Cap_E;
+		};
+		struct {
+			TGL_CAPID_A		ADL_Cap_A;
+			TGL_CAPID_B		ADL_Cap_B;
+			TGL_CAPID_C		ADL_Cap_C;
+			TGL_CAPID_E		ADL_Cap_E;
 		};
 		struct {
 			AMD_0F_HTT_NODE_ID	NodeID;
@@ -1258,9 +1283,14 @@ typedef struct
 #define DID_INTEL_ROCKETLAKE_Q570_PCH	0x4384
 #define DID_INTEL_ROCKETLAKE_Z590_PCH	0x4385
 #define DID_INTEL_ROCKETLAKE_W580_PCH	0x438f
+/* Source: 12th Generation Intel Core Processors datasheet, vol 1	*/
+#define DID_INTEL_ALDERLAKE_S_8P_8E_IMC 0x4660
+#define DID_INTEL_ALDERLAKE_S_8P_4E_IMC 0x4668
+#define DID_INTEL_ALDERLAKE_S_6P_4E_IMC 0x4648
 /* Source: Linux: arch/x86/events/intel/uncore_snb.c			*/
-#define DID_INTEL_ALDERLAKE_1_IMC	0x4660
-#define DID_INTEL_ALDERLAKE_2_IMC	0x4641
+#define DID_INTEL_ALDERLAKE_H_IMC	0x4641
+/* Source: Intel 600 Series Chipset Family Platform Controller Hub	*/
+#define DID_INTEL_ALDERLAKE_Z690_PCH	0x7a84
 /* Source: /include/linux/pci_ids.h					*/
 #define DID_AMD_K8_NB_MEMCTL		0x1102
 #define DID_AMD_K8_NB			0x1100

@@ -4402,6 +4402,237 @@ void TGL_IMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 
 #define TGL_CAP RKL_CAP
 
+void ADL_IMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+{
+	unsigned short mc, cha;
+
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+    {
+	Shm->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
+	Shm->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
+
+     for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+     {
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ODT.tCL;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tRP;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tRP;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tRAS;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ACT.tRRD_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Refresh.tRFC;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Refresh.tREFI;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tWRPRE
+			- RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ODT.tCWL -4U;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tRDPRE;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tWRPRE;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ACT.tFAW;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ODT.tCWL;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_SG = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDRD.tRDRD_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DG = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDRD.tRDRD_DG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DR = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDRD.tRDRD_DR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DD = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDRD.tRDRD_DD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_SG = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDWR.tRDWR_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DG = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDWR.tRDWR_DG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DR = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDWR.tRDWR_DR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DD = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDWR.tRDWR_DD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_SG = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRRD.tWRRD_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DG = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRRD.tWRRD_DG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DR = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRRD.tWRRD_DR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DD = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRRD.tWRRD_DD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_SG = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRWR.tWRWR_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DG = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRWR.tWRWR_DG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DR = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRWR.tWRWR_DR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DD = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRWR.tWRWR_DD;
+
+	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Sched.CMD_Stretch) {
+	case 0b00:
+	case 0b11:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+		break;
+	case 0b01:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+		break;
+	case 0b10:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 3;
+		break;
+	}
+
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Banks = \
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Banks = \
+	!RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Sched.ReservedBits1 ? 16 : 8;
+
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Cols = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Sched.x8_device_Dimm0 ?
+			1024 : 512;
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Cols = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Sched.x8_device_Dimm1 ?
+			1024 : 512;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE  = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.PWDEN.tCKE;
+     }
+	Shm->Uncore.MC[mc].Channel[0].Timing.ECC = \
+				RO(Proc)->Uncore.MC[mc].ADL.MADC0.ECC;
+
+	Shm->Uncore.MC[mc].Channel[1].Timing.ECC = \
+				RO(Proc)->Uncore.MC[mc].ADL.MADC1.ECC;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
+	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_L_Size;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		!RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
+	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_S_Size;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
+	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_L_Size;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
+	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_S_Size;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
+	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD0.DLNOR;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		!RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
+	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD0.DSNOR;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
+	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD1.DLNOR;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
+	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD1.DSNOR;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
+	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD0.DLW);
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		!RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
+	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD0.DSW);
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
+	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD1.DLW);
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
+	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD1.DSW);
+    }
+}
+
+void ADL_CAP(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
+{
+	unsigned int units = 12;
+	unsigned short mc;
+
+	Shm->Uncore.Bus.Rate = 8000;
+	Shm->Uncore.Bus.Speed = (RO(Core)->Clock.Hz * Shm->Uncore.Bus.Rate)
+				/ Shm->Proc.Features.Factory.Clock.Hz;
+
+  for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+    if (RO(Proc)->Uncore.MC[mc].ADL.MADCH.value) {
+	switch (RO(Proc)->Uncore.MC[mc].ADL.MADCH.DDR_TYPE) {
+	default:
+	case 0b00:	/*	DDR4	*/
+		Shm->Uncore.Unit.DDR_Ver = 4;
+
+		if ((RO(Proc)->Uncore.Bus.ADL_Cap_C.DDR4_EN)
+		 && (RO(Proc)->Uncore.Bus.ADL_Cap_A.DDR_OVERCLOCK == 0))
+		{
+			units = RO(Proc)->Uncore.Bus.ADL_Cap_C.DATA_RATE_DDR4;
+		}
+		break;
+	case 0b11:	/*	LPDDR4	*/
+		Shm->Uncore.Unit.DDR_Ver = 4;
+
+		if ((RO(Proc)->Uncore.Bus.ADL_Cap_C.LPDDR4_EN)
+		 && (RO(Proc)->Uncore.Bus.ADL_Cap_A.DDR_OVERCLOCK == 0))
+		{
+			units = RO(Proc)->Uncore.Bus.ADL_Cap_C.DATA_RATE_LPDDR4;
+		}
+		break;
+	case 0b01:	/*	DDR5	*/
+		Shm->Uncore.Unit.DDR_Ver = 5;
+		break;
+	case 0b10:	/*	LPDDR5	*/
+		Shm->Uncore.Unit.DDR_Ver = 5;
+		break;
+	}
+    }
+  }
+	Shm->Uncore.CtrlSpeed = (266 * units) + ((333 * units) / 500);
+
+	Shm->Uncore.Unit.Bus_Rate = 0b01;
+	Shm->Uncore.Unit.BusSpeed = 0b01;
+	Shm->Uncore.Unit.DDR_Rate = 0b11;
+	Shm->Uncore.Unit.DDRSpeed = 0b00;
+
+    Shm->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.ADL_Cap_A.VT_d;
+    Shm->Proc.Technology.IOMMU_Ver_Major = RO(Proc)->Uncore.Bus.IOMMU_Ver.Major;
+    Shm->Proc.Technology.IOMMU_Ver_Minor = RO(Proc)->Uncore.Bus.IOMMU_Ver.Minor;
+}
+
 void AMD_0Fh_MCH(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 {
     struct {
@@ -4956,6 +5187,7 @@ static char *Chipset[CHIPSETS] = {
 	[IC_Q570]		= "Intel Q570",
 	[IC_Z590]		= "Intel Z590",
 	[IC_W580]		= "Intel W580",
+	[IC_Z690]		= "Intel Z690",
 	[IC_K8] 		= "K8/HyperTransport",
 	[IC_ZEN]		= "Zen UMC"
 };
@@ -5379,10 +5611,14 @@ void PCI_Intel(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 	case DID_INTEL_ROCKETLAKE_W580_PCH:
 		SET_CHIPSET(IC_W580);
 		break;
-	case DID_INTEL_ALDERLAKE_1_IMC:
-	case DID_INTEL_ALDERLAKE_2_IMC:
-		RKL_CAP(Shm, RO(Proc), RO(Core));
-		RKL_IMC(Shm, RO(Proc));
+	case DID_INTEL_ALDERLAKE_S_8P_8E_IMC:
+	case DID_INTEL_ALDERLAKE_S_8P_4E_IMC:
+	case DID_INTEL_ALDERLAKE_S_6P_4E_IMC:
+		ADL_CAP(Shm, RO(Proc), RO(Core));
+		ADL_IMC(Shm, RO(Proc));
+		break;
+	case DID_INTEL_ALDERLAKE_Z690_PCH:
+		SET_CHIPSET(IC_Z690);
 		break;
 	}
 }
