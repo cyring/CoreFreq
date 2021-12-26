@@ -1166,15 +1166,15 @@
 #define RSC_DDR4_WRWR_DD_COMM_CODE_EN	\
 				" tWRWR ( Write to Write, Different DIMM ) "
 
+#define RSC_DDR4_RRD_S_COMM_CODE_EN \
+		" tRRD_S ( Activate to Activate, Different Bank Group ) "
+
+#define RSC_DDR4_RRD_L_COMM_CODE_EN \
+			" tRRD_L ( Activate to Activate, Same Bank Group ) "
+
 #define RSC_DDR4_ZEN_RCD_R_COMM_CODE_EN " tRCD_R ( Activate to Read CAS ) "
 #define RSC_DDR4_ZEN_RCD_W_COMM_CODE_EN " tRCD_W ( Activate to Write CAS ) "
 #define RSC_DDR4_ZEN_RC_COMM_CODE_EN	" tRC ( Activate to Activate ) "
-
-#define RSC_DDR4_ZEN_RRD_S_COMM_CODE_EN \
-		" tRRD_S ( Activate to Activate, Different Bank Group ) "
-
-#define RSC_DDR4_ZEN_RRD_L_COMM_CODE_EN \
-			" tRRD_L ( Activate to Activate, Same Bank Group ) "
 
 #define RSC_DDR4_ZEN_WTR_S_COMM_CODE_EN \
 			" tWTR_S ( Write to Read, Different Bank Group ) "
@@ -2040,6 +2040,8 @@
 #define RSC_DDR4_WRWR_SC_CODE		" dgWW"
 #define RSC_DDR4_WRWR_SD_CODE		" drWW"
 #define RSC_DDR4_WRWR_DD_CODE		" ddWW"
+#define RSC_DDR4_RRD_S_CODE		" RRDS"
+#define RSC_DDR4_RRD_L_CODE		" RRDL"
 #define RSC_DDR4_CKE_CODE		" CKE "
 #define RSC_DDR4_ECC_CODE		"  ECC"
 
@@ -2049,8 +2051,6 @@
 #define RSC_DDR4_ZEN_RP_CODE		"  RP "
 #define RSC_DDR4_ZEN_RAS_CODE		" RAS "
 #define RSC_DDR4_ZEN_RC_CODE		"  RC "
-#define RSC_DDR4_ZEN_RRD_S_CODE 	" RRDS"
-#define RSC_DDR4_ZEN_RRD_L_CODE 	" RRDL"
 #define RSC_DDR4_ZEN_FAW_CODE		" FAW "
 #define RSC_DDR4_ZEN_WTR_S_CODE 	" WTRS"
 #define RSC_DDR4_ZEN_WTR_L_CODE 	" WTRL"

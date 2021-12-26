@@ -5527,16 +5527,16 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 			RSC(DDR4_RCD).CODE(),
 			RSC(DDR4_RP).CODE(),
 			RSC(DDR4_RAS).CODE(),
-			RSC(DDR4_RRD).CODE(),
-			RSC(DDR4_RFC).CODE(),
+			RSC(DDR4_RRD_S).CODE(),
+			RSC(DDR4_RRD_L).CODE(),
+			RSC(DDR4_FAW).CODE(),
 			RSC(DDR4_WR).CODE(),
 			RSC(DDR4_RTP).CODE(),
 			RSC(DDR4_WTP).CODE(),
-			RSC(DDR4_FAW).CODE(),
-			RSC(DDR4_B2B).CODE(),
 			RSC(DDR4_CWL).CODE(),
+			RSC(DDR4_CKE).CODE(),
 			RSC(DDR4_CMD).CODE(),
-			RSC(DDR4_REFI).CODE()
+			RSC(DDR4_B2B).CODE()
 		},
 		{
 			RSC(MEM_CTRL_MTY_CELL).CODE(),
@@ -5568,8 +5568,8 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 			RSC(MEM_CTRL_MTY_CELL).CODE(),
 			RSC(MEM_CTRL_MTY_CELL).CODE(),
 			RSC(MEM_CTRL_MTY_CELL).CODE(),
-			RSC(MEM_CTRL_MTY_CELL).CODE(),
-			RSC(DDR4_CKE).CODE(),
+			RSC(DDR4_REFI).CODE(),
+			RSC(DDR4_RFC).CODE(),
 			RSC(DDR4_ECC).CODE()
 		}
 	};
@@ -5580,16 +5580,16 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 			RSC(DDR3_RCD_COMM).CODE(),
 			RSC(DDR3_RP_COMM).CODE(),
 			RSC(DDR3_RAS_COMM).CODE(),
-			RSC(DDR3_RRD_COMM).CODE(),
-			RSC(DDR3_RFC_COMM).CODE(),
+			RSC(DDR4_RRD_S_COMM).CODE(),
+			RSC(DDR4_RRD_L_COMM).CODE(),
+			RSC(DDR3_FAW_COMM).CODE(),
 			RSC(DDR3_WR_COMM).CODE(),
 			RSC(DDR3_RTP_COMM).CODE(),
 			RSC(DDR3_WTP_COMM).CODE(),
-			RSC(DDR3_FAW_COMM).CODE(),
-			RSC(DDR3_B2B_COMM).CODE(),
 			RSC(DDR3_CWL_COMM).CODE(),
+			RSC(DDR3_CKE_COMM).CODE(),
 			RSC(DDR3_CMD_COMM).CODE(),
-			RSC(DDR3_REFI_COMM).CODE()
+			RSC(DDR3_B2B_COMM).CODE()
 		},
 		{
 			NULL,
@@ -5621,8 +5621,8 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 			NULL,
 			NULL,
 			NULL,
-			NULL,
-			RSC(DDR3_CKE_COMM).CODE(),
+			RSC(DDR3_REFI_COMM).CODE(),
+			RSC(DDR3_RFC_COMM).CODE(),
 			RSC(DDR3_ECC_COMM).CODE()
 		}
 	};
@@ -5645,16 +5645,16 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRCD);
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRP);
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRAS);
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRRD);
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRFC);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRRDS);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRRDL);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tFAW);
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tWR);
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRTPr);
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tWTPr);
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tFAW);
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).B2B);
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tCWL);
+		PRT(IMC, attrib[1], "%4u\x20", TIMING(mc, cha).tCKE);
 		PRT(IMC, attrib[1], "%3uT\x20", TIMING(mc, cha).CMD_Rate);
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tREFI);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).B2B);
 	}
 	for (nc = 0; nc < MC_MATX; nc++) {
 		GridHover(	PRT(IMC, attrib[0], Header_DDR4[1][nc]),
@@ -5696,11 +5696,12 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tWRWR_DR);
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tWRWR_DD);
 
-		for (nc = 0; nc < 8; nc++) {
+		for (nc = 0; nc < 7; nc++) {
 			PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
 		}
-		PRT(IMC, attrib[1], "%4u\x20", TIMING(mc, cha).tCKE);
-		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).ECC);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tREFI);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRFC);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).ECC);
 	}
 }
 
@@ -5715,8 +5716,8 @@ void Timing_DDR4_Zen(Window *win,CELL_FUNC OutFunc,CUINT *nl, unsigned short mc)
 			RSC(DDR4_ZEN_RP).CODE(),
 			RSC(DDR4_ZEN_RAS).CODE(),
 			RSC(DDR4_ZEN_RC).CODE(),
-			RSC(DDR4_ZEN_RRD_S).CODE(),
-			RSC(DDR4_ZEN_RRD_L).CODE(),
+			RSC(DDR4_RRD_S).CODE(),
+			RSC(DDR4_RRD_L).CODE(),
 			RSC(DDR4_ZEN_FAW).CODE(),
 			RSC(DDR4_ZEN_WTR_S).CODE(),
 			RSC(DDR4_ZEN_WTR_L).CODE(),
@@ -5785,8 +5786,8 @@ void Timing_DDR4_Zen(Window *win,CELL_FUNC OutFunc,CUINT *nl, unsigned short mc)
 			RSC(DDR3_RP_COMM).CODE(),
 			RSC(DDR3_RAS_COMM).CODE(),
 			RSC(DDR4_ZEN_RC_COMM).CODE(),
-			RSC(DDR4_ZEN_RRD_S_COMM).CODE(),
-			RSC(DDR4_ZEN_RRD_L_COMM).CODE(),
+			RSC(DDR4_RRD_S_COMM).CODE(),
+			RSC(DDR4_RRD_L_COMM).CODE(),
 			RSC(DDR3_FAW_COMM).CODE(),
 			RSC(DDR4_ZEN_WTR_S_COMM).CODE(),
 			RSC(DDR4_ZEN_WTR_L_COMM).CODE(),

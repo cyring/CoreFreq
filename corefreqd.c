@@ -3768,8 +3768,11 @@ void SKL_IMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Timing.tRAS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  = \
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDS = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.ACT.tRRD_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDL = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.ACT.tRRD_DG;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Refresh.tRFC;
@@ -4013,8 +4016,11 @@ void RKL_IMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Timing.tRAS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  = \
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDS = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.ACT.tRRD_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDL = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.ACT.tRRD_DG;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Refresh.tRFC;
@@ -4244,8 +4250,11 @@ void TGL_IMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Timing.tRAS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  = \
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDS = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.ACT.tRRD_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDL = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.ACT.tRRD_DG;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Refresh.tRFC;
@@ -4425,8 +4434,11 @@ void ADL_IMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tRAS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  = \
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDS = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ACT.tRRD_SG;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDL = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ACT.tRRD_DG;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Refresh.tRFC;
