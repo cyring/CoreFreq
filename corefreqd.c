@@ -1522,6 +1522,12 @@ void PowerInterface(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
   }
 }
 
+void ThermalPoint(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+{
+	memcpy(&Shm->Proc.ThermalPoint, &RO(Proc)->ThermalPoint,
+		sizeof(THERMAL_POINT));
+}
+
 void Technology_Update(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc))
 {	/* Technologies aggregation.					*/
 	Shm->Proc.Technology.PowerNow = (Shm->Proc.PowerNow == 0b11);
@@ -1775,10 +1781,9 @@ void Package_Update(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc))
 
 	PowerInterface(Shm, RO(Proc));
 
-	Mitigation_1st_Stage(Shm, RO(Proc), RW(Proc));
+	ThermalPoint(Shm, RO(Proc));
 
-	memcpy(&Shm->Proc.ThermalPoint, &RO(Proc)->ThermalPoint,
-		sizeof(THERMAL_POINT));
+	Mitigation_1st_Stage(Shm, RO(Proc), RW(Proc));
 }
 
 typedef struct {
@@ -7236,7 +7241,7 @@ REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
 		sigemptyset(&Ref.Signal);
 
 		Package_Update(Shm, RO(Proc), RW(Proc));
-		Uncore_Update(Shm,RO(Proc),RO(Core,AT(RO(Proc)->Service.Core)));
+
 		memcpy(&Shm->SMB, &RO(Proc)->SMB, sizeof(SMBIOS_ST));
 
 		/*		Clear notification.			*/
