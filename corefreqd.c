@@ -3875,6 +3875,9 @@ void SKL_IMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Sched.tCKE;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCPDED = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Sched.tCPDED;
      }
 	Shm->Uncore.MC[mc].Channel[0].Timing.ECC = \
 				RO(Proc)->Uncore.MC[mc].SKL.MADC0.ECC;
@@ -4123,6 +4126,9 @@ void RKL_IMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.PWDEN.tCKE;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCPDED = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Sched.tCPDED;
      }
 	Shm->Uncore.MC[mc].Channel[0].Timing.ECC = \
 				RO(Proc)->Uncore.MC[mc].RKL.MADC0.ECC;
@@ -4357,6 +4363,9 @@ void TGL_IMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.PWDEN.tCKE;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCPDED = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Sched.tCPDED;
      }
 	Shm->Uncore.MC[mc].Channel[0].Timing.ECC = \
 				RO(Proc)->Uncore.MC[mc].TGL.MADC0.ECC;
@@ -4541,6 +4550,9 @@ void ADL_IMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.PWDEN.tCKE;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCPDED = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Sched.tCPDED;
      }
 	Shm->Uncore.MC[mc].Channel[0].Timing.ECC = \
 				RO(Proc)->Uncore.MC[mc].ADL.MADC0.ECC;
@@ -5025,8 +5037,11 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 	Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tWrRdScDLR = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR10.tWrRdScDLR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE  = \
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR21.tCKE;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCPDED = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR21.tCPDED;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR12.tREFI;

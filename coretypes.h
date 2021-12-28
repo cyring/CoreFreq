@@ -1463,7 +1463,9 @@ typedef struct
 		} Zen;
 	};
 	unsigned int	tCKE,
-			tREFI;
+			tCPDED;
+
+	unsigned int	tREFI;
 	union {
 	unsigned int	tRFC;
 	unsigned int	tRFC1;

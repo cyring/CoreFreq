@@ -1172,6 +1172,8 @@
 #define RSC_DDR4_RRD_L_COMM_CODE_EN \
 			" tRRD_L ( Activate to Activate, Same Bank Group ) "
 
+#define RSC_DDR4_CPDED_COMM_CODE_EN " tCPDED ( Command Pass Disable Delay ) "
+
 #define RSC_DDR4_ZEN_RCD_R_COMM_CODE_EN " tRCD_R ( Activate to Read CAS ) "
 #define RSC_DDR4_ZEN_RCD_W_COMM_CODE_EN " tRCD_W ( Activate to Write CAS ) "
 #define RSC_DDR4_ZEN_RC_COMM_CODE_EN	" tRC ( Activate to Activate ) "
@@ -2043,6 +2045,7 @@
 #define RSC_DDR4_RRD_S_CODE		" RRDS"
 #define RSC_DDR4_RRD_L_CODE		" RRDL"
 #define RSC_DDR4_CKE_CODE		" CKE "
+#define RSC_DDR4_CPDED_CODE		"CPDED"
 #define RSC_DDR4_ECC_CODE		"  ECC"
 
 #define RSC_DDR4_ZEN_CL_CODE		"  CL "
@@ -2089,7 +2092,7 @@
 #define RSC_DDR4_ZEN_MOD_CODE		" MOD:"
 #define RSC_DDR4_ZEN_MRD_PDA_CODE	"PDA  "
 #define RSC_DDR4_ZEN_MOD_PDA_CODE	"PDA  "
-#define RSC_DDR4_ZEN_STAG_CODE		"STAG "
+#define RSC_DDR4_ZEN_STAG_CODE		" STAG"
 #define RSC_DDR4_ZEN_PDM_CODE		" PDM "
 #define RSC_DDR4_ZEN_PHYWRD_CODE	"Y[WRD"
 #define RSC_DDR4_ZEN_PHYWRL_CODE	"  WRL"

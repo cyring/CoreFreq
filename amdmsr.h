@@ -1629,13 +1629,13 @@ typedef union
 } AMD_17_UMC_TIMING_DTR20;
 
 typedef union
-{	/* SMU: address = { 0x50254 , 0x50255 , 0x50256 , 0x50257 }	*/
+{	/* SMU: address = 0x50254					*/
 	unsigned int		value;
 	struct {
 		unsigned int
 		tXP		:  6-0,
 		ReservedBits1	: 16-6,
-		tPDE		: 20-16, /* POWERDOWN Entry to CMD Bus	*/
+		tCPDED		: 20-16, /* Command pass disable delay	*/
 		ReservedBits2	: 24-20,
 		tCKE		: 29-24, /*	Clock Enable Time	*/
 		ReservedBits3	: 32-29;
