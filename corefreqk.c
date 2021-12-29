@@ -1995,7 +1995,7 @@ static void Map_AMD_Topology(void *arg)
 		factor = factor & (Core->T.CoreID < 32);
 
 		Core->T.Cluster.Node=leaf8000001e.ECX.NodeId;
-		Core->T.Cluster.CCD = (Core->T.CoreID << factor) >> 3;
+		Core->T.Cluster.CCD = (Core->T.CoreID >> 3) << factor;
 		Core->T.Cluster.CCX = Core->T.CoreID >> 2;
 	    } else {	/*	Fallback algorithm.			*/
 		Core->T.ApicID    = leaf1_ebx.Init_APIC_ID;
