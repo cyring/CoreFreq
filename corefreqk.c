@@ -6495,22 +6495,20 @@ static long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
   }
 }
 
-void Query_AMD_F17h_Power_Limits(CORE_RO *Core)
-{
-	UNUSED(Core);
-	/*		Package Power Tracking				*/
-	Core_AMD_SMN_Read( PUBLIC(RO(Proc))->PowerThermal.Zen.PWR,
+void Query_AMD_F17h_Power_Limits(PROC_RO *Pkg)
+{	/*		Package Power Tracking				*/
+	Core_AMD_SMN_Read( Pkg->PowerThermal.Zen.PWR,
 				SMU_AMD_F17H_ZEN2_MCM_PWR,
 				PRIVATE(OF(Zen)).Device.DF );
 	/*		Junction Temperature				*/
-	PUBLIC(RO(Proc))->PowerThermal.Param.Offset[0] = \
+	Pkg->PowerThermal.Param.Offset[0] = \
 				PUBLIC(RO(Proc))->PowerThermal.Zen.PWR.TjMax;
 	/*		Thermal Design Power				*/
-	Core_AMD_SMN_Read( PUBLIC(RO(Proc))->PowerThermal.Zen.TDP,
+	Core_AMD_SMN_Read( Pkg->PowerThermal.Zen.TDP,
 				SMU_AMD_F17H_ZEN2_MCM_TDP,
 				PRIVATE(OF(Zen)).Device.DF );
 	/*		Electric Design Current				*/
-	Core_AMD_SMN_Read( PUBLIC(RO(Proc))->PowerThermal.Zen.EDC,
+	Core_AMD_SMN_Read( Pkg->PowerThermal.Zen.EDC,
 				SMU_AMD_F17H_ZEN2_MCM_EDC,
 				PRIVATE(OF(Zen)).Device.DF );
 }
@@ -6532,8 +6530,6 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
     }
 	Default_Unlock_Reset();
-
-	Query_AMD_F17h_Power_Limits( PUBLIC(RO(Core, AT(cpu))) );
 
 	if (Compute_AMD_Zen_Boost(cpu) == true)
 	{	/*	Count the Xtra Boost ratios			*/
@@ -6665,6 +6661,10 @@ static void Query_AMD_F17h_PerSocket(unsigned int cpu)
 	Probe_AMD_DataFabric();
 
 	Query_AMD_Family_17h(cpu);
+
+	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
+		Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
+	}
 #if defined(FEAT_DBG) && (FEAT_DBG > 1)
 	if (AMD_SBRMI_Init() == 0) {
 		Query_AMD_SBRMI();
@@ -6679,6 +6679,10 @@ static void Query_AMD_F17h_PerCluster(unsigned int cpu)
 	Probe_AMD_DataFabric();
 
 	Query_AMD_Family_17h(cpu);
+
+	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
+		Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
+	}
 #if defined(FEAT_DBG) && (FEAT_DBG > 1)
 	if (AMD_SBRMI_Init() == 0) {
 		Query_AMD_SBRMI();
