@@ -1238,6 +1238,7 @@ typedef struct
 /* Source: 8th Generation Intel® Core™ Processor Families Datasheet Vol2 */
 #define DID_INTEL_WHISKEYLAKE_U_IMC_HAD 0x3e35
 #define DID_INTEL_WHISKEYLAKE_U_IMC_HAQ 0x3e34
+#define DID_INTEL_CANNONLAKE_U_IMC_HB	0x5a04
 /* Source: Intel 400 Series Chipset Family On-Package Platform Controller Hub */
 #define DID_INTEL_COMETLAKE_S_IMC_6C	0x9b53
 #define DID_INTEL_COMETLAKE_S_IMC_10C	0x9b54

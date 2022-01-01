@@ -2357,6 +2357,10 @@ static struct pci_device_id PCI_Kabylake_ids[] = {
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
+		PCI_VDEVICE(INTEL, DID_INTEL_CANNONLAKE_U_IMC_HB),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
 		PCI_VDEVICE(INTEL, DID_INTEL_COMETLAKE_S_IMC_6C),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
