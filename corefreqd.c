@@ -7344,8 +7344,8 @@ REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
 	if ( (ftruncate(fd->ro, (off_t) roSize) != -1)
 	  && (ftruncate(fd->rw, (off_t) rwSize) != -1) )
 	{
-		fchmod(fd->ro, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-		fchmod(fd->rw, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+		fchmod(fd->ro, S_IRUSR|S_IWUSR|S_IRGRP);
+		fchmod(fd->rw, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
 
 	    if ( ( ( RO(Shm) = mmap(NULL, roSize,
 				PROT_READ|PROT_WRITE, MAP_SHARED,
