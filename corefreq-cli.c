@@ -7523,7 +7523,7 @@ Window *CreateSortByField(unsigned long long id)
 		StoreTCell(wSortBy,SORTBY_COMM, RSC(TASKS_SORTBY_COMM).CODE(),
 						MAKE_PRINT_DROP);
 
-		wSortBy->matrix.select.row = RW(Shm)->SysGate.sortByField;
+		wSortBy->matrix.select.row = Shm->SysGate.sortByField;
 
 		StoreWindow(wSortBy,	.color[0].select, MAKE_PRINT_DROP);
 		StoreWindow(wSortBy,	.color[1].select,
@@ -10334,7 +10334,10 @@ int Shortcut(SCANKEY *scan)
 
     case SCANKEY_SHIFT_n:
 	if ((Draw.View == V_TASKS) && (Draw.Disposal == D_MAINVIEW)) {
-		RING_WRITE(RW(Shm)->Ring[1], COREFREQ_TRACK_PROCESS, (pid_t) 0);
+		RING_WRITE_SUB_CMD(	TASK_TRACKING,
+					RW(Shm)->Ring[1],
+					COREFREQ_TASK_MONITORING,
+					(pid_t) 0 );
 	}
 	break;
 
@@ -10682,8 +10685,9 @@ int Shortcut(SCANKEY *scan)
 
     case SCANKEY_r:
 	if ((Draw.View == V_TASKS) && (Draw.Disposal == D_MAINVIEW)) {
-		RW(Shm)->SysGate.reverseOrder = !RW(Shm)->SysGate.reverseOrder;
-		Draw.Flag.layout = 1;
+		RING_WRITE_SUB_CMD(	TASK_INVERSING,
+					RW(Shm)->Ring[1],
+					COREFREQ_TASK_MONITORING );
 	}
     break;
 
@@ -10712,43 +10716,55 @@ int Shortcut(SCANKEY *scan)
 
     case SORTBY_STATE:
     {
-	RW(Shm)->SysGate.sortByField = F_STATE;
-	Draw.Flag.layout = 1;
+	RING_WRITE_SUB_CMD(	TASK_SORTING,
+				RW(Shm)->Ring[1],
+				COREFREQ_TASK_MONITORING,
+				F_STATE );
     }
     break;
 
     case SORTBY_RTIME:
     {
-	RW(Shm)->SysGate.sortByField = F_RTIME;
-	Draw.Flag.layout = 1;
+	RING_WRITE_SUB_CMD(	TASK_SORTING,
+				RW(Shm)->Ring[1],
+				COREFREQ_TASK_MONITORING,
+				F_RTIME );
     }
     break;
 
     case SORTBY_UTIME:
     {
-	RW(Shm)->SysGate.sortByField = F_UTIME;
-	Draw.Flag.layout = 1;
+	RING_WRITE_SUB_CMD(	TASK_SORTING,
+				RW(Shm)->Ring[1],
+				COREFREQ_TASK_MONITORING,
+				F_UTIME );
     }
     break;
 
     case SORTBY_STIME:
     {
-	RW(Shm)->SysGate.sortByField = F_STIME;
-	Draw.Flag.layout = 1;
+	RING_WRITE_SUB_CMD(	TASK_SORTING,
+				RW(Shm)->Ring[1],
+				COREFREQ_TASK_MONITORING,
+				F_STIME );
     }
     break;
 
     case SORTBY_PID:
     {
-	RW(Shm)->SysGate.sortByField = F_PID;
-	Draw.Flag.layout = 1;
+	RING_WRITE_SUB_CMD(	TASK_SORTING,
+				RW(Shm)->Ring[1],
+				COREFREQ_TASK_MONITORING,
+				F_PID );
     }
     break;
 
     case SORTBY_COMM:
     {
-	RW(Shm)->SysGate.sortByField = F_COMM;
-	Draw.Flag.layout = 1;
+	RING_WRITE_SUB_CMD(	TASK_SORTING,
+				RW(Shm)->Ring[1],
+				COREFREQ_TASK_MONITORING,
+				F_COMM );
     }
     break;
 
@@ -13285,9 +13301,10 @@ int Shortcut(SCANKEY *scan)
 
     default:
       if ((scan->key & TRACK_TASK) && !RING_FULL(RW(Shm)->Ring[1])) {
-	RING_WRITE(	RW(Shm)->Ring[1],
-			COREFREQ_TRACK_PROCESS,
-		(pid_t) scan->key & TRACK_MASK );
+	RING_WRITE_SUB_CMD(	TASK_TRACKING,
+				RW(Shm)->Ring[1],
+				COREFREQ_TASK_MONITORING,
+			(pid_t) scan->key & TRACK_MASK );
       }
       else if (scan->key & SMBIOS_STRING_INDEX)
       {
@@ -14302,8 +14319,8 @@ CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 			.row = row
 		},
 		.length = 21,
-		.attr = hSort[RW(Shm)->SysGate.sortByField].attr,
-		.code = hSort[RW(Shm)->SysGate.sortByField].code
+		.attr = hSort[Shm->SysGate.sortByField].attr,
+		.code = hSort[Shm->SysGate.sortByField].code
 	};
 
 	struct {
@@ -14331,8 +14348,8 @@ CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 			.row = (row + Draw.Area.MaxRows + 1)
 		},
 		.length = 15,
-		.attr = hReverse[RW(Shm)->SysGate.reverseOrder].attr,
-		.code = hReverse[RW(Shm)->SysGate.reverseOrder].code
+		.attr = hReverse[Shm->SysGate.reverseOrder].attr,
+		.code = hReverse[Shm->SysGate.reverseOrder].code
 	};
 
 	LayerDeclare(LAYOUT_TASKS_VALUE_SWITCH, RSZ(LAYOUT_TASKS_VALUE_SWITCH),
@@ -16657,7 +16674,7 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 		StrLenFormat(len, Buffer, TASK_COMM_LEN, "%s",
 				Shm->SysGate.taskList[idx].comm);
 	    } else {
-		switch (RW(Shm)->SysGate.sortByField) {
+		switch (Shm->SysGate.sortByField) {
 		case F_STATE:
 			StrLenFormat(len, Buffer, 2 * TASK_COMM_LEN + 2,
 					"%s(%s)",

@@ -101,9 +101,9 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 		json_key(&s, "trackTask");
 		json_literal(&s, "%d", RO(Shm)->SysGate.trackTask);
 		json_key(&s, "sortByField");
-		json_literal(&s, "%d", RW(Shm)->SysGate.sortByField);
+		json_literal(&s, "%d", RO(Shm)->SysGate.sortByField);
 		json_key(&s, "reverseOrder");
-		json_literal(&s, "%d", RW(Shm)->SysGate.reverseOrder);
+		json_literal(&s, "%d", RO(Shm)->SysGate.reverseOrder);
 		json_key(&s, "taskCount");
 		json_literal(&s, "%d", RO(Shm)->SysGate.taskCount);
 		json_key(&s, "taskList");

@@ -489,7 +489,9 @@ typedef struct
 				tickStep;
 
 		pid_t		trackTask;
-		int		taskCount;
+		enum SORTBYFIELD sortByField;
+		int		reverseOrder,
+				taskCount;
 		TASK_MCB	taskList[TASK_LIMIT];
 
 		MEM_MCB 	memInfo;
@@ -567,11 +569,6 @@ typedef struct {
 	struct {
 		Bit64		Sync __attribute__ ((aligned (8)));
 	} Proc;
-
-	struct {
-		enum SORTBYFIELD sortByField;
-		int		reverseOrder;
-	} SysGate;
 
 	struct {
 		RING_CTRL	buffer[RING_SIZE] __attribute__((aligned(16)));

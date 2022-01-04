@@ -6095,10 +6095,9 @@ static int SortByRuntime(const void *p1, const void *p2, void *arg)
 {
 	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
 	REF *Ref = (REF*) arg;
-	RW(SHM_STRUCT) *RW(Shm) = Ref->RW(Shm);
 
 	int sort = task1->runtime < task2->runtime ? +1 : -1;
-	sort *= reverseSign[RW(Shm)->SysGate.reverseOrder];
+	sort *= reverseSign[Ref->RO(Shm)->SysGate.reverseOrder];
 	return sort;
 }
 
@@ -6106,10 +6105,9 @@ static int SortByUsertime(const void *p1, const void *p2, void *arg)
 {
 	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
 	REF *Ref = (REF*) arg;
-	RW(SHM_STRUCT) *RW(Shm) = Ref->RW(Shm);
 
 	int sort = task1->usertime < task2->usertime ? +1 : -1;
-	sort *= reverseSign[RW(Shm)->SysGate.reverseOrder];
+	sort *= reverseSign[Ref->RO(Shm)->SysGate.reverseOrder];
 	return sort;
 }
 
@@ -6117,10 +6115,9 @@ static int SortBySystime(const void *p1, const void *p2, void *arg)
 {
 	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
 	REF *Ref = (REF*) arg;
-	RW(SHM_STRUCT) *RW(Shm) = Ref->RW(Shm);
 
 	int sort = task1->systime < task2->systime ? +1 : -1;
-	sort *= reverseSign[RW(Shm)->SysGate.reverseOrder];
+	sort *= reverseSign[Ref->RO(Shm)->SysGate.reverseOrder];
 	return sort;
 }
 
@@ -6128,10 +6125,9 @@ static int SortByState(const void *p1, const void *p2, void *arg)
 {
 	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
 	REF *Ref = (REF*) arg;
-	RW(SHM_STRUCT) *RW(Shm) = Ref->RW(Shm);
 
 	int sort = task1->state < task2->state ? -1 : +1;
-	sort *= reverseSign[RW(Shm)->SysGate.reverseOrder];
+	sort *= reverseSign[Ref->RO(Shm)->SysGate.reverseOrder];
 	return sort;
 }
 
@@ -6139,10 +6135,9 @@ static int SortByPID(const void *p1, const void *p2, void *arg)
 {
 	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
 	REF *Ref = (REF*) arg;
-	RW(SHM_STRUCT) *RW(Shm) = Ref->RW(Shm);
 
 	int sort = task1->pid < task2->pid ? -1 : +1;
-	sort *= reverseSign[RW(Shm)->SysGate.reverseOrder];
+	sort *= reverseSign[Ref->RO(Shm)->SysGate.reverseOrder];
 	return sort;
 }
 
@@ -6150,10 +6145,9 @@ static int SortByCommand(const void *p1, const void *p2, void *arg)
 {
 	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
 	REF *Ref = (REF*) arg;
-	RW(SHM_STRUCT) *RW(Shm) = Ref->RW(Shm);
 
 	int sort = strncmp(task1->comm, task2->comm, TASK_COMM_LEN);
-	sort *= reverseSign[RW(Shm)->SysGate.reverseOrder];
+	sort *= reverseSign[Ref->RO(Shm)->SysGate.reverseOrder];
 	return sort;
 }
 
@@ -6172,19 +6166,16 @@ static int SortByTracker(const void *p1, const void *p2, void *arg)
 {
 	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
 	REF *Ref = (REF*) arg;
-	RO(SHM_STRUCT) *RO(Shm) = Ref->RO(Shm);
-	RW(SHM_STRUCT) *RW(Shm) = Ref->RW(Shm);
 
-	int sort = (task1->pid == RO(Shm)->SysGate.trackTask) ?
-		-1 : (task2->pid == RO(Shm)->SysGate.trackTask) ?
-		+1 :  SortByFunc[RW(Shm)->SysGate.sortByField](p1, p2, Ref);
+	int sort = (task1->pid == Ref->RO(Shm)->SysGate.trackTask) ?
+		-1 : (task2->pid == Ref->RO(Shm)->SysGate.trackTask) ?
+		+1 : SortByFunc[Ref->RO(Shm)->SysGate.sortByField](p1, p2, Ref);
 	return sort;
 }
 
 void SysGate_Update(REF *Ref)
 {
 	RO(SHM_STRUCT) *RO(Shm) = Ref->RO(Shm);
-	RW(SHM_STRUCT) *RW(Shm) = Ref->RW(Shm);
 	RO(SYSGATE) *SysGate = Ref->RO(SysGate);
 	RO(PROC) *RO(Proc) = Ref->RO(Proc);
 
@@ -6197,7 +6188,7 @@ void SysGate_Update(REF *Ref)
 		(size_t) RO(Shm)->SysGate.taskCount, sizeof(TASK_MCB),
 		RO(Shm)->SysGate.trackTask ?
 			  SortByTracker
-			: SortByFunc[RW(Shm)->SysGate.sortByField], Ref);
+			: SortByFunc[RO(Shm)->SysGate.sortByField], Ref);
 
 	RO(Shm)->SysGate.memInfo.totalram  = SysGate->memInfo.totalram;
 	RO(Shm)->SysGate.memInfo.sharedram = SysGate->memInfo.sharedram;
@@ -6381,9 +6372,24 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 	    break;
 	}
 	break;
-   case COREFREQ_TRACK_PROCESS:
-	Ref->RO(Shm)->SysGate.trackTask = (pid_t) ctrl.arg;
-
+   case COREFREQ_TASK_MONITORING:
+	switch (ctrl.sub) {
+	case TASK_TRACKING:
+		Ref->RO(Shm)->SysGate.trackTask = (pid_t) ctrl.arg;
+		break;
+	case TASK_SORTING:
+	    {
+		enum SORTBYFIELD sortByField = (enum SORTBYFIELD) ctrl.dl.lo;
+		Ref->RO(Shm)->SysGate.sortByField = sortByField % SORTBYCOUNT;
+	    }
+		break;
+	case TASK_INVERSING:
+	    {
+		const int reverseOrder = !!!Ref->RO(Shm)->SysGate.reverseOrder;
+		Ref->RO(Shm)->SysGate.reverseOrder = reverseOrder;
+	    }
+		break;
+	}
 	BITWISESET(LOCKLESS, Ref->RW(Shm)->Proc.Sync, BIT_MASK_NTFY);
 	break;
    default:
