@@ -4,7 +4,12 @@
  * Licenses: GPL2
  */
 
-#define SHM_FILENAME	"corefreq-shm"
+#define OF( _ptr_ , ...)	_ptr_ __VA_ARGS__
+#define RO( _ptr_ , ...)	OF( _ptr_##_RO , __VA_ARGS__ )
+#define RW( _ptr_ , ...)	OF( _ptr_##_RW , __VA_ARGS__ )
+
+#define SHM_FILENAME_RO "corefreq-ro-shm"
+#define SHM_FILENAME_RW "corefreq-rw-shm"
 
 #define SIG_RING_MS	(500 * 1000000LU)
 #define CHILD_PS_MS	(500 * 1000000LU)
@@ -278,8 +283,6 @@ typedef struct
 
 typedef struct
 {
-	Bit64			Sync __attribute__ ((aligned (8)));
-
 	Bit64			Toggle __attribute__ ((aligned (8)));
 
 	FEATURES		Features;
@@ -486,9 +489,7 @@ typedef struct
 				tickStep;
 
 		pid_t		trackTask;
-		enum SORTBYFIELD sortByField;
-		int		reverseOrder,
-				taskCount;
+		int		taskCount;
 		TASK_MCB	taskList[TASK_LIMIT];
 
 		MEM_MCB 	memInfo;
@@ -513,23 +514,11 @@ typedef struct
 				sliceWaiting;
 	} Sleep;
 
-	struct {
-		RING_CTRL	buffer[RING_SIZE] __attribute__((aligned(16)));
-		unsigned int	head, tail;
-	} Ring[2]; /* [0] Parent ; [1] Child				*/
-
-	struct {
-		RING_CTRL	buffer[RING_SIZE] __attribute__((aligned(16)));
-		unsigned int	head, tail;
-	} Error;
-
 	time_t				StartedAt;
 
 	char				ShmName[TASK_COMM_LEN];
 	struct {
-		pid_t			Svr,
-					Cli,
-					GUI;
+		pid_t			Svr;
 	} App;
 
 	struct {
@@ -572,7 +561,33 @@ typedef struct
 
 	PROC_STRUCT		Proc;
 	CPU_STRUCT		Cpu[];
-} SHM_STRUCT;
+} SHM_STRUCT_RO;
+
+typedef struct {
+	struct {
+		Bit64		Sync __attribute__ ((aligned (8)));
+	} Proc;
+
+	struct {
+		enum SORTBYFIELD sortByField;
+		int		reverseOrder;
+	} SysGate;
+
+	struct {
+		RING_CTRL	buffer[RING_SIZE] __attribute__((aligned(16)));
+		unsigned int	head, tail;
+	} Ring[2]; /* [0] Parent ; [1] Child				*/
+
+	struct {
+		RING_CTRL	buffer[RING_SIZE] __attribute__((aligned(16)));
+		unsigned int	head, tail;
+	} Error;
+
+	struct {
+		pid_t		Cli,
+				GUI;
+	} App;
+} SHM_STRUCT_RW;
 
 /* Sensors formulas and definitions.
   MIN = [SENSOR] > [TRIGGER] AND ([SENSOR] < [LOWEST] OR [LOWEST] <= [CAPPED])

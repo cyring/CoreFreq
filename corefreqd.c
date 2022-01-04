@@ -30,9 +30,6 @@
 #include "corefreq-api.h"
 
 #define AT( _loc_ )		[ _loc_ ]
-#define OF( _ptr_ , ...)	_ptr_ __VA_ARGS__
-#define RO( _ptr_ , ...)	OF( _ptr_##_RO , __VA_ARGS__ )
-#define RW( _ptr_ , ...)	OF( _ptr_##_RW , __VA_ARGS__ )
 
 #define PAGE_SIZE							\
 (									\
@@ -52,8 +49,9 @@ UBENCH_DECLARE()
 
 typedef struct
 {
-	int	Drv,
-		Svr;
+	int	drv,
+		ro,
+		rw;
 } FD;
 
 typedef struct {
@@ -67,7 +65,8 @@ typedef struct {
 		enum PATTERN	pattern;
 	} Slice;
 	FD			*fd;
-	SHM_STRUCT		*Shm;
+	RO(SHM_STRUCT)		*RO(Shm);
+	RW(SHM_STRUCT)		*RW(Shm);
 	RO(PROC)		*RO(Proc);
 	RW(PROC)		*RW(Proc);
 	RO(CORE)		**RO(Core);
@@ -102,10 +101,10 @@ void Core_ComputeThermalLimits(CPU_STRUCT *Cpu, struct FLIP_FLOP *CFlip)
 }
 
 static void ComputeThermal_None( struct FLIP_FLOP *CFlip,
-					SHM_STRUCT *Shm,
+					RO(SHM_STRUCT) *RO(Shm),
 					unsigned int cpu )
 {
-	UNUSED(Shm);
+	UNUSED(RO(Shm));
 	UNUSED(cpu);
 	CFlip->Thermal.Temp = 0;
 }
@@ -115,7 +114,7 @@ static void ComputeThermal_None( struct FLIP_FLOP *CFlip,
 #define ComputeThermal_None_PerPkg	ComputeThermal_None
 
 static void (*ComputeThermal_None_Matrix[4])( struct FLIP_FLOP*,
-						SHM_STRUCT*,
+						RO(SHM_STRUCT)*,
 						unsigned int ) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputeThermal_None,
@@ -125,7 +124,7 @@ static void (*ComputeThermal_None_Matrix[4])( struct FLIP_FLOP*,
 };
 
 static void ComputeThermal_Intel( struct FLIP_FLOP *CFlip,
-					SHM_STRUCT *Shm,
+					RO(SHM_STRUCT) *RO(Shm),
 					unsigned int cpu )
 {
 	COMPUTE_THERMAL(INTEL,
@@ -133,34 +132,34 @@ static void ComputeThermal_Intel( struct FLIP_FLOP *CFlip,
 			CFlip->Thermal.Param,
 			CFlip->Thermal.Sensor);
 
-	Core_ComputeThermalLimits(&Shm->Cpu[cpu], CFlip);
+	Core_ComputeThermalLimits(&RO(Shm)->Cpu[cpu], CFlip);
 }
 
 #define ComputeThermal_Intel_PerSMT	ComputeThermal_Intel
 
 static void ComputeThermal_Intel_PerCore( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {
-	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
-	 || (Shm->Cpu[cpu].Topology.ThreadID == -1))
+	if ((RO(Shm)->Cpu[cpu].Topology.ThreadID == 0)
+	 || (RO(Shm)->Cpu[cpu].Topology.ThreadID == -1))
 	{
-		ComputeThermal_Intel(CFlip, Shm, cpu);
+		ComputeThermal_Intel(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void ComputeThermal_Intel_PerPkg( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {
-	if (cpu == Shm->Proc.Service.Core)
+	if (cpu == RO(Shm)->Proc.Service.Core)
 	{
-		ComputeThermal_Intel(CFlip, Shm, cpu);
+		ComputeThermal_Intel(CFlip, RO(Shm), cpu);
 	}
 }
 
-static void (*ComputeThermal_Intel_Matrix[4])( struct FLIP_FLOP*,
-						SHM_STRUCT*,
+static void (*ComputeThermal_Intel_Matrix[4])(	struct FLIP_FLOP*,
+						RO(SHM_STRUCT)*,
 						unsigned int ) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputeThermal_None,
@@ -170,7 +169,7 @@ static void (*ComputeThermal_Intel_Matrix[4])( struct FLIP_FLOP*,
 };
 
 static void ComputeThermal_AMD( struct FLIP_FLOP *CFlip,
-					SHM_STRUCT *Shm,
+					RO(SHM_STRUCT) *RO(Shm),
 					unsigned int cpu )
 {
 	COMPUTE_THERMAL(AMD,
@@ -178,34 +177,34 @@ static void ComputeThermal_AMD( struct FLIP_FLOP *CFlip,
 			CFlip->Thermal.Param,
 			CFlip->Thermal.Sensor);
 
-	Core_ComputeThermalLimits(&Shm->Cpu[cpu], CFlip);
+	Core_ComputeThermalLimits(&RO(Shm)->Cpu[cpu], CFlip);
 }
 
 #define ComputeThermal_AMD_PerSMT	ComputeThermal_AMD
 
 static void ComputeThermal_AMD_PerCore( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {
-	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
-	 || (Shm->Cpu[cpu].Topology.ThreadID == -1))
+	if ((RO(Shm)->Cpu[cpu].Topology.ThreadID == 0)
+	 || (RO(Shm)->Cpu[cpu].Topology.ThreadID == -1))
 	{
-		ComputeThermal_AMD(CFlip, Shm, cpu);
+		ComputeThermal_AMD(CFlip, RO(Shm), cpu);
 	}
 }
 
-static void ComputeThermal_AMD_PerPkg(	struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+static void ComputeThermal_AMD_PerPkg( struct FLIP_FLOP *CFlip,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {
-	if (cpu == Shm->Proc.Service.Core)
+	if (cpu == RO(Shm)->Proc.Service.Core)
 	{
-		ComputeThermal_AMD(CFlip, Shm, cpu);
+		ComputeThermal_AMD(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void (*ComputeThermal_AMD_Matrix[4])( struct FLIP_FLOP*,
-						SHM_STRUCT*,
+						RO(SHM_STRUCT)*,
 						unsigned int ) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputeThermal_None,
@@ -215,7 +214,7 @@ static void (*ComputeThermal_AMD_Matrix[4])( struct FLIP_FLOP*,
 };
 
 static void ComputeThermal_AMD_0Fh( struct FLIP_FLOP *CFlip,
-					SHM_STRUCT *Shm,
+					RO(SHM_STRUCT) *RO(Shm),
 					unsigned int cpu )
 {
 	COMPUTE_THERMAL(AMD_0Fh,
@@ -223,34 +222,34 @@ static void ComputeThermal_AMD_0Fh( struct FLIP_FLOP *CFlip,
 			CFlip->Thermal.Param,
 			CFlip->Thermal.Sensor);
 
-	Core_ComputeThermalLimits(&Shm->Cpu[cpu], CFlip);
+	Core_ComputeThermalLimits(&RO(Shm)->Cpu[cpu], CFlip);
 }
 
 #define ComputeThermal_AMD_0Fh_PerSMT	ComputeThermal_AMD_0Fh
 
 static void ComputeThermal_AMD_0Fh_PerCore( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {
-	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
-	 || (Shm->Cpu[cpu].Topology.ThreadID == -1))
+	if ((RO(Shm)->Cpu[cpu].Topology.ThreadID == 0)
+	 || (RO(Shm)->Cpu[cpu].Topology.ThreadID == -1))
 	{
-		ComputeThermal_AMD_0Fh(CFlip, Shm, cpu);
+		ComputeThermal_AMD_0Fh(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void ComputeThermal_AMD_0Fh_PerPkg( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {
-	if (cpu == Shm->Proc.Service.Core)
+	if (cpu == RO(Shm)->Proc.Service.Core)
 	{
-		ComputeThermal_AMD_0Fh(CFlip, Shm, cpu);
+		ComputeThermal_AMD_0Fh(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void (*ComputeThermal_AMD_0Fh_Matrix[4])( struct FLIP_FLOP*,
-							SHM_STRUCT*,
+							RO(SHM_STRUCT)*,
 							unsigned int ) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputeThermal_None,
@@ -260,44 +259,44 @@ static void (*ComputeThermal_AMD_0Fh_Matrix[4])( struct FLIP_FLOP*,
 };
 
 static void ComputeThermal_AMD_15h( struct FLIP_FLOP *CFlip,
-					SHM_STRUCT *Shm,
+					RO(SHM_STRUCT) *RO(Shm),
 					unsigned int cpu )
 {
-    if (Shm->Cpu[cpu].Topology.CoreID == 0)
+    if (RO(Shm)->Cpu[cpu].Topology.CoreID == 0)
     {
 	COMPUTE_THERMAL(AMD_15h,
 			CFlip->Thermal.Temp,
 			CFlip->Thermal.Param,
 			CFlip->Thermal.Sensor);
 
-	Core_ComputeThermalLimits(&Shm->Cpu[cpu], CFlip);
+	Core_ComputeThermalLimits(&RO(Shm)->Cpu[cpu], CFlip);
     }
 }
 
 #define ComputeThermal_AMD_15h_PerSMT	ComputeThermal_AMD_15h
 
 static void ComputeThermal_AMD_15h_PerCore( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {
-	if (Shm->Cpu[cpu].Topology.CoreID == 0) /* Opteron test case	*/
+	if (RO(Shm)->Cpu[cpu].Topology.CoreID == 0)	/* Opteron use case */
 	{
-		ComputeThermal_AMD_15h(CFlip, Shm, cpu);
+		ComputeThermal_AMD_15h(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void ComputeThermal_AMD_15h_PerPkg( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {
-	if (cpu == Shm->Proc.Service.Core)
+	if (cpu == RO(Shm)->Proc.Service.Core)
 	{
-		ComputeThermal_AMD_15h(CFlip, Shm, cpu);
+		ComputeThermal_AMD_15h(CFlip, RO(Shm), cpu);
 	}
 }
 
-static void (*ComputeThermal_AMD_15h_Matrix[4])(struct FLIP_FLOP*,
-							SHM_STRUCT*,
+static void (*ComputeThermal_AMD_15h_Matrix[4])( struct FLIP_FLOP*,
+							RO(SHM_STRUCT)*,
 							unsigned int) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputeThermal_None,
@@ -307,7 +306,7 @@ static void (*ComputeThermal_AMD_15h_Matrix[4])(struct FLIP_FLOP*,
 };
 
 static void ComputeThermal_AMD_17h( struct FLIP_FLOP *CFlip,
-					SHM_STRUCT *Shm,
+					RO(SHM_STRUCT) *RO(Shm),
 					unsigned int cpu )
 {
 	COMPUTE_THERMAL(AMD_17h,
@@ -315,34 +314,34 @@ static void ComputeThermal_AMD_17h( struct FLIP_FLOP *CFlip,
 			CFlip->Thermal.Param,
 			CFlip->Thermal.Sensor);
 
-	Core_ComputeThermalLimits(&Shm->Cpu[cpu], CFlip);
+	Core_ComputeThermalLimits(&RO(Shm)->Cpu[cpu], CFlip);
 }
 
 #define ComputeThermal_AMD_17h_PerSMT	ComputeThermal_AMD_17h
 
 static void ComputeThermal_AMD_17h_PerCore( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {
-	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
-	 || (Shm->Cpu[cpu].Topology.ThreadID == -1))
+	if ((RO(Shm)->Cpu[cpu].Topology.ThreadID == 0)
+	 || (RO(Shm)->Cpu[cpu].Topology.ThreadID == -1))
 	{
-		ComputeThermal_AMD_17h(CFlip, Shm, cpu);
+		ComputeThermal_AMD_17h(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void ComputeThermal_AMD_17h_PerPkg( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {
-	if (cpu == Shm->Proc.Service.Core)
+	if (cpu == RO(Shm)->Proc.Service.Core)
 	{
-		ComputeThermal_AMD_17h(CFlip, Shm, cpu);
+		ComputeThermal_AMD_17h(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void (*ComputeThermal_AMD_17h_Matrix[4])(struct FLIP_FLOP*,
-						SHM_STRUCT*,
+						RO(SHM_STRUCT)*,
 						unsigned int) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputeThermal_None,
@@ -361,11 +360,11 @@ void Core_ComputeVoltageLimits(CPU_STRUCT *Cpu, struct FLIP_FLOP *CFlip)
 }
 
 static void ComputeVoltage_None( struct FLIP_FLOP *CFlip,
-					SHM_STRUCT *Shm,
+					RO(SHM_STRUCT) *RO(Shm),
 					unsigned int cpu )
 {
 	UNUSED(CFlip);
-	UNUSED(Shm);
+	UNUSED(RO(Shm));
 	UNUSED(cpu);
 }
 
@@ -374,7 +373,7 @@ static void ComputeVoltage_None( struct FLIP_FLOP *CFlip,
 #define ComputeVoltage_None_PerPkg	ComputeVoltage_None
 
 static void (*ComputeVoltage_None_Matrix[4])(	struct FLIP_FLOP*,
-						SHM_STRUCT*,
+						RO(SHM_STRUCT)*,
 						unsigned int ) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputeVoltage_None,
@@ -386,41 +385,41 @@ static void (*ComputeVoltage_None_Matrix[4])(	struct FLIP_FLOP*,
 #define ComputeVoltage_Intel_Matrix	ComputeVoltage_None_Matrix
 
 static void ComputeVoltage_Intel_Core2( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {	/* Intel Core 2 Extreme Datasheet §3.3-Table 2			*/
 	COMPUTE_VOLTAGE(INTEL_CORE2,
 			CFlip->Voltage.Vcore,
 			CFlip->Voltage.VID);
 
-	Core_ComputeVoltageLimits(&Shm->Cpu[cpu], CFlip);
+	Core_ComputeVoltageLimits(&RO(Shm)->Cpu[cpu], CFlip);
 }
 
 #define ComputeVoltage_Intel_Core2_PerSMT	ComputeVoltage_Intel_Core2
 
 static void ComputeVoltage_Intel_Core2_PerCore( struct FLIP_FLOP *CFlip,
-							SHM_STRUCT *Shm,
+							RO(SHM_STRUCT) *RO(Shm),
 							unsigned int cpu )
 {
-	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
-	 || (Shm->Cpu[cpu].Topology.ThreadID == -1))
+	if ((RO(Shm)->Cpu[cpu].Topology.ThreadID == 0)
+	 || (RO(Shm)->Cpu[cpu].Topology.ThreadID == -1))
 	{
-		ComputeVoltage_Intel_Core2(CFlip, Shm, cpu);
+		ComputeVoltage_Intel_Core2(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void ComputeVoltage_Intel_Core2_PerPkg( struct FLIP_FLOP *CFlip,
-							SHM_STRUCT *Shm,
+							RO(SHM_STRUCT) *RO(Shm),
 							unsigned int cpu )
 {
-	if (cpu == Shm->Proc.Service.Core)
+	if (cpu == RO(Shm)->Proc.Service.Core)
 	{
-		ComputeVoltage_Intel_Core2(CFlip, Shm, cpu);
+		ComputeVoltage_Intel_Core2(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void (*ComputeVoltage_Intel_Core2_Matrix[4])( struct FLIP_FLOP*,
-							SHM_STRUCT*,
+							RO(SHM_STRUCT)*,
 							unsigned int ) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputeVoltage_None,
@@ -430,41 +429,41 @@ static void (*ComputeVoltage_Intel_Core2_Matrix[4])( struct FLIP_FLOP*,
 };
 
 static void ComputeVoltage_Intel_SoC( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {	/* Intel Valleyview-D/M SoC					*/
 	COMPUTE_VOLTAGE(INTEL_SOC,
 			CFlip->Voltage.Vcore,
 			CFlip->Voltage.VID);
 
-	Core_ComputeVoltageLimits(&Shm->Cpu[cpu], CFlip);
+	Core_ComputeVoltageLimits(&RO(Shm)->Cpu[cpu], CFlip);
 }
 
 #define ComputeVoltage_Intel_SoC_PerSMT	ComputeVoltage_Intel_SoC
 
 static void ComputeVoltage_Intel_SoC_PerCore( struct FLIP_FLOP *CFlip,
-							SHM_STRUCT *Shm,
+							RO(SHM_STRUCT) *RO(Shm),
 							unsigned int cpu )
 {
-	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
-	 || (Shm->Cpu[cpu].Topology.ThreadID == -1))
+	if ((RO(Shm)->Cpu[cpu].Topology.ThreadID == 0)
+	 || (RO(Shm)->Cpu[cpu].Topology.ThreadID == -1))
 	{
-		ComputeVoltage_Intel_SoC(CFlip, Shm, cpu);
+		ComputeVoltage_Intel_SoC(CFlip, RO(Shm), cpu);
 	}
 }
 
 static  void ComputeVoltage_Intel_SoC_PerPkg( struct FLIP_FLOP *CFlip,
-							SHM_STRUCT *Shm,
+							RO(SHM_STRUCT) *RO(Shm),
 							unsigned int cpu )
 {
-	if (cpu == Shm->Proc.Service.Core)
+	if (cpu == RO(Shm)->Proc.Service.Core)
 	{
-		ComputeVoltage_Intel_SoC(CFlip, Shm, cpu);
+		ComputeVoltage_Intel_SoC(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void (*ComputeVoltage_Intel_SoC_Matrix[4])( struct FLIP_FLOP*,
-							SHM_STRUCT*,
+							RO(SHM_STRUCT)*,
 							unsigned int ) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputeVoltage_None,
@@ -474,41 +473,41 @@ static void (*ComputeVoltage_Intel_SoC_Matrix[4])( struct FLIP_FLOP*,
 };
 
 static void ComputeVoltage_Intel_SNB( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {
 	COMPUTE_VOLTAGE(INTEL_SNB,
 			CFlip->Voltage.Vcore,
 			CFlip->Voltage.VID);
 
-	Core_ComputeVoltageLimits(&Shm->Cpu[cpu], CFlip);
+	Core_ComputeVoltageLimits(&RO(Shm)->Cpu[cpu], CFlip);
 }
 
 #define ComputeVoltage_Intel_SNB_PerSMT 	ComputeVoltage_Intel_SNB
 
 static void ComputeVoltage_Intel_SNB_PerCore( struct FLIP_FLOP *CFlip,
-							SHM_STRUCT *Shm,
+							RO(SHM_STRUCT) *RO(Shm),
 							unsigned int cpu )
 {
-	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
-	 || (Shm->Cpu[cpu].Topology.ThreadID == -1))
+	if ((RO(Shm)->Cpu[cpu].Topology.ThreadID == 0)
+	 || (RO(Shm)->Cpu[cpu].Topology.ThreadID == -1))
 	{
-		ComputeVoltage_Intel_SNB(CFlip, Shm, cpu);
+		ComputeVoltage_Intel_SNB(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void ComputeVoltage_Intel_SNB_PerPkg( struct FLIP_FLOP *CFlip,
-							SHM_STRUCT *Shm,
+							RO(SHM_STRUCT) *RO(Shm),
 							unsigned int cpu )
 {
-	if (cpu == Shm->Proc.Service.Core)
+	if (cpu == RO(Shm)->Proc.Service.Core)
 	{
-		ComputeVoltage_Intel_SNB(CFlip, Shm, cpu);
+		ComputeVoltage_Intel_SNB(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void (*ComputeVoltage_Intel_SNB_Matrix[4])( struct FLIP_FLOP*,
-							SHM_STRUCT*,
+							RO(SHM_STRUCT)*,
 							unsigned int ) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputeVoltage_None,
@@ -518,41 +517,41 @@ static void (*ComputeVoltage_Intel_SNB_Matrix[4])( struct FLIP_FLOP*,
 };
 
 static void ComputeVoltage_Intel_SKL_X( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {
 	COMPUTE_VOLTAGE(INTEL_SKL_X,
 			CFlip->Voltage.Vcore,
 			CFlip->Voltage.VID);
 
-	Core_ComputeVoltageLimits(&Shm->Cpu[cpu], CFlip);
+	Core_ComputeVoltageLimits(&RO(Shm)->Cpu[cpu], CFlip);
 }
 
 #define ComputeVoltage_Intel_SKL_X_PerSMT	ComputeVoltage_Intel_SKL_X
 
 static void ComputeVoltage_Intel_SKL_X_PerCore( struct FLIP_FLOP *CFlip,
-							SHM_STRUCT *Shm,
+							RO(SHM_STRUCT) *RO(Shm),
 							unsigned int cpu )
 {
-	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
-	 || (Shm->Cpu[cpu].Topology.ThreadID == -1))
+	if ((RO(Shm)->Cpu[cpu].Topology.ThreadID == 0)
+	 || (RO(Shm)->Cpu[cpu].Topology.ThreadID == -1))
 	{
-		ComputeVoltage_Intel_SKL_X(CFlip, Shm, cpu);
+		ComputeVoltage_Intel_SKL_X(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void ComputeVoltage_Intel_SKL_X_PerPkg( struct FLIP_FLOP *CFlip,
-							SHM_STRUCT *Shm,
+							RO(SHM_STRUCT) *RO(Shm),
 							unsigned int cpu )
 {
-	if (cpu == Shm->Proc.Service.Core)
+	if (cpu == RO(Shm)->Proc.Service.Core)
 	{
-		ComputeVoltage_Intel_SKL_X(CFlip, Shm, cpu);
+		ComputeVoltage_Intel_SKL_X(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void (*ComputeVoltage_Intel_SKL_X_Matrix[4])( struct FLIP_FLOP*,
-							SHM_STRUCT*,
+							RO(SHM_STRUCT)*,
 							unsigned int ) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputeVoltage_None,
@@ -562,41 +561,41 @@ static void (*ComputeVoltage_Intel_SKL_X_Matrix[4])( struct FLIP_FLOP*,
 };
 
 static void ComputeVoltage_AMD( struct FLIP_FLOP *CFlip,
-					SHM_STRUCT *Shm,
+					RO(SHM_STRUCT) *RO(Shm),
 					unsigned int cpu )
 {
 	COMPUTE_VOLTAGE(AMD,
 			CFlip->Voltage.Vcore,
 			CFlip->Voltage.VID);
 
-	Core_ComputeVoltageLimits(&Shm->Cpu[cpu], CFlip);
+	Core_ComputeVoltageLimits(&RO(Shm)->Cpu[cpu], CFlip);
 }
 
 #define ComputeVoltage_AMD_PerSMT	ComputeVoltage_AMD
 
 static void ComputeVoltage_AMD_PerCore( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {
-	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
-	 || (Shm->Cpu[cpu].Topology.ThreadID == -1))
+	if ((RO(Shm)->Cpu[cpu].Topology.ThreadID == 0)
+	 || (RO(Shm)->Cpu[cpu].Topology.ThreadID == -1))
 	{
-		ComputeVoltage_AMD(CFlip, Shm, cpu);
+		ComputeVoltage_AMD(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void ComputeVoltage_AMD_PerPkg( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {
-	if (cpu == Shm->Proc.Service.Core)
+	if (cpu == RO(Shm)->Proc.Service.Core)
 	{
-		ComputeVoltage_AMD(CFlip, Shm, cpu);
+		ComputeVoltage_AMD(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void (*ComputeVoltage_AMD_Matrix[4])( struct FLIP_FLOP*,
-						SHM_STRUCT*,
+						RO(SHM_STRUCT)*,
 						unsigned int ) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputeVoltage_None,
@@ -606,41 +605,41 @@ static void (*ComputeVoltage_AMD_Matrix[4])( struct FLIP_FLOP*,
 };
 
 static void ComputeVoltage_AMD_0Fh( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {	/* AMD BKDG Family 0Fh §10.6 Table 70				*/
 	COMPUTE_VOLTAGE(AMD_0Fh,
 			CFlip->Voltage.Vcore,
 			CFlip->Voltage.VID);
 
-	Core_ComputeVoltageLimits(&Shm->Cpu[cpu], CFlip);
+	Core_ComputeVoltageLimits(&RO(Shm)->Cpu[cpu], CFlip);
 }
 
 #define ComputeVoltage_AMD_0Fh_PerSMT	ComputeVoltage_AMD_0Fh
 
 static void ComputeVoltage_AMD_0Fh_PerCore( struct FLIP_FLOP *CFlip,
-							SHM_STRUCT *Shm,
+							RO(SHM_STRUCT) *RO(Shm),
 							unsigned int cpu )
 {
-	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
-	 || (Shm->Cpu[cpu].Topology.ThreadID == -1))
+	if ((RO(Shm)->Cpu[cpu].Topology.ThreadID == 0)
+	 || (RO(Shm)->Cpu[cpu].Topology.ThreadID == -1))
 	{
-		ComputeVoltage_AMD_0Fh(CFlip, Shm, cpu);
+		ComputeVoltage_AMD_0Fh(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void ComputeVoltage_AMD_0Fh_PerPkg( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {
-	if (cpu == Shm->Proc.Service.Core)
+	if (cpu == RO(Shm)->Proc.Service.Core)
 	{
-		ComputeVoltage_AMD_0Fh(CFlip, Shm, cpu);
+		ComputeVoltage_AMD_0Fh(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void (*ComputeVoltage_AMD_0Fh_Matrix[4])(struct FLIP_FLOP*,
-						SHM_STRUCT*,
+						RO(SHM_STRUCT)*,
 						unsigned int) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputeVoltage_None,
@@ -650,41 +649,41 @@ static void (*ComputeVoltage_AMD_0Fh_Matrix[4])(struct FLIP_FLOP*,
 };
 
 static void ComputeVoltage_AMD_15h( struct FLIP_FLOP *CFlip,
-					SHM_STRUCT *Shm,
+					RO(SHM_STRUCT) *RO(Shm),
 					unsigned int cpu )
 {
 	COMPUTE_VOLTAGE(AMD_15h,
 			CFlip->Voltage.Vcore,
 			CFlip->Voltage.VID);
 
-	Core_ComputeVoltageLimits(&Shm->Cpu[cpu], CFlip);
+	Core_ComputeVoltageLimits(&RO(Shm)->Cpu[cpu], CFlip);
 }
 
 #define ComputeVoltage_AMD_15h_PerSMT	ComputeVoltage_AMD_15h
 
 static void ComputeVoltage_AMD_15h_PerCore( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {
-	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
-	 || (Shm->Cpu[cpu].Topology.ThreadID == -1))
+	if ((RO(Shm)->Cpu[cpu].Topology.ThreadID == 0)
+	 || (RO(Shm)->Cpu[cpu].Topology.ThreadID == -1))
 	{
-		ComputeVoltage_AMD_15h(CFlip, Shm, cpu);
+		ComputeVoltage_AMD_15h(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void ComputeVoltage_AMD_15h_PerPkg( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {
-	if (cpu == Shm->Proc.Service.Core)
+	if (cpu == RO(Shm)->Proc.Service.Core)
 	{
-		ComputeVoltage_AMD_15h(CFlip, Shm, cpu);
+		ComputeVoltage_AMD_15h(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void (*ComputeVoltage_AMD_15h_Matrix[4])(struct FLIP_FLOP*,
-						SHM_STRUCT*,
+						RO(SHM_STRUCT)*,
 						unsigned int) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputeVoltage_None,
@@ -694,41 +693,41 @@ static void (*ComputeVoltage_AMD_15h_Matrix[4])(struct FLIP_FLOP*,
 };
 
 static void ComputeVoltage_AMD_17h( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {
 	COMPUTE_VOLTAGE(AMD_17h,
 			CFlip->Voltage.Vcore,
 			CFlip->Voltage.VID);
 
-	Core_ComputeVoltageLimits(&Shm->Cpu[cpu], CFlip);
+	Core_ComputeVoltageLimits(&RO(Shm)->Cpu[cpu], CFlip);
 }
 
 #define ComputeVoltage_AMD_17h_PerSMT	ComputeVoltage_AMD_17h
 
 static void ComputeVoltage_AMD_17h_PerCore( struct FLIP_FLOP *CFlip,
-							SHM_STRUCT *Shm,
+							RO(SHM_STRUCT) *RO(Shm),
 							unsigned int cpu )
 {
-	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
-	 || (Shm->Cpu[cpu].Topology.ThreadID == -1))
+	if ((RO(Shm)->Cpu[cpu].Topology.ThreadID == 0)
+	 || (RO(Shm)->Cpu[cpu].Topology.ThreadID == -1))
 	{
-		ComputeVoltage_AMD_17h(CFlip, Shm, cpu);
+		ComputeVoltage_AMD_17h(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void ComputeVoltage_AMD_17h_PerPkg( struct FLIP_FLOP *CFlip,
-							SHM_STRUCT *Shm,
+							RO(SHM_STRUCT) *RO(Shm),
 							unsigned int cpu )
 {
-	if (cpu == Shm->Proc.Service.Core)
+	if (cpu == RO(Shm)->Proc.Service.Core)
 	{
-		ComputeVoltage_AMD_17h(CFlip, Shm, cpu);
+		ComputeVoltage_AMD_17h(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void (*ComputeVoltage_AMD_17h_Matrix[4])(struct FLIP_FLOP*,
-						SHM_STRUCT*,
+						RO(SHM_STRUCT)*,
 						unsigned int) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputeVoltage_None,
@@ -738,41 +737,41 @@ static void (*ComputeVoltage_AMD_17h_Matrix[4])(struct FLIP_FLOP*,
 };
 
 static void ComputeVoltage_Winbond_IO( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {	/* Winbond W83627EHF/EF, W83627EHG,EG				*/
 	COMPUTE_VOLTAGE(WINBOND_IO,
 			CFlip->Voltage.Vcore,
 			CFlip->Voltage.VID);
 
-	Core_ComputeVoltageLimits(&Shm->Cpu[cpu], CFlip);
+	Core_ComputeVoltageLimits(&RO(Shm)->Cpu[cpu], CFlip);
 }
 
 #define ComputeVoltage_Winbond_IO_PerSMT	ComputeVoltage_Winbond_IO
 
 static void ComputeVoltage_Winbond_IO_PerCore( struct FLIP_FLOP *CFlip,
-							SHM_STRUCT *Shm,
+							RO(SHM_STRUCT) *RO(Shm),
 							unsigned int cpu )
 {
-	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
-	 || (Shm->Cpu[cpu].Topology.ThreadID == -1))
+	if ((RO(Shm)->Cpu[cpu].Topology.ThreadID == 0)
+	 || (RO(Shm)->Cpu[cpu].Topology.ThreadID == -1))
 	{
-		ComputeVoltage_Winbond_IO(CFlip, Shm, cpu);
+		ComputeVoltage_Winbond_IO(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void ComputeVoltage_Winbond_IO_PerPkg( struct FLIP_FLOP *CFlip,
-							SHM_STRUCT *Shm,
+							RO(SHM_STRUCT) *RO(Shm),
 							unsigned int cpu )
 {
-	if (cpu == Shm->Proc.Service.Core)
+	if (cpu == RO(Shm)->Proc.Service.Core)
 	{
-		ComputeVoltage_Winbond_IO(CFlip, Shm, cpu);
+		ComputeVoltage_Winbond_IO(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void (*ComputeVoltage_Winbond_IO_Matrix[4])( struct FLIP_FLOP*,
-							SHM_STRUCT*,
+							RO(SHM_STRUCT)*,
 							unsigned int ) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputeVoltage_None,
@@ -782,41 +781,41 @@ static void (*ComputeVoltage_Winbond_IO_Matrix[4])( struct FLIP_FLOP*,
 };
 
 static void ComputeVoltage_ITE_Tech_IO( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {	/* ITE Tech IT8720F						*/
 	COMPUTE_VOLTAGE(ITETECH_IO,
 			CFlip->Voltage.Vcore,
 			CFlip->Voltage.VID);
 
-	Core_ComputeVoltageLimits(&Shm->Cpu[cpu], CFlip);
+	Core_ComputeVoltageLimits(&RO(Shm)->Cpu[cpu], CFlip);
 }
 
 #define ComputeVoltage_ITE_Tech_IO_PerSMT	ComputeVoltage_ITE_Tech_IO
 
 static void ComputeVoltage_ITE_Tech_IO_PerCore( struct FLIP_FLOP *CFlip,
-							SHM_STRUCT *Shm,
+							RO(SHM_STRUCT) *RO(Shm),
 							unsigned int cpu )
 {
-	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
-	 || (Shm->Cpu[cpu].Topology.ThreadID == -1))
+	if ((RO(Shm)->Cpu[cpu].Topology.ThreadID == 0)
+	 || (RO(Shm)->Cpu[cpu].Topology.ThreadID == -1))
 	{
-		ComputeVoltage_ITE_Tech_IO(CFlip, Shm, cpu);
+		ComputeVoltage_ITE_Tech_IO(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void ComputeVoltage_ITE_Tech_IO_PerPkg( struct FLIP_FLOP *CFlip,
-							SHM_STRUCT *Shm,
+							RO(SHM_STRUCT) *RO(Shm),
 							unsigned int cpu )
 {
-	if (cpu == Shm->Proc.Service.Core)
+	if (cpu == RO(Shm)->Proc.Service.Core)
 	{
-		ComputeVoltage_ITE_Tech_IO(CFlip, Shm, cpu);
+		ComputeVoltage_ITE_Tech_IO(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void (*ComputeVoltage_ITE_Tech_IO_Matrix[4])(	struct FLIP_FLOP*,
-							SHM_STRUCT*,
+							RO(SHM_STRUCT)*,
 							unsigned int ) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputeVoltage_None,
@@ -841,11 +840,11 @@ void Core_ComputePowerLimits(CPU_STRUCT *Cpu, struct FLIP_FLOP *CFlip)
 }
 
 static void ComputePower_None( struct FLIP_FLOP *CFlip,
-					SHM_STRUCT *Shm,
+					RO(SHM_STRUCT) *RO(Shm),
 					unsigned int cpu )
 {
 	UNUSED(CFlip);
-	UNUSED(Shm);
+	UNUSED(RO(Shm));
 	UNUSED(cpu);
 }
 
@@ -854,7 +853,7 @@ static void ComputePower_None( struct FLIP_FLOP *CFlip,
 #define ComputePower_None_PerPkg	ComputePower_None
 
 static void (*ComputePower_None_Matrix[4])(	struct FLIP_FLOP*,
-						SHM_STRUCT*,
+						RO(SHM_STRUCT)*,
 						unsigned int ) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputePower_None,
@@ -870,43 +869,43 @@ static void (*ComputePower_None_Matrix[4])(	struct FLIP_FLOP*,
 #define ComputePower_AMD_Matrix 	ComputePower_None_Matrix
 
 static void ComputePower_AMD_17h( struct FLIP_FLOP *CFlip,
-					SHM_STRUCT *Shm,
+					RO(SHM_STRUCT) *RO(Shm),
 					unsigned int cpu)
 {
 	CFlip->State.Energy	= (double)CFlip->Delta.Power.ACCU
-				* Shm->Proc.Power.Unit.Joules;
+				* RO(Shm)->Proc.Power.Unit.Joules;
 
 	CFlip->State.Power	= 1000.0 * CFlip->State.Energy;
-	CFlip->State.Power	/= Shm->Sleep.Interval;
+	CFlip->State.Power	/= RO(Shm)->Sleep.Interval;
 
-	Core_ComputePowerLimits(&Shm->Cpu[cpu], CFlip);
+	Core_ComputePowerLimits(&RO(Shm)->Cpu[cpu], CFlip);
 }
 
 #define ComputePower_AMD_17h_PerSMT	ComputePower_AMD_17h
 
 static void ComputePower_AMD_17h_PerCore( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {
-	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
-	 || (Shm->Cpu[cpu].Topology.ThreadID == -1))
+	if ((RO(Shm)->Cpu[cpu].Topology.ThreadID == 0)
+	 || (RO(Shm)->Cpu[cpu].Topology.ThreadID == -1))
 	{
-		ComputePower_AMD_17h(CFlip, Shm, cpu);
+		ComputePower_AMD_17h(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void ComputePower_AMD_17h_PerPkg( struct FLIP_FLOP *CFlip,
-						SHM_STRUCT *Shm,
+						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
 {
-	if (cpu == Shm->Proc.Service.Core)
+	if (cpu == RO(Shm)->Proc.Service.Core)
 	{
-		ComputePower_AMD_17h(CFlip, Shm, cpu);
+		ComputePower_AMD_17h(CFlip, RO(Shm), cpu);
 	}
 }
 
 static void (*ComputePower_AMD_17h_Matrix[4])(	struct FLIP_FLOP*,
-						SHM_STRUCT*,
+						RO(SHM_STRUCT)*,
 						unsigned int ) = \
 {
 	[FORMULA_SCOPE_NONE] = ComputePower_None,
@@ -926,10 +925,10 @@ static void *Core_Cycle(void *arg)
 {
 	ARG		*Arg		= (ARG *) arg;
 	unsigned int	cpu		= Arg->Bind;
-	SHM_STRUCT	*Shm		= Arg->Ref->Shm;
+	RO(SHM_STRUCT)	*RO(Shm)	= Arg->Ref->RO(Shm);
 	RO(CORE)	*RO(Core)	= Arg->Ref->RO(Core, AT(cpu));
 	RW(CORE)	*RW(Core)	= Arg->Ref->RW(Core, AT(cpu));
-	CPU_STRUCT	*Cpu		= &Shm->Cpu[cpu];
+	CPU_STRUCT	*Cpu		= &RO(Shm)->Cpu[cpu];
 
 	pthread_t tid = pthread_self();
 	cpu_set_t cpuset;
@@ -946,18 +945,18 @@ static void *Core_Cycle(void *arg)
 	}
 
 	void (**ComputeThermalFormula)( struct FLIP_FLOP*,
-					SHM_STRUCT*,
+					RO(SHM_STRUCT)*,
 					unsigned int );
 
 	void (**ComputeVoltageFormula)( struct FLIP_FLOP*,
-					SHM_STRUCT*,
+					RO(SHM_STRUCT)*,
 					unsigned int );
 
 	void (**ComputePowerFormula)(	struct FLIP_FLOP*,
-					SHM_STRUCT*,
+					RO(SHM_STRUCT)*,
 					unsigned int );
 
-	switch (KIND_OF_FORMULA(Shm->Proc.thermalFormula)) {
+	switch (KIND_OF_FORMULA(RO(Shm)->Proc.thermalFormula)) {
 	case THERMAL_KIND_INTEL:
 		ComputeThermalFormula = ComputeThermal_Intel_Matrix;
 		break;
@@ -979,7 +978,7 @@ static void *Core_Cycle(void *arg)
 		break;
 	}
 
-	switch (KIND_OF_FORMULA(Shm->Proc.voltageFormula)) {
+	switch (KIND_OF_FORMULA(RO(Shm)->Proc.voltageFormula)) {
 	case VOLTAGE_KIND_INTEL:
 		ComputeVoltageFormula = ComputeVoltage_Intel_Matrix;
 		break;
@@ -1019,7 +1018,7 @@ static void *Core_Cycle(void *arg)
 		break;
 	}
 
-	switch (KIND_OF_FORMULA(Shm->Proc.powerFormula)) {
+	switch (KIND_OF_FORMULA(RO(Shm)->Proc.powerFormula)) {
 	case POWER_KIND_INTEL:
 		ComputePowerFormula = ComputePower_Intel_Matrix;
 		break;
@@ -1049,7 +1048,7 @@ static void *Core_Cycle(void *arg)
     while (!BITCLR(LOCKLESS, RW(Core)->Sync.V, NTFY)
 	&& !BITVAL(Shutdown, SYNC)
 	&& !BITVAL(RO(Core)->OffLine, OS)) {
-		nanosleep(&Shm->Sleep.pollingWait, NULL);
+		nanosleep(&RO(Shm)->Sleep.pollingWait, NULL);
     }
 
     if (!BITVAL(Shutdown, SYNC) && !BITVAL(RO(Core)->OffLine, OS))
@@ -1128,7 +1127,7 @@ static void *Core_Cycle(void *arg)
 	CFlip->Relative.Freq	= REL_FREQ_MHz( double,
 						CFlip->Relative.Ratio,
 						CFlip->Clock,
-						Shm->Sleep.Interval );
+						RO(Shm)->Sleep.Interval );
 
 	/* Per Core, compute the Relative Frequency limits.		*/
 	TEST_AND_SET_SENSOR( REL_FREQ, LOWEST,	CFlip->Relative.Freq,
@@ -1150,38 +1149,38 @@ static void *Core_Cycle(void *arg)
 	CFlip->Thermal.Events	= RO(Core)->PowerThermal.Events;
 	CFlip->Thermal.Param	= RO(Core)->PowerThermal.Param;
 
-	ComputeThermalFormula[SCOPE_OF_FORMULA(Shm->Proc.thermalFormula)](
-		CFlip, Shm, cpu
+	ComputeThermalFormula[SCOPE_OF_FORMULA(RO(Shm)->Proc.thermalFormula)](
+		CFlip, RO(Shm), cpu
 	);
 
 	/* Per Core, evaluate the voltage properties.			*/
 	CFlip->Voltage.VID = RO(Core)->PowerThermal.VID;
 
-	ComputeVoltageFormula[SCOPE_OF_FORMULA(Shm->Proc.voltageFormula)](
-		CFlip, Shm, cpu
+	ComputeVoltageFormula[SCOPE_OF_FORMULA(RO(Shm)->Proc.voltageFormula)](
+		CFlip, RO(Shm), cpu
 	);
 
 	/* Per Core, evaluate the Power properties.			*/
 	CFlip->Delta.Power.ACCU = RO(Core)->Delta.Power.ACCU;
 
-	ComputePowerFormula[SCOPE_OF_FORMULA(Shm->Proc.powerFormula)](
-		CFlip, Shm, cpu
+	ComputePowerFormula[SCOPE_OF_FORMULA(RO(Shm)->Proc.powerFormula)](
+		CFlip, RO(Shm), cpu
 	);
 
 	/* Copy the Interrupts counters.				*/
 	CFlip->Counter.SMI = RO(Core)->Interrupt.SMI;
 
 	/* If driver registered, copy any NMI counter.			*/
-	if (BITVAL(Shm->Registration.NMI, BIT_NMI_LOCAL) == 1) {
+	if (BITVAL(RO(Shm)->Registration.NMI, BIT_NMI_LOCAL) == 1) {
 		CFlip->Counter.NMI.LOCAL   = RO(Core)->Interrupt.NMI.LOCAL;
 	}
-	if (BITVAL(Shm->Registration.NMI, BIT_NMI_UNKNOWN) == 1) {
+	if (BITVAL(RO(Shm)->Registration.NMI, BIT_NMI_UNKNOWN) == 1) {
 		CFlip->Counter.NMI.UNKNOWN = RO(Core)->Interrupt.NMI.UNKNOWN;
 	}
-	if (BITVAL(Shm->Registration.NMI, BIT_NMI_SERR) == 1) {
+	if (BITVAL(RO(Shm)->Registration.NMI, BIT_NMI_SERR) == 1) {
 		CFlip->Counter.NMI.PCISERR = RO(Core)->Interrupt.NMI.PCISERR;
 	}
-	if (BITVAL(Shm->Registration.NMI, BIT_NMI_IO_CHECK) == 1) {
+	if (BITVAL(RO(Shm)->Registration.NMI, BIT_NMI_IO_CHECK) == 1) {
 		CFlip->Counter.NMI.IOCHECK = RO(Core)->Interrupt.NMI.IOCHECK;
 	}
     }
@@ -1199,42 +1198,43 @@ EXIT:
 	return NULL;
 }
 
-void SliceScheduling(SHM_STRUCT *Shm, unsigned int cpu, enum PATTERN pattern)
+void SliceScheduling(	RO(SHM_STRUCT) *RO(Shm),
+			unsigned int cpu, enum PATTERN pattern )
 {
 	unsigned int seek;
 	switch (pattern) {
 	case RESET_CSP:
-		for (seek = 0; seek < Shm->Proc.CPU.Count; seek++) {
-			if (seek == Shm->Proc.Service.Core) {
-				BITSET_CC(LOCKLESS, Shm->roomSched, seek);
+		for (seek = 0; seek < RO(Shm)->Proc.CPU.Count; seek++) {
+			if (seek == RO(Shm)->Proc.Service.Core) {
+				BITSET_CC(LOCKLESS, RO(Shm)->roomSched, seek);
 			} else {
-				BITCLR_CC(LOCKLESS, Shm->roomSched, seek);
+				BITCLR_CC(LOCKLESS, RO(Shm)->roomSched, seek);
 			}
 		}
 		break;
 	case ALL_SMT:
-		if (cpu == Shm->Proc.Service.Core) {
-			BITSTOR_CC(LOCKLESS, Shm->roomSched, roomSeed);
+		if (cpu == RO(Shm)->Proc.Service.Core) {
+			BITSTOR_CC(LOCKLESS, RO(Shm)->roomSched, roomSeed);
 		}
 		break;
 	case RAND_SMT:
 		do {
 			seek = (unsigned int) rand();
-			seek = seek % Shm->Proc.CPU.Count;
-		} while (BITVAL(Shm->Cpu[seek].OffLine, OS));
-		BITCLR_CC(LOCKLESS, Shm->roomSched, cpu);
-		BITSET_CC(LOCKLESS, Shm->roomSched, seek);
+			seek = seek % RO(Shm)->Proc.CPU.Count;
+		} while (BITVAL(RO(Shm)->Cpu[seek].OffLine, OS));
+		BITCLR_CC(LOCKLESS, RO(Shm)->roomSched, cpu);
+		BITSET_CC(LOCKLESS, RO(Shm)->roomSched, seek);
 		break;
 	case RR_SMT:
 		seek = cpu;
 		do {
 			seek++;
-			if (seek >= Shm->Proc.CPU.Count) {
+			if (seek >= RO(Shm)->Proc.CPU.Count) {
 				seek = 0;
 			}
-		} while (BITVAL(Shm->Cpu[seek].OffLine, OS));
-		BITCLR_CC(LOCKLESS, Shm->roomSched, cpu);
-		BITSET_CC(LOCKLESS, Shm->roomSched, seek);
+		} while (BITVAL(RO(Shm)->Cpu[seek].OffLine, OS));
+		BITCLR_CC(LOCKLESS, RO(Shm)->roomSched, cpu);
+		BITSET_CC(LOCKLESS, RO(Shm)->roomSched, seek);
 		break;
 	case USR_CPU:
 		/*	NOP	*/
@@ -1246,17 +1246,19 @@ static void *Child_Thread(void *arg)
 {
 	ARG *Arg	= (ARG *) arg;
 	unsigned int cpu = Arg->Bind;
-	SHM_STRUCT *Shm = Arg->Ref->Shm;
-	CPU_STRUCT *Cpu = &Shm->Cpu[cpu];
+
+	RO(SHM_STRUCT) *RO(Shm) = Arg->Ref->RO(Shm);
+	RW(SHM_STRUCT) *RW(Shm) = Arg->Ref->RW(Shm);
+	CPU_STRUCT *Cpu = &RO(Shm)->Cpu[cpu];
 
 	CALL_FUNC MatrixCallFunc[2][2] = {
 		{ CallWith_RDTSC_No_RDPMC,  CallWith_RDTSC_RDPMC  },
 		{ CallWith_RDTSCP_No_RDPMC, CallWith_RDTSCP_RDPMC }
 	};
-	const int withTSCP = ((Shm->Proc.Features.AdvPower.EDX.Inv_TSC == 1)
-			   || (Shm->Proc.Features.ExtInfo.EDX.RDTSCP == 1)),
-		withRDPMC = ((Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
-			  && (Shm->Proc.PM_version >= 1)
+	const int withTSCP = ((RO(Shm)->Proc.Features.AdvPower.EDX.Inv_TSC == 1)
+			   || (RO(Shm)->Proc.Features.ExtInfo.EDX.RDTSCP == 1)),
+		withRDPMC=((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+			  && (RO(Shm)->Proc.PM_version >= 1)
 			  && (BITVAL(Cpu->SystemRegister.CR4, CR4_PCE) == 1));
 
 	CALL_FUNC CallSliceFunc = MatrixCallFunc[withTSCP][withRDPMC];
@@ -1281,43 +1283,43 @@ static void *Child_Thread(void *arg)
 
 	BITSET_CC(BUS_LOCK, roomSeed, cpu);
 
-	do {
-		while (!BITVAL(Shm->Proc.Sync, BURN)
-		    && !BITVAL(Shutdown, SYNC)
-		    && !BITVAL(Cpu->OffLine, OS)) {
-			nanosleep(&Shm->Sleep.sliceWaiting, NULL);
-		}
+    do {
+	while (!BITVAL(RW(Shm)->Proc.Sync, BURN)
+	    && !BITVAL(Shutdown, SYNC)
+	    && !BITVAL(Cpu->OffLine, OS)) {
+		nanosleep(&RO(Shm)->Sleep.sliceWaiting, NULL);
+	}
 
-		BITSET_CC(BUS_LOCK, roomCore, cpu);
+	BITSET_CC(BUS_LOCK, roomCore, cpu);
 
-		RESET_Slice(Cpu->Slice);
+	RESET_Slice(Cpu->Slice);
 
-		while ( BITVAL(Shm->Proc.Sync, BURN)
-		    && !BITVAL(Shutdown, SYNC) )
-		{
-		    if (BITVAL_CC(Shm->roomSched, cpu)) {
-			CallSliceFunc(	Shm, cpu,
-					Arg->Ref->Slice.Func,
-					Arg->Ref->Slice.arg);
+	while ( BITVAL(RW(Shm)->Proc.Sync, BURN)
+	    && !BITVAL(Shutdown, SYNC) )
+	{
+	    if (BITVAL_CC(RO(Shm)->roomSched, cpu)) {
+		CallSliceFunc(	RO(Shm), RW(Shm), cpu,
+				Arg->Ref->Slice.Func,
+				Arg->Ref->Slice.arg);
 
-			SliceScheduling(Shm, cpu, Arg->Ref->Slice.pattern);
+		SliceScheduling(RO(Shm), cpu, Arg->Ref->Slice.pattern);
 
-		      if (BITVAL(Cpu->OffLine, OS)) {/* ReSchedule to Service */
-			SliceScheduling(Shm, Shm->Proc.Service.Core, RESET_CSP);
+	      if (BITVAL(Cpu->OffLine, OS)) {	/* ReSchedule to Service */
+		SliceScheduling(RO(Shm), RO(Shm)->Proc.Service.Core, RESET_CSP);
+		break;
+	      }
+	    } else {
+		nanosleep(&RO(Shm)->Sleep.sliceWaiting, NULL);
+
+		if (BITVAL(Cpu->OffLine, OS)) {
 			break;
-		      }
-		    } else {
-			nanosleep(&Shm->Sleep.sliceWaiting, NULL);
-
-			if (BITVAL(Cpu->OffLine, OS)) {
-				break;
-			}
-		    }
 		}
+	    }
+	}
 
-		BITCLR_CC(BUS_LOCK, roomCore, cpu);
+	BITCLR_CC(BUS_LOCK, roomCore, cpu);
 
-	} while (!BITVAL(Shutdown, SYNC) && !BITVAL(Cpu->OffLine, OS)) ;
+    } while (!BITVAL(Shutdown, SYNC) && !BITVAL(Cpu->OffLine, OS)) ;
 
 	BITCLR_CC(BUS_LOCK, roomSeed, cpu);
 
@@ -1331,28 +1333,28 @@ EXIT:
 	return NULL;
 }
 
-void Architecture(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void Architecture(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	signed long ix;
 	Bit32	fTSC = RO(Proc)->Features.Std.EDX.TSC,
 		aTSC = RO(Proc)->Features.AdvPower.EDX.Inv_TSC;
 
-	/* Copy all initial CPUID features.				*/
-	memcpy(&Shm->Proc.Features, &RO(Proc)->Features, sizeof(FEATURES));
-	/* Copy the fomula identifiers					*/
-	Shm->Proc.thermalFormula = RO(Proc)->thermalFormula;
-	Shm->Proc.voltageFormula = RO(Proc)->voltageFormula;
-	Shm->Proc.powerFormula   = RO(Proc)->powerFormula;
-	/* Copy the numbers of total & online CPU.			*/
-	Shm->Proc.CPU.Count	= RO(Proc)->CPU.Count;
-	Shm->Proc.CPU.OnLine	= RO(Proc)->CPU.OnLine;
-	Shm->Proc.Service.Proc	= RO(Proc)->Service.Proc;
-	/* Architecture and Hypervisor identifiers.			*/
-	Shm->Proc.ArchID = RO(Proc)->ArchID;
-	Shm->Proc.HypervisorID = RO(Proc)->HypervisorID;
-	/* Copy the Architecture name.					*/
-	StrCopy(Shm->Proc.Architecture, RO(Proc)->Architecture, CODENAME_LEN);
-	/* Make the processor's brand string with no trailing spaces	*/
+	/*	Copy all initial CPUID features.			*/
+	memcpy(&RO(Shm)->Proc.Features, &RO(Proc)->Features, sizeof(FEATURES));
+	/*	Copy the fomula identifiers				*/
+	RO(Shm)->Proc.thermalFormula = RO(Proc)->thermalFormula;
+	RO(Shm)->Proc.voltageFormula = RO(Proc)->voltageFormula;
+	RO(Shm)->Proc.powerFormula   = RO(Proc)->powerFormula;
+	/*	Copy the numbers of total & online CPU.			*/
+	RO(Shm)->Proc.CPU.Count	= RO(Proc)->CPU.Count;
+	RO(Shm)->Proc.CPU.OnLine	= RO(Proc)->CPU.OnLine;
+	RO(Shm)->Proc.Service.Proc	= RO(Proc)->Service.Proc;
+	/*	Architecture and Hypervisor identifiers.		*/
+	RO(Shm)->Proc.ArchID = RO(Proc)->ArchID;
+	RO(Shm)->Proc.HypervisorID = RO(Proc)->HypervisorID;
+	/*	Copy the Architecture name.				*/
+	StrCopy(RO(Shm)->Proc.Architecture,RO(Proc)->Architecture,CODENAME_LEN);
+	/*	Make the processor's brand string with no trailing spaces */
 	ix = BRAND_LENGTH;
 	do {
 		if ((RO(Proc)->Features.Info.Brand[ix] == 0x20)
@@ -1362,25 +1364,25 @@ void Architecture(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 			break;
 		}
 	} while (ix != 0);
-	Shm->Proc.Brand[1 + ix] = '\0';
+	RO(Shm)->Proc.Brand[1 + ix] = '\0';
 	for (; ix >= 0; ix--) {
-		Shm->Proc.Brand[ix] = RO(Proc)->Features.Info.Brand[ix];
+		RO(Shm)->Proc.Brand[ix] = RO(Proc)->Features.Info.Brand[ix];
 	}
-	/* Compute the TSC mode: None, Variant, Invariant		*/
-	Shm->Proc.Features.InvariantTSC = fTSC << aTSC;
+	/*	Compute the TSC mode: None, Variant, Invariant		*/
+	RO(Shm)->Proc.Features.InvariantTSC = fTSC << aTSC;
 }
 
-void PerformanceMonitoring(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void PerformanceMonitoring(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
-	Shm->Proc.PM_version = RO(Proc)->Features.PerfMon.EAX.Version;
+	RO(Shm)->Proc.PM_version = RO(Proc)->Features.PerfMon.EAX.Version;
 }
 
-void HyperThreading(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
-{	/* Update the HyperThreading state				*/
-	Shm->Proc.Features.HyperThreading = RO(Proc)->Features.HTT_Enable;
+void HyperThreading(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
+{	/*	Update the HyperThreading state.			*/
+	RO(Shm)->Proc.Features.HyperThreading = RO(Proc)->Features.HTT_Enable;
 }
 
-void PowerInterface(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void PowerInterface(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short pwrUnits = 0, pwrVal;
 	enum PWR_DOMAIN pw;
@@ -1389,100 +1391,102 @@ void PowerInterface(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
     case POWER_KIND_INTEL:
     case POWER_KIND_AMD:
     case POWER_KIND_AMD_17h:
-	Shm->Proc.Power.Unit.Watts = RO(Proc)->PowerThermal.Unit.PU > 0 ?
+	RO(Shm)->Proc.Power.Unit.Watts = RO(Proc)->PowerThermal.Unit.PU > 0 ?
 		1.0 / (double) (1 << RO(Proc)->PowerThermal.Unit.PU) : 0;
-	Shm->Proc.Power.Unit.Joules= RO(Proc)->PowerThermal.Unit.ESU > 0 ?
+
+	RO(Shm)->Proc.Power.Unit.Joules= RO(Proc)->PowerThermal.Unit.ESU > 0 ?
 		1.0 / (double) (1 << RO(Proc)->PowerThermal.Unit.ESU) :0;
       TIME_UNIT:
-	Shm->Proc.Power.Unit.Times = RO(Proc)->PowerThermal.Unit.TU > 0 ?
+	RO(Shm)->Proc.Power.Unit.Times = RO(Proc)->PowerThermal.Unit.TU > 0 ?
 			1.0 / (double) (1 << RO(Proc)->PowerThermal.Unit.TU)
 			: 1.0 / (double) (1 << 10);
 
 	pwrUnits = 2 << (RO(Proc)->PowerThermal.Unit.PU - 1);
 	break;
     case POWER_KIND_INTEL_ATOM:
-	Shm->Proc.Power.Unit.Watts = RO(Proc)->PowerThermal.Unit.PU > 0 ?
+	RO(Shm)->Proc.Power.Unit.Watts = RO(Proc)->PowerThermal.Unit.PU > 0 ?
 		0.001 / (double) (1 << RO(Proc)->PowerThermal.Unit.PU) : 0;
-	Shm->Proc.Power.Unit.Joules= RO(Proc)->PowerThermal.Unit.ESU > 0 ?
+
+	RO(Shm)->Proc.Power.Unit.Joules= RO(Proc)->PowerThermal.Unit.ESU > 0 ?
 		0.001 / (double) (1 << RO(Proc)->PowerThermal.Unit.ESU) : 0;
 	goto TIME_UNIT;
 	break;
     case POWER_KIND_NONE:
 	break;
     }
-  if (	(Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-  ||	(Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
+  if (	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+  ||	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
   { /* AMD PowerNow */
 	if (RO(Proc)->Features.AdvPower.EDX.FID) {
-		BITSET(LOCKLESS, Shm->Proc.PowerNow, 0);
+		BITSET(LOCKLESS, RO(Shm)->Proc.PowerNow, 0);
 	} else {
-		BITCLR(LOCKLESS, Shm->Proc.PowerNow, 0);
+		BITCLR(LOCKLESS, RO(Shm)->Proc.PowerNow, 0);
 	}
 	if (RO(Proc)->Features.AdvPower.EDX.VID) {
-		BITSET(LOCKLESS, Shm->Proc.PowerNow, 1);
+		BITSET(LOCKLESS, RO(Shm)->Proc.PowerNow, 1);
 	} else {
-		BITCLR(LOCKLESS, Shm->Proc.PowerNow, 1);
+		BITCLR(LOCKLESS, RO(Shm)->Proc.PowerNow, 1);
 	}
-	Shm->Proc.Power.PPT = RO(Proc)->PowerThermal.Zen.PWR.PPT;
-	Shm->Proc.Power.TDP = RO(Proc)->PowerThermal.Zen.TDP.TDP;
-	Shm->Proc.Power.Min = RO(Proc)->PowerThermal.Zen.TDP.TDP2;
-	Shm->Proc.Power.Max = RO(Proc)->PowerThermal.Zen.TDP.TDP3;
-	Shm->Proc.Power.EDC = RO(Proc)->PowerThermal.Zen.EDC.EDC << 2;
-	Shm->Proc.Power.TDC = RO(Proc)->PowerThermal.Zen.EDC.TDC;
+	RO(Shm)->Proc.Power.PPT = RO(Proc)->PowerThermal.Zen.PWR.PPT;
+	RO(Shm)->Proc.Power.TDP = RO(Proc)->PowerThermal.Zen.TDP.TDP;
+	RO(Shm)->Proc.Power.Min = RO(Proc)->PowerThermal.Zen.TDP.TDP2;
+	RO(Shm)->Proc.Power.Max = RO(Proc)->PowerThermal.Zen.TDP.TDP3;
+	RO(Shm)->Proc.Power.EDC = RO(Proc)->PowerThermal.Zen.EDC.EDC << 2;
+	RO(Shm)->Proc.Power.TDC = RO(Proc)->PowerThermal.Zen.EDC.TDC;
 
       for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
       {
-	Shm->Proc.Power.Domain[pw].Feature[PL1].Enable = \
+	RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Enable = \
 			RO(Proc)->PowerThermal.PowerLimit[pw].Enable_Limit1;
 
-	Shm->Proc.Power.Domain[pw].Feature[PL2].Enable = \
+	RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Enable = \
 			RO(Proc)->PowerThermal.PowerLimit[pw].Enable_Limit2;
 
-	Shm->Proc.Power.Domain[pw].Feature[PL1].Clamping = \
+	RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Clamping = \
 			RO(Proc)->PowerThermal.PowerLimit[pw].Clamping1;
 
-	Shm->Proc.Power.Domain[pw].Feature[PL2].Clamping = \
+	RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Clamping = \
 			RO(Proc)->PowerThermal.PowerLimit[pw].Clamping2;
 
 	pwrVal = RO(Proc)->PowerThermal.PowerLimit[pw].Domain_Limit1;
-	Shm->Proc.Power.Domain[pw].PL1 = pwrVal;
+	RO(Shm)->Proc.Power.Domain[pw].PL1 = pwrVal;
 
 	pwrVal = RO(Proc)->PowerThermal.PowerLimit[pw].Domain_Limit2;
-	Shm->Proc.Power.Domain[pw].PL2 = pwrVal;
+	RO(Shm)->Proc.Power.Domain[pw].PL2 = pwrVal;
       }
   }
-  else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+  else if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
   {
     if (pwrUnits != 0)
     {
       for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
       {
-	Shm->Proc.Power.Domain[pw].Feature[PL1].Enable = \
+	RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Enable = \
 			RO(Proc)->PowerThermal.PowerLimit[pw].Enable_Limit1;
 
-	Shm->Proc.Power.Domain[pw].Feature[PL2].Enable = \
+	RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Enable = \
 			RO(Proc)->PowerThermal.PowerLimit[pw].Enable_Limit2;
 
-	Shm->Proc.Power.Domain[pw].Feature[PL1].Clamping = \
+	RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Clamping = \
 			RO(Proc)->PowerThermal.PowerLimit[pw].Clamping1;
 
-	Shm->Proc.Power.Domain[pw].Feature[PL2].Clamping = \
+	RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Clamping = \
 			RO(Proc)->PowerThermal.PowerLimit[pw].Clamping2;
 
 	pwrVal = RO(Proc)->PowerThermal.PowerLimit[pw].Domain_Limit1 / pwrUnits;
-	Shm->Proc.Power.Domain[pw].PL1 = pwrVal;
+	RO(Shm)->Proc.Power.Domain[pw].PL1 = pwrVal;
 
 	pwrVal = RO(Proc)->PowerThermal.PowerLimit[pw].Domain_Limit2 / pwrUnits;
-	Shm->Proc.Power.Domain[pw].PL2 = pwrVal;
+	RO(Shm)->Proc.Power.Domain[pw].PL2 = pwrVal;
       }
 	pwrVal = RO(Proc)->PowerThermal.PowerInfo.ThermalSpecPower / pwrUnits;
-	Shm->Proc.Power.TDP = pwrVal;
+	RO(Shm)->Proc.Power.TDP = pwrVal;
 
 	pwrVal = RO(Proc)->PowerThermal.PowerInfo.MinimumPower / pwrUnits;
-	Shm->Proc.Power.Min = pwrVal;
+	RO(Shm)->Proc.Power.Min = pwrVal;
 
 	pwrVal = RO(Proc)->PowerThermal.PowerInfo.MaximumPower / pwrUnits;
-	Shm->Proc.Power.Max = pwrVal;
+	RO(Shm)->Proc.Power.Max = pwrVal;
     }
     for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
     {
@@ -1493,12 +1497,13 @@ void PowerInterface(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 	duration *= (4 + RO(Proc)->PowerThermal.PowerLimit[pw].TimeWindow1_Z);
 	duration = duration >> 2;
 
-	Shm->Proc.Power.Domain[pw].TW1	= Shm->Proc.Power.Unit.Times
-					* (double)duration;
-	if (Shm->Proc.Power.Domain[pw].TW1 < 1.0)
-		Shm->Proc.Power.Domain[pw].TW1 = 1.0;
+	RO(Shm)->Proc.Power.Domain[pw].TW1 = RO(Shm)->Proc.Power.Unit.Times
+						* (double)duration;
+
+	if (RO(Shm)->Proc.Power.Domain[pw].TW1 < 1.0)
+		RO(Shm)->Proc.Power.Domain[pw].TW1 = 1.0;
       } else {
-	Shm->Proc.Power.Domain[pw].TW1 = 1.0;
+	RO(Shm)->Proc.Power.Domain[pw].TW1 = 1.0;
       }
       if (RO(Proc)->PowerThermal.PowerLimit[pw].TimeWindow2 > 0)
       {
@@ -1507,121 +1512,124 @@ void PowerInterface(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 	duration *= (4 + RO(Proc)->PowerThermal.PowerLimit[pw].TimeWindow2_Z);
 	duration = duration >> 2;
 
-	Shm->Proc.Power.Domain[pw].TW2	= Shm->Proc.Power.Unit.Times
-					* (double)duration;
-	if (Shm->Proc.Power.Domain[pw].TW2 < 1.0)
-		Shm->Proc.Power.Domain[pw].TW2 = 1.0;
+	RO(Shm)->Proc.Power.Domain[pw].TW2 = RO(Shm)->Proc.Power.Unit.Times
+						* (double)duration;
+
+	if (RO(Shm)->Proc.Power.Domain[pw].TW2 < 1.0)
+		RO(Shm)->Proc.Power.Domain[pw].TW2 = 1.0;
       } else {
-	Shm->Proc.Power.Domain[pw].TW2 = 1.0;
+	RO(Shm)->Proc.Power.Domain[pw].TW2 = 1.0;
       }
     }
-	Shm->Proc.Power.TDC = RO(Proc)->PowerThermal.TDC;
-	Shm->Proc.Power.Feature.TDC = RO(Proc)->PowerThermal.Enable_Limit.TDC;
+	RO(Shm)->Proc.Power.TDC = RO(Proc)->PowerThermal.TDC;
+	RO(Shm)->Proc.Power.Feature.TDC=RO(Proc)->PowerThermal.Enable_Limit.TDC;
   } else {
-	Shm->Proc.PowerNow = 0;
+	RO(Shm)->Proc.PowerNow = 0;
   }
 }
 
-void ThermalPoint(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void ThermalPoint(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
-	memcpy(&Shm->Proc.ThermalPoint, &RO(Proc)->ThermalPoint,
+	memcpy(&RO(Shm)->Proc.ThermalPoint, &RO(Proc)->ThermalPoint,
 		sizeof(THERMAL_POINT));
 }
 
-void Technology_Update(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc))
-{	/* Technologies aggregation.					*/
-	Shm->Proc.Technology.PowerNow = (Shm->Proc.PowerNow == 0b11);
+void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
+			RO(PROC) *RO(Proc), RW(PROC) *RW(Proc) )
+{	/*	Technologies aggregation.				*/
+	RO(Shm)->Proc.Technology.PowerNow = (RO(Shm)->Proc.PowerNow == 0b11);
 
-	Shm->Proc.Technology.ODCM = BITCMP_CC(	LOCKLESS,
+	RO(Shm)->Proc.Technology.ODCM = BITCMP_CC(LOCKLESS,
 						RW(Proc)->ODCM,
-						RO(Proc)->ODCM_Mask );
+						RO(Proc)->ODCM_Mask);
 
-	Shm->Proc.Technology.L1_HW_Prefetch=BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.L1_HW_Prefetch = BITCMP_CC(LOCKLESS,
 						RW(Proc)->L1_HW_Prefetch,
-						RO(Proc)->DCU_Mask );
+						RO(Proc)->DCU_Mask);
 
-	Shm->Proc.Technology.L1_HW_IP_Prefetch=BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.L1_HW_IP_Prefetch = BITCMP_CC(LOCKLESS,
 						RW(Proc)->L1_HW_IP_Prefetch,
-						RO(Proc)->DCU_Mask );
+						RO(Proc)->DCU_Mask);
 
-	Shm->Proc.Technology.L2_HW_Prefetch = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.L2_HW_Prefetch = BITCMP_CC(LOCKLESS,
 						RW(Proc)->L2_HW_Prefetch,
-						RO(Proc)->DCU_Mask );
+						RO(Proc)->DCU_Mask);
 
-	Shm->Proc.Technology.L2_HW_CL_Prefetch=BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.L2_HW_CL_Prefetch = BITCMP_CC(LOCKLESS,
 						RW(Proc)->L2_HW_CL_Prefetch,
-						RO(Proc)->DCU_Mask );
+						RO(Proc)->DCU_Mask);
 
-	Shm->Proc.Technology.PowerMgmt=BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.PowerMgmt = BITCMP_CC(LOCKLESS,
 						RW(Proc)->PowerMgmt,
 						RO(Proc)->PowerMgmt_Mask);
 
-	Shm->Proc.Technology.EIST = BITCMP_CC(	LOCKLESS,
+	RO(Shm)->Proc.Technology.EIST = BITCMP_CC(LOCKLESS,
 						RW(Proc)->SpeedStep,
-						RO(Proc)->SpeedStep_Mask );
+						RO(Proc)->SpeedStep_Mask);
 
-	Shm->Proc.Technology.Turbo = BITWISEAND_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.Turbo = BITWISEAND_CC(LOCKLESS,
 						RW(Proc)->TurboBoost,
 						RO(Proc)->TurboBoost_Mask) != 0;
 
-	Shm->Proc.Technology.C1E = BITCMP_CC(	LOCKLESS,
+	RO(Shm)->Proc.Technology.C1E = BITCMP_CC(LOCKLESS,
 						RW(Proc)->C1E,
-						RO(Proc)->C1E_Mask );
+						RO(Proc)->C1E_Mask);
 
-	Shm->Proc.Technology.C3A = BITCMP_CC(	LOCKLESS,
+	RO(Shm)->Proc.Technology.C3A = BITCMP_CC(LOCKLESS,
 						RW(Proc)->C3A,
-						RO(Proc)->C3A_Mask );
+						RO(Proc)->C3A_Mask);
 
-	Shm->Proc.Technology.C1A = BITCMP_CC(	LOCKLESS,
+	RO(Shm)->Proc.Technology.C1A = BITCMP_CC(LOCKLESS,
 						RW(Proc)->C1A,
-						RO(Proc)->C1A_Mask );
+						RO(Proc)->C1A_Mask);
 
-	Shm->Proc.Technology.C3U = BITCMP_CC(	LOCKLESS,
+	RO(Shm)->Proc.Technology.C3U = BITCMP_CC(LOCKLESS,
 						RW(Proc)->C3U,
-						RO(Proc)->C3U_Mask );
+						RO(Proc)->C3U_Mask);
 
-	Shm->Proc.Technology.C1U = BITCMP_CC(	LOCKLESS,
+	RO(Shm)->Proc.Technology.C1U = BITCMP_CC(LOCKLESS,
 						RW(Proc)->C1U,
-						RO(Proc)->C1U_Mask );
+						RO(Proc)->C1U_Mask);
 
-	Shm->Proc.Technology.CC6 = BITCMP_CC(	LOCKLESS,
+	RO(Shm)->Proc.Technology.CC6 = BITCMP_CC(LOCKLESS,
 						RW(Proc)->CC6,
-						RO(Proc)->CC6_Mask );
+						RO(Proc)->CC6_Mask);
 
-	Shm->Proc.Technology.PC6 = BITCMP_CC(	LOCKLESS,
+	RO(Shm)->Proc.Technology.PC6 = BITCMP_CC(LOCKLESS,
 						RW(Proc)->PC6,
-						RO(Proc)->PC6_Mask );
+						RO(Proc)->PC6_Mask);
 
-	Shm->Proc.Technology.SMM = BITCMP_CC(	LOCKLESS,
+	RO(Shm)->Proc.Technology.SMM = BITCMP_CC(LOCKLESS,
 						RW(Proc)->SMM,
-						RO(Proc)->CR_Mask );
+						RO(Proc)->CR_Mask);
 
-	Shm->Proc.Technology.VM = BITCMP_CC(	LOCKLESS,
+	RO(Shm)->Proc.Technology.VM = BITCMP_CC(LOCKLESS,
 						RW(Proc)->VM,
-						RO(Proc)->CR_Mask );
+						RO(Proc)->CR_Mask);
 
-	Shm->Proc.Technology.WDT = BITCMP_CC(	LOCKLESS,
+	RO(Shm)->Proc.Technology.WDT = BITCMP_CC(LOCKLESS,
 						RW(Proc)->WDT,
-						RO(Proc)->WDT_Mask );
+						RO(Proc)->WDT_Mask);
 
 								/* 000v */
-	Shm->Proc.Technology.TM1 = RO(Proc)->Features.Std.EDX.TM1
-				 | RO(Proc)->Features.AdvPower.EDX.TTP;
+	RO(Shm)->Proc.Technology.TM1 = RO(Proc)->Features.Std.EDX.TM1
+					| RO(Proc)->Features.AdvPower.EDX.TTP;
 								/* 00v0 */
-	Shm->Proc.Technology.TM1 |= BITCMP_CC(	LOCKLESS,
+	RO(Shm)->Proc.Technology.TM1 |= BITCMP_CC(LOCKLESS,
 						RW(Proc)->TM1,
-						RO(Proc)->TM_Mask ) << 1;
+						RO(Proc)->TM_Mask) << 1;
 
 								/* 000v */
-	Shm->Proc.Technology.TM2 = RO(Proc)->Features.Std.ECX.TM2
-				 | RO(Proc)->Features.AdvPower.EDX.TM;
+	RO(Shm)->Proc.Technology.TM2 = RO(Proc)->Features.Std.ECX.TM2
+					| RO(Proc)->Features.AdvPower.EDX.TM;
 								/* 00v0 */
-	Shm->Proc.Technology.TM2 |= BITCMP_CC(	LOCKLESS,
+	RO(Shm)->Proc.Technology.TM2 |= BITCMP_CC(LOCKLESS,
 						RW(Proc)->TM2,
-						RO(Proc)->TM_Mask ) << 1;
+						RO(Proc)->TM_Mask) << 1;
 }
 
-void Mitigation_2nd_Stage(SHM_STRUCT *Shm,RO(PROC) *RO(Proc),RW(PROC) *RW(Proc))
+void Mitigation_2nd_Stage(	RO(SHM_STRUCT) *RO(Shm),
+				RO(PROC) *RO(Proc), RW(PROC) *RW(Proc) )
 {
 	unsigned short	IBRS = BITCMP_CC(	LOCKLESS,
 						RW(Proc)->IBRS,
@@ -1635,14 +1643,15 @@ void Mitigation_2nd_Stage(SHM_STRUCT *Shm,RO(PROC) *RO(Proc),RW(PROC) *RW(Proc))
 						RW(Proc)->SSBD,
 						RO(Proc)->SPEC_CTRL_Mask );
 
-	Shm->Proc.Mechanisms.IBRS +=	(2 * IBRS);
-	Shm->Proc.Mechanisms.STIBP +=	(2 * STIBP);
-	Shm->Proc.Mechanisms.SSBD +=	(2 * SSBD);
+	RO(Shm)->Proc.Mechanisms.IBRS  += (2 * IBRS);
+	RO(Shm)->Proc.Mechanisms.STIBP += (2 * STIBP);
+	RO(Shm)->Proc.Mechanisms.SSBD  += (2 * SSBD);
 }
 
-void Mitigation_1st_Stage(SHM_STRUCT *Shm,RO(PROC) *RO(Proc),RW(PROC) *RW(Proc))
+void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
+				RO(PROC) *RO(Proc), RW(PROC) *RW(Proc) )
 {
-    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+    if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	unsigned short	RDCL_NO = BITCMP_CC(	LOCKLESS,
 						RW(Proc)->RDCL_NO,
@@ -1676,303 +1685,314 @@ void Mitigation_1st_Stage(SHM_STRUCT *Shm,RO(PROC) *RO(Proc),RW(PROC) *RW(Proc))
 						RW(Proc)->TAA_NO,
 						RO(Proc)->ARCH_CAP_Mask );
 
-	Shm->Proc.Mechanisms.IBRS = (
-		Shm->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap == 1
+	RO(Shm)->Proc.Mechanisms.IBRS = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap == 1
 	);
-	Shm->Proc.Mechanisms.STIBP = (
-		Shm->Proc.Features.ExtFeature.EDX.STIBP_Cap == 1
+	RO(Shm)->Proc.Mechanisms.STIBP = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.STIBP_Cap == 1
 	);
-	Shm->Proc.Mechanisms.SSBD = (
-		Shm->Proc.Features.ExtFeature.EDX.SSBD_Cap == 1
+	RO(Shm)->Proc.Mechanisms.SSBD = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.SSBD_Cap == 1
 	);
 
-	Mitigation_2nd_Stage(Shm, RO(Proc), RW(Proc));
+	Mitigation_2nd_Stage(RO(Shm), RO(Proc), RW(Proc));
 
-	Shm->Proc.Mechanisms.RDCL_NO = (
-		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP + (2 * RDCL_NO)
+	RO(Shm)->Proc.Mechanisms.RDCL_NO = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
+		+ (2 * RDCL_NO)
 	);
-	Shm->Proc.Mechanisms.IBRS_ALL = (
-		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP + (2 * IBRS_ALL)
+	RO(Shm)->Proc.Mechanisms.IBRS_ALL = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
+		+ (2 * IBRS_ALL)
 	);
-	Shm->Proc.Mechanisms.RSBA = (
-		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP + (2 * RSBA)
+	RO(Shm)->Proc.Mechanisms.RSBA = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
+		+ (2 * RSBA)
 	);
-	Shm->Proc.Mechanisms.L1DFL_VMENTRY_NO = (
-		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP + (2 * L1DFL_NO)
+	RO(Shm)->Proc.Mechanisms.L1DFL_VMENTRY_NO = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
+		+ (2 * L1DFL_NO)
 	);
-	Shm->Proc.Mechanisms.SSB_NO = (
-		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP + (2 * SSB_NO)
+	RO(Shm)->Proc.Mechanisms.SSB_NO = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
+		+ (2 * SSB_NO)
 	);
-	Shm->Proc.Mechanisms.MDS_NO = (
-		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP + (2 * MDS_NO)
+	RO(Shm)->Proc.Mechanisms.MDS_NO = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
+		+ (2 * MDS_NO)
 	);
-	Shm->Proc.Mechanisms.PSCHANGE_MC_NO = (
-	    Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP + (2*PSCHANGE_MC_NO)
+	RO(Shm)->Proc.Mechanisms.PSCHANGE_MC_NO = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
+		+ (2*PSCHANGE_MC_NO)
 	);
-	Shm->Proc.Mechanisms.TAA_NO = (
-		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP + (2 * TAA_NO)
+	RO(Shm)->Proc.Mechanisms.TAA_NO = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
+		+ (2 * TAA_NO)
 	);
-	Shm->Proc.Mechanisms.STLB = BITCMP_CC(	LOCKLESS,
+	RO(Shm)->Proc.Mechanisms.STLB = BITCMP_CC(LOCKLESS,
 						RW(Proc)->STLB,
-						RO(Proc)->ARCH_CAP_Mask );
-	Shm->Proc.Mechanisms.FUSA = BITCMP_CC(	LOCKLESS,
+						RO(Proc)->ARCH_CAP_Mask);
+	RO(Shm)->Proc.Mechanisms.FUSA = BITCMP_CC(LOCKLESS,
 						RW(Proc)->FUSA,
-						RO(Proc)->ARCH_CAP_Mask );
-	Shm->Proc.Mechanisms.RSM_CPL0 = BITCMP_CC(LOCKLESS,
+						RO(Proc)->ARCH_CAP_Mask);
+	RO(Shm)->Proc.Mechanisms.RSM_CPL0 = BITCMP_CC(LOCKLESS,
 						RW(Proc)->RSM_CPL0,
-						RO(Proc)->ARCH_CAP_Mask );
-	Shm->Proc.Mechanisms.SPLA = BITCMP_CC(	LOCKLESS,
+						RO(Proc)->ARCH_CAP_Mask);
+	RO(Shm)->Proc.Mechanisms.SPLA = BITCMP_CC(LOCKLESS,
 						RW(Proc)->SPLA,
-						RO(Proc)->ARCH_CAP_Mask );
-	Shm->Proc.Mechanisms.SNOOP_FILTER = BITCMP_CC(LOCKLESS,
+						RO(Proc)->ARCH_CAP_Mask);
+	RO(Shm)->Proc.Mechanisms.SNOOP_FILTER = BITCMP_CC(LOCKLESS,
 						RW(Proc)->SNOOP_FILTER,
-						RO(Proc)->ARCH_CAP_Mask );
+						RO(Proc)->ARCH_CAP_Mask);
     }
-    else if (	(Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-	||	(Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
+    else if (	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	||	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
     {
 	unsigned short	PSFD = BITCMP_CC(	LOCKLESS,
 						RW(Proc)->PSFD,
 						RO(Proc)->SPEC_CTRL_Mask );
 
-	Shm->Proc.Mechanisms.IBRS = (
-		Shm->Proc.Features.leaf80000008.EBX.IBRS == 1
+	RO(Shm)->Proc.Mechanisms.IBRS = (
+		RO(Shm)->Proc.Features.leaf80000008.EBX.IBRS == 1
 	);
-	Shm->Proc.Mechanisms.STIBP = (
-		Shm->Proc.Features.leaf80000008.EBX.STIBP == 1
+	RO(Shm)->Proc.Mechanisms.STIBP = (
+		RO(Shm)->Proc.Features.leaf80000008.EBX.STIBP == 1
 	);
-	Shm->Proc.Mechanisms.SSBD = (
-		Shm->Proc.Features.leaf80000008.EBX.SSBD == 1
+	RO(Shm)->Proc.Mechanisms.SSBD = (
+		RO(Shm)->Proc.Features.leaf80000008.EBX.SSBD == 1
 	);
 
-	Mitigation_2nd_Stage(Shm, RO(Proc), RW(Proc));
+	Mitigation_2nd_Stage(RO(Shm), RO(Proc), RW(Proc));
 
-	Shm->Proc.Mechanisms.PSFD = (
-		Shm->Proc.Features.leaf80000008.EBX.PSFD + (2 * PSFD)
+	RO(Shm)->Proc.Mechanisms.PSFD = (
+		RO(Shm)->Proc.Features.leaf80000008.EBX.PSFD + (2 * PSFD)
 	);
     }
 }
 
-void Package_Update(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc))
-{	/* Copy the operational settings.				*/
-	Shm->Registration.AutoClock = RO(Proc)->Registration.AutoClock;
-	Shm->Registration.Experimental = RO(Proc)->Registration.Experimental;
-	Shm->Registration.HotPlug = RO(Proc)->Registration.HotPlug;
-	Shm->Registration.PCI = RO(Proc)->Registration.PCI;
-	Shm->Registration.PFM = RO(Proc)->Registration.PFM;
-	Shm->Registration.I2C = RO(Proc)->Registration.I2C;
-	Shm->Registration.HSMP= RO(Proc)->Features.HSMP_Enable;
-	BITSTOR(LOCKLESS, Shm->Registration.NMI, RO(Proc)->Registration.NMI);
-	Shm->Registration.Driver = RO(Proc)->Registration.Driver;
-	/* Copy the timer interval delay.				*/
-	Shm->Sleep.Interval = RO(Proc)->SleepInterval;
-	/* Compute the polling wait time based on the timer interval.	*/
-	Shm->Sleep.pollingWait = TIMESPEC((Shm->Sleep.Interval * 1000000L)
-				/ WAKEUP_RATIO);
-	/* Copy the SysGate tick steps.					*/
-	Shm->SysGate.tickReset = RO(Proc)->tickReset;
-	Shm->SysGate.tickStep  = RO(Proc)->tickStep;
+void Package_Update(	RO(SHM_STRUCT) *RO(Shm),
+			RO(PROC) *RO(Proc), RW(PROC) *RW(Proc) )
+{	/*	Copy the operational settings.				*/
+	RO(Shm)->Registration.AutoClock = RO(Proc)->Registration.AutoClock;
+	RO(Shm)->Registration.Experimental= RO(Proc)->Registration.Experimental;
+	RO(Shm)->Registration.HotPlug = RO(Proc)->Registration.HotPlug;
+	RO(Shm)->Registration.PCI = RO(Proc)->Registration.PCI;
+	RO(Shm)->Registration.PFM = RO(Proc)->Registration.PFM;
+	RO(Shm)->Registration.I2C = RO(Proc)->Registration.I2C;
+	RO(Shm)->Registration.HSMP= RO(Proc)->Features.HSMP_Enable;
+	BITSTOR(LOCKLESS,RO(Shm)->Registration.NMI, RO(Proc)->Registration.NMI);
+	RO(Shm)->Registration.Driver = RO(Proc)->Registration.Driver;
+	/*	Copy the timer interval delay.				*/
+	RO(Shm)->Sleep.Interval = RO(Proc)->SleepInterval;
+	/*	Compute the polling wait time based on the timer interval. */
+	RO(Shm)->Sleep.pollingWait=TIMESPEC((RO(Shm)->Sleep.Interval * 1000000L)
+					/ WAKEUP_RATIO);
+	/*	Copy the SysGate tick steps.					*/
+	RO(Shm)->SysGate.tickReset = RO(Proc)->tickReset;
+	RO(Shm)->SysGate.tickStep  = RO(Proc)->tickStep;
 
-	Architecture(Shm, RO(Proc));
+	Architecture(RO(Shm), RO(Proc));
 
-	PerformanceMonitoring(Shm, RO(Proc));
+	PerformanceMonitoring(RO(Shm), RO(Proc));
 
-	HyperThreading(Shm, RO(Proc));
+	HyperThreading(RO(Shm), RO(Proc));
 
-	PowerInterface(Shm, RO(Proc));
+	PowerInterface(RO(Shm), RO(Proc));
 
-	ThermalPoint(Shm, RO(Proc));
+	ThermalPoint(RO(Shm), RO(Proc));
 
-	Mitigation_1st_Stage(Shm, RO(Proc), RW(Proc));
+	Mitigation_1st_Stage(RO(Shm), RO(Proc), RW(Proc));
 }
+
+#define TIMING(_mc, _cha)	RO(Shm)->Uncore.MC[_mc].Channel[_cha].Timing
 
 typedef struct {
 	unsigned int	Q,
 			R;
 } RAM_Ratio;
 
-void P945_MCH(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void P945_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short mc, cha, slot;
 
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
-    {
-      Shm->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
-      Shm->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
+  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
+  {
+    RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
+    RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
 
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-      {
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = \
+    for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
+    {
+	TIMING(mc, cha).tWR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P945.DRT0.tWR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = \
+	TIMING(mc, cha).tRTPr = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P945.DRT1.tRTPr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS = \
+	TIMING(mc, cha).tRAS = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P945.DRT1.tRAS;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].P945.DRT1.tRRD) {
 	case 0b000:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 1;
+		TIMING(mc, cha).tRRD = 1;
 		break;
 	case 0b001:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 2;
+		TIMING(mc, cha).tRRD = 2;
 		break;
 	}
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC = \
+	TIMING(mc, cha).tRFC = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P945.DRT1.tRFC;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].P945.DRT1.tCL) {
 	case 0b00:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 5;
+		TIMING(mc, cha).tCL = 5;
 		break;
 	case 0b01:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 4;
+		TIMING(mc, cha).tCL = 4;
 		break;
 	case 0b10:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 3;
+		TIMING(mc, cha).tCL = 3;
 		break;
 	case 0b11:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 6;
+		TIMING(mc, cha).tCL = 6;
 		break;
 	}
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = \
+	TIMING(mc, cha).tRCD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P945.DRT1.tRCD + 2;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP  = \
+	TIMING(mc, cha).tRP  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P945.DRT1.tRP + 2;
 
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
-	{
-		unsigned long long DIMM_Size;
-		unsigned short rank, rankCount = (cha == 0) ? 4 : 2;
+      for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
+      {
+	unsigned long long DIMM_Size;
+	unsigned short rank, rankCount = (cha == 0) ? 4 : 2;
 
-	    for (rank = 0; rank < rankCount; rank++) {
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks += \
+	for (rank = 0; rank < rankCount; rank++) {
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks += \
 		  RO(Proc)->Uncore.MC[mc].Channel[cha].P945.DRB[rank].Boundary;
-	    }
-	    switch (RO(Proc)->Uncore.MC[mc].Channel[cha].P945.BANK.Rank0)
-	    {
-	    case 0b00:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 4;
-		break;
-	    case 0b01:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
-		break;
-	    }
-	    switch (RO(Proc)->Uncore.MC[mc].Channel[cha].P945.WIDTH.Rank0)
-	    {
-	    case 0b00:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 16384;
-		break;
-	    case 0b01:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 8192;
-		break;
-	    }
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1024;
-
-		DIMM_Size=Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
-
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
-						(unsigned int)(DIMM_Size >> 20);
 	}
-	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
+	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].P945.BANK.Rank0)
+	{
+	case 0b00:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 4;
+		break;
+	case 0b01:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
+		break;
+	}
+	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].P945.WIDTH.Rank0)
+	{
+	case 0b00:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 16384;
+		break;
+	case 0b01:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 8192;
+		break;
+	}
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1024;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].P945.DRT2.tCKE;
+	DIMM_Size	= RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
+
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+						(unsigned int)(DIMM_Size >> 20);
       }
+	TIMING(mc, cha).ECC = 0;
+
+	TIMING(mc, cha).tCKE = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].P945.DRT2.tCKE;
     }
+  }
 }
 
-void P955_MCH(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void P955_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short mc, cha, slot;
 
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
-    {
-      Shm->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
-      Shm->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
+  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
+  {
+    RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
+    RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
 
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-      {
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS = \
+    for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
+    {
+	TIMING(mc, cha).tRAS = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P955.DRT1.tRAS;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].P955.DRT1.tCL) {
 	case 0b00:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 5;
+		TIMING(mc, cha).tCL = 5;
 		break;
 	case 0b01:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 4;
+		TIMING(mc, cha).tCL = 4;
 		break;
 	case 0b10:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 3;
+		TIMING(mc, cha).tCL = 3;
 		break;
 	case 0b11:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 6;
+		TIMING(mc, cha).tCL = 6;
 		break;
 	}
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = \
+	TIMING(mc, cha).tRCD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P955.DRT1.tRCD + 2;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP  = \
+	TIMING(mc, cha).tRP  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P955.DRT1.tRP + 2;
 
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
-	{
-		unsigned long long DIMM_Size;
-		unsigned short rank;
+      for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
+      {
+	unsigned long long DIMM_Size;
+	unsigned short rank;
 
-	    for (rank = 0; rank < 4; rank++) {
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks += \
+	for (rank = 0; rank < 4; rank++) {
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks += \
 		  RO(Proc)->Uncore.MC[mc].Channel[cha].P955.DRB[rank].Boundary;
-	    }
-	    switch (RO(Proc)->Uncore.MC[mc].Channel[cha].P955.BANK.Rank0)
-	    {
-	    case 0b00:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 4;
-		break;
-	    case 0b01:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
-		break;
-	    }
-	    switch (RO(Proc)->Uncore.MC[mc].Channel[cha].P955.WIDTH.Rank0)
-	    {
-	    case 0b00:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 16384;
-		break;
-	    case 0b01:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 8192;
-		break;
-	    }
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1024;
-
-		DIMM_Size=Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
-
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
-							(unsigned int)DIMM_Size;
 	}
-	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
+	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].P955.BANK.Rank0)
+	{
+	case 0b00:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 4;
+		break;
+	case 0b01:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
+		break;
+	}
+	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].P955.WIDTH.Rank0)
+	{
+	case 0b00:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 16384;
+		break;
+	case 0b01:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 8192;
+		break;
+	}
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1024;
+
+	DIMM_Size	= RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
+
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+							(unsigned int)DIMM_Size;
       }
+	TIMING(mc, cha).ECC = 0;
     }
+  }
 }
 
-void P945_CLK(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
+void P945_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	RAM_Ratio Ratio = {.Q = 1, .R = 1};
 
 	switch (RO(Proc)->Uncore.Bus.ClkCfg.FSB_Select) {
 	case 0b000:
-		Shm->Uncore.Bus.Rate = 400;
+		RO(Shm)->Uncore.Bus.Rate = 400;
 
 		switch (RO(Proc)->Uncore.Bus.ClkCfg.RAM_Select) {
 		default:
@@ -1992,7 +2012,7 @@ void P945_CLK(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		}
 		break;
 	case 0b001:
-		Shm->Uncore.Bus.Rate = 533;
+		RO(Shm)->Uncore.Bus.Rate = 533;
 
 		switch (RO(Proc)->Uncore.Bus.ClkCfg.RAM_Select) {
 		default:
@@ -2014,7 +2034,7 @@ void P945_CLK(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	default:
 		fallthrough;
 	case 0b011:
-		Shm->Uncore.Bus.Rate = 667;
+		RO(Shm)->Uncore.Bus.Rate = 667;
 
 		switch (RO(Proc)->Uncore.Bus.ClkCfg.RAM_Select) {
 		default:
@@ -2035,81 +2055,82 @@ void P945_CLK(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		break;
 	}
 
-	Shm->Uncore.CtrlSpeed = (RO(Core)->Clock.Hz * Ratio.Q * 2) /* DDR2 */
+	RO(Shm)->Uncore.CtrlSpeed = (RO(Core)->Clock.Hz * Ratio.Q * 2)/* DDR2 */
 				/ (Ratio.R * 1000000L);
 
-	Shm->Uncore.Bus.Speed = (RO(Core)->Clock.Hz * Shm->Uncore.Bus.Rate)
-				/ Shm->Proc.Features.Factory.Clock.Hz;
+	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
+				* RO(Shm)->Uncore.Bus.Rate)
+				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	Shm->Uncore.Unit.Bus_Rate = 0b00;
-	Shm->Uncore.Unit.BusSpeed = 0b00;
-	Shm->Uncore.Unit.DDR_Rate = 0b11;
-	Shm->Uncore.Unit.DDRSpeed = 0b00;
-	Shm->Uncore.Unit.DDR_Ver  = 2;
+	RO(Shm)->Uncore.Unit.Bus_Rate = 0b00;
+	RO(Shm)->Uncore.Unit.BusSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
+	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.DDR_Ver  = 2;
 }
 
-void P965_MCH(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void P965_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short mc, cha, slot;
 
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
-    {
-      Shm->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
-      Shm->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
+  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
+  {
+    RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
+    RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
 
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-      {
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   = \
+    for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
+    {
+	TIMING(mc, cha).tCL   = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT0.tCL;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  = \
+	TIMING(mc, cha).tRAS  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT1.tRAS;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   = \
+	TIMING(mc, cha).tWR   = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT1.tWR;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  = \
+	TIMING(mc, cha).tRFC  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT2.tRFC;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   = \
+	TIMING(mc, cha).tRP   = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT2.tRP;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  = \
+	TIMING(mc, cha).tRRD  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT2.tRRD;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  = \
+	TIMING(mc, cha).tRCD  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT4.tRCD_RD;
 /* TODO(Timings)
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  = \
+	TIMING(mc, cha).tFAW  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT_.tFAW;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = \
+	TIMING(mc, cha).tRTPr = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT_.tRTPr;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  = ?
+	TIMING(mc, cha).tCWL  = ?
 */
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL  += 3;
+	TIMING(mc, cha).tCL  += 3;
 
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
+	for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
 	{
 		unsigned long long DIMM_Size;
 /* TODO(Geometry):Hardware missing! */
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 0;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 0;
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 0;
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 0;
 
 		DIMM_Size = 8LLU
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
 						(unsigned int)(DIMM_Size >> 20);
 	}
-	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
+	TIMING(mc, cha).ECC = 0;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE = (cha == 0) ?
+	TIMING(mc, cha).tCKE = (cha == 0) ?
 				  RO(Proc)->Uncore.MC[mc].P965.CKE0.tCKE_Low
 				: RO(Proc)->Uncore.MC[mc].P965.CKE1.tCKE_Low;
-      }
     }
+  }
 }
 
-void P965_CLK(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
+void P965_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	RAM_Ratio Ratio = {.Q = 1, .R = 1};
 
@@ -2117,7 +2138,7 @@ void P965_CLK(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	case 0b111:	/* Unknown */
 		fallthrough;
 	case 0b000:
-		Shm->Uncore.Bus.Rate = 1066;
+		RO(Shm)->Uncore.Bus.Rate = 1066;
 
 		switch (RO(Proc)->Uncore.Bus.ClkCfg.RAM_Select) {
 		case 0b001:
@@ -2143,7 +2164,7 @@ void P965_CLK(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		}
 		break;
 	case 0b001:
-		Shm->Uncore.Bus.Rate = 533;
+		RO(Shm)->Uncore.Bus.Rate = 533;
 
 		switch (RO(Proc)->Uncore.Bus.ClkCfg.RAM_Select) {
 		case 0b001:
@@ -2161,10 +2182,10 @@ void P965_CLK(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		}
 		break;
 	case 0b011:
-		Shm->Uncore.Bus.Rate = 667;
+		RO(Shm)->Uncore.Bus.Rate = 667;
 		break;
 	case 0b100:
-		Shm->Uncore.Bus.Rate = 1333;
+		RO(Shm)->Uncore.Bus.Rate = 1333;
 
 		switch (RO(Proc)->Uncore.Bus.ClkCfg.RAM_Select) {
 		case 0b010:
@@ -2186,7 +2207,7 @@ void P965_CLK(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		}
 		break;
 	case 0b110:
-		Shm->Uncore.Bus.Rate = 1600;
+		RO(Shm)->Uncore.Bus.Rate = 1600;
 
 		switch (RO(Proc)->Uncore.Bus.ClkCfg.RAM_Select) {
 		case 0b011:
@@ -2210,7 +2231,7 @@ void P965_CLK(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	default:
 		fallthrough;
 	case 0b010:
-		Shm->Uncore.Bus.Rate = 800;
+		RO(Shm)->Uncore.Bus.Rate = 800;
 
 		switch (RO(Proc)->Uncore.Bus.ClkCfg.RAM_Select) {
 		case 0b000:
@@ -2241,218 +2262,219 @@ void P965_CLK(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		break;
 	}
 
-	Shm->Uncore.CtrlSpeed = (RO(Core)->Clock.Hz * Ratio.Q * 2) /* DDR2 */
+	RO(Shm)->Uncore.CtrlSpeed = (RO(Core)->Clock.Hz * Ratio.Q * 2) /* DDR2 */
 				/ (Ratio.R * 1000000L);
 
-	Shm->Uncore.Bus.Speed = (RO(Core)->Clock.Hz * Shm->Uncore.Bus.Rate)
-				/ Shm->Proc.Features.Factory.Clock.Hz;
+	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
+				* RO(Shm)->Uncore.Bus.Rate)
+				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	Shm->Uncore.Unit.Bus_Rate = 0b00;
-	Shm->Uncore.Unit.BusSpeed = 0b00;
-	Shm->Uncore.Unit.DDR_Rate = 0b11;
-	Shm->Uncore.Unit.DDRSpeed = 0b00;
-	Shm->Uncore.Unit.DDR_Ver  = 2;
+	RO(Shm)->Uncore.Unit.Bus_Rate = 0b00;
+	RO(Shm)->Uncore.Unit.BusSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
+	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.DDR_Ver  = 2;
 }
 
-void G965_MCH(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void G965_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short mc, cha, slot;
 
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
-    {
-      Shm->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
-      Shm->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
+  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
+  {
+      RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
+      RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
 
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-      {
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  = \
+    for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
+    {
+	TIMING(mc, cha).tWR  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].G965.DRT0.tWR;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].G965.DRT1.tRCD) {
 	case 0b000:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 2;
+		TIMING(mc, cha).tRCD = 2;
 		break;
 	case 0b001:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 3;
+		TIMING(mc, cha).tRCD = 3;
 		break;
 	case 0b010:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 4;
+		TIMING(mc, cha).tRCD = 4;
 		break;
 	case 0b011:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 5;
+		TIMING(mc, cha).tRCD = 5;
 		break;
 	case 0b100:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 6;
+		TIMING(mc, cha).tRCD = 6;
 		break;
 	case 0b101:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 7;
+		TIMING(mc, cha).tRCD = 7;
 		break;
 	case 0b110:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 8;
+		TIMING(mc, cha).tRCD = 8;
 		break;
 	}
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].G965.DRT1.tRP) {
 	case 0b000:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 2;
+		TIMING(mc, cha).tRP = 2;
 		break;
 	case 0b001:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 3;
+		TIMING(mc, cha).tRP = 3;
 		break;
 	case 0b010:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 4;
+		TIMING(mc, cha).tRP = 4;
 		break;
 	case 0b011:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 5;
+		TIMING(mc, cha).tRP = 5;
 		break;
 	case 0b100:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 6;
+		TIMING(mc, cha).tRP = 6;
 		break;
 	case 0b101:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 7;
+		TIMING(mc, cha).tRP = 7;
 		break;
 	case 0b110:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 8;
+		TIMING(mc, cha).tRP = 8;
 		break;
 	}
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  = \
+	TIMING(mc, cha).tRAS  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].G965.DRT1.tRAS;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].G965.DRT1.tRRD) {
 	case 0b000:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 2;
+		TIMING(mc, cha).tRRD = 2;
 		break;
 	case 0b001:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 3;
+		TIMING(mc, cha).tRRD = 3;
 		break;
 	case 0b010:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 4;
+		TIMING(mc, cha).tRRD = 4;
 		break;
 	case 0b011:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 5;
+		TIMING(mc, cha).tRRD = 5;
 		break;
 	case 0b100:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 6;
+		TIMING(mc, cha).tRRD = 6;
 		break;
 	}
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = \
+	TIMING(mc, cha).tRTPr = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].G965.DRT1.tRTPr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  = \
+	TIMING(mc, cha).tFAW  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].G965.DRT2.tFAW;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].G965.DRT3.tCL) {
 	case 0b000:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 3;
+		TIMING(mc, cha).tCL = 3;
 		break;
 	case 0b001:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 4;
+		TIMING(mc, cha).tCL = 4;
 		break;
 	case 0b010:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 5;
+		TIMING(mc, cha).tCL = 5;
 		break;
 	case 0b011:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 6;
+		TIMING(mc, cha).tCL = 6;
 		break;
 	case 0b100:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 7;
+		TIMING(mc, cha).tCL = 7;
 		break;
 	}
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  = \
+	TIMING(mc, cha).tRFC  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].G965.DRT3.tRFC;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].G965.DRT3.tCWL) {
 	case 0b000:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = 2;
+		TIMING(mc, cha).tCWL = 2;
 		break;
 	case 0b001:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = 3;
+		TIMING(mc, cha).tCWL = 3;
 		break;
 	case 0b010:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = 4;
+		TIMING(mc, cha).tCWL = 4;
 		break;
 	case 0b011:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = 5;
+		TIMING(mc, cha).tCWL = 5;
 		break;
 	case 0b100:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = 6;
+		TIMING(mc, cha).tCWL = 6;
 		break;
 	default:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = \
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tCL - 1;
+		TIMING(mc, cha).tCWL = \
+			TIMING(mc, cha).tCL - 1;
 		break;
 	}
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
+      for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
+      {
+	unsigned long long DIMM_Size;
+
+	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DRA.Rank1Bank)
 	{
-		unsigned long long DIMM_Size;
-
-	  switch (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DRA.Rank1Bank)
-	  {
-	  case 0b00:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 4;
+	case 0b00:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 4;
 		break;
-	  case 0b01:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
+	case 0b01:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
 		break;
-	  }
-	  switch (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DRA.Rank0Bank)
-	  {
-	  case 0b00:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks += 4;
-		break;
-	  case 0b01:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks += 8;
-		break;
-	  }
-	  switch (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DRA.OddRank1)
-	  {
-	  case 0b10:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 1;
-		break;
-	  case 0b11:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 2;
-		break;
-	  }
-	  switch (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DRA.EvenRank0)
-	  {
-	  case 0b10:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks += 1;
-		break;
-	  case 0b11:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks += 2;
-		break;
-	  }
-
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 4096;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1024;
-
-		DIMM_Size = 8LLU
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
-
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
-						(unsigned int)(DIMM_Size >> 20);
 	}
-	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
+	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DRA.Rank0Bank)
+	{
+	case 0b00:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks += 4;
+		break;
+	case 0b01:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks += 8;
+		break;
+	}
+	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DRA.OddRank1)
+	{
+	case 0b10:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 1;
+		break;
+	case 0b11:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 2;
+		break;
+	}
+	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DRA.EvenRank0)
+	{
+	case 0b10:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks += 1;
+		break;
+	case 0b11:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks += 2;
+		break;
+	}
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].G965.DRT2.tCKE;
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 4096;
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1024;
+
+	DIMM_Size	= 8LLU
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
+
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+						(unsigned int)(DIMM_Size >> 20);
       }
+	TIMING(mc, cha).ECC = 0;
+
+	TIMING(mc, cha).tCKE = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].G965.DRT2.tCKE;
     }
+  }
 }
 
-void G965_CLK(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
+void G965_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	RAM_Ratio Ratio = {.Q = 1, .R = 1};
 
 	switch (RO(Proc)->Uncore.Bus.ClkCfg.FSB_Select) {
 	case 0b001:
-		Shm->Uncore.Bus.Rate = 533;
+		RO(Shm)->Uncore.Bus.Rate = 533;
 
 		switch (RO(Proc)->Uncore.Bus.ClkCfg.RAM_Select) {
 		case 0b001:
@@ -2470,7 +2492,7 @@ void G965_CLK(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		}
 		break;
 	case 0b011:
-		Shm->Uncore.Bus.Rate = 667;
+		RO(Shm)->Uncore.Bus.Rate = 667;
 
 		switch (RO(Proc)->Uncore.Bus.ClkCfg.RAM_Select) {
 		case 0b001:
@@ -2496,7 +2518,7 @@ void G965_CLK(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		}
 		break;
 	case 0b110:
-		Shm->Uncore.Bus.Rate = 1066;
+		RO(Shm)->Uncore.Bus.Rate = 1066;
 
 		switch (RO(Proc)->Uncore.Bus.ClkCfg.RAM_Select) {
 		case 0b101:
@@ -2512,7 +2534,7 @@ void G965_CLK(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	default:
 		fallthrough;
 	case 0b010:
-		Shm->Uncore.Bus.Rate = 800;
+		RO(Shm)->Uncore.Bus.Rate = 800;
 
 		switch (RO(Proc)->Uncore.Bus.ClkCfg.RAM_Select) {
 		case 0b001:
@@ -2539,270 +2561,272 @@ void G965_CLK(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		break;
 	}
 
-	Shm->Uncore.CtrlSpeed = (RO(Core)->Clock.Hz * Ratio.Q * 2) /* DDR2 */
+	RO(Shm)->Uncore.CtrlSpeed = (RO(Core)->Clock.Hz * Ratio.Q * 2) /* DDR2 */
 				/ (Ratio.R * 1000000L);
 
-	Shm->Uncore.Bus.Speed = (RO(Core)->Clock.Hz * Shm->Uncore.Bus.Rate)
-				/ Shm->Proc.Features.Factory.Clock.Hz;
+	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
+				* RO(Shm)->Uncore.Bus.Rate)
+				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	Shm->Uncore.Unit.Bus_Rate = 0b00;
-	Shm->Uncore.Unit.BusSpeed = 0b00;
-	Shm->Uncore.Unit.DDR_Rate = 0b11;
-	Shm->Uncore.Unit.DDRSpeed = 0b00;
-	Shm->Uncore.Unit.DDR_Ver  = 2;
+	RO(Shm)->Uncore.Unit.Bus_Rate = 0b00;
+	RO(Shm)->Uncore.Unit.BusSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
+	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.DDR_Ver  = 2;
 }
 
-void P3S_MCH(	SHM_STRUCT *Shm, RO(PROC) *RO(Proc),
+void P3S_MCH(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 		unsigned short mc,unsigned short cha )
 {
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   = \
+	TIMING(mc, cha).tCL   = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT0.tCL;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   = \
+	TIMING(mc, cha).tWR   = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT1.tWR;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  = \
+	TIMING(mc, cha).tRFC  = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT2.tRFC;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   = \
+	TIMING(mc, cha).tRP   = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT2.tRP;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  = \
+	TIMING(mc, cha).tRRD  = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT2.tRRD;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  = \
+	TIMING(mc, cha).tRCD  = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT4.tRCD_RD;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  = \
+	TIMING(mc, cha).tRAS  = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT5.tRAS;
 /* TODO(Timings)
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  = \
+	TIMING(mc, cha).tFAW  = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRTn.tFAW;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = \
+	TIMING(mc, cha).tRTPr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRTn.tRTPr;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWL   = ?
+	TIMING(mc, cha).tWL   = ?
 */
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE = (cha == 0) ?
+	TIMING(mc, cha).tCKE = (cha == 0) ?
 				  RO(Proc)->Uncore.MC[mc].P35.CKE0.tCKE_Low
 				: RO(Proc)->Uncore.MC[mc].P35.CKE1.tCKE_Low;
 }
 
-void P35_MCH(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void P35_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short mc, cha, slot;
 
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
+  {
+    RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
+    RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
+
+    for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
     {
-      Shm->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
-      Shm->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
+	P3S_MCH(RO(Shm), RO(Proc), mc, cha);
 
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-      {
-	P3S_MCH(Shm, RO(Proc), mc, cha);
-
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL -= 9;
+	TIMING(mc, cha).tCL -= 9;
 /* TODO(Timings) */
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
-	{
-		unsigned long long DIMM_Size;
+      for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
+      {
+	unsigned long long DIMM_Size;
 /* TODO(Geometry):Hardware missing! */
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 0;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 0;
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 0;
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 0;
 
-		DIMM_Size = 8LLU
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
+	DIMM_Size	= 8LLU
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
 						(unsigned int)(DIMM_Size >> 20);
-	}
-	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
       }
+	TIMING(mc, cha).ECC = 0;
     }
+  }
 }
 
-void P35_CLK(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
+void P35_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
-	P965_CLK(Shm, RO(Proc), RO(Core));
+	P965_CLK(RO(Shm), RO(Proc), RO(Core));
 }
 
-void P4S_MCH(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void P4S_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short mc, cha, slot;
 
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
+  {
+    RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
+    RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
+
+    for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
     {
-      Shm->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
-      Shm->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
+	P3S_MCH(RO(Shm), RO(Proc), mc, cha);
 
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-      {
-	P3S_MCH(Shm, RO(Proc), mc, cha);
-
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL -= 6;
+	TIMING(mc, cha).tCL -= 6;
 /* TODO(Timings) */
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
-	{
-		unsigned long long DIMM_Size;
+      for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
+      {
+	unsigned long long DIMM_Size;
 /* TODO(Geometry):Hardware missing! */
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 0;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 0;
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 0;
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 0;
 
-		DIMM_Size = 8LLU
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
+	DIMM_Size	= 8LLU
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
 						(unsigned int)(DIMM_Size >> 20);
-	}
-	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
       }
+	TIMING(mc, cha).ECC = 0;
     }
+  }
 }
 
-void SLM_PTR(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
+void SLM_PTR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	unsigned short mc, cha, slot;
 /* BUS & DRAM frequency */
-	Shm->Uncore.CtrlSpeed = 800LLU + (
+	RO(Shm)->Uncore.CtrlSpeed = 800LLU + (
 			((2134LLU * RO(Proc)->Uncore.MC[0].SLM.DTR0.DFREQ) >> 3)
 	);
-	Shm->Uncore.Bus.Rate = 5000;
+	RO(Shm)->Uncore.Bus.Rate = 5000;
 
-	Shm->Uncore.Bus.Speed = (RO(Core)->Clock.Hz * Shm->Uncore.Bus.Rate)
-				/ Shm->Proc.Features.Factory.Clock.Hz;
+	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
+				* RO(Shm)->Uncore.Bus.Rate)
+				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	Shm->Uncore.Unit.Bus_Rate = 0b01;
-	Shm->Uncore.Unit.BusSpeed = 0b01;
-	Shm->Uncore.Unit.DDR_Rate = 0b11;
-	Shm->Uncore.Unit.DDRSpeed = 0b00;
-	Shm->Uncore.Unit.DDR_Ver  = 3;
+	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
+	RO(Shm)->Uncore.Unit.BusSpeed = 0b01;
+	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
+	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
 
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
+  {
+    RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
+    RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
+
+    for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
     {
-      Shm->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
-      Shm->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
-
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-      {
 /* Standard Timings */
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL  = \
+	TIMING(mc, cha).tCL  = \
 			RO(Proc)->Uncore.MC[mc].SLM.DTR0.tCL + 5;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = \
+	TIMING(mc, cha).tRCD = \
 			RO(Proc)->Uncore.MC[mc].SLM.DTR0.tRCD + 5;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP  = \
+	TIMING(mc, cha).tRP  = \
 			RO(Proc)->Uncore.MC[mc].SLM.DTR0.tRP + 5;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS = \
+	TIMING(mc, cha).tRAS = \
 			RO(Proc)->Uncore.MC[mc].SLM.DTR1.tRAS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = \
+	TIMING(mc, cha).tRRD = \
 			RO(Proc)->Uncore.MC[mc].SLM.DTR1.tRRD + 4;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC = \
+	TIMING(mc, cha).tRFC = \
 			RO(Proc)->Uncore.MC[mc].SLM.DTR0.tXS == 0 ? 256 : 384;
 
 	switch (RO(Proc)->Uncore.MC[mc].SLM.DRFC.tREFI) {
 	case 0 ... 1:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI = 0;
+		TIMING(mc, cha).tREFI = 0;
 		break;
 	case 2:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI = 39;
+		TIMING(mc, cha).tREFI = 39;
 		break;
 	case 3:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI = 78;
+		TIMING(mc, cha).tREFI = 78;
 		break;
 	}
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI *= Shm->Uncore.CtrlSpeed;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI /= 20;
+	TIMING(mc, cha).tREFI *= RO(Shm)->Uncore.CtrlSpeed;
+	TIMING(mc, cha).tREFI /= 20;
 
 /*TODO( Advanced Timings )
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE = \
+	TIMING(mc, cha).tCKE = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SLM
 */
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = \
+	TIMING(mc, cha).tRTPr = \
 			RO(Proc)->Uncore.MC[mc].SLM.DTR1.tRTP + 4;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr = \
+	TIMING(mc, cha).tWTPr = \
 			RO(Proc)->Uncore.MC[mc].SLM.DTR1.tWTP + 14;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.B2B   = \
+	TIMING(mc, cha).B2B   = \
 			RO(Proc)->Uncore.MC[mc].SLM.DTR1.tCCD;
 
 	switch (RO(Proc)->Uncore.MC[mc].SLM.DTR1.tFAW) {
 	case 0 ... 1:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW = 0;
+		TIMING(mc, cha).tFAW = 0;
 		break;
 	default:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW = \
+		TIMING(mc, cha).tFAW = \
 		10 + ((unsigned int)RO(Proc)->Uncore.MC[mc].SLM.DTR1.tFAW << 1);
 		break;
 	}
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = \
+	TIMING(mc, cha).tCWL = \
 			RO(Proc)->Uncore.MC[mc].SLM.DTR1.tWCL + 3;
 /* Same Rank */
 /*TODO( Read to Read )
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd = \
+	TIMING(mc, cha).tsrRdTRd = \
 			RO(Proc)->Uncore.MC[mc].SLM.DTR?.;
 */
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTWr = 6
+	TIMING(mc, cha).tsrRdTWr = 6
 			+ RO(Proc)->Uncore.MC[mc].SLM.DTR3.tRWSR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTRd = 11
+	TIMING(mc, cha).tsrWrTRd = 11
 			+ RO(Proc)->Uncore.MC[mc].SLM.DTR3.tWRSR;
 /*TODO( Write to Write )
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr = \
+	TIMING(mc, cha).tsrWrTWr = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SLM.DTR?.;
 */
 /* Different Rank */
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTRd = \
+	TIMING(mc, cha).tdrRdTRd = \
 			RO(Proc)->Uncore.MC[mc].SLM.DTR2.tRRDR;
-	if (Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTRd > 0) {
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTRd += 5;
+	if (TIMING(mc, cha).tdrRdTRd > 0) {
+		TIMING(mc, cha).tdrRdTRd += 5;
 	}
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTWr = \
+	TIMING(mc, cha).tdrRdTWr = \
 			+ RO(Proc)->Uncore.MC[mc].SLM.DTR2.tRWDR;
-	if (Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTWr > 0) {
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTWr += 5;
+	if (TIMING(mc, cha).tdrRdTWr > 0) {
+		TIMING(mc, cha).tdrRdTWr += 5;
 	}
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd = \
+	TIMING(mc, cha).tdrWrTRd = \
 			+ RO(Proc)->Uncore.MC[mc].SLM.DTR3.tWRDR;
-	if (Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd > 0) {
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd += 3;
+	if (TIMING(mc, cha).tdrWrTRd > 0) {
+		TIMING(mc, cha).tdrWrTRd += 3;
 	}
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTWr = 4
+	TIMING(mc, cha).tdrWrTWr = 4
 			+ RO(Proc)->Uncore.MC[mc].SLM.DTR2.tWWDR;
 /* Different DIMM */
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd = \
+	TIMING(mc, cha).tddRdTRd = \
 			+ RO(Proc)->Uncore.MC[mc].SLM.DTR2.tRRDD;
-	if (Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd > 0) {
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd += 5;
+	if (TIMING(mc, cha).tddRdTRd > 0) {
+		TIMING(mc, cha).tddRdTRd += 5;
 	}
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr = \
+	TIMING(mc, cha).tddRdTWr = \
 			+ RO(Proc)->Uncore.MC[mc].SLM.DTR2.tRWDD;
-	if (Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr > 0) {
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr += 5;
+	if (TIMING(mc, cha).tddRdTWr > 0) {
+		TIMING(mc, cha).tddRdTWr += 5;
 	}
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTRd = 4
+	TIMING(mc, cha).tddWrTRd = 4
 			+ RO(Proc)->Uncore.MC[mc].SLM.DTR3.tWRDD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTWr = 4
+	TIMING(mc, cha).tddWrTWr = 4
 			+ RO(Proc)->Uncore.MC[mc].SLM.DTR2.tWWDD;
 /* Command Rate */
-	Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1
+	TIMING(mc, cha).CMD_Rate = 1
 			+ RO(Proc)->Uncore.MC[mc].SLM.DTR1.tCMD;
 /* Topology */
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
+	for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
 	{
 		unsigned long long DIMM_Size;
 		const struct {
@@ -2816,921 +2840,933 @@ void SLM_PTR(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 			{ .Banks = 8,	.Rows = 1<<14,	.Cols = 1<<10	}
 		};
 	    if  (cha == 0) {
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
 					RO(Proc)->Uncore.MC[mc].SLM.DRP.RKEN0
 				+	RO(Proc)->Uncore.MC[mc].SLM.DRP.RKEN1;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = \
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = \
 			DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.DIMMDDEN0].Banks;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = \
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = \
 			DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.DIMMDDEN0].Rows;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = \
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = \
 			DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.DIMMDDEN0].Cols;
 	    } else {
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
 					RO(Proc)->Uncore.MC[mc].SLM.DRP.RKEN2
 				+	RO(Proc)->Uncore.MC[mc].SLM.DRP.RKNE3;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = \
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = \
 			DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.DIMMDDEN1].Banks;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = \
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = \
 			DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.DIMMDDEN1].Rows;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = \
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = \
 			DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.DIMMDDEN1].Cols;
 	    }
 		DIMM_Size = 8LLU
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
 						(unsigned int)(DIMM_Size >> 20);
 	}
 /* Error Correcting Code */
-	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = \
+	TIMING(mc, cha).ECC = \
 			  RO(Proc)->Uncore.MC[mc].SLM.BIOS_CFG.EFF_ECC_EN
 			| RO(Proc)->Uncore.MC[mc].SLM.BIOS_CFG.ECC_EN;
-      }
     }
+  }
 }
 
-void NHM_IMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void NHM_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short mc, cha, slot;
 
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
-    {
-      Shm->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
+  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
+  {
+    RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
+    RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
 
-      Shm->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-      {
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = \
+    for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
+    {
+	TIMING(mc, cha).tCL = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.MR0_1.tCL ?
 		4 + RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.MR0_1.tCL : 0;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.MR0_1.tWR) {
 	case 0b001:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 5;
+		TIMING(mc, cha).tWR = 5;
 		break;
 	case 0b010:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 6;
+		TIMING(mc, cha).tWR = 6;
 		break;
 	case 0b011:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 7;
+		TIMING(mc, cha).tWR = 7;
 		break;
 	case 0b100:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 8;
+		TIMING(mc, cha).tWR = 8;
 		break;
 	case 0b101:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 10;
+		TIMING(mc, cha).tWR = 10;
 		break;
 	case 0b110:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 12;
+		TIMING(mc, cha).tWR = 12;
 		break;
 	}
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  = \
+	TIMING(mc, cha).tRCD  = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Bank.tRCD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   = \
+	TIMING(mc, cha).tRP   = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Bank.tRP;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  = \
+	TIMING(mc, cha).tRAS  = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Bank.tRAS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  = \
+	TIMING(mc, cha).tRRD  = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Rank_B.tRRD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  = \
+	TIMING(mc, cha).tRFC  = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Refresh.tRFC;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI = \
+	TIMING(mc, cha).tREFI = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Refresh.tREFI_8;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE  = \
+	TIMING(mc, cha).tCKE  = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.CKE_Timing.tCKE;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = \
+	TIMING(mc, cha).tRTPr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Bank.tRTPr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr = \
+	TIMING(mc, cha).tWTPr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Bank.tWTPr;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tsrRdTRd) {
 	case 0b0:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd = 4;
+		TIMING(mc, cha).tsrRdTRd = 4;
 		break;
 	case 0b1:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd = 6;
+		TIMING(mc, cha).tsrRdTRd = 6;
 		break;
 	}
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTRd = 2
+	TIMING(mc, cha).tdrRdTRd = 2
 		+ RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tdrRdTRd;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd = 2
+	TIMING(mc, cha).tddRdTRd = 2
 		+ RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tddRdTRd;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTWr = 2
+	TIMING(mc, cha).tsrRdTWr = 2
 		+ RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tsrRdTWr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTWr = 2
+	TIMING(mc, cha).tdrRdTWr = 2
 		+ RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tdrRdTWr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr = 2
+	TIMING(mc, cha).tddRdTWr = 2
 		+ RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tddRdTWr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTRd = 10
+	TIMING(mc, cha).tsrWrTRd = 10
 		+ RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tsrWrTRd;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd = 1
+	TIMING(mc, cha).tdrWrTRd = 1
 		+ RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tdrWrTRd;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTRd = 1
+	TIMING(mc, cha).tddWrTRd = 1
 		+ RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tddWrTRd;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Rank_B.tsrWrTWr) {
 	case 0b0:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr = 4;
+		TIMING(mc, cha).tsrWrTWr = 4;
 		break;
 	case 0b1:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr = 6;
+		TIMING(mc, cha).tsrWrTWr = 6;
 		break;
 	}
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTWr = 2
+	TIMING(mc, cha).tdrWrTWr = 2
 		+ RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Rank_B.tdrWrTWr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTWr = 2
+	TIMING(mc, cha).tddWrTWr = 2
 		+ RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Rank_B.tddWrTWr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW = \
+	TIMING(mc, cha).tFAW = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Rank_B.tFAW;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.B2B  = \
+	TIMING(mc, cha).B2B  = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Rank_B.B2B;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.MR2_3.tCWL) {
 	case 0b000:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = 5;
+		TIMING(mc, cha).tCWL = 5;
 		break;
 	case 0b001:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = 6;
+		TIMING(mc, cha).tCWL = 6;
 		break;
 	case 0b010:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = 7;
+		TIMING(mc, cha).tCWL = 7;
 		break;
 	case 0b011:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = 8;
+		TIMING(mc, cha).tCWL = 8;
 		break;
 	}
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Params.ENABLE_2N_3N)
 	{
 	case 0b00:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+		TIMING(mc, cha).CMD_Rate = 1;
 		break;
 	case 0b01:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+		TIMING(mc, cha).CMD_Rate = 2;
 		break;
 	case 0b10:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 3;
+		TIMING(mc, cha).CMD_Rate = 3;
 		break;
 	}
 
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
-	  if (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DOD.DIMMPRESENT)
-	  {
-		unsigned long long DIMM_Size;
+     for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++) {
+      if (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DOD.DIMMPRESENT)
+      {
+	unsigned long long DIMM_Size;
 
-	    switch (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DOD.NUMBANK)
-	    {
-	    case 0b00:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 4;
+	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DOD.NUMBANK)
+	{
+	case 0b00:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 4;
 		break;
-	    case 0b01:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
+	case 0b01:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
 		break;
-	    case 0b10:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 16;
+	case 0b10:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 16;
 		break;
-	    }
-	    switch (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DOD.NUMRANK)
-	    {
-	    case 0b00:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 1;
+	}
+	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DOD.NUMRANK)
+	{
+	case 0b00:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 1;
 		break;
-	    case 0b01:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 2;
+	case 0b01:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 2;
 		break;
-	    case 0b10:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 4;
+	case 0b10:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 4;
 		break;
-	    }
-	    switch (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DOD.NUMROW)
-	    {
-	    case 0b000:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 12;
+	}
+	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DOD.NUMROW)
+	{
+	case 0b000:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 12;
 		break;
-	    case 0b001:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 13;
+	case 0b001:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 13;
 		break;
-	    case 0b010:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 14;
+	case 0b010:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 14;
 		break;
-	    case 0b011:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 15;
+	case 0b011:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 15;
 		break;
-	    case 0b100:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 16;
+	case 0b100:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 16;
 		break;
-	    }
-	    switch (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DOD.NUMCOL)
-	    {
-	    case 0b000:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
+	}
+	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DOD.NUMCOL)
+	{
+	case 0b000:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
 		break;
-	    case 0b001:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 11;
+	case 0b001:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 11;
 		break;
-	    case 0b010:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 12;
+	case 0b010:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 12;
 		break;
-	    }
+	}
 
-		DIMM_Size = 8LLU
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
+	DIMM_Size	= 8LLU
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
 						(unsigned int)(DIMM_Size >> 20);
-	  }
-	}
-	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = (unsigned int)\
+      }
+     }
+	TIMING(mc, cha).ECC = (unsigned int)\
 			( RO(Proc)->Uncore.MC[mc].NHM.STATUS.ECC_ENABLED
 			& RO(Proc)->Uncore.MC[mc].NHM.CONTROL.ECC_ENABLED );
-      }
     }
+  }
 }
 
-void QPI_CLK(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
+void QPI_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	switch (RO(Proc)->Uncore.Bus.DimmClock.QCLK_RATIO) {
 	case 0b00110:
-		Shm->Uncore.CtrlSpeed = 800;
+		RO(Shm)->Uncore.CtrlSpeed = 800;
 		break;
 	case 0b01000:
-		Shm->Uncore.CtrlSpeed = 1066;
+		RO(Shm)->Uncore.CtrlSpeed = 1066;
 		break;
 	case 0b01010:
-		Shm->Uncore.CtrlSpeed = 1333;
+		RO(Shm)->Uncore.CtrlSpeed = 1333;
 		break;
 	case 0b01100:
-		Shm->Uncore.CtrlSpeed = 1600;
+		RO(Shm)->Uncore.CtrlSpeed = 1600;
 		break;
 	case 0b01110:
-		Shm->Uncore.CtrlSpeed = 1866;
+		RO(Shm)->Uncore.CtrlSpeed = 1866;
 		break;
 	case 0b10000:
-		Shm->Uncore.CtrlSpeed = 2133;
+		RO(Shm)->Uncore.CtrlSpeed = 2133;
 		break;
 	case 0b000000:
 		fallthrough;
 	default:
-		Shm->Uncore.CtrlSpeed = 800;
+		RO(Shm)->Uncore.CtrlSpeed = 800;
 		break;
 	}
 
-	Shm->Uncore.CtrlSpeed *= RO(Core)->Clock.Hz;
-	Shm->Uncore.CtrlSpeed /= Shm->Proc.Features.Factory.Clock.Hz;
+	RO(Shm)->Uncore.CtrlSpeed *= RO(Core)->Clock.Hz;
+	RO(Shm)->Uncore.CtrlSpeed /= RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	Shm->Uncore.Bus.Rate = \
+	RO(Shm)->Uncore.Bus.Rate = \
 			RO(Proc)->Uncore.Bus.QuickPath.X58.QPIFREQSEL == 0b00 ?
 		4800 :	RO(Proc)->Uncore.Bus.QuickPath.X58.QPIFREQSEL == 0b10 ?
 		6400 :	RO(Proc)->Uncore.Bus.QuickPath.X58.QPIFREQSEL == 0b01 ?
 		5866 : 6400;
 
-	Shm->Uncore.Bus.Speed = (RO(Core)->Clock.Hz * Shm->Uncore.Bus.Rate)
-				/ Shm->Proc.Features.Factory.Clock.Hz;
+	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
+				* RO(Shm)->Uncore.Bus.Rate)
+				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	Shm->Uncore.Unit.Bus_Rate = 0b01;
-	Shm->Uncore.Unit.BusSpeed = 0b01;
-	Shm->Uncore.Unit.DDR_Rate = 0b11;
-	Shm->Uncore.Unit.DDRSpeed = 0b00;
-	Shm->Uncore.Unit.DDR_Ver  = 3;
+	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
+	RO(Shm)->Uncore.Unit.BusSpeed = 0b01;
+	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
+	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
 }
 
-void X58_VTD(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
+void X58_VTD(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	UNUSED(RO(Core));
-    Shm->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.QuickPath.X58.VT_d;
-    Shm->Proc.Technology.IOMMU_Ver_Major = RO(Proc)->Uncore.Bus.IOMMU_Ver.Major;
-    Shm->Proc.Technology.IOMMU_Ver_Minor = RO(Proc)->Uncore.Bus.IOMMU_Ver.Minor;
+
+	RO(Shm)->Proc.Technology.IOMMU = \
+				!RO(Proc)->Uncore.Bus.QuickPath.X58.VT_d;
+
+	RO(Shm)->Proc.Technology.IOMMU_Ver_Major = \
+					RO(Proc)->Uncore.Bus.IOMMU_Ver.Major;
+
+	RO(Shm)->Proc.Technology.IOMMU_Ver_Minor = \
+					RO(Proc)->Uncore.Bus.IOMMU_Ver.Minor;
 }
 
-void DMI_CLK(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
+void DMI_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	switch (RO(Proc)->Uncore.Bus.DimmClock.QCLK_RATIO) {
 	case 0b00010:
-		Shm->Uncore.CtrlSpeed = 266;
+		RO(Shm)->Uncore.CtrlSpeed = 266;
 		break;
 	case 0b00100:
-		Shm->Uncore.CtrlSpeed = 533;
+		RO(Shm)->Uncore.CtrlSpeed = 533;
 		break;
 	case 0b00110:
-		Shm->Uncore.CtrlSpeed = 800;
+		RO(Shm)->Uncore.CtrlSpeed = 800;
 		break;
 	case 0b01000:
-		Shm->Uncore.CtrlSpeed = 1066;
+		RO(Shm)->Uncore.CtrlSpeed = 1066;
 		break;
 	case 0b01010:
-		Shm->Uncore.CtrlSpeed = 1333;
+		RO(Shm)->Uncore.CtrlSpeed = 1333;
 		break;
 	case 0b000000:
 		fallthrough;
 	default:
-		Shm->Uncore.CtrlSpeed = 266;
+		RO(Shm)->Uncore.CtrlSpeed = 266;
 		break;
 	}
 
-	Shm->Uncore.CtrlSpeed *= RO(Core)->Clock.Hz;
-	Shm->Uncore.CtrlSpeed /= Shm->Proc.Features.Factory.Clock.Hz;
+	RO(Shm)->Uncore.CtrlSpeed *= RO(Core)->Clock.Hz;
+	RO(Shm)->Uncore.CtrlSpeed /= RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	Shm->Uncore.Bus.Rate = 2500;	/* TODO: hardwired to Lynnfield */
+	RO(Shm)->Uncore.Bus.Rate = 2500; /* TODO: hardwired to Lynnfield */
 
-	Shm->Uncore.Bus.Speed = (RO(Core)->Clock.Hz * Shm->Uncore.Bus.Rate)
-				/ Shm->Proc.Features.Factory.Clock.Hz;
+	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
+				* RO(Shm)->Uncore.Bus.Rate)
+				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	Shm->Uncore.Unit.Bus_Rate = 0b01;
-	Shm->Uncore.Unit.BusSpeed = 0b01;
-	Shm->Uncore.Unit.DDR_Rate = 0b11;
-	Shm->Uncore.Unit.DDRSpeed = 0b00;
-	Shm->Uncore.Unit.DDR_Ver  = 3;
+	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
+	RO(Shm)->Uncore.Unit.BusSpeed = 0b01;
+	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
+	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
 }
 
-void SNB_IMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void SNB_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short mc, cha, slot;
 
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
+  {
+	unsigned short dimmSize[2][2] = {
+		{
+			RO(Proc)->Uncore.MC[mc].SNB.MAD0.Dimm_A_Size,
+			RO(Proc)->Uncore.MC[mc].SNB.MAD0.Dimm_B_Size
+		}, {
+			RO(Proc)->Uncore.MC[mc].SNB.MAD1.Dimm_A_Size,
+			RO(Proc)->Uncore.MC[mc].SNB.MAD1.Dimm_B_Size
+		}
+	};
+
+     RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
+     RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
+
+    for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
     {
-      unsigned short dimmSize[2][2] = {
-	{
-		RO(Proc)->Uncore.MC[mc].SNB.MAD0.Dimm_A_Size,
-		RO(Proc)->Uncore.MC[mc].SNB.MAD0.Dimm_B_Size
-	}, {
-		RO(Proc)->Uncore.MC[mc].SNB.MAD1.Dimm_A_Size,
-		RO(Proc)->Uncore.MC[mc].SNB.MAD1.Dimm_B_Size
-	}
-      };
-
-      Shm->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
-      Shm->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
-
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-      {
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   = \
+	TIMING(mc, cha).tCL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.DBP.tCL;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  = \
+	TIMING(mc, cha).tRCD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.DBP.tRCD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   = \
+	TIMING(mc, cha).tRP = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.DBP.tRP;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  = \
+	TIMING(mc, cha).tRAS = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.DBP.tRAS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  = \
+	TIMING(mc, cha).tRRD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RAP.tRRD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  = \
+	TIMING(mc, cha).tRFC = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RFTP.tRFC;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI = \
+	TIMING(mc, cha).tREFI = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RFTP.tREFI;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   = \
+	TIMING(mc, cha).tWR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RAP.tWR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = \
+	TIMING(mc, cha).tRTPr = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RAP.tRTPr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr = \
+	TIMING(mc, cha).tWTPr = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RAP.tWTPr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  = \
+	TIMING(mc, cha).tFAW = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RAP.tFAW;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE  = \
+	TIMING(mc, cha).tCKE = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RAP.tCKE;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  = \
+	TIMING(mc, cha).tCWL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.DBP.tCWL;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RAP.CMD_Stretch) {
 	case 0b00:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+		TIMING(mc, cha).CMD_Rate = 1;
 		break;
 	case 0b10:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+		TIMING(mc, cha).CMD_Rate = 2;
 		break;
 	case 0b11:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 3;
+		TIMING(mc, cha).CMD_Rate = 3;
 		break;
 	default:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 0;
+		TIMING(mc, cha).CMD_Rate = 0;
 		break;
 	}
 
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
-	{
-		unsigned int width, DIMM_Banks;
+      for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
+      {
+	unsigned int width, DIMM_Banks;
 
-	    if (slot == 0) {
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
+	if (slot == 0) {
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
 					RO(Proc)->Uncore.MC[mc].SNB.MAD0.DANOR;
 
 		width = RO(Proc)->Uncore.MC[mc].SNB.MAD0.DAW;
-	    } else {
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
+	} else {
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
 					RO(Proc)->Uncore.MC[mc].SNB.MAD0.DBNOR;
 
 		width = RO(Proc)->Uncore.MC[mc].SNB.MAD0.DBW;
-	    }
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks++;
+	}
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks++;
 
-	    if (width == 0) {
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 14;
-	    } else {
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 15;
-	    }
+	if (width == 0) {
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 14;
+	} else {
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 15;
+	}
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size =
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size =
 						dimmSize[cha][slot] * 256;
 
-		DIMM_Banks = 8 * dimmSize[cha][slot] * 1024 * 1024;
+	DIMM_Banks = 8 * dimmSize[cha][slot] * 1024 * 1024;
 
-		DIMM_Banks = DIMM_Banks
-			/ (Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
-			*  Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
-			*  Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks);
+	DIMM_Banks = DIMM_Banks
+		/ (RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+		*  RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
+		*  RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks);
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = DIMM_Banks;
-	}
-	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = (cha == 0) ?
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = DIMM_Banks;
+      }
+	TIMING(mc, cha).ECC = (cha == 0) ?
 					  RO(Proc)->Uncore.MC[mc].SNB.MAD0.ECC
 					: RO(Proc)->Uncore.MC[mc].SNB.MAD1.ECC;
-      }
     }
+  }
 }
 
-void SNB_CAP(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
+void SNB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	switch (RO(Proc)->Uncore.Bus.SNB_Cap.DMFC) {
 	case 0b111:
-		Shm->Uncore.CtrlSpeed = 1067;
+		RO(Shm)->Uncore.CtrlSpeed = 1067;
 		break;
 	case 0b110:
-		Shm->Uncore.CtrlSpeed = 1333;
+		RO(Shm)->Uncore.CtrlSpeed = 1333;
 		break;
 	case 0b101:
-		Shm->Uncore.CtrlSpeed = 1600;
+		RO(Shm)->Uncore.CtrlSpeed = 1600;
 		break;
 	case 0b100:
-		Shm->Uncore.CtrlSpeed = 1867;
+		RO(Shm)->Uncore.CtrlSpeed = 1867;
 		break;
 	case 0b011:
-		Shm->Uncore.CtrlSpeed = 2133;
+		RO(Shm)->Uncore.CtrlSpeed = 2133;
 		break;
 	case 0b010:
-		Shm->Uncore.CtrlSpeed = 2400;
+		RO(Shm)->Uncore.CtrlSpeed = 2400;
 		break;
 	case 0b001:
-		Shm->Uncore.CtrlSpeed = 2667;
+		RO(Shm)->Uncore.CtrlSpeed = 2667;
 		break;
 	case 0b000:
-		Shm->Uncore.CtrlSpeed = 2933;
+		RO(Shm)->Uncore.CtrlSpeed = 2933;
 		break;
 	}
 
-	Shm->Uncore.Bus.Rate = 5000;
-	Shm->Uncore.Bus.Speed = (RO(Core)->Clock.Hz * Shm->Uncore.Bus.Rate)
-				/ Shm->Proc.Features.Factory.Clock.Hz;
+	RO(Shm)->Uncore.Bus.Rate = 5000;
+	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
+				* RO(Shm)->Uncore.Bus.Rate)
+				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	Shm->Uncore.Unit.Bus_Rate = 0b01;
-	Shm->Uncore.Unit.BusSpeed = 0b01;
-	Shm->Uncore.Unit.DDR_Rate = 0b11;
-	Shm->Uncore.Unit.DDRSpeed = 0b00;
-	Shm->Uncore.Unit.DDR_Ver  = 3;
+	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
+	RO(Shm)->Uncore.Unit.BusSpeed = 0b01;
+	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
+	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
 
-	Shm->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.SNB_Cap.VT_d;
+	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.SNB_Cap.VT_d;
 }
 
-void SNB_EP_IMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void SNB_EP_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short mc, cha, slot;
 
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+    for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
     {
-      Shm->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
-      Shm->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
+     RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
+     RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
 
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+      for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
       {
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   = \
+	TIMING(mc, cha).tCL = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.DBP.EP.tCL;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  = \
+	TIMING(mc, cha).tRCD = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.DBP.EP.tRCD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   = \
+	TIMING(mc, cha).tRP = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.DBP.EP.tRP;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  = \
+	TIMING(mc, cha).tCWL = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.DBP.EP.tCWL;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  = \
+	TIMING(mc, cha).tRAS = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.DBP.EP.tRAS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  = \
+	TIMING(mc, cha).tRRD = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.EP.tRRD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  = \
+	TIMING(mc, cha).tRFC = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RFTP.EP.tRFC;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI = \
+	TIMING(mc, cha).tREFI = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RFTP.EP.tREFI;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   = \
+	TIMING(mc, cha).tWR = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.EP.tWR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = \
+	TIMING(mc, cha).tRTPr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.EP.tRTPr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr = \
+	TIMING(mc, cha).tWTPr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.EP.tWTPr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  = \
+	TIMING(mc, cha).tFAW = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.EP.tFAW;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE  = \
+	TIMING(mc, cha).tCKE = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.EP.tCKE;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTRd = \
+	TIMING(mc, cha).tddWrTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tWRDD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd = \
+	TIMING(mc, cha).tdrWrTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tWRDR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTRd = \
+	TIMING(mc, cha).tsrWrTRd = \
 		4U + RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.DBP.EP.tCWL
 		+ RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.EP.tWTPr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr = \
+	TIMING(mc, cha).tddRdTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tRWDD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTWr = \
+	TIMING(mc, cha).tdrRdTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tRWDR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTWr = \
+	TIMING(mc, cha).tsrRdTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tRWSR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd = \
+	TIMING(mc, cha).tddRdTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tRRDD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTRd = \
+	TIMING(mc, cha).tdrRdTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tRRDR;
 /* TODO
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd = \
+	TIMING(mc, cha).tsrRdTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tRRSR;
 */
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTWr = \
+	TIMING(mc, cha).tddWrTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tWWDD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTWr = \
+	TIMING(mc, cha).tdrWrTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tWWDR;
 /* TODO
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr = \
+	TIMING(mc, cha).tsrWrTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tWWSR;
 */
-	Shm->Uncore.MC[mc].Channel[cha].Timing.B2B = \
+	TIMING(mc, cha).B2B = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tCCD;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.EP.CMD_Stretch)
 	{
 	case 0b00:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+		TIMING(mc, cha).CMD_Rate = 1;
 		break;
 	case 0b10:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+		TIMING(mc, cha).CMD_Rate = 2;
 		break;
 	case 0b11:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 3;
+		TIMING(mc, cha).CMD_Rate = 3;
 		break;
 	default:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 0;
+		TIMING(mc, cha).CMD_Rate = 0;
 		break;
 	}
 
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
+	for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
 	{
 	    if (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].MTR.DIMM_POP)
 	    {
 		unsigned long long DIMM_Size;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 4 << \
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 4 << \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].MTR.DDR3_WIDTH;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 1 << \
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 1 << \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].MTR.RANK_CNT;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << ( 13
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << ( 13
 		+ RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].MTR.RA_WIDTH);
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << ( 10
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << ( 10
 		+ RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].MTR.CA_WIDTH);
 
 		DIMM_Size = 8LLU
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
 						(unsigned int)(DIMM_Size >> 20);
 	    }
 	}
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = (unsigned int)\
+	TIMING(mc, cha).ECC = (unsigned int)\
 				( RO(Proc)->Uncore.MC[mc].SNB_EP.TECH.ECC_EN
 				& !RO(Proc)->Uncore.Bus.SNB_EP_Cap3.ECC_DIS );
       }
     }
 }
 
-void SNB_EP_CAP(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
+void SNB_EP_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	switch (RO(Proc)->Uncore.Bus.SNB_EP_Cap1.DMFC) {
 	case 0b111:
-		Shm->Uncore.CtrlSpeed = 1066;
+		RO(Shm)->Uncore.CtrlSpeed = 1066;
 		break;
 	case 0b110:
-		Shm->Uncore.CtrlSpeed = 1333;
+		RO(Shm)->Uncore.CtrlSpeed = 1333;
 		break;
 	case 0b101:
-		Shm->Uncore.CtrlSpeed = 1600;
+		RO(Shm)->Uncore.CtrlSpeed = 1600;
 		break;
 	case 0b100:
-		Shm->Uncore.CtrlSpeed = 1866;
+		RO(Shm)->Uncore.CtrlSpeed = 1866;
 		break;
 	case 0b011:
-		Shm->Uncore.CtrlSpeed = 2133;
+		RO(Shm)->Uncore.CtrlSpeed = 2133;
 		break;
 	case 0b010:
-		Shm->Uncore.CtrlSpeed = 2400;
+		RO(Shm)->Uncore.CtrlSpeed = 2400;
 		break;
 	case 0b001:
-		Shm->Uncore.CtrlSpeed = 2666;
+		RO(Shm)->Uncore.CtrlSpeed = 2666;
 		break;
 	case 0b000:
-		Shm->Uncore.CtrlSpeed = 2933;
+		RO(Shm)->Uncore.CtrlSpeed = 2933;
 		break;
 	}
 
-	Shm->Uncore.CtrlSpeed *= RO(Core)->Clock.Hz;
-	Shm->Uncore.CtrlSpeed /= Shm->Proc.Features.Factory.Clock.Hz;
+	RO(Shm)->Uncore.CtrlSpeed *= RO(Core)->Clock.Hz;
+	RO(Shm)->Uncore.CtrlSpeed /= RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	Shm->Uncore.Bus.Rate = \
+	RO(Shm)->Uncore.Bus.Rate = \
 		RO(Proc)->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b010 ?
 	5600 :	RO(Proc)->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b011 ?
 	6400 :	RO(Proc)->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b100 ?
 	7200 :	RO(Proc)->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b101 ?
 	8000 : 5000;
 
-	Shm->Uncore.Bus.Speed = (RO(Core)->Clock.Hz * Shm->Uncore.Bus.Rate)
-				/ Shm->Proc.Features.Factory.Clock.Hz;
+	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
+				* RO(Shm)->Uncore.Bus.Rate)
+				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	Shm->Uncore.Unit.Bus_Rate = 0b01;
-	Shm->Uncore.Unit.BusSpeed = 0b01;
-	Shm->Uncore.Unit.DDR_Rate = 0b11;
-	Shm->Uncore.Unit.DDRSpeed = 0b00;
-	Shm->Uncore.Unit.DDR_Ver  = 3;
-/* TODO */
-	Shm->Proc.Technology.IOMMU = 0;
+	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
+	RO(Shm)->Uncore.Unit.BusSpeed = 0b01;
+	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
+	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
+/* TODO(I/O MMU capabiility registers for SandyBridge-EP) */
+	RO(Shm)->Proc.Technology.IOMMU = 0;
 }
 
-void IVB_CAP(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
+void IVB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	switch (RO(Proc)->Uncore.Bus.IVB_Cap.DMFC) {
 	case 0b111:
-		Shm->Uncore.CtrlSpeed = 1067;
+		RO(Shm)->Uncore.CtrlSpeed = 1067;
 		break;
 	case 0b110:
-		Shm->Uncore.CtrlSpeed = 1333;
+		RO(Shm)->Uncore.CtrlSpeed = 1333;
 		break;
 	case 0b101:
-		Shm->Uncore.CtrlSpeed = 1600;
+		RO(Shm)->Uncore.CtrlSpeed = 1600;
 		break;
 	case 0b100:
-		Shm->Uncore.CtrlSpeed = 1867;
+		RO(Shm)->Uncore.CtrlSpeed = 1867;
 		break;
 	case 0b011:
-		Shm->Uncore.CtrlSpeed = 2133;
+		RO(Shm)->Uncore.CtrlSpeed = 2133;
 		break;
 	case 0b010:
-		Shm->Uncore.CtrlSpeed = 2400;
+		RO(Shm)->Uncore.CtrlSpeed = 2400;
 		break;
 	case 0b001:
-		Shm->Uncore.CtrlSpeed = 2667;
+		RO(Shm)->Uncore.CtrlSpeed = 2667;
 		break;
 	case 0b000:
 		switch (RO(Proc)->ArchID) {
 		case IvyBridge:
 		case Haswell_ULT:
-			Shm->Uncore.CtrlSpeed = 2933;
+			RO(Shm)->Uncore.CtrlSpeed = 2933;
 			break;
 		case Haswell_DT:
 		case Haswell_EP:
 		case Haswell_ULX:
-			Shm->Uncore.CtrlSpeed = 2667;
+			RO(Shm)->Uncore.CtrlSpeed = 2667;
 			break;
 		case Broadwell:
 		case Broadwell_D:
 		case Broadwell_H:
 		case Broadwell_EP:
-			Shm->Uncore.CtrlSpeed = 3200;
+			RO(Shm)->Uncore.CtrlSpeed = 3200;
 			break;
 		}
 		break;
 	}
 
-	Shm->Uncore.Bus.Rate = 5000;
-	Shm->Uncore.Bus.Speed = (RO(Core)->Clock.Hz * Shm->Uncore.Bus.Rate)
-				/ Shm->Proc.Features.Factory.Clock.Hz;
+	RO(Shm)->Uncore.Bus.Rate = 5000;
+	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
+				* RO(Shm)->Uncore.Bus.Rate)
+				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	Shm->Uncore.Unit.Bus_Rate = 0b01;
-	Shm->Uncore.Unit.BusSpeed = 0b01;
-	Shm->Uncore.Unit.DDR_Rate = 0b11;
-	Shm->Uncore.Unit.DDRSpeed = 0b00;
-	Shm->Uncore.Unit.DDR_Ver  = 3;
+	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
+	RO(Shm)->Uncore.Unit.BusSpeed = 0b01;
+	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
+	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
 
-	Shm->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.SNB_Cap.VT_d;
+	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.SNB_Cap.VT_d;
 }
 
-void HSW_IMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void HSW_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short mc, cha, slot;
 
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
+  {
+	unsigned short dimmSize[2][2] = {
+		{
+			RO(Proc)->Uncore.MC[mc].SNB.MAD0.Dimm_A_Size,
+			RO(Proc)->Uncore.MC[mc].SNB.MAD0.Dimm_B_Size
+		}, {
+			RO(Proc)->Uncore.MC[mc].SNB.MAD1.Dimm_A_Size,
+			RO(Proc)->Uncore.MC[mc].SNB.MAD1.Dimm_B_Size
+		}
+	};
+
+      RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
+      RO(Shm)->Uncore.MC[mc].ChannelCount=RO(Proc)->Uncore.MC[mc].ChannelCount;
+
+    for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
     {
-      unsigned short dimmSize[2][2] = {
-	{
-		RO(Proc)->Uncore.MC[mc].SNB.MAD0.Dimm_A_Size,
-		RO(Proc)->Uncore.MC[mc].SNB.MAD0.Dimm_B_Size
-	}, {
-		RO(Proc)->Uncore.MC[mc].SNB.MAD1.Dimm_A_Size,
-		RO(Proc)->Uncore.MC[mc].SNB.MAD1.Dimm_B_Size
-	}
-      };
-
-      Shm->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
-      Shm->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
-
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   = \
+	TIMING(mc, cha).tCL   = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.Rank.tCL;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  = \
+	TIMING(mc, cha).tCWL  = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.Rank.tCWL;
 /*TODO(Not Found)
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   = \
+	TIMING(mc, cha).tWR = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW._.tWR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  = \
+	TIMING(mc, cha).tFAW = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW._.tFAW;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.B2B   = \
+	TIMING(mc, cha).B2B = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW._.B2B;
 */
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   = \
+	TIMING(mc, cha).tRP = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.REG4C00.tRP;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  = \
+	TIMING(mc, cha).tRRD = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.REG4C00.tRRD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  = \
+	TIMING(mc, cha).tRCD = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.REG4C00.tRCD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  = \
+	TIMING(mc, cha).tRAS = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.REG4C00.tRAS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  = \
+	TIMING(mc, cha).tRFC = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.Refresh.tRFC;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI = \
+	TIMING(mc, cha).tREFI = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.Refresh.tREFI;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd = \
+	TIMING(mc, cha).tsrRdTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.Timing.tsrRdTRd;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTRd = \
+	TIMING(mc, cha).tdrRdTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.Timing.tdrRdTRd;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd = \
+	TIMING(mc, cha).tddRdTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.Timing.tddRdTRd;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTRd = \
+	TIMING(mc, cha).tsrWrTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.Rank_A.tsrWrTRd;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd = \
+	TIMING(mc, cha).tdrWrTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.Rank_A.tdrWrTRd;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTRd = \
+	TIMING(mc, cha).tddWrTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.Rank_A.tddWrTRd;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr = \
+	TIMING(mc, cha).tsrWrTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.Rank_A.tsrWrTWr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTWr = \
+	TIMING(mc, cha).tdrWrTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.Rank_A.tdrWrTWr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTWr = \
+	TIMING(mc, cha).tddWrTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.Rank_A.tddWrTWr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTWr = \
+	TIMING(mc, cha).tsrRdTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.Rank_B.tsrRdTWr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTWr = \
+	TIMING(mc, cha).tdrRdTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.Rank_B.tdrRdTWr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr = \
+	TIMING(mc, cha).tddRdTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.Rank_B.tddRdTWr;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.Timing.CMD_Stretch) {
 	case 0b00:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+		TIMING(mc, cha).CMD_Rate = 1;
 		break;
 	case 0b10:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+		TIMING(mc, cha).CMD_Rate = 2;
 		break;
 	case 0b11:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 3;
+		TIMING(mc, cha).CMD_Rate = 3;
 		break;
 	default:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 0;
+		TIMING(mc, cha).CMD_Rate = 0;
 		break;
 	}
 
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
-	{
-		unsigned int width, DIMM_Banks;
+      for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
+      {
+	unsigned int width, DIMM_Banks;
 
-	    if (slot == 0) {
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
+	if (slot == 0) {
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
 					RO(Proc)->Uncore.MC[mc].SNB.MAD0.DANOR;
 
 		width = RO(Proc)->Uncore.MC[mc].SNB.MAD0.DAW;
-	    } else {
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
+	} else {
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
 					RO(Proc)->Uncore.MC[mc].SNB.MAD0.DBNOR;
 
 		width = RO(Proc)->Uncore.MC[mc].SNB.MAD0.DBW;
-	    }
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks++;
+	}
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks++;
 
-	    if (width == 0) {
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 14;
-	    } else {
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 15;
-	    }
+	if (width == 0) {
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 14;
+	} else {
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 15;
+	}
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
 						dimmSize[cha][slot] * 256;
 
-		DIMM_Banks = 8 * dimmSize[cha][slot] * 1024 * 1024;
+	DIMM_Banks = 8 * dimmSize[cha][slot] * 1024 * 1024;
 
-		DIMM_Banks = DIMM_Banks
-			/ (Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
-			*  Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
-			*  Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks);
+	DIMM_Banks = DIMM_Banks
+		/ (RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+		*  RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
+		*  RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks);
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = DIMM_Banks;
-	}
-	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = (cha == 0) ?
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = DIMM_Banks;
+      }
+	TIMING(mc, cha).ECC = (cha == 0) ?
 					  RO(Proc)->Uncore.MC[mc].SNB.MAD0.ECC
 					: RO(Proc)->Uncore.MC[mc].SNB.MAD1.ECC;
-      }
     }
+  }
 }
 
 unsigned int SKL_DimmWidthToRows(unsigned int width)
@@ -3750,192 +3786,192 @@ unsigned int SKL_DimmWidthToRows(unsigned int width)
 	return (8 * 1024 * rows);
 }
 
-void SKL_IMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void SKL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short mc, cha;
 
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
-    {
-	Shm->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
-	Shm->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
+  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
+  {
+     RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
+     RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
 
-     for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-     {
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   = \
+    for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
+    {
+	TIMING(mc, cha).tCL   = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.ODT.tCL;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  = \
+	TIMING(mc, cha).tRCD  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Timing.tRP;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   = \
+	TIMING(mc, cha).tRP   = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Timing.tRP;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  = \
+	TIMING(mc, cha).tRAS  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Timing.tRAS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDS = \
+	TIMING(mc, cha).tRRDS = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.ACT.tRRD_SG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDL = \
+	TIMING(mc, cha).tRRDL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.ACT.tRRD_DG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  = \
+	TIMING(mc, cha).tRFC  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Refresh.tRFC;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI = \
+	TIMING(mc, cha).tREFI = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Refresh.tREFI;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   = \
+	TIMING(mc, cha).tWR   = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Timing.tWRPRE
 			- RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.ODT.tCWL -4U;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = \
+	TIMING(mc, cha).tRTPr = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Timing.tRDPRE;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr = \
+	TIMING(mc, cha).tWTPr = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Timing.tWRPRE;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  = \
+	TIMING(mc, cha).tFAW  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.ACT.tFAW;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  = \
+	TIMING(mc, cha).tCWL  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.ODT.tCWL;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_SG = \
+	TIMING(mc, cha).DDR4.tRDRD_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.RDRD.tRDRD_SG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DG = \
+	TIMING(mc, cha).DDR4.tRDRD_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.RDRD.tRDRD_DG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DR = \
+	TIMING(mc, cha).DDR4.tRDRD_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.RDRD.tRDRD_DR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DD = \
+	TIMING(mc, cha).DDR4.tRDRD_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.RDRD.tRDRD_DD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_SG = \
+	TIMING(mc, cha).DDR4.tRDWR_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.RDWR.tRDWR_SG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DG = \
+	TIMING(mc, cha).DDR4.tRDWR_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.RDWR.tRDWR_DG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DR = \
+	TIMING(mc, cha).DDR4.tRDWR_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.RDWR.tRDWR_DR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DD = \
+	TIMING(mc, cha).DDR4.tRDWR_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.RDWR.tRDWR_DD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_SG = \
+	TIMING(mc, cha).DDR4.tWRRD_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.WRRD.tWRRD_SG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DG = \
+	TIMING(mc, cha).DDR4.tWRRD_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.WRRD.tWRRD_DG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DR = \
+	TIMING(mc, cha).DDR4.tWRRD_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.WRRD.tWRRD_DR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DD = \
+	TIMING(mc, cha).DDR4.tWRRD_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.WRRD.tWRRD_DD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_SG = \
+	TIMING(mc, cha).DDR4.tWRWR_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.WRWR.tWRWR_SG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DG = \
+	TIMING(mc, cha).DDR4.tWRWR_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.WRWR.tWRWR_DG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DR = \
+	TIMING(mc, cha).DDR4.tWRWR_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.WRWR.tWRWR_DR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DD = \
+	TIMING(mc, cha).DDR4.tWRWR_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.WRWR.tWRWR_DD;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Sched.CMD_Stretch) {
 	case 0b00:
 	case 0b11:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+		TIMING(mc, cha).CMD_Rate = 1;
 		break;
 	case 0b01:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+		TIMING(mc, cha).CMD_Rate = 2;
 		break;
 	case 0b10:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 3;
+		TIMING(mc, cha).CMD_Rate = 3;
 		break;
 	}
 
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Banks = \
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Banks = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[0].Banks = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[1].Banks = \
 	RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Sched.DRAM_Tech == 0b00 ? 16:8;
 
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Cols = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[0].Cols = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Sched.x8_device_Dimm0 ?
 			1024 : 512;
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Cols = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[1].Cols = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Sched.x8_device_Dimm1 ?
 			1024 : 512;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE = \
+	TIMING(mc, cha).tCKE = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Sched.tCKE;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCPDED = \
+	TIMING(mc, cha).tCPDED = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Sched.tCPDED;
-     }
-	Shm->Uncore.MC[mc].Channel[0].Timing.ECC = \
+    }
+	RO(Shm)->Uncore.MC[mc].Channel[0].Timing.ECC = \
 				RO(Proc)->Uncore.MC[mc].SKL.MADC0.ECC;
 
-	Shm->Uncore.MC[mc].Channel[1].Timing.ECC = \
+	RO(Shm)->Uncore.MC[mc].Channel[1].Timing.ECC = \
 				RO(Proc)->Uncore.MC[mc].SKL.MADC1.ECC;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		RO(Proc)->Uncore.MC[mc].SKL.MADC0.Dimm_L_Map
 	].Size = 1024 * RO(Proc)->Uncore.MC[mc].SKL.MADD0.Dimm_L_Size;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		!RO(Proc)->Uncore.MC[mc].SKL.MADC0.Dimm_L_Map
 	].Size = 1024 * RO(Proc)->Uncore.MC[mc].SKL.MADD0.Dimm_S_Size;
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		RO(Proc)->Uncore.MC[mc].SKL.MADC1.Dimm_L_Map
 	].Size = 1024 * RO(Proc)->Uncore.MC[mc].SKL.MADD1.Dimm_L_Size;
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		!RO(Proc)->Uncore.MC[mc].SKL.MADC1.Dimm_L_Map
 	].Size = 1024 * RO(Proc)->Uncore.MC[mc].SKL.MADD1.Dimm_S_Size;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		RO(Proc)->Uncore.MC[mc].SKL.MADC0.Dimm_L_Map
 	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].SKL.MADD0.DLNOR;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		!RO(Proc)->Uncore.MC[mc].SKL.MADC0.Dimm_L_Map
 	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].SKL.MADD0.DSNOR;
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		RO(Proc)->Uncore.MC[mc].SKL.MADC1.Dimm_L_Map
 	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].SKL.MADD1.DLNOR;
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		!RO(Proc)->Uncore.MC[mc].SKL.MADC1.Dimm_L_Map
 	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].SKL.MADD1.DSNOR;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		RO(Proc)->Uncore.MC[mc].SKL.MADC0.Dimm_L_Map
 	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].SKL.MADD0.DLW);
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		!RO(Proc)->Uncore.MC[mc].SKL.MADC0.Dimm_L_Map
 	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].SKL.MADD0.DSW);
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		RO(Proc)->Uncore.MC[mc].SKL.MADC1.Dimm_L_Map
 	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].SKL.MADD1.DLW);
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		!RO(Proc)->Uncore.MC[mc].SKL.MADC1.Dimm_L_Map
 	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].SKL.MADD1.DSW);
-    }
+  }
 }
 
-void SKL_CAP(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
+void SKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	unsigned int DMFC;
 
@@ -3943,37 +3979,37 @@ void SKL_CAP(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	case Skylake_UY:
 	case Kabylake_UY:
 		DMFC = RO(Proc)->Uncore.Bus.SKL_Cap_B.DMFC_DDR3;
-		Shm->Uncore.Bus.Rate = 4000;	/* 4 GT/s QPI */
+		RO(Shm)->Uncore.Bus.Rate = 4000;	/* 4 GT/s QPI */
 		break;
 	default:
 		DMFC = RO(Proc)->Uncore.Bus.SKL_Cap_C.DMFC_DDR4;
-		Shm->Uncore.Bus.Rate = 8000;	/* 8 GT/s DMI3 */
+		RO(Shm)->Uncore.Bus.Rate = 8000;	/* 8 GT/s DMI3 */
 		break;
 	}
     if (RO(Proc)->Uncore.Bus.SKL_SA_Pll.QCLK == 0)
     {
 	switch (DMFC) {
 	case 0b111:
-		Shm->Uncore.CtrlSpeed = 1067;
+		RO(Shm)->Uncore.CtrlSpeed = 1067;
 		break;
 	case 0b110:
-		Shm->Uncore.CtrlSpeed = 1333;
+		RO(Shm)->Uncore.CtrlSpeed = 1333;
 		break;
 	case 0b101:
-		Shm->Uncore.CtrlSpeed = 1600;
+		RO(Shm)->Uncore.CtrlSpeed = 1600;
 		break;
 	case 0b100:
-		Shm->Uncore.CtrlSpeed = 1867;
+		RO(Shm)->Uncore.CtrlSpeed = 1867;
 		break;
 	case 0b011:
-		Shm->Uncore.CtrlSpeed = 2133;
+		RO(Shm)->Uncore.CtrlSpeed = 2133;
 		break;
 	case 0b010:
-		Shm->Uncore.CtrlSpeed = 2400;
+		RO(Shm)->Uncore.CtrlSpeed = 2400;
 		break;
 	case 0b001:
 	case 0b000:
-		Shm->Uncore.CtrlSpeed = 2667;
+		RO(Shm)->Uncore.CtrlSpeed = 2667;
 		break;
 	}
     } else {
@@ -3985,222 +4021,228 @@ void SKL_CAP(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	} else {
 		Freq_Hz = 100LLU * RO(Proc)->Uncore.Bus.SKL_SA_Pll.QCLK;
 	}
-	Shm->Uncore.CtrlSpeed = (unsigned short) Freq_Hz;
+	RO(Shm)->Uncore.CtrlSpeed = (unsigned short) Freq_Hz;
     }
-	Shm->Uncore.Bus.Speed = (RO(Core)->Clock.Hz * Shm->Uncore.Bus.Rate)
-				/ Shm->Proc.Features.Factory.Clock.Hz;
+	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
+				* RO(Shm)->Uncore.Bus.Rate)
+				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	Shm->Uncore.Unit.Bus_Rate = 0b01;
-	Shm->Uncore.Unit.BusSpeed = 0b01;
-	Shm->Uncore.Unit.DDR_Rate = 0b11;
-	Shm->Uncore.Unit.DDRSpeed = 0b00;
-	Shm->Uncore.Unit.DDR_Ver  = 4;
+	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
+	RO(Shm)->Uncore.Unit.BusSpeed = 0b01;
+	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
+	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.DDR_Ver  = 4;
 
-    Shm->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.SKL_Cap_A.VT_d;
-    Shm->Proc.Technology.IOMMU_Ver_Major = RO(Proc)->Uncore.Bus.IOMMU_Ver.Major;
-    Shm->Proc.Technology.IOMMU_Ver_Minor = RO(Proc)->Uncore.Bus.IOMMU_Ver.Minor;
+	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.SKL_Cap_A.VT_d;
+
+	RO(Shm)->Proc.Technology.IOMMU_Ver_Major = \
+					RO(Proc)->Uncore.Bus.IOMMU_Ver.Major;
+
+	RO(Shm)->Proc.Technology.IOMMU_Ver_Minor = \
+					RO(Proc)->Uncore.Bus.IOMMU_Ver.Minor;
 }
 
-void RKL_IMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void RKL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short mc, cha;
 
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
-    {
-	Shm->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
-	Shm->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
+  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
+  {
+     RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
+     RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
 
-     for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-     {
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   = \
+    for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
+    {
+	TIMING(mc, cha).tCL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.ODT.tCL;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  = \
+	TIMING(mc, cha).tRCD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Timing.tRP;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   = \
+	TIMING(mc, cha).tRP = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Timing.tRP;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  = \
+	TIMING(mc, cha).tRAS = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Timing.tRAS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDS = \
+	TIMING(mc, cha).tRRDS = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.ACT.tRRD_SG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDL = \
+	TIMING(mc, cha).tRRDL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.ACT.tRRD_DG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  = \
+	TIMING(mc, cha).tRFC = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Refresh.tRFC;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI = \
+	TIMING(mc, cha).tREFI = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Refresh.tREFI;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   = \
+	TIMING(mc, cha).tWR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Timing.tWRPRE
 			- RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.ODT.tCWL -4U;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = \
+	TIMING(mc, cha).tRTPr = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Timing.tRDPRE;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr = \
+	TIMING(mc, cha).tWTPr = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Timing.tWRPRE;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  = \
+	TIMING(mc, cha).tFAW = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.ACT.tFAW;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  = \
+	TIMING(mc, cha).tCWL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.ODT.tCWL;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_SG = \
+	TIMING(mc, cha).DDR4.tRDRD_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.RDRD.tRDRD_SG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DG = \
+	TIMING(mc, cha).DDR4.tRDRD_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.RDRD.tRDRD_DG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DR = \
+	TIMING(mc, cha).DDR4.tRDRD_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.RDRD.tRDRD_DR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DD = \
+	TIMING(mc, cha).DDR4.tRDRD_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.RDRD.tRDRD_DD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_SG = \
+	TIMING(mc, cha).DDR4.tRDWR_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.RDWR.tRDWR_SG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DG = \
+	TIMING(mc, cha).DDR4.tRDWR_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.RDWR.tRDWR_DG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DR = \
+	TIMING(mc, cha).DDR4.tRDWR_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.RDWR.tRDWR_DR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DD = \
+	TIMING(mc, cha).DDR4.tRDWR_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.RDWR.tRDWR_DD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_SG = \
+	TIMING(mc, cha).DDR4.tWRRD_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.WRRD.tWRRD_SG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DG = \
+	TIMING(mc, cha).DDR4.tWRRD_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.WRRD.tWRRD_DG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DR = \
+	TIMING(mc, cha).DDR4.tWRRD_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.WRRD.tWRRD_DR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DD = \
+	TIMING(mc, cha).DDR4.tWRRD_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.WRRD.tWRRD_DD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_SG = \
+	TIMING(mc, cha).DDR4.tWRWR_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.WRWR.tWRWR_SG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DG = \
+	TIMING(mc, cha).DDR4.tWRWR_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.WRWR.tWRWR_DG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DR = \
+	TIMING(mc, cha).DDR4.tWRWR_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.WRWR.tWRWR_DR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DD = \
+	TIMING(mc, cha).DDR4.tWRWR_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.WRWR.tWRWR_DD;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Sched.CMD_Stretch) {
 	case 0b00:
 	case 0b11:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+		TIMING(mc, cha).CMD_Rate = 1;
 		break;
 	case 0b01:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+		TIMING(mc, cha).CMD_Rate = 2;
 		break;
 	case 0b10:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 3;
+		TIMING(mc, cha).CMD_Rate = 3;
 		break;
 	}
 
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Banks = \
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Banks = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[0].Banks = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[1].Banks = \
 	!RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Sched.ReservedBits1 ? 16 : 8;
 
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Cols = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[0].Cols = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Sched.x8_device_Dimm0 ?
 			1024 : 512;
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Cols = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[1].Cols = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Sched.x8_device_Dimm1 ?
 			1024 : 512;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE = \
+	TIMING(mc, cha).tCKE = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.PWDEN.tCKE;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCPDED = \
+	TIMING(mc, cha).tCPDED = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Sched.tCPDED;
-     }
-	Shm->Uncore.MC[mc].Channel[0].Timing.ECC = \
+    }
+	RO(Shm)->Uncore.MC[mc].Channel[0].Timing.ECC = \
 				RO(Proc)->Uncore.MC[mc].RKL.MADC0.ECC;
 
-	Shm->Uncore.MC[mc].Channel[1].Timing.ECC = \
+	RO(Shm)->Uncore.MC[mc].Channel[1].Timing.ECC = \
 				RO(Proc)->Uncore.MC[mc].RKL.MADC1.ECC;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		RO(Proc)->Uncore.MC[mc].RKL.MADC0.Dimm_L_Map
 	].Size = 512 * RO(Proc)->Uncore.MC[mc].RKL.MADD0.Dimm_L_Size;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		!RO(Proc)->Uncore.MC[mc].RKL.MADC0.Dimm_L_Map
 	].Size = 512 * RO(Proc)->Uncore.MC[mc].RKL.MADD0.Dimm_S_Size;
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		RO(Proc)->Uncore.MC[mc].RKL.MADC1.Dimm_L_Map
 	].Size = 512 * RO(Proc)->Uncore.MC[mc].RKL.MADD1.Dimm_L_Size;
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		!RO(Proc)->Uncore.MC[mc].RKL.MADC1.Dimm_L_Map
 	].Size = 512 * RO(Proc)->Uncore.MC[mc].RKL.MADD1.Dimm_S_Size;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		RO(Proc)->Uncore.MC[mc].RKL.MADC0.Dimm_L_Map
 	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].RKL.MADD0.DLNOR;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		!RO(Proc)->Uncore.MC[mc].RKL.MADC0.Dimm_L_Map
 	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].RKL.MADD0.DSNOR;
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		RO(Proc)->Uncore.MC[mc].RKL.MADC1.Dimm_L_Map
 	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].RKL.MADD1.DLNOR;
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		!RO(Proc)->Uncore.MC[mc].RKL.MADC1.Dimm_L_Map
 	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].RKL.MADD1.DSNOR;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		RO(Proc)->Uncore.MC[mc].RKL.MADC0.Dimm_L_Map
 	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].RKL.MADD0.DLW);
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		!RO(Proc)->Uncore.MC[mc].RKL.MADC0.Dimm_L_Map
 	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].RKL.MADD0.DSW);
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		RO(Proc)->Uncore.MC[mc].RKL.MADC1.Dimm_L_Map
 	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].RKL.MADD1.DLW);
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		!RO(Proc)->Uncore.MC[mc].RKL.MADC1.Dimm_L_Map
 	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].RKL.MADD1.DSW);
-    }
+  }
 }
 
-void RKL_CAP(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
+void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	unsigned int units = 12;
 	unsigned short mc;
 
-	Shm->Uncore.Bus.Rate = 8000;
-	Shm->Uncore.Bus.Speed = (RO(Core)->Clock.Hz * Shm->Uncore.Bus.Rate)
-				/ Shm->Proc.Features.Factory.Clock.Hz;
+	RO(Shm)->Uncore.Bus.Rate = 8000;
+	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
+				* RO(Shm)->Uncore.Bus.Rate)
+				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-  for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++) {
     if (RO(Proc)->Uncore.MC[mc].RKL.MADCH.value) {
 	switch (RO(Proc)->Uncore.MC[mc].RKL.MADCH.DDR_TYPE) {
 	default:
 	case 0b00:	/*	DDR4	*/
-		Shm->Uncore.Unit.DDR_Ver = 4;
+		RO(Shm)->Uncore.Unit.DDR_Ver = 4;
 
 		if ((RO(Proc)->Uncore.Bus.RKL_Cap_C.DDR4_EN)
 		 && (RO(Proc)->Uncore.Bus.RKL_Cap_A.DDR_OVERCLOCK == 0))
@@ -4209,7 +4251,7 @@ void RKL_CAP(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		}
 		break;
 	case 0b11:	/*	LPDDR4	*/
-		Shm->Uncore.Unit.DDR_Ver = 4;
+		RO(Shm)->Uncore.Unit.DDR_Ver = 4;
 
 		if ((RO(Proc)->Uncore.Bus.RKL_Cap_C.LPDDR4_EN)
 		 && (RO(Proc)->Uncore.Bus.RKL_Cap_A.DDR_OVERCLOCK == 0))
@@ -4218,413 +4260,418 @@ void RKL_CAP(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		}
 		break;
 	case 0b01:	/*	DDR5	*/
-		Shm->Uncore.Unit.DDR_Ver = 5;
+		RO(Shm)->Uncore.Unit.DDR_Ver = 5;
 		break;
 	case 0b10:	/*	LPDDR5	*/
-		Shm->Uncore.Unit.DDR_Ver = 5;
+		RO(Shm)->Uncore.Unit.DDR_Ver = 5;
 		break;
 	}
     }
   }
-	Shm->Uncore.CtrlSpeed = (266 * units) + ((333 * units) / 500);
+	RO(Shm)->Uncore.CtrlSpeed = (266 * units) + ((333 * units) / 500);
 
-	Shm->Uncore.Unit.Bus_Rate = 0b01;
-	Shm->Uncore.Unit.BusSpeed = 0b01;
-	Shm->Uncore.Unit.DDR_Rate = 0b11;
-	Shm->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
+	RO(Shm)->Uncore.Unit.BusSpeed = 0b01;
+	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
+	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
 
-    Shm->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.RKL_Cap_A.VT_d;
-    Shm->Proc.Technology.IOMMU_Ver_Major = RO(Proc)->Uncore.Bus.IOMMU_Ver.Major;
-    Shm->Proc.Technology.IOMMU_Ver_Minor = RO(Proc)->Uncore.Bus.IOMMU_Ver.Minor;
+	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.RKL_Cap_A.VT_d;
+
+	RO(Shm)->Proc.Technology.IOMMU_Ver_Major = \
+					RO(Proc)->Uncore.Bus.IOMMU_Ver.Major;
+
+	RO(Shm)->Proc.Technology.IOMMU_Ver_Minor = \
+					RO(Proc)->Uncore.Bus.IOMMU_Ver.Minor;
 }
 
-void TGL_IMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void TGL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short mc, cha;
 
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
-    {
-	Shm->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
-	Shm->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
+  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
+  {
+     RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
+     RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
 
-     for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-     {
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   = \
+    for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
+    {
+	TIMING(mc, cha).tCL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.ODT.tCL;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  = \
+	TIMING(mc, cha).tRCD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Timing.tRP;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   = \
+	TIMING(mc, cha).tRP = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Timing.tRP;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  = \
+	TIMING(mc, cha).tRAS = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Timing.tRAS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDS = \
+	TIMING(mc, cha).tRRDS = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.ACT.tRRD_SG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDL = \
+	TIMING(mc, cha).tRRDL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.ACT.tRRD_DG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  = \
+	TIMING(mc, cha).tRFC = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Refresh.tRFC;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI = \
+	TIMING(mc, cha).tREFI = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Refresh.tREFI;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   = \
+	TIMING(mc, cha).tWR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Timing.tWRPRE
 			- RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.ODT.tCWL -4U;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = \
+	TIMING(mc, cha).tRTPr = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Timing.tRDPRE;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr = \
+	TIMING(mc, cha).tWTPr = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Timing.tWRPRE;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  = \
+	TIMING(mc, cha).tFAW = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.ACT.tFAW;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  = \
+	TIMING(mc, cha).tCWL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.ODT.tCWL;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_SG = \
+	TIMING(mc, cha).DDR4.tRDRD_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.RDRD.tRDRD_SG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DG = \
+	TIMING(mc, cha).DDR4.tRDRD_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.RDRD.tRDRD_DG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DR = \
+	TIMING(mc, cha).DDR4.tRDRD_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.RDRD.tRDRD_DR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DD = \
+	TIMING(mc, cha).DDR4.tRDRD_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.RDRD.tRDRD_DD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_SG = \
+	TIMING(mc, cha).DDR4.tRDWR_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.RDWR.tRDWR_SG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DG = \
+	TIMING(mc, cha).DDR4.tRDWR_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.RDWR.tRDWR_DG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DR = \
+	TIMING(mc, cha).DDR4.tRDWR_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.RDWR.tRDWR_DR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DD = \
+	TIMING(mc, cha).DDR4.tRDWR_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.RDWR.tRDWR_DD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_SG = \
+	TIMING(mc, cha).DDR4.tWRRD_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.WRRD.tWRRD_SG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DG = \
+	TIMING(mc, cha).DDR4.tWRRD_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.WRRD.tWRRD_DG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DR = \
+	TIMING(mc, cha).DDR4.tWRRD_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.WRRD.tWRRD_DR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DD = \
+	TIMING(mc, cha).DDR4.tWRRD_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.WRRD.tWRRD_DD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_SG = \
+	TIMING(mc, cha).DDR4.tWRWR_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.WRWR.tWRWR_SG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DG = \
+	TIMING(mc, cha).DDR4.tWRWR_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.WRWR.tWRWR_DG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DR = \
+	TIMING(mc, cha).DDR4.tWRWR_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.WRWR.tWRWR_DR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DD = \
+	TIMING(mc, cha).DDR4.tWRWR_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.WRWR.tWRWR_DD;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Sched.CMD_Stretch) {
 	case 0b00:
 	case 0b11:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+		TIMING(mc, cha).CMD_Rate = 1;
 		break;
 	case 0b01:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+		TIMING(mc, cha).CMD_Rate = 2;
 		break;
 	case 0b10:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 3;
+		TIMING(mc, cha).CMD_Rate = 3;
 		break;
 	}
 
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Banks = \
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Banks = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[0].Banks = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[1].Banks = \
 	!RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Sched.ReservedBits1 ? 16 : 8;
 
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Cols = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[0].Cols = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Sched.x8_device_Dimm0 ?
 			1024 : 512;
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Cols = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[1].Cols = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Sched.x8_device_Dimm1 ?
 			1024 : 512;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE  = \
+	TIMING(mc, cha).tCKE = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.PWDEN.tCKE;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCPDED = \
+	TIMING(mc, cha).tCPDED = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Sched.tCPDED;
-     }
-	Shm->Uncore.MC[mc].Channel[0].Timing.ECC = \
+    }
+	RO(Shm)->Uncore.MC[mc].Channel[0].Timing.ECC = \
 				RO(Proc)->Uncore.MC[mc].TGL.MADC0.ECC;
 
-	Shm->Uncore.MC[mc].Channel[1].Timing.ECC = \
+	RO(Shm)->Uncore.MC[mc].Channel[1].Timing.ECC = \
 				RO(Proc)->Uncore.MC[mc].TGL.MADC1.ECC;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		RO(Proc)->Uncore.MC[mc].TGL.MADC0.Dimm_L_Map
 	].Size = 512 * RO(Proc)->Uncore.MC[mc].TGL.MADD0.Dimm_L_Size;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		!RO(Proc)->Uncore.MC[mc].TGL.MADC0.Dimm_L_Map
 	].Size = 512 * RO(Proc)->Uncore.MC[mc].TGL.MADD0.Dimm_S_Size;
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		RO(Proc)->Uncore.MC[mc].TGL.MADC1.Dimm_L_Map
 	].Size = 512 * RO(Proc)->Uncore.MC[mc].TGL.MADD1.Dimm_L_Size;
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		!RO(Proc)->Uncore.MC[mc].TGL.MADC1.Dimm_L_Map
 	].Size = 512 * RO(Proc)->Uncore.MC[mc].TGL.MADD1.Dimm_S_Size;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		RO(Proc)->Uncore.MC[mc].TGL.MADC0.Dimm_L_Map
 	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].TGL.MADD0.DLNOR;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		!RO(Proc)->Uncore.MC[mc].TGL.MADC0.Dimm_L_Map
 	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].TGL.MADD0.DSNOR;
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		RO(Proc)->Uncore.MC[mc].TGL.MADC1.Dimm_L_Map
 	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].TGL.MADD1.DLNOR;
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		!RO(Proc)->Uncore.MC[mc].TGL.MADC1.Dimm_L_Map
 	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].TGL.MADD1.DSNOR;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		RO(Proc)->Uncore.MC[mc].TGL.MADC0.Dimm_L_Map
 	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].TGL.MADD0.DLW);
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		!RO(Proc)->Uncore.MC[mc].TGL.MADC0.Dimm_L_Map
 	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].TGL.MADD0.DSW);
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		RO(Proc)->Uncore.MC[mc].TGL.MADC1.Dimm_L_Map
 	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].TGL.MADD1.DLW);
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		!RO(Proc)->Uncore.MC[mc].TGL.MADC1.Dimm_L_Map
 	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].TGL.MADD1.DSW);
-    }
+  }
 }
 
 #define TGL_CAP RKL_CAP
 
-void ADL_IMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short mc, cha;
 
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
-    {
-	Shm->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
-	Shm->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
+  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
+  {
+     RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
+     RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
 
-     for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-     {
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   = \
+    for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
+    {
+	TIMING(mc, cha).tCL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ODT.tCL;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  = \
+	TIMING(mc, cha).tRCD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tRP;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   = \
+	TIMING(mc, cha).tRP = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tRP;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  = \
+	TIMING(mc, cha).tRAS = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tRAS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDS = \
+	TIMING(mc, cha).tRRDS = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ACT.tRRD_SG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDL = \
+	TIMING(mc, cha).tRRDL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ACT.tRRD_DG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  = \
+	TIMING(mc, cha).tRFC = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Refresh.tRFC;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI = \
+	TIMING(mc, cha).tREFI = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Refresh.tREFI;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   = \
+	TIMING(mc, cha).tWR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tWRPRE
 			- RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ODT.tCWL -4U;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = \
+	TIMING(mc, cha).tRTPr = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tRDPRE;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr = \
+	TIMING(mc, cha).tWTPr = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tWRPRE;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  = \
+	TIMING(mc, cha).tFAW = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ACT.tFAW;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  = \
+	TIMING(mc, cha).tCWL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ODT.tCWL;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_SG = \
+	TIMING(mc, cha).DDR4.tRDRD_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDRD.tRDRD_SG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DG = \
+	TIMING(mc, cha).DDR4.tRDRD_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDRD.tRDRD_DG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DR = \
+	TIMING(mc, cha).DDR4.tRDRD_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDRD.tRDRD_DR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DD = \
+	TIMING(mc, cha).DDR4.tRDRD_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDRD.tRDRD_DD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_SG = \
+	TIMING(mc, cha).DDR4.tRDWR_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDWR.tRDWR_SG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DG = \
+	TIMING(mc, cha).DDR4.tRDWR_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDWR.tRDWR_DG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DR = \
+	TIMING(mc, cha).DDR4.tRDWR_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDWR.tRDWR_DR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DD = \
+	TIMING(mc, cha).DDR4.tRDWR_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDWR.tRDWR_DD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_SG = \
+	TIMING(mc, cha).DDR4.tWRRD_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRRD.tWRRD_SG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DG = \
+	TIMING(mc, cha).DDR4.tWRRD_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRRD.tWRRD_DG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DR = \
+	TIMING(mc, cha).DDR4.tWRRD_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRRD.tWRRD_DR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DD = \
+	TIMING(mc, cha).DDR4.tWRRD_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRRD.tWRRD_DD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_SG = \
+	TIMING(mc, cha).DDR4.tWRWR_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRWR.tWRWR_SG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DG = \
+	TIMING(mc, cha).DDR4.tWRWR_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRWR.tWRWR_DG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DR = \
+	TIMING(mc, cha).DDR4.tWRWR_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRWR.tWRWR_DR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DD = \
+	TIMING(mc, cha).DDR4.tWRWR_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRWR.tWRWR_DD;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Sched.CMD_Stretch) {
 	case 0b00:
 	case 0b11:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+		TIMING(mc, cha).CMD_Rate = 1;
 		break;
 	case 0b01:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+		TIMING(mc, cha).CMD_Rate = 2;
 		break;
 	case 0b10:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 3;
+		TIMING(mc, cha).CMD_Rate = 3;
 		break;
 	}
 
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Banks = \
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Banks = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[0].Banks = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[1].Banks = \
 	!RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Sched.ReservedBits1 ? 16 : 8;
 
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Cols = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[0].Cols = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Sched.x8_device_Dimm0 ?
 			1024 : 512;
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Cols = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[1].Cols = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Sched.x8_device_Dimm1 ?
 			1024 : 512;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE  = \
+	TIMING(mc, cha).tCKE = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.PWDEN.tCKE;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCPDED = \
+	TIMING(mc, cha).tCPDED = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Sched.tCPDED;
-     }
-	Shm->Uncore.MC[mc].Channel[0].Timing.ECC = \
+    }
+	RO(Shm)->Uncore.MC[mc].Channel[0].Timing.ECC = \
 				RO(Proc)->Uncore.MC[mc].ADL.MADC0.ECC;
 
-	Shm->Uncore.MC[mc].Channel[1].Timing.ECC = \
+	RO(Shm)->Uncore.MC[mc].Channel[1].Timing.ECC = \
 				RO(Proc)->Uncore.MC[mc].ADL.MADC1.ECC;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
 	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_L_Size;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
 	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_S_Size;
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
 	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_L_Size;
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
 	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_S_Size;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
 	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD0.DLNOR;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
 	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD0.DSNOR;
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
 	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD1.DLNOR;
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
 	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD1.DSNOR;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
 	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD0.DLW);
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
 	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD0.DSW);
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
 	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD1.DLW);
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
 	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD1.DSW);
-    }
+  }
 }
 
-void ADL_CAP(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
+void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	unsigned int units = 12;
 	unsigned short mc;
 
-	Shm->Uncore.Bus.Rate = 8000;
-	Shm->Uncore.Bus.Speed = (RO(Core)->Clock.Hz * Shm->Uncore.Bus.Rate)
-				/ Shm->Proc.Features.Factory.Clock.Hz;
+	RO(Shm)->Uncore.Bus.Rate = 8000;
+	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
+				* RO(Shm)->Uncore.Bus.Rate)
+				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-  for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++) {
     if (RO(Proc)->Uncore.MC[mc].ADL.MADCH.value) {
 	switch (RO(Proc)->Uncore.MC[mc].ADL.MADCH.DDR_TYPE) {
 	default:
 	case 0b00:	/*	DDR4	*/
-		Shm->Uncore.Unit.DDR_Ver = 4;
+		RO(Shm)->Uncore.Unit.DDR_Ver = 4;
 
 		if ((RO(Proc)->Uncore.Bus.ADL_Cap_C.DDR4_EN)
 		 && (RO(Proc)->Uncore.Bus.ADL_Cap_A.DDR_OVERCLOCK == 0))
@@ -4633,7 +4680,7 @@ void ADL_CAP(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		}
 		break;
 	case 0b11:	/*	LPDDR4	*/
-		Shm->Uncore.Unit.DDR_Ver = 4;
+		RO(Shm)->Uncore.Unit.DDR_Ver = 4;
 
 		if ((RO(Proc)->Uncore.Bus.ADL_Cap_C.LPDDR4_EN)
 		 && (RO(Proc)->Uncore.Bus.ADL_Cap_A.DDR_OVERCLOCK == 0))
@@ -4642,27 +4689,31 @@ void ADL_CAP(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		}
 		break;
 	case 0b01:	/*	DDR5	*/
-		Shm->Uncore.Unit.DDR_Ver = 5;
+		RO(Shm)->Uncore.Unit.DDR_Ver = 5;
 		break;
 	case 0b10:	/*	LPDDR5	*/
-		Shm->Uncore.Unit.DDR_Ver = 5;
+		RO(Shm)->Uncore.Unit.DDR_Ver = 5;
 		break;
 	}
     }
   }
-	Shm->Uncore.CtrlSpeed = (266 * units) + ((333 * units) / 500);
+	RO(Shm)->Uncore.CtrlSpeed = (266 * units) + ((333 * units) / 500);
 
-	Shm->Uncore.Unit.Bus_Rate = 0b01;
-	Shm->Uncore.Unit.BusSpeed = 0b01;
-	Shm->Uncore.Unit.DDR_Rate = 0b11;
-	Shm->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
+	RO(Shm)->Uncore.Unit.BusSpeed = 0b01;
+	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
+	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
 
-    Shm->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.ADL_Cap_A.VT_d;
-    Shm->Proc.Technology.IOMMU_Ver_Major = RO(Proc)->Uncore.Bus.IOMMU_Ver.Major;
-    Shm->Proc.Technology.IOMMU_Ver_Minor = RO(Proc)->Uncore.Bus.IOMMU_Ver.Minor;
+	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.ADL_Cap_A.VT_d;
+
+	RO(Shm)->Proc.Technology.IOMMU_Ver_Major = \
+					RO(Proc)->Uncore.Bus.IOMMU_Ver.Major;
+
+	RO(Shm)->Proc.Technology.IOMMU_Ver_Minor = \
+					RO(Proc)->Uncore.Bus.IOMMU_Ver.Minor;
 }
 
-void AMD_0Fh_MCH(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void AMD_0Fh_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
     struct {
 	unsigned int size;
@@ -4675,142 +4726,142 @@ void AMD_0Fh_MCH(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
     unsigned int mask;
     unsigned short mc, cha, slot, shift, index;
 
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+    for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
     {
-      Shm->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
-      Shm->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
+     RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
+     RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
 
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+      for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++) {
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].AMD0Fh.DTRL.tCL) {
 	case 0b010:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 3;
+		TIMING(mc, cha).tCL = 3;
 		break;
 	case 0b011:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 4;
+		TIMING(mc, cha).tCL = 4;
 		break;
 	case 0b100:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 5;
+		TIMING(mc, cha).tCL = 5;
 		break;
 	case 0b101:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 6;
+		TIMING(mc, cha).tCL = 6;
 		break;
 	}
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].AMD0Fh.DTRL.tRCD) {
 	case 0b00:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 3;
+		TIMING(mc, cha).tRCD = 3;
 		break;
 	case 0b01:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 4;
+		TIMING(mc, cha).tRCD = 4;
 		break;
 	case 0b10:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 5;
+		TIMING(mc, cha).tRCD = 5;
 		break;
 	case 0b11:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 6;
+		TIMING(mc, cha).tRCD = 6;
 		break;
 	}
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].AMD0Fh.DTRL.tRP) {
 	case 0b00:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 3;
+		TIMING(mc, cha).tRP = 3;
 		break;
 	case 0b01:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 4;
+		TIMING(mc, cha).tRP = 4;
 		break;
 	case 0b10:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 5;
+		TIMING(mc, cha).tRP = 5;
 		break;
 	case 0b11:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 6;
+		TIMING(mc, cha).tRP = 6;
 		break;
 	}
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].AMD0Fh.DTRL.tRTPr) {
 	case 0b0:
 		if (RO(Proc)->Uncore.MC[mc].AMD0Fh.DCRL.BurstLength32 == 0b1) {
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = 2;
+			TIMING(mc, cha).tRTPr = 2;
 		} else {
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = 4;
+			TIMING(mc, cha).tRTPr = 4;
 		}
 		break;
 	case 0b1:
 		if (RO(Proc)->Uncore.MC[mc].AMD0Fh.DCRL.BurstLength32 == 0b1) {
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = 3;
+			TIMING(mc, cha).tRTPr = 3;
 		} else {
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = 5;
+			TIMING(mc, cha).tRTPr = 5;
 		}
 		break;
 	}
 
 	if (RO(Proc)->Uncore.MC[mc].Channel[cha].AMD0Fh.DTRL.tRAS >= 0b0010) {
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS = \
+		TIMING(mc, cha).tRAS = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].AMD0Fh.DTRL.tRAS+3;
 	}
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC = \
+	TIMING(mc, cha).tRFC = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].AMD0Fh.DTRL.tRC+11;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].AMD0Fh.DTRL.tWR) {
 	case 0b00:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 3;
+		TIMING(mc, cha).tWR = 3;
 		break;
 	case 0b01:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 4;
+		TIMING(mc, cha).tWR = 4;
 		break;
 	case 0b10:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 5;
+		TIMING(mc, cha).tWR = 5;
 		break;
 	case 0b11:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 6;
+		TIMING(mc, cha).tWR = 6;
 		break;
 	}
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].AMD0Fh.DTRL.tRRD) {
 	case 0b00:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 2;
+		TIMING(mc, cha).tRRD = 2;
 		break;
 	case 0b01:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 3;
+		TIMING(mc, cha).tRRD = 3;
 		break;
 	case 0b10:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 4;
+		TIMING(mc, cha).tRRD = 4;
 		break;
 	case 0b11:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 5;
+		TIMING(mc, cha).tRRD = 5;
 		break;
 	}
 
 	if ((RO(Proc)->Uncore.MC[mc].AMD0Fh.DCRH.tFAW > 0b0000)
 	 && (RO(Proc)->Uncore.MC[mc].AMD0Fh.DCRH.tFAW <= 0b1101)) {
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW = \
+		TIMING(mc, cha).tFAW = \
 				RO(Proc)->Uncore.MC[mc].AMD0Fh.DCRH.tFAW + 7;
 	}
 
 	if (RO(Proc)->Uncore.MC[mc].AMD0Fh.DCRH.SlowAccessMode == 0b1)
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+		TIMING(mc, cha).CMD_Rate = 2;
 	else
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+		TIMING(mc, cha).CMD_Rate = 1;
 
 	shift = 4 * cha;
 	mask  = 0b1111U << shift;
 
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
+	for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++) {
 	  if (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].MBA.CSEnable)
 	  {
 		index =(RO(Proc)->Uncore.MC[mc].MaxDIMMs.AMD0Fh.CS.value & mask)
 			>> shift;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
 			module[index].size;
 	  }
 	}
-	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = \
+	TIMING(mc, cha).ECC = \
 			RO(Proc)->Uncore.MC[mc].AMD0Fh.DCRL.ECC_DIMM_Enable;
       }
     }
 }
 
-void AMD_0Fh_HTT(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void AMD_0Fh_HTT(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned int link = 0;
 	RAM_Ratio Ratio = {.Q = 0, .R = 0};
@@ -4834,7 +4885,7 @@ void AMD_0Fh_HTT(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 			Ratio.R = 0;
 			break;
 	}
-	Shm->Uncore.CtrlSpeed = (Ratio.Q * 2) + Ratio.R;	/* DDR2 */
+	RO(Shm)->Uncore.CtrlSpeed = (Ratio.Q * 2) + Ratio.R;	/* DDR2 */
 
 	if ((link = RO(Proc)->Uncore.Bus.UnitID.McUnit) < 0b11) {
 		switch (RO(Proc)->Uncore.Bus.LDTi_Freq[link].LinkFreqMax)
@@ -4858,26 +4909,26 @@ void AMD_0Fh_HTT(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
 			HTT_Clock = 100;
 			break;
 		}
-		Shm->Uncore.Bus.Rate = HTT_Clock * 2;	/* "MT/s" */
-		Shm->Uncore.Bus.Speed = HTT_Clock * 4;	/* "MB/s" */
+		RO(Shm)->Uncore.Bus.Rate = HTT_Clock * 2;	/* "MT/s" */
+		RO(Shm)->Uncore.Bus.Speed = HTT_Clock * 4;	/* "MB/s" */
 	}
-	Shm->Uncore.Unit.Bus_Rate = 0b01;
-	Shm->Uncore.Unit.BusSpeed = 0b10;
-	Shm->Uncore.Unit.DDR_Rate = 0b11;
-	Shm->Uncore.Unit.DDRSpeed = 0b00;
-	Shm->Uncore.Unit.DDR_Ver  = 2;
+	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
+	RO(Shm)->Uncore.Unit.BusSpeed = 0b10;
+	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
+	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.DDR_Ver  = 2;
 }
 
-void AMD_17h_UMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short mc;
- for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+ for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
  {
-	Shm->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
-	Shm->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
+    RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
+    RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
 
 	unsigned short cha;
-  for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+  for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
   {
 	unsigned long long DIMM_Size = 0;
 	unsigned short chip;
@@ -4916,241 +4967,246 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
     }
     if (DIMM_Size > 0)
     {
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.Ranks;
 
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = \
 	8 << RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DAC.NumBanks;
 
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = \
 	1 << (10+RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DAC.NumRowLo);
 
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = \
 	1 << (5 + RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DAC.NumCol);
 
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
 						(unsigned int)(DIMM_Size >> 10);
     }
    }
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = \
+	TIMING(mc, cha).tCL = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR1.tCL;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD_RD = \
+	TIMING(mc, cha).tRCD_RD = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR1.tRCD_RD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD_WR = \
+	TIMING(mc, cha).tRCD_WR = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR1.tRCD_WR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP  = \
+	TIMING(mc, cha).tRP = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR2.tRP;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS = \
+	TIMING(mc, cha).tRAS = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR1.tRAS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDS = \
+	TIMING(mc, cha).tRRDS = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR3.tRRDS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDL = \
+	TIMING(mc, cha).tRRDL = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR3.tRRDL;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tRRDDLR =
+	TIMING(mc, cha).Zen.tRRDDLR =
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR3.tRRDDLR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRC = \
+	TIMING(mc, cha).tRC = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR2.tRC;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCPB = \
+	TIMING(mc, cha).tRCPB = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR2.tRCPB;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRPPB = \
+	TIMING(mc, cha).tRPPB = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR2.tRPPB;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW = \
+	TIMING(mc, cha).tFAW = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR4.tFAW;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAWSLR = \
+	TIMING(mc, cha).tFAWSLR = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR4.tFAWSLR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAWDLR = \
+	TIMING(mc, cha).tFAWDLR = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR4.tFAWDLR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTRS = \
+	TIMING(mc, cha).tWTRS = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR5.tWTRS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTRL = \
+	TIMING(mc, cha).tWTRL = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR5.tWTRL;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = \
+	TIMING(mc, cha).tWR = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR6.tWR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCPage = \
+	TIMING(mc, cha).tRCPage = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR7.tRCPage;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tRdRdScl = \
+	TIMING(mc, cha).Zen.tRdRdScl = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR8.tRdRdScl;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tWrWrScl = \
+	TIMING(mc, cha).Zen.tWrWrScl = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR9.tWrWrScl;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tRdRdBan = \
+	TIMING(mc, cha).Zen.tRdRdBan = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR8.tRdRdBan;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tWrWrBan = \
+	TIMING(mc, cha).Zen.tWrWrBan = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR9.tWrWrBan;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = \
+	TIMING(mc, cha).tCWL = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR5.tCWL;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTP = \
+	TIMING(mc, cha).tRTP = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR3.tRTP;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tddRdTWr = \
+	TIMING(mc, cha).Zen.tddRdTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR10.tddRdTWr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tddWrTRd = \
+	TIMING(mc, cha).Zen.tddWrTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR10.tddWrTRd;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tscWrTWr = \
+	TIMING(mc, cha).Zen.tscWrTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR9.tscWrTWr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tsdWrTWr = \
+	TIMING(mc, cha).Zen.tsdWrTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR9.tsdWrTWr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tddWrTWr = \
+	TIMING(mc, cha).Zen.tddWrTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR9.tddWrTWr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tscRdTRd = \
+	TIMING(mc, cha).Zen.tscRdTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR8.tscRdTRd;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tsdRdTRd = \
+	TIMING(mc, cha).Zen.tsdRdTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR8.tsdRdTRd;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tddRdTRd = \
+	TIMING(mc, cha).Zen.tddRdTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR8.tddRdTRd;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tRdRdScDLR = \
+	TIMING(mc, cha).Zen.tRdRdScDLR = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR8.tRdRdScDLR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tWrWrScDLR = \
+	TIMING(mc, cha).Zen.tWrWrScDLR = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR9.tWrWrScDLR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tWrRdScDLR = \
+	TIMING(mc, cha).Zen.tWrRdScDLR = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR10.tWrRdScDLR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE = \
+	TIMING(mc, cha).tCKE = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR21.tCKE;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCPDED = \
+	TIMING(mc, cha).tCPDED = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR21.tCPDED;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI = \
+	TIMING(mc, cha).tREFI = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR12.tREFI;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC1 = \
+	TIMING(mc, cha).tRFC1 = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTRFC.tRFC1;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC2 = \
+	TIMING(mc, cha).tRFC2 = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTRFC.tRFC2;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC4 = \
+	TIMING(mc, cha).tRFC4 = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTRFC.tRFC4;
 
 	switch(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.CMD_Rate) {
 	case 0b00:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+		TIMING(mc, cha).CMD_Rate = 1;
 		break;
 	case 0b10:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+		TIMING(mc, cha).CMD_Rate = 2;
 		break;
 	default:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 0;
+		TIMING(mc, cha).CMD_Rate = 0;
 		break;
 	}
-	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = \
+	TIMING(mc, cha).ECC = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.ECC.Enable;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.GDM = \
+	TIMING(mc, cha).GDM = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.GearDownMode;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.BGS = \
+	TIMING(mc, cha).BGS = \
 		!((RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.BGS.value
 		& AMD_17_UMC_BGS_MASK_OFF) == AMD_17_UMC_BGS_MASK_OFF);
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.BGS_ALT = \
+	TIMING(mc, cha).BGS_ALT = \
 		(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.BGS_ALT.value
 		& AMD_17_UMC_BGS_ALT_MASK_ON) == AMD_17_UMC_BGS_ALT_MASK_ON;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.PDM_EN = \
+	TIMING(mc, cha).PDM_EN = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.SPAZ.PwrDownEn;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.PDM_MODE = \
+	TIMING(mc, cha).PDM_MODE = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.SPAZ.PwrDownMode;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.PDM_AGGR = \
+	TIMING(mc, cha).PDM_AGGR = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.SPAZ.AggrPwrDownEn;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tMRD = \
+	TIMING(mc, cha).tMRD = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR13.tMRD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tMOD = \
+	TIMING(mc, cha).tMOD = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR13.tMOD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tMRD_PDA = \
+	TIMING(mc, cha).tMRD_PDA = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR13.tMRD_PDA;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tMOD_PDA = \
+	TIMING(mc, cha).tMOD_PDA = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR13.tMOD_PDA;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tSTAG = \
+	TIMING(mc, cha).tSTAG = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR20.tSTAG;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tPHYWRD = \
+	TIMING(mc, cha).tPHYWRD = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR22.tPHY_WRDATA;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tPHYWRL = \
+	TIMING(mc, cha).tPHYWRL = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR22.tPHY_WRLAT;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tPHYRDL = \
+	TIMING(mc, cha).tPHYRDL = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR22.tPHY_RDLAT;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRDDATA = \
+	TIMING(mc, cha).tRDDATA = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR22.tRDDATA_EN;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWRMPR = \
+	TIMING(mc, cha).tWRMPR = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR35.tWR_MPR;
   }
  }
 }
 
-void AMD_17h_CAP(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
+void AMD_17h_CAP(RO(SHM_STRUCT) *RO(Shm),
+		RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	unsigned short mc, clock_done = 0;
-  for (mc = 0; mc < Shm->Uncore.CtrlCount && !clock_done; mc++) {
+  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount && !clock_done; mc++)
+  {
 	unsigned short cha;
-    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount && !clock_done; cha++) {
+    for (cha = 0;
+	cha < RO(Shm)->Uncore.MC[mc].ChannelCount && !clock_done;
+		cha++)
+    {
       if (RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.MEMCLK)
       {
-	Shm->Uncore.Bus.Rate = \
+	RO(Shm)->Uncore.Bus.Rate = \
 			(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.MEMCLK
-			*  Shm->Proc.Features.Factory.Clock.Q) / 3;
+			*  RO(Shm)->Proc.Features.Factory.Clock.Q) / 3;
 
-	Shm->Uncore.Bus.Speed = \
+	RO(Shm)->Uncore.Bus.Speed = \
 			(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.MEMCLK
 			* RO(Core)->Clock.Hz * 333333333LLU)
-			/ (Shm->Proc.Features.Factory.Clock.Hz
+			/ (RO(Shm)->Proc.Features.Factory.Clock.Hz
 			* (1000LLU * PRECISION * PRECISION));
 
-	Shm->Uncore.CtrlSpeed = \
+	RO(Shm)->Uncore.CtrlSpeed = \
 			(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.MEMCLK
 			* RO(Core)->Clock.Hz * 666666666LLU)
-			/ (Shm->Proc.Features.Factory.Clock.Hz
+			/ (RO(Shm)->Proc.Features.Factory.Clock.Hz
 			* (1000LLU * PRECISION * PRECISION));
 
-	Shm->Uncore.Unit.Bus_Rate = 0b01;
-	Shm->Uncore.Unit.BusSpeed = 0b00;
-	Shm->Uncore.Unit.DDR_Rate = 0b11;
-	Shm->Uncore.Unit.DDRSpeed = 0b00;
-	Shm->Uncore.Unit.DDR_Ver  = 4;
+	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
+	RO(Shm)->Uncore.Unit.BusSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
+	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.DDR_Ver  = 4;
 
 	clock_done = 1;
       }
@@ -5158,16 +5214,18 @@ void AMD_17h_CAP(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
   }
 }
 
-void AMD_17h_IOMMU(SHM_STRUCT *Shm, RO(PROC) *RO(Proc))
+void AMD_17h_IOMMU(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
-	Shm->Proc.Technology.IOMMU = RO(Proc)->Uncore.Bus.IOMMU_CR.IOMMU_En;
+	RO(Shm)->Proc.Technology.IOMMU = RO(Proc)->Uncore.Bus.IOMMU_CR.IOMMU_En;
 
-	Shm->Proc.Technology.IOMMU_Ver_Major = \
+	RO(Shm)->Proc.Technology.IOMMU_Ver_Major = \
 			(RO(Proc)->Uncore.Bus.IOMMU_HDR.CapRev & 0b10000) >> 5;
 
-	Shm->Proc.Technology.IOMMU_Ver_Minor = \
+	RO(Shm)->Proc.Technology.IOMMU_Ver_Minor = \
 			RO(Proc)->Uncore.Bus.IOMMU_HDR.CapRev & 0b01111;
 }
+
+#undef TIMING
 
 static char *Chipset[CHIPSETS] = {
 	[IC_CHIPSET]		= NULL,
@@ -5226,336 +5284,336 @@ static char *Chipset[CHIPSETS] = {
 
 #define SET_CHIPSET(ic) 						\
 ({									\
-	Shm->Uncore.ChipID = DID;					\
-	Shm->Uncore.Chipset.ArchID = ic;				\
+	RO(Shm)->Uncore.ChipID = DID;					\
+	RO(Shm)->Uncore.Chipset.ArchID = ic;				\
 })
 
-void PCI_Intel(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
+void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		unsigned short DID)
 {
 	switch (DID) {
 	case DID_INTEL_82945P_HB:
-		P945_CLK(Shm, RO(Proc), RO(Core));
-		P945_MCH(Shm, RO(Proc));
+		P945_CLK(RO(Shm), RO(Proc), RO(Core));
+		P945_MCH(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_LAKEPORT);
 		break;
 	case DID_INTEL_82945GM_HB:
 	case DID_INTEL_82945GME_HB:
-		P945_CLK(Shm, RO(Proc), RO(Core));
-		P945_MCH(Shm, RO(Proc));
+		P945_CLK(RO(Shm), RO(Proc), RO(Core));
+		P945_MCH(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CALISTOGA);
 		break;
 	case DID_INTEL_82955_HB:
-		P945_CLK(Shm, RO(Proc), RO(Core));
-		P955_MCH(Shm, RO(Proc));
+		P945_CLK(RO(Shm), RO(Proc), RO(Core));
+		P955_MCH(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_LAKEPORT_X);
 		break;
 	case DID_INTEL_82946GZ_HB:
-		P965_CLK(Shm, RO(Proc), RO(Core));
-		P965_MCH(Shm, RO(Proc));
+		P965_CLK(RO(Shm), RO(Proc), RO(Core));
+		P965_MCH(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_LAKEPORT_P);
 		break;
 	case DID_INTEL_82965Q_HB:
 	case DID_INTEL_82965G_HB:
-		P965_CLK(Shm, RO(Proc), RO(Core));
-		P965_MCH(Shm, RO(Proc));
+		P965_CLK(RO(Shm), RO(Proc), RO(Core));
+		P965_MCH(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_BROADWATER);
 		break;
 	case DID_INTEL_82965GM_HB:
 	case DID_INTEL_82965GME_HB:
-		G965_CLK(Shm, RO(Proc), RO(Core));
-		G965_MCH(Shm, RO(Proc));
+		G965_CLK(RO(Shm), RO(Proc), RO(Core));
+		G965_MCH(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CRESTLINE);
 		break;
 	case DID_INTEL_GM45_HB:
-		G965_CLK(Shm, RO(Proc), RO(Core));
-		G965_MCH(Shm, RO(Proc));
+		G965_CLK(RO(Shm), RO(Proc), RO(Core));
+		G965_MCH(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANTIGA);
 		break;
 	case DID_INTEL_Q35_HB:
-		P35_CLK(Shm, RO(Proc), RO(Core));
-		P35_MCH(Shm, RO(Proc));
+		P35_CLK(RO(Shm), RO(Proc), RO(Core));
+		P35_MCH(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_BEARLAKE_Q);
 		break;
 	case DID_INTEL_G33_HB:
-		P35_CLK(Shm, RO(Proc), RO(Core));
-		P35_MCH(Shm, RO(Proc));
+		P35_CLK(RO(Shm), RO(Proc), RO(Core));
+		P35_MCH(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_BEARLAKE_P);
 		break;
 	case DID_INTEL_Q33_HB:
-		P35_CLK(Shm, RO(Proc), RO(Core));
-		P35_MCH(Shm, RO(Proc));
+		P35_CLK(RO(Shm), RO(Proc), RO(Core));
+		P35_MCH(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_BEARLAKE_QF);
 		break;
 	case DID_INTEL_X38_HB:
-		P35_CLK(Shm, RO(Proc), RO(Core));
-		P35_MCH(Shm, RO(Proc));
+		P35_CLK(RO(Shm), RO(Proc), RO(Core));
+		P35_MCH(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_BEARLAKE_X);
 		break;
 	case DID_INTEL_3200_HB:
-		P35_CLK(Shm, RO(Proc), RO(Core));
-		P35_MCH(Shm, RO(Proc));
+		P35_CLK(RO(Shm), RO(Proc), RO(Core));
+		P35_MCH(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_INTEL_3200);
 		break;
 	case DID_INTEL_Q45_HB:
-		P35_CLK(Shm, RO(Proc), RO(Core));
-		P4S_MCH(Shm, RO(Proc));
+		P35_CLK(RO(Shm), RO(Proc), RO(Core));
+		P4S_MCH(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_EAGLELAKE_Q);
 		break;
 	case DID_INTEL_G45_HB:
-		P35_CLK(Shm, RO(Proc), RO(Core));
-		P4S_MCH(Shm, RO(Proc));
+		P35_CLK(RO(Shm), RO(Proc), RO(Core));
+		P4S_MCH(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_EAGLELAKE_P);
 		break;
 	case DID_INTEL_G41_HB:
-		P35_CLK(Shm, RO(Proc), RO(Core));
-		P4S_MCH(Shm, RO(Proc));
+		P35_CLK(RO(Shm), RO(Proc), RO(Core));
+		P4S_MCH(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_EAGLELAKE_G);
 		break;
 	case DID_INTEL_SLM_PTR:
-		SLM_PTR(Shm, RO(Proc), RO(Core));
+		SLM_PTR(RO(Shm), RO(Proc), RO(Core));
 		SET_CHIPSET(IC_BAYTRAIL);
 		break;
 	case DID_INTEL_X58_HUB_CTRL:
-		QPI_CLK(Shm, RO(Proc), RO(Core));
+		QPI_CLK(RO(Shm), RO(Proc), RO(Core));
 		break;
 	case DID_INTEL_X58_HUB_CORE:
 	case DID_INTEL_IIO_CORE_REG:
-		X58_VTD(Shm, RO(Proc), RO(Core));
+		X58_VTD(RO(Shm), RO(Proc), RO(Core));
 		break;
 	case DID_INTEL_I7_MCR:			/*	Bloomfield	*/
 	case DID_INTEL_NHM_EP_MCR:		/*	Westmere EP	*/
-		NHM_IMC(Shm, RO(Proc));
+		NHM_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_TYLERSBURG);
 		break;
 	case DID_INTEL_I7_MC_TEST:
 	case DID_INTEL_LYNNFIELD_MC_TEST:
 	case DID_INTEL_NHM_EP_MC_TEST:
 	case DID_INTEL_NHM_EC_MC_TEST:
-		DMI_CLK(Shm, RO(Proc), RO(Core));
+		DMI_CLK(RO(Shm), RO(Proc), RO(Core));
 		break;
 	case DID_INTEL_LYNNFIELD_MCR:		/*	Lynnfield	*/
 	case DID_INTEL_NHM_EC_MCR:		/*	C5500-C3500	*/
-		NHM_IMC(Shm, RO(Proc));
+		NHM_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_IBEXPEAK);
 		break;
 	case DID_INTEL_SNB_IMC_HA0:		/*	Sandy Bridge-E	*/
-		SNB_EP_CAP(Shm, RO(Proc), RO(Core));
-		SNB_EP_IMC(Shm, RO(Proc));
+		SNB_EP_CAP(RO(Shm), RO(Proc), RO(Core));
+		SNB_EP_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_PATSBURG);
 		break;
 	case DID_INTEL_SNB_IMC_SA:		/*	SNB Desktop	*/
-		SNB_CAP(Shm, RO(Proc), RO(Core));
-		SNB_IMC(Shm, RO(Proc));
+		SNB_CAP(RO(Shm), RO(Proc), RO(Core));
+		SNB_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_COUGARPOINT);
 		break;
 	case DID_INTEL_SNB_IMC_0104:
-		SNB_CAP(Shm, RO(Proc), RO(Core));
-		SNB_IMC(Shm, RO(Proc));
+		SNB_CAP(RO(Shm), RO(Proc), RO(Core));
+		SNB_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_IBEXPEAK_M);
 		break;
 	case DID_INTEL_IVB_EP_HOST_BRIDGE:	/* Xeon E5 & E7 v2	*/
-		SNB_EP_CAP(Shm, RO(Proc), RO(Core));
-		SNB_EP_IMC(Shm, RO(Proc));
+		SNB_EP_CAP(RO(Shm), RO(Proc), RO(Core));
+		SNB_EP_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CAVECREEK);
 		break;
 	case DID_INTEL_IVB_IMC_SA:		/*	IVB Desktop	*/
-		IVB_CAP(Shm, RO(Proc), RO(Core));
-		SNB_IMC(Shm, RO(Proc));
+		IVB_CAP(RO(Shm), RO(Proc), RO(Core));
+		SNB_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_PANTHERPOINT);
 		break;
 	case DID_INTEL_IVB_IMC_0154:		/* IVB Mobile i5-3337U	*/
-		IVB_CAP(Shm, RO(Proc), RO(Core));
-		SNB_IMC(Shm, RO(Proc));
+		IVB_CAP(RO(Shm), RO(Proc), RO(Core));
+		SNB_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_PANTHERPOINT_M);
 		break;
 	case DID_INTEL_HASWELL_IMC_SA:		/* HSW & BDW Desktop	*/
 	case DID_INTEL_HASWELL_MH_IMC_HA0:	/* HSW Mobile M/H	*/
 	case DID_INTEL_HASWELL_UY_IMC_HA0:	/* HSW Mobile U/Y	*/
-		IVB_CAP(Shm, RO(Proc), RO(Core));
-		HSW_IMC(Shm, RO(Proc));
+		IVB_CAP(RO(Shm), RO(Proc), RO(Core));
+		HSW_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_LYNXPOINT_M);
 		break;
 	case DID_INTEL_HASWELL_IMC_HA0: 		/* Haswell	*/
-		IVB_CAP(Shm, RO(Proc), RO(Core));
-		HSW_IMC(Shm, RO(Proc));
+		IVB_CAP(RO(Shm), RO(Proc), RO(Core));
+		HSW_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_LYNXPOINT);
 		break;
 	case DID_INTEL_BROADWELL_IMC_HA0:	/* Broadwell/Y/U Core m */
-		IVB_CAP(Shm, RO(Proc), RO(Core));
-		HSW_IMC(Shm, RO(Proc));
+		IVB_CAP(RO(Shm), RO(Proc), RO(Core));
+		HSW_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_WILDCATPOINT_M);
 		break;
 	case DID_INTEL_BROADWELL_D_IMC_HA0:	/*	BDW/Desktop	*/
 	case DID_INTEL_BROADWELL_H_IMC_HA0:	/*	Broadwell/H	*/
-		IVB_CAP(Shm, RO(Proc), RO(Core));
-		HSW_IMC(Shm, RO(Proc));
+		IVB_CAP(RO(Shm), RO(Proc), RO(Core));
+		HSW_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_WELLSBURG);
 		break;
 	case DID_INTEL_SKYLAKE_U_IMC_HA:	/* Skylake/U Processor */
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
 	case DID_INTEL_SKYLAKE_Y_IMC_HA:	/* Skylake/Y Processor */
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
 	case DID_INTEL_SKYLAKE_S_IMC_HAD:	/* Skylake/S Dual Core */
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
 	case DID_INTEL_SKYLAKE_S_IMC_HAQ:	/* Skylake/S Quad Core	*/
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
 	case DID_INTEL_SKYLAKE_H_IMC_HAD:	/* Skylake/H Dual Core	*/
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
 	case DID_INTEL_SKYLAKE_H_IMC_HAQ:	/* Skylake/H Quad Core	*/
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
 	case DID_INTEL_SKYLAKE_DT_IMC_HA:	/* Skylake/DT Server	*/
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
 	case DID_INTEL_KABYLAKE_U_IMC_HA:	/*	BGA 1356	*/
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
 	case DID_INTEL_KABYLAKE_Y_IMC_HA:	/*	BGA 1515	*/
 	case DID_INTEL_KABYLAKE_Y_IMC_HQ:
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
 	case DID_INTEL_KABYLAKE_H_IMC_HAD:	/* Kaby Lake/H Dual Core */
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
 	case DID_INTEL_KABYLAKE_S_IMC_HAD:	/* Kaby Lake/S Dual Core */
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
 	case DID_INTEL_KABYLAKE_H_IMC_HAQ:	/* Kaby Lake/H Quad Core */
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
 	case DID_INTEL_KABYLAKE_DT_IMC_HA:	/* Kaby Lake/DT Server	*/
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
 	case DID_INTEL_KABYLAKE_U_IMC_HAQ:	/* U-Quad Core BGA 1356 */
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
 	case DID_INTEL_KABYLAKE_S_IMC_HAQ:	/* Kaby Lake/S Quad Core */
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
 	case DID_INTEL_KABYLAKE_X_IMC_HAQ:
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
 	case DID_INTEL_COFFEELAKE_S_IMC_HAQ:	/* Coffee Lake Quad Core */
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
 	case DID_INTEL_COFFEELAKE_S_IMC_HAS:	/* Coffee Lake Hexa Core */
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
 	case DID_INTEL_COFFEELAKE_R_S_IMC_HAD:
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
 	case DID_INTEL_COFFEELAKE_R_U_IMC_HAD:
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
 	case DID_INTEL_COFFEELAKE_R_U_IMC_HAQ:
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
 	case DID_INTEL_COFFEELAKE_R_H_IMC_HAQ:
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
 	case DID_INTEL_COFFEELAKE_R_H_IMC_HAS:
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
 	case DID_INTEL_COFFEELAKE_R_H_IMC_HAO:
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
 	case DID_INTEL_COFFEELAKE_R_W_IMC_HAQ:
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
 	case DID_INTEL_COFFEELAKE_R_W_IMC_HAS:
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
 	case DID_INTEL_COFFEELAKE_R_W_IMC_HAO:
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
 	case DID_INTEL_COFFEELAKE_R_S_IMC_HAQ:
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
 	case DID_INTEL_COFFEELAKE_R_S_IMC_HAS:
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
 	case DID_INTEL_COFFEELAKE_R_S_IMC_HAO:
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
 	case DID_INTEL_WHISKEYLAKE_U_IMC_HAD:	/*	WHL Dual Core	*/
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
 	case DID_INTEL_WHISKEYLAKE_U_IMC_HAQ:	/*	WHL Quad Core	*/
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
 	case DID_INTEL_CANNONLAKE_U_IMC_HB:	/*	CNL-U		*/
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
 	case DID_INTEL_COMETLAKE_S_IMC_6C:
@@ -5566,14 +5624,14 @@ void PCI_Intel(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 	case DID_INTEL_COMETLAKE_S1_IMC:
 	case DID_INTEL_COMETLAKE_S2_IMC:
 	case DID_INTEL_COMETLAKE_S5_IMC:
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		break;
 	case DID_INTEL_COMETLAKE_U_IMC_HB:
 	case DID_INTEL_COMETLAKE_U1_IMC:
 	case DID_INTEL_COMETLAKE_U3_IMC:
-		RKL_CAP(Shm, RO(Proc), RO(Core));
-		RKL_IMC(Shm, RO(Proc));
+		RKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		RKL_IMC(RO(Shm), RO(Proc));
 		break;
 	case DID_INTEL_COMETLAKE_PREM_U_PCH:
 		SET_CHIPSET(IC_400_SERIES_P);
@@ -5610,21 +5668,21 @@ void PCI_Intel(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		break;
 	case DID_INTEL_ICELAKE_U_IMC:
 	case DID_INTEL_ICELAKE_U_4C:
-		SKL_CAP(Shm, RO(Proc), RO(Core));
-		SKL_IMC(Shm, RO(Proc));
+		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		SKL_IMC(RO(Shm), RO(Proc));
 		break;
 	case DID_INTEL_TIGERLAKE_U1_IMC:
 	case DID_INTEL_TIGERLAKE_U2_IMC:
 	case DID_INTEL_TIGERLAKE_U3_IMC:
 	case DID_INTEL_TIGERLAKE_U4_IMC:
 	case DID_INTEL_TIGERLAKE_H_IMC:
-		TGL_CAP(Shm, RO(Proc), RO(Core));
-		TGL_IMC(Shm, RO(Proc));
+		TGL_CAP(RO(Shm), RO(Proc), RO(Core));
+		TGL_IMC(RO(Shm), RO(Proc));
 		break;
 	case DID_INTEL_ROCKETLAKE_S_8C_IMC_HB:
 	case DID_INTEL_ROCKETLAKE_S_6C_IMC_HB:
-		RKL_CAP(Shm, RO(Proc), RO(Core));
-		RKL_IMC(Shm, RO(Proc));
+		RKL_CAP(RO(Shm), RO(Proc), RO(Core));
+		RKL_IMC(RO(Shm), RO(Proc));
 		break;
 	case DID_INTEL_TIGERLAKE_UP3_IMC:
 	case DID_INTEL_TIGERLAKE_UP4_IMC:
@@ -5651,8 +5709,8 @@ void PCI_Intel(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 	case DID_INTEL_ALDERLAKE_S_8P_8E_IMC:
 	case DID_INTEL_ALDERLAKE_S_8P_4E_IMC:
 	case DID_INTEL_ALDERLAKE_S_6P_4E_IMC:
-		ADL_CAP(Shm, RO(Proc), RO(Core));
-		ADL_IMC(Shm, RO(Proc));
+		ADL_CAP(RO(Shm), RO(Proc), RO(Core));
+		ADL_IMC(RO(Shm), RO(Proc));
 		break;
 	case DID_INTEL_ALDERLAKE_Z690_PCH:
 		SET_CHIPSET(IC_Z690);
@@ -5660,13 +5718,13 @@ void PCI_Intel(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 	}
 }
 
-void PCI_AMD(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
+void PCI_AMD(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		unsigned short DID)
 {
 	switch (DID) {
 	case DID_AMD_K8_NB_MEMCTL:
-		AMD_0Fh_HTT(Shm, RO(Proc));
-		AMD_0Fh_MCH(Shm, RO(Proc));
+		AMD_0Fh_HTT(RO(Shm), RO(Proc));
+		AMD_0Fh_MCH(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_K8);
 		break;
 	case DID_AMD_17H_ZEN_PLUS_NB_IOMMU:
@@ -5677,7 +5735,7 @@ void PCI_AMD(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 	case DID_AMD_17H_RENOIR_NB_IOMMU:
 	case DID_AMD_17H_ZEN_APU_NB_IOMMU:
 	case DID_AMD_17H_ZEN2_APU_NB_IOMMU:
-		AMD_17h_IOMMU(Shm, RO(Proc));
+		AMD_17h_IOMMU(RO(Shm), RO(Proc));
 		break;
 	case DID_AMD_17H_ZEPPELIN_DF_UMC:
 	case DID_AMD_17H_RAVEN_DF_UMC:
@@ -5687,8 +5745,8 @@ void PCI_AMD(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 	case DID_AMD_17H_ARIEL_DF_UMC:
 	case DID_AMD_17H_FIREFLIGHT_DF_UMC:
 	case DID_AMD_17H_ARDEN_DF_UMC:
-		AMD_17h_UMC(Shm, RO(Proc));
-		AMD_17h_CAP(Shm, RO(Proc), RO(Core));
+		AMD_17h_UMC(RO(Shm), RO(Proc));
+		AMD_17h_CAP(RO(Shm), RO(Proc), RO(Core));
 		SET_CHIPSET(IC_ZEN);
 		break;
 	}
@@ -5696,49 +5754,50 @@ void PCI_AMD(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 
 #undef SET_CHIPSET
 
-void Uncore_Update(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
+void Uncore_Update(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
+			RO(CORE) *RO(Core) )
 {
 	unsigned int idx;
-	/* Copy the # of controllers.					*/
-	Shm->Uncore.CtrlCount = RO(Proc)->Uncore.CtrlCount;
-	/* Decode the Memory Controller for each found vendor:device	*/
+	/*	Copy the # of controllers.				*/
+	RO(Shm)->Uncore.CtrlCount = RO(Proc)->Uncore.CtrlCount;
+	/*	Decode the Memory Controller for each found vendor:device */
 	Chipset[IC_CHIPSET] = RO(Proc)->Features.Info.Vendor.ID;
-	Shm->Uncore.ChipID = 0x0;
-	Shm->Uncore.Chipset.ArchID = IC_CHIPSET;
+	RO(Shm)->Uncore.ChipID = 0x0;
+	RO(Shm)->Uncore.Chipset.ArchID = IC_CHIPSET;
 
   for (idx = 0; idx < CHIP_MAX_PCI; idx++) {
     switch (RO(Proc)->Uncore.Chip[idx].VID) {
     case PCI_VENDOR_ID_INTEL:
-	PCI_Intel(Shm, RO(Proc), RO(Core), RO(Proc)->Uncore.Chip[idx].DID);
+	PCI_Intel(RO(Shm), RO(Proc), RO(Core), RO(Proc)->Uncore.Chip[idx].DID);
 	break;
     case PCI_VENDOR_ID_AMD:
-	PCI_AMD(Shm, RO(Proc), RO(Core), RO(Proc)->Uncore.Chip[idx].DID);
+	PCI_AMD(RO(Shm), RO(Proc), RO(Core), RO(Proc)->Uncore.Chip[idx].DID);
 	break;
     }
   }
-	/* Copy the chipset codename.					*/
-	StrCopy(Shm->Uncore.Chipset.CodeName,
-		Chipset[Shm->Uncore.Chipset.ArchID],
+	/*	Copy the chipset codename.				*/
+	StrCopy(RO(Shm)->Uncore.Chipset.CodeName,
+		Chipset[RO(Shm)->Uncore.Chipset.ArchID],
 		CODENAME_LEN);
-	/* Copy the Uncore clock ratios.				*/
-	memcpy( Shm->Uncore.Boost,
+	/*	Copy the Uncore clock ratios.				*/
+	memcpy( RO(Shm)->Uncore.Boost,
 		RO(Proc)->Uncore.Boost,
 		(UNCORE_BOOST(SIZE)) * sizeof(unsigned int) );
 }
 
-void CPUID_Dump(SHM_STRUCT *Shm, RO(CORE) **RO(Core), unsigned int cpu)
+void CPUID_Dump(RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core), unsigned int cpu)
 {	/* Copy the Vendor CPUID dump per Core.				*/
-	Shm->Cpu[cpu].Query.StdFunc = RO(Core, AT(cpu))->Query.StdFunc;
-	Shm->Cpu[cpu].Query.ExtFunc = RO(Core, AT(cpu))->Query.ExtFunc;
+	RO(Shm)->Cpu[cpu].Query.StdFunc = RO(Core, AT(cpu))->Query.StdFunc;
+	RO(Shm)->Cpu[cpu].Query.ExtFunc = RO(Core, AT(cpu))->Query.ExtFunc;
 
 	enum CPUID_ENUM i;
     for (i = 0; i < CPUID_MAX_FUNC; i++) {
-	Shm->Cpu[cpu].CpuID[i].func   = RO(Core, AT(cpu))->CpuID[i].func;
-	Shm->Cpu[cpu].CpuID[i].sub    = RO(Core, AT(cpu))->CpuID[i].sub;
-	Shm->Cpu[cpu].CpuID[i].reg[0] = RO(Core, AT(cpu))->CpuID[i].reg[0];
-	Shm->Cpu[cpu].CpuID[i].reg[1] = RO(Core, AT(cpu))->CpuID[i].reg[1];
-	Shm->Cpu[cpu].CpuID[i].reg[2] = RO(Core, AT(cpu))->CpuID[i].reg[2];
-	Shm->Cpu[cpu].CpuID[i].reg[3] = RO(Core, AT(cpu))->CpuID[i].reg[3];
+	RO(Shm)->Cpu[cpu].CpuID[i].func   = RO(Core, AT(cpu))->CpuID[i].func;
+	RO(Shm)->Cpu[cpu].CpuID[i].sub    = RO(Core, AT(cpu))->CpuID[i].sub;
+	RO(Shm)->Cpu[cpu].CpuID[i].reg[0] = RO(Core, AT(cpu))->CpuID[i].reg[0];
+	RO(Shm)->Cpu[cpu].CpuID[i].reg[1] = RO(Core, AT(cpu))->CpuID[i].reg[1];
+	RO(Shm)->Cpu[cpu].CpuID[i].reg[2] = RO(Core, AT(cpu))->CpuID[i].reg[2];
+	RO(Shm)->Cpu[cpu].CpuID[i].reg[3] = RO(Core, AT(cpu))->CpuID[i].reg[3];
     }
 }
 
@@ -5770,31 +5829,33 @@ unsigned int AMD_L2_L3_Way_Associativity(RO(CORE) **RO(Core),
 	}
 }
 
-void Topology(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
+void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 		unsigned int cpu)
 {
 	unsigned int loop;
-	/* Copy each Core topology.					*/
-	Shm->Cpu[cpu].Topology.MP.BSP     =(RO(Core, AT(cpu))->T.Base.BSP)? 1:0;
-	Shm->Cpu[cpu].Topology.ApicID     = RO(Core, AT(cpu))->T.ApicID;
-	Shm->Cpu[cpu].Topology.CoreID     = RO(Core, AT(cpu))->T.CoreID;
-	Shm->Cpu[cpu].Topology.ThreadID   = RO(Core, AT(cpu))->T.ThreadID;
-	Shm->Cpu[cpu].Topology.PackageID  = RO(Core, AT(cpu))->T.PackageID;
-	Shm->Cpu[cpu].Topology.Cluster.ID = RO(Core, AT(cpu))->T.Cluster.ID;
-	/* x2APIC capability.						*/
-	Shm->Cpu[cpu].Topology.MP.x2APIC  = RO(Proc)->Features.Std.ECX.x2APIC;
-    if ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-    ||	(Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+	/*	Copy each Core topology.				*/
+	RO(Shm)->Cpu[cpu].Topology.MP.BSP= (RO(Core, AT(cpu))->T.Base.BSP)? 1:0;
+	RO(Shm)->Cpu[cpu].Topology.ApicID     = RO(Core, AT(cpu))->T.ApicID;
+	RO(Shm)->Cpu[cpu].Topology.CoreID     = RO(Core, AT(cpu))->T.CoreID;
+	RO(Shm)->Cpu[cpu].Topology.ThreadID   = RO(Core, AT(cpu))->T.ThreadID;
+	RO(Shm)->Cpu[cpu].Topology.PackageID  = RO(Core, AT(cpu))->T.PackageID;
+	RO(Shm)->Cpu[cpu].Topology.Cluster.ID = RO(Core, AT(cpu))->T.Cluster.ID;
+	/*	x2APIC capability.					*/
+	RO(Shm)->Cpu[cpu].Topology.MP.x2APIC= RO(Proc)->Features.Std.ECX.x2APIC;
+    if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+    ||	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
-	Shm->Cpu[cpu].Topology.MP.x2APIC |= \
+	RO(Shm)->Cpu[cpu].Topology.MP.x2APIC |= \
 				RO(Proc)->Features.ExtInfo.ECX.ExtApicId;
     }
-	/* Is local APIC enabled in xAPIC mode ?			*/
-	Shm->Cpu[cpu].Topology.MP.x2APIC &= RO(Core, AT(cpu))->T.Base.APIC_EN;
-	/* Is xAPIC enabled in x2APIC mode ?				*/
-	Shm->Cpu[cpu].Topology.MP.x2APIC = Shm->Cpu[cpu].Topology.MP.x2APIC
+	/*	Is local APIC enabled in xAPIC mode ?			*/
+	RO(Shm)->Cpu[cpu].Topology.MP.x2APIC &= \
+					RO(Core, AT(cpu))->T.Base.APIC_EN;
+	/*	Is xAPIC enabled in x2APIC mode ?			*/
+	RO(Shm)->Cpu[cpu].Topology.MP.x2APIC = \
+					RO(Shm)->Cpu[cpu].Topology.MP.x2APIC
 					<< RO(Core, AT(cpu))->T.Base.x2APIC_EN;
-	/* Aggregate the Caches topology.				*/
+	/*	Aggregate the Caches topology.				*/
     for (loop = 0; loop < CACHE_MAX_LEVEL; loop++)
     {
       if (RO(Core, AT(cpu))->T.Cache[loop].Type > 0)
@@ -5803,51 +5864,51 @@ void Topology(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 	if (RO(Core, AT(cpu))->T.Cache[loop].Type == 2) {/* Instruction	*/
 		level = 0;
 	}
-	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+	if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
 	{
-		Shm->Cpu[cpu].Topology.Cache[level].Set = \
+		RO(Shm)->Cpu[cpu].Topology.Cache[level].Set = \
 				RO(Core, AT(cpu))->T.Cache[loop].Set + 1;
 
-		Shm->Cpu[cpu].Topology.Cache[level].LineSz = \
+		RO(Shm)->Cpu[cpu].Topology.Cache[level].LineSz = \
 				RO(Core, AT(cpu))->T.Cache[loop].LineSz + 1;
 
-		Shm->Cpu[cpu].Topology.Cache[level].Part = \
+		RO(Shm)->Cpu[cpu].Topology.Cache[level].Part = \
 				RO(Core, AT(cpu))->T.Cache[loop].Part + 1;
 
-		Shm->Cpu[cpu].Topology.Cache[level].Way = \
+		RO(Shm)->Cpu[cpu].Topology.Cache[level].Way = \
 				RO(Core, AT(cpu))->T.Cache[loop].Way + 1;
 
-		Shm->Cpu[cpu].Topology.Cache[level].Size = \
-				  Shm->Cpu[cpu].Topology.Cache[level].Set
-				* Shm->Cpu[cpu].Topology.Cache[level].LineSz
-				* Shm->Cpu[cpu].Topology.Cache[level].Part
-				* Shm->Cpu[cpu].Topology.Cache[level].Way;
+		RO(Shm)->Cpu[cpu].Topology.Cache[level].Size = \
+				  RO(Shm)->Cpu[cpu].Topology.Cache[level].Set
+				* RO(Shm)->Cpu[cpu].Topology.Cache[level].LineSz
+				* RO(Shm)->Cpu[cpu].Topology.Cache[level].Part
+				* RO(Shm)->Cpu[cpu].Topology.Cache[level].Way;
 	} else {
-	    if ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-	     || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+	    if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	     || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
 	    {
-		Shm->Cpu[cpu].Topology.Cache[level].Way = \
+		RO(Shm)->Cpu[cpu].Topology.Cache[level].Way = \
 			(loop == 2) || (loop == 3) ?
 				AMD_L2_L3_Way_Associativity(RO(Core), cpu, loop)
 				: RO(Core, AT(cpu))->T.Cache[loop].Way;
 
-		Shm->Cpu[cpu].Topology.Cache[level].Size = \
+		RO(Shm)->Cpu[cpu].Topology.Cache[level].Size = \
 					RO(Core, AT(cpu))->T.Cache[loop].Size;
 	    }
 	}
-	Shm->Cpu[cpu].Topology.Cache[level].Feature.WriteBack = \
+	RO(Shm)->Cpu[cpu].Topology.Cache[level].Feature.WriteBack = \
 					RO(Core, AT(cpu))->T.Cache[loop].WrBack;
 
-	Shm->Cpu[cpu].Topology.Cache[level].Feature.Inclusive = \
+	RO(Shm)->Cpu[cpu].Topology.Cache[level].Feature.Inclusive = \
 					RO(Core, AT(cpu))->T.Cache[loop].Inclus;
       }
     }
-	/* Apply various architecture size unit.			*/
+	/*	Apply various architecture size unit.			*/
     switch (RO(Proc)->ArchID) {
     case AMD_Family_15h:
 	/*TODO: do models 60h & 70h need a 512 KB size unit adjustment ? */
-	if ((Shm->Proc.Features.Std.EAX.ExtModel == 0x6)
-	 || (Shm->Proc.Features.Std.EAX.ExtModel == 0x7)) {
+	if ((RO(Shm)->Proc.Features.Std.EAX.ExtModel == 0x6)
+	 || (RO(Shm)->Proc.Features.Std.EAX.ExtModel == 0x7)) {
 		break;
 	}
 	fallthrough;
@@ -5870,125 +5931,143 @@ void Topology(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
     case AMD_Family_19h:
     VIRTUALIZED_L3:
 	/* CPUID_Fn80000006_EDX: Value in [3FFFh - 0001h] = (<Value> *0.5) MB */
-	Shm->Cpu[cpu].Topology.Cache[3].Size *= 512;
+	RO(Shm)->Cpu[cpu].Topology.Cache[3].Size *= 512;
 	break;
     default:
-	if ( Shm->Proc.Features.Std.ECX.Hyperv ) { /*	Virtualized ?	*/
+	if (RO(Shm)->Proc.Features.Std.ECX.Hyperv) {	/* Virtualized ? */
 		goto VIRTUALIZED_L3;
 	}
 	break;
     }
 }
 
-void CStates(SHM_STRUCT *Shm, RO(CORE) **RO(Core), unsigned int cpu)
-{	/* Copy the C-State Configuration Control			*/
-	Shm->Cpu[cpu].Query.CfgLock = RO(Core, AT(cpu))->Query.CfgLock;
-	Shm->Cpu[cpu].Query.CStateLimit = RO(Core, AT(cpu))->Query.CStateLimit;
-	/* Copy Intel Max C-State Inclusion				*/
-	Shm->Cpu[cpu].Query.IORedir = RO(Core, AT(cpu))->Query.IORedir;
+void CStates(RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core), unsigned int cpu)
+{	/*	Copy the C-State Configuration Control			*/
+	RO(Shm)->Cpu[cpu].Query.CfgLock = RO(Core, AT(cpu))->Query.CfgLock;
+	RO(Shm)->Cpu[cpu].Query.CStateLimit = RO(Core, AT(cpu))->Query.CStateLimit;
+	/*	Copy Intel Max C-State Inclusion			*/
+	RO(Shm)->Cpu[cpu].Query.IORedir = RO(Core, AT(cpu))->Query.IORedir;
 
-	Shm->Cpu[cpu].Query.CStateInclude = \
+	RO(Shm)->Cpu[cpu].Query.CStateInclude = \
 					RO(Core, AT(cpu))->Query.CStateInclude;
-	/* Copy any architectural C-States I/O Base Address		*/
-	Shm->Cpu[cpu].Query.CStateBaseAddr = \
+	/*	Copy any architectural C-States I/O Base Address	*/
+	RO(Shm)->Cpu[cpu].Query.CStateBaseAddr = \
 					RO(Core, AT(cpu))->Query.CStateBaseAddr;
 }
 
-void PowerThermal(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
-			unsigned int cpu)
+void PowerThermal(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
+			RO(CORE) **RO(Core), unsigned int cpu )
 {
-	Shm->Cpu[cpu].PowerThermal.DutyCycle.Extended = \
+	RO(Shm)->Cpu[cpu].PowerThermal.DutyCycle.Extended = \
 		RO(Core, AT(cpu))->PowerThermal.ClockModulation.ECMD;
 
-	Shm->Cpu[cpu].PowerThermal.DutyCycle.ClockMod = \
+	RO(Shm)->Cpu[cpu].PowerThermal.DutyCycle.ClockMod = \
 		RO(Core, AT(cpu))->PowerThermal.ClockModulation.DutyCycle
-			>> !Shm->Cpu[cpu].PowerThermal.DutyCycle.Extended;
+			>> !RO(Shm)->Cpu[cpu].PowerThermal.DutyCycle.Extended;
 
-	Shm->Cpu[cpu].PowerThermal.PowerPolicy = \
+	RO(Shm)->Cpu[cpu].PowerThermal.PowerPolicy = \
 		RO(Core, AT(cpu))->PowerThermal.PerfEnergyBias.PowerPolicy;
 
-	Shm->Cpu[cpu].PowerThermal.HWP.Capabilities.Highest = \
+	RO(Shm)->Cpu[cpu].PowerThermal.HWP.Capabilities.Highest = \
 		RO(Core, AT(cpu))->PowerThermal.HWP_Capabilities.Highest;
 
-	Shm->Cpu[cpu].PowerThermal.HWP.Capabilities.Guaranteed = \
+	RO(Shm)->Cpu[cpu].PowerThermal.HWP.Capabilities.Guaranteed = \
 		RO(Core, AT(cpu))->PowerThermal.HWP_Capabilities.Guaranteed;
 
-	Shm->Cpu[cpu].PowerThermal.HWP.Capabilities.Most_Efficient = \
+	RO(Shm)->Cpu[cpu].PowerThermal.HWP.Capabilities.Most_Efficient = \
 		RO(Core, AT(cpu))->PowerThermal.HWP_Capabilities.Most_Efficient;
 
-	Shm->Cpu[cpu].PowerThermal.HWP.Capabilities.Lowest = \
+	RO(Shm)->Cpu[cpu].PowerThermal.HWP.Capabilities.Lowest = \
 		RO(Core, AT(cpu))->PowerThermal.HWP_Capabilities.Lowest;
 
-	Shm->Cpu[cpu].PowerThermal.HWP.Request.Minimum_Perf = \
+	RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Minimum_Perf = \
 		RO(Core, AT(cpu))->PowerThermal.HWP_Request.Minimum_Perf;
 
-	Shm->Cpu[cpu].PowerThermal.HWP.Request.Maximum_Perf = \
+	RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Maximum_Perf = \
 		RO(Core, AT(cpu))->PowerThermal.HWP_Request.Maximum_Perf;
 
-	Shm->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf = \
+	RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf = \
 		RO(Core, AT(cpu))->PowerThermal.HWP_Request.Desired_Perf;
 
-	Shm->Cpu[cpu].PowerThermal.HWP.Request.Energy_Pref = \
+	RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Energy_Pref = \
 		RO(Core, AT(cpu))->PowerThermal.HWP_Request.Energy_Pref;
 
-	memcpy(&Shm->Cpu[cpu].ThermalPoint, &RO(Core, AT(cpu))->ThermalPoint,
-		sizeof(THERMAL_POINT));
+	memcpy( &RO(Shm)->Cpu[cpu].ThermalPoint,
+		&RO(Core, AT(cpu))->ThermalPoint,
+		sizeof(THERMAL_POINT) );
 }
 
-void SystemRegisters(SHM_STRUCT *Shm, RO(CORE) **RO(Core), unsigned int cpu)
+void SystemRegisters(	RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core),
+			unsigned int cpu )
 {
-  Shm->Cpu[cpu].SystemRegister.RFLAGS= RO(Core, AT(cpu))->SystemRegister.RFLAGS;
-  Shm->Cpu[cpu].SystemRegister.CR0   = RO(Core, AT(cpu))->SystemRegister.CR0;
-  Shm->Cpu[cpu].SystemRegister.CR3   = RO(Core, AT(cpu))->SystemRegister.CR3;
-  Shm->Cpu[cpu].SystemRegister.CR4   = RO(Core, AT(cpu))->SystemRegister.CR4;
-  Shm->Cpu[cpu].SystemRegister.CR8   = RO(Core, AT(cpu))->SystemRegister.CR8;
-  Shm->Cpu[cpu].SystemRegister.EFER  = RO(Core, AT(cpu))->SystemRegister.EFER;
-  Shm->Cpu[cpu].SystemRegister.EFCR  = RO(Core, AT(cpu))->SystemRegister.EFCR;
+	RO(Shm)->Cpu[cpu].SystemRegister.RFLAGS = \
+				RO(Core, AT(cpu))->SystemRegister.RFLAGS;
+
+	RO(Shm)->Cpu[cpu].SystemRegister.CR0 = \
+				RO(Core, AT(cpu))->SystemRegister.CR0;
+
+	RO(Shm)->Cpu[cpu].SystemRegister.CR3 = \
+				RO(Core, AT(cpu))->SystemRegister.CR3;
+
+	RO(Shm)->Cpu[cpu].SystemRegister.CR4 = \
+				RO(Core, AT(cpu))->SystemRegister.CR4;
+
+	RO(Shm)->Cpu[cpu].SystemRegister.CR8 = \
+				RO(Core, AT(cpu))->SystemRegister.CR8;
+
+	RO(Shm)->Cpu[cpu].SystemRegister.EFER = \
+				RO(Core, AT(cpu))->SystemRegister.EFER;
+
+	RO(Shm)->Cpu[cpu].SystemRegister.EFCR = \
+				RO(Core, AT(cpu))->SystemRegister.EFCR;
 }
 
 void SysGate_OS_Driver(REF *Ref)
 {
-	SHM_STRUCT *Shm = Ref->Shm;
+	RO(SHM_STRUCT) *RO(Shm) = Ref->RO(Shm);
 	RO(PROC) *RO(Proc) = Ref->RO(Proc);
 
-	memset(&Shm->SysGate.OS, 0, sizeof(OS_DRIVER));
+	memset(&RO(Shm)->SysGate.OS, 0, sizeof(OS_DRIVER));
     if (strlen(RO(Proc)->OS.IdleDriver.Name) > 0) {
 	int idx;
 
-	StrCopy(Shm->SysGate.OS.IdleDriver.Name,
+	StrCopy(RO(Shm)->SysGate.OS.IdleDriver.Name,
 		RO(Proc)->OS.IdleDriver.Name,
 		CPUIDLE_NAME_LEN);
 
-    Shm->SysGate.OS.IdleDriver.stateCount = RO(Proc)->OS.IdleDriver.stateCount;
-    Shm->SysGate.OS.IdleDriver.stateLimit = RO(Proc)->OS.IdleDriver.stateLimit;
+	RO(Shm)->SysGate.OS.IdleDriver.stateCount = \
+					RO(Proc)->OS.IdleDriver.stateCount;
 
-	for (idx = 0; idx < Shm->SysGate.OS.IdleDriver.stateCount; idx++)
+	RO(Shm)->SysGate.OS.IdleDriver.stateLimit = \
+					RO(Proc)->OS.IdleDriver.stateLimit;
+
+	for (idx = 0; idx < RO(Shm)->SysGate.OS.IdleDriver.stateCount; idx++)
 	{
-		StrCopy(Shm->SysGate.OS.IdleDriver.State[idx].Name,
+		StrCopy(RO(Shm)->SysGate.OS.IdleDriver.State[idx].Name,
 			RO(Proc)->OS.IdleDriver.State[idx].Name,
 			CPUIDLE_NAME_LEN);
 
-		StrCopy(Shm->SysGate.OS.IdleDriver.State[idx].Desc,
+		StrCopy(RO(Shm)->SysGate.OS.IdleDriver.State[idx].Desc,
 			RO(Proc)->OS.IdleDriver.State[idx].Desc,
 			CPUIDLE_NAME_LEN);
 
-		Shm->SysGate.OS.IdleDriver.State[idx].exitLatency = \
+		RO(Shm)->SysGate.OS.IdleDriver.State[idx].exitLatency = \
 			RO(Proc)->OS.IdleDriver.State[idx].exitLatency;
 
-		Shm->SysGate.OS.IdleDriver.State[idx].powerUsage = \
+		RO(Shm)->SysGate.OS.IdleDriver.State[idx].powerUsage = \
 			RO(Proc)->OS.IdleDriver.State[idx].powerUsage;
 
-		Shm->SysGate.OS.IdleDriver.State[idx].targetResidency = \
+		RO(Shm)->SysGate.OS.IdleDriver.State[idx].targetResidency = \
 			RO(Proc)->OS.IdleDriver.State[idx].targetResidency;
 	}
     }
     if (strlen(RO(Proc)->OS.FreqDriver.Name) > 0) {
-	StrCopy(Shm->SysGate.OS.FreqDriver.Name,
+	StrCopy(RO(Shm)->SysGate.OS.FreqDriver.Name,
 		RO(Proc)->OS.FreqDriver.Name,
 		CPUFREQ_NAME_LEN);
     }
     if (strlen(RO(Proc)->OS.FreqDriver.Governor) > 0) {
-	StrCopy(Shm->SysGate.OS.FreqDriver.Governor,
+	StrCopy(RO(Shm)->SysGate.OS.FreqDriver.Governor,
 		RO(Proc)->OS.FreqDriver.Governor,
 		CPUFREQ_NAME_LEN);
     }
@@ -5996,17 +6075,18 @@ void SysGate_OS_Driver(REF *Ref)
 
 void SysGate_Kernel(REF *Ref)
 {
-	SHM_STRUCT *Shm = Ref->Shm;
+	RO(SHM_STRUCT) *RO(Shm) = Ref->RO(Shm);
 	RO(SYSGATE) *SysGate = Ref->RO(SysGate);
 
-	Shm->SysGate.kernel.version = SysGate->kernelVersionNumber >> 16;
-	Shm->SysGate.kernel.major = (SysGate->kernelVersionNumber >> 8) & 0xff;
-	Shm->SysGate.kernel.minor = SysGate->kernelVersionNumber & 0xff;
+	RO(Shm)->SysGate.kernel.version = SysGate->kernelVersionNumber >> 16;
+	RO(Shm)->SysGate.kernel.major = SysGate->kernelVersionNumber >> 8;
+	RO(Shm)->SysGate.kernel.major = RO(Shm)->SysGate.kernel.major & 0xff;
+	RO(Shm)->SysGate.kernel.minor = SysGate->kernelVersionNumber & 0xff;
 
-	memcpy(Shm->SysGate.sysname, SysGate->sysname, MAX_UTS_LEN);
-	memcpy(Shm->SysGate.release, SysGate->release, MAX_UTS_LEN);
-	memcpy(Shm->SysGate.version, SysGate->version, MAX_UTS_LEN);
-	memcpy(Shm->SysGate.machine, SysGate->machine, MAX_UTS_LEN);
+	memcpy(RO(Shm)->SysGate.sysname, SysGate->sysname, MAX_UTS_LEN);
+	memcpy(RO(Shm)->SysGate.release, SysGate->release, MAX_UTS_LEN);
+	memcpy(RO(Shm)->SysGate.version, SysGate->version, MAX_UTS_LEN);
+	memcpy(RO(Shm)->SysGate.machine, SysGate->machine, MAX_UTS_LEN);
 }
 
 static const int reverseSign[2] = {+1, -1};
@@ -6014,54 +6094,66 @@ static const int reverseSign[2] = {+1, -1};
 static int SortByRuntime(const void *p1, const void *p2, void *arg)
 {
 	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
-	SHM_STRUCT *Shm = (SHM_STRUCT *) arg;
+	REF *Ref = (REF*) arg;
+	RW(SHM_STRUCT) *RW(Shm) = Ref->RW(Shm);
+
 	int sort = task1->runtime < task2->runtime ? +1 : -1;
-	sort *= reverseSign[Shm->SysGate.reverseOrder];
+	sort *= reverseSign[RW(Shm)->SysGate.reverseOrder];
 	return sort;
 }
 
 static int SortByUsertime(const void *p1, const void *p2, void *arg)
 {
 	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
-	SHM_STRUCT *Shm = (SHM_STRUCT *) arg;
+	REF *Ref = (REF*) arg;
+	RW(SHM_STRUCT) *RW(Shm) = Ref->RW(Shm);
+
 	int sort = task1->usertime < task2->usertime ? +1 : -1;
-	sort *= reverseSign[Shm->SysGate.reverseOrder];
+	sort *= reverseSign[RW(Shm)->SysGate.reverseOrder];
 	return sort;
 }
 
 static int SortBySystime(const void *p1, const void *p2, void *arg)
 {
 	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
-	SHM_STRUCT *Shm = (SHM_STRUCT *) arg;
+	REF *Ref = (REF*) arg;
+	RW(SHM_STRUCT) *RW(Shm) = Ref->RW(Shm);
+
 	int sort = task1->systime < task2->systime ? +1 : -1;
-	sort *= reverseSign[Shm->SysGate.reverseOrder];
+	sort *= reverseSign[RW(Shm)->SysGate.reverseOrder];
 	return sort;
 }
 
 static int SortByState(const void *p1, const void *p2, void *arg)
 {
 	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
-	SHM_STRUCT *Shm = (SHM_STRUCT *) arg;
+	REF *Ref = (REF*) arg;
+	RW(SHM_STRUCT) *RW(Shm) = Ref->RW(Shm);
+
 	int sort = task1->state < task2->state ? -1 : +1;
-	sort *= reverseSign[Shm->SysGate.reverseOrder];
+	sort *= reverseSign[RW(Shm)->SysGate.reverseOrder];
 	return sort;
 }
 
 static int SortByPID(const void *p1, const void *p2, void *arg)
 {
 	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
-	SHM_STRUCT *Shm = (SHM_STRUCT *) arg;
+	REF *Ref = (REF*) arg;
+	RW(SHM_STRUCT) *RW(Shm) = Ref->RW(Shm);
+
 	int sort = task1->pid < task2->pid ? -1 : +1;
-	sort *= reverseSign[Shm->SysGate.reverseOrder];
+	sort *= reverseSign[RW(Shm)->SysGate.reverseOrder];
 	return sort;
 }
 
 static int SortByCommand(const void *p1, const void *p2, void *arg)
 {
 	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
-	SHM_STRUCT *Shm = (SHM_STRUCT *) arg;
+	REF *Ref = (REF*) arg;
+	RW(SHM_STRUCT) *RW(Shm) = Ref->RW(Shm);
+
 	int sort = strncmp(task1->comm, task2->comm, TASK_COMM_LEN);
-	sort *= reverseSign[Shm->SysGate.reverseOrder];
+	sort *= reverseSign[RW(Shm)->SysGate.reverseOrder];
 	return sort;
 }
 
@@ -6079,64 +6171,67 @@ static SORTBYFUNC SortByFunc[SORTBYCOUNT] = {
 static int SortByTracker(const void *p1, const void *p2, void *arg)
 {
 	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
-	SHM_STRUCT *Shm = (SHM_STRUCT *) arg;
+	REF *Ref = (REF*) arg;
+	RO(SHM_STRUCT) *RO(Shm) = Ref->RO(Shm);
+	RW(SHM_STRUCT) *RW(Shm) = Ref->RW(Shm);
 
-	int sort = (task1->pid == Shm->SysGate.trackTask) ?
-		-1 : (task2->pid == Shm->SysGate.trackTask) ?
-		+1 :  SortByFunc[Shm->SysGate.sortByField](p1, p2, Shm);
+	int sort = (task1->pid == RO(Shm)->SysGate.trackTask) ?
+		-1 : (task2->pid == RO(Shm)->SysGate.trackTask) ?
+		+1 :  SortByFunc[RW(Shm)->SysGate.sortByField](p1, p2, Ref);
 	return sort;
 }
 
 void SysGate_Update(REF *Ref)
 {
-	SHM_STRUCT *Shm = Ref->Shm;
+	RO(SHM_STRUCT) *RO(Shm) = Ref->RO(Shm);
+	RW(SHM_STRUCT) *RW(Shm) = Ref->RW(Shm);
 	RO(SYSGATE) *SysGate = Ref->RO(SysGate);
 	RO(PROC) *RO(Proc) = Ref->RO(Proc);
 
-	Shm->SysGate.taskCount = SysGate->taskCount;
+	RO(Shm)->SysGate.taskCount = SysGate->taskCount;
 
-	memcpy( Shm->SysGate.taskList, SysGate->taskList,
-		(size_t) Shm->SysGate.taskCount * sizeof(TASK_MCB));
+	memcpy( RO(Shm)->SysGate.taskList, SysGate->taskList,
+		(size_t) RO(Shm)->SysGate.taskCount * sizeof(TASK_MCB));
 
-	qsort_r(Shm->SysGate.taskList,
-		(size_t) Shm->SysGate.taskCount, sizeof(TASK_MCB),
-		Shm->SysGate.trackTask ?
+	qsort_r(RO(Shm)->SysGate.taskList,
+		(size_t) RO(Shm)->SysGate.taskCount, sizeof(TASK_MCB),
+		RO(Shm)->SysGate.trackTask ?
 			  SortByTracker
-			: SortByFunc[Shm->SysGate.sortByField], Shm);
+			: SortByFunc[RW(Shm)->SysGate.sortByField], Ref);
 
-	Shm->SysGate.memInfo.totalram  = SysGate->memInfo.totalram;
-	Shm->SysGate.memInfo.sharedram = SysGate->memInfo.sharedram;
-	Shm->SysGate.memInfo.freeram   = SysGate->memInfo.freeram;
-	Shm->SysGate.memInfo.bufferram = SysGate->memInfo.bufferram;
-	Shm->SysGate.memInfo.totalhigh = SysGate->memInfo.totalhigh;
-	Shm->SysGate.memInfo.freehigh  = SysGate->memInfo.freehigh;
-	Shm->SysGate.OS.IdleDriver.stateLimit =
-				RO(Proc)->OS.IdleDriver.stateLimit;
+	RO(Shm)->SysGate.memInfo.totalram  = SysGate->memInfo.totalram;
+	RO(Shm)->SysGate.memInfo.sharedram = SysGate->memInfo.sharedram;
+	RO(Shm)->SysGate.memInfo.freeram   = SysGate->memInfo.freeram;
+	RO(Shm)->SysGate.memInfo.bufferram = SysGate->memInfo.bufferram;
+	RO(Shm)->SysGate.memInfo.totalhigh = SysGate->memInfo.totalhigh;
+	RO(Shm)->SysGate.memInfo.freehigh  = SysGate->memInfo.freehigh;
+	RO(Shm)->SysGate.OS.IdleDriver.stateLimit =
+					RO(Proc)->OS.IdleDriver.stateLimit;
 }
 
-void PerCore_Update(SHM_STRUCT *Shm, RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
-			unsigned int cpu )
+void PerCore_Update(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
+			RO(CORE) **RO(Core), unsigned int cpu )
 {
 	if (BITVAL(RO(Core, AT(cpu))->OffLine, HW)) {
-		BITSET(LOCKLESS, Shm->Cpu[cpu].OffLine, HW);
+		BITSET(LOCKLESS, RO(Shm)->Cpu[cpu].OffLine, HW);
 	} else {
-		BITCLR(LOCKLESS, Shm->Cpu[cpu].OffLine, HW);
+		BITCLR(LOCKLESS, RO(Shm)->Cpu[cpu].OffLine, HW);
 	}
-	/* Initialize all clock ratios.					*/
-	memcpy( Shm->Cpu[cpu].Boost, RO(Core, AT(cpu))->Boost,
+	/*	Initialize all clock ratios.				*/
+	memcpy( RO(Shm)->Cpu[cpu].Boost, RO(Core, AT(cpu))->Boost,
 		(BOOST(SIZE)) * sizeof(unsigned int) );
 
-	Shm->Cpu[cpu].Query.Microcode = RO(Core, AT(cpu))->Query.Microcode;
+	RO(Shm)->Cpu[cpu].Query.Microcode = RO(Core, AT(cpu))->Query.Microcode;
 
-	Topology(Shm, RO(Proc), RO(Core), cpu);
+	Topology(RO(Shm), RO(Proc), RO(Core), cpu);
 
-	CStates(Shm, RO(Core), cpu);
+	CStates(RO(Shm), RO(Core), cpu);
 
-	PowerThermal(Shm, RO(Proc), RO(Core), cpu);
+	PowerThermal(RO(Shm), RO(Proc), RO(Core), cpu);
 
-	SystemRegisters(Shm, RO(Core), cpu);
+	SystemRegisters(RO(Shm), RO(Core), cpu);
 
-	CPUID_Dump(Shm, RO(Core), cpu);
+	CPUID_Dump(RO(Shm), RO(Core), cpu);
 }
 
 int SysGate_OnDemand(REF *Ref, int operation)
@@ -6159,7 +6254,7 @@ int SysGate_OnDemand(REF *Ref, int operation)
 		RO(SYSGATE) *MapGate = mmap(NULL, allocPages,
 						PROT_READ,
 						MAP_SHARED,
-						Ref->fd->Drv, vm_pgoff);
+						Ref->fd->drv, vm_pgoff);
 		if (MapGate != MAP_FAILED) {
 			Ref->RO(SysGate) = MapGate;
 			rc = 0;
@@ -6174,23 +6269,23 @@ int SysGate_OnDemand(REF *Ref, int operation)
 void SysGate_Toggle(REF *Ref, unsigned int state)
 {
     if (state == 0) {
-	if (BITWISEAND(LOCKLESS, Ref->Shm->SysGate.Operation, 0x1)) {
-		/* Stop SysGate 					*/
-		BITCLR(LOCKLESS, Ref->Shm->SysGate.Operation, 0);
-		/* Notify						*/
+	if (BITWISEAND(LOCKLESS, Ref->RO(Shm)->SysGate.Operation, 0x1)) {
+		/*	Stop SysGate 					*/
+		BITCLR(LOCKLESS, Ref->RO(Shm)->SysGate.Operation, 0);
+		/*	Notify						*/
 		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_NTFY);
 	}
     } else {
-	if (!BITWISEAND(LOCKLESS, Ref->Shm->SysGate.Operation, 0x1)) {
+	if (!BITWISEAND(LOCKLESS, Ref->RO(Shm)->SysGate.Operation, 0x1)) {
 	    if (SysGate_OnDemand(Ref, 1) == 0) {
-		if (ioctl(Ref->fd->Drv, COREFREQ_IOCTL_SYSONCE) != -EPERM) {
-			/* Aggregate the OS idle driver data.		*/
+		if (ioctl(Ref->fd->drv, COREFREQ_IOCTL_SYSONCE) != -EPERM) {
+			/*	Aggregate the OS idle driver data.	*/
 			SysGate_OS_Driver(Ref);
-			/* Copy system information.			*/
+			/*	Copy system information.		*/
 			SysGate_Kernel(Ref);
-			/* Start SysGate				*/
-			BITSET(LOCKLESS, Ref->Shm->SysGate.Operation, 0);
-			/* Notify					*/
+			/*	Start SysGate				*/
+			BITSET(LOCKLESS, Ref->RO(Shm)->SysGate.Operation, 0);
+			/*	Notify					*/
 			BITWISESET(LOCKLESS, PendingSync,BIT_MASK_NTFY);
 		}
 	    }
@@ -6200,16 +6295,16 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 
 void Master_Ring_Handler(REF *Ref, unsigned int rid)
 {
-    if (!RING_NULL(Ref->Shm->Ring[rid]))
+    if (!RING_NULL(Ref->RW(Shm)->Ring[rid]))
     {
 	RING_CTRL ctrl __attribute__ ((aligned(16)));
-	RING_READ(Ref->Shm->Ring[rid], ctrl);
+	RING_READ(Ref->RW(Shm)->Ring[rid], ctrl);
 	int rc = -EPERM, drc = -EPERM;
 
 	if (	(ctrl.cmd >= COREFREQ_IOCTL_SYSUPDT)
 	&&	(ctrl.cmd <= COREFREQ_IOCTL_CLEAR_EVENTS) )
 	{
-		rc = ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg);
+		rc = ioctl(Ref->fd->drv, ctrl.cmd, ctrl.arg);
 		drc = errno;
 	}
 	if (Quiet & 0x100) {
@@ -6223,10 +6318,10 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 			.arg = ctrl.arg,
 			.cmd = ctrl.cmd,
 			.drc = (unsigned int) drc,
-			.tds = ELAPSED(Ref->Shm->StartedAt)
+			.tds = ELAPSED(Ref->RO(Shm)->StartedAt)
 		};
 		RING_WRITE_1xPARAM(	error.sub,
-					Ref->Shm->Error,
+					Ref->RW(Shm)->Error,
 					error.cmd,
 					error.arg );
 	    }
@@ -6237,7 +6332,7 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 	case RC_SUCCESS: /* Platform changed -> pending notification.	*/
 		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_NTFY);
 		break;
-	case RC_OK_COMPUTE: /* Compute claimed -> pending notification.	*/
+	case RC_OK_COMPUTE: /* Compute claimed -> pending notification. */
 		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_COMP);
 		break;
 	}
@@ -6246,10 +6341,10 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 
 void Child_Ring_Handler(REF *Ref, unsigned int rid)
 {
-  if (!RING_NULL(Ref->Shm->Ring[rid]))
+  if (!RING_NULL(Ref->RW(Shm)->Ring[rid]))
   {
 	RING_CTRL ctrl __attribute__ ((aligned(16)));
-	RING_READ(Ref->Shm->Ring[rid], ctrl);
+	RING_READ(Ref->RW(Shm)->Ring[rid], ctrl);
 
    switch (ctrl.cmd) {
    case COREFREQ_TOGGLE_SYSGATE:
@@ -6257,7 +6352,7 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 	case COREFREQ_TOGGLE_OFF:
 	case COREFREQ_TOGGLE_ON:
 		SysGate_Toggle(Ref, ctrl.arg);
-		BITWISESET(LOCKLESS, Ref->Shm->Proc.Sync, BIT_MASK_NTFY);
+		BITWISESET(LOCKLESS, Ref->RW(Shm)->Proc.Sync, BIT_MASK_NTFY);
 		break;
 	}
 	break;
@@ -6265,9 +6360,9 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 	switch (ctrl.arg) {
 	case COREFREQ_TOGGLE_OFF:
 	SCHEDULER_STOP:
-	    if (BITVAL(Ref->Shm->Proc.Sync, BURN))
+	    if (BITVAL(Ref->RW(Shm)->Proc.Sync, BURN))
 	    {
-		BITCLR(BUS_LOCK, Ref->Shm->Proc.Sync, BURN);
+		BITCLR(BUS_LOCK, Ref->RW(Shm)->Proc.Sync, BURN);
 
 		while (BITWISEAND_CC(BUS_LOCK, roomCore, roomSeed))
 		{
@@ -6275,21 +6370,21 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 				break;
 			}
 		}
-		BITSTOR_CC(BUS_LOCK, Ref->Shm->roomSched, roomClear);
+		BITSTOR_CC(BUS_LOCK, Ref->RO(Shm)->roomSched, roomClear);
 
 		Ref->Slice.Func = Slice_NOP;
 		Ref->Slice.arg = 0;
 		Ref->Slice.pattern = RESET_CSP;
-		/* Notify the Slice module has stopped			*/
-		BITWISESET(LOCKLESS, Ref->Shm->Proc.Sync, BIT_MASK_NTFY);
+		/*	Notify the Slice module has stopped		*/
+		BITWISESET(LOCKLESS, Ref->RW(Shm)->Proc.Sync, BIT_MASK_NTFY);
 	    }
 	    break;
 	}
 	break;
    case COREFREQ_TRACK_PROCESS:
-	Ref->Shm->SysGate.trackTask = (pid_t) ctrl.arg;
+	Ref->RO(Shm)->SysGate.trackTask = (pid_t) ctrl.arg;
 
-	BITWISESET(LOCKLESS, Ref->Shm->Proc.Sync, BIT_MASK_NTFY);
+	BITWISESET(LOCKLESS, Ref->RW(Shm)->Proc.Sync, BIT_MASK_NTFY);
 	break;
    default:
     {
@@ -6299,36 +6394,36 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
      {
       if ((porder->ctrl.cmd == ctrl.cmd) &&  (porder->ctrl.sub == ctrl.sub))
       {
-       if ( !BITVAL(Ref->Shm->Proc.Sync, BURN)
+       if ( !BITVAL(Ref->RW(Shm)->Proc.Sync, BURN)
 	|| ((Ref->Slice.Func == Slice_Turbo) && (Ref->Slice.pattern == USR_CPU)
 		&& (ctrl.cmd == COREFREQ_ORDER_TURBO) && (ctrl.sub == USR_CPU)))
        {
 	if (ctrl.sub == USR_CPU) {
-		if (BITVAL_CC(Ref->Shm->roomSched, ctrl.dl.lo))
+	    if (BITVAL_CC(Ref->RO(Shm)->roomSched, ctrl.dl.lo))
+	    {
+		BITCLR_CC(LOCKLESS, Ref->RO(Shm)->roomSched, ctrl.dl.lo);
+
+		if (!BITWISEAND_CC(BUS_LOCK, Ref->RO(Shm)->roomSched, roomSeed))
 		{
-			BITCLR_CC(LOCKLESS, Ref->Shm->roomSched, ctrl.dl.lo);
-
-		    if (!BITWISEAND_CC(BUS_LOCK, Ref->Shm->roomSched, roomSeed))
-		    {
 			goto SCHEDULER_STOP;
-		    }
-		} else {
-			BITSET_CC(LOCKLESS, Ref->Shm->roomSched, ctrl.dl.lo);
-
-			goto SCHEDULER_START;
 		}
+	    } else {
+		BITSET_CC(LOCKLESS, Ref->RO(Shm)->roomSched, ctrl.dl.lo);
+
+		goto SCHEDULER_START;
+	    }
 	} else {
-		SliceScheduling(Ref->Shm, ctrl.dl.lo, porder->pattern);
+		SliceScheduling(Ref->RO(Shm), ctrl.dl.lo, porder->pattern);
 
 	SCHEDULER_START:
 		Ref->Slice.Func = porder->func;
 		Ref->Slice.arg  = porder->ctrl.dl.lo;
 		Ref->Slice.pattern = porder->pattern;
 
-		BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, BURN);
+		BITSET(BUS_LOCK, Ref->RW(Shm)->Proc.Sync, BURN);
 	}
-	/* Notify the Slice module is starting up			*/
-	BITWISESET(LOCKLESS, Ref->Shm->Proc.Sync, BIT_MASK_NTFY);
+	/*	Notify the Slice module is starting up			*/
+	BITWISESET(LOCKLESS, Ref->RW(Shm)->Proc.Sync, BIT_MASK_NTFY);
        }
        break;
       }
@@ -6376,11 +6471,12 @@ static void *Emergency_Handler(void *pRef)
 
 	pthread_t tid = pthread_self();
 
-    if(ServerFollowService(&localService, &Ref->Shm->Proc.Service, tid) == 0) {
+    if(ServerFollowService(&localService, &Ref->RO(Shm)->Proc.Service,tid) == 0)
+    {
 	pthread_setname_np(tid, handlerName);
     }
     while (!leave) {
-	caught = sigtimedwait(&Ref->Signal, NULL, &Ref->Shm->Sleep.ringWaiting);
+	caught=sigtimedwait(&Ref->Signal,NULL,&Ref->RO(Shm)->Sleep.ringWaiting);
 	if (caught != -1) {
 		switch (caught) {
 		case SIGUSR2:
@@ -6432,7 +6528,7 @@ static void *Emergency_Handler(void *pRef)
 			Child_Ring_Handler(Ref, rid);
 		}
 	}
-	ServerFollowService(&localService, &Ref->Shm->Proc.Service, tid);
+	ServerFollowService(&localService, &Ref->RO(Shm)->Proc.Service, tid);
     }
 	return NULL;
 }
@@ -6643,10 +6739,11 @@ void Pkg_ResetSensorLimits(PROC_STRUCT *Pkg)
 
 REASON_CODE Core_Manager(REF *Ref)
 {
-	SHM_STRUCT		*Shm = Ref->Shm;
+	RO(SHM_STRUCT)		*RO(Shm) = Ref->RO(Shm);
+	RW(SHM_STRUCT)		*RW(Shm) = Ref->RW(Shm);
 	RO(PROC)		*RO(Proc) = Ref->RO(Proc);
 	RW(PROC)		*RW(Proc) = Ref->RW(Proc);
-	RO(CORE)		**RO(Core)= Ref->RO(Core);
+	RO(CORE)		**RO(Core) = Ref->RO(Core);
 	struct PKG_FLIP_FLOP	*PFlip;
 	struct FLIP_FLOP	*SProc;
 	SERVICE_PROC		localService = {.Proc = -1};
@@ -6658,12 +6755,12 @@ REASON_CODE Core_Manager(REF *Ref)
 	unsigned int		cpu = 0;
 
 	pthread_t tid = pthread_self();
-	Shm->App.Svr = tid;
+	RO(Shm)->App.Svr = tid;
 
-	if (ServerFollowService(&localService, &Shm->Proc.Service, tid) == 0) {
-		pthread_setname_np(tid, "corefreqd-pmgr");
-	}
-	ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
+  if (ServerFollowService(&localService, &RO(Shm)->Proc.Service, tid) == 0) {
+	pthread_setname_np(tid, "corefreqd-pmgr");
+  }
+	ARG *Arg = calloc(RO(Shm)->Proc.CPU.Count, sizeof(ARG));
   if (Arg != NULL)
   {
 	void (*Pkg_ComputeThermalFormula)(	struct PKG_FLIP_FLOP*,
@@ -6675,7 +6772,7 @@ REASON_CODE Core_Manager(REF *Ref)
 
 	void (*Pkg_ResetPowerFormula)(PROC_RW*);
 
-	switch (KIND_OF_FORMULA(Shm->Proc.thermalFormula)) {
+	switch (KIND_OF_FORMULA(RO(Shm)->Proc.thermalFormula)) {
 	case THERMAL_KIND_INTEL:
 		Pkg_ComputeThermalFormula = Pkg_ComputeThermal_Intel;
 		break;
@@ -6696,7 +6793,7 @@ REASON_CODE Core_Manager(REF *Ref)
 		Pkg_ComputeThermalFormula = Pkg_ComputeThermal_None;
 	}
 
-	switch (KIND_OF_FORMULA(Shm->Proc.voltageFormula)) {
+	switch (KIND_OF_FORMULA(RO(Shm)->Proc.voltageFormula)) {
 	case VOLTAGE_KIND_INTEL:
 		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_Intel;
 		break;
@@ -6736,7 +6833,7 @@ REASON_CODE Core_Manager(REF *Ref)
 		break;
 	}
 
-	switch (KIND_OF_FORMULA(Shm->Proc.powerFormula)) {
+	switch (KIND_OF_FORMULA(RO(Shm)->Proc.powerFormula)) {
 	case POWER_KIND_INTEL:
 		Pkg_ComputePowerFormula = Pkg_ComputePower_Intel;
 		Pkg_ResetPowerFormula	= Pkg_ResetPower_Intel;
@@ -6787,305 +6884,308 @@ REASON_CODE Core_Manager(REF *Ref)
 	UBENCH_SETUP(CONDITION_RDTSCP(), CONDITION_RDPMC());
 	Print_uBenchmark((Quiet & 0x100));
 
-    while (!BITVAL(Shutdown, SYNC))
-    {	/* Loop while all the cpu room bits are not cleared.		*/
+   while (!BITVAL(Shutdown, SYNC))
+   {	/*	Loop while all the cpu room bits are not cleared.	*/
 	while (!BITVAL(Shutdown, SYNC) && !ROOM_CLEAR(room))
 	{
-		nanosleep(&Shm->Sleep.pollingWait, NULL);
+		nanosleep(&RO(Shm)->Sleep.pollingWait, NULL);
 	}
 
 	UBENCH_RDCOUNTER(1);
 
-	Shm->Proc.Toggle = !Shm->Proc.Toggle;
-	PFlip = &Shm->Proc.FlipFlop[Shm->Proc.Toggle];
+	RO(Shm)->Proc.Toggle = !RO(Shm)->Proc.Toggle;
+	PFlip = &RO(Shm)->Proc.FlipFlop[RO(Shm)->Proc.Toggle];
 
-	SProc = &Shm->Cpu[Shm->Proc.Service.Core].FlipFlop[ \
-				!Shm->Cpu[Shm->Proc.Service.Core].Toggle
-	];
+	SProc = &RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].FlipFlop[
+				!RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Toggle
+		];
 
 	PFlip->Thermal.Temp = 0;
-	/* Reset the averages & the max frequency			*/
-	Shm->Proc.Avg.Turbo = 0;
-	Shm->Proc.Avg.C0    = 0;
-	Shm->Proc.Avg.C3    = 0;
-	Shm->Proc.Avg.C6    = 0;
-	Shm->Proc.Avg.C7    = 0;
-	Shm->Proc.Avg.C1    = 0;
+	/*	Reset the averages & the max frequency			*/
+	RO(Shm)->Proc.Avg.Turbo = 0;
+	RO(Shm)->Proc.Avg.C0    = 0;
+	RO(Shm)->Proc.Avg.C3    = 0;
+	RO(Shm)->Proc.Avg.C6    = 0;
+	RO(Shm)->Proc.Avg.C7    = 0;
+	RO(Shm)->Proc.Avg.C1    = 0;
 
 	prevTop.RelFreq = 0.0;
 	prevTop.AbsFreq = 0.0;
 
 	Pkg_ResetPowerFormula(RW(Proc));
 
-	for (cpu=0; !BITVAL(Shutdown, SYNC)&&(cpu < Shm->Proc.CPU.Count);cpu++)
-	{
-	    if (BITVAL(RO(Core, AT(cpu))->OffLine, OS) == 1)
+    for (cpu=0; !BITVAL(Shutdown, SYNC)&&(cpu < RO(Shm)->Proc.CPU.Count);cpu++)
+    {
+      if (BITVAL(RO(Core, AT(cpu))->OffLine, OS) == 1)
+      {
+	if (Arg[cpu].TID)
+	{	/*	Remove this cpu.				*/
+	  if (pthread_join(Arg[cpu].TID, NULL) == 0)
+	  {
+		BITCLR_CC(BUS_LOCK, roomReady, cpu);
+		Arg[cpu].TID = 0;
+
+		PerCore_Update(RO(Shm), RO(Proc), RO(Core), cpu);
+
+	    if (ServerFollowService(	&localService,
+					&RO(Shm)->Proc.Service,
+					tid ) == 0)
 	    {
-		if (Arg[cpu].TID)
-		{	/* Remove this cpu.				*/
-		  if (pthread_join(Arg[cpu].TID, NULL) == 0)
-		  {
-			BITCLR_CC(BUS_LOCK, roomReady, cpu);
-			Arg[cpu].TID = 0;
-
-			PerCore_Update(Shm, RO(Proc), RO(Core), cpu);
-
-		    if (ServerFollowService(	&localService,
-						&Shm->Proc.Service,
-						tid ) == 0)
-		    {
-			SProc = &Shm->Cpu[Shm->Proc.Service.Core].FlipFlop[ \
-				!Shm->Cpu[Shm->Proc.Service.Core].Toggle ];
-		    }
-			/* Raise these bits up to notify a platform change. */
-			BITWISESET(LOCKLESS, PendingSync, BIT_MASK_NTFY);
-		  }
-		}
-		BITSET(LOCKLESS, Shm->Cpu[cpu].OffLine, OS);
-	    } else {
-		struct FLIP_FLOP *CFlop = \
-				&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-
-		if (!Arg[cpu].TID)
-		{	/* Add this cpu.				*/
-			Arg[cpu].Ref  = Ref;
-			Arg[cpu].Bind = cpu;
-		  if (pthread_create( &Arg[cpu].TID,
-					NULL,
-					Core_Cycle,
-					&Arg[cpu]) == 0)
-		  {
-			BITSET_CC(BUS_LOCK, roomReady, cpu);
-
-			PerCore_Update(Shm, RO(Proc), RO(Core), cpu);
-
-		    if (ServerFollowService(&localService,
-						&Shm->Proc.Service,
-						tid) == 0)
-		    {
-			SProc = &Shm->Cpu[Shm->Proc.Service.Core].FlipFlop[ \
-				!Shm->Cpu[Shm->Proc.Service.Core].Toggle ];
-		    }
-		    if (Quiet & 0x100) {
-			printf( "    CPU #%03u @ %.2f MHz\n", cpu,
-			  ABS_FREQ_MHz(double , Shm->Cpu[cpu].Boost[BOOST(MAX)],
-						RO(Core, AT(cpu))->Clock) );
-		    }
-			/* Notify a CPU has been brought up		*/
-			BITWISESET(LOCKLESS, PendingSync, BIT_MASK_NTFY);
-		  }
-		}
-		BITCLR(LOCKLESS, Shm->Cpu[cpu].OffLine, OS);
-
-		/* Index CPU with the highest Rel. and Abs frequencies.	*/
-		if (CFlop->Relative.Freq > prevTop.RelFreq) {
-			prevTop.RelFreq = CFlop->Relative.Freq;
-			Shm->Proc.Top.Rel = cpu;
-		}
-		if (CFlop->Absolute.Freq > prevTop.AbsFreq) {
-			prevTop.AbsFreq = CFlop->Absolute.Freq;
-			Shm->Proc.Top.Abs = cpu;
-		}
-
-		/* Workaround to Package Thermal Management: the hottest Core */
-		if (!Shm->Proc.Features.Power.EAX.PTM) {
-			if (CFlop->Thermal.Temp > PFlip->Thermal.Temp)
-				PFlip->Thermal.Temp = CFlop->Thermal.Temp;
-		}
-
-		/* Workaround to RAPL Package counter: sum of all Cores */
-		Pkg_ComputePowerFormula(RW(Proc), CFlop);
-
-		/* Sum counters.					*/
-		Shm->Proc.Avg.Turbo += CFlop->State.Turbo;
-		Shm->Proc.Avg.C0    += CFlop->State.C0;
-		Shm->Proc.Avg.C3    += CFlop->State.C3;
-		Shm->Proc.Avg.C6    += CFlop->State.C6;
-		Shm->Proc.Avg.C7    += CFlop->State.C7;
-		Shm->Proc.Avg.C1    += CFlop->State.C1;
+		SProc = &RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].FlipFlop[
+				!RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Toggle
+			];
 	    }
+		/*	Raise these bits up to notify a platform change. */
+		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_NTFY);
+	  }
 	}
-	if (!BITVAL(Shutdown, SYNC) && ROOM_READY(room))
-	{
-		unsigned char fRESET = 0;
-		/* Compute the counters averages.			*/
-		Shm->Proc.Avg.Turbo /= Shm->Proc.CPU.OnLine;
-		Shm->Proc.Avg.C0    /= Shm->Proc.CPU.OnLine;
-		Shm->Proc.Avg.C3    /= Shm->Proc.CPU.OnLine;
-		Shm->Proc.Avg.C6    /= Shm->Proc.CPU.OnLine;
-		Shm->Proc.Avg.C7    /= Shm->Proc.CPU.OnLine;
-		Shm->Proc.Avg.C1    /= Shm->Proc.CPU.OnLine;
-		/* Package scope counters				*/
-		PFlip->Delta.PTSC = RO(Proc)->Delta.PTSC;
-		PFlip->Delta.PC02 = RO(Proc)->Delta.PC02;
-		PFlip->Delta.PC03 = RO(Proc)->Delta.PC03;
-		PFlip->Delta.PC04 = RO(Proc)->Delta.PC04;
-		PFlip->Delta.PC06 = RO(Proc)->Delta.PC06;
-		PFlip->Delta.PC07 = RO(Proc)->Delta.PC07;
-		PFlip->Delta.PC08 = RO(Proc)->Delta.PC08;
-		PFlip->Delta.PC09 = RO(Proc)->Delta.PC09;
-		PFlip->Delta.PC10 = RO(Proc)->Delta.PC10;
-		PFlip->Delta.MC6  = RO(Proc)->Delta.MC6;
-		/* Package C-state Residency counters			*/
-		Shm->Proc.State.PC02	= (double)PFlip->Delta.PC02
-					/ (double)PFlip->Delta.PTSC;
-
-		Shm->Proc.State.PC03	= (double)PFlip->Delta.PC03
-					/ (double)PFlip->Delta.PTSC;
-
-		Shm->Proc.State.PC04	= (double)PFlip->Delta.PC04
-					/ (double)PFlip->Delta.PTSC;
-
-		Shm->Proc.State.PC06	= (double)PFlip->Delta.PC06
-					/ (double)PFlip->Delta.PTSC;
-
-		Shm->Proc.State.PC07	= (double)PFlip->Delta.PC07
-					/ (double)PFlip->Delta.PTSC;
-
-		Shm->Proc.State.PC08	= (double)PFlip->Delta.PC08
-					/ (double)PFlip->Delta.PTSC;
-
-		Shm->Proc.State.PC09	= (double)PFlip->Delta.PC09
-					/ (double)PFlip->Delta.PTSC;
-
-		Shm->Proc.State.PC10	= (double)PFlip->Delta.PC10
-					/ (double)PFlip->Delta.PTSC;
-
-		Shm->Proc.State.MC6	= (double)PFlip->Delta.MC6
-					/ (double)PFlip->Delta.PTSC;
-		/* Uncore scope counters				*/
-		PFlip->Uncore.FC0 = RO(Proc)->Delta.Uncore.FC0;
-		/* Power & Energy counters				*/
-		enum PWR_DOMAIN pw;
-	  for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
+	BITSET(LOCKLESS, RO(Shm)->Cpu[cpu].OffLine, OS);
+      } else {
+	struct FLIP_FLOP *CFlop = &RO(Shm)->Cpu[cpu].FlipFlop[
+					!RO(Shm)->Cpu[cpu].Toggle
+				];
+	if (!Arg[cpu].TID)
+	{	/*	Add this cpu.					*/
+		Arg[cpu].Ref  = Ref;
+		Arg[cpu].Bind = cpu;
+	  if (pthread_create( &Arg[cpu].TID,
+				NULL,
+				Core_Cycle,
+				&Arg[cpu]) == 0)
 	  {
-		PFlip->Delta.ACCU[pw] = RW(Proc)->Delta.Power.ACCU[pw];
+		BITSET_CC(BUS_LOCK, roomReady, cpu);
 
-		Shm->Proc.State.Energy[pw].Current = PFlip->Delta.ACCU[pw];
-		Shm->Proc.State.Energy[pw].Current *= \
-						Shm->Proc.Power.Unit.Joules;
+		PerCore_Update(RO(Shm), RO(Proc), RO(Core), cpu);
 
-		Shm->Proc.State.Power[pw].Current = \
-					Shm->Proc.State.Energy[pw].Current;
-
-		Shm->Proc.State.Power[pw].Current *= 1000.0;
-		Shm->Proc.State.Power[pw].Current /= Shm->Sleep.Interval;
-
-		/* Processor scope: computes Min and Max energy consumed. */
-		TEST_AND_SET_SENSOR(	ENERGY, LOWEST,
-					Shm->Proc.State.Energy[pw].Current,
-					Shm->Proc.State.Energy[pw].Limit );
-
-		TEST_AND_SET_SENSOR(	ENERGY, HIGHEST,
-					Shm->Proc.State.Energy[pw].Current,
-					Shm->Proc.State.Energy[pw].Limit );
-		/* Processor scope: computes Min and Max power consumed. */
-		TEST_AND_SET_SENSOR(	POWER, LOWEST,
-					Shm->Proc.State.Power[pw].Current,
-					Shm->Proc.State.Power[pw].Limit );
-
-		TEST_AND_SET_SENSOR(	POWER, HIGHEST,
-					Shm->Proc.State.Power[pw].Current,
-					Shm->Proc.State.Power[pw].Limit );
-	  }
-		/* Package thermal formulas				*/
-		PFlip->Thermal.Events = RO(Proc)->PowerThermal.Events;
-
-	  if (Shm->Proc.Features.Power.EAX.PTM)
-	  {
-		PFlip->Thermal.Sensor = RO(Proc)->PowerThermal.Sensor;
-		Pkg_ComputeThermalFormula(PFlip, SProc);
-	  }
-		/* Package Voltage formulas				*/
-		PFlip->Voltage.VID.CPU = RO(Proc)->PowerThermal.VID.CPU;
-		PFlip->Voltage.VID.SOC = RO(Proc)->PowerThermal.VID.SOC;
-
-		Pkg_ComputeVoltageFormula(PFlip);
-		/* Computes the Min Processor voltage.			*/
-		TEST_AND_SET_SENSOR( VOLTAGE, LOWEST,	PFlip->Voltage.CPU,
-						Shm->Proc.State.Voltage.Limit );
-		/* Computes the Max Processor voltage.			*/
-		TEST_AND_SET_SENSOR( VOLTAGE, HIGHEST,	PFlip->Voltage.CPU,
-						Shm->Proc.State.Voltage.Limit );
-		/*
-		The Driver tick is bound to the Service Core:
-		1- Tasks collection; Tasks count; and Memory usage.
-		2- Processor has resumed from Suspend To RAM.
-		*/
-		Shm->SysGate.tickStep = RO(Proc)->tickStep;
-	  if (Shm->SysGate.tickStep == Shm->SysGate.tickReset)
-	  {
-	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
+	    if (ServerFollowService(&localService,
+					&RO(Shm)->Proc.Service,
+					tid) == 0)
 	    {
+		SProc = &RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].FlipFlop[
+				!RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Toggle
+			];
+	    }
+	    if (Quiet & 0x100) {
+		printf( "    CPU #%03u @ %.2f MHz\n", cpu,
+		  ABS_FREQ_MHz(double , RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)],
+					RO(Core, AT(cpu))->Clock) );
+	    }
+		/*	Notify a CPU has been brought up		*/
+		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_NTFY);
+	  }
+	}
+	BITCLR(LOCKLESS, RO(Shm)->Cpu[cpu].OffLine, OS);
+
+	/*	Index CPU with the highest Rel. and Abs frequencies.	*/
+	if (CFlop->Relative.Freq > prevTop.RelFreq) {
+		prevTop.RelFreq = CFlop->Relative.Freq;
+		RO(Shm)->Proc.Top.Rel = cpu;
+	}
+	if (CFlop->Absolute.Freq > prevTop.AbsFreq) {
+		prevTop.AbsFreq = CFlop->Absolute.Freq;
+		RO(Shm)->Proc.Top.Abs = cpu;
+	}
+
+	/*	Workaround to Package Thermal Management: the hottest Core */
+	if (!RO(Shm)->Proc.Features.Power.EAX.PTM) {
+		if (CFlop->Thermal.Temp > PFlip->Thermal.Temp)
+			PFlip->Thermal.Temp = CFlop->Thermal.Temp;
+	}
+
+	/*	Workaround to RAPL Package counter: sum of all Cores	*/
+	Pkg_ComputePowerFormula(RW(Proc), CFlop);
+
+	/*	Sum counters.						*/
+	RO(Shm)->Proc.Avg.Turbo += CFlop->State.Turbo;
+	RO(Shm)->Proc.Avg.C0    += CFlop->State.C0;
+	RO(Shm)->Proc.Avg.C3    += CFlop->State.C3;
+	RO(Shm)->Proc.Avg.C6    += CFlop->State.C6;
+	RO(Shm)->Proc.Avg.C7    += CFlop->State.C7;
+	RO(Shm)->Proc.Avg.C1    += CFlop->State.C1;
+      }
+    }
+    if (!BITVAL(Shutdown, SYNC) && ROOM_READY(room))
+    {
+	unsigned char fRESET = 0;
+	/*	Compute the counters averages.				*/
+	RO(Shm)->Proc.Avg.Turbo /= RO(Shm)->Proc.CPU.OnLine;
+	RO(Shm)->Proc.Avg.C0    /= RO(Shm)->Proc.CPU.OnLine;
+	RO(Shm)->Proc.Avg.C3    /= RO(Shm)->Proc.CPU.OnLine;
+	RO(Shm)->Proc.Avg.C6    /= RO(Shm)->Proc.CPU.OnLine;
+	RO(Shm)->Proc.Avg.C7    /= RO(Shm)->Proc.CPU.OnLine;
+	RO(Shm)->Proc.Avg.C1    /= RO(Shm)->Proc.CPU.OnLine;
+	/*	Package scope counters					*/
+	PFlip->Delta.PTSC = RO(Proc)->Delta.PTSC;
+	PFlip->Delta.PC02 = RO(Proc)->Delta.PC02;
+	PFlip->Delta.PC03 = RO(Proc)->Delta.PC03;
+	PFlip->Delta.PC04 = RO(Proc)->Delta.PC04;
+	PFlip->Delta.PC06 = RO(Proc)->Delta.PC06;
+	PFlip->Delta.PC07 = RO(Proc)->Delta.PC07;
+	PFlip->Delta.PC08 = RO(Proc)->Delta.PC08;
+	PFlip->Delta.PC09 = RO(Proc)->Delta.PC09;
+	PFlip->Delta.PC10 = RO(Proc)->Delta.PC10;
+	PFlip->Delta.MC6  = RO(Proc)->Delta.MC6;
+	/*	Package C-state Residency counters			*/
+	RO(Shm)->Proc.State.PC02= (double)PFlip->Delta.PC02
+				/ (double)PFlip->Delta.PTSC;
+
+	RO(Shm)->Proc.State.PC03= (double)PFlip->Delta.PC03
+				/ (double)PFlip->Delta.PTSC;
+
+	RO(Shm)->Proc.State.PC04= (double)PFlip->Delta.PC04
+				/ (double)PFlip->Delta.PTSC;
+
+	RO(Shm)->Proc.State.PC06= (double)PFlip->Delta.PC06
+				/ (double)PFlip->Delta.PTSC;
+
+	RO(Shm)->Proc.State.PC07= (double)PFlip->Delta.PC07
+				/ (double)PFlip->Delta.PTSC;
+
+	RO(Shm)->Proc.State.PC08= (double)PFlip->Delta.PC08
+				/ (double)PFlip->Delta.PTSC;
+
+	RO(Shm)->Proc.State.PC09= (double)PFlip->Delta.PC09
+				/ (double)PFlip->Delta.PTSC;
+
+	RO(Shm)->Proc.State.PC10= (double)PFlip->Delta.PC10
+				/ (double)PFlip->Delta.PTSC;
+
+	RO(Shm)->Proc.State.MC6 = (double)PFlip->Delta.MC6
+				/ (double)PFlip->Delta.PTSC;
+	/*	Uncore scope counters				*/
+	PFlip->Uncore.FC0 = RO(Proc)->Delta.Uncore.FC0;
+	/*	Power & Energy counters 				*/
+	enum PWR_DOMAIN pw;
+      for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
+      {
+	PFlip->Delta.ACCU[pw] = RW(Proc)->Delta.Power.ACCU[pw];
+
+	RO(Shm)->Proc.State.Energy[pw].Current = PFlip->Delta.ACCU[pw];
+	RO(Shm)->Proc.State.Energy[pw].Current *= \
+					RO(Shm)->Proc.Power.Unit.Joules;
+
+	RO(Shm)->Proc.State.Power[pw].Current = \
+				RO(Shm)->Proc.State.Energy[pw].Current;
+
+	RO(Shm)->Proc.State.Power[pw].Current *= 1000.0;
+	RO(Shm)->Proc.State.Power[pw].Current /= RO(Shm)->Sleep.Interval;
+
+	/*	Processor scope: computes Min and Max energy consumed.	*/
+	TEST_AND_SET_SENSOR(	ENERGY, LOWEST,
+				RO(Shm)->Proc.State.Energy[pw].Current,
+				RO(Shm)->Proc.State.Energy[pw].Limit );
+
+	TEST_AND_SET_SENSOR(	ENERGY, HIGHEST,
+				RO(Shm)->Proc.State.Energy[pw].Current,
+				RO(Shm)->Proc.State.Energy[pw].Limit );
+	/*	Processor scope: computes Min and Max power consumed. */
+	TEST_AND_SET_SENSOR(	POWER, LOWEST,
+				RO(Shm)->Proc.State.Power[pw].Current,
+				RO(Shm)->Proc.State.Power[pw].Limit );
+
+	TEST_AND_SET_SENSOR(	POWER, HIGHEST,
+				RO(Shm)->Proc.State.Power[pw].Current,
+				RO(Shm)->Proc.State.Power[pw].Limit );
+      }
+	/*	Package thermal formulas				*/
+	PFlip->Thermal.Events = RO(Proc)->PowerThermal.Events;
+
+      if (RO(Shm)->Proc.Features.Power.EAX.PTM)
+      {
+	PFlip->Thermal.Sensor = RO(Proc)->PowerThermal.Sensor;
+	Pkg_ComputeThermalFormula(PFlip, SProc);
+      }
+	/*	Package Voltage formulas				*/
+	PFlip->Voltage.VID.CPU = RO(Proc)->PowerThermal.VID.CPU;
+	PFlip->Voltage.VID.SOC = RO(Proc)->PowerThermal.VID.SOC;
+
+	Pkg_ComputeVoltageFormula(PFlip);
+	/*	Computes the Min Processor voltage.			*/
+	TEST_AND_SET_SENSOR(	VOLTAGE, LOWEST, PFlip->Voltage.CPU,
+				RO(Shm)->Proc.State.Voltage.Limit );
+	/* Computes the Max Processor voltage.			*/
+	TEST_AND_SET_SENSOR(	VOLTAGE, HIGHEST, PFlip->Voltage.CPU,
+				RO(Shm)->Proc.State.Voltage.Limit );
+	/*
+	The Driver tick is bound to the Service Core:
+	1- Tasks collection; Tasks count; and Memory usage.
+	2- Processor has resumed from Suspend To RAM.
+	*/
+	RO(Shm)->SysGate.tickStep = RO(Proc)->tickStep;
+     if (RO(Shm)->SysGate.tickStep == RO(Shm)->SysGate.tickReset)
+     {
+	if (BITWISEAND(LOCKLESS, RO(Shm)->SysGate.Operation, 0x1))
+	{
 		if (SysGate_OnDemand(Ref, 1) == 0) {
 			SysGate_Update(Ref);
 		}
-	    }
-		/* OS notifications: such as Resumed from Suspend.	*/
-	    if ( (fRESET = BITCLR(BUS_LOCK, RW(Proc)->OS.Signal, NTFY )) == 1)
-	    {
+	}
+	/*	OS notifications: such as Resumed from Suspend		*/
+	if ( (fRESET = BITCLR(BUS_LOCK, RW(Proc)->OS.Signal, NTFY )) == 1)
+	{
 		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_COMP|BIT_MASK_NTFY);
-	    }
-	  }
-	  if (BITWISEAND(LOCKLESS, PendingSync, BIT_MASK_COMP|BIT_MASK_NTFY))
-	  {
-		Package_Update(Shm, RO(Proc), RW(Proc));
+	}
+     }
+     if (BITWISEAND(LOCKLESS, PendingSync, BIT_MASK_COMP|BIT_MASK_NTFY))
+     {
+	Package_Update(RO(Shm), RO(Proc), RW(Proc));
 
-		Uncore_Update(Shm,RO(Proc),RO(Core,AT(RO(Proc)->Service.Core)));
+	Uncore_Update(RO(Shm),RO(Proc),RO(Core,AT(RO(Proc)->Service.Core)));
 
-	    for (cpu = 0; cpu < Ref->Shm->Proc.CPU.Count; cpu++)
-	    {
-	      if (fRESET == 1)
-	      {
-		Core_ResetSensorLimits(&Shm->Cpu[cpu]);
-	      }
-	      if (BITVAL(RO(Ref->Core, AT(cpu))->OffLine, OS) == 0)
-	      {
-		PerCore_Update(Ref->Shm, RO(Ref->Proc), RO(Ref->Core), cpu);
-	      }
-	    }
-	    if (fRESET == 1)
-	    {
-		Pkg_ResetSensorLimits(&Shm->Proc);
-	    }
-		Technology_Update(Shm, RO(Proc), RW(Proc));
+      for (cpu = 0; cpu < Ref->RO(Shm)->Proc.CPU.Count; cpu++)
+      {
+	if (fRESET == 1)
+	{
+		Core_ResetSensorLimits(&RO(Shm)->Cpu[cpu]);
+	}
+	if (BITVAL(RO(Ref->Core, AT(cpu))->OffLine, OS) == 0)
+	{
+		PerCore_Update(Ref->RO(Shm), RO(Ref->Proc), RO(Ref->Core), cpu);
+	}
+      }
+	if (fRESET == 1)
+	{
+		Pkg_ResetSensorLimits(&RO(Shm)->Proc);
+	}
+	Technology_Update(RO(Shm), RO(Proc), RW(Proc));
 
-	    if (ServerFollowService(&localService,
-				&Shm->Proc.Service,
+	if (ServerFollowService(&localService,
+				&RO(Shm)->Proc.Service,
 				tid) == 0)
-	    {
-		SProc = &Shm->Cpu[Shm->Proc.Service.Core].FlipFlop[ \
-			!Shm->Cpu[Shm->Proc.Service.Core].Toggle ];
-	    }
-	    if (Quiet & 0x100) {
+	{
+		SProc = &RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].FlipFlop[
+				!RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Toggle
+			];
+	}
+	if (Quiet & 0x100) {
 		printf("\t%s || %s\n",
 			BITVAL(PendingSync, NTFY0) ? "NTFY":"....",
 			BITVAL(PendingSync, COMP0) ? "COMP":"....");
-	    }
-	  }
-		/* All aggregations done: Notify Clients.		*/
-		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_SYNC);
-		BITWISESET(LOCKLESS, Shm->Proc.Sync, PendingSync);
-		BITWISECLR(LOCKLESS, PendingSync);
 	}
-	/* Reset the Room mask						*/
+      }
+	/*	All aggregations done: Notify Clients.		*/
+	BITWISESET(LOCKLESS, PendingSync, BIT_MASK_SYNC);
+	BITWISESET(LOCKLESS, RW(Shm)->Proc.Sync, PendingSync);
+	BITWISECLR(LOCKLESS, PendingSync);
+    }
+	/*	Reset the Room mask					*/
 	ROOM_RESET(room);
 
 	UBENCH_RDCOUNTER(2);
 
 	UBENCH_COMPUTE();
 	Print_uBenchmark((Quiet & 0x100));
-    }
-    #undef CONDITION_RDPMC
-    #undef CONDITION_RDTSCP
-    #undef ROOM_RESET
-    #undef ROOM_READY
-    #undef ROOM_CLEAR
-    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	if (Arg[cpu].TID) {
-		pthread_join(Arg[cpu].TID, NULL);
+   }
+	#undef CONDITION_RDPMC
+	#undef CONDITION_RDTSCP
+	#undef ROOM_RESET
+	#undef ROOM_READY
+	#undef ROOM_CLEAR
+	for (cpu = 0; cpu < RO(Shm)->Proc.CPU.Count; cpu++) {
+		if (Arg[cpu].TID) {
+			pthread_join(Arg[cpu].TID, NULL);
+		}
 	}
-    }
 	free(Arg);
   } else {
 	REASON_SET(reason, RC_MEM_ERR, (errno == 0 ? ENOMEM : errno));
@@ -7095,31 +7195,31 @@ REASON_CODE Core_Manager(REF *Ref)
 
 REASON_CODE Child_Manager(REF *Ref)
 {
-	SHM_STRUCT *Shm = Ref->Shm;
+	RO(SHM_STRUCT) *RO(Shm) = Ref->RO(Shm);
 	SERVICE_PROC localService = {.Proc = -1};
 	REASON_INIT(reason);
 	unsigned int cpu = 0;
 
 	pthread_t tid = pthread_self();
 
-	if (ServerFollowService(&localService, &Shm->Proc.Service, tid) == 0) {
-		pthread_setname_np(tid, "corefreqd-cmgr");
-	}
-	ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
+  if (ServerFollowService(&localService, &RO(Shm)->Proc.Service, tid) == 0) {
+	pthread_setname_np(tid, "corefreqd-cmgr");
+  }
+	ARG *Arg = calloc(RO(Shm)->Proc.CPU.Count, sizeof(ARG));
   if (Arg != NULL)
   {
-    do {
-	for (cpu=0; !BITVAL(Shutdown, SYNC)&&(cpu < Shm->Proc.CPU.Count);cpu++)
-	{
-	    if (BITVAL(Shm->Cpu[cpu].OffLine, OS) == 1) {
+   do {
+    for(cpu=0; !BITVAL(Shutdown, SYNC) && (cpu < RO(Shm)->Proc.CPU.Count);cpu++)
+    {
+	if (BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS) == 1) {
 		if (Arg[cpu].TID) {
-			/* Remove this child thread.			*/
+			/*	Remove this child thread.		*/
 			pthread_join(Arg[cpu].TID, NULL);
 			Arg[cpu].TID = 0;
 		}
-	    } else {
+	} else {
 		if (!Arg[cpu].TID) {
-			/* Add this child thread.			*/
+			/*	Add this child thread.			*/
 			Arg[cpu].Ref  = Ref;
 			Arg[cpu].Bind = cpu;
 			pthread_create( &Arg[cpu].TID,
@@ -7127,15 +7227,15 @@ REASON_CODE Child_Manager(REF *Ref)
 					Child_Thread,
 					&Arg[cpu]);
 		}
-	    }
 	}
-	ServerFollowService(&localService, &Shm->Proc.Service, tid);
-
-	nanosleep(&Shm->Sleep.childWaiting, NULL);
     }
-    while (!BITVAL(Shutdown, SYNC)) ;
+	ServerFollowService(&localService, &RO(Shm)->Proc.Service, tid);
 
-	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
+	nanosleep(&RO(Shm)->Sleep.childWaiting, NULL);
+   }
+   while (!BITVAL(Shutdown, SYNC)) ;
+
+	for (cpu = 0; cpu < RO(Shm)->Proc.CPU.Count; cpu++) {
 		if (Arg[cpu].TID) {
 			pthread_join(Arg[cpu].TID, NULL);
 		}
@@ -7153,7 +7253,8 @@ REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
 	unsigned int	cpu = 0;
 	RO(CORE)	**RO(Core);
 	RW(CORE)	**RW(Core);
-	SHM_STRUCT	*Shm = NULL;
+	RO(SHM_STRUCT)	*RO(Shm) = NULL;
+	RW(SHM_STRUCT)	*RW(Shm) = NULL;
 	struct {
 		const size_t	RO(Core),
 				RW(Core);
@@ -7177,14 +7278,14 @@ REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
 	if ((RO(Core, AT(cpu)) = mmap(NULL, Size.RO(Core),
 				PROT_READ,
 				MAP_SHARED,
-				fd->Drv, vm_ro_pgoff)) == MAP_FAILED)
+				fd->drv, vm_ro_pgoff)) == MAP_FAILED)
 	{
 		REASON_SET(reason, RC_SHM_MMAP);
 	}
 	if ((RW(Core, AT(cpu)) = mmap(NULL, Size.RW(Core),
 				PROT_READ|PROT_WRITE,
 				MAP_SHARED,
-				fd->Drv, vm_rw_pgoff)) == MAP_FAILED)
+				fd->drv, vm_rw_pgoff)) == MAP_FAILED)
 	{
 		REASON_SET(reason, RC_SHM_MMAP);
 	}
@@ -7208,41 +7309,54 @@ REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
     }
     if (reason.rc == RC_SUCCESS)
     {	/* Initialize shared memory.					*/
-	const size_t ShmCpuSize = sizeof(CPU_STRUCT) * RO(Proc)->CPU.Count,
-			ShmSize = ROUND_TO_PAGES((sizeof(SHM_STRUCT)
-				+ ShmCpuSize));
+	const size_t shmCpuSize = sizeof(CPU_STRUCT) * RO(Proc)->CPU.Count,
+			roSize = ROUND_TO_PAGES((sizeof(RO(SHM_STRUCT))
+				+ shmCpuSize)),
+			rwSize = ROUND_TO_PAGES(sizeof(RW(SHM_STRUCT)));
 
-      if ((fd->Svr = shm_open(SHM_FILENAME, O_CREAT|O_TRUNC|O_RDWR,
+      if ( ((fd->ro = shm_open(RO(SHM_FILENAME), O_CREAT|O_TRUNC|O_RDWR,
 					 S_IRUSR|S_IWUSR
 					|S_IRGRP|S_IWGRP
 					|S_IROTH|S_IWOTH)) != -1)
+	&& ((fd->rw = shm_open(RW(SHM_FILENAME), O_CREAT|O_TRUNC|O_RDWR,
+					 S_IRUSR|S_IWUSR
+					|S_IRGRP|S_IWGRP
+					|S_IROTH|S_IWOTH)) != -1) )
       {
 	pid_t CPID = -1;
 
-	if (ftruncate(fd->Svr, (off_t) ShmSize) != -1)
+	if ( (ftruncate(fd->ro, (off_t) roSize) != -1)
+	  && (ftruncate(fd->rw, (off_t) rwSize) != -1) )
 	{
-	    if ((Shm = mmap(NULL, ShmSize,
+		fchmod(fd->ro, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+		fchmod(fd->rw, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+
+	    if ( ( ( RO(Shm) = mmap(NULL, roSize,
 				PROT_READ|PROT_WRITE, MAP_SHARED,
-				fd->Svr, 0)) != MAP_FAILED)
+				fd->ro, 0) ) != MAP_FAILED )
+	      && ( ( RW(Shm) = mmap(NULL, rwSize,
+				PROT_READ|PROT_WRITE, MAP_SHARED,
+				fd->rw, 0) ) != MAP_FAILED ) )
 	    {
 		__typeof__ (errno) fork_err = 0;
-		/* Clear SHM						*/
-		memset(Shm, 0, ShmSize);
-		/* Store version footprint into SHM			*/
-		SET_FOOTPRINT(Shm->FootPrint,	MAX_FREQ_HZ,
+		/*	Clear SHM					*/
+		memset(RO(Shm), 0, roSize);
+		memset(RW(Shm), 0, rwSize);
+		/*	Store version footprint into SHM		*/
+		SET_FOOTPRINT(RO(Shm)->FootPrint,MAX_FREQ_HZ,
 						CORE_COUNT,
 						TASK_ORDER,
 						COREFREQ_MAJOR,
 						COREFREQ_MINOR,
 						COREFREQ_REV	);
-		/* Reference time the Server is starting at.		*/
-		time(&Shm->StartedAt);
-		/* Store the daemon gate name.				*/
-		StrCopy(Shm->ShmName, SHM_FILENAME, TASK_COMM_LEN);
-		/* Initialize the busy wait times.			*/
-		Shm->Sleep.ringWaiting  = TIMESPEC(SIG_RING_MS);
-		Shm->Sleep.childWaiting = TIMESPEC(CHILD_PS_MS);
-		Shm->Sleep.sliceWaiting = TIMESPEC(CHILD_TH_MS);
+		/*	Reference time the Server is starting at.	*/
+		time(&RO(Shm)->StartedAt);
+		/*	Store the daemon gate name.			*/
+		StrCopy(RO(Shm)->ShmName, RO(SHM_FILENAME), TASK_COMM_LEN);
+		/*	Initialize the busy wait times.			*/
+		RO(Shm)->Sleep.ringWaiting  = TIMESPEC(SIG_RING_MS);
+		RO(Shm)->Sleep.childWaiting = TIMESPEC(CHILD_PS_MS);
+		RO(Shm)->Sleep.sliceWaiting = TIMESPEC(CHILD_TH_MS);
 
 		REF Ref = {
 			.CPID		= -1,
@@ -7251,7 +7365,8 @@ REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
 			.Slice.Func	= NULL,
 			.Slice.arg	= 0,
 			.fd		= fd,
-			.Shm		= Shm,
+			.RO(Shm)	= RO(Shm),
+			.RW(Shm)	= RW(Shm),
 			.RO(Proc)	= RO(Proc),
 			.RW(Proc)	= RW(Proc),
 			.RO(Core)	= RO(Core),
@@ -7260,12 +7375,12 @@ REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
 		};
 		sigemptyset(&Ref.Signal);
 
-		Package_Update(Shm, RO(Proc), RW(Proc));
+		Package_Update(RO(Shm), RO(Proc), RW(Proc));
 
-		memcpy(&Shm->SMB, &RO(Proc)->SMB, sizeof(SMBIOS_ST));
+		memcpy(&RO(Shm)->SMB, &RO(Proc)->SMB, sizeof(SMBIOS_ST));
 
-		/*		Clear notification.			*/
-		BITWISECLR(LOCKLESS, Shm->Proc.Sync);
+		/*	Clear notification.				*/
+		BITWISECLR(LOCKLESS, RW(Shm)->Proc.Sync);
 
 		SysGate_Toggle(&Ref, SysGateStartUp);
 
@@ -7279,16 +7394,16 @@ REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
 		printf( "\n"						\
 			"  Processor [%s]\n"				\
 			"  Architecture [%s] %u/%u CPU Online.\n",
-			Shm->Proc.Brand,
-			Shm->Proc.Architecture,
-			Shm->Proc.CPU.OnLine,
-			Shm->Proc.CPU.Count );
+			RO(Shm)->Proc.Brand,
+			RO(Shm)->Proc.Architecture,
+			RO(Shm)->Proc.CPU.OnLine,
+			RO(Shm)->Proc.CPU.Count );
 	      }
 	      if (Quiet & 0x100) {
 		printf( "  SleepInterval(%u), SysGate(%u), %ld tasks\n\n",
-			Shm->Sleep.Interval,
-			!BITVAL(Shm->SysGate.Operation, 0) ?
-				0:Shm->Sleep.Interval * Shm->SysGate.tickReset,
+			RO(Shm)->Sleep.Interval,
+			!BITVAL(RO(Shm)->SysGate.Operation, 0) ?
+			0:RO(Shm)->Sleep.Interval * RO(Shm)->SysGate.tickReset,
 			TASK_LIMIT );
 		}
 	      if (Quiet) {
@@ -7320,13 +7435,13 @@ REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
 					REASON_SET(reason, RC_SYS_CALL);
 				}
 			}
-			if (Shm->App.Cli) {
-				if (kill(Shm->App.Cli, SIGTERM) == -1) {
+			if (RW(Shm)->App.Cli) {
+				if (kill(RW(Shm)->App.Cli, SIGTERM) == -1) {
 					REASON_SET(reason, RC_EXEC_ERR);
 				}
 			}
-			if (Shm->App.GUI) {
-				if (kill(Shm->App.GUI, SIGTERM) == -1) {
+			if (RW(Shm)->App.GUI) {
+				if (kill(RW(Shm)->App.GUI, SIGTERM) == -1) {
 					REASON_SET(reason, RC_EXEC_ERR);
 				}
 			}
@@ -7343,7 +7458,10 @@ REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
 		}
 		Emergency_Command(&Ref, 0);
 
-		if (munmap(Shm, ShmSize) == -1) {
+		if (munmap(RO(Shm), roSize) == -1) {
+			REASON_SET(reason, RC_SHM_MMAP);
+		}
+		if (munmap(RW(Shm), rwSize) == -1) {
 			REASON_SET(reason, RC_SHM_MMAP);
 		}
 	    } else {
@@ -7352,11 +7470,17 @@ REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
 	} else {
 		REASON_SET(reason, RC_SHM_FILE);
 	}
-	if (close(fd->Svr) == -1) {
+	if (close(fd->ro) == -1) {
+		REASON_SET(reason, RC_SHM_FILE);
+	}
+	if (close(fd->rw) == -1) {
 		REASON_SET(reason, RC_SHM_FILE);
 	}
 	if (CPID != 0) {
-	    if (shm_unlink(SHM_FILENAME) == -1) {
+	    if (shm_unlink(RO(SHM_FILENAME)) == -1) {
+		REASON_SET(reason, RC_SHM_FILE);
+	    }
+	    if (shm_unlink(RW(SHM_FILENAME)) == -1) {
 		REASON_SET(reason, RC_SHM_FILE);
 	    }
 	}
@@ -7460,7 +7584,7 @@ REASON_CODE Help(REASON_CODE reason, ...)
 
 int main(int argc, char *argv[])
 {
-	FD   fd = {0, 0};
+	FD fd = {0, 0, 0};
 	RO(PROC) *RO(Proc) = NULL;	/* Kernel module anchor points. */
 	RW(PROC) *RW(Proc) = NULL;
 	uid_t uid = 0, gid = 0;
@@ -7563,7 +7687,7 @@ int main(int argc, char *argv[])
     {
 	if (geteuid() == 0)
 	{
-	    if ((fd.Drv = open(DRV_FILENAME, O_RDWR|O_SYNC)) != -1)
+	    if ((fd.drv = open(DRV_FILENAME, O_RDWR|O_SYNC)) != -1)
 	    {
 		const size_t packageSize[] = {
 			ROUND_TO_PAGES(sizeof(RO(PROC))),
@@ -7575,11 +7699,11 @@ int main(int argc, char *argv[])
 		};
 		if ((RO(Proc) = mmap(NULL, packageSize[0],
 				PROT_READ, MAP_SHARED,
-				fd.Drv, vm_pgoff[0])) != MAP_FAILED)
+				fd.drv, vm_pgoff[0])) != MAP_FAILED)
 		{
 		  if ((RW(Proc) = mmap(NULL, packageSize[1],
 				PROT_READ|PROT_WRITE, MAP_SHARED,
-				fd.Drv, vm_pgoff[1])) != MAP_FAILED)
+				fd.drv, vm_pgoff[1])) != MAP_FAILED)
 		  {
 		    if (CHK_FOOTPRINT(RO(Proc)->FootPrint,MAX_FREQ_HZ,
 							CORE_COUNT,
@@ -7588,8 +7712,8 @@ int main(int argc, char *argv[])
 							COREFREQ_MINOR,
 							COREFREQ_REV))
 		    {
-			reason = Shm_Manager(&fd, RO(Proc), RW(Proc),
-						uid, gid, cmask);
+			reason = Shm_Manager(	&fd, RO(Proc), RW(Proc),
+						uid, gid, cmask );
 
 			switch (reason.rc) {
 			case RC_SUCCESS:
@@ -7602,7 +7726,7 @@ int main(int argc, char *argv[])
 				break;
 			case RC_SHM_FILE:
 			case RC_SHM_MMAP:
-				reason = Help(reason, SHM_FILENAME);
+				reason = Help(reason, RO(SHM_FILENAME));
 				break;
 			case RC_MEM_ERR:
 			case RC_EXEC_ERR:
@@ -7638,7 +7762,7 @@ int main(int argc, char *argv[])
 			REASON_SET(reason, RC_SHM_MMAP);
 			reason = Help(reason, DRV_FILENAME);
 		}
-		if (close(fd.Drv) == -1) {
+		if (close(fd.drv) == -1) {
 			REASON_SET(reason, RC_SHM_FILE);
 			reason = Help(reason, DRV_FILENAME);
 		}

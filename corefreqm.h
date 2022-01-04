@@ -4,17 +4,23 @@
  * Licenses: GPL2
  */
 
-typedef void (*SLICE_FUNC)(SHM_STRUCT*, unsigned int, unsigned long);
+typedef void (*SLICE_FUNC) (	RO(SHM_STRUCT)*, RW(SHM_STRUCT)*,
+				unsigned int, unsigned long );
 
-void Slice_NOP(SHM_STRUCT*, unsigned int, unsigned long);
+void Slice_NOP( RO(SHM_STRUCT)*, RW(SHM_STRUCT)*,
+		unsigned int, unsigned long );
 
-void Slice_Atomic(SHM_STRUCT*, unsigned int, unsigned long);
+void Slice_Atomic(RO(SHM_STRUCT)*, RW(SHM_STRUCT)*,
+		unsigned int, unsigned long);
 
-void Slice_CRC32(SHM_STRUCT*, unsigned int, unsigned long);
+void Slice_CRC32(RO(SHM_STRUCT)*, RW(SHM_STRUCT)*,
+		unsigned int, unsigned long);
 
-void Slice_Conic(SHM_STRUCT*, unsigned int, unsigned long);
+void Slice_Conic(RO(SHM_STRUCT)*, RW(SHM_STRUCT)*,
+		unsigned int, unsigned long);
 
-void Slice_Turbo(SHM_STRUCT*, unsigned int, unsigned long);
+void Slice_Turbo(RO(SHM_STRUCT)*, RW(SHM_STRUCT)*,
+		unsigned int, unsigned long);
 
 typedef struct {
 		RING_CTRL	ctrl;
@@ -24,27 +30,35 @@ typedef struct {
 
 extern RING_SLICE order_list[];
 
-typedef void (*CALL_FUNC)(SHM_STRUCT*, unsigned int, SLICE_FUNC, unsigned long);
-
-void CallWith_RDTSCP_RDPMC(	SHM_STRUCT*,
+typedef void (*CALL_FUNC)(	RO(SHM_STRUCT)*,
+				RW(SHM_STRUCT)*,
 				unsigned int,
 				SLICE_FUNC,
-				unsigned long);
+				unsigned long );
 
-void CallWith_RDTSC_RDPMC(	SHM_STRUCT*,
+void CallWith_RDTSCP_RDPMC(	RO(SHM_STRUCT)*,
+				RW(SHM_STRUCT)*,
 				unsigned int,
 				SLICE_FUNC,
-				unsigned long);
+				unsigned long );
 
-void CallWith_RDTSCP_No_RDPMC(	SHM_STRUCT*,
+void CallWith_RDTSC_RDPMC(	RO(SHM_STRUCT)*,
+				RW(SHM_STRUCT)*,
 				unsigned int,
 				SLICE_FUNC,
-				unsigned long);
+				unsigned long );
 
-void CallWith_RDTSC_No_RDPMC(	SHM_STRUCT*,
+void CallWith_RDTSCP_No_RDPMC(	RO(SHM_STRUCT)*,
+				RW(SHM_STRUCT)*,
 				unsigned int,
 				SLICE_FUNC,
-				unsigned long);
+				unsigned long );
+
+void CallWith_RDTSC_No_RDPMC(	RO(SHM_STRUCT)*,
+				RW(SHM_STRUCT)*,
+				unsigned int,
+				SLICE_FUNC,
+				unsigned long );
 
 #define RESET_Slice(Slice)						\
 ({									\

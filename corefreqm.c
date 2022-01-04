@@ -34,85 +34,99 @@
 		pSlice->Delta.INST -= overhead;				\
 })
 
-void CallWith_RDTSCP_RDPMC(SHM_STRUCT *Shm, unsigned int cpu,
-				SLICE_FUNC SliceFunc, unsigned long arg)
+void CallWith_RDTSCP_RDPMC(	RO(SHM_STRUCT) *RO(Shm),
+				RW(SHM_STRUCT) *RW(Shm),
+				unsigned int cpu,
+				SLICE_FUNC SliceFunc,
+				unsigned long arg )
 {
-	struct SLICE_STRUCT *pSlice = &Shm->Cpu[cpu].Slice;
+	struct SLICE_STRUCT *pSlice = &RO(Shm)->Cpu[cpu].Slice;
 
 	RDTSCP_PMCx1(pSlice->Counter[0].TSC,0x40000000,pSlice->Counter[0].INST);
 
 	RDTSCP_PMCx1(pSlice->Counter[1].TSC,0x40000000,pSlice->Counter[1].INST);
 
-	SliceFunc(Shm, cpu, arg);
+	SliceFunc(RO(Shm), RW(Shm), cpu, arg);
 
 	RDTSCP_PMCx1(pSlice->Counter[2].TSC,0x40000000,pSlice->Counter[2].INST);
 
-	if (BITVAL(Shm->Proc.Sync, BURN)) {
+	if (BITVAL(RW(Shm)->Proc.Sync, BURN)) {
 		DeltaTSC(pSlice);
 		DeltaINST(pSlice);
 	}
 }
 
-void CallWith_RDTSC_RDPMC(SHM_STRUCT *Shm, unsigned int cpu,
-				SLICE_FUNC SliceFunc, unsigned long arg)
+void CallWith_RDTSC_RDPMC(	RO(SHM_STRUCT) *RO(Shm),
+				RW(SHM_STRUCT) *RW(Shm),
+				unsigned int cpu,
+				SLICE_FUNC SliceFunc,
+				unsigned long arg )
 {
-	struct SLICE_STRUCT *pSlice = &Shm->Cpu[cpu].Slice;
+	struct SLICE_STRUCT *pSlice = &RO(Shm)->Cpu[cpu].Slice;
 
 	RDTSC_PMCx1(pSlice->Counter[0].TSC,0x40000000,pSlice->Counter[0].INST);
 
 	RDTSC_PMCx1(pSlice->Counter[1].TSC,0x40000000,pSlice->Counter[1].INST);
 
-	SliceFunc(Shm, cpu, arg);
+	SliceFunc(RO(Shm), RW(Shm), cpu, arg);
 
 	RDTSC_PMCx1(pSlice->Counter[2].TSC,0x40000000,pSlice->Counter[2].INST);
 
-	if (BITVAL(Shm->Proc.Sync, BURN)) {
+	if (BITVAL(RW(Shm)->Proc.Sync, BURN)) {
 		DeltaTSC(pSlice);
 		DeltaINST(pSlice);
 	}
 }
 
-void CallWith_RDTSCP_No_RDPMC(SHM_STRUCT *Shm, unsigned int cpu,
-				SLICE_FUNC SliceFunc, unsigned long arg)
+void CallWith_RDTSCP_No_RDPMC(	RO(SHM_STRUCT) *RO(Shm),
+				RW(SHM_STRUCT) *RW(Shm),
+				unsigned int cpu,
+				SLICE_FUNC SliceFunc,
+				unsigned long arg )
 {
-	struct SLICE_STRUCT *pSlice = &Shm->Cpu[cpu].Slice;
+	struct SLICE_STRUCT *pSlice = &RO(Shm)->Cpu[cpu].Slice;
 
 	RDTSCP64(pSlice->Counter[0].TSC);
 
 	RDTSCP64(pSlice->Counter[1].TSC);
 
-	SliceFunc(Shm, cpu, arg);
+	SliceFunc(RO(Shm), RW(Shm), cpu, arg);
 
 	RDTSCP64(pSlice->Counter[2].TSC);
 
-	if (BITVAL(Shm->Proc.Sync, BURN)) {
+	if (BITVAL(RW(Shm)->Proc.Sync, BURN)) {
 		DeltaTSC(pSlice);
 		pSlice->Delta.INST = 0;
 	}
 }
 
-void CallWith_RDTSC_No_RDPMC(SHM_STRUCT *Shm, unsigned int cpu,
-				SLICE_FUNC SliceFunc, unsigned long arg)
+void CallWith_RDTSC_No_RDPMC(	RO(SHM_STRUCT) *RO(Shm),
+				RW(SHM_STRUCT) *RW(Shm),
+				unsigned int cpu,
+				SLICE_FUNC SliceFunc,
+				unsigned long arg )
 {
-	struct SLICE_STRUCT *pSlice = &Shm->Cpu[cpu].Slice;
+	struct SLICE_STRUCT *pSlice = &RO(Shm)->Cpu[cpu].Slice;
 
 	RDTSC64(pSlice->Counter[0].TSC);
 
 	RDTSC64(pSlice->Counter[1].TSC);
 
-	SliceFunc(Shm, cpu, arg);
+	SliceFunc(RO(Shm), RW(Shm), cpu, arg);
 
 	RDTSC64(pSlice->Counter[2].TSC);
 
-	if (BITVAL(Shm->Proc.Sync, BURN)) {
+	if (BITVAL(RW(Shm)->Proc.Sync, BURN)) {
 		DeltaTSC(pSlice);
 		pSlice->Delta.INST = 0;
 	}
 }
 
-void Slice_NOP(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
+void Slice_NOP( RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
+		unsigned int cpu, unsigned long arg )
 {
-	UNUSED(Shm);
+	UNUSED(RO(Shm));
+	UNUSED(RW(Shm));
 	UNUSED(cpu);
 	UNUSED(arg);
 
@@ -125,7 +139,8 @@ void Slice_NOP(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 	);
 }
 
-void Slice_Atomic(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
+void Slice_Atomic(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
+		unsigned int cpu, unsigned long arg)
 {
 	__asm__ volatile
 	(
@@ -143,11 +158,11 @@ void Slice_Atomic(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 		"2:"			"\n\t"
 		"loop	1b"		"\n\t"
 		"movq	%%r11, %[o_err]"
-		: [o_err] "=m" (Shm->Cpu[cpu].Slice.Error)
+		: [o_err] "=m" (RO(Shm)->Cpu[cpu].Slice.Error)
 		: [_loop] "m" (arg),
 		  [_atom] "i" (SLICE_ATOM),
 		  [_xchg] "i" (SLICE_XCHG),
-		  [i_err] "m" (Shm->Cpu[cpu].Slice.Error)
+		  [i_err] "m" (RO(Shm)->Cpu[cpu].Slice.Error)
 		: "%rcx", "%r11", "%r12", "%r13", "%r14", "%r15",
 		  "cc", "memory"
 	);
@@ -189,14 +204,15 @@ void Slice_Atomic(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 	rem;								\
 })
 
-void Slice_CRC32(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
+void Slice_CRC32(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
+		unsigned int cpu, unsigned long arg)
 {
 	unsigned char *data = (unsigned char *) CRC32_SRC;
 	unsigned int len = 16;
 	UNUSED(arg);
 
 	if (CRC32vASM(data, len) != CRC32_EXP)
-		Shm->Cpu[cpu].Slice.Error++ ;
+		RO(Shm)->Cpu[cpu].Slice.Error++ ;
 }
 
 /*
@@ -210,7 +226,8 @@ void Slice_CRC32(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 	    5 - le cylindre hyperbolique
 	    6 - deux plans parallèles
 */
-void Slice_Conic(SHM_STRUCT *Shm, unsigned int cpu, unsigned long v)
+void Slice_Conic(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
+		unsigned int cpu, unsigned long v)
 {
 	const double interval = (4.0 * 1024.0) - (double) cpu;
 	const struct {
@@ -225,7 +242,7 @@ void Slice_Conic(SHM_STRUCT *Shm, unsigned int cpu, unsigned long v)
 	};
 	double X, Y, Z, Q, k;
 
-	const double step = (double) Shm->Proc.CPU.Count;
+	const double step = (double) RO(Shm)->Proc.CPU.Count;
 
 	for (Y = -interval; Y <= interval; Y += step)
 	    for (X = -interval; X <= interval; X += step) {
@@ -235,15 +252,16 @@ void Slice_Conic(SHM_STRUCT *Shm, unsigned int cpu, unsigned long v)
 		k = p[v].a*pow(X,2.0) + p[v].b*pow(Y,2.0) + p[v].c*pow(Z,2.0);
 
 		if (fabs(k - p[v].k) > CONIC_ERROR)
-			Shm->Cpu[cpu].Slice.Error++ ;
+			RO(Shm)->Cpu[cpu].Slice.Error++ ;
 	    }
 }
 
-void Slice_Turbo(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
+void Slice_Turbo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
+		unsigned int cpu, unsigned long arg)
 {
 	UNUSED(arg);
 
-	Slice_Atomic(Shm, cpu, TURBO_LOOP);
+	Slice_Atomic(RO(Shm), RW(Shm), cpu, TURBO_LOOP);
 }
 
 RING_SLICE order_list[] = {

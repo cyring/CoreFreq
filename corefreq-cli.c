@@ -31,7 +31,8 @@
 #include "corefreq-cli-json.h"
 #include "corefreq-cli-extra.h"
 
-SHM_STRUCT *Shm = NULL;
+RO(SHM_STRUCT)	*Shm = NULL;
+RW(SHM_STRUCT)	*RW(Shm) = NULL;
 
 static Bit64 Shutdown __attribute__ ((aligned (8))) = 0x0;
 
@@ -4692,11 +4693,11 @@ void Package(unsigned int iter)
 
     while (!BITVAL(Shutdown, SYNC) && (iter-- > 0) && (sdx > 0))
     {
-	while (!BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0)
+	while (!BITCLR(LOCKLESS, RW(Shm)->Proc.Sync, SYNC0)
 	    && !BITVAL(Shutdown, SYNC)) {
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
 	}
-	if (BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY0)) {
+	if (BITCLR(LOCKLESS, RW(Shm)->Proc.Sync, NTFY0)) {
 		ClientFollowService(&localService, &Shm->Proc.Service, 0);
 	}
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
@@ -4858,11 +4859,11 @@ void Counters(unsigned int iter)
 
     while (!BITVAL(Shutdown, SYNC) && (iter-- > 0) && (sdx > 0))
     {
-	while (!BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0)
+	while (!BITCLR(LOCKLESS, RW(Shm)->Proc.Sync, SYNC0)
 	    && !BITVAL(Shutdown, SYNC)) {
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
 	}
-	if (BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY0)) {
+	if (BITCLR(LOCKLESS, RW(Shm)->Proc.Sync, NTFY0)) {
 		ClientFollowService(&localService, &Shm->Proc.Service, 0);
 	}
 	idx = sdx;
@@ -4914,11 +4915,11 @@ void Sensors(unsigned int iter)
 
     while (!BITVAL(Shutdown, SYNC) && (iter-- > 0) && (sdx > 0) && (ldx > 0))
     {
-	while (!BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0)
+	while (!BITCLR(LOCKLESS, RW(Shm)->Proc.Sync, SYNC0)
 	    && !BITVAL(Shutdown, SYNC)) {
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
 	}
-	if (BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY0)) {
+	if (BITCLR(LOCKLESS, RW(Shm)->Proc.Sync, NTFY0)) {
 		ClientFollowService(&localService, &Shm->Proc.Service, 0);
 	}
 	idx = sdx;
@@ -4992,11 +4993,11 @@ void Voltage(unsigned int iter)
 
     while (!BITVAL(Shutdown, SYNC) && (iter-- > 0) && (sdx > 0))
     {
-	while (!BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0)
+	while (!BITCLR(LOCKLESS, RW(Shm)->Proc.Sync, SYNC0)
 	    && !BITVAL(Shutdown, SYNC)) {
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
 	}
-	if (BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY0)) {
+	if (BITCLR(LOCKLESS, RW(Shm)->Proc.Sync, NTFY0)) {
 		ClientFollowService(&localService, &Shm->Proc.Service, 0);
 	}
 	idx = sdx;
@@ -5051,11 +5052,11 @@ void Power(unsigned int iter)
 
     while (!BITVAL(Shutdown, SYNC) && (iter-- > 0) && (sdx > 0) && (ldx > 0))
     {
-	while (!BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0)
+	while (!BITCLR(LOCKLESS, RW(Shm)->Proc.Sync, SYNC0)
 	    && !BITVAL(Shutdown, SYNC)) {
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
 	}
-	if (BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY0)) {
+	if (BITCLR(LOCKLESS, RW(Shm)->Proc.Sync, NTFY0)) {
 		ClientFollowService(&localService, &Shm->Proc.Service, 0);
 	}
 	idx = sdx;
@@ -5138,11 +5139,11 @@ void Instructions(unsigned int iter)
 
     while (!BITVAL(Shutdown, SYNC) && (iter-- > 0) && (sdx > 0))
     {
-	while (!BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0)
+	while (!BITCLR(LOCKLESS, RW(Shm)->Proc.Sync, SYNC0)
 	    && !BITVAL(Shutdown, SYNC)) {
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
 	}
-	if (BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY0)) {
+	if (BITCLR(LOCKLESS, RW(Shm)->Proc.Sync, NTFY0)) {
 		ClientFollowService(&localService, &Shm->Proc.Service, 0);
 	}
 	idx = sdx;
@@ -7522,7 +7523,7 @@ Window *CreateSortByField(unsigned long long id)
 		StoreTCell(wSortBy,SORTBY_COMM, RSC(TASKS_SORTBY_COMM).CODE(),
 						MAKE_PRINT_DROP);
 
-		wSortBy->matrix.select.row = Shm->SysGate.sortByField;
+		wSortBy->matrix.select.row = RW(Shm)->SysGate.sortByField;
 
 		StoreWindow(wSortBy,	.color[0].select, MAKE_PRINT_DROP);
 		StoreWindow(wSortBy,	.color[1].select,
@@ -9397,7 +9398,7 @@ IssueList *FindIssues(CUINT *wth, CUINT *hth)
 		RSC(UI).ATTR()[UI_WIN_EXIT_ISSUE_STRESS],
 		BOXKEY_TOOLS_MACHINE
 	    },
-		BITVAL(Shm->Proc.Sync, BURN)
+		BITVAL(RW(Shm)->Proc.Sync, BURN)
 	  },
 	  {
 	    {
@@ -9643,14 +9644,14 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case SCANKEY_AST:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_SYSUPDT);
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(RW(Shm)->Ring[0], COREFREQ_IOCTL_SYSUPDT);
 	}
     break;
 
     case SCANKEY_OPEN_BRACE:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				COREFREQ_TOGGLE_ON,
 				MACHINE_CONTROLLER );
@@ -9658,8 +9659,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case SCANKEY_CLOSE_BRACE:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				COREFREQ_TOGGLE_OFF,
 				MACHINE_CONTROLLER );
@@ -9778,8 +9779,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_INTERVAL_100:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				100,
 				MACHINE_INTERVAL );
@@ -9787,8 +9788,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_INTERVAL_150:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				150,
 				MACHINE_INTERVAL );
@@ -9796,8 +9797,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_INTERVAL_250:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				250,
 				MACHINE_INTERVAL );
@@ -9805,8 +9806,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_INTERVAL_500:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				500,
 				MACHINE_INTERVAL );
@@ -9814,8 +9815,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_INTERVAL_750:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				750,
 				MACHINE_INTERVAL );
@@ -9823,8 +9824,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_INTERVAL_1000:
-	if (!RING_FULL( Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				1000,
 				MACHINE_INTERVAL );
@@ -9832,8 +9833,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_INTERVAL_1500:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				1500,
 				MACHINE_INTERVAL );
@@ -9841,8 +9842,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_INTERVAL_2000:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				2000,
 				MACHINE_INTERVAL );
@@ -9850,8 +9851,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_INTERVAL_2500:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				2500,
 				MACHINE_INTERVAL );
@@ -9859,8 +9860,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_INTERVAL_3000:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				3000,
 				MACHINE_INTERVAL );
@@ -9895,8 +9896,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_AUTOCLOCK_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				COREFREQ_TOGGLE_OFF,
 				MACHINE_AUTOCLOCK );
@@ -9904,8 +9905,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_AUTOCLOCK_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				COREFREQ_TOGGLE_ON,
 				MACHINE_AUTOCLOCK );
@@ -9958,8 +9959,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_EXPERIMENTAL_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				COREFREQ_TOGGLE_OFF,
 				MACHINE_EXPERIMENTAL );
@@ -9967,8 +9968,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_EXPERIMENTAL_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				COREFREQ_TOGGLE_ON,
 				MACHINE_EXPERIMENTAL );
@@ -10007,8 +10008,8 @@ int Shortcut(SCANKEY *scan)
     case OPS_ROUTE_MWAIT:
     {
 	enum IDLE_ROUTE idleRoute = (scan->key & BOXKEY_ROUTE_MASK) >> 4;
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				idleRoute,
 				MACHINE_IDLE_ROUTE );
@@ -10092,8 +10093,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_INTERRUPTS_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				COREFREQ_TOGGLE_OFF,
 				MACHINE_INTERRUPTS );
@@ -10101,8 +10102,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_INTERRUPTS_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				COREFREQ_TOGGLE_ON,
 				MACHINE_INTERRUPTS );
@@ -10110,8 +10111,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_CPU_IDLE_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				COREFREQ_TOGGLE_OFF,
 				MACHINE_CPU_IDLE );
@@ -10119,8 +10120,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_CPU_IDLE_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				COREFREQ_TOGGLE_ON,
 				MACHINE_CPU_IDLE );
@@ -10128,8 +10129,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_CPU_FREQ_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				COREFREQ_TOGGLE_OFF,
 				MACHINE_CPU_FREQ );
@@ -10137,8 +10138,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_CPU_FREQ_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				COREFREQ_TOGGLE_ON,
 				MACHINE_CPU_FREQ );
@@ -10146,8 +10147,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_GOVERNOR_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				COREFREQ_TOGGLE_OFF,
 				MACHINE_GOVERNOR );
@@ -10155,8 +10156,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_GOVERNOR_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				COREFREQ_TOGGLE_ON,
 				MACHINE_GOVERNOR );
@@ -10164,8 +10165,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_CLOCK_SOURCE_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				COREFREQ_TOGGLE_OFF,
 				MACHINE_CLOCK_SOURCE );
@@ -10173,8 +10174,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case OPS_CLOCK_SOURCE_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				COREFREQ_TOGGLE_ON,
 				MACHINE_CLOCK_SOURCE );
@@ -10241,8 +10242,8 @@ int Shortcut(SCANKEY *scan)
     case OPS_POWER_SCOPE_SMT:
     case OPS_POWER_SCOPE_CORE:
     case OPS_POWER_SCOPE_PKG:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				(scan->key & 0x000000000000f000) >> 12,
 				MACHINE_FORMULA_SCOPE,
@@ -10333,7 +10334,7 @@ int Shortcut(SCANKEY *scan)
 
     case SCANKEY_SHIFT_n:
 	if ((Draw.View == V_TASKS) && (Draw.Disposal == D_MAINVIEW)) {
-		RING_WRITE(Shm->Ring[1], COREFREQ_TRACK_PROCESS, (pid_t) 0);
+		RING_WRITE(RW(Shm)->Ring[1], COREFREQ_TRACK_PROCESS, (pid_t) 0);
 	}
 	break;
 
@@ -10428,8 +10429,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case SCANKEY_SHIFT_g:
-	if (!RING_FULL(Shm->Ring[1])) {
-		RING_WRITE(Shm->Ring[1],
+	if (!RING_FULL(RW(Shm)->Ring[1])) {
+		RING_WRITE(RW(Shm)->Ring[1],
 			COREFREQ_TOGGLE_SYSGATE,
 			!BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1));
 	}
@@ -10681,7 +10682,7 @@ int Shortcut(SCANKEY *scan)
 
     case SCANKEY_r:
 	if ((Draw.View == V_TASKS) && (Draw.Disposal == D_MAINVIEW)) {
-		Shm->SysGate.reverseOrder = !Shm->SysGate.reverseOrder;
+		RW(Shm)->SysGate.reverseOrder = !RW(Shm)->SysGate.reverseOrder;
 		Draw.Flag.layout = 1;
 	}
     break;
@@ -10711,42 +10712,42 @@ int Shortcut(SCANKEY *scan)
 
     case SORTBY_STATE:
     {
-	Shm->SysGate.sortByField = F_STATE;
+	RW(Shm)->SysGate.sortByField = F_STATE;
 	Draw.Flag.layout = 1;
     }
     break;
 
     case SORTBY_RTIME:
     {
-	Shm->SysGate.sortByField = F_RTIME;
+	RW(Shm)->SysGate.sortByField = F_RTIME;
 	Draw.Flag.layout = 1;
     }
     break;
 
     case SORTBY_UTIME:
     {
-	Shm->SysGate.sortByField = F_UTIME;
+	RW(Shm)->SysGate.sortByField = F_UTIME;
 	Draw.Flag.layout = 1;
     }
     break;
 
     case SORTBY_STIME:
     {
-	Shm->SysGate.sortByField = F_STIME;
+	RW(Shm)->SysGate.sortByField = F_STIME;
 	Draw.Flag.layout = 1;
     }
     break;
 
     case SORTBY_PID:
     {
-	Shm->SysGate.sortByField = F_PID;
+	RW(Shm)->SysGate.sortByField = F_PID;
 	Draw.Flag.layout = 1;
     }
     break;
 
     case SORTBY_COMM:
     {
-	Shm->SysGate.sortByField = F_COMM;
+	RW(Shm)->SysGate.sortByField = F_COMM;
 	Draw.Flag.layout = 1;
     }
     break;
@@ -10782,8 +10783,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_L1_HW_PREFETCH_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_L1_HW_PREFETCH );
@@ -10791,8 +10792,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_L1_HW_PREFETCH_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_L1_HW_PREFETCH );
@@ -10830,8 +10831,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_L1_HW_IP_PREFETCH_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_L1_HW_IP_PREFETCH );
@@ -10839,8 +10840,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_L1_HW_IP_PREFETCH_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_L1_HW_IP_PREFETCH );
@@ -10878,8 +10879,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_L2_HW_PREFETCH_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_L2_HW_PREFETCH );
@@ -10887,8 +10888,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_L2_HW_PREFETCH_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_L2_HW_PREFETCH );
@@ -10926,8 +10927,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_L2_HW_CL_PREFETCH_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_L2_HW_CL_PREFETCH );
@@ -10935,8 +10936,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_L2_HW_CL_PREFETCH_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_L2_HW_CL_PREFETCH );
@@ -10976,8 +10977,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_EIST_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_EIST );
@@ -10985,8 +10986,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_EIST_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_EIST );
@@ -11026,8 +11027,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_C1E_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_C1E );
@@ -11035,8 +11036,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_C1E_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_C1E );
@@ -11076,8 +11077,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_TURBO_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_TURBO );
@@ -11085,8 +11086,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_TURBO_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_TURBO );
@@ -11126,8 +11127,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_C1A_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_C1A );
@@ -11135,8 +11136,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_C1A_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_C1A );
@@ -11176,8 +11177,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_C3A_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_C3A );
@@ -11185,8 +11186,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_C3A_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_C3A );
@@ -11232,8 +11233,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_C1U_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_C1U );
@@ -11241,8 +11242,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_C1U_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_C1U );
@@ -11282,8 +11283,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_C3U_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_C3U );
@@ -11291,8 +11292,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_C3U_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_C3U );
@@ -11341,8 +11342,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_CC6_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_CC6 );
@@ -11350,8 +11351,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_CC6_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_CC6 );
@@ -11400,8 +11401,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_PC6_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_PC6 );
@@ -11409,8 +11410,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_PC6_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_PC6 );
@@ -11501,8 +11502,8 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_PKGCST_C0:
     {
 	const unsigned long newCST = (scan->key & BOXKEY_CSTATE_MASK) >> 4;
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				newCST,
 				TECHNOLOGY_PKG_CSTATE );
@@ -11544,8 +11545,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_IOMWAIT_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_IO_MWAIT );
@@ -11553,8 +11554,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_IOMWAIT_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_IO_MWAIT );
@@ -11632,8 +11633,8 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_IORCST_C8:
     {
 	const unsigned long newCST = (scan->key & BOXKEY_CSTATE_MASK) >> 4;
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				newCST,
 				TECHNOLOGY_IO_MWAIT_REDIR );
@@ -11674,8 +11675,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_ODCM_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_ODCM );
@@ -11683,8 +11684,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_ODCM_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_ODCM );
@@ -11845,8 +11846,8 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_ODCM_DC14:
     {
 	const unsigned long newDC = (scan->key - BOXKEY_ODCM_DC00) >> 4;
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				newDC,
 				TECHNOLOGY_ODCM_DUTYCYCLE );
@@ -11872,8 +11873,8 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_PWR_POL15:
     {
 	const unsigned long newPolicy = (scan->key - BOXKEY_PWR_POL00) >> 4;
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				newPolicy,
 				TECHNOLOGY_POWER_POLICY );
@@ -11948,8 +11949,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_HWP_EPP_MIN:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				0x0,
 				TECHNOLOGY_HWP_EPP );
@@ -11957,8 +11958,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_HWP_EPP_020:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				0x20,
 				TECHNOLOGY_HWP_EPP );
@@ -11966,8 +11967,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_HWP_EPP_040:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				0x40,
 				TECHNOLOGY_HWP_EPP );
@@ -11975,8 +11976,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_HWP_EPP_060:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				0x60,
 				TECHNOLOGY_HWP_EPP );
@@ -11984,8 +11985,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_HWP_EPP_MED:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				0x80,
 				TECHNOLOGY_HWP_EPP );
@@ -11993,8 +11994,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_HWP_EPP_0A0:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				0xa0,
 				TECHNOLOGY_HWP_EPP );
@@ -12002,8 +12003,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_HWP_EPP_PWR:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				0xc0,
 				TECHNOLOGY_HWP_EPP );
@@ -12011,8 +12012,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_HWP_EPP_0E0:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				0xe0,
 				TECHNOLOGY_HWP_EPP );
@@ -12020,8 +12021,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_HWP_EPP_MAX:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				0xff,
 				TECHNOLOGY_HWP_EPP );
@@ -12058,8 +12059,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_HWP_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_HWP );
@@ -12099,8 +12100,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_HDC_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_HDC );
@@ -12108,8 +12109,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_HDC_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_HDC );
@@ -12149,8 +12150,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_EEO_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_EEO );
@@ -12158,8 +12159,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_EEO_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_EEO );
@@ -12199,8 +12200,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_R2H_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_R2H );
@@ -12208,8 +12209,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_R2H_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_R2H );
@@ -12263,8 +12264,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_CFG_TDP_LVL0:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				0,
 				TECHNOLOGY_CFG_TDP_LVL );
@@ -12272,8 +12273,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_CFG_TDP_LVL1:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				1,
 				TECHNOLOGY_CFG_TDP_LVL );
@@ -12281,8 +12282,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_CFG_TDP_LVL2:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				2,
 				TECHNOLOGY_CFG_TDP_LVL );
@@ -12322,8 +12323,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_WDT_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_WDT );
@@ -12331,8 +12332,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_WDT_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_WDT );
@@ -12463,8 +12464,8 @@ int Shortcut(SCANKEY *scan)
     {
 	const enum PWR_DOMAIN	pw = (scan->key >> 5) & BOXKEY_TDP_MASK;
 	const enum PWR_LIMIT	pl = (scan->key & BOXKEY_PLX_MASK) >> 4;
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_TDP_LIMITING,
@@ -12488,8 +12489,8 @@ int Shortcut(SCANKEY *scan)
     {
 	const enum PWR_DOMAIN	pw = (scan->key >> 5) & BOXKEY_TDP_MASK;
 	const enum PWR_LIMIT	pl = (scan->key & BOXKEY_PLX_MASK) >> 4;
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_TDP_LIMITING,
@@ -12513,8 +12514,8 @@ int Shortcut(SCANKEY *scan)
     {
 	const enum PWR_DOMAIN	pw = (scan->key >> 5) & BOXKEY_TDP_MASK;
 	const enum PWR_LIMIT	pl = (scan->key & BOXKEY_PLX_MASK) >> 4;
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_TDP_CLAMPING,
@@ -12538,8 +12539,8 @@ int Shortcut(SCANKEY *scan)
     {
 	const enum PWR_DOMAIN	pw = (scan->key >> 5) & BOXKEY_TDP_MASK;
 	const enum PWR_LIMIT	pl = (scan->key & BOXKEY_PLX_MASK) >> 4;
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_TDP_CLAMPING,
@@ -12618,8 +12619,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_TDC_ON:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_TDC_LIMITING );
@@ -12627,8 +12628,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_TDC_OFF:
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_TDC_LIMITING );
@@ -12659,8 +12660,8 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_LIMIT_IDLE_ST10:
     {
 	const unsigned long newLim = (scan->key - BOXKEY_LIMIT_IDLE_ST00) >> 4;
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_MACHINE,
 				newLim,
 				MACHINE_LIMIT_IDLE );
@@ -12677,8 +12678,8 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_CLR_X_DOMAIN:
     {
 	const enum THERM_PWR_EVENTS events=(scan->key & CLEAR_EVENT_MASK) >> 4;
-      if (!RING_FULL(Shm->Ring[0])) {
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CLEAR_EVENTS, events);
+      if (!RING_FULL(RW(Shm)->Ring[0])) {
+	RING_WRITE(RW(Shm)->Ring[0], COREFREQ_IOCTL_CLEAR_EVENTS, events);
       }
     }
     break;
@@ -13027,8 +13028,8 @@ int Shortcut(SCANKEY *scan)
 
     case SCANKEY_F10:
     case BOXKEY_TOOLS_MACHINE:
-      if (!RING_FULL(Shm->Ring[1])) {
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_MACHINE, COREFREQ_TOGGLE_OFF);
+      if (!RING_FULL(RW(Shm)->Ring[1])) {
+	RING_WRITE(RW(Shm)->Ring[1], COREFREQ_ORDER_MACHINE, COREFREQ_TOGGLE_OFF);
       }
     break;
 
@@ -13048,9 +13049,9 @@ int Shortcut(SCANKEY *scan)
 	wBox = CreateBox(scan->key, origin, select,
 			(char*) RSC(BOX_TOOLS_TITLE).CODE(),
 			RSC(BOX_TOOLS_STOP_BURN).CODE(),
-				BITVAL(Shm->Proc.Sync, BURN) ?
+				BITVAL(RW(Shm)->Proc.Sync, BURN) ?
 				RSC(UI).ATTR()[UI_BOX_TOOLS_STOP] : blankAttr,
-			BITVAL(Shm->Proc.Sync, BURN) ?
+			BITVAL(RW(Shm)->Proc.Sync, BURN) ?
 				BOXKEY_TOOLS_MACHINE : SCANKEY_NULL,
 			RSC(BOX_TOOLS_ATOMIC_BURN).CODE(),stateAttr[0],
 				BOXKEY_TOOLS_ATOMIC,
@@ -13077,8 +13078,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_TOOLS_ATOMIC:
-      if (!RING_FULL(Shm->Ring[1])) {
-	RING_WRITE(	Shm->Ring[1],
+      if (!RING_FULL(RW(Shm)->Ring[1])) {
+	RING_WRITE(	RW(Shm)->Ring[1],
 			COREFREQ_ORDER_ATOMIC,
 			Shm->Proc.Service.Core,
 			COREFREQ_TOGGLE_ON);
@@ -13086,8 +13087,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_TOOLS_CRC32:
-      if (!RING_FULL(Shm->Ring[1])) {
-	RING_WRITE(	Shm->Ring[1],
+      if (!RING_FULL(RW(Shm)->Ring[1])) {
+	RING_WRITE(	RW(Shm)->Ring[1],
 			COREFREQ_ORDER_CRC32,
 			Shm->Proc.Service.Core,
 			COREFREQ_TOGGLE_ON);
@@ -13128,72 +13129,72 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_TOOLS_CONIC0:
-      if (!RING_FULL(Shm->Ring[1])) {
+      if (!RING_FULL(RW(Shm)->Ring[1])) {
 	RING_WRITE_SUB_CMD(	CONIC_ELLIPSOID,
-				Shm->Ring[1],
+				RW(Shm)->Ring[1],
 				COREFREQ_ORDER_CONIC,
 				Shm->Proc.Service.Core );
       }
     break;
 
     case BOXKEY_TOOLS_CONIC1:
-      if (!RING_FULL(Shm->Ring[1])) {
+      if (!RING_FULL(RW(Shm)->Ring[1])) {
 	RING_WRITE_SUB_CMD(	CONIC_HYPERBOLOID_ONE_SHEET,
-				Shm->Ring[1],
+				RW(Shm)->Ring[1],
 				COREFREQ_ORDER_CONIC,
 				Shm->Proc.Service.Core );
       }
     break;
 
     case BOXKEY_TOOLS_CONIC2:
-      if (!RING_FULL(Shm->Ring[1])) {
+      if (!RING_FULL(RW(Shm)->Ring[1])) {
 	RING_WRITE_SUB_CMD(	CONIC_HYPERBOLOID_TWO_SHEETS,
-				Shm->Ring[1],
+				RW(Shm)->Ring[1],
 				COREFREQ_ORDER_CONIC,
 				Shm->Proc.Service.Core );
       }
     break;
 
     case BOXKEY_TOOLS_CONIC3:
-      if (!RING_FULL(Shm->Ring[1])) {
+      if (!RING_FULL(RW(Shm)->Ring[1])) {
 	RING_WRITE_SUB_CMD(	CONIC_ELLIPTICAL_CYLINDER,
-				Shm->Ring[1],
+				RW(Shm)->Ring[1],
 				COREFREQ_ORDER_CONIC,
 				Shm->Proc.Service.Core );
       }
     break;
 
     case BOXKEY_TOOLS_CONIC4:
-      if (!RING_FULL(Shm->Ring[1])) {
+      if (!RING_FULL(RW(Shm)->Ring[1])) {
 	RING_WRITE_SUB_CMD(	CONIC_HYPERBOLIC_CYLINDER,
-				Shm->Ring[1],
+				RW(Shm)->Ring[1],
 				COREFREQ_ORDER_CONIC,
 				Shm->Proc.Service.Core );
       }
     break;
 
     case BOXKEY_TOOLS_CONIC5:
-      if (!RING_FULL(Shm->Ring[1])) {
+      if (!RING_FULL(RW(Shm)->Ring[1])) {
 	RING_WRITE_SUB_CMD(	CONIC_TWO_PARALLEL_PLANES,
-				Shm->Ring[1],
+				RW(Shm)->Ring[1],
 				COREFREQ_ORDER_CONIC,
 				Shm->Proc.Service.Core );
       }
     break;
 
     case BOXKEY_TOOLS_TURBO_RND:
-      if (!RING_FULL(Shm->Ring[1])) {
+      if (!RING_FULL(RW(Shm)->Ring[1])) {
 	RING_WRITE_SUB_CMD(	RAND_SMT,
-				Shm->Ring[1],
+				RW(Shm)->Ring[1],
 				COREFREQ_ORDER_TURBO,
 				Shm->Proc.Service.Core );
       }
     break;
 
     case BOXKEY_TOOLS_TURBO_RR:
-      if (!RING_FULL(Shm->Ring[1])) {
+      if (!RING_FULL(RW(Shm)->Ring[1])) {
 	RING_WRITE_SUB_CMD(	RR_SMT,
-				Shm->Ring[1],
+				RW(Shm)->Ring[1],
 				COREFREQ_ORDER_TURBO,
 				Shm->Proc.Service.Core );
       }
@@ -13283,8 +13284,8 @@ int Shortcut(SCANKEY *scan)
     break;
 
     default:
-      if ((scan->key & TRACK_TASK) && !RING_FULL(Shm->Ring[1])) {
-	RING_WRITE(	Shm->Ring[1],
+      if ((scan->key & TRACK_TASK) && !RING_FULL(RW(Shm)->Ring[1])) {
+	RING_WRITE(	RW(Shm)->Ring[1],
 			COREFREQ_TRACK_PROCESS,
 		(pid_t) scan->key & TRACK_MASK );
       }
@@ -13301,23 +13302,23 @@ int Shortcut(SCANKEY *scan)
       else if (scan->key & CPU_ONLINE)
       {
 	const unsigned long cpu = scan->key & CPU_MASK;
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CPU_ON, cpu);
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(RW(Shm)->Ring[0], COREFREQ_IOCTL_CPU_ON, cpu);
 	}
       }
       else if (scan->key & CPU_OFFLINE)
       {
 	const unsigned long cpu = scan->key & CPU_MASK;
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CPU_OFF, cpu);
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(RW(Shm)->Ring[0], COREFREQ_IOCTL_CPU_OFF, cpu);
 	}
       }
       else if (scan->key & CPU_SELECT)
       {
 	const unsigned short cpu = scan->key & CPU_MASK;
-	if (!RING_FULL(Shm->Ring[1])) {
+	if (!RING_FULL(RW(Shm)->Ring[1])) {
 		RING_WRITE_SUB_CMD(	USR_CPU,
-					Shm->Ring[1],
+					RW(Shm)->Ring[1],
 					COREFREQ_ORDER_TURBO,
 					cpu );
 	}
@@ -13328,8 +13329,8 @@ int Shortcut(SCANKEY *scan)
 	const enum PWR_LIMIT	pl = (scan->key & BOXKEY_PLX_MASK) >> 4;
 	const unsigned short offset= (scan->key & BOXKEY_TDP_OFFSET) >> 20;
 
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				offset,
 				TECHNOLOGY_TDP_OFFSET,
@@ -13341,8 +13342,8 @@ int Shortcut(SCANKEY *scan)
       {
 	const unsigned short offset = (scan->key & BOXKEY_TDC_OFFSET) >> 20;
 
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				offset,
 				TECHNOLOGY_TDC_OFFSET );
@@ -13748,8 +13749,8 @@ int Shortcut(SCANKEY *scan)
 	    {
 			clockMod.NC &= CLOCKMOD_RATIO_MASK;
 
-		if (!RING_FULL(Shm->Ring[0])) {
-		    RING_WRITE( Shm->Ring[0],
+		if (!RING_FULL(RW(Shm)->Ring[0])) {
+		    RING_WRITE( RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TURBO_CLOCK, clockMod.ullong );
 		}
 	    }
@@ -13757,8 +13758,8 @@ int Shortcut(SCANKEY *scan)
 	    {
 			clockMod.NC &= CLOCKMOD_RATIO_MASK;
 
-		if (!RING_FULL(Shm->Ring[0])) {
-		    RING_WRITE( Shm->Ring[0],
+		if (!RING_FULL(RW(Shm)->Ring[0])) {
+		    RING_WRITE( RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_RATIO_CLOCK, clockMod.ullong );
 		}
 	    }
@@ -13766,8 +13767,8 @@ int Shortcut(SCANKEY *scan)
 	    {
 			clockMod.NC &= CLOCKMOD_RATIO_MASK;
 
-		if (!RING_FULL(Shm->Ring[0])) {
-		    RING_WRITE( Shm->Ring[0],
+		if (!RING_FULL(RW(Shm)->Ring[0])) {
+		    RING_WRITE( RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_CONFIG_TDP, clockMod.ullong );
 		}
 	    }
@@ -13775,8 +13776,8 @@ int Shortcut(SCANKEY *scan)
 	    {
 			clockMod.NC &= CLOCKMOD_RATIO_MASK;
 
-		if (!RING_FULL(Shm->Ring[0])) {
-		    RING_WRITE( Shm->Ring[0],
+		if (!RING_FULL(RW(Shm)->Ring[0])) {
+		    RING_WRITE( RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_UNCORE_CLOCK, clockMod.ullong );
 		}
 	    } else {
@@ -13902,7 +13903,7 @@ void Layout_Header(Layer *layer, CUINT row)
 	len = CUMIN(xProc1 - (hProc0.origin.col + hProc0.length),
 			(CUINT) strlen(Shm->Proc.Brand));
 	/* RED DOT */
-	hProc0.code[0] = BITVAL(Shm->Proc.Sync, BURN) ? '.' : 0x20;
+	hProc0.code[0] = BITVAL(RW(Shm)->Proc.Sync, BURN) ? '.' : 0x20;
 
 	LayerCopyAt(	layer, hProc0.origin.col, hProc0.origin.row,
 			hProc0.length, hProc0.attr, hProc0.code );
@@ -14301,8 +14302,8 @@ CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 			.row = row
 		},
 		.length = 21,
-		.attr = hSort[Shm->SysGate.sortByField].attr,
-		.code = hSort[Shm->SysGate.sortByField].code
+		.attr = hSort[RW(Shm)->SysGate.sortByField].attr,
+		.code = hSort[RW(Shm)->SysGate.sortByField].code
 	};
 
 	struct {
@@ -14330,8 +14331,8 @@ CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 			.row = (row + Draw.Area.MaxRows + 1)
 		},
 		.length = 15,
-		.attr = hReverse[Shm->SysGate.reverseOrder].attr,
-		.code = hReverse[Shm->SysGate.reverseOrder].code
+		.attr = hReverse[RW(Shm)->SysGate.reverseOrder].attr,
+		.code = hReverse[RW(Shm)->SysGate.reverseOrder].code
 	};
 
 	LayerDeclare(LAYOUT_TASKS_VALUE_SWITCH, RSZ(LAYOUT_TASKS_VALUE_SWITCH),
@@ -16656,7 +16657,7 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 		StrLenFormat(len, Buffer, TASK_COMM_LEN, "%s",
 				Shm->SysGate.taskList[idx].comm);
 	    } else {
-		switch (Shm->SysGate.sortByField) {
+		switch (RW(Shm)->SysGate.sortByField) {
 		case F_STATE:
 			StrLenFormat(len, Buffer, 2 * TASK_COMM_LEN + 2,
 					"%s(%s)",
@@ -17969,7 +17970,7 @@ REASON_CODE Top(char option)
     {
       do
       {
-	if ((Draw.Flag.daemon = BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0)) == 0)
+	if ((Draw.Flag.daemon=BITCLR(LOCKLESS, RW(Shm)->Proc.Sync, SYNC0)) == 0)
 	{
 		SCANKEY scan = {.key = 0};
 
@@ -17990,20 +17991,20 @@ REASON_CODE Top(char option)
 		WindowsUpdate(&winList);
 	  }
 	}
-	if (!RING_NULL(Shm->Error))
+	if (!RING_NULL(RW(Shm)->Error))
 	{
 		RING_CTRL ctrl __attribute__ ((aligned(16)));
-		RING_READ(Shm->Error, ctrl);
+		RING_READ(RW(Shm)->Error, ctrl);
 
 		AppendWindow(
 			PopUpMessage(RSC(POPUP_DRIVER_TITLE).CODE(), &ctrl),
 			&winList );
 	}
-	if (BITCLR(LOCKLESS, Shm->Proc.Sync, COMP0)) {
+	if (BITCLR(LOCKLESS, RW(Shm)->Proc.Sync, COMP0)) {
 		AggregateRatio();
 		Draw.Flag.clear = 1;	/* Compute required,clear the layout */
 	}
-	if (BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY0)) {
+	if (BITCLR(LOCKLESS, RW(Shm)->Proc.Sync, NTFY0)) {
 		ClientFollowService(&localService, &Shm->Proc.Service, 0);
 		RECORDER_COMPUTE(Recorder, Shm->Sleep.Interval);
 		Draw.Flag.layout = 1;	 /* Platform changed, redraw layout */
@@ -18149,7 +18150,7 @@ void Emergency(int caught)
 void TrapSignal(int operation)
 {
 	if (operation == 0) {
-		Shm->App.Cli = 0;
+		RW(Shm)->App.Cli = 0;
 	} else {
 		const int ignored[] = {
 			SIGUSR1, SIGUSR2, SIGTTIN, SIGTTOU, SIGPWR,
@@ -18165,7 +18166,7 @@ void TrapSignal(int operation)
 				handledCount = sizeof(handled) / sizeof(int);
 		int signo;
 
-		Shm->App.Cli = getpid();
+		RW(Shm)->App.Cli = getpid();
 		for (signo = SIGRTMIN; signo <= SIGRTMAX; signo++) {
 			signal(signo, SIG_IGN);
 		}
@@ -18180,8 +18181,20 @@ void TrapSignal(int operation)
 
 int main(int argc, char *argv[])
 {
-	struct stat shmStat = {0};
-	int	fd = -1, idx = 0;
+	struct {
+		struct stat ro, rw;
+	} stat_st = {
+		.ro = {0},
+		.rw = {0}
+	};
+	struct
+	{
+		int ro, rw;
+	} fd = {
+		.ro = -1,
+		.rw = -1
+	};
+	int	idx = 0;
 	char	*program = strdup(argv[0]),
 		*appName = program != NULL ? basename(program) : argv[idx],
 		option = 't', trailing = '\0';
@@ -18198,22 +18211,33 @@ int main(int argc, char *argv[])
 	reason = Help(reason, appName);
   } else if (option == 'v') {
 	printf(COREFREQ_VERSION"\n");
-  } else if ((fd = shm_open(SHM_FILENAME, O_RDWR,
-			S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)) !=-1)
+  } else if (	((fd.ro = shm_open(RO(SHM_FILENAME), O_RDONLY,
+				S_IRUSR|S_IWUSR
+				|S_IRGRP|S_IROTH) ) !=-1)
+	&&	((fd.rw = shm_open(RW(SHM_FILENAME), O_RDWR,
+				 S_IRUSR|S_IWUSR
+				|S_IRGRP|S_IWGRP
+				|S_IROTH|S_IWOTH) ) !=-1) )
   {
-    if (fstat(fd, &shmStat) != -1)
+    if ((fstat(fd.ro, &stat_st.ro) != -1)
+     && (fstat(fd.rw, &stat_st.rw) != -1))
     {
-	const size_t shmSize = (size_t) shmStat.st_size;
-      if ((Shm = mmap(	NULL, shmSize,
+	const size_t	roSize = (size_t) stat_st.ro.st_size,
+			rwSize = (size_t) stat_st.rw.st_size;
+
+      if (((Shm = mmap( NULL, roSize,
+			PROT_READ, MAP_SHARED,
+			fd.ro, 0)) != MAP_FAILED )
+       && ((RW(Shm) = mmap( NULL, rwSize,
 			PROT_READ|PROT_WRITE, MAP_SHARED,
-			fd, 0)) != MAP_FAILED)
+			fd.rw, 0)) != MAP_FAILED ))
       {
        if (CHK_FOOTPRINT(Shm->FootPrint,MAX_FREQ_HZ,
 					CORE_COUNT,
 					TASK_ORDER,
 					COREFREQ_MAJOR,
 					COREFREQ_MINOR,
-					COREFREQ_REV)	)
+					COREFREQ_REV))
        {
 	ClientFollowService(&localService, &Shm->Proc.Service, 0);
 
@@ -18331,7 +18355,7 @@ int main(int argc, char *argv[])
 		}
 		break;
 	    case 'j':
-		JsonSysInfo(Shm, NULL);
+		JsonSysInfo(Shm, RW(Shm), NULL);
 		break;
 	    case 'm':
 		{
@@ -18517,9 +18541,13 @@ int main(int argc, char *argv[])
 		&& (argv[idx][0] == '-')
 		&& ((option = argv[idx][1]) != '\0') );
 
-	if (munmap(Shm, shmSize) == -1) {
+	if (munmap(Shm, roSize) == -1) {
 		REASON_SET(reason, RC_SHM_MMAP);
-		reason = Help(reason, SHM_FILENAME);
+		reason = Help(reason, RO(SHM_FILENAME));
+	}
+	if (munmap(RW(Shm), rwSize) == -1) {
+		REASON_SET(reason, RC_SHM_MMAP);
+		reason = Help(reason, RW(SHM_FILENAME));
 	}
        } else {
 		char *wrongVersion = malloc(10+5+5+5+1);
@@ -18533,23 +18561,28 @@ int main(int argc, char *argv[])
 			reason = Help(reason, wrongVersion);
 			free(wrongVersion);
 		}
-		munmap(Shm, shmSize);
+		munmap(Shm, roSize);
+		munmap(RW(Shm), rwSize);
        }
       } else {
 		REASON_SET(reason, RC_SHM_MMAP);
-		reason = Help(reason, SHM_FILENAME);
+		reason = Help(reason, RO(SHM_FILENAME));
       }
     } else {
 		REASON_SET(reason, RC_SHM_FILE);
-		reason = Help(reason, SHM_FILENAME);
+		reason = Help(reason, RO(SHM_FILENAME));
     }
-    if (close(fd) == -1) {
+    if (close(fd.ro) == -1) {
 		REASON_SET(reason, RC_SHM_FILE);
-		reason = Help(reason, SHM_FILENAME);
+		reason = Help(reason, RO(SHM_FILENAME));
+    }
+    if (close(fd.rw) == -1) {
+		REASON_SET(reason, RC_SHM_FILE);
+		reason = Help(reason, RO(SHM_FILENAME));
     }
   } else {
 		REASON_SET(reason, RC_SHM_FILE);
-		reason = Help(reason, SHM_FILENAME);
+		reason = Help(reason, RO(SHM_FILENAME));
   }
     LOCALE(OUT);
 
