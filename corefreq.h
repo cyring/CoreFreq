@@ -520,7 +520,9 @@ typedef struct
 
 	char				ShmName[TASK_COMM_LEN];
 	struct {
-		pid_t			Svr;
+		pid_t			Svr,
+					Cli,
+					GUI;
 	} App;
 
 	struct {
@@ -579,11 +581,6 @@ typedef struct {
 		RING_CTRL	buffer[RING_SIZE] __attribute__((aligned(16)));
 		unsigned int	head, tail;
 	} Error;
-
-	struct {
-		pid_t		Cli,
-				GUI;
-	} App;
 } SHM_STRUCT_RW;
 
 /* Sensors formulas and definitions.

@@ -6338,6 +6338,36 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 	RING_READ(Ref->RW(Shm)->Ring[rid], ctrl);
 
    switch (ctrl.cmd) {
+   case COREFREQ_SESSION_APP:
+	switch (ctrl.sub) {
+	case SESSION_CLI:
+		Ref->RO(Shm)->App.Cli = (pid_t) ctrl.arg;
+		break;
+	case SESSION_GUI:
+		Ref->RO(Shm)->App.GUI = (pid_t) ctrl.arg;
+		break;
+	}
+	break;
+   case COREFREQ_TASK_MONITORING:
+	switch (ctrl.sub) {
+	case TASK_TRACKING:
+		Ref->RO(Shm)->SysGate.trackTask = (pid_t) ctrl.arg;
+		break;
+	case TASK_SORTING:
+	    {
+		enum SORTBYFIELD sortByField = (enum SORTBYFIELD) ctrl.dl.lo;
+		Ref->RO(Shm)->SysGate.sortByField = sortByField % SORTBYCOUNT;
+	    }
+		break;
+	case TASK_INVERSING:
+	    {
+		const int reverseOrder = !!!Ref->RO(Shm)->SysGate.reverseOrder;
+		Ref->RO(Shm)->SysGate.reverseOrder = reverseOrder;
+	    }
+		break;
+	}
+	BITWISESET(LOCKLESS, Ref->RW(Shm)->Proc.Sync, BIT_MASK_NTFY);
+	break;
    case COREFREQ_TOGGLE_SYSGATE:
 	switch (ctrl.arg) {
 	case COREFREQ_TOGGLE_OFF:
@@ -6371,26 +6401,6 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 	    }
 	    break;
 	}
-	break;
-   case COREFREQ_TASK_MONITORING:
-	switch (ctrl.sub) {
-	case TASK_TRACKING:
-		Ref->RO(Shm)->SysGate.trackTask = (pid_t) ctrl.arg;
-		break;
-	case TASK_SORTING:
-	    {
-		enum SORTBYFIELD sortByField = (enum SORTBYFIELD) ctrl.dl.lo;
-		Ref->RO(Shm)->SysGate.sortByField = sortByField % SORTBYCOUNT;
-	    }
-		break;
-	case TASK_INVERSING:
-	    {
-		const int reverseOrder = !!!Ref->RO(Shm)->SysGate.reverseOrder;
-		Ref->RO(Shm)->SysGate.reverseOrder = reverseOrder;
-	    }
-		break;
-	}
-	BITWISESET(LOCKLESS, Ref->RW(Shm)->Proc.Sync, BIT_MASK_NTFY);
 	break;
    default:
     {
@@ -7441,13 +7451,13 @@ REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
 					REASON_SET(reason, RC_SYS_CALL);
 				}
 			}
-			if (RW(Shm)->App.Cli) {
-				if (kill(RW(Shm)->App.Cli, SIGTERM) == -1) {
+			if (RO(Shm)->App.Cli) {
+				if (kill(RO(Shm)->App.Cli, SIGTERM) == -1) {
 					REASON_SET(reason, RC_EXEC_ERR);
 				}
 			}
-			if (RW(Shm)->App.GUI) {
-				if (kill(RW(Shm)->App.GUI, SIGTERM) == -1) {
+			if (RO(Shm)->App.GUI) {
+				if (kill(RO(Shm)->App.GUI, SIGTERM) == -1) {
 					REASON_SET(reason, RC_EXEC_ERR);
 				}
 			}

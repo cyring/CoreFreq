@@ -18167,7 +18167,8 @@ void Emergency(int caught)
 void TrapSignal(int operation)
 {
 	if (operation == 0) {
-		RW(Shm)->App.Cli = 0;
+		RING_WRITE_SUB_CMD(	SESSION_CLI, RW(Shm)->Ring[1],
+					COREFREQ_SESSION_APP, (pid_t) 0 );
 	} else {
 		const int ignored[] = {
 			SIGUSR1, SIGUSR2, SIGTTIN, SIGTTOU, SIGPWR,
@@ -18183,7 +18184,9 @@ void TrapSignal(int operation)
 				handledCount = sizeof(handled) / sizeof(int);
 		int signo;
 
-		RW(Shm)->App.Cli = getpid();
+		RING_WRITE_SUB_CMD(	SESSION_CLI, RW(Shm)->Ring[1],
+					COREFREQ_SESSION_APP, getpid() );
+
 		for (signo = SIGRTMIN; signo <= SIGRTMAX; signo++) {
 			signal(signo, SIG_IGN);
 		}

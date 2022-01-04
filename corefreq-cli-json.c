@@ -222,9 +222,9 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 		json_key(&s, "Svr");
 		json_literal(&s, "%d", RO(Shm)->App.Svr);
 		json_key(&s, "Cli");
-		json_literal(&s, "%d", RW(Shm)->App.Cli);
+		json_literal(&s, "%d", RO(Shm)->App.Cli);
 		json_key(&s, "GUI");
-		json_literal(&s, "%d", RW(Shm)->App.GUI);
+		json_literal(&s, "%d", RO(Shm)->App.GUI);
 		json_end_object(&s);
 	}
 	json_key(&s, "Uncore");
