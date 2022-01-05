@@ -7453,11 +7453,13 @@ REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
 			}
 			if (RO(Shm)->App.Cli) {
 				if (kill(RO(Shm)->App.Cli, SIGTERM) == -1) {
+				    if (errno != ESRCH)
 					REASON_SET(reason, RC_EXEC_ERR);
 				}
 			}
 			if (RO(Shm)->App.GUI) {
 				if (kill(RO(Shm)->App.GUI, SIGTERM) == -1) {
+				    if (errno != ESRCH)
 					REASON_SET(reason, RC_EXEC_ERR);
 				}
 			}
