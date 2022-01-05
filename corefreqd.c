@@ -7264,7 +7264,7 @@ REASON_CODE Child_Manager(REF *Ref)
 }
 
 REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
-			uid_t uid, uid_t gid, mode_t cmask)
+			uid_t uid, uid_t gid, mode_t cmask[2])
 {
 	unsigned int	cpu = 0;
 	RO(CORE)	**RO(Core);
@@ -7320,9 +7320,6 @@ REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
 		}
 	}
     }
-    if (reason.rc == RC_SUCCESS) {
-	umask(cmask);
-    }
     if (reason.rc == RC_SUCCESS)
     {	/* Initialize shared memory.					*/
 	const size_t shmCpuSize = sizeof(CPU_STRUCT) * RO(Proc)->CPU.Count,
@@ -7344,8 +7341,8 @@ REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
 	if ( (ftruncate(fd->ro, (off_t) roSize) != -1)
 	  && (ftruncate(fd->rw, (off_t) rwSize) != -1) )
 	{
-		fchmod(fd->ro, S_IRUSR|S_IWUSR|S_IRGRP);
-		fchmod(fd->rw, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
+		fchmod(fd->ro, cmask[0]);
+		fchmod(fd->rw, cmask[1]);
 
 	    if ( ( ( RO(Shm) = mmap(NULL, roSize,
 				PROT_READ|PROT_WRITE, MAP_SHARED,
@@ -7548,7 +7545,7 @@ REASON_CODE Help(REASON_CODE reason, ...)
 			"\t-goff\t\tDisable SysGate\n"			\
 			"\t-U <decimal>\tSet the effective user ID\n"	\
 			"\t-G <decimal>\tSet the effective group ID\n"	\
-			"\t-M <octal>\tSet the mode creation mask\n"	\
+			"\t-M <oct>,<oct>\tShared Memories permission\n"\
 			"\t-h\t\tPrint out this message\n"		\
 			"\t-v\t\tPrint the version number\n"		\
 			"\nExit status:\n"				\
@@ -7606,8 +7603,10 @@ int main(int argc, char *argv[])
 	RO(PROC) *RO(Proc) = NULL;	/* Kernel module anchor points. */
 	RW(PROC) *RW(Proc) = NULL;
 	uid_t uid = 0, gid = 0;
-	mode_t cmask = !S_IRUSR|!S_IWUSR|!S_IRGRP|!S_IWGRP|!S_IROTH|!S_IWOTH;
-
+	mode_t cmask[2] = {
+		S_IRUSR|S_IRGRP|S_IROTH,
+		S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH
+	};
 	char *program = strdup(argv[0]),
 		*appName = program != NULL ? basename(program) : argv[0];
 
@@ -7677,9 +7676,10 @@ int main(int argc, char *argv[])
 			    if (argv[++i] == NULL) {
 				REASON_SET(reason, RC_CMD_SYNTAX, 0);
 				reason = Help(reason, appName);
-			    } else if (sscanf(argv[i] , "%o%c",
-							&cmask,
-							&trailing) != 1) {
+			    } else if (sscanf(argv[i] , "%o,%o%c",
+							&cmask[0],
+							&cmask[1],
+							&trailing) > 2) {
 					REASON_SET(reason, RC_CMD_SYNTAX);
 					reason = Help(reason, appName);
 			    }
