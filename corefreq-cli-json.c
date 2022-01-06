@@ -1,5 +1,5 @@
 /*
- * CoreFreq (C) 2015-2021 CYRIL INGENIERIE
+ * CoreFreq (C) 2015-2022 CYRIL INGENIERIE
  * Contributors: Andrew Gurinovich ; CyrIng
  * Licenses: GPL2
  */

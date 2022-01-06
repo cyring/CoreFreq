@@ -1,11 +1,11 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2021 CYRIL INGENIERIE
+ * Copyright (C) 2015-2022 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
 #define RSC_THEME_USR1_CODE		/* 72 chars */			\
-"        Strawberry theme by CyrIng.  Updated by CyrIng - Dec. 2021      "
+"        Strawberry theme by CyrIng.  Updated by CyrIng - Dec. 2022      "
 
 #define RSC_UI_THM_USR1_ATTR						\
 {									\

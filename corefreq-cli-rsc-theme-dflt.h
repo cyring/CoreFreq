@@ -1,11 +1,11 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2021 CYRIL INGENIERIE
+ * Copyright (C) 2015-2022 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
 #define RSC_THEME_DFLT_CODE		/* 72 chars */			\
-"           Default theme by CyrIng.  Since 2015; updated Dec. 2021      "
+"           Default theme by CyrIng.  Since 2015; updated Dec. 2022      "
 
 #define RSC_UI_THM_DFLT_ATTR						\
 {									\

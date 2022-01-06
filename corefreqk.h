@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2021 CYRIL INGENIERIE
+ * Copyright (C) 2015-2022 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
@@ -696,7 +696,7 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
     }									\
 })
 
-#if defined(CONFIG_AMD_NB)
+#if defined(CONFIG_AMD_NB) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
 #define AMD_SMN_RW(node, address, value, write, indexPort, dataPort)	\
 ({									\
 	struct pci_dev *root;						\
@@ -893,7 +893,7 @@ typedef union
 	MSG_RSP.value;							\
 })
 
-#if defined(CONFIG_AMD_NB)
+#if defined(CONFIG_AMD_NB) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
 
 #define AMD_HSMP_Mailbox(	MSG_FUNC,				\
 				MSG_ARG,				\
@@ -972,7 +972,6 @@ typedef union
   }									\
 	res == 0 ? MSG_RSP.value : HSMP_UNSPECIFIED;			\
 })
-#endif /* CONFIG_AMD_NB */
 
 #define AMD_HSMP_Exec(MSG_FUNC, MSG_ARG)				\
 ({									\
@@ -995,6 +994,22 @@ typedef union
 	}								\
 	rx;								\
 })
+
+#else
+
+#define AMD_HSMP_Exec(MSG_FUNC, MSG_ARG)				\
+({									\
+	unsigned int rx=PCI_HSMP_Mailbox(MSG_FUNC,			\
+					MSG_ARG,			\
+					SMU_HSMP_CMD,			\
+					SMU_HSMP_ARG,			\
+					SMU_HSMP_RSP,			\
+					AMD_HSMP_INDEX_REGISTER,	\
+					AMD_HSMP_DATA_REGISTER );	\
+	rx;								\
+})
+
+#endif /* CONFIG_AMD_NB */
 
 #if defined(FEAT_DBG) && (FEAT_DBG > 1)
 #ifdef CONFIG_I2C

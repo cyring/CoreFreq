@@ -152,7 +152,7 @@ CoreFreq: Processor [06_1A] Architecture [Nehalem/Bloomfield] CPU [8/8]
 ### Daemon
 
 ```
-CoreFreq Daemon.  Copyright (C) 2015-2021 CYRIL INGENIERIE
+CoreFreq Daemon.  Copyright (C) 2015-2022 CYRIL INGENIERIE
 
   Processor [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz]
   Architecture [Nehalem/Bloomfield] 8/8 CPU Online.
@@ -498,5 +498,5 @@ parm:           WDT_Enable:Watchdog Hardware Timer (short)
 # About
 [CyrIng](https://github.com/cyring)
 
-Copyright (C) 2015-2021 CYRIL INGENIERIE  
+Copyright (C) 2015-2022 CYRIL INGENIERIE  
  -------

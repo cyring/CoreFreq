@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2021 CYRIL INGENIERIE
+ * Copyright (C) 2015-2022 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
@@ -13,7 +13,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_COPY0_CODE_FR "     par CyrIng                                     "
 #define RSC_COPY1_CODE_FR "                                                    "
-#define RSC_COPY2_CODE_FR "            (C)2015-2021 "			\
+#define RSC_COPY2_CODE_FR "            (C)2015-2022 "			\
 			  "CYRIL ING""\x89""NIERIE           "
 
 #define RSC_LAYOUT_HEADER_PROC_CODE_FR					\
@@ -1224,7 +1224,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_ERROR_CMD_SYNTAX_CODE_FR					\
 		"CoreFreq."						\
-		"  Copyright (C) 2015-2021 CYRIL INGENIERIE\n\n"	\
+		"  Copyright (C) 2015-2022 CYRIL INGENIERIE\n\n"	\
 		"Usage:\t%s [-Option <argument>] [-Commande <argument>]\n"\
 		"\n    Options de l'interface\n"			\
 		"\t-Oa\tFréquence absolue\n"				\

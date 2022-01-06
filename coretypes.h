@@ -1,12 +1,12 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2021 CYRIL INGENIERIE
+ * Copyright (C) 2015-2022 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	89
-#define COREFREQ_REV	0
+#define COREFREQ_REV	1
 
 #if !defined(CORE_COUNT)
 	#define CORE_COUNT	256
