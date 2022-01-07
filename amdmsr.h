@@ -313,24 +313,24 @@ typedef union
     struct
     {
 	unsigned long long
-	SmmLock 	:  1-0,
+	SmmLock 	:  1-0,  /* RWO: BIOS SMM code lock		*/
 	Reserved1	:  3-1,
-	TlbCacheDis	:  4-3,
-	INVDWBINVD	:  5-4,
+	TlbCacheDis	:  4-3,  /* RW: 1=Disable cacheable PML4,PDP,PDE,PTE */
+	INVDWBINVD	:  5-4,  /* RW: 1=Convert INVD to WBINVD	*/
 	Reserved2	:  7-5,
-	AllowFerrOnNe	:  8-7,
-	IgnneEm 	:  9-8,
-	MonMwaitDis	: 10-9,
-	MonMwaitUserEn	: 11-10,
+	AllowFerrOnNe	:  8-7,  /* RW: 1=Legacy FERR signaling/exception */
+	IgnneEm 	:  9-8,  /* RW: 1=Enable emulation of IGNNE port */
+	MonMwaitDis	: 10-9,  /* RW: 1=Disable MONITOR & MWAIT opcodes */
+	MonMwaitUserEn	: 11-10, /* RW: 1=MONITOR/MWAIT all privilege levels */
 	Reserved3	: 13-11,
-	SmiSpCycDis	: 14-13,
-	RsmSpCycDis	: 15-14,
+	SmiSpCycDis	: 14-13, /* 0=Generate SMI special bus cycle	*/
+	RsmSpCycDis	: 15-14, /* 0=Generate RSM special bus cycle	*/
 	Reserved4	: 17-15,
-	Wrap32Dis	: 18-17,
-	McStatusWrEn	: 19-18,
+	Wrap32Dis	: 18-17, /* RW: 1=Above 4GB Memory in 32-bits mode */
+	McStatusWrEn	: 19-18, /* RW: 1=Machine Check status writeable */
 	Reserved5	: 20-19,
-	IoCfgGpFault	: 21-20,
-	LockTscToCurrP0 : 22-21,/* RW:lock the TSC to the current P0 frequency*/
+	IoCfgGpFault	: 21-20, /* RW: 1=IO-space config. causes GP fault */
+	LockTscToCurrP0 : 22-21, /* RW: 1=Lock TSC to current P0 frequency */
 	Reserved6	: 24-22,
 	TscFreqSel	: 25-24, /* RO: 1=TSC increments at the P0 frequency */
 	CpbDis		: 26-25, /* RW: 1=Core Performance Boost disable */
@@ -338,11 +338,11 @@ typedef union
 	EffFreqROLock	: 28-27, /* W1: Lock A-M-Perf & IR-Perf counters */
 	Reserved7	: 29-28,
 	CSEnable	: 30-29,
-	IRPerfEn	: 31-30, /* RW: enable instructions retired counter */
-	Reserved8	: 32-31,
-	Undefined	: 33-32, /* RW: enable by default		*/
+	IRPerfEn	: 31-30, /* RW: Enable Instructions Retired counter */
+	SmmBaseLock	: 32-31, /* MSR SMM_BASE saved/restored from save area*/
+	TprLoweringDis	: 33-32, /* RW: FastTprLoweringDis: 1=Disabled	*/
 	SmmPgCfgLock	: 34-33,
-	Reserved9	: 64-34;
+	Reserved8	: 64-34;
     } Family_17h;
     struct
     {
