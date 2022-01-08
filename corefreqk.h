@@ -1573,6 +1573,9 @@ static void Query_AMD_F17h_PerSocket(unsigned int cpu) ;
 static void Query_AMD_F17h_PerCluster(unsigned int cpu) ;
 static void PerCore_AMD_Family_17h_Query(void *arg) ;
 static void Start_AMD_Family_17h(void *arg) ;
+#ifdef CONFIG_PM_SLEEP
+static void Start_AMD_Family_17h_MTS(void *arg) ;
+#endif
 static void Stop_AMD_Family_17h(void *arg) ;
 static void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 static void InitTimer_AMD_F17h_Zen(unsigned int cpu) ;
@@ -8488,7 +8491,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Signature = _AMD_Zen2_MTS,
 	.Query = Query_AMD_F17h_PerCluster,
 	.Update = PerCore_AMD_Family_17h_Query,
+#ifdef CONFIG_PM_SLEEP
+	.Start = Start_AMD_Family_17h_MTS,
+#else
 	.Start = Start_AMD_Family_17h,
+#endif
 	.Stop = Stop_AMD_Family_17h,
 	.Exit = NULL,
 	.Timer = InitTimer_AMD_F17h_Zen2_SP,

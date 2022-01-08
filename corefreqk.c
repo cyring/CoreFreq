@@ -399,6 +399,9 @@ static struct {
 #ifdef CONFIG_I2C
 	struct i2c_client	*I2C_Client;
 #endif /* CONFIG_I2C */
+#ifdef CONFIG_PM_SLEEP
+	bool			ResumeFromSuspend;
+#endif /* CONFIG_PM_SLEEP */
 } CoreFreqK = {
 #ifdef CONFIG_CPU_IDLE
 	.IdleDriver = {
@@ -425,8 +428,11 @@ static struct {
 	},
 #endif /* CONFIG_CPU_FREQ */
 #ifdef CONFIG_I2C
-	.I2C_Client	= NULL
+	.I2C_Client	= NULL,
 #endif /* CONFIG_I2C */
+#ifdef CONFIG_PM_SLEEP
+	.ResumeFromSuspend = false,
+#endif /* CONFIG_PM_SLEEP */
 };
 
 static KPUBLIC *KPublic = NULL;
@@ -14943,6 +14949,17 @@ static void Start_AMD_Family_17h(void *arg)
 	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
+#ifdef CONFIG_PM_SLEEP
+static void Start_AMD_Family_17h_MTS(void *arg)
+{
+	if (CoreFreqK.ResumeFromSuspend == true) {
+		WRCOUNTER(0x0, MSR_IA32_MPERF);
+		WRCOUNTER(0x0, MSR_IA32_APERF);
+	}
+	Start_AMD_Family_17h(arg);
+}
+#endif /* CONFIG_PM_SLEEP */
+
 static void Stop_AMD_Family_17h(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
@@ -17794,6 +17811,8 @@ static int CoreFreqK_Suspend(struct device *dev)
 {
 	UNUSED(dev);
 
+	CoreFreqK.ResumeFromSuspend = true;
+
 	Controller_Stop(1);
 
 	pr_notice("CoreFreq: Suspend\n");
@@ -17823,6 +17842,8 @@ static int CoreFreqK_Resume(struct device *dev)
 	BITSET(BUS_LOCK, PUBLIC(RW(Proc))->OS.Signal, NTFY); /* Notify Daemon*/
 
 	pr_notice("CoreFreq: Resume\n");
+
+	CoreFreqK.ResumeFromSuspend = false;
 
 	return 0;
 }
