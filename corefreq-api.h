@@ -820,11 +820,8 @@ typedef struct
 		};
 			UNCORE_FIXED_PERF_CONTROL  Uncore_FixedPerfControl;
 	    } Intel;
-#if defined(FEAT_DBG) && (FEAT_DBG > 1)
 	    struct {
-		AMD_SBRMI_CONTROL	SBRMI_Control;
 	    } AMD;
-#endif /* FEAT_DBG */
 	} SaveArea;
 
 	FEATURES		Features;
@@ -922,11 +919,6 @@ typedef struct
 				Experimental,
 				HotPlug,
 				PCI;
-	    struct {
-		unsigned int	PFM	:  1-0,
-				I2C	:  2-1,
-				_pad32	: 32-2;
-	    };
 		KERNEL_DRIVER	Driver;
 	} Registration;
 

@@ -1777,8 +1777,6 @@ void Package_Update(	RO(SHM_STRUCT) *RO(Shm),
 	RO(Shm)->Registration.Experimental= RO(Proc)->Registration.Experimental;
 	RO(Shm)->Registration.HotPlug = RO(Proc)->Registration.HotPlug;
 	RO(Shm)->Registration.PCI = RO(Proc)->Registration.PCI;
-	RO(Shm)->Registration.PFM = RO(Proc)->Registration.PFM;
-	RO(Shm)->Registration.I2C = RO(Proc)->Registration.I2C;
 	RO(Shm)->Registration.HSMP= RO(Proc)->Features.HSMP_Enable;
 	BITSTOR(LOCKLESS,RO(Shm)->Registration.NMI, RO(Proc)->Registration.NMI);
 	RO(Shm)->Registration.Driver = RO(Proc)->Registration.Driver;

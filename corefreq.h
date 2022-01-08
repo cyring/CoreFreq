@@ -472,10 +472,8 @@ typedef struct
 				HotPlug, /* < 0: Disable, Other: Enable */
 				PCI;	/*  < 0: Disable, other: Enable */
 	    struct {			/*  = 0: Disable, 1: Enable	*/
-		unsigned int	PFM	:  1-0,
-				I2C	:  2-1,
-				HSMP	:  3-2,
-				_pad32	: 32-3;
+		unsigned int	HSMP	:  1-0,
+				_pad32	: 32-1;
 	    };
 		KERNEL_DRIVER	Driver; /*0:Disable, 1:Enable, 2:Full-control*/
 	} Registration;

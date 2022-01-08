@@ -1011,32 +1011,6 @@ typedef union
 
 #endif /* CONFIG_AMD_NB */
 
-#if defined(FEAT_DBG) && (FEAT_DBG > 1)
-#ifdef CONFIG_I2C
-#define SBRMI_Read8(cli, cmd, data)					\
-({									\
-	signed int status = i2c_smbus_read_byte_data(cli, cmd); 	\
-	data.value = (unsigned char) status;				\
-	status ;							\
-})
-
-#define SBRMI_Write8(cli, cmd, data)					\
-({									\
-	signed int status = i2c_smbus_write_byte_data(cli, cmd, data.value); \
-	status ;							\
-})
-
-static int AMD_SBRMI_Probe(struct i2c_client*) ;
-static int AMD_SBRMI_Remove(struct i2c_client*) ;
-#endif
-
-typedef struct
-{
-	unsigned char		value;
-	enum SBRMI_REGISTER	reg;
-} SBRMI_MSG;
-#endif /* FEAT_DBG */
-
 /* Driver' private and public data definitions.				*/
 enum CSTATES_CLASS {
 	CSTATES_NHM,
@@ -1053,7 +1027,6 @@ enum CSTATES_CLASS {
 #define LATCH_TURBO_UNLOCK	0b000000000100	/* <B>	TurboUnlocked	 */
 #define LATCH_UNCORE_UNLOCK	0b000000001000	/* <U>	UncoreUnlocked	 */
 #define LATCH_HSMP_CAPABLE	0b000000010000	/* <H>	HSMP Capability  */
-#define LATCH_SBRMI_CAPABLE	0b000000100000	/* <R>  SB-RMI Capability*/
 
 typedef struct {
 	char			*CodeName;
@@ -1069,8 +1042,7 @@ typedef struct {
 				TurboUnlocked	: 12-11, /*	<B:1>	*/
 				UncoreUnlocked	: 13-12, /*	<U:1>	*/
 				HSMP_Capable	: 14-13, /*	<H:1>	*/
-				SBRMI_Capable	: 15-14, /*	<R:1>	*/
-				_UnusedLatchBits: 20-15,
+				_UnusedLatchBits: 20-14,
 				/* <R>-<H>-<U>-<B>-<X>-<T> */
 				Latch		: 32-20;
 } PROCESSOR_SPECIFIC;
@@ -1568,7 +1540,6 @@ static void PerCore_AMD_Family_16h_Query(void *arg) ;
 #define     Stop_AMD_Family_16h Stop_AMD_Family_15h
 #define     InitTimer_AMD_Family_16h InitTimer_AuthenticAMD
 
-static void Exit_AMD_Family_17h(void) ;
 static void Query_AMD_F17h_PerSocket(unsigned int cpu) ;
 static void Query_AMD_F17h_PerCluster(unsigned int cpu) ;
 static void PerCore_AMD_Family_17h_Query(void *arg) ;
@@ -4097,9 +4068,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.SBRMI_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
-		|LATCH_SBRMI_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD EPYC 7261"),
@@ -4110,9 +4079,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.SBRMI_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
-		|LATCH_SBRMI_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD EPYC 7281"),
@@ -4123,9 +4090,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.SBRMI_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
-		|LATCH_SBRMI_CAPABLE
 	},
 	{
 	.Brand = ZLIST( "AMD EPYC 7351P",	\
@@ -4138,9 +4103,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.SBRMI_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
-		|LATCH_SBRMI_CAPABLE
 	},
 	{
 	.Brand = ZLIST( "AMD EPYC 7401P",	\
@@ -4152,9 +4115,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.SBRMI_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
-		|LATCH_SBRMI_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD EPYC 7451"),
@@ -4165,9 +4126,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.SBRMI_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
-		|LATCH_SBRMI_CAPABLE
 	},
 	{
 	.Brand = ZLIST( "AMD EPYC 7551P",	\
@@ -4180,9 +4139,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.SBRMI_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
-		|LATCH_SBRMI_CAPABLE
 	},
 	{
 	.Brand = ZLIST("AMD EPYC 7601"),
@@ -4193,9 +4150,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.SBRMI_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
-		|LATCH_SBRMI_CAPABLE
 	},
 	{0}
 };
@@ -8301,7 +8256,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
-	.Exit = Exit_AMD_Family_17h,
+	.Exit = NULL,
 	.Timer = InitTimer_AMD_F17h_Zen,
 	.BaseClock = BaseClock_AMD_Family_17h,
 	.ClockMod = ClockMod_AMD_Zen,

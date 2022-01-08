@@ -216,22 +216,6 @@ enum {
 #define IS_HSMP_OOO(_rx) (_rx == HSMP_UNSPECIFIED			\
 			|| (_rx >= HSMP_FAIL_BGN && _rx <= HSMP_FAIL_END))
 
-#if defined(FEAT_DBG) && (FEAT_DBG > 1)
-enum SBRMI_REGISTER {
-	SBRMI_REVISION	= 0x0,
-	SBRMI_CONTROL	= 0x1,
-	SBRMI_STATUS	= 0x2,
-	SBRMI_OUT_BOUND = 0x30,
-	SBRMI_IN_BOUND	= 0x38,
-	SBRMI_INTERRUPT = 0x40
-};
-
-enum SBRMI_FUNC {
-	SBRMI_RD_PKG_TDP= 0x1,	/* Package power cTDP[31:0] (mWatts)	*/
-	SBRMI_WR_PKG_TDP= 0x2,	/* SoC package power [31:0] (mWatts)	*/
-};
-#endif /* FEAT_DBG */
-
 /* Sources: BKDG for AMD Families 0Fh, 10h up to 16h			*/
 const struct {
 	unsigned int	MCF,
@@ -1781,41 +1765,3 @@ typedef union
 		VID		: 32-24;	/*	Voltage ID	*/
 	};
 } AMD_17_CORE_VID;
-
-#if defined(FEAT_DBG) && (FEAT_DBG > 1)
-/* Sources: Advanced Platform Management Link (APML) Specification	*/
-typedef union
-{	/* I2C: address = 0x0						*/
-	unsigned char		value;
-	struct {
-		unsigned char
-		Revision	:  8-0;
-	};
-} AMD_SBRMI_REVISION;
-
-typedef union
-{	/* I2C: address = 0x1						*/
-	unsigned char		value;
-	struct {
-		unsigned char
-		AlertMask	:  1-0,
-		AraDis		:  2-1,
-		TimeoutDis	:  3-2,
-		BlkRWEn 	:  4-3,
-		SwAlertMask	:  5-4,
-		ReservedBits	:  7-5,
-		PECEn		:  8-7;
-	};
-} AMD_SBRMI_CONTROL;
-
-typedef union
-{	/* I2C: address = 0x2						*/
-	unsigned char		value;
-	struct {
-		unsigned char
-		AlertSts	:  1-0,
-		SwAlertSts	:  2-1,
-		ReservedBits	:  8-2;
-	};
-} AMD_SBRMI_STATUS;
-#endif /* FEAT_DBG */
