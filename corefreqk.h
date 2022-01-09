@@ -1783,7 +1783,7 @@ static void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 
 /*	[Family 19h]		AF_00h
 	[Zen3/Vermeer]		AF_21h Stepping 0	 7 nm
-	[Zen3/Cezanne]		AF_51h Stepping 0	 7 nm
+	[Zen3/Cezanne]		AF_50h Stepping 0	 7 nm
 	[EPYC/Milan]		AF_01h Stepping 0	 7 nm
 	[Zen{2,3}/Chagall]	AF/08h Stepping 2	 7 nm	HEDT/WS */
 #define _AMD_Family_19h {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x0, .Model=0x0}
@@ -2929,8 +2929,7 @@ enum {
 	CN_COLFAX
 };
 enum {
-	CN_PICASSO,
-	CN_GOOGLE_ZORK
+	CN_PICASSO
 };
 enum {
 	CN_DALI,
@@ -2953,7 +2952,8 @@ enum {
 	CN_VERMEER
 };
 enum {
-	CN_CEZANNE
+	CN_CEZANNE,
+	CN_BARCELO
 };
 enum {
 	CN_MILAN
@@ -2980,7 +2980,6 @@ static MICRO_ARCH Arch_AMD_ZenPlus[] = {
 };
 static MICRO_ARCH Arch_AMD_ZenPlus_APU[] = {
 	[CN_PICASSO]		= {"Zen+ Picasso"},
-	[CN_GOOGLE_ZORK]	= {"Zen+ Google Zork"},
 	{NULL}
 };
 static MICRO_ARCH Arch_AMD_Zen_Dali[] = {
@@ -3013,6 +3012,7 @@ static MICRO_ARCH Arch_AMD_Zen3_VMR[] = {
 };
 static MICRO_ARCH Arch_AMD_Zen3_CZN[] = {
 	[CN_CEZANNE]		= {"Zen3/Cezanne"},
+	[CN_BARCELO]		= {"Zen3/Barcelo"},
 	{NULL}
 };
 static MICRO_ARCH Arch_AMD_EPYC_Milan[] = {
@@ -3854,39 +3854,6 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Athlon Silver PRO 3125GE"),
-	.Boost = {+0, 0},
-	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_SUMMIT_RIDGE,
-	.TgtRatioUnlocked = 1,
-	.ClkRatioUnlocked = 0b10,
-	.TurboUnlocked = 0,
-	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
-	},
-	{
-	.Brand = ZLIST("AMD Athlon Gold PRO 3150GE"),
-	.Boost = {+5, 0},
-	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_SUMMIT_RIDGE,
-	.TgtRatioUnlocked = 1,
-	.ClkRatioUnlocked = 0b10,
-	.TurboUnlocked = 0,
-	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
-	},
-	{
-	.Brand = ZLIST("AMD Athlon Gold PRO 3150G"),
-	.Boost = {+4, 0},
-	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_SUMMIT_RIDGE,
-	.TgtRatioUnlocked = 1,
-	.ClkRatioUnlocked = 0b10,
-	.TurboUnlocked = 0,
-	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
-	},
-	{
 	.Brand = ZLIST( "AMD Ryzen Embedded R", \
 			"AMD Athlon Silver",	\
 			"AMD Athlon Gold"	),
@@ -4493,13 +4460,72 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
 static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 /*	[Zen+ Picasso]		8F_18h Stepping 1			*/
 	{
-	.Brand = ZLIST("AMD Athlon PRO 300GE"),
+	.Brand = ZLIST( "AMD Athlon Silver 3050GE",	\
+			"AMD Athlon Silver PRO 3125GE", \
+			"AMD Athlon PRO 300GE"		),
 	.Boost = {+0, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PICASSO,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Athlon PRO 300U"),
+	.Boost = {+9, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PICASSO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Athlon Gold PRO 3150GE",	\
+			"AMD Athlon Gold 3150GE"	),
+	.Boost = {+5, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PICASSO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 5 PRO 3350GE"),
+	.Boost = {+6, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PICASSO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Athlon Gold PRO 3150G",	\
+			"AMD Ryzen 5 PRO 3350G"),
+	.Boost = {+4, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PICASSO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Athlon Gold 3150G"),
+	.Boost = {+4, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PICASSO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
@@ -4587,7 +4613,8 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD Ryzen 5 3580U",	\
 			"AMD Ryzen 5 3550H",	\
-			"AMD Ryzen 5 3500U"	),
+			"AMD Ryzen 5 3500U",	\
+			"AMD Ryzen 5 3500C"	),
 	.Boost = {+16, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PICASSO,
@@ -4600,7 +4627,8 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD Ryzen 7 3780U",	\
 			"AMD Ryzen 7 3750H",	\
-			"AMD Ryzen 7 3700U"	),
+			"AMD Ryzen 7 3700U",	\
+			"AMD Ryzen 7 3700C"	),
 	.Boost = {+17, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PICASSO,
@@ -4611,34 +4639,10 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 7 3700C"),
-	.Boost = {+17, 0},
-	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_GOOGLE_ZORK,
-	.TgtRatioUnlocked = 1,
-	.ClkRatioUnlocked = 0b10,
-	.TurboUnlocked = 0,
-	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
-	},
-	{
-	.Brand = ZLIST("AMD Ryzen 5 3500C"),
-	.Boost = {+16, 0},
-	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_GOOGLE_ZORK,
-	.TgtRatioUnlocked = 1,
-	.ClkRatioUnlocked = 0b10,
-	.TurboUnlocked = 0,
-	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
-	},
-	{
-	.Brand = ZLIST( "AMD Ryzen 3 3250C",		\
-			"AMD Athlon Gold 3150C",	\
-			"AMD Athlon Silver 3050C"	),
+	.Brand = ZLIST("AMD Ryzen 3 3250C"),
 	.Boost = {+9, 0},
 	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_GOOGLE_ZORK,
+	.CodeNameIdx = CN_PICASSO,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
@@ -4661,7 +4665,9 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 };
 static PROCESSOR_SPECIFIC AMD_Zen_Dali_Specific[] = {
 	{
-	.Brand = ZLIST( "AMD Athlon Gold 3150U",	\
+	.Brand = ZLIST( "AMD Athlon Gold 3150C",	\
+			"AMD Athlon Silver 3050C",	\
+			"AMD Athlon Gold 3150U",	\
 			"AMD Athlon Silver 3050U",	\
 			"AMD Ryzen 3"			),
 	.Boost = {+9, 0},
@@ -4674,10 +4680,11 @@ static PROCESSOR_SPECIFIC AMD_Zen_Dali_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Athlon Silver 3050e"),
+	.Brand = ZLIST( "AMD 3020e",		\
+			"AMD Athlon Silver 3050e"),
 	.Boost = {+14, 0},
 	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_POLLOCK,
+	.CodeNameIdx = CN_DALI,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
@@ -4685,8 +4692,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Dali_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD 3020e",	\
-			"AMD 3015Ce",	\
+	.Brand = ZLIST( "AMD 3015Ce",	\
 			"AMD 3015e"	),
 	.Boost = {+11, 0},
 	.Param.Offset = {0, 0, 0},
@@ -5443,6 +5449,19 @@ static PROCESSOR_SPECIFIC AMD_Zen3_VMR_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
 		|LATCH_HSMP_CAPABLE
 	},
+	{
+	.Brand = ZLIST("5800X3D"),
+	.Boost = {+11, +1},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_VERMEER,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
 	{0}
 };
 static PROCESSOR_SPECIFIC AMD_Zen3_CZN_Specific[] = {
@@ -5602,10 +5621,34 @@ static PROCESSOR_SPECIFIC AMD_Zen3_CZN_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
+	.Brand = ZLIST( "AMD Ryzen 3 5425U",	\
+			"AMD Ryzen 3 PRO 5475U" ),
+	.Boost = {+14, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_BARCELO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
 	.Brand = ZLIST("AMD Ryzen 5 5600U"),
 	.Boost = {+19, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_CEZANNE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 5 5625U",	\
+			"AMD Ryzen 5 PRO 5675U" ),
+	.Boost = {+20, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_BARCELO,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
@@ -5641,6 +5684,18 @@ static PROCESSOR_SPECIFIC AMD_Zen3_CZN_Specific[] = {
 	.Boost = {+12, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_CEZANNE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 7 5825U",	\
+			"AMD Ryzen 7 PRO 5875U" ),
+	.Boost = {+25, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_BARCELO,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
