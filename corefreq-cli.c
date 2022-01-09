@@ -4173,16 +4173,18 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
     }
 /* Row Mark */
     if (RO(Shm)->Proc.Power.TDC > 0) {
-	GridCall( PUT(	RO(Shm)->Proc.Features.TDP_Unlock ?
-			BOXKEY_TDC : SCANKEY_NULL,
+	bix	= (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+		&& RO(Shm)->Proc.Features.TDP_Unlock;
+
+	GridCall( PUT(	bix ? BOXKEY_TDC : SCANKEY_NULL,
 			attrib[ RO(Shm)->Proc.Power.Feature.TDC ? 3 : 5 ],
 			width, 2,
 			"%s%.*s%s   %c%5u A%c", RSC(POWER_THERMAL_TDC).CODE(),
 			width - 18 - RSZ(POWER_THERMAL_TDC), hSpace,
 			RSC(POWER_LABEL_TDC).CODE(),
-			RO(Shm)->Proc.Features.TDP_Unlock ? '<' : '[',
+			bix ? '<' : '[',
 			RO(Shm)->Proc.Power.TDC,
-			RO(Shm)->Proc.Features.TDP_Unlock ? '>' : ']' ),
+			bix ? '>' : ']' ),
 		TDC_Update );
     } else {
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
