@@ -5927,18 +5927,18 @@ static void Policy_Core2_SetTarget(void *arg) ;
 static void Policy_Nehalem_SetTarget(void *arg) ;
 static void Policy_SandyBridge_SetTarget(void *arg) ;
 static void Policy_HWP_SetTarget(void *arg) ;
-#define Policy_Broadwell_EP_SetTarget	Policy_HWP_SetTarget
-#define Policy_Skylake_SetTarget	Policy_HWP_SetTarget
+#define Policy_Broadwell_EP_SetTarget	Policy_SandyBridge_SetTarget
+static void Policy_Skylake_SetTarget(void *arg) ;
 static void Policy_Zen_SetTarget(void *arg) ;
 
 #define VOID_Driver {							\
-	.IdleState	= NULL,						\
-	.GetFreq	= NULL,						\
+	.IdleState	= NULL ,					\
+	.GetFreq	= NULL ,					\
 	.SetTarget	= NULL						\
 }
 
 #define CORE2_Driver {							\
-	.IdleState	= NULL,						\
+	.IdleState	= NULL ,					\
 	.GetFreq	= Policy_GetFreq,				\
 	.SetTarget	= Policy_Core2_SetTarget			\
 }
@@ -6249,7 +6249,7 @@ static IDLE_STATE BDW_IdleState[] = {
 	.SetTarget	= Policy_SandyBridge_SetTarget			\
 }
 
-#define BDW_EP_Driver {							\
+#define BDW_EP_Driver { 						\
 	.IdleState	= BDW_IdleState,				\
 	.GetFreq	= Policy_GetFreq,				\
 	.SetTarget	= Policy_Broadwell_EP_SetTarget			\
@@ -6353,7 +6353,7 @@ static IDLE_STATE SKX_IdleState[] = {
 }
 
 #define Intel_Driver {							\
-	.IdleState	= NULL,						\
+	.IdleState	= NULL ,					\
 	.GetFreq	= Policy_GetFreq,				\
 	.SetTarget	= Policy_Skylake_SetTarget			\
 }

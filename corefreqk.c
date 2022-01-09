@@ -6731,6 +6731,11 @@ static int Cmp_SandyBridge_Target(CORE_RO *Core, unsigned int ratio)
 	return (Core->PowerThermal.PerfControl.SNB.TargetRatio > ratio);
 }
 
+static int Cmp_Skylake_Target(CORE_RO *Core, unsigned int ratio)
+{
+	return (Core->PowerThermal.PerfControl.SNB.TargetRatio >= ratio);
+}
+
 bool IsPerformanceControlCapable(void)
 {
 	struct SIGNATURE blackList[] = {
@@ -9687,8 +9692,9 @@ static void PerCore_Skylake_Query(void *arg)
 	TurboBoost_Technology(	Core,
 				Set_SandyBridge_Target,
 				Get_SandyBridge_Target,
-				Cmp_SandyBridge_Target,
-				Core->Boost[BOOST(1C)],
+				Cmp_Skylake_Target,
+				Core->Boost[BOOST(TDP)] > 0 ?
+				Core->Boost[BOOST(TDP)]:Core->Boost[BOOST(1C)],
 				Core->Boost[BOOST(MAX)] );
 
 	Query_Intel_C1E(Core);
@@ -9762,8 +9768,9 @@ static void PerCore_Skylake_X_Query(void *arg)
 	TurboBoost_Technology(	Core,
 				Set_SandyBridge_Target,
 				Get_SandyBridge_Target,
-				Cmp_SandyBridge_Target,
-				Core->Boost[BOOST(1C)],
+				Cmp_Skylake_Target,
+				Core->Boost[BOOST(TDP)] > 0 ?
+				Core->Boost[BOOST(TDP)]:Core->Boost[BOOST(1C)],
 				Core->Boost[BOOST(MAX)] );
 
 	Query_Intel_C1E(Core);
@@ -15924,16 +15931,25 @@ static int CoreFreqK_SetBoost(int state)
 
 static ssize_t CoreFreqK_Show_SetSpeed(struct cpufreq_policy *policy,char *buf)
 {
-  if (policy != NULL) {
+  if (policy != NULL)
+  {
 	CORE_RO *Core;
+	enum RATIO_BOOST boost;
+
     if (policy->cpu < PUBLIC(RO(Proc))->CPU.Count)
     {
 	Core = (CORE_RO *) PUBLIC(RO(Core, AT(policy->cpu)));
     } else {
 	Core = (CORE_RO *) PUBLIC(RO(Core, AT(PUBLIC(RO(Proc))->Service.Core)));
     }
-	return sprintf(buf, "%7llu\n",
-			(Core->Boost[BOOST(TGT)] * Core->Clock.Hz) / 1000LLU);
+    if (PUBLIC(RO(Proc))->Features.HWP_Enable
+    && (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)) {
+	boost = BOOST(HWP_TGT);
+    } else {
+	boost = BOOST(TGT);
+    }
+	return sprintf( buf, "%7llu\n",
+			(Core->Boost[boost] * Core->Clock.Hz) / 1000LLU );
   }
 	return 0;
 }
@@ -15941,24 +15957,31 @@ static ssize_t CoreFreqK_Show_SetSpeed(struct cpufreq_policy *policy,char *buf)
 static int CoreFreqK_Store_SetSpeed(struct cpufreq_policy *policy,
 					unsigned int freq)
 {
-    if (policy != NULL) {
-	if ((policy->cpu < PUBLIC(RO(Proc))->CPU.Count)
-	 && (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.SetTarget != NULL))
-	{
-		CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(policy->cpu)));
-		unsigned int ratio = (freq * 1000LLU) / Core->Clock.Hz;
+  if (policy != NULL)
+  {
+	void (*SetTarget)(void *arg) = NULL;
 
-	    if (ratio > 0) {
-		if (smp_call_function_single(policy->cpu,
-			Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.SetTarget,
-						&ratio, 1) == 0)
+    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL) {
+	SetTarget = Policy_HWP_SetTarget;
+    } else {
+	SetTarget = Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.SetTarget;
+    }
+    if ((policy->cpu < PUBLIC(RO(Proc))->CPU.Count) && (SetTarget != NULL))
+    {
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(policy->cpu)));
+	unsigned int ratio = (freq * 1000LLU) / Core->Clock.Hz;
+
+	if (ratio > 0) {
+		if (smp_call_function_single(	policy->cpu,
+						SetTarget,
+						&ratio, 1) == 0 )
 		{
 			BITSET(BUS_LOCK, PUBLIC(RW(Proc))->OS.Signal, NTFY);
 		}
-	    }
 		return 0;
 	}
     }
+  }
 	return -EINVAL;
 }
 #endif /* CONFIG_CPU_FREQ */
@@ -16062,6 +16085,34 @@ static void Policy_SandyBridge_SetTarget(void *arg)
 #endif /* CONFIG_CPU_FREQ */
 }
 
+static void Policy_Skylake_SetTarget(void *arg)
+{
+#ifdef CONFIG_CPU_FREQ
+	unsigned int *ratio = (unsigned int*) arg;
+	unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+    if ((*ratio) <= Core->Boost[BOOST(1C)])
+    {
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	Set_SandyBridge_Target(Core, (*ratio));
+	WritePerformanceControl(&Core->PowerThermal.PerfControl);
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+
+	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA) {
+	    if (Cmp_Skylake_Target(Core, Core->Boost[BOOST(TDP)] > 0 ?
+			Core->Boost[BOOST(TDP)] : Core->Boost[BOOST(MAX)]))
+	    {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+	    } else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+	    }
+	}
+	Core->Boost[BOOST(TGT)] = Get_SandyBridge_Target(Core);
+    }
+#endif /* CONFIG_CPU_FREQ */
+}
+
 static void Policy_HWP_SetTarget(void *arg)
 {
 #ifdef CONFIG_CPU_FREQ
@@ -16084,7 +16135,9 @@ static void Policy_HWP_SetTarget(void *arg)
 	Core->Boost[BOOST(HWP_TGT)]=Core->PowerThermal.HWP_Request.Desired_Perf;
     }
   } else {
-	Policy_SandyBridge_SetTarget(arg);
+	if (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.SetTarget != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.SetTarget(arg);
+	}
   }
 #endif /* CONFIG_CPU_FREQ */
 }
