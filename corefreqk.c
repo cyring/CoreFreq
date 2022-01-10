@@ -2327,6 +2327,7 @@ int Intel_MaxBusRatio(PLATFORM_ID *PfID)
 		_Atom_Clover_Trail,	/* 06_35 */
 		_Atom_Saltwell, 	/* 06_36 */
 		_Silvermont_Bay_Trail,	/* 06_37 */
+		_Atom_Bonnell,		/* 06_1C */
 	};
 	int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
 	for (id = 0; id < ids; id++) {
