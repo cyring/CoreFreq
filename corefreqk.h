@@ -2961,6 +2961,9 @@ enum {
 enum {
 	CN_CHAGALL
 };
+enum {
+	CN_REMBRANDT
+};
 
 static MICRO_ARCH Arch_AMD_Zen[] = {
 	[CN_SUMMIT_RIDGE]	= {"Zen/Summit Ridge"},
@@ -3023,6 +3026,11 @@ static MICRO_ARCH Arch_AMD_Zen3_Chagall[] = {
 	[CN_CHAGALL]		= {"Zen3/Chagall"},
 	{NULL}
 };
+static MICRO_ARCH Arch_AMD_Zen3Plus_Rembrandt[] __attribute__((unused)) = {
+	[CN_REMBRANDT]		= {"Zen3+ Rembrandt"},
+	{NULL}
+};
+
 static MICRO_ARCH Arch_AMD_Family_17h[] = {{"AMD Zen"}, {NULL}};
 
 static MICRO_ARCH Arch_AMD_Family_18h[] = {{"Dhyana"}, {NULL}};
@@ -5884,6 +5892,112 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Milan_Specific[] = {
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{0}
+};
+static PROCESSOR_SPECIFIC AMD_Zen3_Rembrandt_Specific[] __attribute__((unused))=
+{
+	{
+	.Brand = ZLIST( "AMD Ryzen 5 PRO 6650HS",	\
+			"AMD Ryzen 5 PRO 6650H",	\
+			"AMD Ryzen 5 6600HS​",		\
+			"AMD Ryzen 5 6600H"		),
+	.Boost = {+12, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_REMBRANDT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 7 PRO 6850HS",	\
+			"AMD Ryzen 7 PRO 6850H",	\
+			"AMD Ryzen 7 6800HS",		\
+			"AMD Ryzen 7 6800H"		),
+	.Boost = {+15, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_REMBRANDT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 7 PRO 6850U",	\
+			"AMD Ryzen 7 6800U​"		),
+	.Boost = {+20, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_REMBRANDT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 9 PRO 6950HS",	\
+			"AMD Ryzen 9 PRO 6950H",	\
+			"AMD Ryzen 9 6900HS​",		\
+			"AMD Ryzen 5 PRO 6650U",	\
+			"AMD Ryzen 5 6600U"		),
+	.Boost = {+16, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_REMBRANDT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 9 6900HX"),
+	.Boost = {+16, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_REMBRANDT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 9 6980HS"),
+	.Boost = {+17, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_REMBRANDT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 9 6980HX"),
+	.Boost = {+17, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_REMBRANDT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
 	.HSMP_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
