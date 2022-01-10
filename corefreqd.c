@@ -5924,6 +5924,7 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
     case AMD_Zen3_CZN:
     case AMD_EPYC_Milan:
     case AMD_Zen3_Chagall:
+    case AMD_Zen3Plus_RMB:
     case AMD_Family_17h:
     case AMD_Family_18h:
     case AMD_Family_19h:

@@ -116,6 +116,7 @@ enum {	GenuineArch = 0,
 	AMD_Zen3_CZN,
 	AMD_EPYC_Milan,
 	AMD_Zen3_Chagall,
+	AMD_Zen3Plus_RMB,
 	ARCHITECTURES
 };
 

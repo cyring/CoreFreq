@@ -1843,6 +1843,7 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Zen3_CZN:
 	case AMD_EPYC_Milan:
 	case AMD_Zen3_Chagall:
+	case AMD_Zen3Plus_RMB:
 	case AMD_Family_17h:
 	case AMD_Family_18h:
 	case AMD_Family_19h:
@@ -5977,6 +5978,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	AMD_17_ZEN2_COF XtraCOF = {.value = 0};
 
 	switch (PUBLIC(RO(Proc))->ArchID) {
+	case AMD_Zen3Plus_RMB:
 	case AMD_Zen3_VMR:
 	case AMD_Zen2_MTS:
 	case AMD_Zen2_Ariel:

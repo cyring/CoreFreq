@@ -1762,7 +1762,8 @@ static void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 	[Zen2/Renoir]		8F_60h Stepping 1	 7 nm	APU
 	[Zen2/Lucienne] 	8F_68h Stepping 1	 7 nm	APU
 	[Zen2/Matisse]		8F_71h Stepping 0	 7 nm
-	[Zen2/Xbox		8F_74h Stepping 0	 7 nm		*/
+	[Zen2/Xbox		8F_74h Stepping 0	 7 nm
+	[Zen2/VanGogh]		890F00		[VN]	 7 nm		*/
 #define _AMD_Zen	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x1}
 #define _AMD_Zen_APU	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x1, .Model=0x1}
 #define _AMD_ZenPlus	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x8}
@@ -1785,13 +1786,22 @@ static void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 	[Zen3/Vermeer]		AF_21h Stepping 0	 7 nm
 	[Zen3/Cezanne]		AF_50h Stepping 0	 7 nm
 	[EPYC/Milan]		AF_01h Stepping 0	 7 nm
-	[Zen{2,3}/Chagall]	AF/08h Stepping 2	 7 nm	HEDT/WS */
+	[Zen3/Chagall]		AF_08h Stepping 2 [GN]	 7 nm	HEDT/TRX4
+	[Zen3/Genesis]		A00F11			[Milan]|[GN] ?	*/
+/*
+	[Zen3/Badami/Milan-X]	A30F00		[BA]	 7 nm	SVR
+	[Zen3+ Rembrandt]	AF_40h		[RMB]	 6 nm
+	[Zen4/Genoa/Stones]	A10F00			 5 nm
+	[Zen4/Raphael]		A60F00		[RPL]	 5 nm
+	[Zen4/Phoenix]		A70F00		[PHX]			*/
 #define _AMD_Family_19h {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 #define _AMD_Zen3_VMR	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x2, .Model=0x1}
 #define _AMD_Zen3_CZN	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x5, .Model=0x0}
 #define _AMD_EPYC_Milan {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x0, .Model=0x1}
 #define _AMD_Zen3_Chagall	\
 			{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x0, .Model=0x8}
+#define _AMD_Zen3Plus_RMB	\
+			{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x4, .Model=0x0}
 
 typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
 
@@ -3026,7 +3036,7 @@ static MICRO_ARCH Arch_AMD_Zen3_Chagall[] = {
 	[CN_CHAGALL]		= {"Zen3/Chagall"},
 	{NULL}
 };
-static MICRO_ARCH Arch_AMD_Zen3Plus_Rembrandt[] __attribute__((unused)) = {
+static MICRO_ARCH Arch_AMD_Zen3Plus_RMB[] = {
 	[CN_REMBRANDT]		= {"Zen3+ Rembrandt"},
 	{NULL}
 };
@@ -5899,8 +5909,7 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Milan_Specific[] = {
 	},
 	{0}
 };
-static PROCESSOR_SPECIFIC AMD_Zen3_Rembrandt_Specific[] __attribute__((unused))=
-{
+static PROCESSOR_SPECIFIC AMD_Zen3Plus_RMB_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD Ryzen 5 PRO 6650HS",	\
 			"AMD Ryzen 5 PRO 6650H",	\
@@ -8758,5 +8767,29 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Specific = Void_Specific,
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3_Chagall
+	},
+[AMD_Zen3Plus_RMB] = {							/* 89*/
+	.Signature = _AMD_Zen3Plus_RMB,
+	.Query = Query_AMD_F19h_PerCluster,
+	.Update = PerCore_AMD_Family_19h_Query,
+	.Start = Start_AMD_Family_19h,
+	.Stop = Stop_AMD_Family_19h,
+	.Exit = NULL,
+	.Timer = InitTimer_AMD_F17h_Zen3_SP,
+	.BaseClock = BaseClock_AMD_Family_19h,
+	.ClockMod = ClockMod_AMD_Zen,
+	.TurboClock = TurboClock_AMD_Zen,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN3,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_19h,
+	.powerFormula   = POWER_FORMULA_AMD_19h,
+	.PCI_ids = PCI_AMD_19h_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = AMD_Zen3Plus_RMB_Specific,
+	.SystemDriver = AMD_Zen_Driver,
+	.Architecture = Arch_AMD_Zen3Plus_RMB
 	}
 };
