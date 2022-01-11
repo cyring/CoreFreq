@@ -5364,6 +5364,7 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 	case AMD_Zen3_CZN:
 	case AMD_EPYC_Milan:
 	case AMD_Zen3_Chagall:
+	case AMD_Zen3_Badami:
 	case AMD_Zen3Plus_RMB:
 		TopologyFunc = Topology_CCD;
 		pStrOFF = TopologyStrOFF[2];
@@ -14556,7 +14557,8 @@ CUINT Layout_Ruler_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
     switch (RO(Shm)->Proc.ArchID) {
     case Kabylake_UY:
     case Kabylake:
-    case Cannonlake:
+    case Cannonlake_U:
+    case Cannonlake_H:
     case Icelake_UY:
     case Icelake:
     case Cometlake_UY:
@@ -14648,7 +14650,8 @@ CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
     switch (RO(Shm)->Proc.ArchID) {
     case Kabylake_UY:
     case Kabylake:
-    case Cannonlake:
+    case Cannonlake_U:
+    case Cannonlake_H:
     case Icelake_UY:
     case Icelake:
     case Cometlake_UY:

@@ -1843,6 +1843,7 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Zen3_CZN:
 	case AMD_EPYC_Milan:
 	case AMD_Zen3_Chagall:
+	case AMD_Zen3_Badami:
 	case AMD_Zen3Plus_RMB:
 	case AMD_Family_17h:
 	case AMD_Family_18h:
@@ -1919,7 +1920,8 @@ static void Map_AMD_Topology(void *arg)
 
 			|| ((leaf80000008.ECX.NC == 0x17)
 			 && ((PUBLIC(RO(Proc))->ArchID == AMD_EPYC_Rome_CPK)
-			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Chagall)));
+			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Chagall)
+			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Badami)));
 	      }
 	      else
 	      { 	/*		SMT is disabled.		*/
@@ -1935,7 +1937,8 @@ static void Map_AMD_Topology(void *arg)
 
 			|| ((leaf80000008.ECX.NC == 0x0b)
 			 && ((PUBLIC(RO(Proc))->ArchID == AMD_EPYC_Rome_CPK)
-			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Chagall)));
+			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Chagall)
+			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Badami)));
 	      }
 		/* CCD has to remain within range values from 0 to 7	*/
 		factor = factor & (Core->T.CoreID < 32);
@@ -7784,7 +7787,8 @@ void PowerThermal(CORE_RO *Core)
 		{_Kabylake,		1, 1, 0, 0},	/* 06_9E */
 		{_Kabylake_UY,		1, 1, 1, 0},	/* 06_8E */
 
-		{_Cannonlake,		1, 1, 1, 0},	/* 06_66 */
+		{_Cannonlake_U ,	1, 1, 1, 0},	/* 06_66 */
+		{_Cannonlake_H ,	1, 1, 1, 0},
 		{_Geminilake,		1, 0, 1, 0},	/* 06_7A */
 		{_Icelake_UY,		1, 1, 1, 0},	/* 06_7E */
 
@@ -7804,7 +7808,12 @@ void PowerThermal(CORE_RO *Core)
 		{_Rocketlake,		1, 1, 1, 0},
 		{_Rocketlake_U ,	1, 1, 1, 0},
 		{_Alderlake_S,		1, 1, 1, 0},
-		{_Alderlake_H,		1, 1, 1, 0}
+		{_Alderlake_H,		1, 1, 1, 0},
+		{_Meteorlake_M ,	1, 1, 1, 0},
+		{_Meteorlake_N ,	1, 1, 1, 0},
+		{_Meteorlake_S ,	1, 1, 1, 0},
+		{_Raptorlake_S ,	1, 1, 1, 0},
+		{_Raptorlake_P ,	1, 1, 1, 0}
 	};
 	unsigned int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
  for (id = 0; id < ids; id++)
