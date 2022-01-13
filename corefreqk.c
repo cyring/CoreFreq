@@ -14690,6 +14690,13 @@ static void Start_AMD_Family_17h(void *arg)
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	UNUSED(arg);
 
+#ifdef CONFIG_PM_SLEEP
+	if (CoreFreqK.ResumeFromSuspend == true) {
+		WRCOUNTER(0x0, MSR_IA32_MPERF);
+		WRCOUNTER(0x0, MSR_IA32_APERF);
+	}
+#endif /* CONFIG_PM_SLEEP */
+
 	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
 		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
 	}
@@ -14721,17 +14728,6 @@ static void Start_AMD_Family_17h(void *arg)
 
 	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
-
-#ifdef CONFIG_PM_SLEEP
-static void Start_AMD_Family_17h_MTS(void *arg)
-{
-	if (CoreFreqK.ResumeFromSuspend == true) {
-		WRCOUNTER(0x0, MSR_IA32_MPERF);
-		WRCOUNTER(0x0, MSR_IA32_APERF);
-	}
-	Start_AMD_Family_17h(arg);
-}
-#endif /* CONFIG_PM_SLEEP */
 
 static void Stop_AMD_Family_17h(void *arg)
 {
@@ -14915,7 +14911,7 @@ static int CoreFreqK_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 static int CoreFreqK_MWAIT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {/* Avoid kernel idle loop to be stuck if the MWAIT opcode has been disabled */
-	HWCR HwCfgRegister = {.value = 0};
+	HWCR HwCfgRegister;
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
     if (BITVAL(HwCfgRegister.value, 9) == 0)
     {
@@ -14950,7 +14946,7 @@ static int CoreFreqK_S2_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 static void CoreFreqK_S2_MWAIT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-	HWCR HwCfgRegister = {.value = 0};
+	HWCR HwCfgRegister;
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
     if (BITVAL(HwCfgRegister.value, 9) == 0)
     {
@@ -14961,7 +14957,7 @@ static void CoreFreqK_S2_MWAIT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 static int CoreFreqK_S2_MWAIT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-	HWCR HwCfgRegister = {.value = 0};
+	HWCR HwCfgRegister;
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
     if (BITVAL(HwCfgRegister.value, 9) == 0)
     {
@@ -14998,7 +14994,7 @@ static int CoreFreqK_HALT_Handler(struct cpuidle_device *pIdleDevice,
 static int CoreFreqK_HALT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-	HWCR HwCfgRegister = {.value = 0};
+	HWCR HwCfgRegister;
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
     if (BITVAL(HwCfgRegister.value, 9) == 0)
     {
@@ -15045,7 +15041,7 @@ static int CoreFreqK_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
 static void CoreFreqK_S2_HALT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-	HWCR HwCfgRegister = {.value = 0};
+	HWCR HwCfgRegister;
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
     if (BITVAL(HwCfgRegister.value, 9) == 0)
     {
@@ -15056,7 +15052,7 @@ static void CoreFreqK_S2_HALT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 static int CoreFreqK_S2_HALT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-	HWCR HwCfgRegister = {.value = 0};
+	HWCR HwCfgRegister;
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
     if (BITVAL(HwCfgRegister.value, 9) == 0)
     {
@@ -15094,7 +15090,7 @@ static int CoreFreqK_IO_Handler(struct cpuidle_device *pIdleDevice,
 static int CoreFreqK_IO_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-	HWCR HwCfgRegister = {.value = 0};
+	HWCR HwCfgRegister;
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
     if (BITVAL(HwCfgRegister.value, 9) == 0)
     {
@@ -15141,7 +15137,7 @@ static int CoreFreqK_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
 static void CoreFreqK_S2_IO_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-	HWCR HwCfgRegister = {.value = 0};
+	HWCR HwCfgRegister;
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
     if (BITVAL(HwCfgRegister.value, 9) == 0)
     {
@@ -15152,7 +15148,7 @@ static void CoreFreqK_S2_IO_AMD_Handler(struct cpuidle_device *pIdleDevice,
 static int CoreFreqK_S2_IO_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-	HWCR HwCfgRegister = {.value = 0};
+	HWCR HwCfgRegister;
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
     if (BITVAL(HwCfgRegister.value, 9) == 0)
     {

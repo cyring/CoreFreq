@@ -1544,9 +1544,6 @@ static void Query_AMD_F17h_PerSocket(unsigned int cpu) ;
 static void Query_AMD_F17h_PerCluster(unsigned int cpu) ;
 static void PerCore_AMD_Family_17h_Query(void *arg) ;
 static void Start_AMD_Family_17h(void *arg) ;
-#ifdef CONFIG_PM_SLEEP
-static void Start_AMD_Family_17h_MTS(void *arg) ;
-#endif
 static void Stop_AMD_Family_17h(void *arg) ;
 static void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 static void InitTimer_AMD_F17h_Zen(unsigned int cpu) ;
@@ -1778,7 +1775,7 @@ static void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 	[Zen2/Lucienne] 	8F_68h Stepping 1	 7 nm	APU
 	[Zen2/Matisse]		8F_71h Stepping 0	 7 nm
 	[Zen2/Xbox		8F_74h Stepping 0	 7 nm
-	[Zen2/VanGogh]		890F00		[VN]	 7 nm		*/
+	[Zen2/VanGogh]		8F_90h			 7 nm	[VN]	*/
 #define _AMD_Zen	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x1}
 #define _AMD_Zen_APU	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x1, .Model=0x1}
 #define _AMD_ZenPlus	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x8}
@@ -8817,11 +8814,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Signature = _AMD_Zen2_MTS,
 	.Query = Query_AMD_F17h_PerCluster,
 	.Update = PerCore_AMD_Family_17h_Query,
-#ifdef CONFIG_PM_SLEEP
-	.Start = Start_AMD_Family_17h_MTS,
-#else
 	.Start = Start_AMD_Family_17h,
-#endif
 	.Stop = Stop_AMD_Family_17h,
 	.Exit = NULL,
 	.Timer = InitTimer_AMD_F17h_Zen2_SP,
