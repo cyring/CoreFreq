@@ -3310,6 +3310,9 @@ void SNB_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		break;
 	}
 
+	TIMING(mc, cha).tXS = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.SRFTP.tXS;
+
       for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
       {
 	unsigned int width, DIMM_Banks;
@@ -3502,6 +3505,9 @@ void SNB_EP_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		TIMING(mc, cha).CMD_Rate = 0;
 		break;
 	}
+
+	TIMING(mc, cha).tXS = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.SRFTP.EP.tXS_DLL;
 
 	for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
 	{

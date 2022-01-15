@@ -2525,6 +2525,26 @@ typedef union
 } SNB_IMC_TC_RFTP;
 
 typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: 42A4h & Channel1: 46A4h */
+	unsigned int		value;
+	struct {
+		unsigned int
+		ReservedBits1	: 12-0,
+		tXS		: 16-12,
+		ReservedBits2	: 32-16;
+	};
+	/* Device 16,30 - Function: 0,1,4,5 - Offset 218h		*/
+	struct {
+		unsigned int
+		tXS_DLL 	: 12-0,
+		tXS_XS_OFFSET	: 16-12,
+		tZQOPER 	: 26-16,
+		ReservedBits	: 27-16,
+		tMOD		: 32-27;
+	} EP;
+} SNB_IMC_TC_SRFTP;
+
+typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 5004h & Channel1: 5008h */
 	unsigned int		value;
 	struct {

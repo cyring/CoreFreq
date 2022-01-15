@@ -3985,6 +3985,9 @@ void Query_SNB_IMC(void __iomem *mchmap, unsigned short mc)
 
 		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.RFTP.value = \
 					readl(mchmap + 0x4298 + 0x400 * cha);
+
+		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.SRFTP.value = \
+					readl(mchmap + 0x42a4 + 0x400 * cha);
     }
 	/*		Is Dual DIMM Per Channel Disable ?		*/
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = \
@@ -4698,7 +4701,7 @@ static PCI_CALLBACK SNB_EP_CTRL1(struct pci_dev *dev)
 	return (PCI_CALLBACK) 0;
 }
 
-kernel_ulong_t SNB_EP_IMC(struct pci_dev *dev ,unsigned short mc,
+kernel_ulong_t SNB_EP_IMC(struct pci_dev *dev , unsigned short mc,
 						unsigned short cha)
 {
 	pci_read_config_dword(dev, 0x200,
@@ -4712,6 +4715,9 @@ kernel_ulong_t SNB_EP_IMC(struct pci_dev *dev ,unsigned short mc,
 
 	pci_read_config_dword(dev, 0x214,
 	    &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB_EP.RFTP.value);
+
+	pci_read_config_dword(dev, 0x218,
+	    &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB_EP.SRFTP.value);
 
 	return 0;
 }
