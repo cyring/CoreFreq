@@ -1127,8 +1127,16 @@
 		" tdrWrTWr ( Write to Write, Different Rank, Same DIMM ) "
 
 #define RSC_DDR3_SRWRTWR_COMM_CODE_EN " tsrWrTWr ( Write to Write, Same Rank ) "
+
+#define RSC_DDR3_XS_COMM_CODE_EN	" tXS ( Exit Self refresh to commands" \
+					" not requiring a locked DL ) "
+
+#define RSC_DDR3_XP_COMM_CODE_EN	" tXP ( Exit Power-down with DLL on " \
+					"to any valid command ) "
+
 #define RSC_DDR3_CKE_COMM_CODE_EN	" tCKE ( ClocK Enable ) "
 #define RSC_DDR3_ECC_COMM_CODE_EN	" ECC ( Error Correcting Code ) "
+
 #define RSC_DDR4_RDRD_SCL_COMM_CODE_EN	" tRDRD ( Read to Read, Same Bank ) "
 #define RSC_DDR4_RDRD_SC_COMM_CODE_EN " tRDRD ( Read to Read, Different Bank ) "
 #define RSC_DDR4_RDRD_SD_COMM_CODE_EN " tRDRD ( Read to Read, Different Rank ) "
@@ -1253,11 +1261,17 @@
 #define RSC_DDR4_ZEN_MOD_PDA_COMM_CODE_EN \
 		" tMOD_PDA ( MRS PDA to another non-MRS command, Same CS ) "
 
+#define RSC_DDR4_ZEN_WRMPR_COMM_CODE_EN \
+			" tWRMPR ( Number of clocks greater than tMOD ) "
+
 #define RSC_DDR4_ZEN_STAG_COMM_CODE_EN	\
 		" tSTAG ( Min timing between REF commands, Different CS ) "
 
 #define RSC_DDR4_ZEN_PDM_COMM_CODE_EN	" PDM ( DRAM Power Down Mode ) " \
 					" [ Aggressive:Full|Partial:Enable ] "
+
+#define RSC_DDR4_ZEN_RDDATA_COMM_CODE_EN \
+			" tRDDATA ( Read command to dfi_rddata_en delay ) "
 
 #define RSC_DDR4_ZEN_PHYWRD_COMM_CODE_EN \
 			" tPHYWRD ( dfi_wrdata_en to dfi_wrdata delay ) "
@@ -1267,12 +1281,6 @@
 
 #define RSC_DDR4_ZEN_PHYRDL_COMM_CODE_EN \
 			" tPHYRDL ( dfi_rddata_en to dfi_rddata_vld delay ) "
-
-#define RSC_DDR4_ZEN_RDDATA_COMM_CODE_EN \
-			" tRDDATA ( Read command to dfi_rddata_en delay ) "
-
-#define RSC_DDR4_ZEN_WRMPR_COMM_CODE_EN \
-			" tWRMPR ( Number of clocks greater than tMOD ) "
 
 #define RSC_TASKS_SORTBY_STATE_CODE_EN		" State    "
 #define RSC_TASKS_SORTBY_RTIME_CODE_EN		" RunTime  "
@@ -2009,6 +2017,8 @@
 #define RSC_DDR3_DDWRTWR_CODE		" ddWW"
 #define RSC_DDR3_DRWRTWR_CODE		" drWW"
 #define RSC_DDR3_SRWRTWR_CODE		" srWW"
+#define RSC_DDR3_XS_CODE		"  XS "
+#define RSC_DDR3_XP_CODE		"  XP "
 #define RSC_DDR3_CKE_CODE		" CKE "
 #define RSC_DDR3_ECC_CODE		"  ECC"
 
@@ -2092,14 +2102,13 @@
 #define RSC_DDR4_ZEN_MOD_CODE		" MOD:"
 #define RSC_DDR4_ZEN_MRD_PDA_CODE	"PDA  "
 #define RSC_DDR4_ZEN_MOD_PDA_CODE	"PDA  "
+#define RSC_DDR4_ZEN_WRMPR_CODE 	"WRMPR"
 #define RSC_DDR4_ZEN_STAG_CODE		" STAG"
 #define RSC_DDR4_ZEN_PDM_CODE		" PDM "
-#define RSC_DDR4_ZEN_PHYWRD_CODE	"Y[WRD"
-#define RSC_DDR4_ZEN_PHYWRL_CODE	"  WRL"
-#define RSC_DDR4_ZEN_PHYRDL_CODE	" RDL]"
 #define RSC_DDR4_ZEN_RDDATA_CODE	"RDDAT"
-#define RSC_DDR4_ZEN_PHY_CODE		"A  PH"
-#define RSC_DDR4_ZEN_WRMPR_CODE 	"WRMPR"
+#define RSC_DDR4_ZEN_PHYWRD_CODE	"A WRD"
+#define RSC_DDR4_ZEN_PHYWRL_CODE	"  WRL"
+#define RSC_DDR4_ZEN_PHYRDL_CODE	"  RDL"
 
 #define RSC_SYS_REGS_SPACE_CODE 	"    "
 #define RSC_SYS_REGS_NA_CODE		"  - "

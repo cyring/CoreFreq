@@ -1868,7 +1868,7 @@ typedef union
 		tRD_RD_SR	:  8-4,
 		tWR_RD		: 11-8,
 		tWTR		: 16-11,
-		tRCD_RD		: 20-16,
+		tRCD_RD 	: 20-16,
 		ReservedBits	: 24-20,
 		tREF		: 32-24;	/* Offset 25Bh		*/
 	};
@@ -2303,8 +2303,8 @@ typedef union	/* Nehalem, Westmere					*/
 		tCKE		:  3-0,
 		tXS	 	: 11-3,
 		tXSDLL		: 21-11,
-		Cs4CkeTransition: 22-21,
-		ReservedBits	: 32-22;
+		tXP		: 24-21, /* 22-21: Cs4CkeTransition	*/
+		tRANKIDLE	: 32-24;
 	};
 } NHM_IMC_CKE_TIMING;
 

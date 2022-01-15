@@ -2121,6 +2121,14 @@ void P965_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	}
 	TIMING(mc, cha).ECC = 0;
 
+	TIMING(mc, cha).tXS = (cha == 0) ?
+				  RO(Proc)->Uncore.MC[mc].P965.CKE0.tXSNR
+				: RO(Proc)->Uncore.MC[mc].P965.CKE1.tXSNR;
+
+	TIMING(mc, cha).tXP = (cha == 0) ?
+				  RO(Proc)->Uncore.MC[mc].P965.CKE0.tXP
+				: RO(Proc)->Uncore.MC[mc].P965.CKE1.tXP;
+
 	TIMING(mc, cha).tCKE = (cha == 0) ?
 				  RO(Proc)->Uncore.MC[mc].P965.CKE0.tCKE_Low
 				: RO(Proc)->Uncore.MC[mc].P965.CKE1.tCKE_Low;
@@ -2460,6 +2468,12 @@ void G965_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
       }
 	TIMING(mc, cha).ECC = 0;
 
+	TIMING(mc, cha).tXS = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].G965.DRT3.tXS;
+
+	TIMING(mc, cha).tXP = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].G965.DRT2.tXP;
+
 	TIMING(mc, cha).tCKE = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].G965.DRT2.tCKE;
     }
@@ -2597,6 +2611,14 @@ void P3S_MCH(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 		RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRTn.tRTPr;
 	TIMING(mc, cha).tWL   = ?
 */
+	TIMING(mc, cha).tXS = (cha == 0) ?
+				  RO(Proc)->Uncore.MC[mc].P35.CKE0.tXSNR
+				: RO(Proc)->Uncore.MC[mc].P35.CKE1.tXSNR;
+
+	TIMING(mc, cha).tXP = (cha == 0) ?
+				  RO(Proc)->Uncore.MC[mc].P35.CKE0.tXP
+				: RO(Proc)->Uncore.MC[mc].P35.CKE1.tXP;
+
 	TIMING(mc, cha).tCKE = (cha == 0) ?
 				  RO(Proc)->Uncore.MC[mc].P35.CKE0.tCKE_Low
 				: RO(Proc)->Uncore.MC[mc].P35.CKE1.tCKE_Low;
@@ -2823,6 +2845,10 @@ void SLM_PTR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 /* Command Rate */
 	TIMING(mc, cha).CMD_Rate = 1
 			+ RO(Proc)->Uncore.MC[mc].SLM.DTR1.tCMD;
+
+	TIMING(mc, cha).tXS = RO(Proc)->Uncore.MC[mc].SLM.DTR0.tXS;
+
+	TIMING(mc, cha).tXP = RO(Proc)->Uncore.MC[mc].SLM.DTR3.tXP;
 /* Topology */
 	for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
 	{
@@ -2916,26 +2942,32 @@ void NHM_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		TIMING(mc, cha).tWR = 12;
 		break;
 	}
-	TIMING(mc, cha).tRCD  = \
+	TIMING(mc, cha).tRCD = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Bank.tRCD;
 
-	TIMING(mc, cha).tRP   = \
+	TIMING(mc, cha).tRP = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Bank.tRP;
 
-	TIMING(mc, cha).tRAS  = \
+	TIMING(mc, cha).tRAS = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Bank.tRAS;
 
-	TIMING(mc, cha).tRRD  = \
+	TIMING(mc, cha).tRRD = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Rank_B.tRRD;
 
-	TIMING(mc, cha).tRFC  = \
+	TIMING(mc, cha).tRFC = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Refresh.tRFC;
 
 	TIMING(mc, cha).tREFI = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Refresh.tREFI_8;
 
-	TIMING(mc, cha).tCKE  = \
+	TIMING(mc, cha).tCKE = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.CKE_Timing.tCKE;
+
+	TIMING(mc, cha).tXS = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.CKE_Timing.tXS;
+
+	TIMING(mc, cha).tXP = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.CKE_Timing.tXP;
 
 	TIMING(mc, cha).tRTPr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Bank.tRTPr;
@@ -4166,6 +4198,9 @@ void RKL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	TIMING(mc, cha).tCKE = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.PWDEN.tCKE;
 
+	TIMING(mc, cha).tXP = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.PWDEN.tXP;
+
 	TIMING(mc, cha).tCPDED = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Sched.tCPDED;
     }
@@ -4408,6 +4443,9 @@ void TGL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	TIMING(mc, cha).tCKE = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.PWDEN.tCKE;
 
+	TIMING(mc, cha).tXP = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.PWDEN.tXP;
+
 	TIMING(mc, cha).tCPDED = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Sched.tCPDED;
     }
@@ -4594,6 +4632,9 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	TIMING(mc, cha).tCKE = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.PWDEN.tCKE;
+
+	TIMING(mc, cha).tXP = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.PWDEN.tXP;
 
 	TIMING(mc, cha).tCPDED = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Sched.tCPDED;
@@ -5086,6 +5127,9 @@ void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	TIMING(mc, cha).Zen.tWrRdScDLR = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR10.tWrRdScDLR;
 
+	TIMING(mc, cha).tXP = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR21.tXP;
+
 	TIMING(mc, cha).tCKE = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR21.tCKE;
 
@@ -5149,6 +5193,9 @@ void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	TIMING(mc, cha).tMOD_PDA = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR13.tMOD_PDA;
+
+	TIMING(mc, cha).tXS = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR14.tXS;
 
 	TIMING(mc, cha).tSTAG = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR20.tSTAG;

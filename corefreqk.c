@@ -5125,6 +5125,9 @@ static void AMD_Zen_UMC(struct pci_dev *dev, unsigned int UMC_BAR,
     Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR13,
 			UMC_BAR + 0x234, dev );
 
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR14,
+			UMC_BAR + 0x238, dev );
+
     Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR20,
 			UMC_BAR + 0x250, dev );
 

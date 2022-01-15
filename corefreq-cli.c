@@ -5615,11 +5615,11 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 			RSC(MEM_CTRL_MTY_CELL).CODE(),
 			RSC(MEM_CTRL_MTY_CELL).CODE(),
 			RSC(MEM_CTRL_MTY_CELL).CODE(),
-			RSC(MEM_CTRL_MTY_CELL).CODE(),
-			RSC(DDR4_CPDED).CODE(),
-			RSC(MEM_CTRL_MTY_CELL).CODE(),
 			RSC(DDR4_REFI).CODE(),
 			RSC(DDR4_RFC).CODE(),
+			RSC(DDR3_XS).CODE(),
+			RSC(DDR3_XP).CODE(),
+			RSC(DDR4_CPDED).CODE(),
 			RSC(DDR4_ECC).CODE()
 		}
 	};
@@ -5668,11 +5668,11 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 			NULL,
 			NULL,
 			NULL,
-			NULL,
-			RSC(DDR4_CPDED_COMM).CODE(),
-			NULL,
 			RSC(DDR3_REFI_COMM).CODE(),
 			RSC(DDR3_RFC_COMM).CODE(),
+			RSC(DDR3_XS_COMM).CODE(),
+			RSC(DDR3_XP_COMM).CODE(),
+			RSC(DDR4_CPDED_COMM).CODE(),
 			RSC(DDR3_ECC_COMM).CODE()
 		}
 	};
@@ -5746,13 +5746,14 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tWRWR_DR);
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tWRWR_DD);
 
-		for (nc = 0; nc < 5; nc++) {
+		for (nc = 0; nc < 4; nc++) {
 			PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
 		}
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tCPDED);
-		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tREFI);
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRFC);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tXS);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tXP);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tCPDED);
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).ECC);
 	}
 }
@@ -5821,11 +5822,11 @@ void Timing_DDR4_Zen(Window *win,CELL_FUNC OutFunc,CUINT *nl, unsigned short mc)
 			RSC(DDR4_ZEN_STAG).CODE(),
 			RSC(DDR4_ZEN_PDM).CODE(),
 			RSC(DDR4_ZEN_RDDATA).CODE(),
-			RSC(DDR4_ZEN_PHY).CODE(),
 			RSC(DDR4_ZEN_PHYWRD).CODE(),
 			RSC(DDR4_ZEN_PHYWRL).CODE(),
 			RSC(DDR4_ZEN_PHYRDL).CODE(),
-			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(DDR3_XS).CODE(),
+			RSC(DDR3_XP).CODE(),
 			RSC(DDR4_CPDED).CODE()
 		}
 	};
@@ -5891,11 +5892,11 @@ void Timing_DDR4_Zen(Window *win,CELL_FUNC OutFunc,CUINT *nl, unsigned short mc)
 			RSC(DDR4_ZEN_STAG_COMM).CODE(),
 			RSC(DDR4_ZEN_PDM_COMM).CODE(),
 			RSC(DDR4_ZEN_RDDATA_COMM).CODE(),
-			NULL,
 			RSC(DDR4_ZEN_PHYWRD_COMM).CODE(),
 			RSC(DDR4_ZEN_PHYWRL_COMM).CODE(),
 			RSC(DDR4_ZEN_PHYRDL_COMM).CODE(),
-			NULL,
+			RSC(DDR3_XS_COMM).CODE(),
+			RSC(DDR3_XP_COMM).CODE(),
 			RSC(DDR4_CPDED_COMM).CODE()
 		}
 	};
@@ -6006,11 +6007,11 @@ void Timing_DDR4_Zen(Window *win,CELL_FUNC OutFunc,CUINT *nl, unsigned short mc)
 								'P' : 'F',
 						TIMING(mc, cha).PDM_EN);
 		PRT(IMC, attrib[1], "%5u",	TIMING(mc, cha).tRDDATA);
-		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
 		PRT(IMC, attrib[1], "%4u ",	TIMING(mc, cha).tPHYWRD);
 		PRT(IMC, attrib[1], "%4u ",	TIMING(mc, cha).tPHYWRL);
 		PRT(IMC, attrib[1], "%4u ",	TIMING(mc, cha).tPHYRDL);
-		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+		PRT(IMC, attrib[1], "%4u ",	TIMING(mc, cha).tXS);
+		PRT(IMC, attrib[1], "%4u ",	TIMING(mc, cha).tXP);
 		PRT(IMC, attrib[1], "%4u ",	TIMING(mc, cha).tCPDED);
 	}
 }
