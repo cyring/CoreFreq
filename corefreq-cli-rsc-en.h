@@ -1129,7 +1129,7 @@
 #define RSC_DDR3_SRWRTWR_COMM_CODE_EN " tsrWrTWr ( Write to Write, Same Rank ) "
 
 #define RSC_DDR3_XS_COMM_CODE_EN	" tXS ( Exit Self refresh to commands" \
-					" not requiring a locked DL ) "
+					" not requiring a locked DLL ) "
 
 #define RSC_DDR3_XP_COMM_CODE_EN	" tXP ( Exit Power-down with DLL on " \
 					"to any valid command ) "
