@@ -870,7 +870,7 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 		FDP_EXCPTN_x87	:  7-6, /* FPU Data Pointer exceptions	*/
 		SMEP		:  8-7, /* x86: Supervisor-Mode exec.	*/
 		BMI2		:  9-8, /* Common x86			*/
-		FastStrings	: 10-9, /* Enhanced REP MOVSB/STOSB	*/
+		ERMS		: 10-9, /* Enhanced REP MOVSB/STOSB	*/
 		INVPCID 	: 11-10, /* Invalidate TLB in Specified PCID*/
 		RTM		: 12-11, /* Restricted Transactional Memory */
 		PQM		: 13-12, /* Intel RDT-M capability ?	*/
@@ -932,7 +932,7 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 		Reserved1	:  2-0,
 		AVX512_4VNNIW	:  3-2, /* Intel Xeon Phi		*/
 		AVX512_4FMAPS	:  4-3, /* Intel Xeon Phi		*/
-		FShort_REP_MOV	:  5-4, /* Fast Short REP MOV		*/
+		FSRM		:  5-4, /* Fast Short REP MOVSB 	*/
 		Reserved2	:  8-5,
 		AVX512_VP2INTER :  9-8, /* AVX512_VP2INTERSECT		*/
 		Reserved3	: 10-9,
@@ -945,7 +945,7 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 		Reserved5	: 18-17,
 		PCONFIG		: 19-18,
 		Reserved6	: 20-19,
-		CET_IBT		: 21-20, /* CET Indirect Branch Tracking */
+		CET_IBT 	: 21-20, /* CET Indirect Branch Tracking */
 		Reserved7	: 26-21,
 		IBRS_IBPB_Cap	: 27-26, /* IA32_SPEC_CTRL,IA32_PRED_CMD */
 		STIBP_Cap	: 28-27, /* IA32_SPEC_CTRL[1]		*/
@@ -961,9 +961,16 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf 1		*/
 	struct
 	{
 		unsigned int
-		Reserved1	:  5-0,
+		Reserved1	:  4-0,
+		AVX_VNNI_VEX	:  5-4, /* Vector Neural Network Instructions */
 		AVX512_BF16	:  6-5, /* BFLOAT16 support in AVX512	*/
-		Reserved2	: 32-6;
+		Reserved2	: 10-6,
+		FZRM		: 11-10, /* Fast Zero-length REP MOVSB	*/
+		FSRS		: 12-11, /* Fast Short REP STOSB:Store String */
+		FSRC		: 13-12, /* Fast Short REP CMPSB, REP SCASB */
+		Reserved3	: 22-13,
+		HRESET		: 23-22, /* History Reset instruction	*/
+		Reserved4	: 32-23;
 	} EAX;
 	struct
 	{	/* Intel reserved.					*/

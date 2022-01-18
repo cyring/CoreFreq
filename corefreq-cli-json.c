@@ -756,7 +756,7 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 					json_key(&s, "BMI2");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.BMI2);
 					json_key(&s, "FastStrings");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.FastStrings);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.ERMS);
 					json_key(&s, "INVPCID");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.INVPCID);
 					json_key(&s, "RTM");
@@ -799,8 +799,18 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.AVX512BW);
 					json_key(&s, "AVX512VL");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.AVX512VL);
+					json_key(&s, "AVX_VNNI_VEX");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1.EAX.AVX_VNNI_VEX);
 					json_key(&s, "AVX512_BF16");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1.EAX.AVX512_BF16);
+					json_key(&s, "Fast_Zero_length_REP_MOVSB");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1.EAX.FZRM);
+					json_key(&s, "Fast_Short_REP_STOSB");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1.EAX.FSRS);
+					json_key(&s, "Fast_Short_REP_CMPSB");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1.EAX.FSRC);
+					json_key(&s, "HRESET");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1.EAX.HRESET);
 
 					json_end_object(&s);
 				}
@@ -857,8 +867,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.AVX512_4VNNIW);
 					json_key(&s, "AVX512_4FMAPS");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.AVX512_4FMAPS);
-					json_key(&s, "Fast_Short_REP_MOV");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.FShort_REP_MOV);
+					json_key(&s, "Fast_Short_REP_MOVSB");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.FSRM);
 					json_key(&s, "AVX512_VP2INTERSECT");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.AVX512_VP2INTER);
 					json_key(&s, "MD_CLEAR");
