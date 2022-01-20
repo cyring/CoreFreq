@@ -943,7 +943,7 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 		Hybrid		: 16-15, /* Hybrid part processor	*/
 		TSXLDTRK	: 17-16, /* TSX suspend load address tracking*/
 		Reserved5	: 18-17,
-		PCONFIG		: 19-18,
+		PCONFIG 	: 19-18,
 		Reserved6	: 20-19,
 		CET_IBT 	: 21-20, /* CET Indirect Branch Tracking */
 		Reserved7	: 26-21,

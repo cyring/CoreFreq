@@ -2105,6 +2105,14 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		NULL
 	},
 	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Features.ExtFeature.EDX.Hybrid == 1,
+		attr_Feat,
+		2, "%s%.*sHYBRID   [%7s]", RSC(FEATURES_HYBRID).CODE(),
+		width - 21 - RSZ(FEATURES_HYBRID),
+		NULL
+	},
+	{
 		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.ECX.IBS == 1,
 		attr_Feat,
@@ -2230,6 +2238,14 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sPBE   [%7s]", RSC(FEATURES_PBE).CODE(),
 		width - 18 - RSZ(FEATURES_PBE),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Features.ExtFeature.EDX.PCONFIG == 1,
+		attr_Feat,
+		2, "%s%.*sPCONFIG   [%7s]", RSC(FEATURES_PCONFIG).CODE(),
+		width - 22 - RSZ(FEATURES_PCONFIG),
 		NULL
 	},
 	{
