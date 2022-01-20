@@ -2285,40 +2285,6 @@ PROCESSOR_SPECIFIC *LookupProcessor(void)
 	return NULL;
 }
 
-void Solve_CodeNameString_From_Arch_Stepping(signed int architectureID)
-{
-	switch (architectureID) {
-	case AMD_Zen:
-		switch (PUBLIC(RO(Proc))->Features.Std.EAX.Stepping) {
-		case 0x1:	/* [Zen/Summit Ridge] 8F_01h Stepping 1 */
-			StrCopy(PUBLIC(RO(Proc))->Architecture,
-				Arch_AMD_Zen[CN_SUMMIT_RIDGE].CodeName,
-				CODENAME_LEN);
-			break;
-		case 0x2:	/* [EPYC/Naples] 8F_01h Stepping 2	*/
-			StrCopy(PUBLIC(RO(Proc))->Architecture,
-				Arch_AMD_Zen[CN_NAPLES].CodeName,
-				CODENAME_LEN);
-			break;
-		}
-		break;
-	case AMD_Zen_APU:
-		switch (PUBLIC(RO(Proc))->Features.Std.EAX.Stepping) {
-		case 0x0:	/* [Zen/Raven Ridge] 8F_11h Stepping 0	*/
-			StrCopy(PUBLIC(RO(Proc))->Architecture,
-				Arch_AMD_Zen_APU[CN_RAVEN_RIDGE].CodeName,
-				CODENAME_LEN);
-			break;
-		case 0x2:	/* [Zen/Snowy Owl] 8F_11h Stepping 2	*/
-			StrCopy(PUBLIC(RO(Proc))->Architecture,
-				Arch_AMD_Zen_APU[CN_SNOWY_OWL].CodeName,
-				CODENAME_LEN);
-			break;
-		}
-		break;
-	}
-}
-
 int Intel_MaxBusRatio(PLATFORM_ID *PfID)
 {
 	struct SIGNATURE whiteList[] = {
@@ -5539,7 +5505,36 @@ void Query_VirtualMachine(unsigned int cpu)
     {	/* Lowest frequency according to BKDG				*/
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = 8;
 
-	Solve_CodeNameString_From_Arch_Stepping(SearchArchitectureID());
+	switch (SearchArchitectureID()) {
+	case AMD_Zen:
+		switch (PUBLIC(RO(Proc))->Features.Std.EAX.Stepping) {
+		case 0x1:	/* [Zen/Summit Ridge] 8F_01h Stepping 1 */
+			StrCopy(PUBLIC(RO(Proc))->Architecture,
+				Arch_AMD_Zen[CN_SUMMIT_RIDGE].CodeName,
+				CODENAME_LEN);
+			break;
+		case 0x2:	/* [EPYC/Naples] 8F_01h Stepping 2	*/
+			StrCopy(PUBLIC(RO(Proc))->Architecture,
+				Arch_AMD_Zen[CN_NAPLES].CodeName,
+				CODENAME_LEN);
+			break;
+		}
+		break;
+	case AMD_Zen_APU:
+		switch (PUBLIC(RO(Proc))->Features.Std.EAX.Stepping) {
+		case 0x0:	/* [Zen/Raven Ridge] 8F_11h Stepping 0	*/
+			StrCopy(PUBLIC(RO(Proc))->Architecture,
+				Arch_AMD_Zen_APU[CN_RAVEN_RIDGE].CodeName,
+				CODENAME_LEN);
+			break;
+		case 0x2:	/* [Zen/Snowy Owl] 8F_11h Stepping 2	*/
+			StrCopy(PUBLIC(RO(Proc))->Architecture,
+				Arch_AMD_Zen_APU[CN_SNOWY_OWL].CodeName,
+				CODENAME_LEN);
+			break;
+		}
+		break;
+	}
 
       if (PRIVATE(OF(Specific)) != NULL) {
 	/*	Save the thermal parameters if specified		*/
@@ -11447,6 +11442,90 @@ static void Start_VirtualMachine(void *arg)
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
 		}
 		PKG_Counters_VirtualMachine(Core, 0);
+	}
+
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+}
+
+static enum hrtimer_restart Cycle_Safe_VirtualMachine(struct hrtimer *pTimer)
+{
+	CORE_RO *Core;
+	unsigned int cpu;
+
+	cpu = smp_processor_id();
+	Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+	if (!PUBLIC(RO(Proc))->Features.AdvPower.EDX.Inv_TSC) {
+		RDTSC64(Core->Overhead.TSC);
+	} else {
+		RDTSCP64(Core->Overhead.TSC);
+	}
+	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+	{
+		hrtimer_forward(pTimer,
+				hrtimer_cb_get_time(pTimer),
+				RearmTheTimer);
+
+		Counters_Generic(Core, 1);
+
+		if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+		{
+			PKG_Counters_Generic(Core, 1);
+
+			Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
+
+			Save_PTSC(PUBLIC(RO(Proc)));
+
+			Sys_Tick(PUBLIC(RO(Proc)));
+		}
+
+		Delta_C0(Core);
+
+		Delta_TSC_OVH(Core);
+
+		Delta_C1(Core);
+
+		Save_TSC(Core);
+
+		Save_C0(Core);
+
+		Save_C1(Core);
+
+		BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
+
+		return HRTIMER_RESTART;
+	} else
+		return HRTIMER_NORESTART;
+}
+
+static void InitTimer_Safe_VirtualMachine(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_Safe_VirtualMachine, 1);
+}
+
+static void Start_Safe_VirtualMachine(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	UNUSED(arg);
+
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
+
+	Counters_Generic(Core, 0);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
+		PKG_Counters_Generic(Core, 0);
 	}
 
 	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
@@ -18390,9 +18469,20 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 
 		switch (PUBLIC(RO(Proc))->HypervisorID) {
 		case HYPERV_NONE:
+		case HYPERV_KBOX:
+			PUBLIC(RO(Proc))->ArchID = GenuineArch;
+			Arch[GenuineArch].Query = Query_VirtualMachine;
+			Arch[GenuineArch].Update= PerCore_VirtualMachine;
+			Arch[GenuineArch].Start = Start_Safe_VirtualMachine;
+			Arch[GenuineArch].Stop	= Stop_VirtualMachine;
+			Arch[GenuineArch].Timer = InitTimer_Safe_VirtualMachine;
+
+			Arch[GenuineArch].thermalFormula = THERMAL_FORMULA_NONE;
+			Arch[GenuineArch].voltageFormula = VOLTAGE_FORMULA_NONE;
+			Arch[GenuineArch].powerFormula = POWER_FORMULA_NONE;
+			break;
 		case HYPERV_KVM:
 		case HYPERV_VBOX:
-		case HYPERV_KBOX:
 		case HYPERV_VMWARE:
 		case HYPERV_HYPERV:
 			PUBLIC(RO(Proc))->ArchID = GenuineArch;

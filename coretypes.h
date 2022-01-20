@@ -713,7 +713,7 @@ typedef struct
 		AVX		: 29-28,
 		F16C		: 30-29,
 		RDRAND		: 31-30,
-		Hyperv		: 32-31; /* Returns zero -> Hyperv placeholder*/
+		Hyperv		: 32-31; /* This bit is set by the Hypervisor */
 	} ECX;
 	struct
 	{	/* Most common x86					*/
