@@ -1352,6 +1352,12 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.HDC_Enable);
 			json_key(&s, "SpecTurboRatio");
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.SpecTurboRatio);
+			json_key(&s, "EEO_Enable");
+			json_literal(&s, "%u", RO(Shm)->Proc.Features.EEO_Enable);
+			json_key(&s, "R2H_Enable");
+			json_literal(&s, "%u", RO(Shm)->Proc.Features.R2H_Enable);
+			json_key(&s, "HSMP_Enable");
+			json_literal(&s, "%u", RO(Shm)->Proc.Features.HSMP_Enable);
 
 			json_end_object(&s);
 		}
