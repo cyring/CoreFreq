@@ -546,6 +546,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_SELF_SNOOP_CODE_FR "Self-Snoop"
 #define RSC_FEATURES_SMAP_CODE_FR	"Supervisor-Mode Access Prevention"
 #define RSC_FEATURES_SMEP_CODE_FR	"Supervisor-Mode Execution Prevention"
+#define RSC_FEATURES_ITD_CODE_FR	"Thread Director"
 #define RSC_FEATURES_TSC_CODE_FR	"Time Stamp Counter"
 #define RSC_FEATURES_TSC_DEADLN_CODE_FR "Time Stamp Counter Deadline"
 #define RSC_FEATURES_TSXABORT_CODE_FR	"TSX Force Abort MSR Register"

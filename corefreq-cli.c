@@ -2361,6 +2361,14 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		NULL
 	},
 	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Features.Power.EAX.ITD_MSR == 1,
+		attr_Feat,
+		2, "%s%.*sTD   [%7s]", RSC(FEATURES_ITD).CODE(),
+		width - 17 - RSZ(FEATURES_ITD),
+		NULL
+	},
+	{
 		NULL,
 		RO(Shm)->Proc.Features.InvariantTSC,
 		attr_TSC,
@@ -2370,7 +2378,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	},
 	{
 		NULL,
-		RO(Shm)->Proc.Features.Std.ECX.TSCDEAD == 1,
+		RO(Shm)->Proc.Features.Std.ECX.TSC_DEADLINE == 1,
 		attr_Feat,
 		2, "%s%.*sTSC-DEADLINE   [%7s]",RSC(FEATURES_TSC_DEADLN).CODE(),
 		width - 27 - RSZ(FEATURES_TSC_DEADLN),

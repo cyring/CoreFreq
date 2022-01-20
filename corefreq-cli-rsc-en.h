@@ -898,6 +898,7 @@
 #define RSC_FEATURES_SELF_SNOOP_CODE_EN "Self-Snoop"
 #define RSC_FEATURES_SMAP_CODE_EN	"Supervisor-Mode Access Prevention"
 #define RSC_FEATURES_SMEP_CODE_EN	"Supervisor-Mode Execution Prevention"
+#define RSC_FEATURES_ITD_CODE_EN	"Thread Director"
 #define RSC_FEATURES_TSC_CODE_EN	"Time Stamp Counter"
 #define RSC_FEATURES_TSC_DEADLN_CODE_EN "Time Stamp Counter Deadline"
 #define RSC_FEATURES_TSXABORT_CODE_EN	"TSX Force Abort MSR Register"

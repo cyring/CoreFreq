@@ -664,10 +664,10 @@ typedef struct
 		Model		:  8-4,
 		Family		: 12-8,
 		ProcType	: 14-12,
-		Unused1 	: 16-14,
+		Reserved1	: 16-14,
 		ExtModel	: 20-16,
 		ExtFamily	: 28-20,
-		Unused2 	: 32-28;
+		Reserved2	: 32-28;
 	    } EAX;
 		unsigned int Signature;
 	};
@@ -682,74 +682,74 @@ typedef struct
 	struct
 	{
 		unsigned int
-		SSE3	:  1-0,  /* AMD Family 0Fh			*/
-		PCLMULDQ:  2-1,
-		DTES64	:  3-2,
-		MONITOR :  4-3,
-		DS_CPL	:  5-4,
-		VMX	:  6-5,
-		SMX	:  7-6,
-		EIST	:  8-7,
-		TM2	:  9-8,
-		SSSE3	: 10-9,  /* AMD Family 0Fh			*/
-		CNXT_ID : 11-10,
-		SDBG	: 12-11, /* IA32_DEBUG_INTERFACE MSR support	*/
-		FMA	: 13-12,
-		CMPXCHG16:14-13,
-		xTPR	: 15-14,
-		PDCM	: 16-15,
-		Unused1 : 17-16,
-		PCID	: 18-17,
-		DCA	: 19-18,
-		SSE41	: 20-19,
-		SSE42	: 21-20,
-		x2APIC	: 22-21, /* x2APIC capability			*/
-		MOVBE	: 23-22,
-		POPCNT	: 24-23,
-		TSCDEAD : 25-24,
-		AES	: 26-25,
-		XSAVE	: 27-26,
-		OSXSAVE : 28-27,
-		AVX	: 29-28,
-		F16C	: 30-29,
-		RDRAND	: 31-30,
-		Hyperv	: 32-31; /* Initially return zero -> Placeholder */
+		SSE3		:  1-0,  /* AMD Family 0Fh		*/
+		PCLMULDQ	:  2-1,
+		DTES64		:  3-2,
+		MONITOR 	:  4-3,
+		DS_CPL		:  5-4,
+		VMX		:  6-5,
+		SMX		:  7-6,
+		EIST		:  8-7,
+		TM2		:  9-8,
+		SSSE3		: 10-9,  /* AMD Family 0Fh		*/
+		CNXT_ID 	: 11-10,
+		SDBG		: 12-11, /* IA32_DEBUG_INTERFACE MSR support */
+		FMA		: 13-12,
+		CMPXCHG16	: 14-13,
+		xTPR		: 15-14,
+		PDCM		: 16-15,
+		Reserved	: 17-16,
+		PCID		: 18-17,
+		DCA		: 19-18,
+		SSE41		: 20-19,
+		SSE42		: 21-20,
+		x2APIC		: 22-21, /* x2APIC capability		*/
+		MOVBE		: 23-22,
+		POPCNT		: 24-23,
+		TSC_DEADLINE	: 25-24,
+		AES		: 26-25,
+		XSAVE		: 27-26,
+		OSXSAVE 	: 28-27,
+		AVX		: 29-28,
+		F16C		: 30-29,
+		RDRAND		: 31-30,
+		Hyperv		: 32-31; /* Returns zero -> Hyperv placeholder*/
 	} ECX;
 	struct
 	{	/* Most common x86					*/
 		unsigned int
-		FPU	:  1-0,
-		VME	:  2-1,
-		DE	:  3-2,
-		PSE	:  4-3,
-		TSC	:  5-4,
-		MSR	:  6-5,
-		PAE	:  7-6,
-		MCE	:  8-7,
-		CMPXCHG8:  9-8,
-		APIC	: 10-9,
-		Unused1 : 11-10,
-		SEP	: 12-11,
-		MTRR	: 13-12,
-		PGE	: 14-13,
-		MCA	: 15-14,
-		CMOV	: 16-15,
-		PAT	: 17-16,
-		PSE36	: 18-17,
-		PSN	: 19-18, /* Intel Processor Serial Number	*/
-		CLFLUSH : 20-19,
-		Unused2 : 21-20,
-		DS_PEBS : 22-21,
-		ACPI	: 23-22,
-		MMX	: 24-23,
-		FXSR	: 25-24, /* FXSAVE and FXRSTOR instructions.	*/
-		SSE	: 26-25,
-		SSE2	: 27-26,
-		SS	: 28-27, /* Intel				*/
-		HTT	: 29-28,
-		TM1	: 30-29, /* Intel				*/
-		Unused3 : 31-30,
-		PBE	: 32-31; /* Intel				*/
+		FPU		:  1-0,
+		VME		:  2-1,
+		DE		:  3-2,
+		PSE		:  4-3,
+		TSC		:  5-4,
+		MSR		:  6-5,
+		PAE		:  7-6,
+		MCE		:  8-7,
+		CMPXCHG8	:  9-8,
+		APIC		: 10-9,
+		Reserved1	: 11-10,
+		SEP		: 12-11,
+		MTRR		: 13-12,
+		PGE		: 14-13,
+		MCA		: 15-14,
+		CMOV		: 16-15,
+		PAT		: 17-16,
+		PSE36		: 18-17,
+		PSN		: 19-18, /* Intel Processor Serial Number */
+		CLFLUSH 	: 20-19,
+		Reserved2	: 21-20,
+		DS_PEBS 	: 22-21,
+		ACPI		: 23-22,
+		MMX		: 24-23,
+		FXSR		: 25-24, /* FXSAVE and FXRSTOR instructions. */
+		SSE		: 26-25,
+		SSE2		: 27-26,
+		SS		: 28-27, /* Intel			*/
+		HTT		: 29-28,
+		TM1		: 30-29, /* Intel			*/
+		Reserved3	: 31-30,
+		PBE		: 32-31; /* Intel			*/
 	} EDX;
 } CPUID_0x00000001;
 
@@ -792,62 +792,66 @@ typedef struct	/* MONITOR & MWAIT Leaf.				*/
 typedef struct THERMAL_POWER_LEAF
 {	/* Thermal and Power Management Leaf.				*/
 	struct
-	{	/* Most Intel reserved.					*/
+	{	/* Mostly Intel reserved.				*/
 		unsigned int
-		DTS	:  1-0, /*Digital temperature sensor availability*/
-		TurboIDA:  2-1, /* Reports bit 38 of MSR 0x1a0		*/
-		ARAT	:  3-2, /* Common x86				*/
-		Unused1 :  4-3,
-		PLN	:  5-4, /*Power limit notification controls support*/
-		ECMD	:  6-5, /* Clock modulation duty cycle extension*/
-		PTM	:  7-6, /* Package thermal management support	*/
-		HWP_Reg :  8-7, /* Hardware Performance registers	*/
-		HWP_Int :  9-8, /* IA32_HWP_INTERRUPT HWP_Notification. */
-		HWP_Act : 10-9, /* IA32_HWP_REQUEST Activity_Window	*/
-		HWP_EPP : 11-10,/* IA32_HWP_REQUEST Energy Perf. pref.	*/
-		HWP_Pkg : 12-11,/* IA32_HWP_REQUEST_PKG 		*/
-		Unused2 : 13-12,
-		HDC_Reg : 14-13,/* Hardware Duty Cycling registers	*/
-		Turbo_V3: 15-14,/* Intel Turbo Boost Max Technology 3.0 */
-		HWP_HPrf: 16-15,/* Highest Performance change support.	*/
-		HWP_PECI: 17-16,/* HWP PECI override support state.	*/
-		HWP_Flex: 18-17,/* Flexible HWP is support state.	*/
-		HWP_Fast: 19-18,/* IA32_HWP_REQUEST MSR fast access mode*/
-		HWFB_Cap: 20-19,/* IA32 HW_FEEDBACK* MSR support	*/
-		HWP_Idle: 21-20,/* Ignore (or not) Idle SMT Processor.	*/
-		Unused4 : 32-21;
+		DTS		:  1-0, /* Digital temperature sensor avail. */
+		TurboIDA	:  2-1, /* Reports bit 38 of MSR 0x1a0	*/
+		ARAT		:  3-2, /* Common x86			*/
+		Reserved1	:  4-3,
+		PLN		:  5-4, /* Power limit notification controls */
+		ECMD		:  6-5, /* Clock modulation duty cycle ext. */
+		PTM		:  7-6, /* Package thermal management support */
+		HWP_Reg 	:  8-7, /* Hardware Performance registers */
+		HWP_Int 	:  9-8, /* IA32_HWP_INTERRUPT HWP_Notification*/
+		HWP_Act 	: 10-9, /* IA32_HWP_REQUEST Activity_Window */
+		HWP_EPP 	: 11-10,/* IA32_HWP_REQUEST Energy Perf. pref.*/
+		HWP_Pkg 	: 12-11,/* IA32_HWP_REQUEST_PKG 	*/
+		Reserved2	: 13-12,
+		HDC_Reg 	: 14-13,/* Hardware Duty Cycling registers */
+		Turbo_V3	: 15-14,/* Intel Turbo Boost Max Technology 3 */
+		HWP_HPrf	: 16-15,/* Highest Performance change support */
+		HWP_PECI	: 17-16,/* HWP PECI override support state. */
+		HWP_Flex	: 18-17,/* Flexible HWP is support state. */
+		HWP_Fast	: 19-18,/* IA32_HWP_REQUEST MSR fast access */
+		HWFB_Cap	: 20-19,/* IA32 HW_FEEDBACK* MSR support */
+		HWP_Idle	: 21-20,/* Ignore (or not) Idle SMT Processor */
+		Reserved3	: 23-21,
+		ITD_MSR 	: 24-23, /* HW_FEEDBACK_{CHAR,THREAD_CONFIG} */
+		Reserved4	: 32-24;
 	} EAX;
 	struct
 	{	/* Intel reserved.					*/
 		unsigned int
-		Threshld:  4-0, /* Number of Interrupt Thresholds in DTS*/
-		Unused1 : 32-4;
+		DTS_INT_Threshld:  4-0, /* # of Interrupt Thresholds in DTS */
+		Reserved	: 32-4;
 	} EBX;
     union
     {
 	struct
 	{	/* Intel reserved.					*/
 		unsigned int
-		HCF_Cap :  1-0, /* MSR: IA32_MPERF (E7H) & IA32_APERF (E8H)*/
-		ACNT_Cap:  2-1,
-		Unused1 :  3-2,
-		SETBH	:  4-3, /* MSR: IA32_ENERGY_PERF_BIAS (1B0H)	*/
-		Unused2 : 32-4;
+		HCF_Cap 	:  1-0, /* IA32_MPERF(E7h) & IA32_APERF(E8h) */
+		ACNT_Cap	:  2-1,
+		Reserved1	:  3-2,
+		SETBH		:  4-3, /* MSR: IA32_ENERGY_PERF_BIAS (1B0H) */
+		Reserved2	:  8-4,
+		ITD_CLS 	: 16-8, /* Thread Director classes	*/
+		Reserved3	: 32-16;
 	};
 	struct
 	{	/* AMD reserved.					*/
 		unsigned int
-		EffFreq :  1-0, /* MSR0000_00E7 (MPERF) & MSR0000_00E8 (APERF)*/
-		NotUsed : 32-1;
+		EffFreq 	:  1-0, /* MPERF(0000_00E7) & APERF(0000_00E8)*/
+		Reserved	: 32-1;
 	};
     } ECX;
 	struct
 	{	/* Intel reserved.					*/
 		unsigned int
-		HWFB_Cap:  8-7, /* Hardware Feedback Interface bitmap	*/
-		HWFB_pSz: 12-8, /* HW Feedback structure size (4K page) */
-		Unused1 : 16-12,
-		HWFB_Idx: 32-16; /* HW Feedback structure base 0 index	*/
+		HWFB_Cap	:  8-7, /*Hardware Feedback Interface bitmap */
+		HWFB_pSz	: 12-8, /*HW Feedback structure size (4K page)*/
+		Reserved	: 16-12,
+		HWFB_Idx	: 32-16; /*HW Feedback structure base 0 index */
 	} EDX;
 } CPUID_0x00000006;
 
@@ -1014,16 +1018,16 @@ typedef struct	/* Architectural Performance Monitoring Leaf.		*/
 	struct
 	{
 		unsigned int
-		Unused1 	: 32-0;
+		Reserved	: 32-0;
 	} ECX;
 	struct
 	{
 		unsigned int
 		FixCtrs 	:  5-0,
 		FixWidth	: 13-5,
-		Unused1 	: 15-13,
+		Reserved1	: 15-13,
 		AnyThread_Dprec : 16-15, /* AnyThread deprecation.	*/
-		Unused2 	: 32-16;
+		Reserved2	: 32-16;
 	} EDX;
 } CPUID_0x0000000a;
 
@@ -1039,10 +1043,10 @@ typedef struct
 		Stepping	:  4-0,
 		Model		:  8-4,
 		Family		: 12-8,
-		Unused1 	: 16-12,
+		Reserved1	: 16-12,
 		ExtModel	: 20-16,
 		ExtFamily	: 28-20,
-		Unused2 	: 32-28;
+		Reserved2	: 32-28;
 	} EAX;
 	union { /* AMD reserved, same as CPUID(0x00000001)		*/
 	    struct {
@@ -1062,12 +1066,12 @@ typedef struct
     {
 	struct { /* Intel reserved.					*/
 		unsigned int
-		LAHFSAHF:  1-0,  /* LAHF and SAHF instruction support.	*/
-		Unused1 :  5-1,
-		LZCNT	:  6-5,
-		Unused2 :  8-6,
-		PREFETCHW: 9-8,
-		Unused3 : 32-9;
+		LAHFSAHF	:  1-0, /* LAHF and SAHF instruction support */
+		Reserved1	:  5-1,
+		LZCNT		:  6-5,
+		Reserved2	:  8-6,
+		PREFETCHW	:  9-8,
+		Reserved3	: 32-9;
 	};
 	struct { /* AMD reserved.					*/
 		unsigned int
@@ -1111,16 +1115,16 @@ typedef struct
     {
 	struct { /* Intel reserved.					*/
 		unsigned int
-		Unused1 : 11-0,
-		SYSCALL : 12-11,
-		Unused2 : 20-12,
-		XD_Bit	: 21-20,
-		Unused3 : 26-21,
-		PG_1GB	: 27-26,
-		RdTSCP	: 28-27,
-		Unused4 : 29-28,
-		IA64	: 30-29,
-		Unused5 : 32-30;
+		Reserved1	: 11-0,
+		SYSCALL 	: 12-11,
+		Reserved2	: 20-12,
+		XD_Bit		: 21-20,
+		Reserved3	: 26-21,
+		PG_1GB		: 27-26,
+		RdTSCP		: 28-27,
+		Reserved4	: 29-28,
+		IA64		: 30-29,
+		Reserved5	: 32-30;
 	};
 	struct { /* AMD reserved.					*/
 		unsigned int	 /* Most bits equal to CPUID 0x01	*/
@@ -1164,28 +1168,28 @@ typedef struct	/* Architectural Performance Monitoring Leaf.		*/
 	struct
 	{
 		unsigned int
-		Reserved: 32-0;
+		Reserved	: 32-0;
 	} EAX;
     union
     {
 	struct { /* Intel reserved.					*/
 		unsigned int
-		Reserved: 32-0;
+		Reserved	: 32-0;
 	};
 	struct { /* AMD as April 2020					*/
 		unsigned int
-		MCA_Ovf :  1-0,  /* MCA overflow recovery support	*/
-		SUCCOR	:  2-1,  /* SW uncorrectable error & recovery cap. */
-		HWA	:  3-2,  /* Hardware Assert MSR 0xc00110[df:c0].*/
-		Scal_MCA:  4-3,  /* ScalableMca w/ 1 is supported	*/
-		Rsvd_AMD: 32-4;
+		MCA_Ovf 	:  1-0,/* MCA overflow recovery support */
+		SUCCOR		:  2-1,/*SW uncorrectable error & recovery cap*/
+		HWA		:  3-2,/* Hardware Assert MSR 0xc00110[df:c0].*/
+		Scal_MCA	:  4-3,/* ScalableMca w/ 1 is supported */
+		Rsvd_AMD	: 32-4;
 	};
     } EBX;
     union
     {
 	struct { /* Intel reserved.					*/
 		unsigned int
-		Reserved: 32-0;
+		Reserved	: 32-0;
 	};
 	struct { /* AMD as April 2020					*/
 		unsigned int		/* Ratio of the compute unit power */
@@ -1196,9 +1200,9 @@ typedef struct	/* Architectural Performance Monitoring Leaf.		*/
     {
 	struct { /* Intel reserved.					*/
 		unsigned int
-		Unused1 :  8-0,
-		Inv_TSC :  9-8,  /* Invariant TSC available if 1	*/
-		Unused2 : 32-9;
+		Reserved1	:  8-0,
+		Inv_TSC 	:  9-8,  /* Invariant TSC available if 1 */
+		Reserved2	: 32-9;
 	};
       union
       { 	/* AMD Family 0Fh					*/
