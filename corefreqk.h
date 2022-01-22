@@ -1559,6 +1559,8 @@ static void CTL_AMD_Family_17h_Temp(CORE_RO *Core) ;
 static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core) ;
 static void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 
+static void Query_Hygon_F18h(unsigned int cpu);
+
 #define     Query_AMD_F19h_PerSocket Query_AMD_F17h_PerSocket
 #define     Query_AMD_F19h_PerCluster Query_AMD_F17h_PerCluster
 #define     PerCore_AMD_Family_19h_Query PerCore_AMD_Family_17h_Query
@@ -1791,8 +1793,27 @@ static void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 
 #define _AMD_Family_17h {.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
-/*	[Family 18h]		9F_00h					*/
-#define _AMD_Family_18h {.ExtFamily=0x9, .Family=0xF, .ExtModel=0x0, .Model=0x0}
+/*	[Family 18h]		9F_00h
+	[Hygon/Dhyana]		Stepping 1		14 nm
+					"Hygon C86 XXXX NN-core Processor"
+					7189(32),7185(32),7169(24),7165(24),
+					7159(16),7155(16),7151(16),
+					5280(16),
+					5188(16),5185(16),5168(12),5165(12),
+					5138( 8),5131( 8),
+					3250( 8),
+					3168( 6),3165( 6),
+					3135( 4),3131( 4),3120( 4),
+	[Hygon/Dhyana]		Stepping 2
+					3188( 8),3185( 8),3138( 4),
+	[Family 18h]		9F_01h
+	[Hygon/Dhyana]		Stepping 1		14 nm
+					"Hygon C86 XXXX NN-core Processor"
+					7285(32),7280(64),7265(24),
+					5285(16),
+					3285( 8),3280( 8),3230( 4),	*/
+#define _Hygon_Family_18h	\
+			{.ExtFamily=0x9, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
 /*	[Family 19h]		AF_00h
 	[Zen3/Vermeer]		AF_21h Stepping 0	 7 nm
@@ -2995,6 +3016,12 @@ enum {
 	CN_REMBRANDT
 };
 
+enum {
+	CN_DHYANA,
+	CN_DHYANA_V1,
+	CN_DHYANA_V2
+};
+
 static MICRO_ARCH Arch_AMD_Zen[] = {
 	[CN_SUMMIT_RIDGE]	= {"Zen/Summit Ridge"},
 	[CN_WHITEHAVEN] 	= {"Zen/Whitehaven"},
@@ -3057,6 +3084,7 @@ static MICRO_ARCH Arch_AMD_Zen3_Chagall[] = {
 	{NULL}
 };
 static MICRO_ARCH Arch_AMD_Zen3_Badami[] = {{"Zen3/Milan-X"}, {NULL}};
+
 static MICRO_ARCH Arch_AMD_Zen3Plus_RMB[] = {
 	[CN_REMBRANDT]		= {"Zen3+ Rembrandt"},
 	{NULL}
@@ -3064,7 +3092,12 @@ static MICRO_ARCH Arch_AMD_Zen3Plus_RMB[] = {
 
 static MICRO_ARCH Arch_AMD_Family_17h[] = {{"AMD Zen"}, {NULL}};
 
-static MICRO_ARCH Arch_AMD_Family_18h[] = {{"Dhyana"}, {NULL}};
+static MICRO_ARCH Arch_Hygon_Family_18h[] = {
+	[CN_DHYANA]		= {"Dhyana"},
+	[CN_DHYANA_V1]		= {"Dhyana V1"},
+	[CN_DHYANA_V2]		= {"Dhyana V2"},
+	{NULL}
+};
 
 static MICRO_ARCH Arch_AMD_Family_19h[] = {{"AMD Zen3"}, {NULL}};
 
@@ -6772,9 +6805,9 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_AMD_Family_17h
 	},
-[AMD_Family_18h] = {							/*  9*/
-	.Signature = _AMD_Family_18h,
-	.Query = Query_AMD_F17h_PerSocket,
+[Hygon_Family_18h] = {							/*  9*/
+	.Signature = _Hygon_Family_18h,
+	.Query = Query_Hygon_F18h,
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
@@ -6794,7 +6827,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		},
 	.Specific = Void_Specific,
 	.SystemDriver = VOID_Driver,
-	.Architecture = Arch_AMD_Family_18h
+	.Architecture = Arch_Hygon_Family_18h
 	},
 [AMD_Family_19h] = {							/* 10*/
 	.Signature = _AMD_Family_19h,

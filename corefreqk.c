@@ -1846,7 +1846,7 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Zen3_Badami:
 	case AMD_Zen3Plus_RMB:
 	case AMD_Family_17h:
-	case AMD_Family_18h:
+	case Hygon_Family_18h:
 	case AMD_Family_19h:
 	    if (PUBLIC(RO(Proc))->Features.ExtInfo.ECX.ExtApicId == 1)
 	    {
@@ -5505,37 +5505,6 @@ void Query_VirtualMachine(unsigned int cpu)
     {	/* Lowest frequency according to BKDG				*/
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = 8;
 
-	switch (SearchArchitectureID()) {
-	case AMD_Zen:
-		switch (PUBLIC(RO(Proc))->Features.Std.EAX.Stepping) {
-		case 0x1:	/* [Zen/Summit Ridge] 8F_01h Stepping 1 */
-			StrCopy(PUBLIC(RO(Proc))->Architecture,
-				Arch_AMD_Zen[CN_SUMMIT_RIDGE].CodeName,
-				CODENAME_LEN);
-			break;
-		case 0x2:	/* [EPYC/Naples] 8F_01h Stepping 2	*/
-			StrCopy(PUBLIC(RO(Proc))->Architecture,
-				Arch_AMD_Zen[CN_NAPLES].CodeName,
-				CODENAME_LEN);
-			break;
-		}
-		break;
-	case AMD_Zen_APU:
-		switch (PUBLIC(RO(Proc))->Features.Std.EAX.Stepping) {
-		case 0x0:	/* [Zen/Raven Ridge] 8F_11h Stepping 0	*/
-			StrCopy(PUBLIC(RO(Proc))->Architecture,
-				Arch_AMD_Zen_APU[CN_RAVEN_RIDGE].CodeName,
-				CODENAME_LEN);
-			break;
-		case 0x2:	/* [Zen/Snowy Owl] 8F_11h Stepping 2	*/
-			StrCopy(PUBLIC(RO(Proc))->Architecture,
-				Arch_AMD_Zen_APU[CN_SNOWY_OWL].CodeName,
-				CODENAME_LEN);
-			break;
-		}
-		break;
-	}
-
       if (PRIVATE(OF(Specific)) != NULL) {
 	/*	Save the thermal parameters if specified		*/
 	PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
@@ -6457,6 +6426,31 @@ static void Query_AMD_F17h_PerCluster(unsigned int cpu)
 	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
 		Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
 	}
+}
+
+static void Query_Hygon_F18h(unsigned int cpu)
+{
+	switch (PUBLIC(RO(Proc))->Features.Std.EAX.Model) {
+	case 0x0:
+		switch (PUBLIC(RO(Proc))->Features.Std.EAX.Stepping) {
+		case 0x2:
+			StrCopy(PUBLIC(RO(Proc))->Architecture,
+				Arch_Hygon_Family_18h[CN_DHYANA_V1].CodeName,
+				CODENAME_LEN);
+			break;
+		}
+		break;
+	case 0x1:
+		switch (PUBLIC(RO(Proc))->Features.Std.EAX.Stepping) {
+		case 0x1:
+			StrCopy(PUBLIC(RO(Proc))->Architecture,
+				Arch_Hygon_Family_18h[CN_DHYANA_V2].CodeName,
+				CODENAME_LEN);
+			break;
+		}
+		break;
+	}
+	Query_AMD_F17h_PerSocket(cpu);
 }
 
 void Dump_CPUID(CORE_RO *Core)

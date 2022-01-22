@@ -5980,7 +5980,7 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
     case AMD_Zen3_Badami:
     case AMD_Zen3Plus_RMB:
     case AMD_Family_17h:
-    case AMD_Family_18h:
+    case Hygon_Family_18h:
     case AMD_Family_19h:
     VIRTUALIZED_L3:
 	/* CPUID_Fn80000006_EDX: Value in [3FFFh - 0001h] = (<Value> *0.5) MB */

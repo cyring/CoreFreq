@@ -5423,7 +5423,7 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 		TopologySubHeader[1] = TopologyAltSubHeader[1];
 		break;
 	case AMD_Family_17h:
-	case AMD_Family_18h:
+	case Hygon_Family_18h:
 	case AMD_Family_19h:
 	case AMD_Zen:
 	case AMD_Zen_APU:
