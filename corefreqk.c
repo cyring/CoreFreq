@@ -464,7 +464,8 @@ unsigned int FixMissingRatioAndFrequency(unsigned int r32, CLOCK *pClock)
 	return (unsigned int) r64;
 }
 
-unsigned long long CoreFreqK_Read_CS_From_Invariant_TSC(struct clocksource *cs)
+static unsigned long long
+CoreFreqK_Read_CS_From_Invariant_TSC(struct clocksource *cs)
 {
 	unsigned long long TSC __attribute__ ((aligned (8)));
 	UNUSED(cs);
@@ -472,7 +473,8 @@ unsigned long long CoreFreqK_Read_CS_From_Invariant_TSC(struct clocksource *cs)
 	return TSC;
 }
 
-unsigned long long CoreFreqK_Read_CS_From_Variant_TSC(struct clocksource *cs)
+static unsigned long long
+CoreFreqK_Read_CS_From_Variant_TSC(struct clocksource *cs)
 {
 	unsigned long long TSC __attribute__ ((aligned (8)));
 	UNUSED(cs);
@@ -5491,7 +5493,7 @@ unsigned short Compute_AuthenticAMD_Boost(unsigned int cpu)
 	return SpecTurboRatio;
 }
 
-void Query_VirtualMachine(unsigned int cpu)
+static void Query_VirtualMachine(unsigned int cpu)
 {
 	Query_Same_Genuine_Features();
 	/* Reset Max ratio to call the clock estimation in Controller_Init() */
@@ -5862,9 +5864,9 @@ inline COF_ST AMD_Zen_CoreCOF(unsigned int FID, unsigned int DID)
 	return COF;
 }
 
-unsigned short AMD_Zen_Compute_FID_DID( unsigned int COF,
-					unsigned int *FID,
-					unsigned int *DID )
+inline unsigned short AMD_Zen_Compute_FID_DID(	unsigned int COF,
+						unsigned int *FID,
+						unsigned int *DID )
 {
 	unsigned int tmp = (*FID);
 	if ((*DID) != 0) {
@@ -5880,7 +5882,7 @@ unsigned short AMD_Zen_Compute_FID_DID( unsigned int COF,
 	}
 }
 
-inline unsigned short AMD_Zen_CoreFID(	unsigned int COF,
+unsigned short AMD_Zen_CoreFID(	unsigned int COF,
 					unsigned int *FID,
 					unsigned int *DID )
 {
@@ -9873,7 +9875,7 @@ static void PerCore_AMD_Family_0Fh_Query(void *arg)
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 }
 
-static void PerCore_AMD_Family_Same_Query(void *arg)
+void PerCore_AMD_Family_Same_Query(void *arg)
 {
 	CORE_RO *Core = (CORE_RO *) arg;
 
@@ -14644,8 +14646,8 @@ inline void SoC_RAPL(AMD_17_SVI SVI, const unsigned long long factor)
 	PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(UNCORE)] = ACCU;
 }
 
-void Call_SVI(	const unsigned int plane0, const unsigned int plane1,
-		const unsigned long long factor )
+static void Call_SVI(	const unsigned int plane0, const unsigned int plane1,
+			const unsigned long long factor )
 {
 	AMD_17_SVI SVI = {.value = 0};
 
@@ -14664,8 +14666,8 @@ void Call_SVI(	const unsigned int plane0, const unsigned int plane1,
 	SoC_RAPL(SVI, factor);
 }
 
-void Call_SVI_APU(	const unsigned int plane0, const unsigned int plane1,
-			const unsigned long long factor )
+static void Call_SVI_APU(const unsigned int plane0, const unsigned int plane1,
+			const unsigned long long factor)
 {
 	AMD_17_SVI SVI = {.value = 0};
 
@@ -14684,8 +14686,8 @@ void Call_SVI_APU(	const unsigned int plane0, const unsigned int plane1,
 	SoC_RAPL(SVI, factor);
 }
 
-void Call_DFLT( const unsigned int plane0, const unsigned int plane1,
-		const unsigned long long factor )
+static void Call_DFLT(	const unsigned int plane0, const unsigned int plane1,
+			const unsigned long long factor )
 {
 	UNUSED(plane0);
 	UNUSED(plane1);
