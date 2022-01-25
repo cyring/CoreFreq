@@ -1401,6 +1401,24 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 			RSC(SYSINFO_ISA_COND_1_4).ATTR()
 		}
 	};
+	struct {
+		Bit32	FP128	:  1-0,
+			FP256	:  2-1,
+			_pad32	: 32-2;
+	} AVX = {
+	.FP128 = (RO(Shm)->Proc.Features.Info.LargestExtFunc >= 0x8000001a)
+		&& BITVAL(RO(Shm)->Cpu[
+					RO(Shm)->Proc.Service.Core
+				].CpuID[
+				CPUID_8000001A_00000000_PERF_OPTIMIZATION
+				].reg[0], 0),
+	.FP256 = (RO(Shm)->Proc.Features.Info.LargestExtFunc >= 0x8000001a)
+		&& BITVAL(RO(Shm)->Cpu[
+					RO(Shm)->Proc.Service.Core
+				].CpuID[
+				CPUID_8000001A_00000000_PERF_OPTIMIZATION
+				].reg[0], 2)
+	};
 	const struct ISA_ST {
 		unsigned int	*CRC;
 		const ASCII	*item, *comm;
@@ -1552,21 +1570,10 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 	},
 	{
 		NULL,
-		RO(Shm)->Proc.ArchID == Xeon_Phi ?
-			RSC(ISA_AVX512_VNNIW).CODE() : RSC(ISA_AVX_VEX).CODE(),
-		NULL,
-		{
-		0,
-		RO(Shm)->Proc.ArchID == Xeon_Phi ?
-		    RO(Shm)->Proc.Features.ExtFeature.EDX.AVX512_4VNNIW
-		  : RO(Shm)->Proc.Features.ExtFeature_Leaf1.EAX.AVX_VNNI_VEX
-		},
+		RSC(ISA_AVX512_VNNIW).CODE(), NULL,
+		{ 0, RO(Shm)->Proc.Features.ExtFeature.EDX.AVX512_4VNNIW },
 		(unsigned short[])
-		{
-		RO(Shm)->Proc.ArchID == Xeon_Phi ?
-		    RO(Shm)->Proc.Features.ExtFeature.EDX.AVX512_4VNNIW
-		  : RO(Shm)->Proc.Features.ExtFeature_Leaf1.EAX.AVX_VNNI_VEX
-		},
+		{ RO(Shm)->Proc.Features.ExtFeature.EDX.AVX512_4VNNIW },
 	},
 	{
 		NULL,
@@ -1592,6 +1599,42 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 	},
 	{
 		NULL,
+		RSC(ISA_AVX_VEX).CODE(), NULL,
+		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1.EAX.AVX_VNNI_VEX },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1.EAX.AVX_VNNI_VEX },
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RSC(ISA_AVX_128).CODE(), NULL,
+		{ 0, AVX.FP128 },
+		(unsigned short[])
+		{ AVX.FP128 },
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RSC(ISA_AVX_256).CODE(), NULL,
+		{ 1, AVX.FP256 },
+		(unsigned short[])
+		{ AVX.FP256 },
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_MOVDIRI).CODE(), RSC(ISA_MOVDIRI_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.ExtFeature.ECX.MOVDIRI },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature.ECX.MOVDIRI },
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_MOVDIR64B).CODE(), RSC(ISA_MOVDIR64B_COMM).CODE(),
+		{ 1, RO(Shm)->Proc.Features.ExtFeature.ECX.MOVDIR64B },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature.ECX.MOVDIR64B },
+	},
+/* Row Mark */
+	{
+		NULL,
 		RSC(ISA_BMI).CODE(), RSC(ISA_BMI_COMM).CODE(),
 		{ 0, 2 * ( RO(Shm)->Proc.Features.ExtFeature.EBX.BMI1
 				|  RO(Shm)->Proc.Features.ExtFeature.EBX.BMI2 )
@@ -1613,15 +1656,16 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 	{
 		NULL,
 		RSC(ISA_CLFLUSH).CODE(), RSC(ISA_CLFLUSH_COMM).CODE(),
-		{ 1, 2 * ( RO(Shm)->Proc.Features.Std.EDX.CLFLUSH
-			|  RO(Shm)->Proc.Features.ExtFeature.EBX.CLFLUSHOPT )
-			+ ( RO(Shm)->Proc.Features.Std.EDX.CLFLUSH
-			<< RO(Shm)->Proc.Features.ExtFeature.EBX.CLFLUSHOPT ) },
+		{ 0, RO(Shm)->Proc.Features.Std.EDX.CLFLUSH },
 		(unsigned short[])
-		{
-		RO(Shm)->Proc.Features.Std.EDX.CLFLUSH,
-		RO(Shm)->Proc.Features.ExtFeature.EBX.CLFLUSHOPT
-		},
+		{ RO(Shm)->Proc.Features.Std.EDX.CLFLUSH },
+	},
+	{
+		NULL,
+		RSC(ISA_CLFLUSHOPT).CODE(), RSC(ISA_CLFLUSHOPT_COMM).CODE(),
+		{ 1, RO(Shm)->Proc.Features.ExtFeature.EBX.CLFLUSHOPT },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature.EBX.CLFLUSHOPT },
 	},
 /* Row Mark */
 	{
@@ -7509,7 +7553,7 @@ Window *CreateTopology(unsigned long long id)
 
 Window *CreateISA(unsigned long long id)
 {
-	Window *wISA = CreateWindow(wLayer, id, 4, 13, 6, TOP_HEADER_ROW+2);
+	Window *wISA = CreateWindow(wLayer, id, 4, 14, 6, TOP_HEADER_ROW+2);
 
 	if (wISA != NULL)
 	{
