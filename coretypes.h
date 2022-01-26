@@ -432,7 +432,7 @@ enum PWR_DOMAIN {
 #define CLOCK_GHz(_t, _f)	((_t)(_f) / (_t)UNIT_GHz(1))
 
 #if !defined(MAX_FREQ_HZ)
-	#define MAX_FREQ_HZ	5250000000
+	#define MAX_FREQ_HZ	6175000000
 #elif (MAX_FREQ_HZ < 4850000000)
 	#error "MAX_FREQ_HZ must be at least 4850000000 Hz"
 #endif
