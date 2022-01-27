@@ -1822,7 +1822,7 @@ static void Query_Hygon_F18h(unsigned int cpu);
 	[Zen3/Chagall]		AF_08h Stepping 2	 7 nm	HEDT/TRX4 */
 /*
 	[Zen3/Badami/Milan-X]	AF_30h		[BA]	 7 nm	SVR
-	[Zen3+ Rembrandt]	AF_40h		[RMB]	 6 nm
+	[Zen3+ Rembrandt]	AF_44h Stepping 1	 6 nm	[RMB]
 	[Zen4/Genoa/Stones]	A10F00			 5 nm
 	[Zen4/Raphael]		A60F00		[RPL]	 5 nm
 	[Zen4/Phoenix]		A70F00		[PHX]			*/
@@ -1835,7 +1835,7 @@ static void Query_Hygon_F18h(unsigned int cpu);
 #define _AMD_Zen3_Badami	\
 			{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x3, .Model=0x0}
 #define _AMD_Zen3Plus_RMB	\
-			{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x4, .Model=0x0}
+			{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x4, .Model=0x4}
 
 typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
 
