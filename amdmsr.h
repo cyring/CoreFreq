@@ -1333,6 +1333,20 @@ typedef union
 } AMD_17_UMC_ECC_CTRL;
 
 typedef union
+{	/* SMU: address = 0x50d6c					*/
+	unsigned int		value;
+	struct
+	{
+		unsigned int
+		RAM_Pstate	:  3-0,  /* Current Memory Pstate	*/
+		UCLK_Divisor	:  4-3,  /* UCLK:MEMCLK 0[1:2], 1[1:1]	*/
+		DFI_Initialized :  5-4,
+		UMC_Ready	:  6-5,
+		ReservedBits	: 32-6;
+	};
+} AMD_17_UMC_DEBUG_MISC;
+
+typedef union
 {	/* SMU: address = 0x50df0					*/
 	unsigned int		value;
 	struct
