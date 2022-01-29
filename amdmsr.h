@@ -1224,7 +1224,10 @@ Remark: if BGS_Alt[ON][AUTO] is set then BGS[OFF]
 #define AMD_17_UMC_BGS_ALT_MASK_ON	0x000007f0
 
 typedef union
-{	/* SMU address: UMC{0,1}-DIMM{0}=0x50030; UMC{0,1}-DIMM{1}=0x50034 */
+{	/* SMU addresses:
+		DIMM[0] = 0x{0,1,2,3,4,5,6,7}50030
+		DIMM[1] = 0x{0,1,2,3,4,5,6,7}50034
+	*/
 	unsigned int		value;
 	struct
 	{
@@ -1242,7 +1245,10 @@ typedef union
 } AMD_17_UMC_DRAM_ADDR_CFG;
 
 typedef union
-{	/* SMU: address = 0x50080					*/
+{	/* SMU addresses
+		DIMM[0] = 0x{0,1,2,3,4,5,6,7}50080
+		DIMM[1] = 0x{0,1,2,3,4,5,6,7}50084
+	*/
 	unsigned int		value;
 	struct
 	{
@@ -1263,7 +1269,7 @@ typedef union
 } AMD_17_UMC_DIMM_CFG;
 
 typedef union
-{	/* SMU: address = { 0x50100 , 0x50101 , 0x50102 , 0x50103 }	*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50100			*/
 	unsigned int		value;
 	struct
 	{
@@ -1278,7 +1284,7 @@ typedef union
 } AMD_17_UMC_CONFIG;
 
 typedef union
-{	/* SMU: address = { 0x50104 , 0x50105 , 0x50106 , 0x50107 }	*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50104			*/
 	unsigned int		value;
 	struct
 	{
@@ -1296,7 +1302,7 @@ typedef union
 } AMD_17_UMC_SDP_CTRL;
 
 typedef union
-{	/* SMU: address = 0x5012c					*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}5012c			*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1319,7 +1325,7 @@ typedef union
 } AMD_17_UMC_SPAZ_CTRL;
 
 typedef union
-{	/* SMU: address = 0x5014c					*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}5014c			*/
 	unsigned int		value;
 	struct
 	{
@@ -1333,7 +1339,7 @@ typedef union
 } AMD_17_UMC_ECC_CTRL;
 
 typedef union
-{	/* SMU: address = 0x50d6c					*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50d6c			*/
 	unsigned int		value;
 	struct
 	{
@@ -1347,7 +1353,7 @@ typedef union
 } AMD_17_UMC_DEBUG_MISC;
 
 typedef union
-{	/* SMU: address = 0x50df0					*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50df0			*/
 	unsigned int		value;
 	struct
 	{
@@ -1363,7 +1369,7 @@ typedef union
 } AMD_17_UMC_ECC_CAP;
 
 typedef union
-{	/* SMU: address = 0x50df4					*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50df4			*/
 	unsigned int		value;
 	struct
 	{
@@ -1376,7 +1382,7 @@ typedef union
 } AMD_17_UMC_ECC_CAP_HI;
 
 typedef union
-{	/* SMU: address = { 0x50200, 0x50201 , 0x50202 , 0x50203 }	*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{200,300,400,500}	*/
 	unsigned int		value;
 	struct
 	{
@@ -1392,7 +1398,7 @@ typedef union
 } AMD_17_UMC_CFG_MISC;
 
 typedef union
-{	/* SMU: address = { 0x50204 , 0x50205 , 0x50206 , 0x50207 }	*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{204,304,404,504}	*/
 	unsigned int		value;
 	struct
 	{
@@ -1409,7 +1415,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR1;
 
 typedef union
-{	/* SMU: address = { 0x50208 ,0x50209 , 0x5020a , 0x5020b }	*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{208,308,405,508}	*/
 	unsigned int		value;
 	struct
 	{
@@ -1424,7 +1430,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR2;
 
 typedef union
-{	/* SMU: address = { 0x5020c , 0x5020d , 0x5020e , 0x5020f }	*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{20c,30c,40c,50c}	*/
 	unsigned int		value;
 	struct
 	{
@@ -1441,7 +1447,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR3;
 
 typedef union
-{	/* SMU: address = { 0x50210 , 0x50211 , 0x50212 , 0x50213 }	*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{210,310,410,510}	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1455,7 +1461,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR4;
 
 typedef union
-{	/* SMU: address = { 0x50214 , 0x50215 , 0x50216 , 0x50217 }	*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{214,314,414,514}	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1469,7 +1475,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR5;
 
 typedef union
-{	/* SMU: address = { 0x50218 , 0x50219 , 0x5021a , 0x5021b }	*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{218,318,418,518}	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1479,7 +1485,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR6;
 
 typedef union
-{	/* SMU: address = { 0x5021c , 0x5021d , 0x5021e , 0x5021f }	*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{21c,31c,41c,51c}	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1489,7 +1495,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR7;
 
 typedef union
-{	/* SMU: address = { 0x50220 , 0x50221 , 0x50222 , 0x50223 }	*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{220,320,420,520}	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1506,7 +1512,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR8;
 
 typedef union
-{	/* SMU: address = { 0x50224 , 0x50225 , 0x50226 , 0x50227 }	*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{224,324,424,524}	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1522,7 +1528,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR9;
 
 typedef union
-{	/* SMU: address = { 0x50228 , 0x50229 , 0x5022a , 0x5022b }	*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{228,328,428,528}	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1536,7 +1542,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR10;
 
 typedef union
-{	/* SMU: address = { 0x5022c , 0x5022d , 0x5022e , 0x5022f }	*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{22c,32c,42c,52c}	*/
 	unsigned int		value;
 	struct {
 		unsigned int /* 0000 1110 0100 0010 0000 0000 1000 0000 */
@@ -1549,7 +1555,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR11;
 
 typedef union
-{	/* SMU: address = { 0x50230 , 0x50231 , 0x50232 , 0x50233 }	*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{230,330,430,530}	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1559,7 +1565,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR12;
 
 typedef union
-{	/* SMU: address = 0x50234					*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{234,334,434,534}	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1575,7 +1581,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR13;
 
 typedef union
-{	/* SMU: address = 0x50238					*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{238,338,438,538}	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1587,7 +1593,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR14;
 
 typedef union
-{	/* SMU: address = 0x5023c					*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{23c,33c,43c,53c}	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1603,7 +1609,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR15;
 
 typedef union
-{	/* SMU: address = 0x50244					*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{244,344,444,544}	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1616,7 +1622,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR17;
 
 typedef union
-{	/* SMU: address = 0x50250					*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{250,350,450,550}	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1627,7 +1633,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR20;
 
 typedef union
-{	/* SMU: address = 0x50254					*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{254,354,454,554}	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1641,7 +1647,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR21;
 
 typedef union
-{	/* SMU: address = 0x50258					*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{258,358,458,558}	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1659,7 +1665,10 @@ typedef union
 } AMD_17_UMC_TIMING_DTR22;
 
 typedef union
-{	/* SMU: address = { 0x50260 , 0x50261 , 0x50262 , 0x50263 }	*/
+{	/* SMU addresses
+		DIMM[0] = 0x{0,1,2,3,4,5,6,7}50{260,360,460,560}
+		DIMM[1] = 0x{0,1,2,3,4,5,6,7}50{264,364,464,564}
+	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1670,7 +1679,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTRFC;
 
 typedef union
-{	/* SMU: address = 0x5028c					*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{28c,38c,48c,58c}	*/
 	unsigned int		value;
 	struct {
 		unsigned int
