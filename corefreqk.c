@@ -5161,7 +5161,8 @@ static PCI_CALLBACK AMD_17h_DataFabric(struct pci_dev *pdev)
      {
 	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MAX)] = \
 	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] = \
-	    PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha].AMD17h.MISC.MEMCLK/3;
+	    PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha].AMD17h.MISC.MEMCLK;
+
 	UMC_Clock = true;
      }
     }
