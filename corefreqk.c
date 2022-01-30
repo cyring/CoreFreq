@@ -5029,7 +5029,7 @@ static void AMD_Zen_UMC(struct pci_dev *dev, unsigned int UMC_BAR,
 
 	for (sec = 0; sec < 2; sec++)
 	{
-		unsigned int addr[2], ranks = 0;
+		unsigned int addr[2];
 
 		addr[1] = CHIP_BAR[sec][1] + ((chip >> 1) << 2);
 
@@ -5037,24 +5037,11 @@ static void AMD_Zen_UMC(struct pci_dev *dev, unsigned int UMC_BAR,
 				.AMD17h.CHIP[chip][sec].Mask,
 				addr[1], dev );
 
-	    if ( (ranks == 0)
-		&& (PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
-			.AMD17h.CHIP[chip][sec].Mask.value != 0) )
-	    {
-		ranks = BITVAL(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
-				.AMD17h.CHIP[chip][sec].Mask.value, 9) ? 1 : 2;
-	    }
-
 		addr[0] = CHIP_BAR[sec][0] + ((chip - (chip > 2)) << 2);
 
 		Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
 				.AMD17h.CHIP[chip][sec].Chip,
 				addr[0], dev );
-
-	    if (PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.Ranks == 0)
-	    {
-		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.Ranks=ranks;
-	    }
 	}
     }
     Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.SPAZ,

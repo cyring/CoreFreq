@@ -5012,9 +5012,6 @@ void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
     }
     if (DIMM_Size > 0)
     {
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.Ranks;
-
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = \
 	8 << RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DAC.NumBanks;
 
@@ -5026,6 +5023,14 @@ void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
 						(unsigned int)(DIMM_Size >> 10);
+
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = DIMM_Size
+			/ RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows;
+
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks /= \
+			RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks;
+
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks >>= 3;
     }
    }
 	TIMING(mc, cha).tCL = \

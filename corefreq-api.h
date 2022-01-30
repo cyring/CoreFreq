@@ -566,7 +566,6 @@ typedef struct
 			} AMD0Fh;
 			struct
 			{
-				unsigned int		Ranks;
 				AMD_17_UMC_ECC_CAP_HI	ECC;	/* 32 bits   */
 			  struct {
 			    struct {
@@ -1304,9 +1303,10 @@ typedef struct
 #define DID_AMD_17H_ZEN2_APU_NB_IOMMU	0x1631	/*	Renoir		*/
 #define DID_AMD_17H_FIREFLIGHT_NB_IOMMU 0x15f9	/*	FireFlight	*/
 #define DID_AMD_17H_ARDEN_NB_IOMMU	0x1627	/*	Arden		*/
+#define DID_AMD_19H_CEZANNE_NB_IOMMU	0x1630	/*	Cezanne 	*/
 /* Source: /include/linux/pci_ids.h					*/
 #define DID_AMD_17H_ZEPPELIN_DF_UMC	0x1460	/*	Zeppelin	*/
-#define DID_AMD_17H_RAVEN_DF_UMC	0x15eb	/*	Raven		*/
+#define DID_AMD_17H_RAVEN_DF_UMC	0x15e8	/*	Raven		*/
 #define DID_AMD_17H_MATISSE_DF_UMC	0x1440	/*	Matisse 	*/
 #define DID_AMD_17H_STARSHIP_DF_UMC	0x1490	/*	Starship	*/
 #define DID_AMD_17H_RENOIR_DF_UMC	0x1448	/*	Renoir		*/
@@ -1315,3 +1315,4 @@ typedef struct
 #define DID_AMD_17H_FIREFLIGHT_DF_UMC	0x15f3	/*	FireFlight	*/
 #define DID_AMD_17H_ARDEN_DF_UMC	0x160b	/*	Arden		*/
 #define DID_AMD_19H_VERMEER_DF_UMC	0x1650	/*	Vermeer 	*/
+#define DID_AMD_19H_CEZANNE_DF_UMC	0x166a	/*	Cezanne 	*/
