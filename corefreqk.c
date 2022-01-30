@@ -3092,7 +3092,6 @@ static void PerCore_Intel_HWP_Ignition(void *arg)
 
 void Intel_Hardware_Performance(void)
 {
-    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL) {
 	PM_ENABLE PM_Enable = {.value = 0};
 	HDC_CONTROL HDC_Control = {.value = 0};
 
@@ -3101,7 +3100,7 @@ void Intel_Hardware_Performance(void)
 		/*	MSR_IA32_PM_ENABLE is a Package register.	*/
 		RDMSR(PM_Enable, MSR_IA32_PM_ENABLE);
 		/*	Is the HWP requested and its current state is off ? */
-	  if ((HWP_Enable == 1) && (PM_Enable.HWP_Enable == 0))
+	  if ((HWP_Enable == COREFREQ_TOGGLE_ON) && (PM_Enable.HWP_Enable == 0))
 	  {
 		unsigned int cpu;
 		/*	From last AP to BSP				*/
@@ -3157,7 +3156,6 @@ void Intel_Hardware_Performance(void)
 		}
 	}
 	PUBLIC(RO(Proc))->Features.HDC_Enable = HDC_Control.HDC_Enable;
-    }
 }
 
 void Skylake_PowerControl(void)
@@ -3425,6 +3423,23 @@ void AMD_Processor_PIN(bool capable)
 			PUBLIC(RO(Proc))->Features.Factory.PPIN = PPinNum.value;
 		}
 	}
+}
+
+void AMD_F17h_CPPC(void)
+{
+	AMD_CPPC_ENABLE CPPC_Enable = {.value = 0};
+
+    if (PUBLIC(RO(Proc))->Features.leaf80000008.EBX.CPPC)
+    {
+	RDMSR(CPPC_Enable, MSR_AMD_CPPC_ENABLE);
+      if ((HWP_Enable == COREFREQ_TOGGLE_ON) && (CPPC_Enable.CPPC_Enable == 0))
+      {
+		CPPC_Enable.CPPC_Enable = 1;
+		WRMSR(CPPC_Enable, MSR_AMD_CPPC_ENABLE);
+		RDMSR(CPPC_Enable, MSR_AMD_CPPC_ENABLE);
+      }
+	PUBLIC(RO(Proc))->Features.HWP_Enable = CPPC_Enable.CPPC_Enable;
+    }
 }
 
 void Query_Same_Platform_Features(unsigned int cpu)
@@ -6402,6 +6417,7 @@ static void Query_AMD_F17h_PerSocket(unsigned int cpu)
 
 	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
 		Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
+		AMD_F17h_CPPC();
 	}
 }
 
@@ -6415,6 +6431,7 @@ static void Query_AMD_F17h_PerCluster(unsigned int cpu)
 
 	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
 		Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
+		AMD_F17h_CPPC();
 	}
 }
 
@@ -10139,6 +10156,50 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
 
 	Core->PowerThermal.Param = PUBLIC(RO(Proc))->PowerThermal.Param;
+
+	/*	Collaborative Processor Performance Control	*/
+    if (PUBLIC(RO(Proc))->Features.HWP_Enable)
+    {
+	AMD_CPPC_CAP1 CPPC_Cap = {.value = 0};
+	AMD_CPPC_REQUEST CPPC_Req = {.value = 0};
+	unsigned short scaleRatio;
+
+	RDMSR(CPPC_Cap, MSR_AMD_CPPC_CAP1);
+
+	scaleRatio = (Core->Boost[BOOST(MAX)] * (1+CPPC_Cap.Highest)) >> 8;
+	Core->PowerThermal.HWP_Capabilities.Highest = scaleRatio;
+
+	scaleRatio = (Core->Boost[BOOST(MAX)] * (1+CPPC_Cap.LowNonlinear)) >> 8;
+	Core->PowerThermal.HWP_Capabilities.Guaranteed = scaleRatio;
+
+	scaleRatio = (Core->Boost[BOOST(MAX)] * (1+CPPC_Cap.Nominal)) >> 8;
+	Core->PowerThermal.HWP_Capabilities.Most_Efficient = scaleRatio;
+
+	scaleRatio = (Core->Boost[BOOST(MAX)] * (1+CPPC_Cap.Lowest)) >> 8;
+	Core->PowerThermal.HWP_Capabilities.Lowest = scaleRatio;
+
+	RDMSR(CPPC_Req, MSR_AMD_CPPC_REQ);
+	if ((HWP_EPP >= 0) && (HWP_EPP <= 0xff))
+	{
+		CPPC_Req.Energy_Pref = HWP_EPP;
+		WRMSR(CPPC_Req, MSR_AMD_CPPC_REQ);
+		RDMSR(CPPC_Req, MSR_AMD_CPPC_REQ);
+	}
+	scaleRatio = (Core->Boost[BOOST(MAX)] * (1+CPPC_Req.Minimum_Perf)) >> 8;
+	Core->PowerThermal.HWP_Request.Minimum_Perf = scaleRatio;
+
+	scaleRatio = (Core->Boost[BOOST(MAX)] * (1+CPPC_Req.Maximum_Perf)) >> 8;
+	Core->PowerThermal.HWP_Request.Maximum_Perf = scaleRatio;
+
+	scaleRatio = (Core->Boost[BOOST(MAX)] * (1+CPPC_Req.Desired_Perf)) >> 8;
+	Core->PowerThermal.HWP_Request.Desired_Perf = scaleRatio;
+
+	Core->PowerThermal.HWP_Request.Energy_Pref  = CPPC_Req.Energy_Pref;
+
+	Core->Boost[BOOST(HWP_MIN)]=Core->PowerThermal.HWP_Request.Minimum_Perf;
+	Core->Boost[BOOST(HWP_MAX)]=Core->PowerThermal.HWP_Request.Maximum_Perf;
+	Core->Boost[BOOST(HWP_TGT)]=Core->PowerThermal.HWP_Request.Desired_Perf;
+    }
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 56)
@@ -17236,7 +17297,13 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	case TECHNOLOGY_HWP:
 		Controller_Stop(1);
 		HWP_Enable = prm.dl.lo;
+	    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL) {
 		Intel_Hardware_Performance();
+	    } else if ((PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
+		|| (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON))
+	    {
+		AMD_F17h_CPPC();
+	    }
 		Controller_Start(1);
 		HWP_Enable = -1;
 		rc = RC_SUCCESS;

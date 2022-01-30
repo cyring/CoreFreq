@@ -3541,7 +3541,8 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 26 - RSZ(PERF_MON_HWCF), hSpace,
 		RSC(PERF_LABEL_HWCF).CODE(), ENABLED(bix) );
 
-	bix = RO(Shm)->Proc.Features.Power.EAX.HWP_Reg == 1;	/* Intel */
+	bix = (RO(Shm)->Proc.Features.Power.EAX.HWP_Reg == 1)	/* Intel */
+	|| (RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1); /* AMD/CPPC */
     if (bix)
     {
 	CPU_STRUCT *SProc = &RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core];
@@ -4029,8 +4030,17 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 				RO(Shm)->Proc.Service.Core
 			].PowerThermal.PowerPolicy );
     }
-
-	bix = RO(Shm)->Proc.Features.HWP_Enable == 1;		/* Intel */
+  } else if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	 || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+  {
+	bix = RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1;
+	PUT(	SCANKEY_NULL, attrib[ bix ? 3 : 0 ], width, 2,
+		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_MGMT).CODE(),
+		width - 19 - RSZ(POWER_THERMAL_MGMT), hSpace,
+		RSC(POWER_LABEL_CPPC).CODE(),
+		Unlock[RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC] );
+  }
+	bix = RO(Shm)->Proc.Features.HWP_Enable == 1;	/* Intel || AMD/CPPC */
     if (bix) {
 	GridCall( PUT(	BOXKEY_HWP_EPP, attrib[0], width, 3,
 			"%s%.*s%s   <%7u>", RSC(POWER_THERMAL_BIAS).CODE(),
@@ -4046,7 +4056,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 			].PowerThermal.HWP.Request.Energy_Pref );
     } else {
 	PUT(	SCANKEY_NULL,
-		attrib[RO(Shm)->Proc.Features.Power.EAX.HWP_Reg ? 0 : 4],
+		attrib[RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC ? 0 : 4],
 		width, 3,
 		"%s%.*s%s   [%7u]", RSC(POWER_THERMAL_BIAS).CODE(),
 		width - (OutFunc == NULL ? 25 : 23)
@@ -4056,7 +4066,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 				RO(Shm)->Proc.Service.Core
 			].PowerThermal.HWP.Request.Energy_Pref );
     }
-  }
+
 /* Row Mark */
 	GridCall( PUT(	SCANKEY_NULL, attrib[6], width, 2,
 			"%s%.*s%s [%3u:%3u %c]",
