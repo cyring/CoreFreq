@@ -2141,6 +2141,14 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		NULL
 	},
 	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Features.AdvPower.EDX.HwPstate == 1,
+		attr_Feat,
+		2, "%s%.*sHwP   [%7s]", RSC(FEATURES_HwP).CODE(),
+		width - 18 - RSZ(FEATURES_HwP),
+		NULL
+	},
+	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		RO(Shm)->Proc.Features.ExtFeature_Leaf1.EAX.HRESET == 1,
 		attr_Feat,
@@ -3595,12 +3603,6 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		bix = RO(Shm)->Proc.Features.HWP_Enable == 1;
 		cix = RO(Shm)->Proc.Features.Power.EAX.HWP_Reg == 0 ?
 			0 : RO(Shm)->Proc.Features.HWP_Enable == 1;
-	}
-	else if ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-		||(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
-	{
-		bix = RO(Shm)->Proc.Features.AdvPower.EDX.HwPstate == 1;
-		cix = RO(Shm)->Proc.Features.AdvPower.EDX.HwPstate == 1;
 	}
 	else {
 		bix = 0;
@@ -14976,7 +14978,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 				EN[(RO(Shm)->Proc.PowerNow == 0b11)];
 
 	hTech1.attr[8] = hTech1.attr[9] = hTech1.attr[10] = \
-			EN[RO(Shm)->Proc.Features.AdvPower.EDX.HwPstate];
+					EN[RO(Shm)->Proc.Features.HWP_Enable];
 
 	hTech1.attr[12] = hTech1.attr[13] = hTech1.attr[14] = \
 	hTech1.attr[15] = hTech1.attr[16] = EN[RO(Shm)->Proc.Technology.Turbo];

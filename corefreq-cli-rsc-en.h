@@ -868,6 +868,7 @@
 #define RSC_FEATURES_ERMS_CODE_EN	"Fast-String Operation"
 #define RSC_FEATURES_FMA_CODE_EN	"Fused Multiply Add"
 #define RSC_FEATURES_HLE_CODE_EN	"Hardware Lock Elision"
+#define RSC_FEATURES_HwP_CODE_EN	"Hardware P-state control"
 #define RSC_FEATURES_HRESET_CODE_EN	"History Reset"
 #define RSC_FEATURES_HYBRID_CODE_EN	"Hybrid part processor"
 #define RSC_FEATURES_IBS_CODE_EN	"Instruction Based Sampling"
