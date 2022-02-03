@@ -2,6 +2,10 @@
  * CoreFreq
  * Copyright (C) 2015-2022 CYRIL INGENIERIE
  * Licenses: GPL2
+ *
+ * Time Capsule[02.02.2022]
+ * Cyril to Marcel Courtiat
+ * RIP Daddy; love you forever
  */
 
 #include <linux/version.h>
@@ -6173,6 +6177,143 @@ OutOfMemory:
     }
 }
 
+inline unsigned short CPPC_AMD_Zen_ScaleRatio(	CORE_RO *Core,
+						unsigned short hint,
+						unsigned short CPB )
+{
+	if (CPB) {
+		return (Core->Boost[BOOST(CPB)] * (1 + hint)) >> 8;
+	} else {
+		return (Core->Boost[BOOST(MAX)] * (1 + hint)) >> 8;
+	}
+}
+
+inline unsigned int CPPC_AMD_Zen_ScaleHint(	CORE_RO *Core,
+						signed int ratio,
+						unsigned short CPB )
+{
+	enum RATIO_BOOST boost;
+	unsigned int flag = 1 << 31;
+
+	if (CPB) {
+		boost = BOOST(CPB);
+	} else {
+		boost = BOOST(MAX);
+	}
+	if ((ratio >= 0) && Core->Boost[boost] && (ratio <= Core->Boost[boost]))
+	{
+		unsigned short hint;
+		hint = 255U * ratio;
+		hint = hint / Core->Boost[boost];
+		flag = flag ^ (1 << 31);
+		flag = flag | hint;
+	}
+	return flag;
+}
+
+static void CPPC_AMD_Zen_PerCore(void *arg)
+{
+	CLOCK_ZEN_ARG *pClockZen = (CLOCK_ZEN_ARG *) arg;
+	unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+	HWCR HwCfgRegister = {.value = 0};
+	AMD_CPPC_REQUEST CPPC_Req = {.value = 0};
+	unsigned short WrRdCPPC = 0;
+
+	RDMSR(HwCfgRegister, MSR_K7_HWCR);
+	RDMSR(CPPC_Req, MSR_AMD_CPPC_REQ);
+
+    switch (pClockZen->pClockMod->NC) {
+    case CLOCK_MOD_HWP_MIN:
+    {
+	unsigned int hint;
+      if (pClockZen->pClockMod->cpu == -1) {
+	hint = CPPC_AMD_Zen_ScaleHint(	Core,	pClockZen->pClockMod->Ratio,
+					!HwCfgRegister.Family_17h.CpbDis );
+      } else {
+	hint = CPPC_AMD_Zen_ScaleHint(	Core,	Core->Boost[BOOST(HWP_MIN)]
+						+ pClockZen->pClockMod->Offset,
+					!HwCfgRegister.Family_17h.CpbDis );
+      }
+      if ((hint & (1 << 31)) == (1 << 31))
+      {
+	pClockZen->rc = -ERANGE;
+      } else {
+	CPPC_Req.Minimum_Perf = hint & 0xff;
+	WrRdCPPC = 1;
+      }
+    }
+	break;
+    case CLOCK_MOD_HWP_MAX:
+    {
+	unsigned int hint;
+      if (pClockZen->pClockMod->cpu == -1) {
+	hint = CPPC_AMD_Zen_ScaleHint(	Core,	pClockZen->pClockMod->Ratio,
+					!HwCfgRegister.Family_17h.CpbDis );
+      } else {
+	hint = CPPC_AMD_Zen_ScaleHint(	Core,	Core->Boost[BOOST(HWP_MAX)]
+						+ pClockZen->pClockMod->Offset,
+					!HwCfgRegister.Family_17h.CpbDis );
+      }
+      if ((hint & (1 << 31)) == (1 << 31))
+      {
+	pClockZen->rc = -ERANGE;
+      } else {
+	CPPC_Req.Maximum_Perf = hint & 0xff;
+	WrRdCPPC = 1;
+      }
+    }
+	break;
+    case CLOCK_MOD_HWP_TGT:
+    {
+	unsigned int hint;
+      if (pClockZen->pClockMod->cpu == -1) {
+	hint = CPPC_AMD_Zen_ScaleHint(	Core,	pClockZen->pClockMod->Ratio,
+					!HwCfgRegister.Family_17h.CpbDis );
+      } else {
+	hint = CPPC_AMD_Zen_ScaleHint(	Core,	Core->Boost[BOOST(HWP_TGT)]
+						+ pClockZen->pClockMod->Offset,
+					!HwCfgRegister.Family_17h.CpbDis );
+      }
+      if ((hint & (1 << 31)) == (1 << 31))
+      {
+	pClockZen->rc = -ERANGE;
+      } else {
+	CPPC_Req.Desired_Perf = hint & 0xff;
+	WrRdCPPC = 1;
+      }
+    }
+	break;
+    default:
+	pClockZen->rc = -RC_UNIMPLEMENTED;
+	break;
+    }
+    if (WrRdCPPC == 1)
+    {
+	WRMSR(CPPC_Req, MSR_AMD_CPPC_REQ);
+	RDMSR(CPPC_Req, MSR_AMD_CPPC_REQ);
+
+	Core->PowerThermal.HWP_Request.Minimum_Perf = \
+		CPPC_AMD_Zen_ScaleRatio(Core, CPPC_Req.Minimum_Perf,
+					!HwCfgRegister.Family_17h.CpbDis);
+
+	Core->PowerThermal.HWP_Request.Maximum_Perf = \
+		CPPC_AMD_Zen_ScaleRatio(Core, CPPC_Req.Maximum_Perf,
+					!HwCfgRegister.Family_17h.CpbDis);
+
+	Core->PowerThermal.HWP_Request.Desired_Perf = \
+		CPPC_AMD_Zen_ScaleRatio(Core, CPPC_Req.Desired_Perf,
+					!HwCfgRegister.Family_17h.CpbDis);
+
+	Core->Boost[BOOST(HWP_MIN)]=Core->PowerThermal.HWP_Request.Minimum_Perf;
+	Core->Boost[BOOST(HWP_MAX)]=Core->PowerThermal.HWP_Request.Maximum_Perf;
+	Core->Boost[BOOST(HWP_TGT)]=Core->PowerThermal.HWP_Request.Desired_Perf;
+
+	pClockZen->rc = RC_OK_COMPUTE;
+    }
+}
+
 long For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
 {
 	long rc = RC_SUCCESS;
@@ -6255,13 +6396,23 @@ static long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
       }
     case CLOCK_MOD_TGT:
       {
-		CLOCK_ZEN_ARG ClockZen = {	/* Target non-boosted P-State*/
-			.pClockMod  = pClockMod,
-			.PstateAddr = MSR_AMD_PSTATE_DEF_BASE,
-			.BoostIndex = BOOST(TGT),
-			.rc = RC_SUCCESS
-		};
+	CLOCK_ZEN_ARG ClockZen = {	/* Target non-boosted P-State*/
+		.pClockMod  = pClockMod,
+		.PstateAddr = MSR_AMD_PSTATE_DEF_BASE,
+		.BoostIndex = BOOST(TGT),
+		.rc = RC_SUCCESS
+	};
 	return For_All_AMD_Zen_Clock(&ClockZen, TargetClock_AMD_Zen_PerCore);
+      }
+    case CLOCK_MOD_HWP_MIN:
+    case CLOCK_MOD_HWP_MAX:
+    case CLOCK_MOD_HWP_TGT:
+      {
+	CLOCK_ZEN_ARG ClockZen = {
+		.pClockMod = pClockMod,
+		.rc = RC_SUCCESS
+	};
+	return For_All_AMD_Zen_Clock(&ClockZen, CPPC_AMD_Zen_PerCore);
       }
     default:
 	return -RC_UNIMPLEMENTED;
@@ -10160,23 +10311,28 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	/*	Collaborative Processor Performance Control	*/
     if (PUBLIC(RO(Proc))->Features.HWP_Enable)
     {
+	HWCR HwCfgRegister = {.value = 0};
 	AMD_CPPC_CAP1 CPPC_Cap = {.value = 0};
 	AMD_CPPC_REQUEST CPPC_Req = {.value = 0};
-	unsigned short scaleRatio;
 
+	RDMSR(HwCfgRegister, MSR_K7_HWCR);
 	RDMSR(CPPC_Cap, MSR_AMD_CPPC_CAP1);
 
-	scaleRatio = (Core->Boost[BOOST(MAX)] * (1+CPPC_Cap.Highest)) >> 8;
-	Core->PowerThermal.HWP_Capabilities.Highest = scaleRatio;
+	Core->PowerThermal.HWP_Capabilities.Highest = \
+		CPPC_AMD_Zen_ScaleRatio(Core, CPPC_Cap.Highest,
+					!HwCfgRegister.Family_17h.CpbDis);
 
-	scaleRatio = (Core->Boost[BOOST(MAX)] * (1+CPPC_Cap.LowNonlinear)) >> 8;
-	Core->PowerThermal.HWP_Capabilities.Guaranteed = scaleRatio;
+	Core->PowerThermal.HWP_Capabilities.Guaranteed = \
+		CPPC_AMD_Zen_ScaleRatio(Core, CPPC_Cap.Nominal,
+					!HwCfgRegister.Family_17h.CpbDis);
 
-	scaleRatio = (Core->Boost[BOOST(MAX)] * (1+CPPC_Cap.Nominal)) >> 8;
-	Core->PowerThermal.HWP_Capabilities.Most_Efficient = scaleRatio;
+	Core->PowerThermal.HWP_Capabilities.Most_Efficient = \
+		CPPC_AMD_Zen_ScaleRatio(Core, CPPC_Cap.LowNonlinear,
+					!HwCfgRegister.Family_17h.CpbDis);
 
-	scaleRatio = (Core->Boost[BOOST(MAX)] * (1+CPPC_Cap.Lowest)) >> 8;
-	Core->PowerThermal.HWP_Capabilities.Lowest = scaleRatio;
+	Core->PowerThermal.HWP_Capabilities.Lowest = \
+		CPPC_AMD_Zen_ScaleRatio(Core, CPPC_Cap.Lowest,
+					!HwCfgRegister.Family_17h.CpbDis);
 
 	RDMSR(CPPC_Req, MSR_AMD_CPPC_REQ);
 	if ((HWP_EPP >= 0) && (HWP_EPP <= 0xff))
@@ -10185,14 +10341,18 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 		WRMSR(CPPC_Req, MSR_AMD_CPPC_REQ);
 		RDMSR(CPPC_Req, MSR_AMD_CPPC_REQ);
 	}
-	scaleRatio = (Core->Boost[BOOST(MAX)] * (1+CPPC_Req.Minimum_Perf)) >> 8;
-	Core->PowerThermal.HWP_Request.Minimum_Perf = scaleRatio;
 
-	scaleRatio = (Core->Boost[BOOST(MAX)] * (1+CPPC_Req.Maximum_Perf)) >> 8;
-	Core->PowerThermal.HWP_Request.Maximum_Perf = scaleRatio;
+	Core->PowerThermal.HWP_Request.Minimum_Perf = \
+		CPPC_AMD_Zen_ScaleRatio(Core, CPPC_Req.Minimum_Perf,
+					!HwCfgRegister.Family_17h.CpbDis);
 
-	scaleRatio = (Core->Boost[BOOST(MAX)] * (1+CPPC_Req.Desired_Perf)) >> 8;
-	Core->PowerThermal.HWP_Request.Desired_Perf = scaleRatio;
+	Core->PowerThermal.HWP_Request.Maximum_Perf = \
+		CPPC_AMD_Zen_ScaleRatio(Core, CPPC_Req.Maximum_Perf,
+					!HwCfgRegister.Family_17h.CpbDis);
+
+	Core->PowerThermal.HWP_Request.Desired_Perf = \
+		CPPC_AMD_Zen_ScaleRatio(Core, CPPC_Req.Desired_Perf,
+					!HwCfgRegister.Family_17h.CpbDis);
 
 	Core->PowerThermal.HWP_Request.Energy_Pref  = CPPC_Req.Energy_Pref;
 
