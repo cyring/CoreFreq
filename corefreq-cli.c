@@ -3428,6 +3428,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 				RO(Shm)->Proc.Features.PerfMon.EDX.FixWidth,
 				RSC(PERF_MON_UNIT_BIT).CODE() );
     }
+/* Section Mark */
 	bix = RO(Shm)->Proc.Technology.C1E == 1;
 
 	GridCall( PUT(	BOXKEY_C1E, attrib[bix], width, 2,
@@ -3435,7 +3436,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			width - 18 - RSZ(PERF_MON_C1E), hSpace,
 			RSC(PERF_LABEL_C1E).CODE(), ENABLED(bix) ),
 		C1E_Update );
-
+/* Row Mark */
     if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	bix = RO(Shm)->Proc.Technology.C1A == 1;
@@ -3445,7 +3446,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			width - 18 - RSZ(PERF_MON_C1A), hSpace,
 			RSC(PERF_LABEL_C1A).CODE(), ENABLED(bix) ),
 		C1A_Update );
-
+/* Row Mark */
 	bix = RO(Shm)->Proc.Technology.C3A == 1;
 
 	GridCall( PUT(	BOXKEY_C3A, attrib[bix], width, 2,
@@ -3454,7 +3455,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			RSC(PERF_LABEL_C3A).CODE(), ENABLED(bix) ),
 		C3A_Update );
     }
-
+/* Row Mark */
 	bix = RO(Shm)->Proc.Technology.C1U == 1;
 
     if ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
@@ -3472,7 +3473,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			RSC(PERF_LABEL_C1U).CODE(), ENABLED(bix) ),
 		C1U_Update );
     }
-
+/* Row Mark */
 	bix = RO(Shm)->Proc.Technology.C3U == 1;
 
 	GridCall( PUT(	BOXKEY_C3U, attrib[bix], width, 2,
@@ -3480,7 +3481,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			width - 18 - RSZ(PERF_MON_C3U), hSpace,
 			RSC(PERF_LABEL_C3U).CODE(), ENABLED(bix) ),
 		C3U_Update );
-
+/* Row Mark */
     if((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
@@ -3491,7 +3492,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			width - 18 - RSZ(PERF_MON_CC6), hSpace,
 			RSC(PERF_LABEL_CC6).CODE(), ENABLED(bix) ),
 		CC6_Update );
-
+/* Row Mark */
 	bix = RO(Shm)->Proc.Technology.PC6 == 1;
 
 	GridCall( PUT(	BOXKEY_PC6, attrib[bix], width, 2,
@@ -3516,20 +3517,21 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			RSC(PERF_LABEL_MC6).CODE(), ENABLED(bix) ),
 		PC6_Update );
     }
+/* Section Mark */
 	bix = RO(Shm)->Proc.Features.AdvPower.EDX.FID == 1;
 
 	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s%s       [%3s]", RSC(PERF_MON_FID).CODE(),
 		width - 18 - RSZ(PERF_MON_FID), hSpace,
 		RSC(PERF_LABEL_FID).CODE(), ENABLED(bix) );
-
+/* Row Mark */
 	bix = (RO(Shm)->Proc.Features.AdvPower.EDX.VID == 1);
 
 	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s%s       [%3s]", RSC(PERF_MON_VID).CODE(),
 		width - 18 - RSZ(PERF_MON_VID), hSpace,
 		RSC(PERF_LABEL_VID).CODE(), ENABLED(bix) );
-
+/* Row Mark */
 	bix = (RO(Shm)->Proc.Features.Power.ECX.HCF_Cap == 1)
 	   || ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 		&& (RO(Shm)->Proc.Features.AdvPower.EDX.EffFrqRO == 1))
@@ -3540,7 +3542,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*s%s       [%3s]", RSC(PERF_MON_HWCF).CODE(),
 		width - 26 - RSZ(PERF_MON_HWCF), hSpace,
 		RSC(PERF_LABEL_HWCF).CODE(), ENABLED(bix) );
-
+/* Section Mark */
 	bix = (RO(Shm)->Proc.Features.Power.EAX.HWP_Reg == 1)	/* Intel */
 	|| (RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1); /* AMD/CPPC */
     if (bix)
@@ -3561,9 +3563,9 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			RSC(PERF_LABEL_HWP).CODE(), ENABLED(bix) ),
 		HWP_Update);
 
-	PUT(	SCANKEY_NULL, RSC(SYSINFO_PROC_COND0).ATTR(), width, 3,
-		"%s""%.*s""%s""%.*s""%s", RSC(CAPABILITIES).CODE(),
-		21 - 3*(OutFunc == NULL) - RSZ(CAPABILITIES), hSpace,
+	PUT(	SCANKEY_NULL, RSC(SYSINFO_PERFMON_HWP_CAP_COND1).ATTR(),
+		width, 3, "%s""%.*s""%s""%.*s""%s", RSC(CAPABILITIES).CODE(),
+		21 - 3 * (OutFunc == NULL) - RSZ(CAPABILITIES), hSpace,
 		RSC(PERF_MON_UNIT_HWP).CODE(), 22, hSpace, RSC(RATIO).CODE() );
 
 	GridCall(PrintRatioFreq(win, CFlop,
@@ -3967,6 +3969,20 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	];
 	unsigned int bix;
 /* Section Mark */
+	GridCall( PUT(	SCANKEY_NULL, attrib[6], width, 2,
+			"%s%.*s%s [%3u:%3u %c]",
+			RSC(POWER_THERMAL_TJMAX).CODE(),
+			width - 20 - RSZ(POWER_THERMAL_TJMAX), hSpace,
+			RSC(POWER_LABEL_TJ).CODE(),
+			Setting.fahrCels ? Cels2Fahr(
+				SFlop->Thermal.Param.Offset[1]
+			) : SFlop->Thermal.Param.Offset[1],
+			Setting.fahrCels ? Cels2Fahr(
+				SFlop->Thermal.Param.Offset[0]
+			) : SFlop->Thermal.Param.Offset[0],
+			Setting.fahrCels ? 'F' : 'C' ),
+		TjMax_Update );
+/* Section Mark */
   if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
   {
 	bix = RO(Shm)->Proc.Features.Std.EDX.ACPI == 1;
@@ -3998,7 +4014,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 			].PowerThermal.DutyCycle.ClockMod,
 			bix ? '>' : ']' ),
 		DutyCycle_Update );
-
+/* Row Mark */
 	bix = RO(Shm)->Proc.Technology.PowerMgmt == 1;
 	PUT(	SCANKEY_NULL, attrib[ bix ? 3 : 0 ], width, 2,
 		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_MGMT).CODE(),
@@ -4040,6 +4056,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RSC(POWER_LABEL_CPPC).CODE(),
 		Unlock[RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC] );
   }
+/* Row Mark */
 	bix = RO(Shm)->Proc.Features.HWP_Enable == 1;	/* Intel || AMD/CPPC */
     if (bix) {
 	GridCall( PUT(	BOXKEY_HWP_EPP, attrib[0], width, 3,
@@ -4066,21 +4083,6 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 				RO(Shm)->Proc.Service.Core
 			].PowerThermal.HWP.Request.Energy_Pref );
     }
-
-/* Row Mark */
-	GridCall( PUT(	SCANKEY_NULL, attrib[6], width, 2,
-			"%s%.*s%s [%3u:%3u %c]",
-			RSC(POWER_THERMAL_TJMAX).CODE(),
-			width - 20 - RSZ(POWER_THERMAL_TJMAX), hSpace,
-			RSC(POWER_LABEL_TJ).CODE(),
-			Setting.fahrCels ? Cels2Fahr(
-				SFlop->Thermal.Param.Offset[1]
-			) : SFlop->Thermal.Param.Offset[1],
-			Setting.fahrCels ? Cels2Fahr(
-				SFlop->Thermal.Param.Offset[0]
-			) : SFlop->Thermal.Param.Offset[0],
-			Setting.fahrCels ? 'F' : 'C' ),
-		TjMax_Update );
 /* Row Mark */
 	bix = (RO(Shm)->Proc.Features.Power.EAX.DTS == 1)
 	   || (RO(Shm)->Proc.Features.AdvPower.EDX.TS == 1);
@@ -14988,7 +14990,11 @@ void Layout_Footer(Layer *layer, CUINT row)
 				EN[(RO(Shm)->Proc.PowerNow == 0b11)];
 
 	hTech1.attr[8] = hTech1.attr[9] = hTech1.attr[10] = \
-					EN[RO(Shm)->Proc.Features.HWP_Enable];
+		EN[
+			RO(Shm)->Proc.Features.HWP_Enable == 1 ? 1
+			: RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1 ?
+				2 : 0
+		];
 
 	hTech1.attr[12] = hTech1.attr[13] = hTech1.attr[14] = \
 	hTech1.attr[15] = hTech1.attr[16] = EN[RO(Shm)->Proc.Technology.Turbo];
