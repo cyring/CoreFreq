@@ -6115,6 +6115,7 @@ static void Policy_HWP_SetTarget(void *arg) ;
 #define Policy_Broadwell_EP_SetTarget	Policy_SandyBridge_SetTarget
 static void Policy_Skylake_SetTarget(void *arg) ;
 static void Policy_Zen_SetTarget(void *arg) ;
+static void Policy_Zen_CPPC_SetTarget(void *arg) ;
 
 #define VOID_Driver {							\
 	.IdleState	= NULL ,					\

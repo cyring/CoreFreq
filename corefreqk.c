@@ -488,9 +488,10 @@ CoreFreqK_Read_CS_From_Variant_TSC(struct clocksource *cs)
 
 static struct clocksource CoreFreqK_CS = {
 	.name	= "corefreq",
-	.rating = 250,
+	.rating = 300,
 	.mask	= CLOCKSOURCE_MASK(64),
-	.flags	= CLOCK_SOURCE_IS_CONTINUOUS,
+	.flags	= CLOCK_SOURCE_IS_CONTINUOUS
+		| CLOCK_SOURCE_VALID_FOR_HRES,
 };
 
 static long CoreFreqK_UnRegister_ClockSource(void)
@@ -16265,6 +16266,9 @@ static int CoreFreqK_Store_SetSpeed(struct cpufreq_policy *policy,
 
     if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL) {
 	SetTarget = Policy_HWP_SetTarget;
+    } else if ( (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
+	||	(PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON) ) {
+	SetTarget = Policy_Zen_CPPC_SetTarget;
     } else {
 	SetTarget = Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.SetTarget;
     }
@@ -16490,6 +16494,50 @@ static void Policy_Zen_SetTarget(void *arg)
 
 		Core->Boost[BOOST(TGT)] = COF.Q;
 	}
+#endif /* CONFIG_CPU_FREQ */
+}
+
+static void Policy_Zen_CPPC_SetTarget(void *arg)
+{
+#ifdef CONFIG_CPU_FREQ
+  if (PUBLIC(RO(Proc))->Features.HWP_Enable)
+  {
+	unsigned int *ratio = (unsigned int*) arg;
+	unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+    if (((*ratio) >= Core->PowerThermal.HWP_Capabilities.Lowest)
+     && ((*ratio) <= Core->PowerThermal.HWP_Capabilities.Highest))
+    {
+	HWCR HwCfgRegister = {.value = 0};
+	AMD_CPPC_REQUEST CPPC_Req = {.value = 0};
+
+	RDMSR(HwCfgRegister, MSR_K7_HWCR);
+	RDMSR(CPPC_Req, MSR_AMD_CPPC_REQ);
+
+	CPPC_Req.Maximum_Perf = CPPC_Req.Desired_Perf = \
+		CPPC_AMD_Zen_ScaleHint( Core, (*ratio),
+					!HwCfgRegister.Family_17h.CpbDis );
+
+	WRMSR(CPPC_Req, MSR_AMD_CPPC_REQ);
+	RDMSR(CPPC_Req, MSR_AMD_CPPC_REQ);
+
+	Core->PowerThermal.HWP_Request.Maximum_Perf = \
+		CPPC_AMD_Zen_ScaleRatio(Core, CPPC_Req.Maximum_Perf,
+					!HwCfgRegister.Family_17h.CpbDis);
+
+	Core->PowerThermal.HWP_Request.Desired_Perf = \
+		CPPC_AMD_Zen_ScaleRatio(Core, CPPC_Req.Desired_Perf,
+					!HwCfgRegister.Family_17h.CpbDis);
+
+	Core->Boost[BOOST(HWP_MAX)]=Core->PowerThermal.HWP_Request.Maximum_Perf;
+	Core->Boost[BOOST(HWP_TGT)]=Core->PowerThermal.HWP_Request.Desired_Perf;
+    }
+  } else {
+	if (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.SetTarget != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.SetTarget(arg);
+	}
+  }
 #endif /* CONFIG_CPU_FREQ */
 }
 
