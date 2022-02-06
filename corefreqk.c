@@ -16511,14 +16511,17 @@ static void Policy_Zen_CPPC_SetTarget(void *arg)
     {
 	HWCR HwCfgRegister = {.value = 0};
 	AMD_CPPC_REQUEST CPPC_Req = {.value = 0};
+	unsigned int hint;
 
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
 	RDMSR(CPPC_Req, MSR_AMD_CPPC_REQ);
 
-	CPPC_Req.Maximum_Perf = CPPC_Req.Desired_Perf = \
-		CPPC_AMD_Zen_ScaleHint( Core, (*ratio),
+	hint = CPPC_AMD_Zen_ScaleHint(	Core, (*ratio),
 					!HwCfgRegister.Family_17h.CpbDis );
 
+      if ((hint & (1 << 31)) != (1 << 31))
+      {
+	CPPC_Req.Maximum_Perf = CPPC_Req.Desired_Perf = hint & 0xff;
 	WRMSR(CPPC_Req, MSR_AMD_CPPC_REQ);
 	RDMSR(CPPC_Req, MSR_AMD_CPPC_REQ);
 
@@ -16532,6 +16535,7 @@ static void Policy_Zen_CPPC_SetTarget(void *arg)
 
 	Core->Boost[BOOST(HWP_MAX)]=Core->PowerThermal.HWP_Request.Maximum_Perf;
 	Core->Boost[BOOST(HWP_TGT)]=Core->PowerThermal.HWP_Request.Desired_Perf;
+      }
     }
   } else {
 	if (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.SetTarget != NULL) {
