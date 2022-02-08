@@ -5327,10 +5327,9 @@ static void Query_Nehalem_EX(unsigned int cpu) /* Tables 2-15, 2-17	*/
 
 static void Query_Avoton(unsigned int cpu)	/*	Table 2-10	*/
 {
-	Nehalem_Platform_Info(cpu);
-	HyperThreading_Technology();
+	Query_Silvermont(cpu);
 
-	Intel_PowerInterface();
+	RDMSR(PUBLIC(RO(Proc))->PowerThermal.PowerInfo, MSR_AVN_PKG_POWER_INFO);
 }
 
 static void Query_SandyBridge(unsigned int cpu)
@@ -9565,6 +9564,8 @@ static void PerCore_Nehalem_EX_Query(void *arg)
 static void PerCore_Avoton_Query(void *arg)
 {
 	CORE_RO *Core = (CORE_RO *) arg;
+
+	PerCore_Silvermont_Query(arg);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,	/* Table 2-10 */

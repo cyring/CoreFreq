@@ -167,6 +167,10 @@
 	#define MSR_PKG_POWER_INFO		0x00000614
 #endif
 
+#ifndef MSR_AVN_PKG_POWER_INFO
+	#define MSR_AVN_PKG_POWER_INFO		0x0000066e
+#endif
+
 #ifndef MSR_DRAM_POWER_LIMIT
 	#define MSR_DRAM_POWER_LIMIT		0x00000618
 #endif
