@@ -92,11 +92,11 @@ __asm__ volatile							\
 #define RDTSC64(_mem64) 						\
 __asm__ volatile							\
 (									\
-	"lfence"		"\n\t"					\
-	"rdtsc"			"\n\t"					\
-	"shlq	$32,	%%rdx"	"\n\t"					\
-	"orq	%%rdx,	%%rax"	"\n\t"					\
-	"movq	%%rax,	%0"						\
+	"lfence"				"\n\t"			\
+	"rdtsc" 				"\n\t"			\
+	"shlq	$32	,	%%rdx"		"\n\t"			\
+	"orq	%%rdx	,	%%rax"		"\n\t"			\
+	"movq	%%rax	,	%0"					\
 	: "=m" (_mem64) 						\
 	:								\
 	: "%rax", "%rcx", "%rdx", "cc", "memory"			\
@@ -105,40 +105,40 @@ __asm__ volatile							\
 #define RDTSCP64(_mem64)						\
 __asm__ volatile							\
 (									\
-	"rdtscp"		"\n\t"					\
-	"shlq	$32,	%%rdx"	"\n\t"					\
-	"orq	%%rdx,	%%rax"	"\n\t"					\
-	"movq	%%rax,	%0"						\
+	"rdtscp"				"\n\t"			\
+	"shlq	$32	,	%%rdx"		"\n\t"			\
+	"orq	%%rdx	,	%%rax"		"\n\t"			\
+	"movq	%%rax	,	%0"					\
 	: "=m" (_mem64) 						\
 	:								\
 	: "%rax", "%rcx", "%rdx", "cc", "memory"			\
 )
 
 #define ASM_RDTSCP(_reg)						\
-	"# Read invariant TSC." 	"\n\t"				\
-	"rdtscp"			"\n\t"				\
-	"shlq	$32, %%rdx"		"\n\t"				\
-	"orq	%%rdx, %%rax"		"\n\t"				\
-	"# Save TSC value."		"\n\t"				\
-	"movq	%%rax, %%" #_reg	"\n\t"
+	"# Read invariant TSC." 		"\n\t"			\
+	"rdtscp"				"\n\t"			\
+	"shlq	$32	,	%%rdx"		"\n\t"			\
+	"orq	%%rdx	,	%%rax"		"\n\t"			\
+	"# Save TSC value."			"\n\t"			\
+	"movq	%%rax	,	%%" #_reg	"\n\t"
 
 #define ASM_RDTSC(_reg) 						\
-	"# Read variant TSC."		"\n\t"				\
-	"lfence"			"\n\t"				\
-	"rdtsc" 			"\n\t"				\
-	"shlq	$32, %%rdx"		"\n\t"				\
-	"orq	%%rdx, %%rax"		"\n\t"				\
-	"# Save TSC value."		"\n\t"				\
-	"movq	%%rax, %%" #_reg	"\n\t"
+	"# Read variant TSC."			"\n\t"			\
+	"lfence"				"\n\t"			\
+	"rdtsc" 				"\n\t"			\
+	"shlq	$32	,	%%rdx"		"\n\t"			\
+	"orq	%%rdx	,	%%rax"		"\n\t"			\
+	"# Save TSC value."			"\n\t"			\
+	"movq	%%rax	,	%%" #_reg	"\n\t"
 
 #define ASM_CODE_RDPMC(_ctr, _reg)					\
-	"# Read PMC counter."		"\n\t"				\
-	"movq	$" #_ctr ", %%rcx"	"\n\t"				\
-	"rdpmc" 			"\n\t"				\
-	"shlq	$32, %%rdx"		"\n\t"				\
-	"orq	%%rdx, %%rax"		"\n\t"				\
-	"# Save counter value." 	"\n\t"				\
-	"movq	%%rax, %%" #_reg	"\n\t"
+	"# Read PMC counter."			"\n\t"			\
+	"movq	$" #_ctr ",	%%rcx"		"\n\t"			\
+	"rdpmc" 				"\n\t"			\
+	"shlq	$32	,	%%rdx"		"\n\t"			\
+	"orq	%%rdx	,	%%rax"		"\n\t"			\
+	"# Save counter value." 		"\n\t"			\
+	"movq	%%rax	,	%%" #_reg	"\n\t"
 
 #define ASM_RDPMC(_ctr, _reg) ASM_CODE_RDPMC(_ctr, _reg)
 
@@ -146,8 +146,8 @@ __asm__ volatile							\
 __asm__ volatile							\
 (									\
 	ASM_CODE_RDPMC(_ctr, _reg)					\
-	"# Store values into memory."	"\n\t"				\
-	"movq	%%" #_reg ", %0"					\
+	"# Store values into memory."		"\n\t"			\
+	"movq	%%" #_reg ",	%0"					\
 	: "=m" (_mem)							\
 	:								\
 	: "%rax", "%rcx", "%rdx",					\
@@ -162,13 +162,13 @@ __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
 	ASM_RDPMC(_ctr1, _reg1) 					\
-	"# Store values into memory."	"\n\t"				\
-	"movq	%%" #_reg0 ", %0"	"\n\t"				\
-	"movq	%%" #_reg1 ", %1"					\
+	"# Store values into memory."		"\n\t"			\
+	"movq	%%" #_reg0 ",	%0"		"\n\t"			\
+	"movq	%%" #_reg1 ",	%1"					\
 	: "=m" (mem_tsc), "=m" (_mem1)					\
 	:								\
 	: "%rax", "%rcx", "%rdx",					\
-	  "%" #_reg0"", "%" #_reg1"",					\
+	  "%" #_reg0""	,	"%" #_reg1"",				\
 	  "cc", "memory"						\
 )
 
@@ -185,7 +185,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 									\
 	__asm__ volatile						\
 	(								\
-	_lock	"btsq	%%rdx, %[base]" 	"\n\t"			\
+	_lock	"btsq	%%rdx,	%[base]"	"\n\t"			\
 		"setc	%[ret]" 					\
 		: [ret] "+m" (_ret),					\
 		  [base] "=m" (_base)					\
@@ -272,7 +272,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 									\
 	__asm__ volatile						\
 	(								\
-	_lock	"btcq	%%rdx, %[tmp]"		"\n\t"			\
+	_lock	"btcq	%%rdx,	%[tmp]"		"\n\t"			\
 		"setc	%[ret]" 					\
 		: [ret] "+m" (_ret)					\
 		: [tmp] "m" (_tmp),					\
