@@ -1234,13 +1234,24 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 18, hSpace, 6,
 		RO(Shm)->Proc.Features.Uncore_Unlock ?
 			RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
+    {
+	ASCII *uncoreLabel[2];
 
-    if (RO(Shm)->Proc.Features.Uncore_Unlock) {
+	if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	 || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON)) {
+		uncoreLabel[0] = RSC(UCLK).CODE();
+		uncoreLabel[1] = RSC(MCLK).CODE();
+	} else {
+		uncoreLabel[0] = RSC(MIN).CODE();
+		uncoreLabel[1] = RSC(MAX).CODE();
+	}
+
+      if (RO(Shm)->Proc.Features.Uncore_Unlock) {
 	CLOCK_ARG uncoreClock = {.NC = 0, .Offset = 0};
 
 	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | CLOCK_MOD_MIN;
 	GridCall( PrintRatioFreq(win, CFlop,
-				0, (char*) RSC(MIN).CODE(),
+				0, (char*) uncoreLabel[0],
 				&RO(Shm)->Uncore.Boost[UNCORE_BOOST(MIN)],
 				1, uncoreClock.ullong,
 				width, OutFunc, attrib[3] ),
@@ -1248,25 +1259,26 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | CLOCK_MOD_MAX;
 	GridCall( PrintRatioFreq(win, CFlop,
-				0, (char*) RSC(MAX).CODE(),
+				0, (char*) uncoreLabel[1],
 				&RO(Shm)->Uncore.Boost[UNCORE_BOOST(MAX)],
 				1, uncoreClock.ullong,
 				width, OutFunc, attrib[3]),
 		RefreshRatioFreq, &RO(Shm)->Uncore.Boost[UNCORE_BOOST(MAX)] );
-    } else {
+      } else {
 	GridCall( PrintRatioFreq(win, CFlop,
-				0, (char*) RSC(MIN).CODE(),
+				0, (char*) uncoreLabel[0],
 				&RO(Shm)->Uncore.Boost[UNCORE_BOOST(MIN)],
 				0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
 		RefreshRatioFreq, &RO(Shm)->Uncore.Boost[UNCORE_BOOST(MIN)] );
 
 	GridCall( PrintRatioFreq(win, CFlop,
-				0, (char*) RSC(MAX).CODE(),
+				0, (char*) uncoreLabel[1],
 				&RO(Shm)->Uncore.Boost[UNCORE_BOOST(MAX)],
 				0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
 		RefreshRatioFreq, &RO(Shm)->Uncore.Boost[UNCORE_BOOST(MAX)] );
+      }
     }
     if (RO(Shm)->Proc.Features.TDP_Cfg_Lock) {
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,

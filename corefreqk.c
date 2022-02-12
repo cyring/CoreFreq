@@ -5134,8 +5134,9 @@ static void AMD_Zen_UMC(struct pci_dev *dev, unsigned int UMC_BAR,
 static PCI_CALLBACK AMD_17h_DataFabric(struct pci_dev *pdev)
 {
 	struct pci_dev *dev;
+	enum UNCORE_BOOST Mem_Clock = 0, Div_Clock = 0;
 	unsigned short umc;
-	bool UMC_Clock = false;
+	bool Got_Mem_Clock = false, Got_Div_Clock = false;
 
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 0;
   for (umc = 0; umc < 4; umc++)
@@ -5163,18 +5164,36 @@ static PCI_CALLBACK AMD_17h_DataFabric(struct pci_dev *pdev)
      {
 	AMD_Zen_UMC(dev, SMU_AMD_UMC_BASE_CHA_F17H(cha), umc, cha);
      }
-     if ((UMC_Clock == false)
+     if ((Got_Mem_Clock == false)
       && PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha].AMD17h.MISC.MEMCLK)
      {
-	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MAX)] = \
-	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] = \
-	    PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha].AMD17h.MISC.MEMCLK;
+	Mem_Clock = PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[
+								cha
+							].AMD17h.MISC.MEMCLK;
+	Got_Mem_Clock = true;
+     }
+     if (Got_Div_Clock == false)
+     {
+	AMD_17_UMC_DEBUG_MISC DbgMisc = {.value = 0};
 
-	UMC_Clock = true;
+	Core_AMD_SMN_Read(DbgMisc, SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xd6c, dev);
+	if (DbgMisc.UMC_Ready == 1)
+	{
+		Div_Clock = !DbgMisc.UCLK_Divisor;
+		Got_Div_Clock = true;
+	}
      }
     }
 	pci_dev_put(dev);
    }
+  }
+  if (Got_Mem_Clock) {
+	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MAX)] = \
+	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] = Mem_Clock;
+
+    if (Got_Div_Clock) {
+	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] >>= Div_Clock;
+    }
   }
 	return (PCI_CALLBACK) 0;
 }

@@ -1898,6 +1898,8 @@
 #define RSC_TURBO_CODE			"Turbo"
 #define RSC_MAX_CODE			"Max"
 #define RSC_MIN_CODE			"Min"
+#define RSC_UCLK_CODE			"CLK"
+#define RSC_MCLK_CODE			"MEM"
 #define RSC_TGT_CODE			"TGT"
 #define RSC_HWP_CODE			"HWP"
 #define RSC_XFR_CODE			"XFR"
