@@ -4356,17 +4356,6 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
 /*	[Zen+ Pinnacle Ridge] 	8F_08h Stepping 2			*/
 	{
-	.Brand = ZLIST("AMD Athlon 3000G"),
-	.Boost = {+5, +1},
-	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_PINNACLE_RIDGE,
-	.TgtRatioUnlocked = 1,
-	.ClkRatioUnlocked = 0b10,
-	.TurboUnlocked = 1,
-	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
-	},
-	{
 	.Brand = ZLIST("AMD Athlon 300U"),
 	.Boost = {+9, 0},
 	.Param.Offset = {0, 0, 0},
@@ -4539,6 +4528,17 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
 };
 static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 /*	[Zen+ Picasso]		8F_18h Stepping 1			*/
+	{
+	.Brand = ZLIST("AMD Athlon 3000G"),
+	.Boost = {+0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PICASSO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
 	{
 	.Brand = ZLIST( "AMD Athlon Silver 3050GE",	\
 			"AMD Athlon Silver PRO 3125GE", \
@@ -4749,6 +4749,8 @@ static PROCESSOR_SPECIFIC AMD_Zen_Dali_Specific[] = {
 			"AMD Athlon Silver 3050C",	\
 			"AMD Athlon Gold 3150U",	\
 			"AMD Athlon Silver 3050U",	\
+			"AMD Athlon PRO 3145B" ,	\
+			"AMD Athlon PRO 3045B" ,	\
 			"AMD Ryzen 3"			),
 	.Boost = {+9, 0},
 	.Param.Offset = {0, 0, 0},
@@ -5097,7 +5099,8 @@ static PROCESSOR_SPECIFIC AMD_Zen2_Renoir_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 3 PRO 4350GE"),
+	.Brand = ZLIST( "AMD Athlon Gold PRO 4150GE",	\
+			"AMD Ryzen 3 PRO 4350GE"	),
 	.Boost = {+5, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
