@@ -7940,7 +7940,7 @@ void PowerThermal(CORE_RO *Core)
 		{_SandyBridge,		1, 1, 0, 0},	/* 06_2A */
 		{_SandyBridge_EP,	1, 1, 0, 0},	/* 06_2D */
 
-		{_IvyBridge,		1, 0, 1, 0},	/* 06_3A */
+		{_IvyBridge,		1, 1, 0, 0},	/* 06_3A */
 		{_IvyBridge_EP ,	1, 1, 0, 0},	/* 06_3E */
 
 		{_Haswell_DT,		1, 1, 0, 0},	/* 06_3C */
