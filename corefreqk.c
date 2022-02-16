@@ -14159,6 +14159,39 @@ static void InitTimer_Alderlake(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_Alderlake, 1);
 }
 
+static void Start_Alderlake(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	UNUSED(arg);
+
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
+
+	Intel_Core_Counters_Set(Core);
+	SMT_Counters_SandyBridge(Core, 0);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
+		PKG_Counters_Alderlake(Core, 0);
+
+		Power_ACCU_Skylake(PUBLIC(RO(Proc)), 0);
+	}
+
+	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+}
+
 
 static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 {
