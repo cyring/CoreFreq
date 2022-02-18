@@ -1108,7 +1108,13 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
     if (RO(Shm)->Proc.Features.HWP_Enable) {
 	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
 
+      if ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	|| (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
+      {
+	PUT(SCANKEY_NULL, attrib[0], width, 3, "%s", RSC(CPPC).CODE());
+      } else {
 	PUT(SCANKEY_NULL, attrib[0], width, 3, "%s", RSC(HWP).CODE());
+      }
 
 	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_HWP_MIN;
 
@@ -1167,8 +1173,8 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RO(Shm)->Proc.Features.Turbo_Unlock ?
 			RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
 
-    if((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-    || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+    if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+     || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
       if (RO(Shm)->Proc.Features.XtraCOF >= 2)
       {
@@ -3555,8 +3561,8 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 26 - RSZ(PERF_MON_HWCF), hSpace,
 		RSC(PERF_LABEL_HWCF).CODE(), ENABLED(bix) );
 /* Section Mark */
-	bix = (RO(Shm)->Proc.Features.Power.EAX.HWP_Reg == 1)	/* Intel */
-	|| (RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1); /* AMD/CPPC */
+	bix = (RO(Shm)->Proc.Features.Power.EAX.HWP_Reg == 1)	/* Intel:HWP */
+	|| (RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1); /* AMD:CPPC */
     if (bix)
     {
 	CPU_STRUCT *SProc = &RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core];
@@ -3569,12 +3575,21 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	};
 	bix = RO(Shm)->Proc.Features.HWP_Enable == 1;
 
+      if ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	|| (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
+      {
+	GridCall( PUT(	BOXKEY_HWP, attrib[bix], width, 2,
+			"%s%.*s%s       <%3s>", RSC(PERF_MON_CPPC).CODE(),
+			width - 19 - RSZ(PERF_MON_CPPC), hSpace,
+			RSC(PERF_LABEL_CPPC).CODE(), ENABLED(bix) ),
+		HWP_Update);
+      } else {
 	GridCall( PUT(	BOXKEY_HWP, attrib[bix], width, 2,
 			"%s%.*s%s       <%3s>", RSC(PERF_MON_HWP).CODE(),
 			width - 18 - RSZ(PERF_MON_HWP), hSpace,
 			RSC(PERF_LABEL_HWP).CODE(), ENABLED(bix) ),
 		HWP_Update);
-
+      }
 	PUT(	SCANKEY_NULL, RSC(SYSINFO_PERFMON_HWP_CAP_COND1).ATTR(),
 		width, 3, "%s""%.*s""%s""%.*s""%s", RSC(CAPABILITIES).CODE(),
 		21 - 3 * (OutFunc == NULL) - RSZ(CAPABILITIES), hSpace,
@@ -4058,18 +4073,8 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 				RO(Shm)->Proc.Service.Core
 			].PowerThermal.PowerPolicy );
     }
-  } else if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-	 || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
-  {
-	bix = RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1;
-	PUT(	SCANKEY_NULL, attrib[ bix ? 3 : 0 ], width, 2,
-		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_MGMT).CODE(),
-		width - 19 - RSZ(POWER_THERMAL_MGMT), hSpace,
-		RSC(POWER_LABEL_CPPC).CODE(),
-		Unlock[RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC] );
-  }
 /* Row Mark */
-	bix = RO(Shm)->Proc.Features.HWP_Enable == 1;	/* Intel || AMD/CPPC */
+	bix = RO(Shm)->Proc.Features.HWP_Enable == 1;
     if (bix) {
 	GridCall( PUT(	BOXKEY_HWP_EPP, attrib[0], width, 3,
 			"%s%.*s%s   <%7u>", RSC(POWER_THERMAL_BIAS).CODE(),
@@ -4083,18 +4088,33 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		&RO(Shm)->Cpu[
 				RO(Shm)->Proc.Service.Core
 			].PowerThermal.HWP.Request.Energy_Pref );
-    } else {
-	PUT(	SCANKEY_NULL,
-		attrib[RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC ? 0 : 4],
-		width, 3,
-		"%s%.*s%s   [%7u]", RSC(POWER_THERMAL_BIAS).CODE(),
-		width - (OutFunc == NULL ? 25 : 23)
-		 - RSZ(POWER_THERMAL_BIAS), hSpace,
-		RSC(POWER_LABEL_EPP).CODE(),
-		RO(Shm)->Cpu[
+    }
+  } else if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	 || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+  {
+/* Row Mark */
+	bix = RO(Shm)->Proc.Features.HWP_Enable == 1;
+    if (bix) {
+	GridCall( PUT(	BOXKEY_HWP_EPP, attrib[0], width, 2,
+			"%s%.*s%s   <%7u>", RSC(POWER_THERMAL_CPPC).CODE(),
+			width - 19 - RSZ(POWER_THERMAL_CPPC), hSpace,
+			RSC(POWER_LABEL_CPPC).CODE(),
+			RO(Shm)->Cpu[
+				RO(Shm)->Proc.Service.Core
+			].PowerThermal.HWP.Request.Energy_Pref ),
+		Hint_Update,
+		&RO(Shm)->Cpu[
 				RO(Shm)->Proc.Service.Core
 			].PowerThermal.HWP.Request.Energy_Pref );
+    } else {
+	bix = RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1;
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_CPPC).CODE(),
+		width - 19 - RSZ(POWER_THERMAL_CPPC), hSpace,
+		RSC(POWER_LABEL_CPPC).CODE(), POWERED(bix) );
     }
+  }
 /* Row Mark */
 	bix = (RO(Shm)->Proc.Features.Power.EAX.DTS == 1)
 	   || (RO(Shm)->Proc.Features.AdvPower.EDX.TS == 1);
@@ -12311,7 +12331,10 @@ int Shortcut(SCANKEY *scan)
 	};
 	AppendWindow(
 		CreateBox(scan->key, origin, select,
-			(char*) RSC(BOX_HWP_TITLE).CODE(),
+		    (  (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+		    || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) ) ?
+				(char*) RSC(BOX_CPPC_TITLE).CODE()
+			:	(char*) RSC(BOX_HWP_TITLE).CODE(),
 			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
 			RSC(BOX_HWP_DESC).CODE()  , descAttr,	SCANKEY_NULL,
 			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
@@ -15001,34 +15024,34 @@ void Layout_Footer(Layer *layer, CUINT row)
 	hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[6] = \
 				EN[(RO(Shm)->Proc.PowerNow == 0b11)];
 
-	hTech1.attr[8] = hTech1.attr[9] = hTech1.attr[10] = \
+	hTech1.attr[8] = hTech1.attr[9] = hTech1.attr[10] = hTech1.attr[11] = \
 		EN[
 			RO(Shm)->Proc.Features.HWP_Enable == 1 ? 1
 			: RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1 ?
 				2 : 0
 		];
 
-	hTech1.attr[12] = hTech1.attr[13] = hTech1.attr[14] = \
-	hTech1.attr[15] = hTech1.attr[16] = EN[RO(Shm)->Proc.Technology.Turbo];
+	hTech1.attr[13] = hTech1.attr[14] = hTech1.attr[15] = \
+	hTech1.attr[16] = hTech1.attr[17] = EN[RO(Shm)->Proc.Technology.Turbo];
 
-	hTech1.attr[18] = hTech1.attr[19] = hTech1.attr[20] = \
+	hTech1.attr[19] = hTech1.attr[20] = hTech1.attr[21] = \
 					EN[RO(Shm)->Proc.Technology.C1E];
 
-	hTech1.attr[22] = hTech1.attr[23] = hTech1.attr[24] = \
+	hTech1.attr[23] = hTech1.attr[24] = hTech1.attr[25] = \
 					EN[RO(Shm)->Proc.Technology.CC6];
 
-	hTech1.attr[26] = hTech1.attr[27] = hTech1.attr[28] = \
+	hTech1.attr[27] = hTech1.attr[28] = hTech1.attr[29] = \
 					EN[RO(Shm)->Proc.Technology.PC6];
 
-	hTech1.attr[30] = hTech1.attr[31] = hTech1.attr[32] = \
+	hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] = \
 					EN[(RO(Shm)->Cpu[
 						RO(Shm)->Proc.Service.Core
 					].Query.CStateBaseAddr != 0)];
 
-	hTech1.attr[34] = hTech1.attr[35] = hTech1.attr[36] = \
+	hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] = \
 			EN[(RO(Shm)->Proc.Features.AdvPower.EDX.TS != 0)];
 
-	hTech1.attr[38] = hTech1.attr[39] = \
+	hTech1.attr[39] = hTech1.attr[40] = \
 		TM[RO(Shm)->Proc.Technology.TM1|RO(Shm)->Proc.Technology.TM2];
 
 	LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
@@ -15040,7 +15063,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 			hSpace,
 			RSC(UI).ATTR()[UI_LAYOUT_FOOTER_FILL]);
 
-	Draw.Area.Footer.VoltTemp.Hot[1] = hTech1.origin.col + 41;
+	Draw.Area.Footer.VoltTemp.Hot[1] = hTech1.origin.col + 42;
       }
     }
 	LayerCopyAt(layer, hVoltTemp0.origin.col, hVoltTemp0.origin.row,

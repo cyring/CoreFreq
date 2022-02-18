@@ -5,7 +5,7 @@
  */
 
 #define RSC_THEME_USR2_CODE		/* 72 chars */			\
-"        Transparent theme by leaty.  Updated by CyrIng - Dec. 2022      "
+"        Transparent theme by leaty.  Updated by CyrIng - Feb. 2022      "
 
 #define RSC_UI_THM_USR2_ATTR						\
 {									\
@@ -1166,7 +1166,7 @@
 
 #define RSC_LAYOUT_FOOTER_TECH_AMD_THM_USR2_ATTR			\
 {									\
-	HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,		\
+	HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,LWK,		\
 	HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,		\
 	LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,		\
 	HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK		\

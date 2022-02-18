@@ -606,6 +606,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_PERF_MON_FID_CODE_FR	"Legacy Frequency ID control"
 #define RSC_PERF_MON_VID_CODE_FR	"Legacy Voltage ID control"
 #define RSC_PERF_MON_HWCF_CODE_FR	"P-State Hardware Coordination Feedback"
+#define RSC_PERF_MON_CPPC_CODE_FR  "Collaborative Processor Performance Control"
 #define RSC_PERF_MON_HWP_CODE_FR	"Hardware-Controlled Performance States"
 #define RSC_PERF_MON_HDC_CODE_FR	"Hardware Duty Cycling"
 #define RSC_PERF_MON_PKG_CSTATE_CODE_FR "Package C-States"
@@ -637,6 +638,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_POWER_THERMAL_DUTY_CODE_FR	"Cycle de service"
 #define RSC_POWER_THERMAL_MGMT_CODE_FR	"Gestion de la puissance"
 #define RSC_POWER_THERMAL_BIAS_CODE_FR	"R""\xa8""gle ""\xa9""nerg""\xa9""tique"
+#define RSC_POWER_THERMAL_CPPC_CODE_FR	"CPPC Pr""\xa9""f""\xa9""rence " \
+					"\xa9""nerg""\xa9""tique"
+
 #define RSC_POWER_THERMAL_TJMAX_CODE_FR "Temp""\xa9""rature Offset:Jonction"
 #define RSC_POWER_THERMAL_DTS_CODE_FR	"Capteur thermique num""\xa9""rique"
 #define RSC_POWER_THERMAL_PLN_CODE_FR	"Notification de puissance"

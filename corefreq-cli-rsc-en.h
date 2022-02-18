@@ -570,7 +570,7 @@
 
 #define RSC_LAYOUT_FOOTER_TECH_AMD_CODE_EN				\
 {									\
-	'S','M','T',',','C','n','Q',',','H','W','P',',',		\
+	'S','M','T',',','C','n','Q',',','C','P','P','C',',',		\
 	'B','O','O','S','T',',','C','1','E',',','C','C','6',		\
 	',','P','C','6',',','C','C','x',',','D','T','S',',',		\
 	'T','M',',','H','O','T',']',' ',' ',' ',' ',' ',' '		\
@@ -958,6 +958,7 @@
 #define RSC_PERF_MON_FID_CODE_EN	"Legacy Frequency ID control"
 #define RSC_PERF_MON_VID_CODE_EN	"Legacy Voltage ID control"
 #define RSC_PERF_MON_HWCF_CODE_EN	"P-State Hardware Coordination Feedback"
+#define RSC_PERF_MON_CPPC_CODE_EN  "Collaborative Processor Performance Control"
 #define RSC_PERF_MON_HWP_CODE_EN	"Hardware-Controlled Performance States"
 #define RSC_PERF_MON_HDC_CODE_EN	"Hardware Duty Cycling"
 #define RSC_PERF_MON_PKG_CSTATE_CODE_EN "Package C-States"
@@ -989,6 +990,7 @@
 #define RSC_POWER_THERMAL_DUTY_CODE_EN	"DutyCycle"
 #define RSC_POWER_THERMAL_MGMT_CODE_EN	"Power Management"
 #define RSC_POWER_THERMAL_BIAS_CODE_EN	"Energy Policy"
+#define RSC_POWER_THERMAL_CPPC_CODE_EN	"CPPC Energy Preference"
 #define RSC_POWER_THERMAL_TJMAX_CODE_EN "Temperature Offset:Junction"
 #define RSC_POWER_THERMAL_DTS_CODE_EN	"Digital Thermal Sensor"
 #define RSC_POWER_THERMAL_PLN_CODE_EN	"Power Limit Notification"
@@ -1819,6 +1821,8 @@
 #define RSC_BOX_EXT_DUTY_CYCLE_PCT13_CODE	"           81.25%          "
 #define RSC_BOX_EXT_DUTY_CYCLE_PCT14_CODE	"           87.50%          "
 
+#define RSC_BOX_CPPC_TITLE_CODE		" CPPC "
+
 #define RSC_BOX_HWP_TITLE_CODE		" HWP "
 
 #define RSC_BOX_HDC_TITLE_CODE		" HDC "
@@ -1896,6 +1900,7 @@
 #define RSC_UNCORE_CODE 		"Uncore"
 #define RSC_BOOST_CODE			"Turbo Boost"
 #define RSC_TURBO_CODE			"Turbo"
+#define RSC_CPPC_CODE			"CPPC"
 #define RSC_MAX_CODE			"Max"
 #define RSC_MIN_CODE			"Min"
 #define RSC_UCLK_CODE			"CLK"
@@ -1948,6 +1953,7 @@
 #define RSC_PERF_LABEL_FID_CODE 	"FID"
 #define RSC_PERF_LABEL_VID_CODE 	"VID"
 #define RSC_PERF_LABEL_HWCF_CODE	"MPERF/APERF"
+#define RSC_PERF_LABEL_CPPC_CODE	"CPPC"
 #define RSC_PERF_LABEL_HWP_CODE 	"HWP"
 #define RSC_PERF_LABEL_HDC_CODE 	"HDC"
 #define RSC_PERF_LABEL_CFG_CTRL_CODE	"CONFIG"

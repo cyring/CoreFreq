@@ -5,7 +5,7 @@
  */
 
 #define RSC_THEME_USR1_CODE		/* 72 chars */			\
-"        Strawberry theme by CyrIng.  Updated by CyrIng - Dec. 2022      "
+"        Strawberry theme by CyrIng.  Updated by CyrIng - Feb. 2022      "
 
 #define RSC_UI_THM_USR1_ATTR						\
 {									\
@@ -1166,7 +1166,7 @@
 
 #define RSC_LAYOUT_FOOTER_TECH_AMD_THM_USR1_ATTR			\
 {									\
-	HKW,HKW,HKW,LKW,HKW,HKW,HKW,LKW,HKW,HKW,HKW,LKW,		\
+	HKW,HKW,HKW,LKW,HKW,HKW,HKW,LKW,HKW,HKW,HKW,HKW,LKW,		\
 	HKW,HKW,HKW,HKW,HKW,LKW,HKW,HKW,HKW,LKW,HKW,HKW,HKW,		\
 	LKW,HKW,HKW,HKW,LKW,HKW,HKW,HKW,LKW,HKW,HKW,HKW,LKW,		\
 	HKW,HKW,LKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW		\
