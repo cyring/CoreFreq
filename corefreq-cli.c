@@ -4013,8 +4013,10 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
   if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
   {
 	bix = RO(Shm)->Proc.Features.Std.EDX.ACPI == 1;
+
 	GridCall( PUT(	bix ? BOXKEY_ODCM : SCANKEY_NULL,
-			attrib[ bix ? 3 : 1 ], width, 2,
+			attrib[(RO(Shm)->Proc.Technology.ODCM == 1) ? 3 : 1],
+			width, 2,
 			"%s%.*s%s   %c%7s%c", RSC(POWER_THERMAL_ODCM).CODE(),
 			width - 19 - RSZ(POWER_THERMAL_ODCM), hSpace,
 			RSC(POWER_LABEL_ODCM).CODE(),
