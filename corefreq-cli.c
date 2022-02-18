@@ -3627,21 +3627,12 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		Refresh_HWP_Cap_Freq,
 		&SProc->PowerThermal.HWP.Capabilities.Highest);
     } else {
-	unsigned int cix;
-	if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
-	{
-		bix = RO(Shm)->Proc.Features.HWP_Enable == 1;
-		cix = RO(Shm)->Proc.Features.Power.EAX.HWP_Reg == 0 ?
-			0 : RO(Shm)->Proc.Features.HWP_Enable == 1;
-	}
-	else {
-		bix = 0;
-		cix = 4;
-	}
-	PUT(	SCANKEY_NULL, attrib[cix], width, 2,
+	unsigned int cix = RO(Shm)->Proc.Features.HWP_Enable == 1;
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s%s       [%3s]", RSC(PERF_MON_HWP).CODE(),
 		width - 18 - RSZ(PERF_MON_HWP), hSpace,
-		RSC(PERF_LABEL_HWP).CODE(), ENABLED(bix) );
+		RSC(PERF_LABEL_HWP).CODE(), ENABLED(cix) );
     }
 /* Section Mark */
     if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
