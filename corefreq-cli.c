@@ -6900,16 +6900,23 @@ void HSMP_Registration_Update(TGrid *grid, DATA_TYPE data)
 void IdleRoute_Update(TGrid *grid, DATA_TYPE data)
 {
 	const ASCII *instructions[ROUTE_SIZE] = {
-		RSC(SETTINGS_ROUTE_DFLT).CODE(),
-		RSC(SETTINGS_ROUTE_IO).CODE(),
-		RSC(SETTINGS_ROUTE_HALT).CODE(),
-		RSC(SETTINGS_ROUTE_MWAIT).CODE()
+		[ROUTE_DEFAULT] = RSC(SETTINGS_ROUTE_DFLT).CODE(),
+		[ROUTE_IO]	= RSC(SETTINGS_ROUTE_IO).CODE(),
+		[ROUTE_HALT]	= RSC(SETTINGS_ROUTE_HALT).CODE(),
+		[ROUTE_MWAIT]	= RSC(SETTINGS_ROUTE_MWAIT).CODE()
 	};
 	UNUSED(data);
 
+	const unsigned int bix	= RO(Shm)->Registration.Driver.CPUidle
+				& REGISTRATION_ENABLE;
 	const size_t size = (size_t) RSZ(SETTINGS_ROUTE_DFLT);
-	memcpy(&grid->cell.item[grid->cell.length - size-2],
+
+	memcpy(&grid->cell.item[grid->cell.length - size - 2],
 		instructions[RO(Shm)->Registration.Driver.Route], size);
+
+	grid->cell.item[grid->cell.length -  2] = bix ? '>' : ']';
+	grid->cell.item[grid->cell.length - 10] = bix ? '<' : '[';
+	grid->cell.quick.key = bix ? OPS_IDLE_ROUTE : SCANKEY_NULL;
 }
 
 void NMI_Registration_Update(TGrid *grid, DATA_TYPE data)

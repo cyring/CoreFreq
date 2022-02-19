@@ -15994,6 +15994,7 @@ static void CoreFreqK_IdleDriver_UnInit(void)
 	cpuidle_unregister_driver(&CoreFreqK.IdleDriver);
 	free_percpu(CoreFreqK.IdleDevice);
 #endif /* CONFIG_CPU_IDLE and 4.14.0 */
+	PUBLIC(RO(Proc))->Registration.Driver.Route = ROUTE_DEFAULT;
 }
 
 static int CoreFreqK_IdleDriver_Init(void)
