@@ -7982,9 +7982,9 @@ void PowerThermal(CORE_RO *Core)
 		{_Sapphire_Rapids,	1, 1, 1, 0},
 		{_Rocketlake,		1, 1, 1, 0},
 		{_Rocketlake_U ,	1, 1, 1, 0},
-		{_Alderlake_S,		1, 1, 1, 0},
-		{_Alderlake_H,		1, 1, 1, 0},
-		{_Alderlake_N,		1, 1, 1, 0},
+		{_Alderlake_S,		1, 1, 0, 0},	/* 06_97 */
+		{_Alderlake_H,		1, 1, 0, 0},
+		{_Alderlake_N,		1, 1, 0, 0},
 		{_Meteorlake_M ,	1, 1, 1, 0},
 		{_Meteorlake_N ,	1, 1, 1, 0},
 		{_Meteorlake_S ,	1, 1, 1, 0},
