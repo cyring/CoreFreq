@@ -10893,6 +10893,18 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 			: 0;						\
 })
 
+#define SMT_Counters_Alderlake(Core, T)					\
+({									\
+	RDTSC_COUNTERx7(Core->Counter[T].TSC,				\
+			MSR_CORE_PERF_UCC, Core->Counter[T].C0.UCC,	\
+			MSR_CORE_PERF_URC, Core->Counter[T].C0.URC,	\
+			MSR_CORE_C1_RESIDENCY, Core->Counter[T].C1,	\
+			MSR_CORE_C3_RESIDENCY, Core->Counter[T].C3,	\
+			MSR_CORE_C6_RESIDENCY, Core->Counter[T].C6,	\
+			MSR_CORE_C7_RESIDENCY, Core->Counter[T].C7,	\
+			MSR_CORE_PERF_FIXED_CTR0,Core->Counter[T].INST);\
+})
+
 #define SMT_Counters_AMD_Family_17h(Core, T)				\
 ({									\
 	RDTSCP_COUNTERx3(Core->Counter[T].TSC,				\
@@ -11131,13 +11143,14 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 
 #define PKG_Counters_Alderlake(Core, T)					\
 ({									\
-    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC,			\
-		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
-		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
-		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
-		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
-		MSR_ADL_UNCORE_PERF_FIXED_CTR0 ,			\
-			PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);	\
+    RDTSCP_COUNTERx6(PUBLIC(RO(Proc))->Counter[T].PTSC,			\
+	MSR_PKG_C2_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC02,	\
+	MSR_PKG_C3_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC03,	\
+	MSR_PKG_C6_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC06,	\
+	MSR_PKG_C7_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC07,	\
+	MSR_ATOM_MC6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].MC6,	\
+	MSR_ADL_UNCORE_PERF_FIXED_CTR0 ,				\
+				PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
 })
 
 #define Pkg_OVH(Pkg, Core)						\
@@ -14334,7 +14347,7 @@ static enum hrtimer_restart Cycle_Alderlake(struct hrtimer *pTimer)
 			hrtimer_cb_get_time(pTimer),
 			RearmTheTimer);
 
-	SMT_Counters_SandyBridge(Core, 1);
+	SMT_Counters_Alderlake(Core, 1);
 
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 	Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
@@ -14486,7 +14499,7 @@ static void Start_Alderlake(void *arg)
 	}
 
 	Intel_Core_Counters_Set(Core);
-	SMT_Counters_SandyBridge(Core, 0);
+	SMT_Counters_Alderlake(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
