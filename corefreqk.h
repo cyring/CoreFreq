@@ -1494,6 +1494,8 @@ static void Stop_Uncore_Skylake_X(void *arg) ;
 static void InitTimer_Alderlake(unsigned int cpu) ;
 static void Start_Alderlake(void *arg) ;
 #define     Stop_Alderlake Stop_Skylake
+static void Start_Uncore_Alderlake(void *arg) ;
+static void Stop_Uncore_Alderlake(void *arg) ;
 
 static void Power_ACCU_SKL_DEFAULT(PROC_RO *Pkg, unsigned int T) ;
 static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T) ;
@@ -8489,8 +8491,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Alderlake_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_Alderlake,
+		.Stop = Stop_Uncore_Alderlake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
@@ -8513,8 +8515,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Alderlake_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_Alderlake,
+		.Stop = Stop_Uncore_Alderlake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
@@ -8537,8 +8539,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Alderlake_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_Alderlake,
+		.Stop = Stop_Uncore_Alderlake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,

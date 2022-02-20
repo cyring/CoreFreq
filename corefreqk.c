@@ -11131,11 +11131,13 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 
 #define PKG_Counters_Alderlake(Core, T)					\
 ({									\
-    RDTSCP_COUNTERx4(PUBLIC(RO(Proc))->Counter[T].PTSC,			\
+    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC,			\
 		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
-		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07);\
+		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
+		MSR_ADL_UNCORE_PERF_FIXED_CTR0 ,			\
+			PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);	\
 })
 
 #define Pkg_OVH(Pkg, Core)						\
@@ -14504,6 +14506,20 @@ static void Start_Alderlake(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+}
+
+static void Start_Uncore_Alderlake(void *arg)
+{
+	UNUSED(arg);
+
+	Uncore_Counters_Set(ADL);
+}
+
+static void Stop_Uncore_Alderlake(void *arg)
+{
+	UNUSED(arg);
+
+	Uncore_Counters_Clear(ADL);
 }
 
 
