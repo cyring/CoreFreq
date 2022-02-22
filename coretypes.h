@@ -128,6 +128,14 @@ enum {	GenuineArch = 0,
 	ARCHITECTURES
 };
 
+
+enum HYBRID_ARCH {
+	Hybrid_RSVD1	= 0x10,
+	Hybrid_Atom	= 0x20,
+	Hybrid_RSVD2	= 0x30,
+	Hybrid_Core	= 0x40
+};
+
 enum HYPERVISOR {
 	HYPERV_NONE,
 	BARE_METAL,
@@ -977,10 +985,16 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf 1		*/
 		Reserved4	: 32-23;
 	} EAX;
 	struct
+	{
+		unsigned int
+		MSR_PPIN_CAP	:  1-0,  /* MSR IA32_PPIN and IA32_PPIN_CTL */
+		Reserved	: 32-1;
+	} EBX;
+	struct
 	{	/* Intel reserved.					*/
 		unsigned int
 		Reserved	: 32-0;
-	} EBX, ECX, EDX;
+	} ECX, EDX;
 } CPUID_0x00000007_1;
 
 typedef struct	/* Extended Feature Flags Leaf equal or greater than 2	*/
@@ -1018,7 +1032,7 @@ typedef struct	/* Architectural Performance Monitoring Leaf.		*/
 	struct
 	{
 		unsigned int
-		Reserved	: 32-0;
+		FixCtrs_Mask	: 32-0; /* Counter# supported at ECX[Bit#] */
 	} ECX;
 	struct
 	{
@@ -1030,6 +1044,21 @@ typedef struct	/* Architectural Performance Monitoring Leaf.		*/
 		Reserved2	: 32-16;
 	} EDX;
 } CPUID_0x0000000a;
+
+typedef struct	/* Intel Hybrid Information Enumeration Leaf		*/
+{
+	struct
+	{
+		unsigned int
+		Model_ID	: 24-0,
+		CoreType	: 32-24; /* 0x20: Atom; 0x40: Core	*/
+	} EAX;
+	struct
+	{
+		unsigned int
+		Reserved	: 32-0;
+	} EBX, ECX, EDX;
+} CPUID_0x0000001a;
 
 typedef struct	/* Extended CPUID Function.				*/
 {

@@ -951,8 +951,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 				json_key(&s, "ECX");
 				{
 					json_start_object(&s);
-					json_key(&s, "Reserved");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.ECX.Reserved);
+					json_key(&s, "FixCtrs_Mask");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.ECX.FixCtrs_Mask);
 					json_end_object(&s);
 				}
 				json_key(&s, "EDX");
@@ -1726,6 +1726,10 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 			}
 			json_key(&s, "PackageID");
 			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.PackageID);
+			json_key(&s, "Hybrid_ID");
+			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.Hybrid.ID);
+			json_key(&s, "Hybrid_Arch");
+			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.Hybrid.Arch);
 		    if((vendor == CRC_AMD) || (vendor == CRC_HYGON))
 		    {
 			json_key(&s, "CCD");

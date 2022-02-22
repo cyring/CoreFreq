@@ -81,20 +81,25 @@ typedef union
 		BSP		:  9-8,
 		ReservedBits2	: 10-9,
 		x2APIC_EN	: 11-10, /* Intel Nehalem [06_1A]; AMD[F17h] */
-		APIC_EN		: 12-11, /* Intel P4, Xeon, P6; AMD	*/
+		APIC_EN 	: 12-11, /* Intel P4, Xeon, P6; AMD	*/
 		Addr		: 64-12;
 	};
 } LOCAL_APIC;
 
 typedef struct
 {
-	LOCAL_APIC	Base;
-	signed int	ApicID,
-			CoreID,
-			ThreadID,
-			PackageID;
+	LOCAL_APIC		Base;
+	signed int		ApicID,
+				CoreID,
+				ThreadID,
+				PackageID;
+	struct {
+		unsigned int	ID;
+	    enum HYBRID_ARCH	Arch;
+	} Hybrid;
+
 	union {
-	  unsigned int	ID;		/* AMD-17h MSR(0x0000002a)	*/
+		unsigned int	ID;	/* AMD-17h MSR(0x0000002a)	*/
 	  struct {
 	  unsigned int	Node	:  8-0, /* CPUID(0x8000001e):ECX[8-0]	*/
 			CCX	: 16-8, /* CPUID(0x8000001e):EAX[32-0]:[3] */

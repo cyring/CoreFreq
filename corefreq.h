@@ -106,6 +106,11 @@ typedef struct
 					CoreID,
 					ThreadID,
 					PackageID;
+		struct {
+			unsigned int	ID;
+		    enum HYBRID_ARCH	Arch;
+		} Hybrid;
+
 		union {
 			unsigned int	ID;
 		    struct {

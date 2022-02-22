@@ -5891,11 +5891,13 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 	unsigned int loop;
 	/*	Copy each Core topology.				*/
 	RO(Shm)->Cpu[cpu].Topology.MP.BSP= (RO(Core, AT(cpu))->T.Base.BSP)? 1:0;
-	RO(Shm)->Cpu[cpu].Topology.ApicID     = RO(Core, AT(cpu))->T.ApicID;
-	RO(Shm)->Cpu[cpu].Topology.CoreID     = RO(Core, AT(cpu))->T.CoreID;
-	RO(Shm)->Cpu[cpu].Topology.ThreadID   = RO(Core, AT(cpu))->T.ThreadID;
-	RO(Shm)->Cpu[cpu].Topology.PackageID  = RO(Core, AT(cpu))->T.PackageID;
-	RO(Shm)->Cpu[cpu].Topology.Cluster.ID = RO(Core, AT(cpu))->T.Cluster.ID;
+	RO(Shm)->Cpu[cpu].Topology.ApicID     = RO(Core,AT(cpu))->T.ApicID;
+	RO(Shm)->Cpu[cpu].Topology.CoreID     = RO(Core,AT(cpu))->T.CoreID;
+	RO(Shm)->Cpu[cpu].Topology.ThreadID   = RO(Core,AT(cpu))->T.ThreadID;
+	RO(Shm)->Cpu[cpu].Topology.PackageID  = RO(Core,AT(cpu))->T.PackageID;
+	RO(Shm)->Cpu[cpu].Topology.Hybrid.ID  = RO(Core,AT(cpu))->T.Hybrid.ID;
+	RO(Shm)->Cpu[cpu].Topology.Hybrid.Arch= RO(Core,AT(cpu))->T.Hybrid.Arch;
+	RO(Shm)->Cpu[cpu].Topology.Cluster.ID = RO(Core,AT(cpu))->T.Cluster.ID;
 	/*	x2APIC capability.					*/
 	RO(Shm)->Cpu[cpu].Topology.MP.x2APIC= RO(Proc)->Features.Std.ECX.x2APIC;
     if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
