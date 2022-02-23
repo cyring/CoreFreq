@@ -106,11 +106,6 @@ typedef struct
 					CoreID,
 					ThreadID,
 					PackageID;
-		struct {
-			unsigned int	ID;
-		    enum HYBRID_ARCH	Arch;
-		} Hybrid;
-
 		union {
 			unsigned int	ID;
 		    struct {
@@ -119,10 +114,14 @@ typedef struct
 					CCD	: 24-16,
 					CMP	: 32-24;
 		    };
+			unsigned int	Hybrid_ID;
 		} Cluster;
+
 		struct {
 			unsigned short	x2APIC	:  8-0,
-					_pad	: 14-8,
+					_pad	: 12-8,
+					Ecore	: 13-12,
+					Pcore	: 14-13,
 					BSC	: 15-14,
 					BSP	: 16-15;
 		} MP;

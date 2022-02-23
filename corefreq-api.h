@@ -93,19 +93,15 @@ typedef struct
 				CoreID,
 				ThreadID,
 				PackageID;
-	struct {
-		unsigned int	ID;
-	    enum HYBRID_ARCH	Arch;
-	} Hybrid;
-
 	union {
-		unsigned int	ID;	/* AMD-17h MSR(0x0000002a)	*/
-	  struct {
-	  unsigned int	Node	:  8-0, /* CPUID(0x8000001e):ECX[8-0]	*/
-			CCX	: 16-8, /* CPUID(0x8000001e):EAX[32-0]:[3] */
-			CCD	: 24-16,
-			CMP	: 32-24;
-	  };
+		unsigned int	ID; /* AMD-17h MSR(0x0000002a) | Intel Hybrid */
+	    struct {
+		unsigned int	Node:  8-0, /* CPUID(0x8000001e):ECX[8-0] */
+				CCX : 16-8, /* CPUID(0x8000001e):EAX[32-0]:[3]*/
+				CCD : 24-16,
+				CMP : 32-24;
+	    };
+	    CPUID_0x0000001a	Hybrid;
 	} Cluster;
 
 	struct CACHE_INFO

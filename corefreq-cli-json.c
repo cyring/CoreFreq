@@ -1720,22 +1720,27 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 				json_start_object(&s);
 				json_key(&s, "BSP");
 				json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.MP.BSP);
+				json_key(&s, "Pcore");
+				json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.MP.Pcore);
+				json_key(&s, "Ecore");
+				json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.MP.Ecore);
 				json_key(&s, "x2APIC");
 				json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.MP.x2APIC);
 				json_end_object(&s);
 			}
 			json_key(&s, "PackageID");
 			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.PackageID);
-			json_key(&s, "Hybrid_ID");
-			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.Hybrid.ID);
-			json_key(&s, "Hybrid_Arch");
-			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.Hybrid.Arch);
-		    if((vendor == CRC_AMD) || (vendor == CRC_HYGON))
+		    if ((vendor == CRC_AMD) || (vendor == CRC_HYGON))
 		    {
 			json_key(&s, "CCD");
 			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.Cluster.CCD);
 			json_key(&s, "CCX");
 			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.Cluster.CCX);
+		    }
+		    else if (vendor == CRC_INTEL)
+		    {
+			json_key(&s, "Hybrid_ID");
+			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID);
 		    }
 			json_key(&s, "CoreID");
 			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.CoreID);

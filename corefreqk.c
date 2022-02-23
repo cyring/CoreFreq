@@ -2147,8 +2147,6 @@ static void Map_Intel_Extended_Topology(void *arg)
 	if ((PUBLIC(RO(Proc))->Features.Info.LargestStdFunc >= 0xa)
 	  && PUBLIC(RO(Proc))->Features.ExtFeature.EDX.Hybrid)
 	{
-		CPUID_0x0000001a leaf_1a = {.EAX = {0x0}};
-
 		__asm__ volatile
 		(
 			"movq	$0x1a, %%rax	\n\t"
@@ -2157,13 +2155,10 @@ static void Map_Intel_Extended_Topology(void *arg)
 			"xorq	%%rdx, %%rdx	\n\t"
 			"cpuid			\n\t"
 			"mov	%%eax, %0"
-			: "=r" (leaf_1a.EAX)
+			: "=r" (Core->T.Cluster.ID)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
-
-		Core->T.Hybrid.ID = leaf_1a.EAX.Model_ID;
-		Core->T.Hybrid.Arch = leaf_1a.EAX.CoreType;
 	}
 
 	Cache_Topology(Core);

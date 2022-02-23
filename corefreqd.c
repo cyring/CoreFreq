@@ -5895,16 +5895,29 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 	RO(Shm)->Cpu[cpu].Topology.CoreID     = RO(Core,AT(cpu))->T.CoreID;
 	RO(Shm)->Cpu[cpu].Topology.ThreadID   = RO(Core,AT(cpu))->T.ThreadID;
 	RO(Shm)->Cpu[cpu].Topology.PackageID  = RO(Core,AT(cpu))->T.PackageID;
-	RO(Shm)->Cpu[cpu].Topology.Hybrid.ID  = RO(Core,AT(cpu))->T.Hybrid.ID;
-	RO(Shm)->Cpu[cpu].Topology.Hybrid.Arch= RO(Core,AT(cpu))->T.Hybrid.Arch;
 	RO(Shm)->Cpu[cpu].Topology.Cluster.ID = RO(Core,AT(cpu))->T.Cluster.ID;
 	/*	x2APIC capability.					*/
 	RO(Shm)->Cpu[cpu].Topology.MP.x2APIC= RO(Proc)->Features.Std.ECX.x2APIC;
+
     if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     ||	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
 	RO(Shm)->Cpu[cpu].Topology.MP.x2APIC |= \
 				RO(Proc)->Features.ExtInfo.ECX.ExtApicId;
+    }
+  else if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+	&& (RO(Shm)->Proc.Features.ExtFeature.EDX.Hybrid == 1))
+    {
+	switch (RO(Core,AT(cpu))->T.Cluster.Hybrid.CoreType) {
+	case Hybrid_Atom:
+		RO(Shm)->Cpu[cpu].Topology.MP.Ecore = 1;
+		break;
+	case Hybrid_Core:
+		RO(Shm)->Cpu[cpu].Topology.MP.Pcore = 1;
+		break;
+	}
+	RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID = \
+				RO(Core,AT(cpu))->T.Cluster.Hybrid.Model_ID;
     }
 	/*	Is local APIC enabled in xAPIC mode ?			*/
 	RO(Shm)->Cpu[cpu].Topology.MP.x2APIC &= \

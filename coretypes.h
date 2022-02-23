@@ -1047,17 +1047,9 @@ typedef struct	/* Architectural Performance Monitoring Leaf.		*/
 
 typedef struct	/* Intel Hybrid Information Enumeration Leaf		*/
 {
-	struct
-	{
 		unsigned int
 		Model_ID	: 24-0,
 		CoreType	: 32-24; /* 0x20: Atom; 0x40: Core	*/
-	} EAX;
-	struct
-	{
-		unsigned int
-		Reserved	: 32-0;
-	} EBX, ECX, EDX;
 } CPUID_0x0000001a;
 
 typedef struct	/* Extended CPUID Function.				*/

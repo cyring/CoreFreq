@@ -5524,10 +5524,12 @@ ASCII* Topology_Hybrid(char *pStr, unsigned int cpu)
 	ASCII *comment = Topology_Std(pStr, cpu);
 
 	StrFormat(&pStr[TOPO_MATX+1], 3+(3*11)+1, "\x20%c%4u%4d%3d",
-		RO(Shm)->Cpu[cpu].Topology.Hybrid.Arch == Hybrid_Atom ? 'E':'P',
-		RO(Shm)->Cpu[cpu].Topology.Hybrid.ID,
-		RO(Shm)->Cpu[cpu].Topology.CoreID,
-		RO(Shm)->Cpu[cpu].Topology.ThreadID);
+			RO(Shm)->Cpu[cpu].Topology.MP.Ecore ?
+			'E' : RO(Shm)->Cpu[cpu].Topology.MP.Pcore ?
+			'P' : '?',
+			RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID,
+			RO(Shm)->Cpu[cpu].Topology.CoreID,
+			RO(Shm)->Cpu[cpu].Topology.ThreadID);
 	return comment;
 }
 
