@@ -5519,10 +5519,23 @@ ASCII* Topology_CCD(char *pStr, unsigned int cpu)
 	return comment;
 }
 
+ASCII* Topology_Hybrid(char *pStr, unsigned int cpu)
+{
+	ASCII *comment = Topology_Std(pStr, cpu);
+
+	StrFormat(&pStr[TOPO_MATX+1], 3+(3*11)+1, "\x20%c%4u%4d%3d",
+		RO(Shm)->Cpu[cpu].Topology.Hybrid.Arch == Hybrid_Atom ? 'E':'P',
+		RO(Shm)->Cpu[cpu].Topology.Hybrid.ID,
+		RO(Shm)->Cpu[cpu].Topology.CoreID,
+		RO(Shm)->Cpu[cpu].Topology.ThreadID);
+	return comment;
+}
+
 const char *TopologyStrOFF[] = {
 	"\x20\x20\x20\x20-\x20\x20\x20\x20\x20\x20-\x20",
 	"\x20\x20-\x20\x20\x20-\x20\x20\x20\x20\x20-",
-	"\x20\x20-\x20\x20-\x20\x20\x20-\x20\x20-"
+	"\x20\x20-\x20\x20-\x20\x20\x20-\x20\x20-",
+	"\x20-\x20\x20\x20-\x20\x20\x20-\x20\x20-"
 };
 
 const char *TopologyFmtOFF[] = {
@@ -5551,7 +5564,8 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 	ASCII *TopologyAltSubHeader[] = {
 		RSC(TOPOLOGY_ALT_ITEM1).CODE(),
 		RSC(TOPOLOGY_ALT_ITEM2).CODE(),
-		RSC(TOPOLOGY_ALT_ITEM3).CODE()
+		RSC(TOPOLOGY_ALT_ITEM3).CODE(),
+		RSC(TOPOLOGY_ALT_ITEM4).CODE()
 	};
 	ATTRIBUTE *attrib[5] = {
 		RSC(TOPOLOGY_COND0).ATTR(),
@@ -5624,7 +5638,13 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 		break;
 	}
     } else {
-	TopologySubHeader[1] = TopologyAltSubHeader[0];
+	if (RO(Shm)->Proc.Features.ExtFeature.EDX.Hybrid) {
+		TopologyFunc = Topology_Hybrid;
+		pStrOFF = TopologyStrOFF[3];
+		TopologySubHeader[1] = TopologyAltSubHeader[3];
+	} else {
+		TopologySubHeader[1] = TopologyAltSubHeader[0];
+	}
     }
 	PRT(MAP, attrib[2], TopologySubHeader[1]);
 	PRT(MAP, attrib[2], TopologySubHeader[2]);
