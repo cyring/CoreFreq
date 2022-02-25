@@ -531,7 +531,10 @@ typedef union
 	signed long long	Proc;
 	struct {
 		unsigned int	Core;
-		signed int	Thread;
+	    struct {
+		signed short	Hybrid,
+				Thread;
+	    };
 	};
 } SERVICE_PROC;
 

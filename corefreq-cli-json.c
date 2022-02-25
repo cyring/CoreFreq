@@ -1444,6 +1444,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 				json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Service.Core);
 				json_key(&s, "Thread");
 				json_literal(&s, "%d", RO(Shm)->Proc.Service.Thread);
+				json_key(&s, "Hybrid");
+				json_literal(&s, "%d", RO(Shm)->Proc.Service.Hybrid);
 				json_end_object(&s);
 			}
 			json_end_object(&s);

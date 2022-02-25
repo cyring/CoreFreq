@@ -213,6 +213,9 @@
 	[UI_ILLUMINATES_CPU_SP] = {					\
 		.fg = CYAN, .un = 0, .bg = BLACK, .bf = 1		\
 	},								\
+	[UI_ILLUMINATES_CPU_SP_HYBRID] = {				\
+		.fg = GREEN, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
 	[UI_DRAW_FREQUENCY_LOAD_CLEAR] = {				\
 		.fg = BLACK, .un = 0, .bg = BLACK, .bf = 0		\
 	},								\

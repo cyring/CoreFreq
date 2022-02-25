@@ -102,7 +102,7 @@ static signed int ServiceProcessor = -1; /* -1=ANY ; 0=BSP */
 module_param(ServiceProcessor, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ServiceProcessor, "Select a CPU to run services with");
 
-static SERVICE_PROC DefaultSMT = {.Proc = -1};
+static SERVICE_PROC DefaultSMT = {.Core = 0, .Thread = -1, .Hybrid = -1};
 
 static unsigned short RDPMC_Enable = 0;
 module_param(RDPMC_Enable, ushort, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -16909,6 +16909,28 @@ signed int Seek_Topology_Thread_Peer(unsigned int cpu, signed int exclude)
 	return -1;
 }
 
+signed int Seek_Topology_Hybrid_Core(unsigned int cpu)
+{
+	signed int any = (signed int) PUBLIC(RO(Proc))->CPU.Count, seek;
+
+    do {
+	any--;
+    } while (BITVAL(PUBLIC(RO(Core, AT(any)))->OffLine, OS) && (any > 0)) ;
+
+    for (seek = any; seek != 0; seek--)
+    {
+      if ((PUBLIC(RO(Core, AT(seek)))->T.Cluster.Hybrid.CoreType == Hybrid_Atom)
+       && (PUBLIC(RO(Core, AT(seek)))->T.PackageID \
+	== PUBLIC(RO(Core, AT(cpu)))->T.PackageID)
+       && !BITVAL(PUBLIC(RO(Core, AT(seek)))->OffLine, OS))
+	{
+		any = seek;
+		break;
+	}
+    }
+	return any;
+}
+
 void MatchCoreForService(SERVICE_PROC *pService,unsigned int cpi,signed int cpx)
 {
 	unsigned int cpu;
@@ -16967,8 +16989,14 @@ void MatchPeerForDefaultService(SERVICE_PROC *pService, unsigned int cpu)
 		pService->Core = cpu;
 		pService->Thread = -1;
 	}
+	if (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.Hybrid) {
+		pService->Hybrid = Seek_Topology_Hybrid_Core(cpu);
+	} else {
+		pService->Hybrid = -1;
+	}
 	if (ServiceProcessor != -1) {
-		DefaultSMT.Proc = pService->Proc;
+		DefaultSMT.Core = pService->Core;
+		DefaultSMT.Thread = pService->Thread;
 	}
 }
 
@@ -16977,6 +17005,7 @@ void MatchPeerForUpService(SERVICE_PROC *pService, unsigned int cpu)
 	SERVICE_PROC hService = {
 		.Core = cpu,
 		.Thread = -1,
+		.Hybrid = -1
 	};
 	if (PUBLIC(RO(Proc))->Features.HTT_Enable)
 	{
@@ -16996,16 +17025,24 @@ void MatchPeerForUpService(SERVICE_PROC *pService, unsigned int cpu)
 			}
 		}
 	}
-	if (pService->Proc != DefaultSMT.Proc)
+	if ((pService->Core != DefaultSMT.Core)
+	 || (pService->Thread != DefaultSMT.Thread))
 	{
-		if (hService.Proc == DefaultSMT.Proc) {
-			pService->Proc = hService.Proc;
+		if ((hService.Core == DefaultSMT.Core)
+		 && (hService.Thread == DefaultSMT.Thread))
+		{
+			pService->Core = hService.Core;
+			pService->Thread = hService.Thread;
 		} else {
 			if ((pService->Thread == -1) && (hService.Thread > 0))
 			{
-				pService->Proc = hService.Proc;
+				pService->Core = hService.Core;
+				pService->Thread = hService.Thread;
 			}
 		}
+	}
+	if (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.Hybrid) {
+		pService->Hybrid = Seek_Topology_Hybrid_Core(cpu);
 	}
 }
 
@@ -18417,6 +18454,10 @@ static int CoreFreqK_HotPlug_CPU_Offline(unsigned int cpu)
 	    }
 #endif /* CONFIG_HAVE_PERF_EVENTS */
 	  }
+	} else if ((cpu == PUBLIC(RO(Proc))->Service.Hybrid)
+		&& (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.Hybrid))
+	{
+		PUBLIC(RO(Proc))->Service.Hybrid=Seek_Topology_Hybrid_Core(cpu);
 	}
 #ifdef CONFIG_CPU_FREQ
 	Policy_Aggregate_Turbo();
@@ -19066,10 +19107,12 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 		CoreFreqK_Register_NMI();
 	}
 
-	pr_info(KERN_INFO "CoreFreq(%u:%d):"	\
+	pr_info(KERN_INFO "CoreFreq(%u:%d:%d):"	\
 		" Processor [%2X%1X_%1X%1X]"	\
 		" Architecture [%s] %3s [%u/%u]\n",
-		PUBLIC(RO(Proc))->Service.Core,PUBLIC(RO(Proc))->Service.Thread,
+		PUBLIC(RO(Proc))->Service.Core,
+		PUBLIC(RO(Proc))->Service.Thread,
+		PUBLIC(RO(Proc))->Service.Hybrid,
 		PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily,
 		PUBLIC(RO(Proc))->Features.Std.EAX.Family,
 		PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel,

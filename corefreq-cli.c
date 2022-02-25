@@ -17660,8 +17660,10 @@ void Layout_Header_DualView_Footer(Layer *layer)
     {
       if (cpu == RO(Shm)->Proc.Service.Core) {
 	Illuminates_CPU(layer, row, RSC(UI).ATTR()[UI_ILLUMINATES_CPU_SP]);
-      } else if ((signed int) cpu == RO(Shm)->Proc.Service.Thread) {
+      } else if ((signed short) cpu == RO(Shm)->Proc.Service.Thread) {
 	Illuminates_CPU(layer, row, RSC(UI).ATTR()[UI_ILLUMINATES_CPU_SP]);
+      } else if ((signed short) cpu == RO(Shm)->Proc.Service.Hybrid) {
+	Illuminates_CPU(layer,row,RSC(UI).ATTR()[UI_ILLUMINATES_CPU_SP_HYBRID]);
       } else {
 	Illuminates_CPU(layer, row, RSC(UI).ATTR()[UI_ILLUMINATES_CPU_ON]);
       }

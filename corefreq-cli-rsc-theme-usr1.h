@@ -213,6 +213,9 @@
 	[UI_ILLUMINATES_CPU_SP] = {					\
 		.fg = MAGENTA, .un = 0, .bg = WHITE, .bf = 1		\
 	},								\
+	[UI_ILLUMINATES_CPU_SP_HYBRID] = {				\
+		.fg = GREEN, .un = 0, .bg = WHITE, .bf = 1		\
+	},								\
 	[UI_DRAW_FREQUENCY_LOAD_CLEAR] = {				\
 		.fg = WHITE, .un = 0, .bg = WHITE, .bf = 0		\
 	},								\
