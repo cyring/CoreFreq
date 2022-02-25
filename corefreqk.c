@@ -10910,7 +10910,19 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 			: 0;						\
 })
 
-#define SMT_Counters_Alderlake(Core, T)					\
+#define SMT_Counters_Alderlake_Ecore(Core, T)				\
+({									\
+	RDTSC_COUNTERx7(Core->Counter[T].TSC,				\
+			MSR_CORE_PERF_UCC, Core->Counter[T].C0.UCC,	\
+			MSR_CORE_PERF_URC, Core->Counter[T].C0.URC,	\
+			MSR_CORE_C1_RESIDENCY, Core->Counter[T].C1,	\
+			MSR_CORE_C3_RESIDENCY, Core->Counter[T].C3,	\
+			MSR_CORE_C6_RESIDENCY, Core->Counter[T].C6,	\
+			MSR_CORE_C7_RESIDENCY, Core->Counter[T].C7,	\
+			MSR_CORE_PERF_FIXED_CTR0,Core->Counter[T].INST);\
+})
+
+#define SMT_Counters_Alderlake_Pcore(Core, T)				\
 ({									\
 	RDTSC_COUNTERx7(Core->Counter[T].TSC,				\
 			MSR_CORE_PERF_UCC, Core->Counter[T].C0.UCC,	\
@@ -11116,7 +11128,7 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 
 #define PKG_Counters_Haswell_ULT(Core, T)				\
 ({									\
-    RDTSCP_COUNTERx7(PUBLIC(RO(Proc))->Counter[T].PTSC,			\
+    RDTSCP_COUNTERx7(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
 		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
@@ -11125,13 +11137,13 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 		MSR_PKG_C9_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC09,\
 		MSR_PKG_C10_RESIDENCY,PUBLIC(RO(Proc))->Counter[T].PC10);\
 									\
-	RDCOUNTER	(PUBLIC(RO(Proc))->Counter[T].Uncore.FC0,	\
+	RDCOUNTER(	PUBLIC(RO(Proc))->Counter[T].Uncore.FC0,	\
 			MSR_SNB_UNCORE_PERF_FIXED_CTR0 );		\
 })
 
 #define PKG_Counters_Goldmont(Core, T)					\
 ({									\
-    RDTSCP_COUNTERx4(PUBLIC(RO(Proc))->Counter[T].PTSC,			\
+    RDTSCP_COUNTERx4(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
 		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
@@ -11140,7 +11152,7 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 
 #define PKG_Counters_Skylake(Core, T)					\
 ({									\
-    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC,			\
+    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
 		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
@@ -11151,21 +11163,27 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 
 #define PKG_Counters_Skylake_X(Core, T) 				\
 ({									\
-    RDTSCP_COUNTERx4(PUBLIC(RO(Proc))->Counter[T].PTSC,			\
+    RDTSCP_COUNTERx4(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
 		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
 		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07);\
 })
 
-#define PKG_Counters_Alderlake(Core, T)					\
+#define PKG_Counters_Alderlake_Ecore(Core, T)				\
 ({									\
-    RDTSCP_COUNTERx6(PUBLIC(RO(Proc))->Counter[T].PTSC,			\
+    RDCOUNTER(PUBLIC(RO(Proc))->Counter[T].PC04, MSR_ATOM_PKG_C4_RESIDENCY);\
+    RDCOUNTER(PUBLIC(RO(Proc))->Counter[T].PC10, MSR_PKG_C10_RESIDENCY);\
+    RDCOUNTER(PUBLIC(RO(Proc))->Counter[T].MC6, MSR_ATOM_MC6_RESIDENCY);\
+})
+
+#define PKG_Counters_Alderlake_Pcore(Core, T)				\
+({									\
+    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
 	MSR_PKG_C2_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC02,	\
 	MSR_PKG_C3_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC03,	\
 	MSR_PKG_C6_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC06,	\
 	MSR_PKG_C7_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC07,	\
-	MSR_ATOM_MC6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].MC6,	\
 	MSR_ADL_UNCORE_PERF_FIXED_CTR0 ,				\
 				PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
 })
@@ -11192,49 +11210,49 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 #define Delta_PC02(Pkg) 						\
 ({									\
 	Pkg->Delta.PC02 = Pkg->Counter[1].PC02				\
-			- Pkg->Counter[0].PC02;				\
+			- Pkg->Counter[0].PC02 ;			\
 })
 
 #define Delta_PC03(Pkg) 						\
 ({									\
 	Pkg->Delta.PC03 = Pkg->Counter[1].PC03				\
-			- Pkg->Counter[0].PC03;				\
+			- Pkg->Counter[0].PC03 ;			\
 })
 
 #define Delta_PC04(Pkg) 						\
 ({									\
 	Pkg->Delta.PC04 = Pkg->Counter[1].PC04				\
-			- Pkg->Counter[0].PC04;				\
+			- Pkg->Counter[0].PC04 ;			\
 })
 
 #define Delta_PC06(Pkg) 						\
 ({									\
 	Pkg->Delta.PC06 = Pkg->Counter[1].PC06				\
-			- Pkg->Counter[0].PC06;				\
+			- Pkg->Counter[0].PC06 ;			\
 })
 
 #define Delta_PC07(Pkg) 						\
 ({									\
 	Pkg->Delta.PC07 = Pkg->Counter[1].PC07				\
-			- Pkg->Counter[0].PC07;				\
+			- Pkg->Counter[0].PC07 ;			\
 })
 
 #define Delta_PC08(Pkg) 						\
 ({									\
 	Pkg->Delta.PC08 = Pkg->Counter[1].PC08				\
-			- Pkg->Counter[0].PC08;				\
+			- Pkg->Counter[0].PC08 ;			\
 })
 
 #define Delta_PC09(Pkg) 						\
 ({									\
 	Pkg->Delta.PC09 = Pkg->Counter[1].PC09				\
-			- Pkg->Counter[0].PC09;				\
+			- Pkg->Counter[0].PC09 ;			\
 })
 
 #define Delta_PC10(Pkg) 						\
 ({									\
 	Pkg->Delta.PC10 = Pkg->Counter[1].PC10				\
-			- Pkg->Counter[0].PC10;				\
+			- Pkg->Counter[0].PC10 ;			\
 })
 
 #define Delta_MC6(Pkg)							\
@@ -14347,7 +14365,7 @@ static void Stop_Uncore_Skylake_X(void *arg)
 }
 
 
-static enum hrtimer_restart Cycle_Alderlake(struct hrtimer *pTimer)
+static enum hrtimer_restart Cycle_Alderlake_Ecore(struct hrtimer *pTimer)
 {
 	PERF_STATUS PerfStatus = {.value = 0};
 	CORE_RO *Core;
@@ -14364,7 +14382,126 @@ static enum hrtimer_restart Cycle_Alderlake(struct hrtimer *pTimer)
 			hrtimer_cb_get_time(pTimer),
 			RearmTheTimer);
 
-	SMT_Counters_Alderlake(Core, 1);
+	SMT_Counters_Alderlake_Ecore(Core, 1);
+
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
+
+	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+	Core->Ratio.Perf = PerfStatus.SNB.CurrentRatio;
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Hybrid)
+	{
+		PKG_Counters_Alderlake_Ecore(Core, 1);
+
+	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
+	    {
+	    case FORMULA_SCOPE_PKG:
+		Core_Intel_Temp(Core);
+		break;
+	    }
+
+		PUBLIC(RO(Proc))->PowerThermal.VID.CPU = PerfStatus.SNB.CurrVID;
+
+	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
+	    {
+	    case FORMULA_SCOPE_PKG:
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+		break;
+	    }
+
+		Delta_PC04(PUBLIC(RO(Proc)));
+
+		Delta_PC10(PUBLIC(RO(Proc)));
+
+		Delta_MC6(PUBLIC(RO(Proc)));
+
+		Save_PC04(PUBLIC(RO(Proc)));
+
+		Save_PC10(PUBLIC(RO(Proc)));
+
+		Save_MC6(PUBLIC(RO(Proc)));
+	} else {
+		Core->PowerThermal.VID = 0;
+	}
+
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core_Intel_Temp(Core);
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core_Intel_Temp(Core);
+		break;
+	}
+
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+		break;
+	}
+
+	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+	Delta_INST(Core);
+
+	Delta_C0(Core);
+
+	Delta_C3(Core);
+
+	Delta_C6(Core);
+
+	Delta_C7(Core);
+
+	Delta_TSC_OVH(Core);
+
+	Delta_C1(Core);
+
+	Save_INST(Core);
+
+	Save_TSC(Core);
+
+	Save_C0(Core);
+
+	Save_C3(Core);
+
+	Save_C6(Core);
+
+	Save_C7(Core);
+
+	Save_C1(Core);
+
+	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
+
+	return HRTIMER_RESTART;
+    } else
+	return HRTIMER_NORESTART;
+}
+
+static enum hrtimer_restart Cycle_Alderlake_Pcore(struct hrtimer *pTimer)
+{
+	PERF_STATUS PerfStatus = {.value = 0};
+	CORE_RO *Core;
+	unsigned int cpu;
+
+	cpu = smp_processor_id();
+	Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+	Mark_OVH(Core);
+
+    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    {
+	hrtimer_forward(pTimer,
+			hrtimer_cb_get_time(pTimer),
+			RearmTheTimer);
+
+	SMT_Counters_Alderlake_Pcore(Core, 1);
 
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 	Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
@@ -14374,7 +14511,7 @@ static enum hrtimer_restart Cycle_Alderlake(struct hrtimer *pTimer)
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
-		PKG_Counters_Alderlake(Core, 1);
+		PKG_Counters_Alderlake_Pcore(Core, 1);
 
 		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
@@ -14502,7 +14639,16 @@ static enum hrtimer_restart Cycle_Alderlake(struct hrtimer *pTimer)
 
 static void InitTimer_Alderlake(unsigned int cpu)
 {
-	smp_call_function_single(cpu, InitTimer, Cycle_Alderlake, 1);
+    switch (PUBLIC(RO(Core, AT(cpu)))->T.Cluster.Hybrid.CoreType) {
+    case Hybrid_Atom:
+	smp_call_function_single(cpu, InitTimer, Cycle_Alderlake_Ecore, 1);
+	break;
+    case Hybrid_Core:
+    case Hybrid_RSVD1:
+    case Hybrid_RSVD2:
+	smp_call_function_single(cpu, InitTimer, Cycle_Alderlake_Pcore, 1);
+	break;
+    }
 }
 
 static void Start_Alderlake(void *arg)
@@ -14516,16 +14662,32 @@ static void Start_Alderlake(void *arg)
 	}
 
 	Intel_Core_Counters_Set(Core);
-	SMT_Counters_Alderlake(Core, 0);
 
-	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+    switch (PUBLIC(RO(Core, AT(cpu)))->T.Cluster.Hybrid.CoreType) {
+    case Hybrid_Atom:
+	SMT_Counters_Alderlake_Ecore(Core, 0);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Hybrid)
+	{
+		PKG_Counters_Alderlake_Ecore(Core, 0);
+	}
+	break;
+    case Hybrid_Core:
+    case Hybrid_RSVD1:
+    case Hybrid_RSVD2:
+	SMT_Counters_Alderlake_Pcore(Core, 0);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+	{
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
 		}
-		PKG_Counters_Alderlake(Core, 0);
+		PKG_Counters_Alderlake_Pcore(Core, 0);
 
 		Power_ACCU_Skylake(PUBLIC(RO(Proc)), 0);
 	}
+	break;
+    }
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
