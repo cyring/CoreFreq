@@ -6540,7 +6540,8 @@ int ServerFollowService(SERVICE_PROC *pSlave,
 		CPU_ZERO(&cpuset);
 		CPU_SET(pSlave->Core, &cpuset);
 		if (pSlave->Thread != -1) {
-			CPU_SET((unsigned int) pSlave->Thread, &cpuset);
+			const signed int cpu = pSlave->Thread;
+			CPU_SET(cpu , &cpuset);
 		}
 		return pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
 	}
@@ -6551,7 +6552,7 @@ static void *Emergency_Handler(void *pRef)
 {
 	REF *Ref = (REF *) pRef;
 	unsigned int rid = (Ref->CPID == 0);
-	SERVICE_PROC localService = {.Proc = -1};
+	SERVICE_PROC localService = RESET_SERVICE;
 	int caught = 0, leave = 0;
 	char handlerName[TASK_COMM_LEN] = {
 		'c','o','r','e','f','r','e','q','d','-','r','i','n','g','0',0
@@ -6835,7 +6836,7 @@ REASON_CODE Core_Manager(REF *Ref)
 	RO(CORE)		**RO(Core) = Ref->RO(Core);
 	struct PKG_FLIP_FLOP	*PFlip;
 	struct FLIP_FLOP	*SProc;
-	SERVICE_PROC		localService = {.Proc = -1};
+	SERVICE_PROC		localService = RESET_SERVICE;
 	struct {
 		double		RelFreq,
 				AbsFreq;
@@ -7285,7 +7286,7 @@ REASON_CODE Core_Manager(REF *Ref)
 REASON_CODE Child_Manager(REF *Ref)
 {
 	RO(SHM_STRUCT) *RO(Shm) = Ref->RO(Shm);
-	SERVICE_PROC localService = {.Proc = -1};
+	SERVICE_PROC localService = RESET_SERVICE;
 	REASON_INIT(reason);
 	unsigned int cpu = 0;
 

@@ -102,7 +102,7 @@ static signed int ServiceProcessor = -1; /* -1=ANY ; 0=BSP */
 module_param(ServiceProcessor, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ServiceProcessor, "Select a CPU to run services with");
 
-static SERVICE_PROC DefaultSMT = {.Core = 0, .Thread = -1, .Hybrid = -1};
+static SERVICE_PROC DefaultSMT = RESET_SERVICE;
 
 static unsigned short RDPMC_Enable = 0;
 module_param(RDPMC_Enable, ushort, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);

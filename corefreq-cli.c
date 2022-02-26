@@ -36,7 +36,7 @@ RW(SHM_STRUCT)	*RW(Shm) = NULL;
 
 static Bit64 Shutdown __attribute__ ((aligned (8))) = 0x0;
 
-SERVICE_PROC localService = {.Proc = -1};
+SERVICE_PROC localService = RESET_SERVICE;
 
 UBENCH_DECLARE()
 
@@ -95,7 +95,8 @@ int ClientFollowService(SERVICE_PROC *pSlave, SERVICE_PROC *pMaster, pid_t pid)
 		CPU_ZERO(&cpuset);
 		CPU_SET(pSlave->Core, &cpuset);
 		if (pSlave->Thread != -1) {
-			CPU_SET((unsigned int) pSlave->Thread, &cpuset);
+			const signed int cpu = pSlave->Thread;
+			CPU_SET(cpu , &cpuset);
 		}
 		return sched_setaffinity(pid, sizeof(cpu_set_t), &cpuset);
 	}

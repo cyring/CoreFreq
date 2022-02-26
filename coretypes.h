@@ -538,6 +538,8 @@ typedef union
 	};
 } SERVICE_PROC;
 
+#define RESET_SERVICE	{.Core = -1U, .Thread = -1, .Hybrid = -1}
+
 enum CPUID_ENUM {
 	CPUID_00000001_00000000_INSTRUCTION_SET,
 /* Intel */
