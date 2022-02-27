@@ -7675,14 +7675,15 @@ void Query_AMD_Family_0Fh_C1E(CORE_RO *Core)			/* Per Core */
 void ThermalMonitor2_Set(CORE_RO *Core, MISC_PROC_FEATURES MiscFeatures)
 {	/* Intel Core Solo Duo. */
 	struct SIGNATURE whiteList[] = {
-		_Core_Yonah,		/* 06_0E */
-		_Core_Conroe,		/* 06_0F */
-		_Core_Penryn,		/* 06_17 */
-		_Atom_Bonnell,		/* 06_1C */
+		_Core_Yonah	,	/* 06_0E */
+		_Core_Conroe	,	/* 06_0F */
+		_Core_Penryn	,	/* 06_17 */
+		_Atom_Bonnell	,	/* 06_1C */
 		_Atom_Silvermont,	/* 06_26 */
-		_Atom_Lincroft,		/* 06_27 */
+		_Atom_Lincroft ,	/* 06_27 */
 		_Atom_Clover_Trail,	/* 06_35 */
-		_Atom_Saltwell,		/* 06_36 */
+		_Atom_Saltwell	,	/* 06_36 */
+		_Alderlake_S	,	/* 06_97 */
 	};
 	int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
   for (id = 0; id < ids; id++)
@@ -11179,11 +11180,13 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 
 #define PKG_Counters_Alderlake_Pcore(Core, T)				\
 ({									\
-    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
+    RDTSCP_COUNTERx7(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
 	MSR_PKG_C2_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC02,	\
 	MSR_PKG_C3_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC03,	\
 	MSR_PKG_C6_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC06,	\
 	MSR_PKG_C7_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC07,	\
+	MSR_PKG_C8_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC08,	\
+	MSR_PKG_C9_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC09,	\
 	MSR_ADL_UNCORE_PERF_FIXED_CTR0 ,				\
 				PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
 })
@@ -11441,6 +11444,24 @@ static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T)
 {
 	PWR_ACCU_SKL_PLATFORM(Pkg, T);
 }
+
+#define PWR_ACCU_Alderlake(Pkg, T)					\
+({									\
+        RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(PKG)],		\
+						MSR_PKG_ENERGY_STATUS); \
+									\
+        RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(CORES)],	\
+						MSR_PP0_ENERGY_STATUS); \
+									\
+        RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(UNCORE)],	\
+						MSR_PP1_ENERGY_STATUS); \
+									\
+        RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(RAM)],		\
+						MSR_DRAM_ENERGY_STATUS);\
+									\
+        RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(PLATFORM)],	\
+					MSR_PLATFORM_ENERGY_STATUS);	\
+})
 
 #define Delta_PWR_ACCU(Pkg, PwrDomain)					\
 ({									\
@@ -14531,7 +14552,7 @@ static enum hrtimer_restart Cycle_Alderlake_Pcore(struct hrtimer *pTimer)
 		break;
 	    }
 
-		Power_ACCU_Skylake(PUBLIC(RO(Proc)), 1);
+		PWR_ACCU_Alderlake(PUBLIC(RO(Proc)), 1);
 
 		Delta_PC02(PUBLIC(RO(Proc)));
 
@@ -14540,6 +14561,10 @@ static enum hrtimer_restart Cycle_Alderlake_Pcore(struct hrtimer *pTimer)
 		Delta_PC06(PUBLIC(RO(Proc)));
 
 		Delta_PC07(PUBLIC(RO(Proc)));
+
+		Delta_PC08(PUBLIC(RO(Proc)));
+
+		Delta_PC09(PUBLIC(RO(Proc)));
 
 		Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
 
@@ -14553,6 +14578,8 @@ static enum hrtimer_restart Cycle_Alderlake_Pcore(struct hrtimer *pTimer)
 
 		Delta_PWR_ACCU(Proc, RAM);
 
+		Delta_PWR_ACCU(Proc, PLATFORM);
+
 		Save_PC02(PUBLIC(RO(Proc)));
 
 		Save_PC03(PUBLIC(RO(Proc)));
@@ -14560,6 +14587,10 @@ static enum hrtimer_restart Cycle_Alderlake_Pcore(struct hrtimer *pTimer)
 		Save_PC06(PUBLIC(RO(Proc)));
 
 		Save_PC07(PUBLIC(RO(Proc)));
+
+		Save_PC08(PUBLIC(RO(Proc)));
+
+		Save_PC09(PUBLIC(RO(Proc)));
 
 		Save_PTSC(PUBLIC(RO(Proc)));
 
@@ -14572,6 +14603,8 @@ static enum hrtimer_restart Cycle_Alderlake_Pcore(struct hrtimer *pTimer)
 		Save_PWR_ACCU(PUBLIC(RO(Proc)), UNCORE);
 
 		Save_PWR_ACCU(PUBLIC(RO(Proc)), RAM);
+
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), PLATFORM);
 
 		Sys_Tick(PUBLIC(RO(Proc)));
 	} else {
@@ -14684,7 +14717,7 @@ static void Start_Alderlake(void *arg)
 		}
 		PKG_Counters_Alderlake_Pcore(Core, 0);
 
-		Power_ACCU_Skylake(PUBLIC(RO(Proc)), 0);
+		PWR_ACCU_Alderlake(PUBLIC(RO(Proc)), 0);
 	}
 	break;
     }
