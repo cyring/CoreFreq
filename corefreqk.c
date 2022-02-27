@@ -7683,6 +7683,7 @@ void ThermalMonitor2_Set(CORE_RO *Core, MISC_PROC_FEATURES MiscFeatures)
 		_Atom_Lincroft ,	/* 06_27 */
 		_Atom_Clover_Trail,	/* 06_35 */
 		_Atom_Saltwell	,	/* 06_36 */
+		_Tigerlake_U	,	/* 06_8C */
 		_Alderlake_S	,	/* 06_97 */
 	};
 	int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
