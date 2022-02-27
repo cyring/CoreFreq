@@ -3387,8 +3387,10 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 		switch (Activate_TDP_Clamp[lt]) {
 		case COREFREQ_TOGGLE_OFF:
 		case COREFREQ_TOGGLE_ON:
+		    if (PUBLIC(RO(Proc))->Features.Power.EAX.PLN) {
 			PowerLimit.Clamping1 = Activate_TDP_Clamp[lt];
 			WrRdMSR = 1;
+		    }
 			break;
 		}
 	}
