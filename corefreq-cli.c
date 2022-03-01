@@ -127,7 +127,7 @@ void AggregateRatio(void)
 	Ruler.Count = 0;
     for (lt = BOOST(MIN); lt < BOOST(SIZE); lt++) {
 	Ruler.Top[lt] = RO(Shm)->Proc.Service.Core;
-	Ruler.Uniq[lt] = 0.0;
+	Ruler.Uniq[lt] = 0;
     }
 	SetTopOfRuler(RO(Shm)->Proc.Service.Core, BOOST(MIN));
 
@@ -400,7 +400,7 @@ REASON_CODE SysInfoCPUID(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 		PUT(SCANKEY_NULL, attrib[2], width, 3,
 			"%.*s""=%08x",
-			25, RSC(LARGEST_STD_FUNC).CODE(),
+			RSZ(LARGEST_STD_FUNC), RSC(LARGEST_STD_FUNC).CODE(),
 			RO(Shm)->Cpu[cpu].Query.StdFunc.LargestStdFunc);
 
 		PUT(SCANKEY_NULL, attrib[3], width, 2, format,
@@ -413,7 +413,7 @@ REASON_CODE SysInfoCPUID(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 		PUT(SCANKEY_NULL, attrib[2], width, 3,
 			"%.*s""=%08x",
-			25, RSC(LARGEST_EXT_FUNC).CODE(),
+			RSZ(LARGEST_EXT_FUNC), RSC(LARGEST_EXT_FUNC).CODE(),
 			RO(Shm)->Cpu[cpu].Query.ExtFunc.LargestExtFunc);
 
 		enum CPUID_ENUM i;
@@ -14433,7 +14433,9 @@ void Layout_Ruler_Load(Layer *layer, CUINT row)
 	int idx = (int) Ruler.Count, bright = 1;
     while (idx-- > 0)
     {
-	int hPos = Ruler.Uniq[idx] * Draw.Area.LoadWidth / Ruler.Maximum;
+	double fPos = (Ruler.Uniq[idx] * Draw.Area.LoadWidth) / Ruler.Maximum;
+	int hPos = (int) fPos;
+
 	if (((hPos+6) < hLoad1.origin.col)
 	 || ((hLoad0.origin.col+hPos+3) > (hLoad1.origin.col+hLoad1.length)))
 	{
@@ -15297,8 +15299,9 @@ void Layout_BCLK_To_View(Layer *layer, const CUINT col, const CUINT row)
 CUINT Draw_Frequency_Load(	Layer *layer, CUINT row,
 				const unsigned int cpu, double ratio )
 {	/*	Upper view area: draw bar chart iff load exists:	*/
-	const CUINT col = ((ratio > Ruler.Maximum ? Ruler.Maximum : ratio)
-			* Draw.Area.LoadWidth) / Ruler.Maximum;
+	const double fPos = ((ratio > Ruler.Maximum ? Ruler.Maximum : ratio)
+				* Draw.Area.LoadWidth) / Ruler.Maximum;
+	const CUINT col = (CUINT) fPos;
     if (col > 0) {
 	const ATTRIBUTE attr = ratio > Ruler.Median ?
 				RSC(UI).ATTR()[UI_DRAW_FREQUENCY_LOAD_HIGH]
