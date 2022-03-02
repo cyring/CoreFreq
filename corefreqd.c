@@ -4663,6 +4663,8 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	RO(Shm)->Uncore.MC[mc].Channel[1].Timing.ECC = \
 				RO(Proc)->Uncore.MC[mc].ADL.MADC1.ECC;
 
+    switch (RO(Shm)->Uncore.Unit.DDR_Ver) {
+    case 1 ... 4:
 	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
 	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_L_Size;
@@ -4678,7 +4680,26 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
 	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_S_Size;
+	break;
+    case 5:
+    default:
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
+		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
+	].Size = 1024 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.DDR5_Dimm_L_Size;
 
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
+		!RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
+	].Size = 1024 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.DDR5_Dimm_S_Size;
+
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
+		RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
+	].Size = 1024 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.DDR5_Dimm_L_Size;
+
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
+		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
+	].Size = 1024 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.DDR5_Dimm_S_Size;
+	break;
+    }
 	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
 	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD0.DLNOR;
