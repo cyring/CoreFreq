@@ -4336,44 +4336,57 @@ void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.value = readl(mchmap+0xd80c);
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.value = readl(mchmap+0xd810);
 	/*		Sum up any present DIMM per channel.		*/
+    switch (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADCH.DDR_TYPE) {
+    case 0b00:	/*	DDR4	*/
+    case 0b11:	/*	LPDDR4	*/
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
 	  ((PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.Dimm_L_Size != 0)
 	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.Dimm_S_Size != 0))
 	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.Dimm_L_Size != 0)
 	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.Dimm_S_Size != 0));
+	break;
+    case 0b01:	/*	DDR5	*/
+    case 0b10:	/*	LPDDR5	*/
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
+	  ((PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.DDR5_Dimm_L_Size != 0)
+	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.DDR5_Dimm_S_Size != 0))
+	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.DDR5_Dimm_L_Size != 0)
+	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.DDR5_Dimm_S_Size != 0));
+	break;
+    }
 
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
 
     for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
     {
-	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.Timing.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].ADL.Timing.value = \
 					readq(mchmap + 0xe000 + 0x800 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.ACT.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].ADL.ACT.value = \
 					readl(mchmap + 0xe008 + 0x800 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.RDRD.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].ADL.RDRD.value = \
 					readl(mchmap + 0xe00c + 0x800 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.RDWR.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].ADL.RDWR.value = \
 					readl(mchmap + 0xe010 + 0x800 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.WRRD.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].ADL.WRRD.value = \
 					readl(mchmap + 0xe014 + 0x800 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.WRWR.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].ADL.WRWR.value = \
 					readl(mchmap + 0xe018 + 0x800 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.Sched.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].ADL.Sched.value = \
 					readq(mchmap + 0xe088 + 0x800 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.PWDEN.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].ADL.PWDEN.value = \
 					readq(mchmap + 0xe050 + 0x800 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.ODT.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].ADL.ODT.value = \
 					readq(mchmap + 0xe070 + 0x800 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.Refresh.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].ADL.Refresh.value = \
 					readl(mchmap + 0xe43c + 0x800 * cha);
     }
     if (mc == 0) {
