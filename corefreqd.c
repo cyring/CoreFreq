@@ -4559,11 +4559,9 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	TIMING(mc, cha).tREFI = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Refresh.tREFI;
-
+/*TODO(UnSpec)
 	TIMING(mc, cha).tWR = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tWRPRE
-			- RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ODT.tCWL -4U;
-
+*/
 	TIMING(mc, cha).tRTPr = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tRDPRE;
 
