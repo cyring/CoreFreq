@@ -734,10 +734,11 @@ typedef struct
 			TGL_CAPID_E		TGL_Cap_E;
 		};
 		struct {
-			TGL_CAPID_A		ADL_Cap_A;
-			TGL_CAPID_B		ADL_Cap_B;
-			TGL_CAPID_C		ADL_Cap_C;
-			TGL_CAPID_E		ADL_Cap_E;
+			ADL_CAPID_A		ADL_Cap_A;
+			ADL_CAPID_B		ADL_Cap_B;
+			ADL_CAPID_C		ADL_Cap_C;
+			ADL_CAPID_E		ADL_Cap_E;
+			ADL_SA_PERF_STATUS	ADL_SA_Pll;
 		};
 		struct {
 			AMD_0F_HTT_NODE_ID	NodeID;

@@ -4300,9 +4300,21 @@ void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		break;
 	case 0b01:	/*	DDR5	*/
 		RO(Shm)->Uncore.Unit.DDR_Ver = 5;
+
+		if ((RO(Proc)->Uncore.Bus.TGL_Cap_E.DDR5_EN)
+		 && (RO(Proc)->Uncore.Bus.TGL_Cap_A.DDR_OVERCLOCK == 0))
+		{
+			units = RO(Proc)->Uncore.Bus.TGL_Cap_E.DATA_RATE_DDR5;
+		}
 		break;
 	case 0b10:	/*	LPDDR5	*/
 		RO(Shm)->Uncore.Unit.DDR_Ver = 5;
+
+		if ((RO(Proc)->Uncore.Bus.TGL_Cap_E.LPDDR5_EN)
+		 && (RO(Proc)->Uncore.Bus.TGL_Cap_A.DDR_OVERCLOCK == 0))
+		{
+			units = RO(Proc)->Uncore.Bus.TGL_Cap_E.DATA_RATE_LPDDR5;
+		}
 		break;
 	}
     }
@@ -4704,14 +4716,26 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	unsigned int units = 12;
-	unsigned short mc;
+	unsigned short mc, clock_done;
 
+    if (RO(Proc)->Uncore.Bus.ADL_SA_Pll.UCLK_RATIO > 0) {/* Ring Interconnect */
+	RO(Shm)->Uncore.Bus.Rate = RO(Proc)->Uncore.Bus.ADL_SA_Pll.UCLK_RATIO;
+	RO(Shm)->Uncore.Bus.Rate *= 100;
+	RO(Shm)->Uncore.Unit.Bus_Rate = 0b00;		/*	MHz	*/
+	RO(Shm)->Uncore.Unit.BusSpeed = 0b00;
+    } else {					/* Advertised Bus Speed */
 	RO(Shm)->Uncore.Bus.Rate = 8000;
+	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;		/*	MT/s	*/
+	RO(Shm)->Uncore.Unit.BusSpeed = 0b01;
+    }
 	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
 				* RO(Shm)->Uncore.Bus.Rate)
 				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++) {
+  for (mc = 0, clock_done = 0;
+	mc < RO(Shm)->Uncore.CtrlCount && !clock_done;
+		mc++)
+  {
     if (RO(Proc)->Uncore.MC[mc].ADL.MADCH.value) {
 	switch (RO(Proc)->Uncore.MC[mc].ADL.MADCH.DDR_TYPE) {
 	default:
@@ -4722,6 +4746,7 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		 && (RO(Proc)->Uncore.Bus.ADL_Cap_A.DDR_OVERCLOCK == 0))
 		{
 			units = RO(Proc)->Uncore.Bus.ADL_Cap_C.DATA_RATE_DDR4;
+			clock_done = 1;
 		}
 		break;
 	case 0b11:	/*	LPDDR4	*/
@@ -4731,21 +4756,49 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		 && (RO(Proc)->Uncore.Bus.ADL_Cap_A.DDR_OVERCLOCK == 0))
 		{
 			units = RO(Proc)->Uncore.Bus.ADL_Cap_C.DATA_RATE_LPDDR4;
+			clock_done = 1;
 		}
 		break;
 	case 0b01:	/*	DDR5	*/
 		RO(Shm)->Uncore.Unit.DDR_Ver = 5;
+
+		if ((RO(Proc)->Uncore.Bus.ADL_Cap_E.DDR5_EN)
+		 && (RO(Proc)->Uncore.Bus.ADL_Cap_A.DDR_OVERCLOCK == 0))
+		{
+			units = RO(Proc)->Uncore.Bus.ADL_Cap_E.DATA_RATE_DDR5;
+			clock_done = 1;
+		}
 		break;
 	case 0b10:	/*	LPDDR5	*/
 		RO(Shm)->Uncore.Unit.DDR_Ver = 5;
+
+		if ((RO(Proc)->Uncore.Bus.ADL_Cap_E.LPDDR5_EN)
+		 && (RO(Proc)->Uncore.Bus.ADL_Cap_A.DDR_OVERCLOCK == 0))
+		{
+			units = RO(Proc)->Uncore.Bus.ADL_Cap_E.DATA_RATE_LPDDR5;
+			clock_done = 1;
+		}
 		break;
 	}
     }
   }
+    if (RO(Proc)->Uncore.Bus.ADL_SA_Pll.QCLK_RATIO == 0)
+    {
 	RO(Shm)->Uncore.CtrlSpeed = (266 * units) + ((333 * units) / 500);
+    }
+    else	/*	Is Memory frequency overclocked ?		*/
+    {
+	unsigned long long Freq_Hz;
 
-	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
-	RO(Shm)->Uncore.Unit.BusSpeed = 0b01;
+	if (RO(Proc)->Uncore.Bus.ADL_SA_Pll.QCLK_REF == 0) {
+		Freq_Hz = 133333333LLU
+			* RO(Proc)->Uncore.Bus.ADL_SA_Pll.QCLK_RATIO;
+		Freq_Hz = Freq_Hz / 1000000LLU;
+	} else {
+		Freq_Hz = 100LLU * RO(Proc)->Uncore.Bus.ADL_SA_Pll.QCLK_RATIO;
+	}
+	RO(Shm)->Uncore.CtrlSpeed = (unsigned short) Freq_Hz;
+    }
 	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
 	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
 

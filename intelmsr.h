@@ -3631,6 +3631,24 @@ typedef union
 } SKL_SA_PLL_RATIOS;	/* 06_4E/06_5E/06_9E				*/
 
 typedef union
+{	/* Device: 0 - Function: 0 - Offset 5918h			*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		LAST_DE_WP_REQ_SERVED	:   2-0,
+		QCLK_RATIO		:  10-2, /* DDR QCLK Ratio	*/
+		QCLK_REF		: 11-10, /* 0=400/3Mhz; 1=100Mhz*/
+		OPI_LINK_SPEED		: 12-11, /* 0=2Gb/s ; 1=4Gb/s	*/
+		IPU_IS_DIVISOR		: 18-12, /* = 1600MHz / Divisor */
+		IPU_PS_RATIO		: 24-18, /* = 25Mhz * Ratio	*/
+		UCLK_RATIO		: 32-24, /* Ring UCLK at 100MHz */
+		PSF0_RATIO		: 40-32, /* = 16.67 MHz * Ratio */
+		SA_VOLTAGE		: 56-40, /* = 1/8192V		*/
+		ReservedBits		: 64-56;
+	};
+} ADL_SA_PERF_STATUS;	/* 06_97					*/
+
+typedef union
 {	/* Device: 0 - Function: 0 - Offset E4h 			*/
 	unsigned int		value;
 	struct {
