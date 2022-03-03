@@ -2932,9 +2932,9 @@ typedef union
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 4000h & Channel1: 4400h */
-	unsigned int		value;
+	unsigned long long	value;
 	struct {
-		unsigned int
+		unsigned long long
 		tRP		:  7-0,  /* (incl. tRCD) - Range: 8-60	*/
 		tRPab_ext	: 11-7,  /* Range: 0-6. Unknown: 0b111	*/
 		tRDPRE		: 17-11, /* Range:  4-32		*/
@@ -2949,9 +2949,9 @@ typedef union
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: E000h & Channel1: E800h */
-	unsigned int		value;
+	unsigned long long	value;
 	struct {
-		unsigned int
+		unsigned long long
 		tRP		:  8-0,  /* (incl. tRCD) - Range: 8-60	*/
 		tRPab_ext	: 13-8,  /* Range:  0-6 		*/
 		tRDPRE		: 20-13, /* Range:  4-32		*/
@@ -3632,9 +3632,9 @@ typedef union
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset 5918h			*/
-	unsigned int		value;
+	unsigned long long	value;
 	struct {
-		unsigned int
+		unsigned long long
 		LAST_DE_WP_REQ_SERVED	:   2-0,
 		QCLK_RATIO		:  10-2, /* DDR QCLK Ratio	*/
 		QCLK_REF		: 11-10, /* 0=400/3Mhz; 1=100Mhz*/

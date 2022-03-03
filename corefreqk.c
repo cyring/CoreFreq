@@ -4315,7 +4315,7 @@ void Query_TGL_IMC(void __iomem *mchmap, unsigned short mc)
 
 inline void ADL_SA(void __iomem *mchmap)
 {
-	PUBLIC(RO(Proc))->Uncore.Bus.ADL_SA_Pll.value = readl(mchmap+0x5918);
+	PUBLIC(RO(Proc))->Uncore.Bus.ADL_SA_Pll.value = readq(mchmap+0x5918);
 }
 
 void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
