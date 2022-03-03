@@ -3001,8 +3001,8 @@ typedef union
 	struct {
 		unsigned int
 		tFAW		:  9-0,  /* Range: 16-88		*/
-		tRRD_SG 	: 15-9,  /* Range:  4-32		*/
-		tRRD_DG 	: 22-15, /* Range:  4-32		*/
+		tRRD_SG 	: 15-9,  /* Range:  4-32	tRRD_L	*/
+		tRRD_DG 	: 22-15, /* Range:  4-32	tRRD	*/
 		ReservedBits	: 24-22,
 		tREFSBRD	: 32-24;
 	};

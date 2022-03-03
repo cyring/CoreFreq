@@ -3846,10 +3846,10 @@ void SKL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Timing.tRAS;
 
 	TIMING(mc, cha).tRRDS = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.ACT.tRRD_SG;
+			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.ACT.tRRD_DG;
 
 	TIMING(mc, cha).tRRDL = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.ACT.tRRD_DG;
+			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.ACT.tRRD_SG;
 
 	TIMING(mc, cha).tRFC  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Refresh.tRFC;
@@ -4102,10 +4102,10 @@ void RKL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Timing.tRAS;
 
 	TIMING(mc, cha).tRRDS = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.ACT.tRRD_SG;
+			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.ACT.tRRD_DG;
 
 	TIMING(mc, cha).tRRDL = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.ACT.tRRD_DG;
+			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.ACT.tRRD_SG;
 
 	TIMING(mc, cha).tRFC = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Refresh.tRFC;
@@ -4359,10 +4359,10 @@ void TGL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Timing.tRAS;
 
 	TIMING(mc, cha).tRRDS = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.ACT.tRRD_SG;
+			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.ACT.tRRD_DG;
 
 	TIMING(mc, cha).tRRDL = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.ACT.tRRD_DG;
+			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.ACT.tRRD_SG;
 
 	TIMING(mc, cha).tRFC = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Refresh.tRFC;
@@ -4553,10 +4553,10 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tRAS;
 
 	TIMING(mc, cha).tRRDS = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ACT.tRRD_SG;
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ACT.tRRD_DG;
 
 	TIMING(mc, cha).tRRDL = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ACT.tRRD_DG;
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ACT.tRRD_SG;
 
 	TIMING(mc, cha).tRFC = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Refresh.tRFC;
