@@ -4319,7 +4319,7 @@ void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	}
     }
   }
-	RO(Shm)->Uncore.CtrlSpeed = (266 * units) + ((333 * units) / 500);
+	RO(Shm)->Uncore.CtrlSpeed = (266 * units) + ((334 * units) / 501);
 
 	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
 	RO(Shm)->Uncore.Unit.BusSpeed = 0b01;
@@ -4803,7 +4803,7 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
   }
     if (RO(Proc)->Uncore.Bus.ADL_SA_Pll.QCLK_RATIO == 0)
     {
-	RO(Shm)->Uncore.CtrlSpeed = (266 * units) + ((333 * units) / 500);
+	RO(Shm)->Uncore.CtrlSpeed = (266 * units) + ((334 * units) / 501);
     }
     else	/*	Is Memory frequency overclocked ?		*/
     {
