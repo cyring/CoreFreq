@@ -3605,8 +3605,8 @@ typedef union
 		Dimm_L_Size	:  7-0,  /* Size of DIMM in 512 MB multiples */
 		DLW		:  9-7,  /* DIMM L width: 0=x8, 1=x16, 2=x32 */
 		DLNOR		: 11-9,  /* DIMM L ranks: 0=1, 1=2, 2=3, 3=4 */
-		DDR5_Dimm_S_Size: 12-11, /* 1=8Gb , 0=more than 8Gb capacity */
-		DDR5_Dimm_L_Size: 13-12,
+		DDR5_DS_8GB	: 12-11, /* 1=8Gb , 0=more than 8Gb capacity */
+		DDR5_DL_8GB	: 13-12,
 		ReservedBits1	: 16-13,
 		Dimm_S_Size	: 23-16, /* DIMM S size in 512 MB multiples */
 		ReservedBits2	: 24-23,

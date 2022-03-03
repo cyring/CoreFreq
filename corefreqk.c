@@ -4336,24 +4336,11 @@ void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.value = readl(mchmap+0xd80c);
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.value = readl(mchmap+0xd810);
 	/*		Sum up any present DIMM per channel.		*/
-    switch (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADCH.DDR_TYPE) {
-    case 0b00:	/*	DDR4	*/
-    case 0b11:	/*	LPDDR4	*/
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
 	  ((PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.Dimm_L_Size != 0)
 	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.Dimm_S_Size != 0))
 	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.Dimm_L_Size != 0)
 	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.Dimm_S_Size != 0));
-	break;
-    case 0b01:	/*	DDR5	*/
-    case 0b10:	/*	LPDDR5	*/
-	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
-	  ((PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.DDR5_Dimm_L_Size != 0)
-	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.DDR5_Dimm_S_Size != 0))
-	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.DDR5_Dimm_L_Size != 0)
-	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.DDR5_Dimm_S_Size != 0));
-	break;
-    }
 
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
 
