@@ -10310,6 +10310,14 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 
 	/*	Query the FCH for various registers			*/
 	AMD_FCH_PM_Read16(AMD_FCH_PM_CSTATE_EN, PM);
+	switch (C1E_Enable) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			PM.CStateEn.C1eToC3En = \
+			PM.CStateEn.C1eToC2En = !C1E_Enable;
+			ToggleFeature = 1;
+		break;
+	}
 	switch (C3U_Enable) {
 		case COREFREQ_TOGGLE_OFF:
 		case COREFREQ_TOGGLE_ON:
@@ -10339,6 +10347,12 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
+	}
+	if (PM.CStateEn.C1eToC2En || PM.CStateEn.C1eToC3En)
+	{
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1E, Core->Bind);
+	} else {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1E, Core->Bind);
 	}
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
