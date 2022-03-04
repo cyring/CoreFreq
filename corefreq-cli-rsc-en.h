@@ -1195,6 +1195,7 @@
 			" tRRD_L ( Activate to Activate, Same Bank Group ) "
 
 #define RSC_DDR4_CPDED_COMM_CODE_EN " tCPDED ( Command Pass Disable Delay ) "
+#define RSC_DDR4_GEAR_COMM_CODE_EN	" GEAR ( Clock Gear Mode ) "
 
 #define RSC_DDR4_ZEN_RCD_R_COMM_CODE_EN " tRCD_R ( Activate to Read CAS ) "
 #define RSC_DDR4_ZEN_RCD_W_COMM_CODE_EN " tRCD_W ( Activate to Write CAS ) "
@@ -2054,7 +2055,7 @@
 #define RSC_DDR4_RTP_CODE		" RTPr"
 #define RSC_DDR4_WTP_CODE		" WTPr"
 #define RSC_DDR4_FAW_CODE		"  FAW"
-#define RSC_DDR4_B2B_CODE		"  B2B"
+#define RSC_DDR4_GEAR_CODE		" GEAR"
 #define RSC_DDR4_CWL_CODE		"  CWL"
 #define RSC_DDR4_CMD_CODE		" CMD "
 #define RSC_DDR4_REFI_CODE		" REFI"

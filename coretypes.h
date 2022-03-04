@@ -1535,6 +1535,7 @@ typedef struct
 	unsigned int	CMD_Rate;
 	union {
 	  unsigned int	B2B;
+	  unsigned int	GEAR;
 	  struct {
 	  unsigned int	GDM	:  1-0,
 			BGS	:  2-1,

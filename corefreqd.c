@@ -4209,6 +4209,9 @@ void RKL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	TIMING(mc, cha).tCPDED = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Sched.tCPDED;
+
+	TIMING(mc, cha).GEAR = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Sched.GEAR2 ? 2 : 1;
     }
 	RO(Shm)->Uncore.MC[mc].Channel[0].Timing.ECC = \
 				RO(Proc)->Uncore.MC[mc].RKL.MADC0.ECC;
@@ -4470,6 +4473,9 @@ void TGL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	TIMING(mc, cha).tCPDED = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Sched.tCPDED;
+
+	TIMING(mc, cha).GEAR = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Sched.GEAR2 ? 2 : 1;
     }
 	RO(Shm)->Uncore.MC[mc].Channel[0].Timing.ECC = \
 				RO(Proc)->Uncore.MC[mc].TGL.MADC0.ECC;
@@ -4660,6 +4666,10 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	TIMING(mc, cha).tCPDED = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Sched.tCPDED;
+
+	TIMING(mc, cha).GEAR = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Sched.GEAR4 ? 4 : \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Sched.GEAR2 ? 2 : 1;
     }
 	RO(Shm)->Uncore.MC[mc].Channel[0].Timing.ECC = \
 				RO(Proc)->Uncore.MC[mc].ADL.MADC0.ECC;
