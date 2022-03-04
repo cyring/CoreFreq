@@ -6547,6 +6547,37 @@ static IDLE_STATE SKX_IdleState[] = {
 	.SetTarget	= Policy_Skylake_SetTarget			\
 }
 
+static IDLE_STATE ICX_IdleState[] = {
+	{
+	.Name		= "C1",
+	.Desc		= "ICX-C1",
+	.flags		= 0x00 << 24,
+	.Latency	= 1,
+	.Residency	= 1
+	},
+	{
+	.Name		= "C1E",
+	.Desc		= "ICX-C1E",
+	.flags		= 0x01 << 24,
+	.Latency	= 4,
+	.Residency	= 4
+	},
+	{
+	.Name		= "C6",
+	.Desc		= "ICX-C6",
+	.flags		= (0x20 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
+	.Latency	= 170,
+	.Residency	= 600
+	},
+	{NULL}
+};
+
+#define ICX_Driver {							\
+	.IdleState	= ICX_IdleState,				\
+	.GetFreq	= Policy_GetFreq,				\
+	.SetTarget	= Policy_Skylake_SetTarget			\
+}
+
 #define Intel_Driver {							\
 	.IdleState	= NULL ,					\
 	.GetFreq	= Policy_GetFreq,				\
@@ -8130,7 +8161,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = SKL_Driver,
+	.SystemDriver = ICX_Driver,
 	.Architecture = Arch_Icelake_X
 	},
 [Icelake_D] = { 							/* 60*/
@@ -8154,7 +8185,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = SKL_Driver,
+	.SystemDriver = ICX_Driver,
 	.Architecture = Arch_Icelake_D
 	},
 
