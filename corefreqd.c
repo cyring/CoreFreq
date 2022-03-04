@@ -3873,52 +3873,52 @@ void SKL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	TIMING(mc, cha).tCWL  = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.ODT.tCWL;
 
-	TIMING(mc, cha).DDR4.tRDRD_SG = \
+	TIMING(mc, cha).tRDRD_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.RDRD.tRDRD_SG;
 
-	TIMING(mc, cha).DDR4.tRDRD_DG = \
+	TIMING(mc, cha).tRDRD_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.RDRD.tRDRD_DG;
 
-	TIMING(mc, cha).DDR4.tRDRD_DR = \
+	TIMING(mc, cha).tRDRD_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.RDRD.tRDRD_DR;
 
-	TIMING(mc, cha).DDR4.tRDRD_DD = \
+	TIMING(mc, cha).tRDRD_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.RDRD.tRDRD_DD;
 
-	TIMING(mc, cha).DDR4.tRDWR_SG = \
+	TIMING(mc, cha).tRDWR_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.RDWR.tRDWR_SG;
 
-	TIMING(mc, cha).DDR4.tRDWR_DG = \
+	TIMING(mc, cha).tRDWR_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.RDWR.tRDWR_DG;
 
-	TIMING(mc, cha).DDR4.tRDWR_DR = \
+	TIMING(mc, cha).tRDWR_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.RDWR.tRDWR_DR;
 
-	TIMING(mc, cha).DDR4.tRDWR_DD = \
+	TIMING(mc, cha).tRDWR_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.RDWR.tRDWR_DD;
 
-	TIMING(mc, cha).DDR4.tWRRD_SG = \
+	TIMING(mc, cha).tWRRD_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.WRRD.tWRRD_SG;
 
-	TIMING(mc, cha).DDR4.tWRRD_DG = \
+	TIMING(mc, cha).tWRRD_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.WRRD.tWRRD_DG;
 
-	TIMING(mc, cha).DDR4.tWRRD_DR = \
+	TIMING(mc, cha).tWRRD_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.WRRD.tWRRD_DR;
 
-	TIMING(mc, cha).DDR4.tWRRD_DD = \
+	TIMING(mc, cha).tWRRD_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.WRRD.tWRRD_DD;
 
-	TIMING(mc, cha).DDR4.tWRWR_SG = \
+	TIMING(mc, cha).tWRWR_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.WRWR.tWRWR_SG;
 
-	TIMING(mc, cha).DDR4.tWRWR_DG = \
+	TIMING(mc, cha).tWRWR_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.WRWR.tWRWR_DG;
 
-	TIMING(mc, cha).DDR4.tWRWR_DR = \
+	TIMING(mc, cha).tWRWR_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.WRWR.tWRWR_DR;
 
-	TIMING(mc, cha).DDR4.tWRWR_DD = \
+	TIMING(mc, cha).tWRWR_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.WRWR.tWRWR_DD;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Sched.CMD_Stretch) {
@@ -4129,52 +4129,52 @@ void RKL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	TIMING(mc, cha).tCWL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.ODT.tCWL;
 
-	TIMING(mc, cha).DDR4.tRDRD_SG = \
+	TIMING(mc, cha).tRDRD_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.RDRD.tRDRD_SG;
 
-	TIMING(mc, cha).DDR4.tRDRD_DG = \
+	TIMING(mc, cha).tRDRD_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.RDRD.tRDRD_DG;
 
-	TIMING(mc, cha).DDR4.tRDRD_DR = \
+	TIMING(mc, cha).tRDRD_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.RDRD.tRDRD_DR;
 
-	TIMING(mc, cha).DDR4.tRDRD_DD = \
+	TIMING(mc, cha).tRDRD_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.RDRD.tRDRD_DD;
 
-	TIMING(mc, cha).DDR4.tRDWR_SG = \
+	TIMING(mc, cha).tRDWR_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.RDWR.tRDWR_SG;
 
-	TIMING(mc, cha).DDR4.tRDWR_DG = \
+	TIMING(mc, cha).tRDWR_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.RDWR.tRDWR_DG;
 
-	TIMING(mc, cha).DDR4.tRDWR_DR = \
+	TIMING(mc, cha).tRDWR_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.RDWR.tRDWR_DR;
 
-	TIMING(mc, cha).DDR4.tRDWR_DD = \
+	TIMING(mc, cha).tRDWR_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.RDWR.tRDWR_DD;
 
-	TIMING(mc, cha).DDR4.tWRRD_SG = \
+	TIMING(mc, cha).tWRRD_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.WRRD.tWRRD_SG;
 
-	TIMING(mc, cha).DDR4.tWRRD_DG = \
+	TIMING(mc, cha).tWRRD_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.WRRD.tWRRD_DG;
 
-	TIMING(mc, cha).DDR4.tWRRD_DR = \
+	TIMING(mc, cha).tWRRD_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.WRRD.tWRRD_DR;
 
-	TIMING(mc, cha).DDR4.tWRRD_DD = \
+	TIMING(mc, cha).tWRRD_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.WRRD.tWRRD_DD;
 
-	TIMING(mc, cha).DDR4.tWRWR_SG = \
+	TIMING(mc, cha).tWRWR_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.WRWR.tWRWR_SG;
 
-	TIMING(mc, cha).DDR4.tWRWR_DG = \
+	TIMING(mc, cha).tWRWR_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.WRWR.tWRWR_DG;
 
-	TIMING(mc, cha).DDR4.tWRWR_DR = \
+	TIMING(mc, cha).tWRWR_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.WRWR.tWRWR_DR;
 
-	TIMING(mc, cha).DDR4.tWRWR_DD = \
+	TIMING(mc, cha).tWRWR_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.WRWR.tWRWR_DD;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Sched.CMD_Stretch) {
@@ -4390,52 +4390,52 @@ void TGL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	TIMING(mc, cha).tCWL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.ODT.tCWL;
 
-	TIMING(mc, cha).DDR4.tRDRD_SG = \
+	TIMING(mc, cha).tRDRD_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.RDRD.tRDRD_SG;
 
-	TIMING(mc, cha).DDR4.tRDRD_DG = \
+	TIMING(mc, cha).tRDRD_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.RDRD.tRDRD_DG;
 
-	TIMING(mc, cha).DDR4.tRDRD_DR = \
+	TIMING(mc, cha).tRDRD_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.RDRD.tRDRD_DR;
 
-	TIMING(mc, cha).DDR4.tRDRD_DD = \
+	TIMING(mc, cha).tRDRD_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.RDRD.tRDRD_DD;
 
-	TIMING(mc, cha).DDR4.tRDWR_SG = \
+	TIMING(mc, cha).tRDWR_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.RDWR.tRDWR_SG;
 
-	TIMING(mc, cha).DDR4.tRDWR_DG = \
+	TIMING(mc, cha).tRDWR_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.RDWR.tRDWR_DG;
 
-	TIMING(mc, cha).DDR4.tRDWR_DR = \
+	TIMING(mc, cha).tRDWR_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.RDWR.tRDWR_DR;
 
-	TIMING(mc, cha).DDR4.tRDWR_DD = \
+	TIMING(mc, cha).tRDWR_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.RDWR.tRDWR_DD;
 
-	TIMING(mc, cha).DDR4.tWRRD_SG = \
+	TIMING(mc, cha).tWRRD_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.WRRD.tWRRD_SG;
 
-	TIMING(mc, cha).DDR4.tWRRD_DG = \
+	TIMING(mc, cha).tWRRD_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.WRRD.tWRRD_DG;
 
-	TIMING(mc, cha).DDR4.tWRRD_DR = \
+	TIMING(mc, cha).tWRRD_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.WRRD.tWRRD_DR;
 
-	TIMING(mc, cha).DDR4.tWRRD_DD = \
+	TIMING(mc, cha).tWRRD_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.WRRD.tWRRD_DD;
 
-	TIMING(mc, cha).DDR4.tWRWR_SG = \
+	TIMING(mc, cha).tWRWR_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.WRWR.tWRWR_SG;
 
-	TIMING(mc, cha).DDR4.tWRWR_DG = \
+	TIMING(mc, cha).tWRWR_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.WRWR.tWRWR_DG;
 
-	TIMING(mc, cha).DDR4.tWRWR_DR = \
+	TIMING(mc, cha).tWRWR_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.WRWR.tWRWR_DR;
 
-	TIMING(mc, cha).DDR4.tWRWR_DD = \
+	TIMING(mc, cha).tWRWR_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.WRWR.tWRWR_DD;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Sched.CMD_Stretch) {
@@ -4584,52 +4584,52 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	TIMING(mc, cha).tCWL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ODT.tCWL;
 
-	TIMING(mc, cha).DDR4.tRDRD_SG = \
+	TIMING(mc, cha).tRDRD_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDRD.tRDRD_SG;
 
-	TIMING(mc, cha).DDR4.tRDRD_DG = \
+	TIMING(mc, cha).tRDRD_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDRD.tRDRD_DG;
 
-	TIMING(mc, cha).DDR4.tRDRD_DR = \
+	TIMING(mc, cha).tRDRD_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDRD.tRDRD_DR;
 
-	TIMING(mc, cha).DDR4.tRDRD_DD = \
+	TIMING(mc, cha).tRDRD_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDRD.tRDRD_DD;
 
-	TIMING(mc, cha).DDR4.tRDWR_SG = \
+	TIMING(mc, cha).tRDWR_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDWR.tRDWR_SG;
 
-	TIMING(mc, cha).DDR4.tRDWR_DG = \
+	TIMING(mc, cha).tRDWR_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDWR.tRDWR_DG;
 
-	TIMING(mc, cha).DDR4.tRDWR_DR = \
+	TIMING(mc, cha).tRDWR_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDWR.tRDWR_DR;
 
-	TIMING(mc, cha).DDR4.tRDWR_DD = \
+	TIMING(mc, cha).tRDWR_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.RDWR.tRDWR_DD;
 
-	TIMING(mc, cha).DDR4.tWRRD_SG = \
+	TIMING(mc, cha).tWRRD_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRRD.tWRRD_SG;
 
-	TIMING(mc, cha).DDR4.tWRRD_DG = \
+	TIMING(mc, cha).tWRRD_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRRD.tWRRD_DG;
 
-	TIMING(mc, cha).DDR4.tWRRD_DR = \
+	TIMING(mc, cha).tWRRD_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRRD.tWRRD_DR;
 
-	TIMING(mc, cha).DDR4.tWRRD_DD = \
+	TIMING(mc, cha).tWRRD_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRRD.tWRRD_DD;
 
-	TIMING(mc, cha).DDR4.tWRWR_SG = \
+	TIMING(mc, cha).tWRWR_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRWR.tWRWR_SG;
 
-	TIMING(mc, cha).DDR4.tWRWR_DG = \
+	TIMING(mc, cha).tWRWR_DG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRWR.tWRWR_DG;
 
-	TIMING(mc, cha).DDR4.tWRWR_DR = \
+	TIMING(mc, cha).tWRWR_DR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRWR.tWRWR_DR;
 
-	TIMING(mc, cha).DDR4.tWRWR_DD = \
+	TIMING(mc, cha).tWRWR_DD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.WRWR.tWRWR_DD;
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Sched.CMD_Stretch) {

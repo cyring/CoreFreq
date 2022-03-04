@@ -5989,24 +5989,24 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 	{
 		PRT(IMC, attrib[0], "\x20\x20#%-2u", cha);
 
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tRDRD_SG);
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tRDRD_DG);
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tRDRD_DR);
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tRDRD_DD);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRDRD_SG);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRDRD_DG);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRDRD_DR);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRDRD_DD);
 
 		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
 
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tRDWR_SG);
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tRDWR_DG);
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tRDWR_DR);
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tRDWR_DD);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRDWR_SG);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRDWR_DG);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRDWR_DR);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRDWR_DD);
 
 		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
 
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tWRRD_SG);
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tWRRD_DG);
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tWRRD_DR);
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tWRRD_DD);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tWRRD_SG);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tWRRD_DG);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tWRRD_DR);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tWRRD_DD);
 	}
 	for (nc = 0; nc < MC_MATX; nc++) {
 		GridHover(	PRT(IMC, attrib[0], Header_DDR4[2][nc]),
@@ -6016,10 +6016,10 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 	{
 		PRT(IMC, attrib[0], "\x20\x20#%-2u", cha);
 
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tWRWR_SG);
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tWRWR_DG);
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tWRWR_DR);
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tWRWR_DD);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tWRWR_SG);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tWRWR_DG);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tWRWR_DR);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tWRWR_DD);
 
 		for (nc = 0; nc < 4; nc++) {
 			PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);

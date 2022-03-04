@@ -1489,7 +1489,7 @@ typedef struct
 			tWRWR_DG,
 			tWRWR_DR,
 			tWRWR_DD;
-		} DDR4;
+		}; /* DDR4 & DDR5 */
 		struct {
 	unsigned int	tddRdTWr,
 			tddWrTRd,
