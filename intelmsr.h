@@ -3646,7 +3646,11 @@ typedef union
 		SA_VOLTAGE		: 56-40, /* = 1/8192V		*/
 		ReservedBits		: 64-56;
 	};
-} ADL_SA_PERF_STATUS;	/* 06_97					*/
+} RKL_SA_PERF_STATUS;
+
+#define TGL_SA_PERF_STATUS	RKL_SA_PERF_STATUS
+
+#define ADL_SA_PERF_STATUS	TGL_SA_PERF_STATUS
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset E4h 			*/

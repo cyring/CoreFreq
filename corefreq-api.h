@@ -726,12 +726,14 @@ typedef struct
 			RKL_CAPID_A		RKL_Cap_A;
 			RKL_CAPID_B		RKL_Cap_B;
 			RKL_CAPID_C		RKL_Cap_C;
+			RKL_SA_PERF_STATUS	RKL_SA_Pll;
 		};
 		struct {
 			TGL_CAPID_A		TGL_Cap_A;
 			TGL_CAPID_B		TGL_Cap_B;
 			TGL_CAPID_C		TGL_Cap_C;
 			TGL_CAPID_E		TGL_Cap_E;
+			TGL_SA_PERF_STATUS	TGL_SA_Pll;
 		};
 		struct {
 			ADL_CAPID_A		ADL_Cap_A;

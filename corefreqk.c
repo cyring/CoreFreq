@@ -4188,6 +4188,11 @@ void Query_SKL_IMC(void __iomem *mchmap, unsigned short mc)
     }
 }
 
+inline void RKL_SA(void __iomem *mchmap)
+{
+	PUBLIC(RO(Proc))->Uncore.Bus.ADL_SA_Pll.value = readq(mchmap+0x5918);
+}
+
 void Query_RKL_IMC(void __iomem *mchmap, unsigned short mc)
 {	/*Source: 11th Generation Intel® Core Processor Datasheet Vol 2*/
 	unsigned short cha;
@@ -4247,8 +4252,11 @@ void Query_RKL_IMC(void __iomem *mchmap, unsigned short mc)
     }
     if (mc == 0) {
 	Query_Turbo_TDP_Config(mchmap);
+	RKL_SA(mchmap);
     }
 }
+
+#define TGL_SA	RKL_SA
 
 void Query_TGL_IMC(void __iomem *mchmap, unsigned short mc)
 {	/*Source: 11th Generation Intel® Core Processor Datasheet Vol 2 */
@@ -4310,13 +4318,11 @@ void Query_TGL_IMC(void __iomem *mchmap, unsigned short mc)
     }
     if (mc == 0) {
 	Query_Turbo_TDP_Config(mchmap);
+	TGL_SA(mchmap);
     }
 }
 
-inline void ADL_SA(void __iomem *mchmap)
-{
-	PUBLIC(RO(Proc))->Uncore.Bus.ADL_SA_Pll.value = readq(mchmap+0x5918);
-}
+#define ADL_SA	TGL_SA
 
 void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
 {	/*Source: 12th Generation Intel® Core Processor Datasheet Vol 2 */
