@@ -3277,7 +3277,7 @@ void Nehalem_PowerLimit(void)
 	{	/*	Register is an 8 watt multiplier	*/
 		signed short	TDP_Limit = PowerLimit.TDP_Limit >> 3;
 				TDP_Limit += Custom_TDP_Offset[PWR_DOMAIN(PKG)];
-	    if (TDP_Limit > 0)
+	    if (TDP_Limit >= 0)
 	    {
 		PowerLimit.TDP_Limit = TDP_Limit << 3;
 		WrRdMSR = 1;
@@ -3354,7 +3354,7 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 	    {
 		signed short	TDP_Limit = PowerLimit.Domain_Limit1 / pwrUnits;
 				TDP_Limit = TDP_Limit + Custom_TDP_Offset[lt];
-		if (TDP_Limit > 0) {
+		if (TDP_Limit >= 0) {
 			PowerLimit.Domain_Limit1 = pwrUnits * TDP_Limit;
 			WrRdMSR = 1;
 		}
@@ -3366,7 +3366,7 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 	    {
 		signed short	TDP_Limit = PowerLimit.Domain_Limit2 / pwrUnits;
 				TDP_Limit = TDP_Limit + Custom_TDP_Offset[rt];
-		if (TDP_Limit > 0) {
+		if (TDP_Limit >= 0) {
 			PowerLimit.Domain_Limit2 = pwrUnits * TDP_Limit;
 			WrRdMSR = 1;
 		}
@@ -10278,7 +10278,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 
 		TDP_Limit = TDP_Limit + Custom_TDP_Offset[_lt];
 
-		if (PUBLIC(RO(Proc))->Features.HSMP_Enable && (TDP_Limit > 0))
+		if (PUBLIC(RO(Proc))->Features.HSMP_Enable && (TDP_Limit >= 0))
 		{
 			RESET_ARRAY(arg, 8, 0, .value);
 			arg[0].value = 1000 * TDP_Limit;
