@@ -6300,10 +6300,10 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 		RSC(MEMORY_CONTROLLER_COND1).ATTR()
 	};
 	const ASCII *MC_Unit[4] = {
-		[0b00] = RSC(MEM_CTRL_UNIT_MHZ).CODE(),
-		[0b01] = RSC(MEM_CTRL_UNIT_MTS).CODE(),
-		[0b10] = RSC(MEM_CTRL_UNIT_MBS).CODE(),
-		[0b11] = (ASCII*) MEM_CTRL_FMT
+		[MC_MHZ] = RSC(MEM_CTRL_UNIT_MHZ).CODE(),
+		[MC_MTS] = RSC(MEM_CTRL_UNIT_MTS).CODE(),
+		[MC_MBS] = RSC(MEM_CTRL_UNIT_MBS).CODE(),
+		[MC_NIL] = (ASCII*) MEM_CTRL_FMT
 	};
 	char	item[MC_MATY + 1], *str = malloc(CODENAME_LEN + 4 + 10),
 		*chipStr = malloc((MC_MATX * MC_MATY) + 1);
@@ -17883,15 +17883,15 @@ void Layout_Card_Bus(Layer *layer, Card *card)
 	hBus.code[8] = (ASCII) Buffer[3];
 
 	switch (RO(Shm)->Uncore.Unit.Bus_Rate) {
-	case 0b00:
+	case MC_MHZ:
 		hBus.code[ 9] = 'H';
 		hBus.code[10] = 'z';
 		break;
-	case 0b01:
+	case MC_MTS:
 		hBus.code[ 9] = 'M';
 		hBus.code[10] = 'T';
 		break;
-	case 0b10:
+	case MC_MBS:
 		hBus.code[ 9] = 'B';
 		hBus.code[10] = 's';
 		break;

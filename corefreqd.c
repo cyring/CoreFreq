@@ -2060,10 +2060,10 @@ void P945_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 				* RO(Shm)->Uncore.Bus.Rate)
 				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	RO(Shm)->Uncore.Unit.Bus_Rate = 0b00;
-	RO(Shm)->Uncore.Unit.BusSpeed = 0b00;
-	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
-	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;
+	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 2;
 }
 
@@ -2275,10 +2275,10 @@ void P965_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 				* RO(Shm)->Uncore.Bus.Rate)
 				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	RO(Shm)->Uncore.Unit.Bus_Rate = 0b00;
-	RO(Shm)->Uncore.Unit.BusSpeed = 0b00;
-	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
-	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;
+	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 2;
 }
 
@@ -2580,10 +2580,10 @@ void G965_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 				* RO(Shm)->Uncore.Bus.Rate)
 				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	RO(Shm)->Uncore.Unit.Bus_Rate = 0b00;
-	RO(Shm)->Uncore.Unit.BusSpeed = 0b00;
-	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
-	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;
+	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 2;
 }
 
@@ -2718,10 +2718,10 @@ void SLM_PTR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 				* RO(Shm)->Uncore.Bus.Rate)
 				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
-	RO(Shm)->Uncore.Unit.BusSpeed = 0b01;
-	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
-	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MTS;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MTS;
+	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
 
   for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
@@ -3173,10 +3173,10 @@ void QPI_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 				* RO(Shm)->Uncore.Bus.Rate)
 				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
-	RO(Shm)->Uncore.Unit.BusSpeed = 0b01;
-	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
-	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MTS;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MTS;
+	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
 }
 
@@ -3228,10 +3228,10 @@ void DMI_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 				* RO(Shm)->Uncore.Bus.Rate)
 				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
-	RO(Shm)->Uncore.Unit.BusSpeed = 0b01;
-	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
-	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MTS;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MTS;
+	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
 }
 
@@ -3391,10 +3391,10 @@ void SNB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 				* RO(Shm)->Uncore.Bus.Rate)
 				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
-	RO(Shm)->Uncore.Unit.BusSpeed = 0b01;
-	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
-	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MTS;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MTS;
+	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
 
 	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.SNB_Cap.VT_d;
@@ -3588,10 +3588,10 @@ void SNB_EP_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 				* RO(Shm)->Uncore.Bus.Rate)
 				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
-	RO(Shm)->Uncore.Unit.BusSpeed = 0b01;
-	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
-	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MTS;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MTS;
+	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
 /* TODO(I/O MMU capabiility registers for SandyBridge-EP) */
 	RO(Shm)->Proc.Technology.IOMMU = 0;
@@ -3647,10 +3647,10 @@ void IVB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 				* RO(Shm)->Uncore.Bus.Rate)
 				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
-	RO(Shm)->Uncore.Unit.BusSpeed = 0b01;
-	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
-	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MTS;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MTS;
+	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
 
 	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.SNB_Cap.VT_d;
@@ -4063,10 +4063,10 @@ void SKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 				* RO(Shm)->Uncore.Bus.Rate)
 				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
-	RO(Shm)->Uncore.Unit.BusSpeed = 0b01;
-	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
-	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MTS;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MTS;
+	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 4;
 
 	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.SKL_Cap_A.VT_d;
@@ -4324,10 +4324,10 @@ void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
   }
 	RO(Shm)->Uncore.CtrlSpeed = (266 * units) + ((334 * units) / 501);
 
-	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
-	RO(Shm)->Uncore.Unit.BusSpeed = 0b01;
-	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
-	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MTS;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MTS;
+	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 
 	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.RKL_Cap_A.VT_d;
 
@@ -4756,12 +4756,12 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
     if (RO(Proc)->Uncore.Bus.ADL_SA_Pll.UCLK_RATIO > 0) {/* Ring Interconnect */
 	RO(Shm)->Uncore.Bus.Rate = RO(Proc)->Uncore.Bus.ADL_SA_Pll.UCLK_RATIO;
 	RO(Shm)->Uncore.Bus.Rate *= 100;
-	RO(Shm)->Uncore.Unit.Bus_Rate = 0b00;		/*	MHz	*/
-	RO(Shm)->Uncore.Unit.BusSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;		/*	MHz	*/
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;
     } else {					/* Advertised Bus Speed */
 	RO(Shm)->Uncore.Bus.Rate = 8000;
-	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;		/*	MT/s	*/
-	RO(Shm)->Uncore.Unit.BusSpeed = 0b01;
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MTS;		/*	MT/s	*/
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MTS;
     }
 	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
 				* RO(Shm)->Uncore.Bus.Rate)
@@ -4834,8 +4834,8 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	}
 	RO(Shm)->Uncore.CtrlSpeed = (unsigned short) Freq_Hz;
     }
-	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
-	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 
 	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.ADL_Cap_A.VT_d;
 
@@ -5045,10 +5045,10 @@ void AMD_0Fh_HTT(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		RO(Shm)->Uncore.Bus.Rate = HTT_Clock * 2;	/* "MT/s" */
 		RO(Shm)->Uncore.Bus.Speed = HTT_Clock * 4;	/* "MB/s" */
 	}
-	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
-	RO(Shm)->Uncore.Unit.BusSpeed = 0b10;
-	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
-	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MTS;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MBS;
+	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 2;
 }
 
@@ -5346,10 +5346,10 @@ void AMD_17h_CAP(RO(SHM_STRUCT) *RO(Shm),
 			/ (RO(Shm)->Proc.Features.Factory.Clock.Hz
 			* (1000LLU * PRECISION * PRECISION));
 
-	RO(Shm)->Uncore.Unit.Bus_Rate = 0b01;
-	RO(Shm)->Uncore.Unit.BusSpeed = 0b00;
-	RO(Shm)->Uncore.Unit.DDR_Rate = 0b11;
-	RO(Shm)->Uncore.Unit.DDRSpeed = 0b00;
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MTS;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;
+	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 4;
 
 	clock_done = 1;

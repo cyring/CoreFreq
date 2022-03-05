@@ -1422,6 +1422,11 @@ typedef struct	/* BSP CPUID features.					*/
 #define MC_MAX_CHA	8
 #define MC_MAX_DIMM	4
 
+#define MC_MHZ		0b00
+#define MC_MTS		0b01
+#define MC_MBS		0b10
+#define MC_NIL		0b11
+
 typedef struct
 {
 	unsigned int	tCL;
