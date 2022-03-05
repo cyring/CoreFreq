@@ -18128,8 +18128,12 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		break;
 
 	case TECHNOLOGY_TDP_CLAMPING:
-	    {
+	  {
 		const enum PWR_DOMAIN	pw = prm.dh.lo;
+
+	    if ( !( (pw == PWR_DOMAIN(RAM))
+		&& !PUBLIC(RO(Proc))->Registration.Experimental) )
+	    {
 		const enum PWR_LIMIT	pl = prm.dh.hi;
 
 		const unsigned int idx = (PWR_LIMIT_SIZE * pw) + pl;
@@ -18150,7 +18154,10 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			break;
 		}
 	      }
+	    } else {
+		rc = -RC_EXPERIMENTAL;
 	    }
+	  }
 		break;
 
 	case TECHNOLOGY_TDP_OFFSET:
