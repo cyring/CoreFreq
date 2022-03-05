@@ -3930,9 +3930,15 @@ void PCT_Update(TGrid *grid, const unsigned int bix, unsigned short value)
 		RSC(SYSINFO_PWR_THERMAL_COND6).ATTR()
 	};
 	const signed int pos = grid->cell.length - 9;
+	unsigned int cix;
 	char item[6+1];
 
-	memcpy(&grid->cell.attr[pos], &attrib[ bix ? 3 : 5 ][pos], 7);
+	if (value > 0) {
+		cix = bix ? 3 : 5;
+	} else {
+		cix = 0;
+	}
+	memcpy(&grid->cell.attr[pos], &attrib[cix][pos], 7);
 	StrFormat(item, 6+1, "%5u", value);
 	memcpy(&grid->cell.item[pos], item, 5);
 }
@@ -4228,6 +4234,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	enum PWR_DOMAIN pw;
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
 	{
+		unsigned int cix;
 		unsigned short digits;
 		bix	= RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Enable
 			| RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Enable;
@@ -4245,13 +4252,17 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 				RO(Shm)->Proc.Features.TDP_Unlock ? '>' : ']' ),
 			TDP_State, pw );
 
-	    if (RO(Shm)->Proc.Power.Domain[pw].PL1 > 0) {
 		digits = RO(Shm)->Proc.Power.Domain[pw].TW1 > 0 ?
 		(unsigned short) log10(RO(Shm)->Proc.Power.Domain[pw].TW1) : 0;
 
+		if (RO(Shm)->Proc.Power.Domain[pw].PL1 > 0) {
+			cix =  bix ? 3 : 5;
+		} else {
+			cix = 0;
+		}
 		GridCall( PUT(	RO(Shm)->Proc.Features.TDP_Unlock ?
 				(BOXKEY_TDP_OR | (pw << 5) | PL1) :SCANKEY_NULL,
-				attrib[ bix ? 3 : 5 ], width, 3,
+				attrib[cix], width, 3,
 				"%s (%.0f sec)%.*s%s   %c%5u W%c",
 				RSC(POWER_THERMAL_TPL).CODE(),
 				RO(Shm)->Proc.Power.Domain[pw].TW1,
@@ -4262,22 +4273,20 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 				RO(Shm)->Proc.Power.Domain[pw].PL1,
 				RO(Shm)->Proc.Features.TDP_Unlock ? '>' : ']' ),
 			PL1_Update, pw );
-	    } else {
-		PUT(	SCANKEY_NULL, attrib[0], width, 3,
-			"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_TPL).CODE(),
-			width - (OutFunc == NULL ? 21 : 19)
-			 - RSZ(POWER_THERMAL_TPL), hSpace,
-			RSC(POWER_LABEL_PL1).CODE(), POWERED(0) );
-	    }
-	  if (pw == PWR_DOMAIN(PKG) || pw == PWR_DOMAIN(PLATFORM))
-	  {
-	    if (RO(Shm)->Proc.Power.Domain[pw].PL2 > 0) {
+
+	    if (pw == PWR_DOMAIN(PKG) || pw == PWR_DOMAIN(PLATFORM))
+	    {
 		digits = RO(Shm)->Proc.Power.Domain[pw].TW2 > 0 ?
 		(unsigned short) log10(RO(Shm)->Proc.Power.Domain[pw].TW2) : 0;
 
+		if (RO(Shm)->Proc.Power.Domain[pw].PL2 > 0) {
+			cix = bix ? 3 : 5;
+		} else {
+			cix = 0;
+		}
 		GridCall( PUT(	RO(Shm)->Proc.Features.TDP_Unlock ?
 				(BOXKEY_TDP_OR | (pw << 5) | PL2) :SCANKEY_NULL,
-				attrib[ bix ? 3 : 5 ], width, 3,
+				attrib[cix], width, 3,
 				"%s (%.0f sec)%.*s%s   %c%5u W%c",
 				RSC(POWER_THERMAL_TPL).CODE(),
 				RO(Shm)->Proc.Power.Domain[pw].TW2,
@@ -4288,27 +4297,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 				RO(Shm)->Proc.Power.Domain[pw].PL2,
 				RO(Shm)->Proc.Features.TDP_Unlock ? '>' : ']' ),
 			PL2_Update, pw );
-	    } else {
-		PUT(	SCANKEY_NULL, attrib[0], width, 3,
-			"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_TPL).CODE(),
-			width - (OutFunc == NULL ? 21 : 19)
-			 - RSZ(POWER_THERMAL_TPL), hSpace,
-			RSC(POWER_LABEL_PL2).CODE(), POWERED(0) );
 	    }
-	  } else if (RO(Shm)->Proc.Power.Domain[pw].PL2 > 0) {
-		digits = RO(Shm)->Proc.Power.Domain[pw].TW2 > 0 ?
-		(unsigned short) log10(RO(Shm)->Proc.Power.Domain[pw].TW2) : 0;
-		/*	Some register may have garbage value	*/
-		GridCall( PUT(	SCANKEY_NULL, attrib[0], width, 3,
-				"%s (%.0f sec)%.*s%s   [%5u W]",
-				RSC(POWER_THERMAL_TPL).CODE(),
-				RO(Shm)->Proc.Power.Domain[pw].TW2,
-				width - (OutFunc == NULL ? 29 : 27) - digits
-				 - RSZ(POWER_THERMAL_TPL), hSpace,
-				RSC(POWER_LABEL_PL2).CODE(),
-				RO(Shm)->Proc.Power.Domain[pw].PL2 ),
-			PL2_Update, pw );
-	  }
 	}
 /* Section Mark */
     if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
