@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	90
-#define COREFREQ_REV	1
+#define COREFREQ_REV	2
 
 #if !defined(CORE_COUNT)
 	#define CORE_COUNT	256
@@ -1564,6 +1564,13 @@ typedef struct
 				Ranks;
 	};
 } RAM_GEOMETRY;
+
+enum RAM_STANDARD {
+	RAM_STD_UNSPEC,
+	RAM_STD_SDRAM,
+	RAM_STD_LPDDR,
+	RAM_STD_RDIMM
+};
 
 /* Source: /include/uapi/linux/utsname.h				*/
 #ifdef __NEW_UTS_LEN

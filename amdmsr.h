@@ -1257,8 +1257,8 @@ typedef union
 		OutputInvert	:  2-1,
 		DRAM_3DS	:  3-2,
 		CIsCS		:  4-3,
-		R_DDR4		:  5-4,
-		LR_DDR4 	:  6-5, /* DDR4 iff not LR_DDR4 and not R_DDR4*/
+		RDIMM		:  5-4,
+		LRDIMM		:  6-5, /* DDR4 iff not LR_DDR4 and not R_DDR4*/
 		X4_DIMMS	:  7-6,
 		X16_DIMMS	:  8-7,
 		DqMapSwapDis	:  9-8,
@@ -1366,7 +1366,7 @@ typedef union
 		MemChannel_Dis	: 20-19,
 		ReservedBits2	: 32-20;
 	};
-} AMD_17_UMC_ECC_CAP;
+} AMD_17_UMC_ECC_CAP_LO;
 
 typedef union
 {	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50df4			*/

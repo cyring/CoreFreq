@@ -363,6 +363,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 			json_literal(&s, "%u", (unsigned) RO(Shm)->Uncore.Unit.DDRSpeed);
 			json_key(&s, "DDR_Ver");
 			json_literal(&s, "%u", (unsigned) RO(Shm)->Uncore.Unit.DDR_Ver);
+			json_key(&s, "DDR_Std");
+			json_literal(&s, "%u", (unsigned) RO(Shm)->Uncore.Unit.DDR_Std);
 			json_end_object(&s);
 		}
 		json_end_object(&s);

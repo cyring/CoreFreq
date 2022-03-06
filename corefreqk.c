@@ -5075,8 +5075,12 @@ static void AMD_Zen_UMC(struct pci_dev *dev, unsigned int UMC_BAR,
 	unsigned short sec;
 
 	Core_AMD_SMN_Read(
-		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[slot].DAC,
-		SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x30 + (slot << 2), dev);
+	    PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.DAC,
+		SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x30 + (slot << 2), dev );
+
+	Core_AMD_SMN_Read(
+	    PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.CFG,
+		SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x80 + (slot << 2), dev );
 
 	for (sec = 0; sec < 2; sec++)
 	{
@@ -5186,10 +5190,15 @@ static PCI_CALLBACK AMD_17h_DataFabric(struct pci_dev *pdev)
     {
 	AMD_17_UMC_SDP_CTRL SDP_CTRL = {.value = 0};
 
-     Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha].AMD17h.ECC,
-			SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xdf4, dev);
+	Core_AMD_SMN_Read(
+		PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha].AMD17h.ECC._,
+		SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xdf0, dev );
 
-     Core_AMD_SMN_Read(SDP_CTRL, SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x104, dev);
+	Core_AMD_SMN_Read(
+		PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha].AMD17h.ECC.__,
+		SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xdf4, dev );
+
+	Core_AMD_SMN_Read(SDP_CTRL, SMU_AMD_UMC_BASE_CHA_F17H(cha)+0x104, dev);
 
      if ((SDP_CTRL.value != 0xffffffff) && (SDP_CTRL.SdpInit))
      {

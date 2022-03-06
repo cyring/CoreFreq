@@ -553,7 +553,7 @@ typedef struct
 					BusSpeed:  4-2,
 					DDR_Rate:  6-4,
 					DDRSpeed:  8-6,
-					_Unused : 12-8,
+					DDR_Std : 12-8,
 					DDR_Ver : 16-12;
 	    } Unit;
 

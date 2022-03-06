@@ -2065,6 +2065,7 @@ void P945_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
 	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 2;
+	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_UNSPEC;
 }
 
 void P965_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
@@ -2280,6 +2281,7 @@ void P965_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
 	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 2;
+	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_UNSPEC;
 }
 
 void G965_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
@@ -2585,6 +2587,7 @@ void G965_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
 	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 2;
+	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_UNSPEC;
 }
 
 void P3S_MCH(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
@@ -2723,6 +2726,7 @@ void SLM_PTR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
 	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
+	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_UNSPEC;
 
   for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
   {
@@ -3233,6 +3237,7 @@ void DMI_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
 	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
+	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_UNSPEC;
 }
 
 void SNB_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
@@ -3396,6 +3401,7 @@ void SNB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
 	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
+	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_UNSPEC;
 
 	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.SNB_Cap.VT_d;
 }
@@ -3593,6 +3599,7 @@ void SNB_EP_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
 	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
+	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_UNSPEC;
 /* TODO(I/O MMU capabiility registers for SandyBridge-EP) */
 	RO(Shm)->Proc.Technology.IOMMU = 0;
 }
@@ -3652,6 +3659,7 @@ void IVB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
 	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
+	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_UNSPEC;
 
 	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.SNB_Cap.VT_d;
 }
@@ -4075,6 +4083,7 @@ void SKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.Unit.BusSpeed = MC_MTS;
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 4;
+	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_UNSPEC;
 
 	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.SKL_Cap_A.VT_d;
 
@@ -4308,6 +4317,7 @@ void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	default:
 	case 0b00:	/*	DDR4	*/
 		RO(Shm)->Uncore.Unit.DDR_Ver = 4;
+		RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_SDRAM;
 
 		if ((RO(Proc)->Uncore.Bus.RKL_Cap_C.DDR4_EN)
 		 && (RO(Proc)->Uncore.Bus.RKL_Cap_A.DDR_OVERCLOCK == 0))
@@ -4318,6 +4328,7 @@ void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		break;
 	case 0b11:	/*	LPDDR4	*/
 		RO(Shm)->Uncore.Unit.DDR_Ver = 4;
+		RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_LPDDR;
 
 		if ((RO(Proc)->Uncore.Bus.RKL_Cap_C.LPDDR4_EN)
 		 && (RO(Proc)->Uncore.Bus.RKL_Cap_A.DDR_OVERCLOCK == 0))
@@ -4328,6 +4339,7 @@ void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		break;
 	case 0b01:	/*	DDR5	*/
 		RO(Shm)->Uncore.Unit.DDR_Ver = 5;
+		RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_SDRAM;
 
 		if ((RO(Proc)->Uncore.Bus.TGL_Cap_E.DDR5_EN)
 		 && (RO(Proc)->Uncore.Bus.TGL_Cap_A.DDR_OVERCLOCK == 0))
@@ -4338,6 +4350,7 @@ void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		break;
 	case 0b10:	/*	LPDDR5	*/
 		RO(Shm)->Uncore.Unit.DDR_Ver = 5;
+		RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_LPDDR;
 
 		if ((RO(Proc)->Uncore.Bus.TGL_Cap_E.LPDDR5_EN)
 		 && (RO(Proc)->Uncore.Bus.TGL_Cap_A.DDR_OVERCLOCK == 0))
@@ -4820,6 +4833,7 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	default:
 	case 0b00:	/*	DDR4	*/
 		RO(Shm)->Uncore.Unit.DDR_Ver = 4;
+		RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_SDRAM;
 
 		if ((RO(Proc)->Uncore.Bus.ADL_Cap_C.DDR4_EN)
 		 && (RO(Proc)->Uncore.Bus.ADL_Cap_A.DDR_OVERCLOCK == 0))
@@ -4830,6 +4844,7 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		break;
 	case 0b11:	/*	LPDDR4	*/
 		RO(Shm)->Uncore.Unit.DDR_Ver = 4;
+		RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_LPDDR;
 
 		if ((RO(Proc)->Uncore.Bus.ADL_Cap_C.LPDDR4_EN)
 		 && (RO(Proc)->Uncore.Bus.ADL_Cap_A.DDR_OVERCLOCK == 0))
@@ -4840,6 +4855,7 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		break;
 	case 0b01:	/*	DDR5	*/
 		RO(Shm)->Uncore.Unit.DDR_Ver = 5;
+		RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_SDRAM;
 
 		if ((RO(Proc)->Uncore.Bus.ADL_Cap_E.DDR5_EN)
 		 && (RO(Proc)->Uncore.Bus.ADL_Cap_A.DDR_OVERCLOCK == 0))
@@ -4850,6 +4866,7 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		break;
 	case 0b10:	/*	LPDDR5	*/
 		RO(Shm)->Uncore.Unit.DDR_Ver = 5;
+		RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_LPDDR;
 
 		if ((RO(Proc)->Uncore.Bus.ADL_Cap_E.LPDDR5_EN)
 		 && (RO(Proc)->Uncore.Bus.ADL_Cap_A.DDR_OVERCLOCK == 0))
@@ -5098,6 +5115,7 @@ void AMD_0Fh_HTT(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
 	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 2;
+	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_UNSPEC;
 }
 
 void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
@@ -5148,14 +5166,14 @@ void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
     }
     if (DIMM_Size > 0)
     {
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = \
-	8 << RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DAC.NumBanks;
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8 \
+	<< RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.DAC.NumBanks;
 
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = \
-	1 << (10+RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DAC.NumRowLo);
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 \
+    << (10+RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.DAC.NumRowLo);
 
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = \
-	1 << (5 + RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].DAC.NumCol);
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 \
+    << (5 + RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.DAC.NumCol);
 
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
 						(unsigned int)(DIMM_Size >> 10);
@@ -5307,7 +5325,7 @@ void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		break;
 	}
 	TIMING(mc, cha).ECC = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.ECC.Enable;
+		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.ECC.__.Enable;
 
 	TIMING(mc, cha).GDM = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.GearDownMode;
@@ -5378,6 +5396,8 @@ void AMD_17h_CAP(RO(SHM_STRUCT) *RO(Shm),
     {
       if (RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.MEMCLK)
       {
+	unsigned short slot;
+
 	RO(Shm)->Uncore.Bus.Rate = \
 			(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.MEMCLK
 			*  RO(Shm)->Proc.Features.Factory.Clock.Q) / 3;
@@ -5399,7 +5419,21 @@ void AMD_17h_CAP(RO(SHM_STRUCT) *RO(Shm),
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
 	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 4;
+	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_SDRAM;
 
+       for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
+       {
+	if (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.CFG.value \
+		!= 0xffffffff)
+	{
+	  if (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.CFG.RDIMM
+	   || RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.CFG.LRDIMM)
+	  {
+		RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_RDIMM;
+		break;
+	  }
+	}
+       }
 	clock_done = 1;
       }
     }

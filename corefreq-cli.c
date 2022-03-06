@@ -6388,10 +6388,24 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 					RO(Shm)->Uncore.Unit.BusSpeed
 				], MC_MATY,HSPACE);
 
-	for (nc = 0; nc < (MC_MATX - 13); nc++) {
+	for (nc = 0; nc < (MC_MATX - 14); nc++) {
 		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
 	}
 
+      switch (RO(Shm)->Uncore.Unit.DDR_Std) {
+      case RAM_STD_UNSPEC:
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_RAM_STD_0).CODE());
+	break;
+      case RAM_STD_SDRAM:
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_RAM_STD_1).CODE());
+	break;
+      case RAM_STD_LPDDR:
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_RAM_STD_2).CODE());
+	break;
+      case RAM_STD_RDIMM:
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_RAM_STD_3).CODE());
+	break;
+      }
       switch (RO(Shm)->Uncore.Unit.DDR_Ver) {
       case 2:
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_DRAM_DDR2_0).CODE());
