@@ -3605,7 +3605,17 @@ void SNB_EP_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
 	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
-	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_UNSPEC;
+
+	if (RO(Proc)->Uncore.Bus.SNB_EP_Cap3.RDIMM_DIS)
+	{
+		if (RO(Proc)->Uncore.Bus.SNB_EP_Cap3.UDIMM_DIS) {
+			RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_SDRAM;
+		} else {
+			RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_UNSPEC;
+		}
+	} else {
+		RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_RDIMM;
+	}
 /* TODO(I/O MMU capabiility registers for SandyBridge-EP) */
 	RO(Shm)->Proc.Technology.IOMMU = 0;
 }
