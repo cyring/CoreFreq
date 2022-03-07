@@ -2101,7 +2101,7 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x0			*/
 		ReservedBits3	: 16-15,
 		DIMMFLIP	: 17-16, /* One if DIMM1 > DIMM0 size	*/
 		RANKREMAP	: 18-17,
-		CKECOPY		: 19-18,
+		CKECOPY 	: 19-18,
 		ReservedBits4	: 20-19,
 		DIMM0MIRR	: 21-20,
 		DIMM1MIRR	: 22-21,
@@ -2128,7 +2128,7 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x1			*/
 		ReservedBits4	: 20-19,
 		tZQCS		: 21-20, /* 0h=64; 1h=96		*/
 		ReservedBits5	: 22-21,
-		tZQoper		: 23-22, /* 0h=256; 1h=384		*/
+		tZQoper 	: 23-22, /* 0h=256; 1h=384		*/
 		ReservedBits6	: 24-23,
 		PMEDLY		: 26-24, /* {6; 8; 10; 12}		*/
 		ReservedBits7	: 28-26,
@@ -2241,6 +2241,26 @@ typedef union	/*	MCR: Port=0x04 & Offset=0x6			*/
 } SOC_MC_BIOS_CFG;
 
 typedef union	/* Nehalem						*/
+{	/* Device: 4, 5, 6 - Function: 0 - Offset: 58h			*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		RESET_ON_TIME	:  5-0,  /*		2^n DCLKs	*/
+		BLOCK_CKE_DELAY : 10-5,  /*		2^n DCLKs	*/
+		PHY_FSM_DELAY	: 15-10, /* Physical layer training: 2^n DCLK */
+		REGISTERED_DIMM : 16-15, /* Channel contains registered DIMMs */
+		WRLEVEL_DELAY	: 17-16, /* Write leveling training:16|32 DCLK*/
+		WRDQDQS_DELAY	: 22-17, /* WRDQDQS training delay	*/
+		QUAD_RANK	: 23-22, /* 1: QUAD_RANK_PRESENT	*/
+		SINGLE_QUAD_RANK: 24-23, /* 1: SINGLE_QUAD_RANK_PRESENT */
+		THREE_DIMMS	: 25-24, /* 1: THREE_DIMMS_PRESENT	*/
+		DIS_AI		: 26-25, /* 1: RDIMM supports auto MRS cycles */
+		DIS_3T		: 27-26, /* 1: 3T mode will not be enabled*/
+		ReservedBits	: 32-27;
+	};
+} NHM_IMC_DIMM_INIT_PARAMS;
+
+typedef union	/* Nehalem						*/
 {	/* Device: 4, 5, 6 - Function: 0 - Offset: 70h			*/
 	unsigned int		value;
 	struct { /* Source: Micron DDR3					*/
@@ -2252,7 +2272,7 @@ typedef union	/* Nehalem						*/
 		ReservedBits2	:  8-7,
 		DLL		:  9-8,
 		tWR		: 12-9,
-		Pchg_PD		: 13-12,
+		Pchg_PD 	: 13-12,
 		MR0		: 16-13,
 		MR1		: 32-16;
 	};
@@ -2341,7 +2361,7 @@ typedef union	/* Nehalem, Westmere					*/
 	struct {
 		unsigned int
 		tCKE		:  3-0,
-		tXS	 	: 11-3,
+		tXS		: 11-3,
 		tXSDLL		: 21-11,
 		tXP		: 24-21, /* 22-21: Cs4CkeTransition	*/
 		tRANKIDLE	: 32-24;

@@ -3046,7 +3046,7 @@ void NHM_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		break;
 	}
 
-	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Params.ENABLE_2N_3N)
+	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.Sched.ENABLE_2N_3N)
 	{
 	case 0b00:
 		TIMING(mc, cha).CMD_Rate = 1;
@@ -3057,6 +3057,13 @@ void NHM_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	case 0b10:
 		TIMING(mc, cha).CMD_Rate = 3;
 		break;
+	}
+
+	if (RO(Proc)->Uncore.MC[mc].Channel[cha].NHM.DIMM_Init.REGISTERED_DIMM)
+	{
+		RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_RDIMM;
+	} else {
+		RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_SDRAM;
 	}
 
      for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++) {
@@ -3237,7 +3244,6 @@ void DMI_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
 	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
-	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_UNSPEC;
 }
 
 void SNB_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))

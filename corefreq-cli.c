@@ -6010,7 +6010,7 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tWRWR_DR);
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tWRWR_DD);
 
-		for (nc = 0; nc < 4; nc++) {
+		for (nc = 0; nc < (MC_MATX - 11); nc++) {
 			PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
 		}
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tREFI);
@@ -6493,7 +6493,7 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 		PRT(IMC, attrib[1], "%5s", &str[0]);
 		PRT(IMC, attrib[1], "%5s", &str[8]);
 	    }
-	    else for (nc = 0; nc < 9; nc++) {
+	    else for (nc = 0; nc < (MC_MATX - 6); nc++) {
 		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
 	    }
 	    for (nc = 0; nc < (MC_MATX - 11); nc++) {

@@ -492,7 +492,8 @@ typedef struct
 				NHM_IMC_BANK_TIMING	Bank;
 				NHM_IMC_REFRESH_TIMING	Refresh;
 				NHM_IMC_CKE_TIMING	CKE_Timing;
-				NHM_IMC_SCHEDULER_PARAMS Params;
+				NHM_IMC_SCHEDULER_PARAMS Sched;
+				NHM_IMC_DIMM_INIT_PARAMS DIMM_Init;
 			} NHM;
 			struct {
 	/* 4000h */		SNB_IMC_TC_DBP		DBP;	/* 32 bits    */

@@ -3837,6 +3837,9 @@ kernel_ulong_t Query_NHM_Timing(struct pci_dev *pdev,
 				);
     if (dev != NULL)
     {
+	pci_read_config_dword(dev, 0x58,
+	    &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.DIMM_Init.value);
+
 	pci_read_config_dword(dev, 0x70,
 		&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.MR0_1.value);
 
@@ -3859,7 +3862,7 @@ kernel_ulong_t Query_NHM_Timing(struct pci_dev *pdev,
 	    &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.CKE_Timing.value);
 
 	pci_read_config_dword(dev, 0xb8,
-		&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.Params.value);
+		&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.Sched.value);
 
 	pci_dev_put(dev);
 	return 0;
