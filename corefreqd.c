@@ -2725,8 +2725,6 @@ void SLM_PTR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.Unit.BusSpeed = MC_MTS;
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
 	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
-	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
-	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_UNSPEC;
 
   for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
   {
@@ -2907,6 +2905,18 @@ void SLM_PTR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	TIMING(mc, cha).ECC = \
 			  RO(Proc)->Uncore.MC[mc].SLM.BIOS_CFG.EFF_ECC_EN
 			| RO(Proc)->Uncore.MC[mc].SLM.BIOS_CFG.ECC_EN;
+    }
+    if (RO(Proc)->Uncore.MC[mc].SLM.DRP.DRAMTYPE) {
+	RO(Shm)->Uncore.Unit.DDR_Ver = 2;
+	RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_LPDDR;
+    } else {
+	RO(Shm)->Uncore.Unit.DDR_Ver = 3;
+
+	if (RO(Proc)->Uncore.MC[mc].SLM.DRP.ENLPDDR3) {
+		RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_LPDDR;
+	} else {
+		RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_SDRAM;
+	}
     }
   }
 }
@@ -3609,9 +3619,9 @@ void SNB_EP_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	if (RO(Proc)->Uncore.Bus.SNB_EP_Cap3.RDIMM_DIS)
 	{
 		if (RO(Proc)->Uncore.Bus.SNB_EP_Cap3.UDIMM_DIS) {
-			RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_SDRAM;
-		} else {
 			RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_UNSPEC;
+		} else {
+			RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_SDRAM;
 		}
 	} else {
 		RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_RDIMM;
@@ -4032,6 +4042,25 @@ void SKL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		!RO(Proc)->Uncore.MC[mc].SKL.MADC1.Dimm_L_Map
 	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].SKL.MADD1.DSW);
+
+    switch (RO(Proc)->Uncore.MC[mc].SKL.MADCH.DDR_TYPE) {
+    case 0b00:
+	RO(Shm)->Uncore.Unit.DDR_Ver = 4;
+	RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_SDRAM;
+	break;
+    case 0b01:
+	RO(Shm)->Uncore.Unit.DDR_Ver = 3;
+	RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_SDRAM;
+	break;
+    case 0b10:
+	RO(Shm)->Uncore.Unit.DDR_Ver = 3;
+	RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_LPDDR;
+	break;
+    default:
+	RO(Shm)->Uncore.Unit.DDR_Ver = 4;
+	RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_UNSPEC;
+	break;
+    }
   }
 }
 
@@ -4098,8 +4127,6 @@ void SKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MTS;
 	RO(Shm)->Uncore.Unit.BusSpeed = MC_MTS;
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
-	RO(Shm)->Uncore.Unit.DDR_Ver  = 4;
-	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_UNSPEC;
 
 	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.SKL_Cap_A.VT_d;
 
