@@ -64,6 +64,8 @@
 	#define MSR_SVM_LOCK_KEY		0xc0010118
 #endif
 
+#define MSR_AMD_F17H_L3_PERF_CTL		0xc0010230
+#define MSR_AMD_F17H_L3_PERF_CTR		0xc0010231
 #define MSR_AMD_F17H_DF_PERF_CTL		0xc0010240
 #define MSR_AMD_F17H_DF_PERF_CTR		0xc0010241
 #define MSR_AMD_F17H_PMGT_MISC			0xc0010292
@@ -472,6 +474,23 @@ typedef union
 	PstateEn	: 64-63; /* RW: Is this Pstate MSR valid ?	*/
     } Family_17h;
 } PSTATEDEF;
+
+typedef union
+{
+	unsigned long long value;
+    struct
+    {
+	unsigned long long	 /* MSR 0xC001023{0,2,4,6,8,a}		*/
+	EventSelect	:  8-0,
+	UnitMask	: 16-8,
+	Reserved1	: 22-16,
+	CounterEn	: 23-22,
+	Reserved2	: 48-23,
+	SliceMask	: 52-48,
+	Reserved3	: 56-52,
+	ThreadMask	: 64-56;
+    };
+} ZEN_L3_PERF_CTL;
 
 typedef union
 {

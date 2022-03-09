@@ -384,7 +384,7 @@ typedef struct
 	    };
 	    struct	/* AMD						*/
 	    {
-		unsigned long long	Core_PerfEventsCtrsControl;
+		ZEN_L3_PERF_CTL 	Zen_L3_Cache_PerfControl;
 		HWCR			Core_HardwareConfiguration;
 	    };
 	} SaveArea;
@@ -788,18 +788,23 @@ typedef struct
 {
 	struct
 	{
-	    unsigned long long	PTSC, /* Package Time Stamp Counter	*/
-				PC02, /* Goldmont, Sandy-Bridge, Phi	*/
+	    unsigned long long	PTSC; /* Package Time Stamp Counter	*/
+	  union {
+	    struct {
+	    unsigned long long	PC02, /* Goldmont, Sandy-Bridge, Phi	*/
 				PC03, /* Goldmont, Nehalem, Sandy-Bridge, Phi */
 				PC04, /* Atom [06_27h]			*/
 				PC06, /* Goldmont, Nehalem, Sandy-Bridge, Phi */
 				PC07, /* Nehalem, Sandy-Bridge, Phi	*/
 				PC08, /* Haswell			*/
 				PC09, /* Haswell			*/
-				PC10, /* Goldmont, Haswell		*/
-				MC6;  /* Atom, Silervmont: per Module	*/
+				PC10; /* Goldmont, Haswell		*/
+	    };
+	    unsigned long long	CTR[8]; /*	Up to eight CCDs	*/
+	  };
+	    unsigned long long	MC6;  /* Atom, Silervmont: per Module	*/
 	  struct {
-	    unsigned long long	FC0; /* Uncore fixed counter #0		*/
+	    unsigned long long	FC0; /* Uncore fixed counter #0 	*/
 	  } Uncore;
 
 	  struct {
@@ -809,16 +814,21 @@ typedef struct
 
 	struct
 	{
-	    unsigned long long	PTSC,
-				PC02,
+	    unsigned long long	PTSC;
+	  union {
+	    struct {
+	    unsigned long long	PC02,
 				PC03,
 				PC04,
 				PC06,
 				PC07,
 				PC08,
 				PC09,
-				PC10,
-				MC6;
+				PC10;
+	    };
+	    unsigned long long	CTR[8];
+	  };
+	    unsigned long long	MC6;
 	  struct {
 	    unsigned long long	FC0;
 	  } Uncore;

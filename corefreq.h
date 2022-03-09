@@ -365,16 +365,21 @@ typedef struct
 
 	struct PKG_FLIP_FLOP {
 		struct {
-		unsigned long long	PTSC,
-					PC02,
+		unsigned long long	PTSC;
+		  union {
+		    struct {
+		    unsigned long long	PC02,
 					PC03,
 					PC04,
 					PC06,
 					PC07,
 					PC08,
 					PC09,
-					PC10,
-					MC6,
+					PC10;
+		    };
+		    unsigned long long	CTR[8];
+		  };
+		unsigned long long	MC6,
 					ACCU[PWR_DOMAIN(SIZE)];
 		} Delta;
 
