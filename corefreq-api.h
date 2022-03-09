@@ -834,6 +834,7 @@ typedef struct
 			UNCORE_FIXED_PERF_CONTROL  Uncore_FixedPerfControl;
 	    } Intel;
 	    struct {
+			ZEN_DF_PERF_CTL 	Zen_DataFabricPerfControl;
 	    } AMD;
 	} SaveArea;
 

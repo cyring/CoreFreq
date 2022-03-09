@@ -1556,6 +1556,8 @@ static void InitTimer_AMD_F17h_Zen(unsigned int cpu) ;
 static void InitTimer_AMD_F17h_Zen2_SP(unsigned int cpu) ;
 static void InitTimer_AMD_F17h_Zen2_MP(unsigned int cpu) ;
 static void InitTimer_AMD_F17h_Zen2_APU(unsigned int cpu) ;
+static void Start_Uncore_AMD_Family_17h(void *arg) ;
+static void Stop_Uncore_AMD_Family_17h(void *arg) ;
 
 static void Core_AMD_F17h_No_Thermal(CORE_RO *Core)
 {
@@ -1575,6 +1577,8 @@ static void Query_Hygon_F18h(unsigned int cpu);
 #define     InitTimer_AMD_Family_19h InitTimer_AMD_Family_17h
 #define     InitTimer_AMD_F17h_Zen3_SP InitTimer_AMD_F17h_Zen2_SP
 #define     InitTimer_AMD_F17h_Zen3_MP InitTimer_AMD_F17h_Zen2_MP
+#define     Start_Uncore_AMD_Family_19h Start_Uncore_AMD_Family_17h
+#define     Stop_Uncore_AMD_Family_19h Stop_Uncore_AMD_Family_17h
 
 /*	[Void]								*/
 #define _Void_Signature {.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
@@ -6846,8 +6850,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_AMD_17h,
 	.PCI_ids = PCI_AMD_17h_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_AMD_Family_17h,
+		.Stop = Stop_Uncore_AMD_Family_17h,
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
@@ -6870,8 +6874,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_AMD_17h,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_AMD_Family_17h,
+		.Stop = Stop_Uncore_AMD_Family_17h,
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
@@ -6894,8 +6898,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_AMD_19h,
 	.PCI_ids = PCI_AMD_19h_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_AMD_Family_19h,
+		.Stop = Stop_Uncore_AMD_Family_19h,
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
@@ -8716,8 +8720,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_AMD_17h,
 	.PCI_ids = PCI_AMD_17h_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_AMD_Family_17h,
+		.Stop = Stop_Uncore_AMD_Family_17h,
 		.ClockMod = NULL
 		},
 	.Specific = AMD_Zen_Specific,
@@ -8740,8 +8744,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_AMD_17h,
 	.PCI_ids = PCI_AMD_17h_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_AMD_Family_17h,
+		.Stop = Stop_Uncore_AMD_Family_17h,
 		.ClockMod = NULL
 		},
 	.Specific = AMD_Zen_APU_Specific,
@@ -8764,8 +8768,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_AMD_17h,
 	.PCI_ids = PCI_AMD_17h_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_AMD_Family_17h,
+		.Stop = Stop_Uncore_AMD_Family_17h,
 		.ClockMod = NULL
 		},
 	.Specific = AMD_ZenPlus_Specific,
@@ -8788,8 +8792,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_AMD_17h,
 	.PCI_ids = PCI_AMD_17h_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_AMD_Family_17h,
+		.Stop = Stop_Uncore_AMD_Family_17h,
 		.ClockMod = NULL
 		},
 	.Specific = AMD_ZenPlus_APU_Specific,
@@ -8812,8 +8816,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_AMD_17h,
 	.PCI_ids = PCI_AMD_17h_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_AMD_Family_17h,
+		.Stop = Stop_Uncore_AMD_Family_17h,
 		.ClockMod = NULL
 		},
 	.Specific = AMD_Zen_Dali_Specific,
@@ -8836,8 +8840,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_AMD_17h,
 	.PCI_ids = PCI_AMD_17h_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_AMD_Family_17h,
+		.Stop = Stop_Uncore_AMD_Family_17h,
 		.ClockMod = NULL
 		},
 	.Specific = AMD_EPYC_Rome_CPK_Specific,
@@ -8860,8 +8864,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_AMD_17h,
 	.PCI_ids = PCI_AMD_17h_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_AMD_Family_17h,
+		.Stop = Stop_Uncore_AMD_Family_17h,
 		.ClockMod = NULL
 		},
 	.Specific = AMD_Zen2_Renoir_Specific,
@@ -8884,8 +8888,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_AMD_17h,
 	.PCI_ids = PCI_AMD_17h_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_AMD_Family_17h,
+		.Stop = Stop_Uncore_AMD_Family_17h,
 		.ClockMod = NULL
 		},
 	.Specific = AMD_Zen2_LCN_Specific,
@@ -8908,8 +8912,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_AMD_17h,
 	.PCI_ids = PCI_AMD_17h_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_AMD_Family_17h,
+		.Stop = Stop_Uncore_AMD_Family_17h,
 		.ClockMod = NULL
 		},
 	.Specific = AMD_Zen2_MTS_Specific,
@@ -8932,8 +8936,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_AMD_17h,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_AMD_Family_17h,
+		.Stop = Stop_Uncore_AMD_Family_17h,
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
@@ -8956,8 +8960,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_AMD_19h,
 	.PCI_ids = PCI_AMD_19h_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_AMD_Family_19h,
+		.Stop = Stop_Uncore_AMD_Family_19h,
 		.ClockMod = NULL
 		},
 	.Specific = AMD_Zen3_VMR_Specific,
@@ -8980,8 +8984,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_AMD_19h,
 	.PCI_ids = PCI_AMD_19h_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_AMD_Family_19h,
+		.Stop = Stop_Uncore_AMD_Family_19h,
 		.ClockMod = NULL
 		},
 	.Specific = AMD_Zen3_CZN_Specific,
@@ -9004,8 +9008,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_AMD_19h,
 	.PCI_ids = PCI_AMD_19h_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_AMD_Family_19h,
+		.Stop = Stop_Uncore_AMD_Family_19h,
 		.ClockMod = NULL
 		},
 	.Specific = AMD_EPYC_Milan_Specific,
@@ -9028,8 +9032,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_AMD_19h,
 	.PCI_ids = PCI_AMD_19h_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_AMD_Family_19h,
+		.Stop = Stop_Uncore_AMD_Family_19h,
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
@@ -9052,8 +9056,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_AMD_19h,
 	.PCI_ids = PCI_AMD_19h_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_AMD_Family_19h,
+		.Stop = Stop_Uncore_AMD_Family_19h,
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
@@ -9076,8 +9080,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_AMD_19h,
 	.PCI_ids = PCI_AMD_19h_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_AMD_Family_19h,
+		.Stop = Stop_Uncore_AMD_Family_19h,
 		.ClockMod = NULL
 		},
 	.Specific = AMD_Zen3Plus_RMB_Specific,

@@ -11232,6 +11232,14 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 				PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
 })
 
+#define PKG_Counters_AMD_Family_17h(Core, T)				\
+({									\
+	PUBLIC(RO(Proc))->Counter[T].PTSC = Core->Counter[T].TSC;	\
+									\
+	RDCOUNTER(	PUBLIC(RO(Proc))->Counter[T].Uncore.FC0,	\
+			MSR_AMD_F17H_DF_PERF_CTR );			\
+})
+
 #define Pkg_OVH(Pkg, Core)						\
 ({									\
 	Pkg->Delta.PTSC -= (Pkg->Counter[1].PTSC - Core->Overhead.TSC); \
@@ -15245,7 +15253,7 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
-		PKG_Counters_Generic(Core, 1);
+		PKG_Counters_AMD_Family_17h(Core, 1);
 
 		Pkg_AMD_Family_17h_Temp(PUBLIC(RO(Proc)), Core);
 
@@ -15268,9 +15276,13 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
 
 		Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
 
+		Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
+
 		Delta_PWR_ACCU(Proc, PKG);
 
 		Save_PTSC(PUBLIC(RO(Proc)));
+
+		Save_UNCORE_FC0(PUBLIC(RO(Proc)));
 
 		Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
 
@@ -15508,7 +15520,7 @@ static void Start_AMD_Family_17h(void *arg)
 	if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
 		Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
 	}
-	PKG_Counters_Generic(Core, 0);
+	PKG_Counters_AMD_Family_17h(Core, 0);
 
 	RDCOUNTER(PUBLIC(RO(Proc))->Counter[0].Power.ACCU[PWR_DOMAIN(PKG)],
 			MSR_AMD_PKG_ENERGY_STATUS );
@@ -15550,6 +15562,34 @@ static void Stop_AMD_Family_17h(void *arg)
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
+
+static void Start_Uncore_AMD_Family_17h(void *arg)
+{
+	ZEN_DF_PERF_CTL Zen_DataFabricPerfControl;
+	UNUSED(arg);
+
+	RDMSR(Zen_DataFabricPerfControl, MSR_AMD_F17H_DF_PERF_CTL);
+
+	PUBLIC(RO(Proc))->SaveArea.AMD.Zen_DataFabricPerfControl = \
+						Zen_DataFabricPerfControl;
+
+	Zen_DataFabricPerfControl.EventSelect00 = 0x0f;
+	Zen_DataFabricPerfControl.UnitMask	= 0xff;
+	Zen_DataFabricPerfControl.CounterEn	= 1;
+	Zen_DataFabricPerfControl.EventSelect08 = 0x00;
+	Zen_DataFabricPerfControl.EventSelect12 = 0x00;
+
+	WRMSR(Zen_DataFabricPerfControl, MSR_AMD_F17H_DF_PERF_CTL);
+}
+
+static void Stop_Uncore_AMD_Family_17h(void *arg)
+{
+	UNUSED(arg);
+
+	WRMSR(	PUBLIC(RO(Proc))->SaveArea.AMD.Zen_DataFabricPerfControl,
+		MSR_AMD_F17H_DF_PERF_CTL );
+}
+
 
 long Sys_OS_Driver_Query(void)
 {
