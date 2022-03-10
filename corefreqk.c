@@ -11753,25 +11753,6 @@ static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 	Pkg->PowerThermal.Sensor = Core->PowerThermal.Sensor;		\
 })
 
-#define Pkg_AMD_Family_19h_PROCHOT(Pkg) 				\
-({									\
-    if (Pkg->Features.HSMP_Enable)					\
-    {									\
-	unsigned int rx;						\
-	HSMP_ARG arg[8];						\
-	RESET_ARRAY(arg, 8, 0, .value);					\
-	rx = AMD_HSMP_Exec(HSMP_RD_PROCHOT, arg);			\
-	if (rx == HSMP_RESULT_OK)					\
-	{								\
-		Pkg->PowerThermal.Events = ((arg[0].value & 0x1) << 1); \
-	}								\
-	else if (IS_HSMP_OOO(rx))					\
-	{								\
-		Pkg->Features.HSMP_Enable = 0;				\
-	}								\
-    }									\
-})
-
 
 static enum hrtimer_restart Cycle_VirtualMachine(struct hrtimer *pTimer)
 {
@@ -15334,10 +15315,7 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
 
 		Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
 
-		Sys_Tick(PUBLIC(RO(Proc)),
-			{
-				Pkg_AMD_Family_19h_PROCHOT(PUBLIC(RO(Proc)));
-			});
+		Sys_Tick(PUBLIC(RO(Proc)));
 	} else {
 		Core->PowerThermal.VID = 0;
 	}
