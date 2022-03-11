@@ -1031,8 +1031,8 @@ static void Query_Features(void *pArg)
 
     } else if ( (iArg->Features->Info.Vendor.CRC == CRC_AMD)
 	||	(iArg->Features->Info.Vendor.CRC == CRC_HYGON) )
-    {	/*	Specified as Core Performance 64 bits General Counters. */
-	iArg->Features->PerfMon.EAX.MonWidth = 64;
+    {	/*	Specified as Core Performance 48 bits General Counters. */
+	iArg->Features->PerfMon.EAX.MonWidth = 48;
 
 	if (iArg->Features->ExtInfo.ECX.PerfCore)
 	{
@@ -10779,14 +10779,40 @@ void Intel_Core_Counters_Set(CORE_RO *Core)
 									\
 	RDMSR(Zen_L3_Cache_PerfControl, MSR_AMD_F17H_L3_PERF_CTL);	\
 	Core->SaveArea.Zen_L3_Cache_PerfControl=Zen_L3_Cache_PerfControl;\
-	Zen_L3_Cache_PerfControl.EventSelect = 0x90;			\
-	Zen_L3_Cache_PerfControl.UnitMask    = 0x00;			\
-	Zen_L3_Cache_PerfControl.CounterEn   = 1;			\
-	Zen_L3_Cache_PerfControl.SliceMask   = 0x0f;			\
-	Zen_L3_Cache_PerfControl.ThreadMask  = 0xff;			\
+	Zen_L3_Cache_PerfControl.EventSelect =	0x90;			\
+	Zen_L3_Cache_PerfControl.UnitMask =	0x00;			\
+	Zen_L3_Cache_PerfControl.CounterEn =	1;			\
+	Zen_L3_Cache_PerfControl.SliceMask =	0x0f;			\
+	Zen_L3_Cache_PerfControl.ThreadMask =	0xff;			\
 	WRMSR(Zen_L3_Cache_PerfControl, MSR_AMD_F17H_L3_PERF_CTL);	\
     }									\
 })
+
+#define AMD_Zen_PERF_Counters_Set(Core) 				\
+({									\
+	ZEN_PERF_CTL Zen_PerformanceControl = {.value = 0};		\
+									\
+	RDMSR(Zen_PerformanceControl, MSR_AMD_F17H_PERF_CTL);		\
+	Core->SaveArea.Zen_PerformanceControl = Zen_PerformanceControl; \
+	Zen_PerformanceControl.EventSelect00 =	0xc1;			\
+	Zen_PerformanceControl.UnitMask =	0x00;			\
+	Zen_PerformanceControl.OsUserMode =	0x03;			\
+	Zen_PerformanceControl.EdgeDetect =	0;			\
+	Zen_PerformanceControl.APIC_Interrupt = 0;			\
+	Zen_PerformanceControl.CounterEn =	1;			\
+	Zen_PerformanceControl.InvCntMask =	0;			\
+	Zen_PerformanceControl.CntMask =	0x00;			\
+	Zen_PerformanceControl.EventSelect08 =	0x00;			\
+	Zen_PerformanceControl.HostGuestOnly =	0x00;			\
+	WRMSR(Zen_PerformanceControl, MSR_AMD_F17H_PERF_CTL);		\
+})
+
+#define _AMD_Zen_Counters_Set_(Core, PMU)				\
+({									\
+	AMD_Zen_##PMU##_Counters_Set(Core);				\
+})
+#define AMD_Zen_Counters_Set(Core, PMU) 				\
+	_AMD_Zen_Counters_Set_(Core, PMU)
 
 #define Uncore_Counters_Set(PMU)					\
 ({									\
@@ -10855,6 +10881,18 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 			MSR_AMD_F17H_L3_PERF_CTL );			\
 	}								\
 })
+
+#define AMD_Zen_PERF_Counters_Clear(Core) 				\
+({									\
+	WRMSR(Core->SaveArea.Zen_PerformanceControl,MSR_AMD_F17H_PERF_CTL);\
+})
+
+#define _AMD_Zen_Counters_Clear_(Core, PMU)				\
+({									\
+	AMD_Zen_##PMU##_Counters_Clear(Core);				\
+})
+#define AMD_Zen_Counters_Clear(Core, PMU)				\
+	_AMD_Zen_Counters_Clear_(Core, PMU)
 
 #define Uncore_Counters_Clear(PMU)					\
 ({									\
@@ -11266,7 +11304,7 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 			MSR_AMD_F17H_DF_PERF_CTR );			\
 })
 
-#define L3_Counters_AMD_Family_17h(Pkg, T, complex)			\
+#define AMD_Zen_CCX_L3_Counters(Pkg, T, complex)			\
 ({									\
     if (PUBLIC(RO(Proc))->Features.ExtInfo.ECX.PerfLLC == 1)		\
     {									\
@@ -11276,6 +11314,21 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 	Pkg->Counter[T].CTR[complex] &= 0xffffffffffff ;		\
     }									\
 })
+
+#define AMD_Zen_CCX_PERF_Counters(Pkg, T, complex)			\
+({									\
+	RDCOUNTER(	Pkg->Counter[T].CTR[complex],			\
+			MSR_AMD_F17H_PERF_CTR );			\
+									\
+	Pkg->Counter[T].CTR[complex] &= 0xffffffffffff ;		\
+})
+
+#define _AMD_Zen_CCX_Counters_(Pkg, T, complex, PMU)			\
+({									\
+	AMD_Zen_CCX_##PMU##_Counters(Pkg, T, complex);			\
+})
+#define AMD_Zen_CCX_Counters(Pkg, T, complex, PMU)			\
+	_AMD_Zen_CCX_Counters_(Pkg, T, complex, PMU)
 
 #define Pkg_OVH(Pkg, Core)						\
 ({									\
@@ -15365,7 +15418,7 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
     {
 	const unsigned short CCX = Core->T.Cluster.CCX & 0b111;
 
-	L3_Counters_AMD_Family_17h(PUBLIC(RO(Proc)), 1, CCX);
+	AMD_Zen_CCX_Counters(PUBLIC(RO(Proc)), 1, CCX, AMD_ZEN_PMU);
 
 	Delta_L3(PUBLIC(RO(Proc)), CCX);
 
@@ -15556,7 +15609,7 @@ static void Start_AMD_Family_17h(void *arg)
 	if ((Core->T.ThreadID == 0) &&
 !(Core->T.ApicID & PUBLIC(RO(Proc))->Features.leaf80000008.ECX.ApicIdCoreIdSize))
 	{
-		AMD_Zen_L3_Counters_Set(Core);
+		AMD_Zen_Counters_Set(Core, AMD_ZEN_PMU);
 	}
 	SMT_Counters_AMD_Family_17h(Core, 0);
 
@@ -15580,7 +15633,7 @@ static void Start_AMD_Family_17h(void *arg)
     {
 	const unsigned short CCX = Core->T.Cluster.CCX & 0b111;
 
-	L3_Counters_AMD_Family_17h(PUBLIC(RO(Proc)), 0, CCX);
+	AMD_Zen_CCX_Counters(PUBLIC(RO(Proc)), 0, CCX, AMD_ZEN_PMU);
     }
 	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
@@ -15606,7 +15659,7 @@ static void Stop_AMD_Family_17h(void *arg)
 	if ((Core->T.ThreadID == 0) &&
 !(Core->T.ApicID & PUBLIC(RO(Proc))->Features.leaf80000008.ECX.ApicIdCoreIdSize))
 	{
-		AMD_Zen_L3_Counters_Clear(Core);
+		AMD_Zen_Counters_Clear(Core, AMD_ZEN_PMU);
 	}
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {

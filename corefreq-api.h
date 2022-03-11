@@ -384,6 +384,7 @@ typedef struct
 	    };
 	    struct	/* AMD						*/
 	    {
+		ZEN_PERF_CTL		Zen_PerformanceControl;
 		ZEN_L3_PERF_CTL 	Zen_L3_Cache_PerfControl;
 		HWCR			Core_HardwareConfiguration;
 	    };

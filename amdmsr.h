@@ -64,6 +64,8 @@
 	#define MSR_SVM_LOCK_KEY		0xc0010118
 #endif
 
+#define MSR_AMD_F17H_PERF_CTL			0xc0010200
+#define MSR_AMD_F17H_PERF_CTR			0xc0010201
 #define MSR_AMD_F17H_L3_PERF_CTL		0xc0010230
 #define MSR_AMD_F17H_L3_PERF_CTR		0xc0010231
 #define MSR_AMD_F17H_DF_PERF_CTL		0xc0010240
@@ -464,7 +466,7 @@ typedef union
     } Family_15h;
     struct
     {
-	unsigned long long	 /* MSRC001_0064 [P-state [7:0]]	*/
+	unsigned long long	 /* MSR 0xC001_0064 [P-state [7:0]]	*/
 	CpuFid		:  8-0,  /* Core Frequency ID. RW: FFh-10h <Value>*25 */
 	CpuDfsId	: 14-8,  /* Core Divisor ID. RW			*/
 	CpuVid		: 22-14, /* Core Voltage ID. RW			*/
@@ -479,8 +481,31 @@ typedef union
 {
 	unsigned long long value;
     struct
+    {	/* MSR 0xC001020{0,2,4,6,8,a} ; 0xC001000{0,1,2,3}		*/
+	unsigned long long
+	EventSelect00	:  8-0,
+	UnitMask	: 16-8,
+	OsUserMode	: 18-16,
+	EdgeDetect	: 19-18,
+	Reserved1	: 20-19,
+	APIC_Interrupt	: 21-20,
+	Reserved2	: 22-21,
+	CounterEn	: 23-22,
+	InvCntMask	: 24-23,
+	CntMask 	: 32-24,
+	EventSelect08	: 36-32,
+	Reserved3	: 40-36,
+	HostGuestOnly	: 42-40,
+	Reserved4	: 64-42;
+    };
+} ZEN_PERF_CTL;
+
+typedef union
+{
+	unsigned long long value;
+    struct
     {
-	unsigned long long	 /* MSR 0xC001023{0,2,4,6,8,a}		*/
+	unsigned long long	/* MSR 0xC001023{0,2,4,6,8,a}		*/
 	EventSelect	:  8-0,
 	UnitMask	: 16-8,
 	Reserved1	: 22-16,
@@ -497,7 +522,7 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* MSR 0xC001024{0,2,4,6}		*/
+	unsigned long long	/* MSR 0xC001024{0,2,4,6}		*/
 	EventSelect00	:  8-0,
 	UnitMask	: 16-8,
 	Reserved1	: 22-16,
