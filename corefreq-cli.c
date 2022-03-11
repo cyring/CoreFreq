@@ -14649,7 +14649,7 @@ CUINT Layout_Ruler_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	ASCII	*hCState[9] = {
+	const ASCII *Intel_CState[9] = {
 		RSC(LAYOUT_PACKAGE_PC02).CODE(),
 		RSC(LAYOUT_PACKAGE_PC03).CODE(),
 		RSC(LAYOUT_PACKAGE_PC04).CODE(),
@@ -14659,7 +14659,18 @@ CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 		RSC(LAYOUT_PACKAGE_PC09).CODE(),
 		RSC(LAYOUT_PACKAGE_PC10).CODE(),
 		RSC(LAYOUT_PACKAGE_MC06).CODE()
-	};
+	}, *AMD_CState[9] = {
+		RSC(LAYOUT_PACKAGE_CTR0).CODE(),
+		RSC(LAYOUT_PACKAGE_CTR1).CODE(),
+		RSC(LAYOUT_PACKAGE_CTR2).CODE(),
+		RSC(LAYOUT_PACKAGE_CTR3).CODE(),
+		RSC(LAYOUT_PACKAGE_CTR4).CODE(),
+		RSC(LAYOUT_PACKAGE_CTR5).CODE(),
+		RSC(LAYOUT_PACKAGE_CTR6).CODE(),
+		RSC(LAYOUT_PACKAGE_CTR7).CODE(),
+		RSC(LAYOUT_PACKAGE_MC06).CODE()
+	}, **hCState = RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
+		Intel_CState : AMD_CState;
 
 	LayerFillAt(	layer, 0, row, Draw.Size.width,
 			RSC(LAYOUT_RULER_PACKAGE).CODE(),
@@ -14682,10 +14693,17 @@ CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	}
 
 	LayerDeclare(	LAYOUT_PACKAGE_UNCORE, Draw.Size.width,
-			0, (row + 10), hUncore);
+			0, (row + 10), Intel_Uncore);
 
-	LayerCopyAt(	layer, hUncore.origin.col, hUncore.origin.row,
-			hUncore.length, hUncore.attr, hUncore.code);
+	LayerDeclare(	LAYOUT_PACKAGE_FABRIC, Draw.Size.width,
+			0, (row + 10), AMD_Fabric);
+
+	const LAYER_DECL_ST *hUncore = \
+		RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
+			&Intel_Uncore : &AMD_Fabric;
+
+	LayerCopyAt(	layer, hUncore->origin.col, hUncore->origin.row,
+			hUncore->length, hUncore->attr, hUncore->code);
 
 	LayerFillAt(	layer, 0, (row + 11),
 			Draw.Size.width, hLine,
@@ -17084,12 +17102,16 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 			bar0, hBar, bar1, hSpace);
 
 	memcpy(&LayerAt(layer, code, 5, (row + 8)), Buffer, len);
-/* TSC & UNCORE */
+/* TSC */
 	StrLenFormat(len, Buffer, Draw.Area.LoadWidth,
-			"%18llu" "%.*s" "UNCORE:%18llu",
-			PFlop->Delta.PTSC, 7+2+18, hSpace, PFlop->Uncore.FC0);
+			"%18llu", PFlop->Delta.PTSC);
 
 	memcpy(&LayerAt(layer, code, 5, (row + 9)), Buffer, len);
+/* UNCORE */
+	StrLenFormat(len, Buffer, Draw.Area.LoadWidth,
+			"%18llu", PFlop->Uncore.FC0);
+
+	memcpy(&LayerAt(layer, code, 5+18+7+2+18+7, (row + 9)), Buffer, len);
 
 	row += 1 + 10;
 	return row;

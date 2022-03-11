@@ -13,7 +13,7 @@ TASK_ORDER = 5
 MAX_FREQ_HZ ?= 6575000000
 MSR_CORE_PERF_UCC ?= MSR_IA32_APERF
 MSR_CORE_PERF_URC ?= MSR_IA32_MPERF
-AMD_ZEN_PMU ?= L3
+AMD_ZEN_PMC ?= L3
 
 obj-m := corefreqk.o
 ccflags-y :=	-D CORE_COUNT=$(CORE_COUNT) \
@@ -47,7 +47,7 @@ endif
 
 ccflags-y += -D MSR_CORE_PERF_UCC=$(MSR_CORE_PERF_UCC)
 ccflags-y += -D MSR_CORE_PERF_URC=$(MSR_CORE_PERF_URC)
-ccflags-y += -D AMD_ZEN_PMU=$(AMD_ZEN_PMU)
+ccflags-y += -D AMD_ZEN_PMC=$(AMD_ZEN_PMC)
 
 ifneq ($(HWM_CHIPSET),)
 	ccflags-y += -D HWM_CHIPSET=$(HWM_CHIPSET)
@@ -154,7 +154,7 @@ info:
 	$(info OPTIM_LVL [$(OPTIM_LVL)])
 	$(info MSR_CORE_PERF_UCC [$(MSR_CORE_PERF_UCC)])
 	$(info MSR_CORE_PERF_URC [$(MSR_CORE_PERF_URC)])
-	$(info AMD_ZEN_PMU [$(AMD_ZEN_PMU)])
+	$(info AMD_ZEN_PMC [$(AMD_ZEN_PMC)])
 	$(info NO_HEADER [$(NO_HEADER)])
 	$(info NO_FOOTER [$(NO_FOOTER)])
 	$(info NO_UPPER [$(NO_UPPER)])

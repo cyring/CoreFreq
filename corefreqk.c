@@ -10758,7 +10758,7 @@ void Intel_Core_Counters_Set(CORE_RO *Core)
     }
 }
 
-#define AMD_Core_Counters_Set(Core, PMU)				\
+#define AMD_Core_Counters_Set(Core, PMC)				\
 ({									\
     if (PUBLIC(RO(Proc))->Features.PerfMon.EBX.InstrRetired == 0)	\
     {									\
@@ -10766,7 +10766,7 @@ void Intel_Core_Counters_Set(CORE_RO *Core)
 									\
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);				\
 	Core->SaveArea.Core_HardwareConfiguration = HwCfgRegister;	\
-	HwCfgRegister.PMU.IRPerfEn = 1 ;				\
+	HwCfgRegister.PMC.IRPerfEn = 1 ;				\
 	WRMSR(HwCfgRegister, MSR_K7_HWCR);				\
     }									\
 })
@@ -10807,12 +10807,12 @@ void Intel_Core_Counters_Set(CORE_RO *Core)
 	WRMSR(Zen_PerformanceControl, MSR_AMD_F17H_PERF_CTL);		\
 })
 
-#define _AMD_Zen_Counters_Set_(Core, PMU)				\
+#define _AMD_Zen_Counters_Set_(Core, PMC)				\
 ({									\
-	AMD_Zen_##PMU##_Counters_Set(Core);				\
+	AMD_Zen_##PMC##_Counters_Set(Core);				\
 })
-#define AMD_Zen_Counters_Set(Core, PMU) 				\
-	_AMD_Zen_Counters_Set_(Core, PMU)
+#define AMD_Zen_Counters_Set(Core, PMC) 				\
+	_AMD_Zen_Counters_Set_(Core, PMC)
 
 #define Uncore_Counters_Set(PMU)					\
 ({									\
@@ -10887,12 +10887,12 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 	WRMSR(Core->SaveArea.Zen_PerformanceControl,MSR_AMD_F17H_PERF_CTL);\
 })
 
-#define _AMD_Zen_Counters_Clear_(Core, PMU)				\
+#define _AMD_Zen_Counters_Clear_(Core, PMC)				\
 ({									\
-	AMD_Zen_##PMU##_Counters_Clear(Core);				\
+	AMD_Zen_##PMC##_Counters_Clear(Core);				\
 })
-#define AMD_Zen_Counters_Clear(Core, PMU)				\
-	_AMD_Zen_Counters_Clear_(Core, PMU)
+#define AMD_Zen_Counters_Clear(Core, PMC)				\
+	_AMD_Zen_Counters_Clear_(Core, PMC)
 
 #define Uncore_Counters_Clear(PMU)					\
 ({									\
@@ -11323,12 +11323,12 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 	Pkg->Counter[T].CTR[complex] &= 0xffffffffffff ;		\
 })
 
-#define _AMD_Zen_CCX_Counters_(Pkg, T, complex, PMU)			\
+#define _AMD_Zen_CCX_Counters_(Pkg, T, complex, PMC)			\
 ({									\
-	AMD_Zen_CCX_##PMU##_Counters(Pkg, T, complex);			\
+	AMD_Zen_CCX_##PMC##_Counters(Pkg, T, complex);			\
 })
-#define AMD_Zen_CCX_Counters(Pkg, T, complex, PMU)			\
-	_AMD_Zen_CCX_Counters_(Pkg, T, complex, PMU)
+#define AMD_Zen_CCX_Counters(Pkg, T, complex, PMC)			\
+	_AMD_Zen_CCX_Counters_(Pkg, T, complex, PMC)
 
 #define Pkg_OVH(Pkg, Core)						\
 ({									\
@@ -15413,12 +15413,13 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
     }
 
 	/*	Read the Cache L3 performance counter per Complex	*/
-    if ((Core->T.PackageID == 0) &&
-!(Core->T.ApicID & PUBLIC(RO(Proc))->Features.leaf80000008.ECX.ApicIdCoreIdSize))
+    if ((Core->T.PackageID == 0)
+	&& !(Core->T.ApicID
+	    & PUBLIC(RO(Proc))->Features.leaf80000008.ECX.ApicIdCoreIdSize))
     {
 	const unsigned short CCX = Core->T.Cluster.CCX & 0b111;
 
-	AMD_Zen_CCX_Counters(PUBLIC(RO(Proc)), 1, CCX, AMD_ZEN_PMU);
+	AMD_Zen_CCX_Counters(PUBLIC(RO(Proc)), 1, CCX, AMD_ZEN_PMC);
 
 	Delta_L3(PUBLIC(RO(Proc)), CCX);
 
@@ -15606,10 +15607,11 @@ static void Start_AMD_Family_17h(void *arg)
 
 	AMD_Core_Counters_Set(Core, Family_17h);
 
-	if ((Core->T.ThreadID == 0) &&
-!(Core->T.ApicID & PUBLIC(RO(Proc))->Features.leaf80000008.ECX.ApicIdCoreIdSize))
+	if ((Core->T.ThreadID == 0)
+	&& !(Core->T.ApicID
+	    & PUBLIC(RO(Proc))->Features.leaf80000008.ECX.ApicIdCoreIdSize))
 	{
-		AMD_Zen_Counters_Set(Core, AMD_ZEN_PMU);
+		AMD_Zen_Counters_Set(Core, AMD_ZEN_PMC);
 	}
 	SMT_Counters_AMD_Family_17h(Core, 0);
 
@@ -15628,12 +15630,13 @@ static void Start_AMD_Family_17h(void *arg)
 	RDCOUNTER(Core->Counter[0].Power.ACCU,MSR_AMD_PP0_ENERGY_STATUS);
 	Core->Counter[0].Power.ACCU &= 0xffffffff;
     }
-    if ((Core->T.PackageID == 0) &&
-!(Core->T.ApicID & PUBLIC(RO(Proc))->Features.leaf80000008.ECX.ApicIdCoreIdSize))
+    if ((Core->T.PackageID == 0)
+    && !(Core->T.ApicID
+	& PUBLIC(RO(Proc))->Features.leaf80000008.ECX.ApicIdCoreIdSize))
     {
 	const unsigned short CCX = Core->T.Cluster.CCX & 0b111;
 
-	AMD_Zen_CCX_Counters(PUBLIC(RO(Proc)), 0, CCX, AMD_ZEN_PMU);
+	AMD_Zen_CCX_Counters(PUBLIC(RO(Proc)), 0, CCX, AMD_ZEN_PMC);
     }
 	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
@@ -15656,10 +15659,11 @@ static void Stop_AMD_Family_17h(void *arg)
 
 	AMD_Core_Counters_Clear(Core);
 
-	if ((Core->T.ThreadID == 0) &&
-!(Core->T.ApicID & PUBLIC(RO(Proc))->Features.leaf80000008.ECX.ApicIdCoreIdSize))
+	if ((Core->T.ThreadID == 0)
+	&& !(Core->T.ApicID
+	    & PUBLIC(RO(Proc))->Features.leaf80000008.ECX.ApicIdCoreIdSize))
 	{
-		AMD_Zen_Counters_Clear(Core, AMD_ZEN_PMU);
+		AMD_Zen_Counters_Clear(Core, AMD_ZEN_PMC);
 	}
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
