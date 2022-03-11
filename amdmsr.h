@@ -517,6 +517,50 @@ typedef union
     };
 } ZEN_L3_PERF_CTL;
 
+#define SMU_AMD_UMC_PERF_CTL_CLK(_umc)	(0x00050d00 + (_umc << 20))
+
+typedef union
+{
+	unsigned int value;
+    struct
+    {	/*	SMU addresses = 0x{0,1,2,3,4,5,6,7}50d00		*/
+	unsigned int
+	GlblResetMsk	:  6-0, /* Six Counters can be reset by GlblReset */
+	Reserved1	: 24-6,
+	GlblReset	: 25-24,/* Reset Ctr not masked within GlblResetMsk */
+	GlblMonEn	: 26-25,/* Global counter enable		*/
+	Reserved2	: 31-26,
+	CtrClkEn	: 32-31;
+    };
+} ZEN_UMC_PERF_CTL_CLK;
+
+#define SMU_AMD_ZEN_UMC_PERF_CTL(_umc, _cha)				\
+	(0x00050d04 + (_umc << 20) + (_cha << 2))
+
+typedef union
+{
+	unsigned int value;
+    struct
+    {	/*	SMU addresses = 0x{0,1,2,3,4,5,6,7}50d{04,08,0c,10}	*/
+	unsigned int
+	EventSelect	:  8-0,
+	RdWrMask	: 10-8, /* Masking: 0=None; 1=Writes; 2=Reads; 3=Rsvd */
+	PriorityMask	: 14-10,/* Masking: 0=Low; 1=Medium; 2=High; 3=Urgent */
+	ReqSizeMask	: 16-14,/* Transactions: 0=None; 1=32B; 2=64B; 3=Rsvd */
+	ChipSelMask	: 20-16,/* Chip Select: 0=CS0; 1=CS1; 2=CS2; 3=CS3 */
+	ChipIDSel	: 24-20,/* Only events from 0=C0; 1=C1; 2=C2; 3=Enable*/
+	VCSel		: 29-24,/* Only events from 0=VC0; 1=VC1; 2=VC2; 3=VC3*/
+	Reserved	: 31-29,
+	CounterEn	: 32-31;
+    };
+} ZEN_UMC_PERF_CTL;
+
+#define SMU_AMD_ZEN_UMC_PERF_CLK_LOW(_cha)				\
+	(0x00050d20 + (_cha << 20))
+
+#define SMU_AMD_ZEN_UMC_PERF_CLK_HIGH(_cha)				\
+	(0x00050d24 + (_cha << 20))
+
 typedef union
 {
 	unsigned long long value;
