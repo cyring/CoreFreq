@@ -377,7 +377,8 @@ typedef struct
 					PC09,
 					PC10;
 		    };
-		    unsigned long long	CTR[MC_MAX_CTRL*MC_MAX_CHA*MC_MAX_DIMM];
+			unsigned long long
+			CTR[MC_VECTOR_TO_SCALAR(MC_MAX_CTRL, MC_MAX_CHA)];
 		  };
 		unsigned long long	MC6,
 					ACCU[PWR_DOMAIN(SIZE)];

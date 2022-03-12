@@ -1422,6 +1422,21 @@ typedef struct	/* BSP CPUID features.					*/
 #define MC_MAX_CHA	8
 #define MC_MAX_DIMM	4
 
+#define MC_3D_VECTOR_TO_SCALAR(_mc, _cha, _slot)			\
+	((_mc * MC_MAX_CTRL) + (_cha * MC_MAX_CHA) + _slot)
+
+#define MC_2D_VECTOR_TO_SCALAR(_mc, _cha)				\
+	((_mc * MC_MAX_CTRL) + _cha)
+
+#define MC_VECTOR_DISPATCH(_1, _2, _3, MC_VECTOR_CURSOR, ...)		\
+	MC_VECTOR_CURSOR
+
+#define MC_VECTOR_TO_SCALAR( ... )					\
+	MC_VECTOR_DISPATCH(__VA_ARGS__, MC_3D_VECTOR_TO_SCALAR, /*3*/	\
+					MC_2D_VECTOR_TO_SCALAR, /*2*/	\
+					NULL)			/*1*/	\
+							( __VA_ARGS__ )
+
 #define MC_MHZ		0b00
 #define MC_MTS		0b01
 #define MC_MBS		0b10

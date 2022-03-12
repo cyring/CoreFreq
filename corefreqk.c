@@ -11403,7 +11403,7 @@ static void AMD_Zen_PMC_PERF_Counters(CORE_RO *Core, unsigned int T)
     for (slot=0;slot < PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount;slot++)\
     {									\
 	ZEN_UMC_PERF_CTL Zen_UMC_PerfControl = {			\
-		.value = 0, .EventSelect = 0x13 + cha, .CounterEn = 1	\
+		.value = 0, .EventSelect = 0x13 + slot, .CounterEn = 1	\
 	};								\
 									\
 	Core_AMD_SMN_Write(	Zen_UMC_PerfControl,			\
@@ -11475,7 +11475,7 @@ static void Pkg_AMD_Zen_PMC_UMC_Counters(PROC_RO *Pkg,
 	unsigned short cha;
     for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
     {
-	const unsigned short idx = (mc * MC_MAX_CTRL) + cha;
+	const unsigned short idx = MC_VECTOR_TO_SCALAR(mc, cha);
 
 	union {
 			unsigned long long	ctr48;
