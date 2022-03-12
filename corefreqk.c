@@ -11393,20 +11393,28 @@ static void AMD_Zen_PMC_PERF_Counters(CORE_RO *Core, unsigned int T)
 		.value=0, .GlblReset=1, .GlblMonEn=1, .CtrClkEn=1	\
 	};								\
 									\
+	unsigned short mc;						\
+  for (mc = 0; mc < PUBLIC(RO(Proc))->Uncore.CtrlCount; mc++)		\
+  {									\
 	unsigned short cha;						\
-    for(cha=0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)\
+   for (cha=0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount;cha++)\
+   {									\
+	unsigned int slot;						\
+    for (slot=0;slot < PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount;slot++)\
     {									\
 	ZEN_UMC_PERF_CTL Zen_UMC_PerfControl = {			\
 		.value = 0, .EventSelect = 0x13 + cha, .CounterEn = 1	\
 	};								\
 									\
 	Core_AMD_SMN_Write(	Zen_UMC_PerfControl,			\
-				SMU_AMD_ZEN_UMC_PERF_CTL(0, cha),	\
+				SMU_AMD_ZEN_UMC_PERF_CTL(cha, slot),	\
 				PRIVATE(OF(Zen)).Device.DF );		\
     }									\
 	Core_AMD_SMN_Write(	Zen_UMC_PerfCtlClk,			\
-				SMU_AMD_UMC_PERF_CTL_CLK(0),		\
+				SMU_AMD_UMC_PERF_CTL_CLK(cha),		\
 				PRIVATE(OF(Zen)).Device.DF );		\
+   }									\
+  }									\
 })
 
 #define _Pkg_AMD_Zen_PMC_Set_(Core, _PMC_)				\
@@ -11424,18 +11432,26 @@ static void AMD_Zen_PMC_PERF_Counters(CORE_RO *Core, unsigned int T)
 ({									\
 	ZEN_UMC_PERF_CTL_CLK Zen_UMC_PerfCtlClk = { .value = 0 };	\
 									\
+	unsigned short mc;						\
+  for (mc = 0; mc < PUBLIC(RO(Proc))->Uncore.CtrlCount; mc++)		\
+  {									\
 	unsigned short cha;						\
-    for(cha=0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)\
+   for (cha=0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount;cha++)\
+   {									\
+	unsigned int slot;						\
+    for (slot=0;slot < PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount;slot++)\
     {									\
 	ZEN_UMC_PERF_CTL Zen_UMC_PerfControl = { .value = 0 };		\
 									\
 	Core_AMD_SMN_Write(	Zen_UMC_PerfControl,			\
-				SMU_AMD_ZEN_UMC_PERF_CTL(0, cha),	\
+				SMU_AMD_ZEN_UMC_PERF_CTL(cha, slot),	\
 				PRIVATE(OF(Zen)).Device.DF );		\
     }									\
 	Core_AMD_SMN_Write(	Zen_UMC_PerfCtlClk,			\
-				SMU_AMD_UMC_PERF_CTL_CLK(0),		\
+				SMU_AMD_UMC_PERF_CTL_CLK(cha),		\
 				PRIVATE(OF(Zen)).Device.DF );		\
+   }									\
+  }									\
 })
 
 #define _Pkg_AMD_Zen_PMC_Clear_(Core, _PMC_)				\
@@ -11453,9 +11469,14 @@ static void Pkg_AMD_Zen_PMC_UMC_Counters(PROC_RO *Pkg,
 					CORE_RO *Core,
 					unsigned int T)
 {
+	unsigned short mc;
+  for (mc = 0; mc < PUBLIC(RO(Proc))->Uncore.CtrlCount; mc++)
+  {
 	unsigned short cha;
-    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
     {
+	const unsigned short idx = (mc * MC_MAX_CTRL) + cha;
+
 	union {
 			unsigned long long	ctr48;
 		struct {
@@ -11467,7 +11488,7 @@ static void Pkg_AMD_Zen_PMC_UMC_Counters(PROC_RO *Pkg,
 			} high16;
 		};
 	} data;
-
+	/*				Count				*/
 	Core_AMD_SMN_Read(data.low32,	SMU_AMD_ZEN_UMC_PERF_CLK_LOW(cha),
 					PRIVATE(OF(Zen)).Device.DF);
 
@@ -11475,14 +11496,15 @@ static void Pkg_AMD_Zen_PMC_UMC_Counters(PROC_RO *Pkg,
 					PRIVATE(OF(Zen)).Device.DF);
 	data.high16.value &= 0xffff;
 
-	PUBLIC(RO(Proc))->Counter[T].CTR[cha] = data.ctr48;
-
-	PUBLIC(RO(Proc))->Delta.CTR[cha]= PUBLIC(RO(Proc))->Counter[1].CTR[cha]
-					- PUBLIC(RO(Proc))->Counter[0].CTR[cha];
-
-	PUBLIC(RO(Proc))->Counter[0].CTR[cha] = \
-					PUBLIC(RO(Proc))->Counter[1].CTR[cha];
+	PUBLIC(RO(Proc))->Counter[T].CTR[idx] = data.ctr48;
+	/*				Delta				*/
+	PUBLIC(RO(Proc))->Delta.CTR[idx]= PUBLIC(RO(Proc))->Counter[1].CTR[idx]
+					- PUBLIC(RO(Proc))->Counter[0].CTR[idx];
+	/*				Save				*/
+	PUBLIC(RO(Proc))->Counter[0].CTR[idx] = \
+					PUBLIC(RO(Proc))->Counter[1].CTR[idx];
     }
+  }
 }
 
 #define _Pkg_AMD_Zen_PMC_Counters_(Pkg, Core , T, _PMC_)		\
