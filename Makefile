@@ -120,6 +120,7 @@ corefreq-cli.o: corefreq-cli.c
 corefreq-cli-rsc.o: corefreq-cli-rsc.c
 	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-cli-rsc.c \
 	  $(DEFINITIONS) $(LAYOUT) \
+	  -D AMD_ZEN_PMC=$(AMD_ZEN_PMC) \
 	  -o corefreq-cli-rsc.o
 
 corefreq-cli-json.o: corefreq-cli-json.c
@@ -138,6 +139,7 @@ corefreq-cli: corefreq-cli.o corefreq-ui.o corefreq-cli-rsc.o \
 	  corefreq-cli.c corefreq-ui.c corefreq-cli-rsc.c \
 	  corefreq-cli-json.c corefreq-cli-extra.c \
 	  $(DEFINITIONS) $(LAYOUT) \
+	  -D AMD_ZEN_PMC=$(AMD_ZEN_PMC) \
 	  -o corefreq-cli -lm -lrt
 
 .PHONY: info
