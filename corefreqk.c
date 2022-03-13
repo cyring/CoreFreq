@@ -11756,7 +11756,7 @@ static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T)
 
 #define Pkg_AMD_Zen_PMC_L3_Counters(Pkg, Core, T)			\
 ({									\
-	Pkg->Counter[T].PTSC = Core->Counter[T].TSC;			\
+	Pkg->Counter[T].PCLK = Core->Counter[T].TSC;			\
 									\
 	RDCOUNTER(Pkg->Counter[T].Uncore.FC0, MSR_AMD_F17H_DF_PERF_CTR);\
 									\
@@ -11766,7 +11766,7 @@ static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T)
 
 #define Pkg_AMD_Zen_PMC_PERF_Counters(Pkg, Core, T)			\
 ({									\
-	Pkg->Counter[T].PTSC = Core->Counter[T].TSC;			\
+	Pkg->Counter[T].PCLK = Core->Counter[T].TSC;			\
 									\
 	RDCOUNTER(Pkg->Counter[T].Uncore.FC0, MSR_AMD_F17H_DF_PERF_CTR);\
 									\
