@@ -391,6 +391,7 @@
 #define RSC_LAYOUT_PACKAGE_CTR5_CODE_EN {'C', 'T', 'R', '5'}
 #define RSC_LAYOUT_PACKAGE_CTR6_CODE_EN {'C', 'T', 'R', '6'}
 #define RSC_LAYOUT_PACKAGE_CTR7_CODE_EN {'C', 'T', 'R', '7'}
+#define RSC_LAYOUT_PACKAGE_FCLK_CODE_EN {'F', 'C', 'L', 'K'}
 
 #define RSC_LAYOUT_PACKAGE_UNCORE_CODE_EN				\
 {									\

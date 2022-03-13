@@ -365,7 +365,7 @@ typedef struct
 
 	struct PKG_FLIP_FLOP {
 		struct {
-		unsigned long long	PTSC;
+		unsigned long long	PCLK;
 		  union {
 		    struct {
 		    unsigned long long	PC02,

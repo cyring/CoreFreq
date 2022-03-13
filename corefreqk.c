@@ -6618,6 +6618,21 @@ void Query_AMD_Family_17h(unsigned int cpu)
 		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
 	    }
 	}
+	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
+	{
+		RESET_ARRAY(arg, 8, 0, .value);
+		rx = AMD_HSMP_Exec(HSMP_RD_DF_MCLK, arg);
+	    if (rx == HSMP_RESULT_OK)
+	    {
+		PUBLIC(RO(Proc))->Counter[0].FCLK = \
+		PUBLIC(RO(Proc))->Counter[1].FCLK = \
+		PUBLIC(RO(Proc))->Delta.FCLK = UNIT_MHz(arg[0].value);
+	    }
+	    else if (IS_HSMP_OOO(rx))
+	    {
+		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
+	    }
+	}
 }
 
 static void Query_AMD_F17h_PerSocket(unsigned int cpu)
@@ -11171,17 +11186,17 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 
 #define PKG_Counters_VirtualMachine(Core, T)				\
 ({									\
-	PUBLIC(RO(Proc))->Counter[T].PTSC = Core->Counter[T].TSC;	\
+	PUBLIC(RO(Proc))->Counter[T].PCLK = Core->Counter[T].TSC;	\
 })
 
 #define PKG_Counters_Generic(Core, T)					\
 ({									\
-	PUBLIC(RO(Proc))->Counter[T].PTSC = Core->Counter[T].TSC;	\
+	PUBLIC(RO(Proc))->Counter[T].PCLK = Core->Counter[T].TSC;	\
 })
 
 #define PKG_Counters_SLM(Core, T)					\
 ({									\
-    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
+    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PCLK ,		\
 	MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,	\
 	MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,	\
 	MSR_ATOM_PKG_C4_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC04,	\
@@ -11191,7 +11206,7 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 
 #define PKG_Counters_Nehalem(Core, T)					\
 ({									\
-    RDTSCP_COUNTERx4(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
+    RDTSCP_COUNTERx4(PUBLIC(RO(Proc))->Counter[T].PCLK ,		\
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
 		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
@@ -11201,7 +11216,7 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 
 #define PKG_Counters_SandyBridge(Core, T)				\
 ({									\
-    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
+    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PCLK ,		\
 		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
@@ -11212,7 +11227,7 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 
 #define PKG_COUNTERS_SANDYBRIDGE_EP(Core, T)				\
 ({									\
-    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
+    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PCLK ,		\
 		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
@@ -11230,7 +11245,7 @@ static void PKG_Counters_SandyBridge_EP(CORE_RO *Core, unsigned int T)
 
 #define PKG_COUNTERS_IVYBRIDGE_EP(Core, T)				\
 ({									\
-    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
+    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PCLK ,		\
 		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
@@ -11248,7 +11263,7 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 
 #define PKG_Counters_Haswell_EP(Core, T)				\
 ({									\
-    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
+    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PCLK ,		\
 		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
@@ -11259,7 +11274,7 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 
 #define PKG_Counters_Haswell_ULT(Core, T)				\
 ({									\
-    RDTSCP_COUNTERx7(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
+    RDTSCP_COUNTERx7(PUBLIC(RO(Proc))->Counter[T].PCLK ,		\
 		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
@@ -11274,7 +11289,7 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 
 #define PKG_Counters_Goldmont(Core, T)					\
 ({									\
-    RDTSCP_COUNTERx4(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
+    RDTSCP_COUNTERx4(PUBLIC(RO(Proc))->Counter[T].PCLK ,		\
 		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
@@ -11283,7 +11298,7 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 
 #define PKG_Counters_Skylake(Core, T)					\
 ({									\
-    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
+    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PCLK ,		\
 		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
@@ -11294,7 +11309,7 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 
 #define PKG_Counters_Skylake_X(Core, T) 				\
 ({									\
-    RDTSCP_COUNTERx4(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
+    RDTSCP_COUNTERx4(PUBLIC(RO(Proc))->Counter[T].PCLK ,		\
 		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
@@ -11310,7 +11325,7 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 
 #define PKG_Counters_Alderlake_Pcore(Core, T)				\
 ({									\
-    RDTSCP_COUNTERx7(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
+    RDTSCP_COUNTERx7(PUBLIC(RO(Proc))->Counter[T].PCLK ,		\
 	MSR_PKG_C2_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC02,	\
 	MSR_PKG_C3_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC03,	\
 	MSR_PKG_C6_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC06,	\
@@ -11455,13 +11470,13 @@ static void AMD_Zen_PMC_PERF_Counters(CORE_RO *Core, unsigned int T)
 
 #define Pkg_OVH(Pkg, Core)						\
 ({									\
-	Pkg->Delta.PTSC -= (Pkg->Counter[1].PTSC - Core->Overhead.TSC); \
+	Pkg->Delta.PCLK -= (Pkg->Counter[1].PCLK - Core->Overhead.TSC); \
 })
 
 #define Delta_PTSC(Pkg) 						\
 ({									\
-	Pkg->Delta.PTSC = Pkg->Counter[1].PTSC				\
-			- Pkg->Counter[0].PTSC; 			\
+	Pkg->Delta.PCLK = Pkg->Counter[1].PCLK				\
+			- Pkg->Counter[0].PCLK; 			\
 })
 
 #define Delta_PTSC_OVH(Pkg, Core)					\
@@ -11575,7 +11590,7 @@ static void AMD_Zen_PMC_PERF_Counters(CORE_RO *Core, unsigned int T)
 
 #define Save_PTSC(Pkg)							\
 ({									\
-	Pkg->Counter[0].PTSC = Pkg->Counter[1].PTSC;			\
+	Pkg->Counter[0].PCLK = Pkg->Counter[1].PCLK;			\
 })
 
 #define Save_PC02(Pkg)							\
@@ -11763,15 +11778,15 @@ static void Pkg_AMD_Zen_PMC_UMC_Counters(PROC_RO *Pkg,
 					CORE_RO *Core,
 					unsigned int T)
 {
-	AMD_17_UMC_DEBUG_MISC DbgMisc;
+	unsigned short umc;
+	bool Got_Mem_Clock = false;
 
-	unsigned short mc;
-  for (mc = 0; mc < Pkg->Uncore.CtrlCount; mc++)
+  for (umc = 0; umc < Pkg->Uncore.CtrlCount; umc++)
   {
 	unsigned short cha;
-    for (cha = 0; cha < Pkg->Uncore.MC[mc].ChannelCount; cha++)
+    for (cha = 0; cha < Pkg->Uncore.MC[umc].ChannelCount; cha++)
     {
-	const unsigned short idx = MC_VECTOR_TO_SCALAR(mc, cha);
+	const unsigned short idx = MC_VECTOR_TO_SCALAR(umc, cha);
 
 	union {
 			unsigned long long	ctr48;
@@ -11785,7 +11800,7 @@ static void Pkg_AMD_Zen_PMC_UMC_Counters(PROC_RO *Pkg,
 		};
 	} data;
 
-	/*				Count				*/
+	/*			48-bits UMC counter			*/
 	Core_AMD_SMN_Read(data.low32,	SMU_AMD_ZEN_UMC_PERF_CLK_LOW(cha),
 					PRIVATE(OF(Zen)).Device.DF);
 
@@ -11794,33 +11809,31 @@ static void Pkg_AMD_Zen_PMC_UMC_Counters(PROC_RO *Pkg,
 	data.high16.value &= 0xffff;
 
 	Pkg->Counter[T].CTR[idx] = data.ctr48;
-
-	/*				Delta				*/
+	/*			Delta with previous counter		*/
 	Pkg->Delta.CTR[idx]=Pkg->Counter[1].CTR[idx] - Pkg->Counter[0].CTR[idx];
-	/*				Save				*/
+	/*			Save current counter			*/
 	Pkg->Counter[0].CTR[idx] = Pkg->Counter[1].CTR[idx];
 
-	/*				Data Fabric			*/
-	RDCOUNTER(Pkg->Counter[T].Uncore.FC0, MSR_AMD_F17H_DF_PERF_CTR);
-
-	/*			Dynamic memory clock			*/
-	Core_AMD_SMN_Read(	Pkg->Uncore.MC[mc].Channel[cha].AMD17h.MISC,
+	/*		Update memory clock frequency (Hz)		*/
+      if (Got_Mem_Clock == false)
+      {
+	Core_AMD_SMN_Read(	Pkg->Uncore.MC[umc].Channel[cha].AMD17h.MISC,
 				SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x200,
 				PRIVATE(OF(Zen)).Device.DF );
 
-	Pkg->Counter[T].PTSC = Core->Clock.Hz
-			* Pkg->Uncore.MC[mc].Channel[cha].AMD17h.MISC.MEMCLK;
+	Pkg->Counter[T].PCLK = Core->Clock.Hz
+			* Pkg->Uncore.MC[umc].Channel[cha].AMD17h.MISC.MEMCLK;
 
-	/*			Msemory clock divisor			*/
-	Core_AMD_SMN_Read(	DbgMisc, SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xd6c,
-				PRIVATE(OF(Zen)).Device.DF );
+	Pkg->Counter[T].PCLK = DIV_ROUND_CLOSEST(Pkg->Counter[T].PCLK, 3);
 
-	Pkg->Counter[T].PTSC = Pkg->Counter[T].PTSC >> !DbgMisc.UCLK_Divisor;
-	Pkg->Counter[T].PTSC = Pkg->Counter[T].PTSC / 3;
+	Pkg->Delta.PCLK = Pkg->Counter[T].PCLK;
 
-	Pkg->Delta.PTSC = Pkg->Counter[T].PTSC;
+	Got_Mem_Clock = true;
+      }
     }
   }
+	/*			Data Fabric Counter			*/
+	RDCOUNTER(Pkg->Counter[T].Uncore.FC0, MSR_AMD_F17H_DF_PERF_CTR);
 }
 
 #define _Pkg_AMD_Zen_PMC_Counters_(Pkg, Core , T, _PMC_)		\

@@ -789,7 +789,7 @@ typedef struct
 {
 	struct
 	{
-	    unsigned long long	PTSC; /* Package Time Stamp Counter	*/
+	    unsigned long long	PCLK; /* Contextual Clock [TSC|UCLK|MCLK] */
 	  union {
 	    struct {
 	    unsigned long long	PC02, /* Goldmont, Sandy-Bridge, Phi	*/
@@ -803,7 +803,10 @@ typedef struct
 	    };
 	    unsigned long long	CTR[8]; /*	Up to eight CCDs	*/
 	  };
+	  union {
 	    unsigned long long	MC6;  /* Atom, Silervmont: per Module	*/
+	    unsigned long long	FCLK; /* AMD Family 17h, 18h, 19h	*/
+	  };
 	  struct {
 	    unsigned long long	FC0; /* Uncore fixed counter #0 	*/
 	  } Uncore;
@@ -815,7 +818,7 @@ typedef struct
 
 	struct
 	{
-	    unsigned long long	PTSC;
+	    unsigned long long	PCLK;
 	  union {
 	    struct {
 	    unsigned long long	PC02,
@@ -830,7 +833,10 @@ typedef struct
 		unsigned long long
 			CTR[MC_VECTOR_TO_SCALAR(MC_MAX_CTRL, MC_MAX_CHA)];
 	  };
+	  union {
 	    unsigned long long	MC6;
+	    unsigned long long	FCLK;
+	  };
 	  struct {
 	    unsigned long long	FC0;
 	  } Uncore;

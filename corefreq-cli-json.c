@@ -1487,7 +1487,7 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 				json_start_object(&s);
 
 				json_key(&s, "PTSC");
-				json_literal(&s, "%llu", RO(Shm)->Proc.FlipFlop[i].Delta.PTSC);
+				json_literal(&s, "%llu", RO(Shm)->Proc.FlipFlop[i].Delta.PCLK);
 				json_key(&s, "PC02");
 				json_literal(&s, "%llu", RO(Shm)->Proc.FlipFlop[i].Delta.PC02);
 				json_key(&s, "PC03");

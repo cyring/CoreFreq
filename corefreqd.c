@@ -7318,7 +7318,7 @@ REASON_CODE Core_Manager(REF *Ref)
 	RO(Shm)->Proc.Avg.C7    /= RO(Shm)->Proc.CPU.OnLine;
 	RO(Shm)->Proc.Avg.C1    /= RO(Shm)->Proc.CPU.OnLine;
 	/*	Package scope counters					*/
-	PFlip->Delta.PTSC = RO(Proc)->Delta.PTSC;
+	PFlip->Delta.PCLK = RO(Proc)->Delta.PCLK;
 	PFlip->Delta.PC02 = RO(Proc)->Delta.PC02;
 	PFlip->Delta.PC03 = RO(Proc)->Delta.PC03;
 	PFlip->Delta.PC04 = RO(Proc)->Delta.PC04;
@@ -7330,31 +7330,31 @@ REASON_CODE Core_Manager(REF *Ref)
 	PFlip->Delta.MC6  = RO(Proc)->Delta.MC6;
 	/*	Package C-state Residency counters			*/
 	RO(Shm)->Proc.State.PC02= (double)PFlip->Delta.PC02
-				/ (double)PFlip->Delta.PTSC;
+				/ (double)PFlip->Delta.PCLK;
 
 	RO(Shm)->Proc.State.PC03= (double)PFlip->Delta.PC03
-				/ (double)PFlip->Delta.PTSC;
+				/ (double)PFlip->Delta.PCLK;
 
 	RO(Shm)->Proc.State.PC04= (double)PFlip->Delta.PC04
-				/ (double)PFlip->Delta.PTSC;
+				/ (double)PFlip->Delta.PCLK;
 
 	RO(Shm)->Proc.State.PC06= (double)PFlip->Delta.PC06
-				/ (double)PFlip->Delta.PTSC;
+				/ (double)PFlip->Delta.PCLK;
 
 	RO(Shm)->Proc.State.PC07= (double)PFlip->Delta.PC07
-				/ (double)PFlip->Delta.PTSC;
+				/ (double)PFlip->Delta.PCLK;
 
 	RO(Shm)->Proc.State.PC08= (double)PFlip->Delta.PC08
-				/ (double)PFlip->Delta.PTSC;
+				/ (double)PFlip->Delta.PCLK;
 
 	RO(Shm)->Proc.State.PC09= (double)PFlip->Delta.PC09
-				/ (double)PFlip->Delta.PTSC;
+				/ (double)PFlip->Delta.PCLK;
 
 	RO(Shm)->Proc.State.PC10= (double)PFlip->Delta.PC10
-				/ (double)PFlip->Delta.PTSC;
+				/ (double)PFlip->Delta.PCLK;
 
 	RO(Shm)->Proc.State.MC6 = (double)PFlip->Delta.MC6
-				/ (double)PFlip->Delta.PTSC;
+				/ (double)PFlip->Delta.PCLK;
 	/*	Uncore scope counters				*/
 	PFlip->Uncore.FC0 = RO(Proc)->Delta.Uncore.FC0;
 	/*	Power & Energy counters 				*/

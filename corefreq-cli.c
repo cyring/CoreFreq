@@ -5002,7 +5002,7 @@ void Package(unsigned int iter)
 		PFlop->Delta.PC09, 100.f * RO(Shm)->Proc.State.PC09,
 		PFlop->Delta.PC10, 100.f * RO(Shm)->Proc.State.PC10,
 		PFlop->Delta.MC6,  100.f * RO(Shm)->Proc.State.MC6,
-		PFlop->Delta.PTSC,
+		PFlop->Delta.PCLK,
 		PFlop->Uncore.FC0)) > 0)
 	{
 		idx += rdx;
@@ -14668,7 +14668,7 @@ CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 		RSC(LAYOUT_PACKAGE_CTR5).CODE(),
 		RSC(LAYOUT_PACKAGE_CTR6).CODE(),
 		RSC(LAYOUT_PACKAGE_CTR7).CODE(),
-		RSC(LAYOUT_PACKAGE_MC06).CODE()
+		RSC(LAYOUT_PACKAGE_FCLK).CODE()
 	}, **hCState = RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
 		Intel_CState : AMD_CState;
 
@@ -17104,7 +17104,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	memcpy(&LayerAt(layer, code, 5, (row + 8)), Buffer, len);
 /* TSC */
 	StrLenFormat(len, Buffer, Draw.Area.LoadWidth,
-			"%18llu", PFlop->Delta.PTSC);
+			"%18llu", PFlop->Delta.PCLK);
 
 	memcpy(&LayerAt(layer, code, 5, (row + 9)), Buffer, len);
 /* UNCORE */
@@ -18184,7 +18184,7 @@ void Draw_Card_CLK(Layer *layer, Card *card)
 	struct PKG_FLIP_FLOP *PFlop = \
 		&RO(Shm)->Proc.FlipFlop[!RO(Shm)->Proc.Toggle];
 
-	double bclk = (double)(PFlop->Delta.PTSC / RO(Shm)->Sleep.Interval);
+	double bclk = (double)(PFlop->Delta.PCLK / RO(Shm)->Sleep.Interval);
 
 	Counter2LCD(layer, card->origin.col, card->origin.row, bclk);
 
