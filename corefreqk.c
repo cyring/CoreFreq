@@ -11367,59 +11367,86 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 				PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
 })
 
-static void AMD_Zen_PMC_L3_Counters(CORE_RO *Core, unsigned int T)
-{	/* Read the Cache L3 performance counter per Complex	*/
-	const unsigned int bitwiseID = Core->T.ApicID
-	& PUBLIC(RO(Proc))->Features.leaf80000008.ECX.ApicIdCoreIdSize;
-
-    if ((PUBLIC(RO(Proc))->Features.ExtInfo.ECX.PerfLLC == 1)
-     && (Core->T.PackageID == 0) && (bitwiseID == 0))
-    {
-	const unsigned short CCX = Core->T.Cluster.CCX & 0b111;
-
-	RDCOUNTER(	PUBLIC(RO(Proc))->Counter[T].CTR[CCX],
-			MSR_AMD_F17H_L3_PERF_CTR );
-
-	PUBLIC(RO(Proc))->Counter[T].CTR[CCX] &= 0xffffffffffff;
-
-	PUBLIC(RO(Proc))->Delta.CTR[CCX]= PUBLIC(RO(Proc))->Counter[1].CTR[CCX]
-					- PUBLIC(RO(Proc))->Counter[0].CTR[CCX];
-
-	PUBLIC(RO(Proc))->Counter[0].CTR[CCX] = \
-					PUBLIC(RO(Proc))->Counter[1].CTR[CCX];
-    }
-}
-
-static void AMD_Zen_PMC_PERF_Counters(CORE_RO *Core, unsigned int T)
-{
-	const unsigned int bitwiseID = Core->T.ApicID
-	& PUBLIC(RO(Proc))->Features.leaf80000008.ECX.ApicIdCoreIdSize;
-
-    if ((Core->T.PackageID == 0) && (bitwiseID == 0))
-    {
-	const unsigned short CCX = Core->T.Cluster.CCX & 0b111;
-
-	RDCOUNTER(	PUBLIC(RO(Proc))->Counter[T].CTR[CCX],
-			MSR_AMD_F17H_PERF_CTR );
-
-	PUBLIC(RO(Proc))->Counter[T].CTR[CCX] &= 0xffffffffffff;
-
-	PUBLIC(RO(Proc))->Delta.CTR[CCX]= PUBLIC(RO(Proc))->Counter[1].CTR[CCX]
-					- PUBLIC(RO(Proc))->Counter[0].CTR[CCX];
-
-	PUBLIC(RO(Proc))->Counter[0].CTR[CCX] = \
-					PUBLIC(RO(Proc))->Counter[1].CTR[CCX];
-    }
-}
-
-#define AMD_Zen_PMC_UMC_Counters(Core, T)	({})
-
-#define _AMD_Zen_PMC_Counters_(Core, T, _PMC_)				\
+#define AMD_Zen_PMC_L3_Closure(Core, _T)				\
 ({									\
-	AMD_Zen_PMC_##_PMC_##_Counters(Core, T);			\
+	PUBLIC(RO(Proc))->Delta.CTR[CCX] =				\
+				PUBLIC(RO(Proc))->Counter[1].CTR[CCX]	\
+				- PUBLIC(RO(Proc))->Counter[0].CTR[CCX];\
+									\
+	PUBLIC(RO(Proc))->Counter[0].CTR[CCX] = 			\
+				PUBLIC(RO(Proc))->Counter[1].CTR[CCX];	\
 })
-#define AMD_Zen_PMC_Counters(Core, T, _PMC_)				\
-	_AMD_Zen_PMC_Counters_(Core, T, _PMC_)
+
+#define AMD_Zen_PMC_L3_Counters(Core, _T, ...)				\
+({	/* Read the Cache L3 performance counter per Complex	*/	\
+	const unsigned int bitwiseID = Core->T.ApicID			\
+	& PUBLIC(RO(Proc))->Features.leaf80000008.ECX.ApicIdCoreIdSize; \
+									\
+    if ((PUBLIC(RO(Proc))->Features.ExtInfo.ECX.PerfLLC == 1)		\
+     && (Core->T.PackageID == 0) && (bitwiseID == 0))			\
+    {									\
+	const unsigned short CCX = Core->T.Cluster.CCX & 0b111; 	\
+									\
+	RDCOUNTER(	PUBLIC(RO(Proc))->Counter[_T].CTR[CCX], 	\
+			MSR_AMD_F17H_L3_PERF_CTR );			\
+									\
+	PUBLIC(RO(Proc))->Counter[_T].CTR[CCX] &= 0xffffffffffff;	\
+	/*			Closure statement		*/	\
+	__VA_ARGS__;							\
+    }									\
+})
+
+#define AMD_Zen_PMC_PERF_Closure(Core, _T)				\
+({									\
+	PUBLIC(RO(Proc))->Delta.CTR[CCX] =				\
+				PUBLIC(RO(Proc))->Counter[1].CTR[CCX]	\
+				- PUBLIC(RO(Proc))->Counter[0].CTR[CCX];\
+									\
+	PUBLIC(RO(Proc))->Counter[0].CTR[CCX] = 			\
+				PUBLIC(RO(Proc))->Counter[1].CTR[CCX];	\
+})
+
+#define AMD_Zen_PMC_PERF_Counters(Core, _T, ...) 			\
+({									\
+	const unsigned int bitwiseID = Core->T.ApicID			\
+	& PUBLIC(RO(Proc))->Features.leaf80000008.ECX.ApicIdCoreIdSize; \
+									\
+    if ((Core->T.PackageID == 0) && (bitwiseID == 0))			\
+    {									\
+	const unsigned short CCX = Core->T.Cluster.CCX & 0b111; 	\
+									\
+	RDCOUNTER(	PUBLIC(RO(Proc))->Counter[_T].CTR[CCX], 	\
+			MSR_AMD_F17H_PERF_CTR );			\
+									\
+	PUBLIC(RO(Proc))->Counter[_T].CTR[CCX] &= 0xffffffffffff;	\
+	/*			Closure statement		*/	\
+	__VA_ARGS__;							\
+    }									\
+})
+
+#define AMD_Zen_PMC_UMC_Closure(Core, _T)				\
+({									\
+})
+
+#define AMD_Zen_PMC_UMC_Counters(Core, _T, ...)				\
+({									\
+	/*			Closure statement		*/	\
+	__VA_ARGS__;							\
+})
+
+#define _AMD_Zen_PMC_Closure_(Core, _T, _PMC_)				\
+	AMD_Zen_PMC_##_PMC_##_Closure(Core, _T)
+
+#define AMD_Zen_PMC_Closure(Core, _T, _PMC_)				\
+	_AMD_Zen_PMC_Closure_(Core, _T, _PMC_)
+
+#define _AMD_Zen_PMC_Counters_(Core, _T, _PMC_, ...)			\
+({									\
+	AMD_Zen_PMC_##_PMC_##_Counters(Core, _T, __VA_ARGS__);		\
+})
+
+#define AMD_Zen_PMC_Counters(Core, _T, _PMC_, ...)			\
+	_AMD_Zen_PMC_Counters_(Core, _T, _PMC_, __VA_ARGS__)
 
 #define Pkg_AMD_Zen_PMC_L3_Set(Core)		({})
 
@@ -11785,100 +11812,121 @@ static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T)
 		Pkg->Counter[1].Power.ACCU[PWR_DOMAIN(PwrDomain)];	\
 })
 
-#define Pkg_AMD_Zen_PMC_L3_Counters(Pkg, Core, T)			\
+#define Pkg_AMD_Zen_PMC_L3_Closure(Pkg, Core, _T)			\
 ({									\
-	Pkg->Counter[T].PCLK = Core->Counter[T].TSC;			\
-									\
-	RDCOUNTER(Pkg->Counter[T].Uncore.FC0, MSR_AMD_F17H_DF_PERF_CTR);\
-									\
 	Delta_PTSC_OVH(Pkg, Core);					\
 	Save_PTSC(Pkg); 						\
 })
 
-#define Pkg_AMD_Zen_PMC_PERF_Counters(Pkg, Core, T)			\
+#define Pkg_AMD_Zen_PMC_L3_Counters(Pkg, Core, T, ...)			\
 ({									\
 	Pkg->Counter[T].PCLK = Core->Counter[T].TSC;			\
+	/*			Closure statement		*/	\
+	__VA_ARGS__;							\
 									\
 	RDCOUNTER(Pkg->Counter[T].Uncore.FC0, MSR_AMD_F17H_DF_PERF_CTR);\
-									\
+})
+
+#define Pkg_AMD_Zen_PMC_PERF_Closure(Pkg, Core, _T)			\
+({									\
 	Delta_PTSC_OVH(Pkg, Core);					\
 	Save_PTSC(Pkg); 						\
 })
 
-static void Pkg_AMD_Zen_PMC_UMC_Counters(PROC_RO *Pkg,
-					CORE_RO *Core,
-					unsigned int T)
-{
-	unsigned short umc;
-	bool Got_Mem_Clock = false;
-
-  for (umc = 0; umc < Pkg->Uncore.CtrlCount; umc++)
-  {
-	unsigned short cha;
-    for (cha = 0; cha < Pkg->Uncore.MC[umc].ChannelCount; cha++)
-    {
-	const unsigned short idx = MC_VECTOR_TO_SCALAR(umc, cha);
-
-	union {
-			unsigned long long	ctr48;
-		struct {
-			struct {
-				unsigned int	value;
-			} low32;
-			struct {
-				unsigned int	value;
-			} high16;
-		};
-	} data;
-
-	/*			48-bits UMC counter			*/
-	Core_AMD_SMN_Read(data.low32,	SMU_AMD_ZEN_UMC_PERF_CLK_LOW(cha),
-					PRIVATE(OF(Zen)).Device.DF);
-
-	Core_AMD_SMN_Read(data.high16,	SMU_AMD_ZEN_UMC_PERF_CLK_HIGH(cha),
-					PRIVATE(OF(Zen)).Device.DF);
-	data.high16.value &= 0xffff;
-
-	Pkg->Counter[T].CTR[idx] = data.ctr48;
-	/*			Delta with previous counter		*/
-	Pkg->Delta.CTR[idx]=Pkg->Counter[1].CTR[idx] - Pkg->Counter[0].CTR[idx];
-	/*			Save current counter			*/
-	Pkg->Counter[0].CTR[idx] = Pkg->Counter[1].CTR[idx];
-
-	/*		Update memory clock frequency (Hz)		*/
-      if (Got_Mem_Clock == false)
-      {
-	AMD_17_UMC_DEBUG_MISC DbgMisc;
-
-	Core_AMD_SMN_Read(	Pkg->Uncore.MC[umc].Channel[cha].AMD17h.MISC,
-				SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x200,
-				PRIVATE(OF(Zen)).Device.DF );
-	/*		Apply the memory clock divisor			*/
-	Core_AMD_SMN_Read(	DbgMisc, SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xd6c,
-				PRIVATE(OF(Zen)).Device.DF );
-
-	Pkg->Counter[T].PCLK = Core->Clock.Hz
-			* Pkg->Uncore.MC[umc].Channel[cha].AMD17h.MISC.MEMCLK;
-
-	Pkg->Counter[T].PCLK = DIV_ROUND_CLOSEST(Pkg->Counter[T].PCLK, 3);
-	Pkg->Counter[T].PCLK = Pkg->Counter[T].PCLK >> !DbgMisc.UCLK_Divisor;
-
-	Pkg->Delta.PCLK = Pkg->Counter[T].PCLK;
-
-	Got_Mem_Clock = true;
-      }
-    }
-  }
-	/*			Data Fabric Counter			*/
-	RDCOUNTER(Pkg->Counter[T].Uncore.FC0, MSR_AMD_F17H_DF_PERF_CTR);
-}
-
-#define _Pkg_AMD_Zen_PMC_Counters_(Pkg, Core , T, _PMC_)		\
+#define Pkg_AMD_Zen_PMC_PERF_Counters(Pkg, Core, _T, ...)		\
 ({									\
-	Pkg_AMD_Zen_PMC_##_PMC_##_Counters(Pkg, Core, T);		\
+	Pkg->Counter[_T].PCLK = Core->Counter[_T].TSC;			\
+	/*			Closure statement		*/	\
+	__VA_ARGS__;							\
+									\
+	RDCOUNTER(Pkg->Counter[_T].Uncore.FC0, MSR_AMD_F17H_DF_PERF_CTR);\
 })
-#define Pkg_AMD_Zen_PMC_Counters(Pkg, Core, T, _PMC_)			\
-	_Pkg_AMD_Zen_PMC_Counters_(Pkg, Core, T, _PMC_)
+
+#define Pkg_AMD_Zen_PMC_UMC_Closure(Pkg, Core, _T)			\
+({									\
+	/*			Delta with previous counter	*/	\
+	Pkg->Delta.CTR[idx]	= Pkg->Counter[1].CTR[idx]		\
+				- Pkg->Counter[0].CTR[idx];		\
+	/*			Save current counter		*/	\
+	Pkg->Counter[0].CTR[idx] = Pkg->Counter[1].CTR[idx];		\
+})
+
+#define Pkg_AMD_Zen_PMC_UMC_Counters(Pkg, Core, _T, ...)		\
+({									\
+	unsigned short umc;						\
+	bool Got_Mem_Clock = false;					\
+									\
+  for (umc = 0; umc < Pkg->Uncore.CtrlCount; umc++)			\
+  {									\
+	unsigned short cha;						\
+    for (cha = 0; cha < Pkg->Uncore.MC[umc].ChannelCount; cha++)	\
+    {									\
+	const unsigned short idx = MC_VECTOR_TO_SCALAR(umc, cha);	\
+									\
+	union { 							\
+			unsigned long long	ctr48;			\
+		struct {						\
+			struct {					\
+				unsigned int	value;			\
+			} low32;					\
+			struct {					\
+				unsigned int	value;			\
+			} high16;					\
+		};							\
+	} data; 							\
+									\
+	/*			48-bits UMC counter		*/	\
+	Core_AMD_SMN_Read(data.low32,	SMU_AMD_ZEN_UMC_PERF_CLK_LOW(cha),\
+					PRIVATE(OF(Zen)).Device.DF);	\
+									\
+	Core_AMD_SMN_Read(data.high16,	SMU_AMD_ZEN_UMC_PERF_CLK_HIGH(cha),\
+					PRIVATE(OF(Zen)).Device.DF);	\
+	data.high16.value &= 0xffff;					\
+									\
+	Pkg->Counter[_T].CTR[idx] = data.ctr48 ;			\
+	/*			Closure statement		*/	\
+	__VA_ARGS__;							\
+	/*		Update memory clock frequency (Hz)	*/	\
+      if (Got_Mem_Clock == false)					\
+      { 								\
+	AMD_17_UMC_DEBUG_MISC DbgMisc;					\
+									\
+	Core_AMD_SMN_Read(Pkg->Uncore.MC[umc].Channel[cha].AMD17h.MISC, \
+			SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x200, 	\
+			PRIVATE(OF(Zen)).Device.DF );			\
+	/*		Apply the memory clock divisor		*/	\
+	Core_AMD_SMN_Read(DbgMisc, SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xd6c,\
+			PRIVATE(OF(Zen)).Device.DF );			\
+									\
+	Pkg->Counter[_T].PCLK = Core->Clock.Hz				\
+		* Pkg->Uncore.MC[umc].Channel[cha].AMD17h.MISC.MEMCLK;	\
+									\
+	Pkg->Counter[_T].PCLK = DIV_ROUND_CLOSEST(Pkg->Counter[_T].PCLK, 3);\
+	Pkg->Counter[_T].PCLK = Pkg->Counter[_T].PCLK >> !DbgMisc.UCLK_Divisor;\
+									\
+	Pkg->Delta.PCLK = Pkg->Counter[_T].PCLK;			\
+									\
+	Got_Mem_Clock = true;						\
+      } 								\
+    }									\
+  }									\
+	/*			Data Fabric Counter		*/	\
+	RDCOUNTER(Pkg->Counter[_T].Uncore.FC0, MSR_AMD_F17H_DF_PERF_CTR);\
+})
+
+#define _Pkg_AMD_Zen_PMC_Closure_(Pkg, Core, _T, _PMC_) 		\
+	Pkg_AMD_Zen_PMC_##_PMC_##_Closure(Pkg, Core, _T)
+
+#define Pkg_AMD_Zen_PMC_Closure(Pkg, Core, _T, _PMC_)			\
+	_Pkg_AMD_Zen_PMC_Closure_(Pkg, Core, _T, _PMC_)
+
+#define _Pkg_AMD_Zen_PMC_Counters_(Pkg, Core , _T, _PMC_, ...)		\
+({									\
+	Pkg_AMD_Zen_PMC_##_PMC_##_Counters(Pkg, Core, _T, __VA_ARGS__); \
+})
+
+#define Pkg_AMD_Zen_PMC_Counters(Pkg, Core, _T, _PMC_, ...)		\
+	_Pkg_AMD_Zen_PMC_Counters_(Pkg, Core, _T, _PMC_, __VA_ARGS__)
 
 void Core_Intel_Temp(CORE_RO *Core)
 {
@@ -15586,41 +15634,43 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
 				PstateDef.Family_17h.CpuDfsId );
 	Core->Ratio.COF = COF;
 
-	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
-	{
-		Pkg_AMD_Zen_PMC_Counters(PUBLIC(RO(Proc)), Core, 1,AMD_ZEN_PMC);
+    if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+    {
+	Pkg_AMD_Zen_PMC_Counters(PUBLIC(RO(Proc)), Core, 1, AMD_ZEN_PMC,
+		Pkg_AMD_Zen_PMC_Closure(PUBLIC(RO(Proc)), Core, 1, AMD_ZEN_PMC)
+	);
 
-		Pkg_AMD_Family_17h_Temp(PUBLIC(RO(Proc)), Core);
+	Pkg_AMD_Family_17h_Temp(PUBLIC(RO(Proc)), Core);
 
-	  switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
-	  case FORMULA_SCOPE_PKG:
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+	case FORMULA_SCOPE_PKG:
 		Core_AMD_Family_17h_Temp(Core);
 		break;
-	  }
+	}
 
-	  switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
-	  case FORMULA_SCOPE_PKG:
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+	case FORMULA_SCOPE_PKG:
 		Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
 		break;
-	  }
+	}
 
 		Call_SMU(plane0, plane1, factor);
 
-	    RDCOUNTER(PUBLIC(RO(Proc))->Counter[1].Power.ACCU[PWR_DOMAIN(PKG)],
-			MSR_AMD_PKG_ENERGY_STATUS);
+	RDCOUNTER( PUBLIC(RO(Proc))->Counter[1].Power.ACCU[PWR_DOMAIN(PKG)],
+			MSR_AMD_PKG_ENERGY_STATUS );
 
-		Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
+	Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-		Delta_PWR_ACCU(Proc, PKG);
+	Delta_PWR_ACCU(Proc, PKG);
 
-		Save_UNCORE_FC0(PUBLIC(RO(Proc)));
+	Save_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-		Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
+	Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
 
-		Sys_Tick(PUBLIC(RO(Proc)));
-	} else {
-		Core->PowerThermal.VID = 0;
-	}
+	Sys_Tick(PUBLIC(RO(Proc)));
+    } else {
+	Core->PowerThermal.VID = 0;
+    }
 
 	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
 	case FORMULA_SCOPE_CORE:
@@ -15661,7 +15711,9 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
 	Core->Counter[0].Power.ACCU = Core->Counter[1].Power.ACCU;
     }
 
-	AMD_Zen_PMC_Counters(Core, 1, AMD_ZEN_PMC);
+	AMD_Zen_PMC_Counters(Core, 1, AMD_ZEN_PMC,
+		AMD_Zen_PMC_Closure(Core, 1, AMD_ZEN_PMC)
+	);
 
 	Delta_INST(Core);
 
