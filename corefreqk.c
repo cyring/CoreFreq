@@ -11817,14 +11817,20 @@ static void Pkg_AMD_Zen_PMC_UMC_Counters(PROC_RO *Pkg,
 	/*		Update memory clock frequency (Hz)		*/
       if (Got_Mem_Clock == false)
       {
+	AMD_17_UMC_DEBUG_MISC DbgMisc;
+
 	Core_AMD_SMN_Read(	Pkg->Uncore.MC[umc].Channel[cha].AMD17h.MISC,
 				SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x200,
+				PRIVATE(OF(Zen)).Device.DF );
+	/*		Apply the memory clock divisor			*/
+	Core_AMD_SMN_Read(	DbgMisc, SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xd6c,
 				PRIVATE(OF(Zen)).Device.DF );
 
 	Pkg->Counter[T].PCLK = Core->Clock.Hz
 			* Pkg->Uncore.MC[umc].Channel[cha].AMD17h.MISC.MEMCLK;
 
 	Pkg->Counter[T].PCLK = DIV_ROUND_CLOSEST(Pkg->Counter[T].PCLK, 3);
+	Pkg->Counter[T].PCLK = Pkg->Counter[T].PCLK >> !DbgMisc.UCLK_Divisor;
 
 	Pkg->Delta.PCLK = Pkg->Counter[T].PCLK;
 
