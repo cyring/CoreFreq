@@ -1034,11 +1034,42 @@ static void Query_Features(void *pArg)
     {	/*	Specified as Core Performance 48 bits General Counters. */
 	iArg->Features->PerfMon.EAX.MonWidth = 48;
 
-	if (iArg->Features->ExtInfo.ECX.PerfCore)
-	{
-		iArg->Features->PerfMon.EAX.MonCtrs = 6;
-	} else {
+	if (iArg->Features->ExtInfo.ECX.PerfCore) {
+		switch (iArg->Features->Std.EAX.ExtFamily) {
+		case 0x6:
+		case 0x8 ... 0xa:
+		/* PPR: six core performance event counters per thread	*/
+			iArg->Features->PerfMon.EAX.MonCtrs = 6;
+			break;
+		case 0x0 ... 0x5:
+		case 0x7:
+			iArg->Features->PerfMon.EAX.MonCtrs = 4;
+			break;
+		}
+	} else {	/*	CPUID 0F_00h		*/
 		iArg->Features->PerfMon.EAX.MonCtrs = 4;
+	}
+	/* Specified as Data Fabric or Northbridge Performance Events Counter */
+	if (iArg->Features->ExtInfo.ECX.PerfNB)
+	{	/* PPR: four Data Fabric performance events counters	*/
+		iArg->Features->PerfMon.EAX.MonCtrs += 4;
+	}
+	/* Specified as L3 Cache or L2I-ext Performance Events Counters */
+	if (iArg->Features->ExtInfo.ECX.PerfLLC) {
+		switch (iArg->Features->Std.EAX.ExtFamily) {
+		case 0x8 ... 0xa:
+		/* PPR: six performance events counters per L3 complex	*/
+			iArg->Features->PerfMon.EAX.MonCtrs += 6;
+			break;
+		case 0x6:
+			if (iArg->Features->Std.EAX.ExtModel < 0x6) {
+				break;
+			}
+			fallthrough;
+		case 0x7:
+			iArg->Features->PerfMon.EAX.MonCtrs += 4;
+			break;
+		}
 	}
 	/* Fix the Performance Counters. Use Intel bits as AMD placeholder */
 	iArg->Features->PerfMon.EDX.FixWidth = 64;

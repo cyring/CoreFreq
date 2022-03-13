@@ -1040,8 +1040,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 						json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.ECX.NotUsed4);
 						json_key(&s, "Data_BP");
 						json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.ECX.Data_BP);
-						json_key(&s, "PerfTSC");
-						json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.ECX.PerfTSC);
+						json_key(&s, "CU_PTSC");
+						json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.ECX.CU_PTSC);
 						json_key(&s, "PerfLLC");
 						json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.ECX.PerfLLC);
 						json_key(&s, "MWaitExt");
@@ -1301,8 +1301,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.leaf80000008.ECX.Reserved1);
 					json_key(&s, "ApicIdCoreIdSize");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.leaf80000008.ECX.ApicIdCoreIdSize);
-					json_key(&s, "PerfTscSize");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.leaf80000008.ECX.PerfTscSize);
+					json_key(&s, "CU_PTSC_Size");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.leaf80000008.ECX.CU_PTSC_Size);
 					json_key(&s, "Reserved2");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.leaf80000008.ECX.Reserved2);
 

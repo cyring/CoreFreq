@@ -3805,11 +3805,20 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
     else if( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	  || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
     {
-	bix = RO(Shm)->Proc.Features.ExtInfo.ECX.PerfTSC == 1 ? 2 : 0;
-
-	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+      if (RO(Shm)->Proc.Features.ExtInfo.ECX.CU_PTSC == 1) {
+	PUT(	SCANKEY_NULL, attrib[2], width, 2,
+		"%s x%3u %s%.*s[%7s]", RSC(PERF_MON_TSC).CODE(),
+		(unsigned int[]) { 40, 48, 56, 64 } [
+			RO(Shm)->Proc.Features.leaf80000008.ECX.CU_PTSC_Size
+		],
+		RSC(PERF_MON_UNIT_BIT).CODE(),
+		width - 18 - RSZ(PERF_MON_TSC) - RSZ(PERF_MON_UNIT_BIT),
+		hSpace, POWERED(2) );
+      } else {
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_TSC).CODE(),
-		width - 12 - RSZ(PERF_MON_TSC), hSpace, POWERED(bix) );
+		width - 12 - RSZ(PERF_MON_TSC), hSpace, POWERED(0) );
+      }
 
 	bix = RO(Shm)->Proc.Features.ExtInfo.ECX.PerfNB == 1 ? 2 : 0;
 

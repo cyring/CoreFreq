@@ -1132,7 +1132,7 @@ typedef struct
 		PerfNB	: 25-24, /* PerfCtrExtNB MSR.			*/
 		NotUsed4: 26-25,
 		Data_BP : 27-26, /* Data access breakpoint extension.	*/
-		PerfTSC : 28-27, /* Performance TSC MSR.		*/
+		CU_PTSC : 28-27, /* Global TSC (CU_PTSC)		*/
 		PerfLLC : 29-28, /* Last level Cache perf. counter extensions*/
 		MWaitExt: 30-29, /* MWAITX/MONITORX support.		*/
 		AdMskExt: 31-30, /* Addr Mask Ext support for Inst Breakpoint*/
@@ -1311,7 +1311,7 @@ typedef struct	/* Processor Capacity Leaf.				*/
 		NC		:  8-0,  /* Zero based number of threads */
 		Reserved1	: 12-8,
 		ApicIdCoreIdSize: 16-12,/* Initial APIC ID size to compute MNC*/
-		PerfTscSize	: 18-16, /* 00b=40,01b=48,10b=56,11b=64 bits  */
+		CU_PTSC_Size	: 18-16, /* 00b=40,01b=48,10b=56,11b=64 bits  */
 		Reserved2	: 32-18;
 	} ECX;
 	struct
