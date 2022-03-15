@@ -16136,7 +16136,21 @@ static int CoreFreqK_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
 
-	mwait_idle_with_hints(MWAIT, 1UL);
+	__asm__ volatile
+	(
+		"xorq	%%rcx	,	%%rcx"	"\n\t"
+		"xorq	%%rdx	,	%%rdx"	"\n\t"
+		"leaq	%[addr] ,	%%rax"	"\n\t"
+		"monitor"			"\n\t"
+		"# Bit 0 of ECX must be set"	"\n\t"
+		"movq	$0x1	,	%%rcx"	"\n\t"
+		"movq	%[hint] ,	%%rax"	"\n\t"
+		"mwait"
+		:
+		: [addr] "m" (current_thread_info()->flags),
+		  [hint] "ir" (MWAIT)
+		: "%rax", "%rcx", "%rdx", "memory"
+	);
 
 	return index;
 }
@@ -16167,7 +16181,21 @@ static int CoreFreqK_S2_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
 
-	mwait_idle_with_hints(MWAIT, 1UL);
+	__asm__ volatile
+	(
+		"xorq	%%rcx	,	%%rcx"	"\n\t"
+		"xorq	%%rdx	,	%%rdx"	"\n\t"
+		"leaq	%[addr] ,	%%rax"	"\n\t"
+		"monitor"			"\n\t"
+		"# Bit 0 of ECX must be set"	"\n\t"
+		"movq	$0x1	,	%%rcx"	"\n\t"
+		"movq	%[hint] ,	%%rax"	"\n\t"
+		"mwait"
+		:
+		: [addr] "m" (current_thread_info()->flags),
+		  [hint] "ir" (MWAIT)
+		: "%rax", "%rcx", "%rdx", "memory"
+	);
 
 #if ((LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)) || (RHEL_MINOR >= 4))
 	return index;
