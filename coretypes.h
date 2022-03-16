@@ -1372,22 +1372,26 @@ typedef struct	/* BSP CPUID features.					*/
 	CPUID_0x80000008	leaf80000008;
 
 	struct {
-	  unsigned long long	PPIN;
-		CLOCK		Clock;
-		unsigned int	Freq,
-				Ratio;
-	  struct {
-		unsigned int	Interface;
-	    union {
-		unsigned int	Version;
+		unsigned long long	PPIN;
+			CLOCK		Clock;
+			unsigned int	Freq,
+					Ratio;
 		struct {
-		unsigned char	Revision,
-				Minor,
-				Major,
-				Other;
-		};
-	    };
-	  } SMU;
+			unsigned int	Interface;
+		    union {
+			unsigned int	Version;
+			struct {
+			unsigned char	Revision,
+					Minor,
+					Major,
+					Other;
+			};
+		    };
+		} SMU;
+		struct {
+			unsigned char	LLC,
+					NB;
+		} PMC;
 	} Factory;
 
 	struct {

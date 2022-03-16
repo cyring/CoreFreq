@@ -1052,14 +1052,16 @@ static void Query_Features(void *pArg)
 	/* Specified as Data Fabric or Northbridge Performance Events Counter */
 	if (iArg->Features->ExtInfo.ECX.PerfNB)
 	{	/* PPR: four Data Fabric performance events counters	*/
-		iArg->Features->PerfMon.EAX.MonCtrs += 4;
+		iArg->Features->Factory.PMC.NB = 4;
+	} else {
+		iArg->Features->Factory.PMC.NB = 0;
 	}
 	/* Specified as L3 Cache or L2I-ext Performance Events Counters */
 	if (iArg->Features->ExtInfo.ECX.PerfLLC) {
 		switch (iArg->Features->Std.EAX.ExtFamily) {
 		case 0x8 ... 0xa:
 		/* PPR: six performance events counters per L3 complex	*/
-			iArg->Features->PerfMon.EAX.MonCtrs += 6;
+			iArg->Features->Factory.PMC.LLC = 6;
 			break;
 		case 0x6:
 			if (iArg->Features->Std.EAX.ExtModel < 0x6) {
@@ -1067,9 +1069,14 @@ static void Query_Features(void *pArg)
 			}
 			fallthrough;
 		case 0x7:
-			iArg->Features->PerfMon.EAX.MonCtrs += 4;
+			iArg->Features->Factory.PMC.LLC = 4;
+			break;
+		default:
+			iArg->Features->Factory.PMC.LLC = 4;
 			break;
 		}
+	} else {
+		iArg->Features->Factory.PMC.LLC = 0;
 	}
 	/* Fix the Performance Counters. Use Intel bits as AMD placeholder */
 	iArg->Features->PerfMon.EDX.FixWidth = 64;

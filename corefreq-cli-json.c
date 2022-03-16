@@ -921,6 +921,10 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.EAX.Version);
 					json_key(&s, "MonCtrs");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.EAX.MonCtrs);
+					json_key(&s, "PMC_LLC");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Factory.PMC.LLC);
+					json_key(&s, "PMC_NB");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Factory.PMC.NB);
 					json_key(&s, "MonWidth");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.EAX.MonWidth);
 					json_key(&s, "VectorSz");

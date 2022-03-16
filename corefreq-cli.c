@@ -3430,20 +3430,24 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 
     if (OutFunc == NULL) {
 	PUT(	SCANKEY_NULL, attrib[0], width, 1,
-		"%.*s%3u x%3u %s%.*s%3u x%3u %s",
-		19, hSpace,	RO(Shm)->Proc.Features.PerfMon.EAX.MonCtrs,
+		"%.*s%3u%3u%3u x%3u %s%.*s%3u x%3u %s",
+		16, hSpace,	RO(Shm)->Proc.Features.PerfMon.EAX.MonCtrs,
+				RO(Shm)->Proc.Features.Factory.PMC.LLC,
+				RO(Shm)->Proc.Features.Factory.PMC.NB,
 				RO(Shm)->Proc.Features.PerfMon.EAX.MonWidth,
 				RSC(PERF_MON_UNIT_BIT).CODE(),
-		11, hSpace,	RO(Shm)->Proc.Features.PerfMon.EDX.FixCtrs,
+		10, hSpace,	RO(Shm)->Proc.Features.PerfMon.EDX.FixCtrs,
 				RO(Shm)->Proc.Features.PerfMon.EDX.FixWidth,
 				RSC(PERF_MON_UNIT_BIT).CODE() );
     } else {
 	PUT(	SCANKEY_NULL, attrib[0], width, 0,
-		"%.*s%3u x%3u %s%.*s%3u x%3u %s",
-		19, hSpace,	RO(Shm)->Proc.Features.PerfMon.EAX.MonCtrs,
+		"%.*s%3u%3u%3u x%3u %s%.*s%3u x%3u %s",
+		16, hSpace,	RO(Shm)->Proc.Features.PerfMon.EAX.MonCtrs,
+				RO(Shm)->Proc.Features.Factory.PMC.LLC,
+				RO(Shm)->Proc.Features.Factory.PMC.NB,
 				RO(Shm)->Proc.Features.PerfMon.EAX.MonWidth,
 				RSC(PERF_MON_UNIT_BIT).CODE(),
-		5, hSpace,	RO(Shm)->Proc.Features.PerfMon.EDX.FixCtrs,
+		4, hSpace,	RO(Shm)->Proc.Features.PerfMon.EDX.FixCtrs,
 				RO(Shm)->Proc.Features.PerfMon.EDX.FixWidth,
 				RSC(PERF_MON_UNIT_BIT).CODE() );
     }
