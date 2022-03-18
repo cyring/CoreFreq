@@ -290,6 +290,16 @@ typedef struct
 	HWP_CAPABILITIES		HWP_Capabilities;
 	HWP_INTERRUPT			HWP_Interrupt;
 	HWP_REQUEST			HWP_Request;
+	struct ACPI_CPPC_STRUCT {
+		unsigned short		Highest,
+					Guaranteed,
+					Efficient,
+					Lowest,
+					Minimum,
+					Maximum,
+					Desired,
+					Energy;
+	} ACPI_CPPC;
 } POWER_THERMAL;
 
 typedef struct

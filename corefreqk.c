@@ -42,6 +42,9 @@
 #ifdef CONFIG_AMD_NB
 #include <asm/amd_nb.h>
 #endif
+#ifdef CONFIG_ACPI_CPPC_LIB
+#include <acpi/cppc_acpi.h>
+#endif
 
 #include "bitasm.h"
 #include "amdmsr.h"
@@ -3487,7 +3490,7 @@ void AMD_Processor_PIN(bool capable)
 	}
 }
 
-void AMD_F17h_CPPC(void)
+long AMD_F17h_CPPC(void)
 {
 	AMD_CPPC_ENABLE CPPC_Enable = {.value = 0};
 
@@ -3501,7 +3504,50 @@ void AMD_F17h_CPPC(void)
 		RDMSR(CPPC_Enable, MSR_AMD_CPPC_ENABLE);
       }
 	PUBLIC(RO(Proc))->Features.HWP_Enable = CPPC_Enable.CPPC_Enable;
+
+	return 0;
     }
+	return -ENODEV;
+}
+
+void ACPI_CPPC(void)
+{
+#ifdef CONFIG_ACPI_CPPC_LIB
+	struct cppc_perf_fb_ctrs CPPC_Perf;
+	struct cppc_perf_caps CPPC_Caps;
+	signed int cpu, rc = acpi_cpc_valid() == false;
+
+    for (cpu = 0; (cpu < PUBLIC(RO(Proc))->CPU.Count) && (rc == 0); cpu++)
+    {
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+	if ((rc = cppc_get_perf_ctrs(Core->Bind, &CPPC_Perf)) == 0) {
+		rc = cppc_get_perf_caps(Core->Bind, &CPPC_Caps);
+	}
+	if (rc == 0) {
+		unsigned long long desired_perf = 0;
+
+		Core->PowerThermal.ACPI_CPPC = (struct ACPI_CPPC_STRUCT) {
+			.Highest	= CPPC_Caps.highest_perf,
+			.Guaranteed	= CPPC_Caps.nominal_perf,
+			.Efficient	= CPPC_Caps.nominal_freq,
+			.Lowest 	= CPPC_Caps.lowest_freq,
+			.Minimum	= CPPC_Perf.reference_perf,
+			.Maximum	= CPPC_Perf.reference_perf,
+			.Desired	= CPPC_Perf.reference_perf,
+			.Energy 	= 0
+		};
+		rc = cppc_get_desired_perf(Core->Bind, &desired_perf);
+		if (rc == 0) {
+			Core->PowerThermal.ACPI_CPPC.Maximum = \
+			Core->PowerThermal.ACPI_CPPC.Desired = desired_perf;
+		}
+	}
+    }
+	PUBLIC(RO(Proc))->Features.ACPI_CPPC = (rc == 0);
+#else
+	PUBLIC(RO(Proc))->Features.ACPI_CPPC = 0;
+#endif /* CONFIG_ACPI_CPPC_LIB */
 }
 
 void Query_Same_Platform_Features(unsigned int cpu)
@@ -6683,7 +6729,9 @@ static void Query_AMD_F17h_PerSocket(unsigned int cpu)
 
 	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
 		Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
-		AMD_F17h_CPPC();
+		if (AMD_F17h_CPPC() == -ENODEV) {
+			ACPI_CPPC();
+		}
 	}
 }
 
@@ -6697,7 +6745,9 @@ static void Query_AMD_F17h_PerCluster(unsigned int cpu)
 
 	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
 		Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
-		AMD_F17h_CPPC();
+		if (AMD_F17h_CPPC() == -ENODEV) {
+			ACPI_CPPC();
+		}
 	}
 }
 
@@ -10488,6 +10538,50 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 					!HwCfgRegister.Family_17h.CpbDis);
 
 	Core->PowerThermal.HWP_Request.Energy_Pref  = CPPC_Req.Energy_Pref;
+
+	Core->Boost[BOOST(HWP_MIN)]=Core->PowerThermal.HWP_Request.Minimum_Perf;
+	Core->Boost[BOOST(HWP_MAX)]=Core->PowerThermal.HWP_Request.Maximum_Perf;
+	Core->Boost[BOOST(HWP_TGT)]=Core->PowerThermal.HWP_Request.Desired_Perf;
+    }
+    else if (PUBLIC(RO(Proc))->Features.ACPI_CPPC)
+    {
+	HWCR HwCfgRegister = {.value = 0};
+
+	RDMSR(HwCfgRegister, MSR_K7_HWCR);
+
+	Core->PowerThermal.HWP_Capabilities.Highest = \
+			CPPC_AMD_Zen_ScaleRatio( Core,
+				Core->PowerThermal.ACPI_CPPC.Highest,
+				!HwCfgRegister.Family_17h.CpbDis
+			);
+	Core->PowerThermal.HWP_Capabilities.Guaranteed = \
+			CPPC_AMD_Zen_ScaleRatio( Core,
+				Core->PowerThermal.ACPI_CPPC.Guaranteed,
+				!HwCfgRegister.Family_17h.CpbDis
+			);
+	Core->PowerThermal.HWP_Capabilities.Most_Efficient = \
+			Core->PowerThermal.ACPI_CPPC.Efficient / PRECISION;
+
+	Core->PowerThermal.HWP_Capabilities.Lowest = \
+			Core->PowerThermal.ACPI_CPPC.Lowest / PRECISION;
+
+	Core->PowerThermal.HWP_Request.Minimum_Perf = \
+			CPPC_AMD_Zen_ScaleRatio( Core,
+				Core->PowerThermal.ACPI_CPPC.Minimum,
+				!HwCfgRegister.Family_17h.CpbDis
+			);
+	Core->PowerThermal.HWP_Request.Maximum_Perf = \
+			CPPC_AMD_Zen_ScaleRatio( Core,
+				Core->PowerThermal.ACPI_CPPC.Maximum,
+				!HwCfgRegister.Family_17h.CpbDis
+			);
+	Core->PowerThermal.HWP_Request.Desired_Perf = \
+			CPPC_AMD_Zen_ScaleRatio( Core,
+				Core->PowerThermal.ACPI_CPPC.Desired,
+				!HwCfgRegister.Family_17h.CpbDis
+			);
+	Core->PowerThermal.HWP_Request.Energy_Pref = \
+					Core->PowerThermal.ACPI_CPPC.Energy;
 
 	Core->Boost[BOOST(HWP_MIN)]=Core->PowerThermal.HWP_Request.Minimum_Perf;
 	Core->Boost[BOOST(HWP_MAX)]=Core->PowerThermal.HWP_Request.Maximum_Perf;

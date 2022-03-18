@@ -1106,7 +1106,9 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				width, OutFunc, attrib[3] ),
 		RefreshTopFreq, BOOST(TGT) );
     }
-    if (RO(Shm)->Proc.Features.HWP_Enable) {
+    if ((RO(Shm)->Proc.Features.HWP_Enable == 1)
+     || (RO(Shm)->Proc.Features.ACPI_CPPC == 1))
+    {
 	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
 
       if ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
@@ -3567,7 +3569,8 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RSC(PERF_LABEL_HWCF).CODE(), ENABLED(bix) );
 /* Section Mark */
 	bix = (RO(Shm)->Proc.Features.Power.EAX.HWP_Reg == 1)	/* Intel:HWP */
-	|| (RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1); /* AMD:CPPC */
+	|| (RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1)	/* AMD:CPPC  */
+	|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1);		/* ACPI:CPPC */
     if (bix)
     {
 	CPU_STRUCT *SProc = &RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core];
@@ -3640,7 +3643,8 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 19 - RSZ(PERF_MON_CPPC), hSpace,
 		RSC(PERF_LABEL_CPPC).CODE(), RSC(NOT_AVAILABLE).CODE() );
     } else {
-	const unsigned int cix = RO(Shm)->Proc.Features.HWP_Enable == 1;
+	const unsigned int cix	= ((RO(Shm)->Proc.Features.HWP_Enable == 1)
+				|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1));
 
 	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s%s       [%3s]", RSC(PERF_MON_HWP).CODE(),
@@ -15180,7 +15184,8 @@ void Layout_Footer(Layer *layer, CUINT row)
 	hTech1.attr[8] = hTech1.attr[9] = hTech1.attr[10] = hTech1.attr[11] = \
 		EN[
 			RO(Shm)->Proc.Features.HWP_Enable == 1 ? 1
-			: RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1 ?
+			:  (RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1)
+			|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1) ?
 				2 : 0
 		];
 
