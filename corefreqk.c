@@ -3528,16 +3528,21 @@ signed int Read_ACPI_CPPC_Registers(unsigned int cpu)
 		Core->PowerThermal.ACPI_CPPC = (struct ACPI_CPPC_STRUCT) {
 			.Highest	= CPPC_Caps.highest_perf,
 			.Guaranteed	= CPPC_Caps.nominal_perf,
+			#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0)
 			.Efficient	= CPPC_Caps.nominal_freq,
 			.Lowest 	= CPPC_Caps.lowest_freq,
+			#else
+			.Efficient	= CPPC_Caps.nominal_perf,
+			.Lowest 	= CPPC_Caps.lowest_perf,
+			#endif
 			.Minimum	= CPPC_Perf.reference_perf,
 			.Maximum	= CPPC_Perf.reference_perf,
 			.Desired	= CPPC_Perf.reference_perf,
 			.Energy 	= 0
 		};
-
+		#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
 		rc = cppc_get_desired_perf(Core->Bind, &desired_perf);
-
+		#endif
 		if (rc == 0) {
 			Core->PowerThermal.ACPI_CPPC.Maximum = \
 			Core->PowerThermal.ACPI_CPPC.Desired = desired_perf;
@@ -3551,7 +3556,11 @@ signed int Read_ACPI_CPPC_Registers(unsigned int cpu)
 
 void For_All_ACPI_CPPC_Read(void)
 {
+	#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
 	signed int rc = acpi_cpc_valid() == false;
+	#else
+	signed int rc = acpi_disabled;
+	#endif
 
 	unsigned int cpu;
 	for (cpu = 0; (cpu < PUBLIC(RO(Proc))->CPU.Count) && (rc == 0); cpu++)
@@ -10571,12 +10580,24 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 				Core->PowerThermal.ACPI_CPPC.Guaranteed,
 				!HwCfgRegister.Family_17h.CpbDis
 			);
+	#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0)
 	Core->PowerThermal.HWP_Capabilities.Most_Efficient = \
 			Core->PowerThermal.ACPI_CPPC.Efficient / PRECISION;
 
 	Core->PowerThermal.HWP_Capabilities.Lowest = \
 			Core->PowerThermal.ACPI_CPPC.Lowest / PRECISION;
-
+	#else
+	Core->PowerThermal.HWP_Capabilities.Most_Efficient = \
+			CPPC_AMD_Zen_ScaleRatio( Core,
+				Core->PowerThermal.ACPI_CPPC.Efficient,
+				!HwCfgRegister.Family_17h.CpbDis
+			);
+	Core->PowerThermal.HWP_Capabilities.Lowest = \
+			CPPC_AMD_Zen_ScaleRatio( Core,
+				Core->PowerThermal.ACPI_CPPC.Lowest,
+				!HwCfgRegister.Family_17h.CpbDis
+			);
+	#endif
 	Core->PowerThermal.HWP_Request.Minimum_Perf = \
 			CPPC_AMD_Zen_ScaleRatio( Core,
 				Core->PowerThermal.ACPI_CPPC.Minimum,
