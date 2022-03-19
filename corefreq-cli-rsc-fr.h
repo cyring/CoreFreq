@@ -496,6 +496,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_ISA_MOVDIR64B_COMM_CODE_FR	RSC_ISA_MOVDIR64B_COMM_CODE_EN
 
 #define RSC_FEATURES_TITLE_CODE_FR	" Caract""\xa9""ristiques "
+#define RSC_ON_CODE_FR			" ON"
+#define RSC_OFF_CODE_FR 		"OFF"
+#define RSC_FMW_CODE_FR 		"FMW"
 #define RSC_NOT_AVAILABLE_CODE_FR	"N/A"
 #define RSC_AUTOMATIC_CODE_FR		"AUTO"
 #define RSC_MISSING_CODE_FR		"Absent"

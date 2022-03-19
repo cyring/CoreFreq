@@ -3510,17 +3510,15 @@ long AMD_F17h_CPPC(void)
 	return -ENODEV;
 }
 
-void ACPI_CPPC(void)
+signed int Read_ACPI_CPPC_Registers(unsigned int cpu)
 {
 #ifdef CONFIG_ACPI_CPPC_LIB
 	struct cppc_perf_fb_ctrs CPPC_Perf;
 	struct cppc_perf_caps CPPC_Caps;
-	signed int cpu, rc = acpi_cpc_valid() == false;
 
-    for (cpu = 0; (cpu < PUBLIC(RO(Proc))->CPU.Count) && (rc == 0); cpu++)
-    {
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
+	signed int rc = 0;
 	if ((rc = cppc_get_perf_ctrs(Core->Bind, &CPPC_Perf)) == 0) {
 		rc = cppc_get_perf_caps(Core->Bind, &CPPC_Caps);
 	}
@@ -3537,17 +3535,30 @@ void ACPI_CPPC(void)
 			.Desired	= CPPC_Perf.reference_perf,
 			.Energy 	= 0
 		};
+
 		rc = cppc_get_desired_perf(Core->Bind, &desired_perf);
+
 		if (rc == 0) {
 			Core->PowerThermal.ACPI_CPPC.Maximum = \
 			Core->PowerThermal.ACPI_CPPC.Desired = desired_perf;
 		}
 	}
-    }
-	PUBLIC(RO(Proc))->Features.ACPI_CPPC = (rc == 0);
+	return rc;
 #else
-	PUBLIC(RO(Proc))->Features.ACPI_CPPC = 0;
+	return -ENODEV;
 #endif /* CONFIG_ACPI_CPPC_LIB */
+}
+
+void For_All_ACPI_CPPC_Read(void)
+{
+	signed int rc = acpi_cpc_valid() == false;
+
+	unsigned int cpu;
+	for (cpu = 0; (cpu < PUBLIC(RO(Proc))->CPU.Count) && (rc == 0); cpu++)
+	{
+		rc = Read_ACPI_CPPC_Registers(cpu);
+	}
+	PUBLIC(RO(Proc))->Features.ACPI_CPPC = (rc == 0);
 }
 
 void Query_Same_Platform_Features(unsigned int cpu)
@@ -6328,9 +6339,9 @@ inline unsigned short CPPC_AMD_Zen_ScaleRatio(	CORE_RO *Core,
 						unsigned short CPB )
 {
 	if (CPB) {
-		return (Core->Boost[BOOST(CPB)] * (1 + hint)) >> 8;
+		return DIV_ROUND_CLOSEST(Core->Boost[BOOST(CPB)] * hint, 255U);
 	} else {
-		return (Core->Boost[BOOST(MAX)] * (1 + hint)) >> 8;
+		return DIV_ROUND_CLOSEST(Core->Boost[BOOST(MAX)] * hint, 255U);
 	}
 }
 
@@ -6349,8 +6360,7 @@ inline unsigned int CPPC_AMD_Zen_ScaleHint(	CORE_RO *Core,
 	if ((ratio >= 0) && Core->Boost[boost] && (ratio <= Core->Boost[boost]))
 	{
 		unsigned short hint;
-		hint = 255U * ratio;
-		hint = hint / Core->Boost[boost];
+		hint = DIV_ROUND_CLOSEST(255U * ratio, Core->Boost[boost]);
 		flag = flag ^ (1 << 31);
 		flag = flag | hint;
 	}
@@ -6558,7 +6568,9 @@ static long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 		.pClockMod = pClockMod,
 		.rc = RC_SUCCESS
 	};
-	return For_All_AMD_Zen_Clock(&ClockZen, CPPC_AMD_Zen_PerCore);
+	return PUBLIC(RO(Proc))->Features.HWP_Enable == 1 ?
+		For_All_AMD_Zen_Clock(&ClockZen, CPPC_AMD_Zen_PerCore)
+		: -RC_UNIMPLEMENTED;
       }
     default:
 	return -RC_UNIMPLEMENTED;
@@ -6730,7 +6742,7 @@ static void Query_AMD_F17h_PerSocket(unsigned int cpu)
 	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
 		Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
 		if (AMD_F17h_CPPC() == -ENODEV) {
-			ACPI_CPPC();
+			For_All_ACPI_CPPC_Read();
 		}
 	}
 }
@@ -6746,7 +6758,7 @@ static void Query_AMD_F17h_PerCluster(unsigned int cpu)
 	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
 		Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
 		if (AMD_F17h_CPPC() == -ENODEV) {
-			ACPI_CPPC();
+			For_All_ACPI_CPPC_Read();
 		}
 	}
 }

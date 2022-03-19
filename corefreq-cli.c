@@ -949,6 +949,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RSC(SYSINFO_PROC_COND3).ATTR()
 	};
 	struct FLIP_FLOP *CFlop;
+	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
 	unsigned int activeCores;
 	enum RATIO_BOOST boost = 0;
 
@@ -1031,8 +1032,6 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RSC(FREQ_UNIT_MHZ).CODE(),
 		23 - (OutFunc == NULL), hSpace,
 		RSC(RATIO).CODE() );
-    {
-	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
 
 	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_MIN;
 
@@ -1050,9 +1049,8 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				1, coreClock.ullong,
 				width, OutFunc, attrib[3] ),
 		RefreshTopFreq, BOOST(MIN) );
-    }
-    {
-	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
+
+	coreClock = (CLOCK_ARG) {.NC = 0, .Offset = 0};
 
 	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_MAX;
 
@@ -1070,7 +1068,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				1, coreClock.ullong,
 				width, OutFunc, attrib[3] ),
 		RefreshTopFreq, BOOST(MAX) );
-    }
+
 	GridCall( PUT(	SCANKEY_NULL, attrib[0], width, 2,
 			"%s""%.*s[%7.3f]", RSC(FACTORY).CODE(),
 			(OutFunc == NULL ? 68 : 64) - RSZ(FACTORY), hSpace,
@@ -1086,8 +1084,8 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	PUT(SCANKEY_NULL, attrib[0], width, 2, "%s", RSC(PERFORMANCE).CODE());
 
 	PUT(SCANKEY_NULL, attrib[0], width, 3, "%s", RSC(PSTATE).CODE());
-    {
-	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
+
+	coreClock = (CLOCK_ARG) {.NC = 0, .Offset = 0};
 
 	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_TGT;
 
@@ -1105,11 +1103,11 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				1, coreClock.ullong,
 				width, OutFunc, attrib[3] ),
 		RefreshTopFreq, BOOST(TGT) );
-    }
+
     if ((RO(Shm)->Proc.Features.HWP_Enable == 1)
      || (RO(Shm)->Proc.Features.ACPI_CPPC == 1))
     {
-	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
+	coreClock = (CLOCK_ARG) {.NC = 0, .Offset = 0};
 
       if ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	|| (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
@@ -1214,7 +1212,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RefreshTopFreq, BOOST(CPB) );
       }
     }
-    {
+
       for(boost = BOOST(1C), activeCores = 1;
       boost > BOOST(1C)-(enum RATIO_BOOST)RO(Shm)->Proc.Features.SpecTurboRatio;
 		boost--, activeCores++)
@@ -1237,13 +1235,13 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				width, OutFunc, attrib[3] ),
 		RefreshTopFreq, boost );
       }
-    }
+
 	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.Uncore_Unlock],
 		width, 2, "%s%.*s[%7.*s]", RSC(UNCORE).CODE(),
 		width - 18, hSpace, 6,
 		RO(Shm)->Proc.Features.Uncore_Unlock ?
 			RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
-    {
+
 	ASCII *uncoreLabel[2];
 
 	if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
@@ -1288,7 +1286,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				width, OutFunc, attrib[3]),
 		RefreshRatioFreq, &RO(Shm)->Uncore.Boost[UNCORE_BOOST(MAX)] );
       }
-    }
+
     if (RO(Shm)->Proc.Features.TDP_Cfg_Lock) {
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s%.*s""%s"" [%3d:%-3d]", RSC(TDP).CODE(),
@@ -1316,7 +1314,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	char *pfx = malloc(len);
       if (pfx != NULL)
       {
-	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
+	coreClock = (CLOCK_ARG) {.NC = 0, .Offset = 0};
 
 	PUT( SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.TDP_Cfg_Lock == 0],
 		width, 3, "%s%.*s[%7.*s]", RSC(CONFIGURATION).CODE(),
@@ -3583,21 +3581,31 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	};
 	bix = RO(Shm)->Proc.Features.HWP_Enable == 1;
 
-      if ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+     if  ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	|| (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
+     {
+      if (RO(Shm)->Proc.Features.ACPI_CPPC == 1)
+      {
+		PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+			"%s%.*s%s       [%3s]", RSC(PERF_MON_CPPC).CODE(),
+			width - 19 - RSZ(PERF_MON_CPPC), hSpace,
+			RSC(PERF_LABEL_CPPC).CODE(), RSC(FMW).CODE() );
+      }
+      else
       {
 	GridCall( PUT(	BOXKEY_HWP, attrib[bix], width, 2,
 			"%s%.*s%s       <%3s>", RSC(PERF_MON_CPPC).CODE(),
 			width - 19 - RSZ(PERF_MON_CPPC), hSpace,
 			RSC(PERF_LABEL_CPPC).CODE(), ENABLED(bix) ),
 		HWP_Update);
-      } else {
+      }
+     } else {
 	GridCall( PUT(	BOXKEY_HWP, attrib[bix], width, 2,
 			"%s%.*s%s       <%3s>", RSC(PERF_MON_HWP).CODE(),
 			width - 18 - RSZ(PERF_MON_HWP), hSpace,
 			RSC(PERF_LABEL_HWP).CODE(), ENABLED(bix) ),
 		HWP_Update);
-      }
+     }
 	PUT(	SCANKEY_NULL, RSC(SYSINFO_PERFMON_HWP_CAP_COND1).ATTR(),
 		width, 3, "%s""%.*s""%s""%.*s""%s", RSC(CAPABILITIES).CODE(),
 		21 - 3 * (OutFunc == NULL) - RSZ(CAPABILITIES), hSpace,
@@ -13915,6 +13923,7 @@ int Shortcut(SCANKEY *scan)
 	  break;
 
 	case BOXKEY_RATIO_CLOCK_HWP_TGT:
+	  if (RO(Shm)->Proc.Features.HWP_Enable == 1)
 	  {
 		Window *win = SearchWinListById(scan->key, &winList);
 	    if (win == NULL)
@@ -13966,6 +13975,7 @@ int Shortcut(SCANKEY *scan)
 	  break;
 
 	case BOXKEY_RATIO_CLOCK_HWP_MAX:
+	  if (RO(Shm)->Proc.Features.HWP_Enable == 1)
 	  {
 		Window *win = SearchWinListById(scan->key, &winList);
 	    if (win == NULL)
@@ -14017,6 +14027,7 @@ int Shortcut(SCANKEY *scan)
 	  break;
 
 	case BOXKEY_RATIO_CLOCK_HWP_MIN:
+	  if (RO(Shm)->Proc.Features.HWP_Enable == 1)
 	  {
 		Window *win = SearchWinListById(scan->key, &winList);
 	    if (win == NULL)

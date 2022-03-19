@@ -971,6 +971,9 @@
 #define RSC_ISA_MOVDIR64B_COMM_CODE_EN	" Move 64 Bytes as Direct Store "
 
 #define RSC_FEATURES_TITLE_CODE_EN	" Features "
+#define RSC_ON_CODE_EN			" ON"
+#define RSC_OFF_CODE_EN 		"OFF"
+#define RSC_FMW_CODE_EN 		"FMW"
 #define RSC_NOT_AVAILABLE_CODE_EN	"N/A"
 #define RSC_AUTOMATIC_CODE_EN		"AUTO"
 #define RSC_MISSING_CODE_EN		"Missing"
