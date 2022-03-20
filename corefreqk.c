@@ -7842,7 +7842,7 @@ void Intel_Turbo_TDP_Config(CORE_RO *Core)
 							ConfigTDP[0].MaxPower;
 	break;
     case 0:
-	/*			MSR_PKG_POWER_INFO			*/
+	RDMSR(PUBLIC(RO(Proc))->PowerThermal.PowerInfo, MSR_PKG_POWER_INFO);
 	break;
     }
   }
