@@ -147,6 +147,14 @@ module_param_array(Custom_TDP_Offset, short, &Custom_TDP_Count ,	\
 					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Custom_TDP_Offset, "TDP Limit Offset (watt)");
 
+static unsigned int PowerTimeWindow_Count = 0;
+static signed short PowerTimeWindow[PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE)] = {
+			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+};
+module_param_array(PowerTimeWindow, short, &PowerTimeWindow_Count,	\
+					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(PowerTimeWindow, "Power Limit PL(n) Time Window");
+
 static unsigned int TDP_Limiting_Count = 0;
 static signed short Activate_TDP_Limit[PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE)] = {
 			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
@@ -3414,6 +3422,46 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 	    }
 	  }
 	}
+	switch (pw) {
+	case PWR_DOMAIN(PKG):
+	case PWR_DOMAIN(UNCORE):
+	case PWR_DOMAIN(RAM):
+	case PWR_DOMAIN(PLATFORM):
+		if (PowerTimeWindow_Count > lt) {
+			if ((PowerTimeWindow[lt] >= 0)
+			 && (PowerTimeWindow[lt] <= 0b1111111))
+			{
+				PowerLimit.TimeWindow1 = PowerTimeWindow[lt];
+				WrRdMSR = 1;
+			}
+		}
+		break;
+	case PWR_DOMAIN(CORES):
+	case PWR_DOMAIN(SIZE):
+		break;
+	}
+	switch (pw) {
+	case PWR_DOMAIN(PLATFORM):
+		if (!PUBLIC(RO(Proc))->Registration.Experimental) {
+			break;
+		}
+		fallthrough;
+	case PWR_DOMAIN(PKG):
+		if (PowerTimeWindow_Count > rt) {
+			if ((PowerTimeWindow[rt] >= 0)
+			 && (PowerTimeWindow[rt] <= 0b1111111))
+			{
+				PowerLimit.TimeWindow2 = PowerTimeWindow[rt];
+				WrRdMSR = 1;
+			}
+		}
+		break;
+	case PWR_DOMAIN(CORES):
+	case PWR_DOMAIN(UNCORE):
+	case PWR_DOMAIN(RAM):
+	case PWR_DOMAIN(SIZE):
+		break;
+	}
     }
 	if (TDP_Limiting_Count > lt) {
 		switch (Activate_TDP_Limit[lt]) {
@@ -3424,16 +3472,25 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 			break;
 		}
 	}
-	if (TDP_Clamping_Count > lt) {
-		switch (Activate_TDP_Clamp[lt]) {
-		case COREFREQ_TOGGLE_OFF:
-		case COREFREQ_TOGGLE_ON:
-		    if (PUBLIC(RO(Proc))->Features.Power.EAX.PLN) {
-			PowerLimit.Clamping1 = Activate_TDP_Clamp[lt];
-			WrRdMSR = 1;
-		    }
+	switch (pw) {
+	case PWR_DOMAIN(RAM):
+		if (!PUBLIC(RO(Proc))->Registration.Experimental) {
 			break;
 		}
+		fallthrough;
+	default:
+		if (TDP_Clamping_Count > lt) {
+			switch (Activate_TDP_Clamp[lt]) {
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
+			    if (PUBLIC(RO(Proc))->Features.Power.EAX.PLN) {
+				PowerLimit.Clamping1 = Activate_TDP_Clamp[lt];
+				WrRdMSR = 1;
+			    }
+				break;
+			}
+		}
+		break;
 	}
 	if (PowerLimitLockMask == PKG_POWER_LIMIT_LOCK_MASK) {
 	    if (TDP_Limiting_Count > rt) {
@@ -3445,14 +3502,23 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 			break;
 		}
 	    }
-	    if (TDP_Clamping_Count > rt) {
-		switch (Activate_TDP_Clamp[rt]) {
-		case COREFREQ_TOGGLE_OFF:
-		case COREFREQ_TOGGLE_ON:
-			PowerLimit.Clamping2 = Activate_TDP_Clamp[rt];
-			WrRdMSR = 1;
+	    switch (pw) {
+	    case PWR_DOMAIN(RAM):
+		if (!PUBLIC(RO(Proc))->Registration.Experimental) {
 			break;
 		}
+		fallthrough;
+	    default:
+		if (TDP_Clamping_Count > rt) {
+			switch (Activate_TDP_Clamp[rt]) {
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
+				PowerLimit.Clamping2 = Activate_TDP_Clamp[rt];
+				WrRdMSR = 1;
+				break;
+			}
+		}
+		break;
 	    }
 	}
 	if (WrRdMSR) {
