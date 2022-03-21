@@ -3424,6 +3424,7 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 	}
 	switch (pw) {
 	case PWR_DOMAIN(PKG):
+	case PWR_DOMAIN(CORES):
 	case PWR_DOMAIN(UNCORE):
 	case PWR_DOMAIN(RAM):
 	case PWR_DOMAIN(PLATFORM):
@@ -3436,7 +3437,6 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 			}
 		}
 		break;
-	case PWR_DOMAIN(CORES):
 	case PWR_DOMAIN(SIZE):
 		break;
 	}
