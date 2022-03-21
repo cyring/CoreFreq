@@ -3995,8 +3995,16 @@ void TW1_Update(TGrid *grid, DATA_TYPE data)
 {
 	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data.sint[0];
 	char item[6+1];
-	StrFormat(item, 6+1, "%5.1f", RO(Shm)->Proc.Power.Domain[pw].TW1);
 
+    if (RO(Shm)->Proc.Power.Domain[pw].TW1 < 1.0) {
+	const unsigned long long TW1	= 10000000LLU
+					* RO(Shm)->Proc.Power.Domain[pw].TW1;
+	StrFormat(item, 6+1, TW1 > 0 ? ".%-4llu" : "%5llu", TW1);
+    } else {
+	StrFormat(item, 6+1, "%5.0f",
+			RO(Shm)->Proc.Power.Domain[pw].TW1 > 99999.0 ?
+			99999.0 : RO(Shm)->Proc.Power.Domain[pw].TW1);
+    }
 	PCT_Update(	grid, item, RO(Shm)->Proc.Power.Domain[pw].TW1 > 0 ?
 			RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Enable ?
 			3 : 5 : 0 );
@@ -4006,8 +4014,16 @@ void TW2_Update(TGrid *grid, DATA_TYPE data)
 {
 	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data.sint[0];
 	char item[6+1];
-	StrFormat(item, 6+1, "%5.1f", RO(Shm)->Proc.Power.Domain[pw].TW2);
 
+    if (RO(Shm)->Proc.Power.Domain[pw].TW2 < 1.0) {
+	const unsigned long long TW2	= 10000000LLU
+					* RO(Shm)->Proc.Power.Domain[pw].TW2;
+	StrFormat(item, 6+1, TW2 > 0 ? ".%-4llu" : "%5llu", TW2);
+    } else {
+	StrFormat(item, 6+1, "%5.0f",
+			RO(Shm)->Proc.Power.Domain[pw].TW2 > 99999.0 ?
+			99999.0 : RO(Shm)->Proc.Power.Domain[pw].TW2);
+    }
 	PCT_Update(	grid, item, RO(Shm)->Proc.Power.Domain[pw].TW2 > 0 ?
 			RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Enable ?
 			3 : 5 : 0 );
@@ -4320,13 +4336,16 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 		GridCall( PUT(	SCANKEY_NULL,
 				attrib[cix], width, 3,
-				"%s%.*s%s   %c%5.1f S%c",
+				RO(Shm)->Proc.Power.Domain[pw].TW1 > 99999.0 ?
+					"%s%.*s%s   %c%5.0f S%c"
+				:	"%s%.*s%s   %c%5.1f S%c",
 				RSC(POWER_THERMAL_TW).CODE(),
 				width - (OutFunc == NULL ? 21 : 19)
 				 - RSZ(POWER_THERMAL_TW), hSpace,
 				RSC(POWER_LABEL_TW1).CODE(),
 				RO(Shm)->Proc.Features.TDP_Unlock ? '<' : '[',
-				RO(Shm)->Proc.Power.Domain[pw].TW1,
+				RO(Shm)->Proc.Power.Domain[pw].TW1 > 99999.0 ?
+				99999.0 : RO(Shm)->Proc.Power.Domain[pw].TW1,
 				RO(Shm)->Proc.Features.TDP_Unlock ? '>' : ']' ),
 			TW1_Update, pw );
 
@@ -4351,13 +4370,16 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 		GridCall( PUT(	SCANKEY_NULL,
 				attrib[cix], width, 3,
-				"%s%.*s%s   %c%5.1f S%c",
+				RO(Shm)->Proc.Power.Domain[pw].TW2 > 99999.0 ?
+					"%s%.*s%s   %c%5.0f S%c"
+				:	"%s%.*s%s   %c%5.1f S%c",
 				RSC(POWER_THERMAL_TW).CODE(),
 				width - (OutFunc == NULL ? 21 : 19)
 				 - RSZ(POWER_THERMAL_TW), hSpace,
 				RSC(POWER_LABEL_TW2).CODE(),
 				RO(Shm)->Proc.Features.TDP_Unlock ? '<' : '[',
-				RO(Shm)->Proc.Power.Domain[pw].TW2,
+				RO(Shm)->Proc.Power.Domain[pw].TW2 > 99999.0 ?
+				99999.0 : RO(Shm)->Proc.Power.Domain[pw].TW2,
 				RO(Shm)->Proc.Features.TDP_Unlock ? '>' : ']' ),
 			TW2_Update, pw );
 	    }
