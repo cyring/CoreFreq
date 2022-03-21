@@ -1382,6 +1382,11 @@ void HyperThreading(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	RO(Shm)->Proc.Features.HyperThreading = RO(Proc)->Features.HTT_Enable;
 }
 
+double TW_Manufacturer(unsigned short Y, unsigned short Z, double TU)
+{
+	return (1 << Y) * (1 + Z/4) * TU;
+}
+
 void PowerInterface(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short pwrUnits = 0, pwrVal;
@@ -1490,20 +1495,16 @@ void PowerInterface(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
     }
     for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
     {
-	unsigned long long duration;
-	duration = (1 << RO(Proc)->PowerThermal.PowerLimit[pw].TimeWindow1_Y);
-	duration *= (4 + RO(Proc)->PowerThermal.PowerLimit[pw].TimeWindow1_Z);
-	duration = duration >> 2;
-
-	RO(Shm)->Proc.Power.Domain[pw].TW1 = RO(Shm)->Proc.Power.Unit.Times
-						* (double)duration;
-
-	duration = (1 << RO(Proc)->PowerThermal.PowerLimit[pw].TimeWindow2_Y);
-	duration *= (4 + RO(Proc)->PowerThermal.PowerLimit[pw].TimeWindow2_Z);
-	duration = duration >> 2;
-
-	RO(Shm)->Proc.Power.Domain[pw].TW2 = RO(Shm)->Proc.Power.Unit.Times
-						* (double)duration;
+	RO(Shm)->Proc.Power.Domain[pw].TW1 = TW_Manufacturer(
+			RO(Proc)->PowerThermal.PowerLimit[pw].TimeWindow1_Y,
+			RO(Proc)->PowerThermal.PowerLimit[pw].TimeWindow1_Z,
+			RO(Shm)->Proc.Power.Unit.Times
+	);
+	RO(Shm)->Proc.Power.Domain[pw].TW2 = TW_Manufacturer(
+			RO(Proc)->PowerThermal.PowerLimit[pw].TimeWindow2_Y,
+			RO(Proc)->PowerThermal.PowerLimit[pw].TimeWindow2_Z,
+			RO(Shm)->Proc.Power.Unit.Times
+	);
     }
 	RO(Shm)->Proc.Power.TDC = RO(Proc)->PowerThermal.TDC;
 	RO(Shm)->Proc.Power.Feature.TDC=RO(Proc)->PowerThermal.Enable_Limit.TDC;
