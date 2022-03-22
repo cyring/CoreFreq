@@ -1095,15 +1095,22 @@ typedef struct
 typedef struct
 {
 	PROCESSOR_SPECIFIC	*Specific;
-	struct {
-	    struct {
-		#ifdef CONFIG_AMD_NB
-		struct pci_dev	*DF;
-		#endif
-	    } Device;
-		Bit64		AMD_SMN_LOCK __attribute__ ((aligned (8)));
-		Bit64		AMD_FCH_LOCK __attribute__ ((aligned (8)));
-	} Zen;
+	union {
+		struct {
+		    struct {
+			#ifdef CONFIG_AMD_NB
+			struct pci_dev	*DF;
+			#endif
+		    } Device;
+			Bit64	AMD_SMN_LOCK __attribute__ ((aligned (8)));
+			Bit64	AMD_FCH_LOCK __attribute__ ((aligned (8)));
+		} Zen;
+		struct {
+			struct pci_dev	*HB;
+			void __iomem	*BAR;
+			unsigned int	ADDR;
+		} Xtra;
+	};
 	struct kmem_cache	*Cache;
 	JOIN			*Join[];
 } KPRIVATE;
@@ -1483,6 +1490,9 @@ static void InitTimer_Skylake(unsigned int cpu) ;
 static void Start_Uncore_Skylake(void *arg) ;
 static void Stop_Uncore_Skylake(void *arg) ;
 
+static void Start_Uncore_Xtra(void *arg) ;
+static void Stop_Uncore_Xtra(void *arg) ;
+
 static void Query_Skylake_X(unsigned int cpu) ;
 static void PerCore_Skylake_X_Query(void *arg) ;
 static void Start_Skylake_X(void *arg) ;
@@ -1546,6 +1556,7 @@ static void PerCore_AMD_Family_16h_Query(void *arg) ;
 #define     Stop_AMD_Family_16h Stop_AMD_Family_15h
 #define     InitTimer_AMD_Family_16h InitTimer_AuthenticAMD
 
+static void Exit_AMD_F17h(void) ;
 static void Query_AMD_F17h_PerSocket(unsigned int cpu) ;
 static void Query_AMD_F17h_PerCluster(unsigned int cpu) ;
 static void PerCore_AMD_Family_17h_Query(void *arg) ;
@@ -1569,6 +1580,7 @@ static void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 
 static void Query_Hygon_F18h(unsigned int cpu);
 
+#define     Exit_AMD_F19h Exit_AMD_F17h
 #define     Query_AMD_F19h_PerSocket Query_AMD_F17h_PerSocket
 #define     Query_AMD_F19h_PerCluster Query_AMD_F17h_PerCluster
 #define     PerCore_AMD_Family_19h_Query PerCore_AMD_Family_17h_Query
@@ -6840,7 +6852,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
-	.Exit = NULL,
+	.Exit = Exit_AMD_F17h,
 	.Timer = InitTimer_AMD_Family_17h,
 	.BaseClock = BaseClock_AMD_Family_17h,
 	.ClockMod = ClockMod_AMD_Zen,
@@ -6864,7 +6876,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
-	.Exit = NULL,
+	.Exit = Exit_AMD_F17h,
 	.Timer = InitTimer_AMD_Family_17h,
 	.BaseClock = BaseClock_AMD_Family_17h,
 	.ClockMod = ClockMod_AMD_Zen,
@@ -6888,7 +6900,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
-	.Exit = NULL,
+	.Exit = Exit_AMD_F19h,
 	.Timer = InitTimer_AMD_Family_19h,
 	.BaseClock = BaseClock_AMD_Family_19h,
 	.ClockMod = ClockMod_AMD_Zen,
@@ -8258,8 +8270,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Kabylake_ids,
 	.Uncore = {
-		.Start = Start_Uncore_Skylake,
-		.Stop = Stop_Uncore_Skylake,
+		.Start = Start_Uncore_Xtra,
+		.Stop = Stop_Uncore_Xtra,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
@@ -8710,7 +8722,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
-	.Exit = NULL,
+	.Exit = Exit_AMD_F17h,
 	.Timer = InitTimer_AMD_F17h_Zen,
 	.BaseClock = BaseClock_AMD_Family_17h,
 	.ClockMod = ClockMod_AMD_Zen,
@@ -8734,7 +8746,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
-	.Exit = NULL,
+	.Exit = Exit_AMD_F17h,
 	.Timer = InitTimer_AMD_Family_17h,
 	.BaseClock = BaseClock_AMD_Family_17h,
 	.ClockMod = ClockMod_AMD_Zen,
@@ -8758,7 +8770,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
-	.Exit = NULL,
+	.Exit = Exit_AMD_F17h,
 	.Timer = InitTimer_AMD_F17h_Zen,
 	.BaseClock = BaseClock_AMD_Family_17h,
 	.ClockMod = ClockMod_AMD_Zen,
@@ -8782,7 +8794,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
-	.Exit = NULL,
+	.Exit = Exit_AMD_F17h,
 	.Timer = InitTimer_AMD_F17h_Zen,
 	.BaseClock = BaseClock_AMD_Family_17h,
 	.ClockMod = ClockMod_AMD_Zen,
@@ -8806,7 +8818,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
-	.Exit = NULL,
+	.Exit = Exit_AMD_F17h,
 	.Timer = InitTimer_AMD_Family_17h,
 	.BaseClock = BaseClock_AMD_Family_17h,
 	.ClockMod = ClockMod_AMD_Zen,
@@ -8830,7 +8842,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
-	.Exit = NULL,
+	.Exit = Exit_AMD_F17h,
 	.Timer = InitTimer_AMD_F17h_Zen2_MP,
 	.BaseClock = BaseClock_AMD_Family_17h,
 	.ClockMod = ClockMod_AMD_Zen,
@@ -8854,7 +8866,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
-	.Exit = NULL,
+	.Exit = Exit_AMD_F17h,
 	.Timer = InitTimer_AMD_F17h_Zen2_APU,
 	.BaseClock = BaseClock_AMD_Family_17h,
 	.ClockMod = ClockMod_AMD_Zen,
@@ -8878,7 +8890,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
-	.Exit = NULL,
+	.Exit = Exit_AMD_F17h,
 	.Timer = InitTimer_AMD_F17h_Zen2_APU,
 	.BaseClock = BaseClock_AMD_Family_17h,
 	.ClockMod = ClockMod_AMD_Zen,
@@ -8902,7 +8914,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
-	.Exit = NULL,
+	.Exit = Exit_AMD_F17h,
 	.Timer = InitTimer_AMD_F17h_Zen2_SP,
 	.BaseClock = BaseClock_AMD_Family_17h,
 	.ClockMod = ClockMod_AMD_Zen,
@@ -8926,7 +8938,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
-	.Exit = NULL,
+	.Exit = Exit_AMD_F17h,
 	.Timer = InitTimer_AMD_F17h_Zen2_SP,
 	.BaseClock = BaseClock_AMD_Family_17h,
 	.ClockMod = ClockMod_AMD_Zen,
@@ -8950,7 +8962,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
-	.Exit = NULL,
+	.Exit = Exit_AMD_F19h,
 	.Timer = InitTimer_AMD_F17h_Zen3_SP,
 	.BaseClock = BaseClock_AMD_Family_19h,
 	.ClockMod = ClockMod_AMD_Zen,
@@ -8974,7 +8986,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
-	.Exit = NULL,
+	.Exit = Exit_AMD_F19h,
 	.Timer = InitTimer_AMD_F17h_Zen3_SP,
 	.BaseClock = BaseClock_AMD_Family_19h,
 	.ClockMod = ClockMod_AMD_Zen,
@@ -8998,7 +9010,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
-	.Exit = NULL,
+	.Exit = Exit_AMD_F19h,
 	.Timer = InitTimer_AMD_F17h_Zen3_MP,
 	.BaseClock = BaseClock_AMD_Family_19h,
 	.ClockMod = ClockMod_AMD_Zen,
@@ -9022,7 +9034,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
-	.Exit = NULL,
+	.Exit = Exit_AMD_F19h,
 	.Timer = InitTimer_AMD_F17h_Zen3_MP,
 	.BaseClock = BaseClock_AMD_Family_19h,
 	.ClockMod = ClockMod_AMD_Zen,
@@ -9046,7 +9058,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
-	.Exit = NULL,
+	.Exit = Exit_AMD_F19h,
 	.Timer = InitTimer_AMD_F17h_Zen3_MP,
 	.BaseClock = BaseClock_AMD_Family_19h,
 	.ClockMod = ClockMod_AMD_Zen,
@@ -9070,7 +9082,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
-	.Exit = NULL,
+	.Exit = Exit_AMD_F19h,
 	.Timer = InitTimer_AMD_F17h_Zen3_SP,
 	.BaseClock = BaseClock_AMD_Family_19h,
 	.ClockMod = ClockMod_AMD_Zen,

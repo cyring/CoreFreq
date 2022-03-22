@@ -3735,7 +3735,6 @@ void Probe_AMD_DataFabric(void)
 		if (dev != NULL)
 		{
 			PRIVATE(OF(Zen)).Device.DF = dev;
-			pci_dev_put(dev);
 		}
 	}
     }
@@ -3784,6 +3783,63 @@ PCI_CALLBACK Router(struct pci_dev *dev, unsigned int offset,
 			return (PCI_CALLBACK) -ENOMEM;
 	} else
 		return (PCI_CALLBACK) -ENOMEM;
+}
+
+PCI_CALLBACK GetMemoryBAR(int M, int B, int D, int F, unsigned int offset,
+			unsigned int bsize, unsigned long long wsize,
+			unsigned short range,
+			struct pci_dev **device, void __iomem **memmap)
+{
+  if ((*device) == NULL) {
+    if (((*device) = pci_get_domain_bus_and_slot(M, B, PCI_DEVFN(D,F))) != NULL)
+    {
+	union {
+		unsigned long long addr;
+		struct {
+			unsigned int low;
+			unsigned int high;
+		};
+	} membar;
+	unsigned long long wmask = BITCPL(wsize);
+	unsigned char membarEnable = 0;
+
+	switch (bsize) {
+	case 32:
+		pci_read_config_dword((*device), offset    , &membar.low);
+		membar.high = 0;
+		break;
+	case 64:
+		pci_read_config_dword((*device), offset    , &membar.low);
+		pci_read_config_dword((*device), offset + 4, &membar.high);
+		break;
+	}
+	membarEnable = BITVAL(membar, 0);
+	if (membarEnable) {
+		membar.addr &= wmask;
+		membar.addr += wsize * range;
+		if (((*memmap) = ioremap(membar.addr, wsize)) != NULL) {
+			return 0;
+		} else
+			return (PCI_CALLBACK) -ENOMEM;
+	} else
+		return (PCI_CALLBACK) -ENOMEM;
+    }
+	return (PCI_CALLBACK) -EINVAL;
+  }
+	return (PCI_CALLBACK) -EEXIST;
+}
+
+void PutMemoryBAR(struct pci_dev **device, void __iomem **memmap)
+{
+	if ((*memmap) != NULL) {
+		iounmap((*memmap));
+		(*memmap) = NULL;
+	}
+	if ((*device) != NULL)
+	{
+		pci_dev_put((*device));
+		(*device) = NULL;
+	}
 }
 
 void Query_P945(void __iomem *mchmap, unsigned short mc)
@@ -6804,6 +6860,17 @@ void Query_AMD_Family_17h(unsigned int cpu)
 		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
 	    }
 	}
+}
+
+static void Exit_AMD_F17h(void)
+{
+#ifdef CONFIG_AMD_NB
+	if (PRIVATE(OF(Zen)).Device.DF != NULL)
+	{
+		pci_dev_put(PRIVATE(OF(Zen)).Device.DF);
+		PRIVATE(OF(Zen)).Device.DF = NULL;
+	}
+#endif /* CONFIG_AMD_NB */
 }
 
 static void Query_AMD_F17h_PerSocket(unsigned int cpu)
@@ -11536,6 +11603,14 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
 		MSR_SKL_UNCORE_PERF_FIXED_CTR0 ,			\
 			PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);	\
+									\
+  if (PRIVATE(OF(Xtra)).BAR != NULL) {					\
+    if (PRIVATE(OF(Xtra)).ADDR != 0x0)					\
+    {									\
+	PUBLIC(RO(Proc))->Counter[T].MC6 =				\
+		readq(PRIVATE(OF(Xtra)).BAR + PRIVATE(OF(Xtra)).ADDR);	\
+    }									\
+  }									\
 })
 
 #define PKG_Counters_Skylake_X(Core, T) 				\
@@ -14625,6 +14700,8 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 
 		Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
+		Delta_MC6(PUBLIC(RO(Proc)));
+
 		Delta_PWR_ACCU(Proc, PKG);
 
 		Delta_PWR_ACCU(Proc, CORES);
@@ -14644,6 +14721,8 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 		Save_PTSC(PUBLIC(RO(Proc)));
 
 		Save_UNCORE_FC0(PUBLIC(RO(Proc)));
+
+		Save_MC6(PUBLIC(RO(Proc)));
 
 		Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
 
@@ -14790,6 +14869,41 @@ static void Stop_Uncore_Skylake(void *arg)
 	UNUSED(arg);
 
 	Uncore_Counters_Clear(SKL);
+}
+
+static void Start_Uncore_Xtra(void *arg)
+{
+	Start_Uncore_Skylake(arg);
+
+	if (GetMemoryBAR(0, 0, 0, 0, 0x48, 64, 0x10000, 0,
+			&PRIVATE(OF(Xtra)).HB, &PRIVATE(OF(Xtra)).BAR) == 0)
+	{
+		PRIVATE(OF(Xtra)).ADDR = 0x5838;
+/*
+ *		Counter | Description
+ *		--------|------------
+ *		0x5828	| Cycle Sum of All Active Cores
+ *		0x5830	| Cycle Sum of Any Active Core
+ *		0x5838	| Cycle Sum of Active Graphics
+ *		0x5840	| Cycle Sum of Overlapping Active GT and Core
+ *		0x5848	| Cycle Sum of Any Active GT Slice
+ *		0x5850	| Cycle Sum of All Active GT Slice
+ *		0x5858	| Cycle Sum of Any GT Media Engine
+ *		0x5860	| Ratio Sum of Any Active Core
+ *		0x5868	| Ratio Sum of Active GT
+ *		0x5870	| Ratio Sum of Active GT Slice
+ */
+	} else {
+		PRIVATE(OF(Xtra)).ADDR = 0x0;
+	}
+}
+
+static void Stop_Uncore_Xtra(void *arg)
+{
+	Stop_Uncore_Skylake(arg);
+
+	PutMemoryBAR(&PRIVATE(OF(Xtra)).HB, &PRIVATE(OF(Xtra)).BAR);
+	PRIVATE(OF(Xtra)).ADDR = 0x0;
 }
 
 static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
