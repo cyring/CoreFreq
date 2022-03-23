@@ -4009,7 +4009,7 @@ char *FormatTW(const size_t fsz, char *fmt, const double fTW)
 	} else {
 		iTW = fTW;
 		rTW = (100LLU * fTW) - (100LLU * iTW);
-		StrFormat(fmt, fsz, "%2llu.%2llu s", iTW, rTW);
+		StrFormat(fmt, fsz, "%2llu.%02llu s", iTW, rTW);
 	}
     } else {
 	unsigned long long iTW;
