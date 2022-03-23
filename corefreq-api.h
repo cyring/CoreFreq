@@ -925,7 +925,11 @@ typedef struct
 		RAPL_POWER_UNIT Unit;
 	  union {
 	    struct {
-/*64-bits*/	DOMAIN_POWER_LIMIT	PowerLimit[PWR_DOMAIN(SIZE)];
+	      struct {
+/*64-bits*/	DOMAIN_POWER_LIMIT	PowerLimit;
+		unsigned short		Unlock; /* Not Agent Locked */
+	      } Domain[PWR_DOMAIN(SIZE)];
+
 /*64-bits*/	DOMAIN_POWER_INFO	PowerInfo;
 /*32-bits*/	struct {
 			unsigned int	TDC	:  1-0,

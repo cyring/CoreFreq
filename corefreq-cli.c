@@ -4322,87 +4322,102 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		{RSC(POWER_LABEL_PLATFORM).CODE(),RSZ(POWER_LABEL_PLATFORM)}
 	};
 	enum PWR_DOMAIN pw;
-	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
-	{
-		char item[7+1];
-		unsigned int cix;
-		bix	= RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Enable
-			| RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Enable;
+    for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
+    {
+	char item[7+1];
+	unsigned int cix;
 
-		GridCall( PUT(	RO(Shm)->Proc.Features.TDP_Unlock ?
-				(BOXKEY_TDP_OR | (pw << 5) | PL1) :SCANKEY_NULL,
-				attrib[ bix ? 3 : 1 ], width, 2,
-				"%s%.*s%s   %c%7s%c",
-				RSC(POWER_THERMAL_TDP).CODE(),
-				width - 15 - RSZ(POWER_THERMAL_TDP)
-				 - label[pw].size,
-				hSpace, label[pw].code,
-				RO(Shm)->Proc.Features.TDP_Unlock ? '<' : '[',
-				bix ? RSC(ENABLE).CODE():RSC(DISABLE).CODE(),
-				RO(Shm)->Proc.Features.TDP_Unlock ? '>' : ']' ),
-			TDP_State, pw );
+	GridCall(
+	    PUT(RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Unlock ?
+		(BOXKEY_TDP_OR | (pw << 5) | PL1) : SCANKEY_NULL,
+		attrib[
+			RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Enable ? 3:1
+		],
+		width, 2,
+		"%s%.*s%s   %c%7s%c",
+		RSC(POWER_THERMAL_TDP).CODE(),
+		width - 15 - RSZ(POWER_THERMAL_TDP) - label[pw].size,
+		hSpace,
+		label[pw].code,
+		RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Unlock ? '<' : '[',
+		RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Enable ?
+				RSC(ENABLE).CODE() : RSC(DISABLE).CODE(),
+		RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Unlock ? '>' : ']'),
+	TDP_State, pw );
 
-		cix = RO(Shm)->Proc.Power.Domain[pw].PL1 > 0 ? bix ? 3 : 5 : 0;
+	cix = RO(Shm)->Proc.Power.Domain[pw].PL1 > 0 ?
+		RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Enable ? 3 : 5 : 0;
 
-		GridCall( PUT(	RO(Shm)->Proc.Features.TDP_Unlock ?
-				(BOXKEY_TDP_OR | (pw << 5) | PL1) :SCANKEY_NULL,
-				attrib[cix], width, 3,
-				"%s%.*s%s   %c%5u W%c",
-				RSC(POWER_THERMAL_TPL).CODE(),
-				width - (OutFunc == NULL ? 21 : 19)
-				 - RSZ(POWER_THERMAL_TPL), hSpace,
-				RSC(POWER_LABEL_PL1).CODE(),
-				RO(Shm)->Proc.Features.TDP_Unlock ? '<' : '[',
-				RO(Shm)->Proc.Power.Domain[pw].PL1,
-				RO(Shm)->Proc.Features.TDP_Unlock ? '>' : ']' ),
-			PL1_Update, pw );
+	GridCall(
+	    PUT(RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Unlock ?
+		(BOXKEY_TDP_OR | (pw << 5) | PL1) : SCANKEY_NULL,
+		attrib[cix],
+		width, 3,
+		"%s%.*s%s   %c%5u W%c",
+		RSC(POWER_THERMAL_TPL).CODE(),
+		width - (OutFunc == NULL ? 21 : 19) - RSZ(POWER_THERMAL_TPL),
+		hSpace,
+		RSC(POWER_LABEL_PL1).CODE(),
+		RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Unlock ? '<' : '[',
+		RO(Shm)->Proc.Power.Domain[pw].PL1,
+		RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Unlock ? '>' : ']'),
+	PL1_Update, pw );
 
-		cix = RO(Shm)->Proc.Power.Domain[pw].TW1 > 0 ? bix ? 3 : 5 : 0;
+	cix = RO(Shm)->Proc.Power.Domain[pw].TW1 > 0 ?
+		RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Enable ? 3 : 5 : 0;
 
-		GridCall( PUT(	SCANKEY_NULL,
-				attrib[cix], width, 3,
-				"%s%.*s%s   %c%s%c",
-				RSC(POWER_THERMAL_TW).CODE(),
-				width - (OutFunc == NULL ? 21 : 19)
-				 - RSZ(POWER_THERMAL_TW), hSpace,
-				RSC(POWER_LABEL_TW1).CODE(),
-				RO(Shm)->Proc.Features.TDP_Unlock ? '<' : '[',
-				FormatTW(7+1, item, RO(Shm)->Proc.Power.Domain[pw].TW1),
-				RO(Shm)->Proc.Features.TDP_Unlock ? '>' : ']' ),
-			TW1_Update, pw );
+	GridCall(
+	    PUT(SCANKEY_NULL,
+		attrib[cix],
+		width, 3,
+		"%s%.*s%s   %c%s%c",
+		RSC(POWER_THERMAL_TW).CODE(),
+		width - (OutFunc == NULL ? 21 : 19) - RSZ(POWER_THERMAL_TW),
+		hSpace,
+		RSC(POWER_LABEL_TW1).CODE(),
+		RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Unlock ? '<' : '[',
+		FormatTW(7+1, item, RO(Shm)->Proc.Power.Domain[pw].TW1),
+		RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Unlock ? '>' : ']'),
+	TW1_Update, pw );
 
-	    if (pw == PWR_DOMAIN(PKG) || pw == PWR_DOMAIN(PLATFORM))
-	    {
-		cix = RO(Shm)->Proc.Power.Domain[pw].PL2 > 0 ? bix ? 3 : 5 : 0;
+      if (pw == PWR_DOMAIN(PKG) || pw == PWR_DOMAIN(PLATFORM))
+      {
+	cix = RO(Shm)->Proc.Power.Domain[pw].PL2 > 0 ?
+		RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Enable ? 3 : 5 : 0;
 
-		GridCall( PUT(	RO(Shm)->Proc.Features.TDP_Unlock ?
-				(BOXKEY_TDP_OR | (pw << 5) | PL2) :SCANKEY_NULL,
-				attrib[cix], width, 3,
-				"%s%.*s%s   %c%5u W%c",
-				RSC(POWER_THERMAL_TPL).CODE(),
-				width - (OutFunc == NULL ? 21 : 19)
-				 - RSZ(POWER_THERMAL_TPL), hSpace,
-				RSC(POWER_LABEL_PL2).CODE(),
-				RO(Shm)->Proc.Features.TDP_Unlock ? '<' : '[',
-				RO(Shm)->Proc.Power.Domain[pw].PL2,
-				RO(Shm)->Proc.Features.TDP_Unlock ? '>' : ']' ),
-			PL2_Update, pw );
+	GridCall(
+	    PUT(RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Unlock ?
+		(BOXKEY_TDP_OR | (pw << 5) | PL2) : SCANKEY_NULL,
+		attrib[cix],
+		width, 3,
+		"%s%.*s%s   %c%5u W%c",
+		RSC(POWER_THERMAL_TPL).CODE(),
+		width - (OutFunc == NULL ? 21 : 19) - RSZ(POWER_THERMAL_TPL),
+		hSpace,
+		RSC(POWER_LABEL_PL2).CODE(),
+		RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Unlock ? '<' : '[',
+		RO(Shm)->Proc.Power.Domain[pw].PL2,
+		RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Unlock ? '>' : ']'),
+	PL2_Update, pw );
 
-		cix = RO(Shm)->Proc.Power.Domain[pw].TW2 > 0 ? bix ? 3 : 5 : 0;
+	cix = RO(Shm)->Proc.Power.Domain[pw].TW2 > 0 ?
+		RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Enable ? 3 : 5 : 0;
 
-		GridCall( PUT(	SCANKEY_NULL,
-				attrib[cix], width, 3,
-				"%s%.*s%s   %c%s%c",
-				RSC(POWER_THERMAL_TW).CODE(),
-				width - (OutFunc == NULL ? 21 : 19)
-				 - RSZ(POWER_THERMAL_TW), hSpace,
-				RSC(POWER_LABEL_TW2).CODE(),
-				RO(Shm)->Proc.Features.TDP_Unlock ? '<' : '[',
-				FormatTW(7+1, item, RO(Shm)->Proc.Power.Domain[pw].TW2),
-				RO(Shm)->Proc.Features.TDP_Unlock ? '>' : ']' ),
-			TW2_Update, pw );
-	    }
-	}
+	GridCall(
+	    PUT(SCANKEY_NULL,
+		attrib[cix],
+		width, 3,
+		"%s%.*s%s   %c%s%c",
+		RSC(POWER_THERMAL_TW).CODE(),
+		width - (OutFunc == NULL ? 21 : 19) - RSZ(POWER_THERMAL_TW),
+		hSpace,
+		RSC(POWER_LABEL_TW2).CODE(),
+		RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Unlock ? '<' : '[',
+		FormatTW(7+1, item, RO(Shm)->Proc.Power.Domain[pw].TW2),
+		RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Unlock ? '>' : ']'),
+	TW2_Update, pw );
+      }
+    }
 /* Section Mark */
     if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     ||	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))

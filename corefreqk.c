@@ -3364,11 +3364,16 @@ void Nehalem_PowerLimit(void)
 			RDMSR(PowerLimit, MSR_TURBO_POWER_CURRENT_LIMIT);
 		}
 	}
-	PUBLIC(RO(Proc))->PowerThermal.PowerLimit[PWR_DOMAIN(PKG)].Domain_Limit1
-		= PowerLimit.TDP_Limit;
+	PUBLIC(RO(Proc))->PowerThermal.Domain[PWR_DOMAIN(PKG)].Unlock = \
+					PUBLIC(RO(Proc))->Features.TDP_Unlock;
 
-	PUBLIC(RO(Proc))->PowerThermal.PowerLimit[PWR_DOMAIN(PKG)].Enable_Limit1
-		= PowerLimit.TDP_Override;
+	PUBLIC(RO(Proc))->PowerThermal.Domain[
+		PWR_DOMAIN(PKG)
+	].PowerLimit.Domain_Limit1 = PowerLimit.TDP_Limit;
+
+	PUBLIC(RO(Proc))->PowerThermal.Domain[
+		PWR_DOMAIN(PKG)
+	].PowerLimit.Enable_Limit1 = PowerLimit.TDP_Override;
 	/*	TDP: 1/(2 << (3-1)) = 1/8 watt	*/
 	PUBLIC(RO(Proc))->PowerThermal.Unit.PU = 3;
 	/*	TDC: 1/8 amp			*/
@@ -3386,14 +3391,16 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 				unsigned long long PowerLimitLockMask,
 				enum PWR_DOMAIN pw )
 {
-	unsigned short WrRdMSR = 0;
 	const unsigned int lt = PWR_LIMIT_SIZE * pw, rt = 1 + lt;
+	unsigned short WrRdMSR = 0;
 
 	DOMAIN_POWER_LIMIT PowerLimit = {.value = 0};
 	RDMSR(PowerLimit, MSR_DOMAIN_POWER_LIMIT);
 
-    if ((PowerLimit.value & PowerLimitLockMask) == 0
-     && (PUBLIC(RO(Proc))->PowerThermal.Unit.PU > 0))
+	PUBLIC(RO(Proc))->PowerThermal.Domain[pw].Unlock = \
+	!((PowerLimit.value & PowerLimitLockMask) == PowerLimitLockMask);
+
+    if (PUBLIC(RO(Proc))->PowerThermal.Unit.PU > 0)
     {
 	unsigned short	pwrUnits = PUBLIC(RO(Proc))->PowerThermal.Unit.PU - 1;
 			pwrUnits = 2 << pwrUnits;
@@ -3521,13 +3528,11 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 		break;
 	    }
 	}
-	if (WrRdMSR) {
-		if (PUBLIC(RO(Proc))->Features.TDP_Unlock) {
-			WRMSR(PowerLimit, MSR_DOMAIN_POWER_LIMIT);
-			RDMSR(PowerLimit, MSR_DOMAIN_POWER_LIMIT);
-		}
+	if (WrRdMSR && PUBLIC(RO(Proc))->PowerThermal.Domain[pw].Unlock) {
+		WRMSR(PowerLimit, MSR_DOMAIN_POWER_LIMIT);
 	}
-	PUBLIC(RO(Proc))->PowerThermal.PowerLimit[pw] = PowerLimit;
+	RDMSR(PowerLimit, MSR_DOMAIN_POWER_LIMIT);
+	PUBLIC(RO(Proc))->PowerThermal.Domain[pw].PowerLimit = PowerLimit;
 }
 
 void Intel_Processor_PIN(bool capable)
@@ -6808,13 +6813,25 @@ void Query_AMD_Family_17h(unsigned int cpu)
 		rx = AMD_HSMP_Exec(HSMP_RD_PKG_PL1, arg);
 	    if (rx == HSMP_RESULT_OK)
 	    {
-		PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
+		PUBLIC(RO(Proc))->PowerThermal.Domain[
 			PWR_DOMAIN(PKG)
-		].Domain_Limit1 = arg[0].value / 1000;
+		].PowerLimit.Domain_Limit1 = arg[0].value / 1000;
 
-		PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
+		PUBLIC(RO(Proc))->PowerThermal.Domain[
 			PWR_DOMAIN(PKG)
-		].Enable_Limit1 = PUBLIC(RO(Proc))->Features.TDP_Unlock = 1;
+		].PowerLimit.Enable_Limit1 = \
+
+		PUBLIC(RO(Proc))->PowerThermal.Domain[
+			PWR_DOMAIN(PKG)
+		].PowerLimit.Clamping1 = \
+
+		PUBLIC(RO(Proc))->PowerThermal.Domain[
+			PWR_DOMAIN(PKG)
+		].Unlock = \
+		/* Assumed PL1 is enabled, clamped, unlocked if value exists */
+		PUBLIC(RO(Proc))->PowerThermal.Domain[
+			PWR_DOMAIN(PKG)
+		].PowerLimit.Domain_Limit1 > 0;
 	    }
 	    else if (IS_HSMP_OOO(rx))
 	    {
@@ -6828,17 +6845,21 @@ void Query_AMD_Family_17h(unsigned int cpu)
 		rx = AMD_HSMP_Exec(HSMP_RD_MAX_PPT, arg);
 	    if (rx == HSMP_RESULT_OK)
 	    {
-		PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
+		PUBLIC(RO(Proc))->PowerThermal.Domain[
 			PWR_DOMAIN(PKG)
-		].Domain_Limit2 = arg[0].value / 1000;
+		].PowerLimit.Domain_Limit2 = arg[0].value / 1000;
 
-		PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
+		PUBLIC(RO(Proc))->PowerThermal.Domain[
 			PWR_DOMAIN(PKG)
-		].Enable_Limit2 = 1;
+		].PowerLimit.Enable_Limit2 = \
 
-		PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
+		PUBLIC(RO(Proc))->PowerThermal.Domain[
 			PWR_DOMAIN(PKG)
-		].Clamping2 = 1;
+		].PowerLimit.Clamping2 = \
+		/*	Assumed PL2 is enabled, clamped if value exists */
+		PUBLIC(RO(Proc))->PowerThermal.Domain[
+			PWR_DOMAIN(PKG)
+		].PowerLimit.Domain_Limit2 > 0;
 	    }
 	    else if (IS_HSMP_OOO(rx))
 	    {
@@ -9970,9 +9991,17 @@ static void PerCore_SandyBridge_EP_Query(void *arg)
 
 static void PerCore_IvyBridge_Query(void *arg)
 {
+	CORE_RO *Core = (CORE_RO *) arg;
+
 	PerCore_SandyBridge_Query(arg);
 	Intel_Turbo_Activation_Ratio( (CORE_RO*) arg );
 	Intel_Turbo_TDP_Config( (CORE_RO*) arg );
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		Intel_DomainPowerLimit( MSR_PP1_POWER_LIMIT,
+					PPn_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(UNCORE) );
+	}
 }
 
 static void PerCore_IvyBridge_EP_Query(void *arg)
@@ -10541,9 +10570,9 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	    if (Custom_TDP_Offset[_lt] != 0)
 	    {
 		signed int TDP_Limit;
-		TDP_Limit = PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
+		TDP_Limit = PUBLIC(RO(Proc))->PowerThermal.Domain[
 					PWR_DOMAIN(PKG)
-			].Domain_Limit1;
+			].PowerLimit.Domain_Limit1;
 
 		TDP_Limit = TDP_Limit + Custom_TDP_Offset[_lt];
 
@@ -10559,9 +10588,9 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 		    }
 		    if (rx == HSMP_RESULT_OK)
 		    {
-			PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
+			PUBLIC(RO(Proc))->PowerThermal.Domain[
 				PWR_DOMAIN(PKG)
-			].Domain_Limit1 = arg[0].value / 1000;
+			].PowerLimit.Domain_Limit1 = arg[0].value / 1000;
 		    }
 		    else if (IS_HSMP_OOO(rx))
 		    {

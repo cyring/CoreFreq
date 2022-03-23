@@ -1442,22 +1442,26 @@ void PowerInterface(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
       for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
       {
 	RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Enable = \
-			RO(Proc)->PowerThermal.PowerLimit[pw].Enable_Limit1;
+		RO(Proc)->PowerThermal.Domain[pw].PowerLimit.Enable_Limit1;
 
 	RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Enable = \
-			RO(Proc)->PowerThermal.PowerLimit[pw].Enable_Limit2;
+		RO(Proc)->PowerThermal.Domain[pw].PowerLimit.Enable_Limit2;
 
 	RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Clamping = \
-			RO(Proc)->PowerThermal.PowerLimit[pw].Clamping1;
+			RO(Proc)->PowerThermal.Domain[pw].PowerLimit.Clamping1;
 
 	RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Clamping = \
-			RO(Proc)->PowerThermal.PowerLimit[pw].Clamping2;
+			RO(Proc)->PowerThermal.Domain[pw].PowerLimit.Clamping2;
 
-	pwrVal = RO(Proc)->PowerThermal.PowerLimit[pw].Domain_Limit1;
+	pwrVal = RO(Proc)->PowerThermal.Domain[pw].PowerLimit.Domain_Limit1;
 	RO(Shm)->Proc.Power.Domain[pw].PL1 = pwrVal;
 
-	pwrVal = RO(Proc)->PowerThermal.PowerLimit[pw].Domain_Limit2;
+	pwrVal = RO(Proc)->PowerThermal.Domain[pw].PowerLimit.Domain_Limit2;
 	RO(Shm)->Proc.Power.Domain[pw].PL2 = pwrVal;
+
+	RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Unlock = \
+	RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Unlock = \
+				RO(Proc)->PowerThermal.Domain[pw].Unlock;
       }
   }
   else if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
@@ -1467,21 +1471,23 @@ void PowerInterface(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
       for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
       {
 	RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Enable = \
-			RO(Proc)->PowerThermal.PowerLimit[pw].Enable_Limit1;
+		RO(Proc)->PowerThermal.Domain[pw].PowerLimit.Enable_Limit1;
 
 	RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Enable = \
-			RO(Proc)->PowerThermal.PowerLimit[pw].Enable_Limit2;
+		RO(Proc)->PowerThermal.Domain[pw].PowerLimit.Enable_Limit2;
 
 	RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Clamping = \
-			RO(Proc)->PowerThermal.PowerLimit[pw].Clamping1;
+		RO(Proc)->PowerThermal.Domain[pw].PowerLimit.Clamping1;
 
 	RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Clamping = \
-			RO(Proc)->PowerThermal.PowerLimit[pw].Clamping2;
+		RO(Proc)->PowerThermal.Domain[pw].PowerLimit.Clamping2;
 
-	pwrVal = RO(Proc)->PowerThermal.PowerLimit[pw].Domain_Limit1 / pwrUnits;
+	pwrVal	= RO(Proc)->PowerThermal.Domain[pw].PowerLimit.Domain_Limit1
+		/ pwrUnits;
 	RO(Shm)->Proc.Power.Domain[pw].PL1 = pwrVal;
 
-	pwrVal = RO(Proc)->PowerThermal.PowerLimit[pw].Domain_Limit2 / pwrUnits;
+	pwrVal	= RO(Proc)->PowerThermal.Domain[pw].PowerLimit.Domain_Limit2
+		/ pwrUnits;
 	RO(Shm)->Proc.Power.Domain[pw].PL2 = pwrVal;
       }
 	pwrVal = RO(Proc)->PowerThermal.PowerInfo.ThermalSpecPower / pwrUnits;
@@ -1496,15 +1502,18 @@ void PowerInterface(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
     for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
     {
 	RO(Shm)->Proc.Power.Domain[pw].TW1 = TW_Manufacturer(
-			RO(Proc)->PowerThermal.PowerLimit[pw].TimeWindow1_Y,
-			RO(Proc)->PowerThermal.PowerLimit[pw].TimeWindow1_Z,
-			RO(Shm)->Proc.Power.Unit.Times
+		RO(Proc)->PowerThermal.Domain[pw].PowerLimit.TimeWindow1_Y,
+		RO(Proc)->PowerThermal.Domain[pw].PowerLimit.TimeWindow1_Z,
+		RO(Shm)->Proc.Power.Unit.Times
 	);
 	RO(Shm)->Proc.Power.Domain[pw].TW2 = TW_Manufacturer(
-			RO(Proc)->PowerThermal.PowerLimit[pw].TimeWindow2_Y,
-			RO(Proc)->PowerThermal.PowerLimit[pw].TimeWindow2_Z,
-			RO(Shm)->Proc.Power.Unit.Times
+		RO(Proc)->PowerThermal.Domain[pw].PowerLimit.TimeWindow2_Y,
+		RO(Proc)->PowerThermal.Domain[pw].PowerLimit.TimeWindow2_Z,
+		RO(Shm)->Proc.Power.Unit.Times
 	);
+	RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Unlock = \
+	RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Unlock = \
+				RO(Proc)->PowerThermal.Domain[pw].Unlock;
     }
 	RO(Shm)->Proc.Power.TDC = RO(Proc)->PowerThermal.TDC;
 	RO(Shm)->Proc.Power.Feature.TDC=RO(Proc)->PowerThermal.Enable_Limit.TDC;

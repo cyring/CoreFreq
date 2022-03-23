@@ -450,7 +450,8 @@ typedef struct
 			unsigned short
 					Enable	:  1-0,
 					Clamping:  2-1,
-					_Unused : 16-2;
+					Unlock	:  3-2,
+					_Unused : 16-3;
 		    } Feature[PWR_LIMIT_SIZE];
 		} Domain[PWR_DOMAIN(SIZE)];
 		unsigned short		TDP, Min, Max;
