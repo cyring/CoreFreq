@@ -3957,14 +3957,14 @@ void PCT_Update(TGrid *grid, const char *item, const unsigned int cix)
 	const signed int pos = grid->cell.length - 9;
 
 	memcpy(&grid->cell.attr[pos], &attrib[cix][pos], 7);
-	memcpy(&grid->cell.item[pos], item, 5);
+	memcpy(&grid->cell.item[pos], item, 7);
 }
 
 void TDP_Update(TGrid *grid, DATA_TYPE data)
 {
 	UNUSED(data);
-	char item[6+1];
-	StrFormat(item, 6+1, "%5u", RO(Shm)->Proc.Power.TDP);
+	char item[7+1];
+	StrFormat(item, 7+1, "%5u W", RO(Shm)->Proc.Power.TDP);
 
 	PCT_Update(grid, item, RO(Shm)->Proc.Power.TDP > 0 ? 5 : 0);
 }
@@ -3972,8 +3972,8 @@ void TDP_Update(TGrid *grid, DATA_TYPE data)
 void PL1_Update(TGrid *grid, DATA_TYPE data)
 {
 	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data.sint[0];
-	char item[6+1];
-	StrFormat(item, 6+1, "%5u", RO(Shm)->Proc.Power.Domain[pw].PL1);
+	char item[7+1];
+	StrFormat(item, 7+1, "%5u W", RO(Shm)->Proc.Power.Domain[pw].PL1);
 
 	PCT_Update(	grid, item, RO(Shm)->Proc.Power.Domain[pw].PL1 > 0 ?
 			RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Enable ?
@@ -3983,29 +3983,60 @@ void PL1_Update(TGrid *grid, DATA_TYPE data)
 void PL2_Update(TGrid *grid, DATA_TYPE data)
 {
 	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data.sint[0];
-	char item[6+1];
-	StrFormat(item, 6+1, "%5u", RO(Shm)->Proc.Power.Domain[pw].PL2);
+	char item[7+1];
+	StrFormat(item, 7+1, "%5u W", RO(Shm)->Proc.Power.Domain[pw].PL2);
 
 	PCT_Update(	grid, item, RO(Shm)->Proc.Power.Domain[pw].PL2 > 0 ?
 			RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Enable ?
 			3 : 5 : 0 );
 }
 
+char *FormatTW(const size_t fsz, char *fmt, const double fTW)
+{
+    if (fTW >= 1.0) {
+	unsigned long long iTW, rTW;
+	if (fTW >= 36000.0) {
+		iTW = fTW / 86400LLU;
+		rTW = fTW - (iTW * 86400LLU);
+		rTW = (100LLU * rTW) / 86400LLU;
+		StrFormat(fmt, fsz, "%2llu.%02llu d", iTW, rTW);
+	} else if (fTW >= 60.0) {
+		unsigned long long hTW = fTW / 3600LLU, mTW;
+		iTW = fTW / 60LLU;
+		rTW = fTW - (iTW * 60LLU);
+		mTW = (fTW - (hTW * 3600LLU)) / 60LLU;
+		StrFormat(fmt, fsz, "%1llu:%02llu:%02llu", hTW, mTW, rTW);
+	} else {
+		iTW = fTW;
+		rTW = (100LLU * fTW) - (100LLU * iTW);
+		StrFormat(fmt, fsz, "%2llu.%2llu s", iTW, rTW);
+	}
+    } else {
+	unsigned long long iTW;
+	char unit;
+	if (fTW < 0.000001) {
+		iTW = 1000LLU * 1000LLU * 1000LLU * fTW;
+		unit = 'n';
+	} else if (fTW < 0.001) {
+		iTW = 1000LLU * 1000LLU * fTW;
+		unit = 'u';
+	} else {
+		iTW = 1000LLU * fTW;
+		unit = 'm';
+	}
+	StrFormat(fmt, fsz, "%4llu %cs", iTW, unit);
+    }
+	return fmt;
+}
+
 void TW1_Update(TGrid *grid, DATA_TYPE data)
 {
 	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data.sint[0];
-	char item[6+1];
+	char item[7+1];
 
-    if (RO(Shm)->Proc.Power.Domain[pw].TW1 < 1.0) {
-	const unsigned long long TW1	= 10000000LLU
-					* RO(Shm)->Proc.Power.Domain[pw].TW1;
-	StrFormat(item, 6+1, TW1 > 0 ? ".%-4llu" : "%5llu", TW1);
-    } else {
-	StrFormat(item, 6+1, "%5.0f",
-			RO(Shm)->Proc.Power.Domain[pw].TW1 > 99999.0 ?
-			99999.0 : RO(Shm)->Proc.Power.Domain[pw].TW1);
-    }
-	PCT_Update(	grid, item, RO(Shm)->Proc.Power.Domain[pw].TW1 > 0 ?
+	PCT_Update(	grid,
+			FormatTW(7+1, item, RO(Shm)->Proc.Power.Domain[pw].TW1),
+			RO(Shm)->Proc.Power.Domain[pw].TW1 > 0 ?
 			RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Enable ?
 			3 : 5 : 0 );
 }
@@ -4013,18 +4044,11 @@ void TW1_Update(TGrid *grid, DATA_TYPE data)
 void TW2_Update(TGrid *grid, DATA_TYPE data)
 {
 	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data.sint[0];
-	char item[6+1];
+	char item[7+1];
 
-    if (RO(Shm)->Proc.Power.Domain[pw].TW2 < 1.0) {
-	const unsigned long long TW2	= 10000000LLU
-					* RO(Shm)->Proc.Power.Domain[pw].TW2;
-	StrFormat(item, 6+1, TW2 > 0 ? ".%-4llu" : "%5llu", TW2);
-    } else {
-	StrFormat(item, 6+1, "%5.0f",
-			RO(Shm)->Proc.Power.Domain[pw].TW2 > 99999.0 ?
-			99999.0 : RO(Shm)->Proc.Power.Domain[pw].TW2);
-    }
-	PCT_Update(	grid, item, RO(Shm)->Proc.Power.Domain[pw].TW2 > 0 ?
+	PCT_Update(	grid,
+			FormatTW(7+1, item, RO(Shm)->Proc.Power.Domain[pw].TW2),
+			RO(Shm)->Proc.Power.Domain[pw].TW2 > 0 ?
 			RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Enable ?
 			3 : 5 : 0 );
 }
@@ -4032,8 +4056,8 @@ void TW2_Update(TGrid *grid, DATA_TYPE data)
 void TDC_Update(TGrid *grid, DATA_TYPE data)
 {
 	UNUSED(data);
-	char item[6+1];
-	StrFormat(item, 6+1, "%5u", RO(Shm)->Proc.Power.TDC);
+	char item[7+1];
+	StrFormat(item, 7+1, "%5u A", RO(Shm)->Proc.Power.TDC);
 
 	PCT_Update(	grid, item, RO(Shm)->Proc.Power.TDC > 0 ?
 			RO(Shm)->Proc.Power.Feature.TDC ?
@@ -4300,6 +4324,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	enum PWR_DOMAIN pw;
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
 	{
+		char item[7+1];
 		unsigned int cix;
 		bix	= RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Enable
 			| RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Enable;
@@ -4336,16 +4361,13 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 		GridCall( PUT(	SCANKEY_NULL,
 				attrib[cix], width, 3,
-				RO(Shm)->Proc.Power.Domain[pw].TW1 > 99999.0 ?
-					"%s%.*s%s   %c%5.0f S%c"
-				:	"%s%.*s%s   %c%5.1f S%c",
+				"%s%.*s%s   %c%s%c",
 				RSC(POWER_THERMAL_TW).CODE(),
 				width - (OutFunc == NULL ? 21 : 19)
 				 - RSZ(POWER_THERMAL_TW), hSpace,
 				RSC(POWER_LABEL_TW1).CODE(),
 				RO(Shm)->Proc.Features.TDP_Unlock ? '<' : '[',
-				RO(Shm)->Proc.Power.Domain[pw].TW1 > 99999.0 ?
-				99999.0 : RO(Shm)->Proc.Power.Domain[pw].TW1,
+				FormatTW(7+1, item, RO(Shm)->Proc.Power.Domain[pw].TW1),
 				RO(Shm)->Proc.Features.TDP_Unlock ? '>' : ']' ),
 			TW1_Update, pw );
 
@@ -4370,16 +4392,13 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 		GridCall( PUT(	SCANKEY_NULL,
 				attrib[cix], width, 3,
-				RO(Shm)->Proc.Power.Domain[pw].TW2 > 99999.0 ?
-					"%s%.*s%s   %c%5.0f S%c"
-				:	"%s%.*s%s   %c%5.1f S%c",
+				"%s%.*s%s   %c%s%c",
 				RSC(POWER_THERMAL_TW).CODE(),
 				width - (OutFunc == NULL ? 21 : 19)
 				 - RSZ(POWER_THERMAL_TW), hSpace,
 				RSC(POWER_LABEL_TW2).CODE(),
 				RO(Shm)->Proc.Features.TDP_Unlock ? '<' : '[',
-				RO(Shm)->Proc.Power.Domain[pw].TW2 > 99999.0 ?
-				99999.0 : RO(Shm)->Proc.Power.Domain[pw].TW2,
+				FormatTW(7+1, item, RO(Shm)->Proc.Power.Domain[pw].TW2),
 				RO(Shm)->Proc.Features.TDP_Unlock ? '>' : ']' ),
 			TW2_Update, pw );
 	    }
