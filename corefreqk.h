@@ -1095,6 +1095,20 @@ typedef struct
 typedef struct
 {
 	PROCESSOR_SPECIFIC	*Specific;
+
+	union {
+	    struct {
+		union {
+			UNCORE_GLOBAL_PERF_CONTROL Uncore_GlobalPerfControl;
+			UNCORE_PMON_GLOBAL_CONTROL Uncore_PMonGlobalControl;
+		};
+			UNCORE_FIXED_PERF_CONTROL  Uncore_FixedPerfControl;
+	    } Intel;
+	    struct {
+			ZEN_DF_PERF_CTL 	Zen_DataFabricPerfControl;
+	    } AMD;
+	} SaveArea;
+
 	union {
 		struct {
 		    struct {
@@ -1111,8 +1125,26 @@ typedef struct
 			unsigned int	ADDR;
 		} PCU;
 	};
+
 	struct kmem_cache	*Cache;
-	JOIN			*Join[];
+
+	struct PRIV_CORE_ST {
+		JOIN		Join;
+
+		union SAVE_AREA_CORE {
+		    struct	/* Intel				*/
+		    {
+			CORE_GLOBAL_PERF_CONTROL Core_GlobalPerfControl;
+			CORE_FIXED_PERF_CONTROL  Core_FixedPerfControl;
+		    };
+		    struct	/* AMD					*/
+		    {
+			ZEN_PERF_CTL		Zen_PerformanceControl;
+			ZEN_L3_PERF_CTL 	Zen_L3_Cache_PerfControl;
+			HWCR			Core_HardwareConfiguration;
+		    };
+		} SaveArea;
+	} *Core[];
 } KPRIVATE;
 
 

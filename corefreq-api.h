@@ -386,20 +386,6 @@ typedef struct
 		}			NMI;
 	} Interrupt;
 
-	union {
-	    struct	/* Intel					*/
-	    {
-		CORE_GLOBAL_PERF_CONTROL Core_GlobalPerfControl;
-		CORE_FIXED_PERF_CONTROL  Core_FixedPerfControl;
-	    };
-	    struct	/* AMD						*/
-	    {
-		ZEN_PERF_CTL		Zen_PerformanceControl;
-		ZEN_L3_PERF_CTL 	Zen_L3_Cache_PerfControl;
-		HWCR			Core_HardwareConfiguration;
-	    };
-	} SaveArea;
-
 	struct
 	{
 		CPUID_0x00000000	StdFunc;
@@ -852,20 +838,6 @@ typedef struct
 	  } Uncore;
 	} Delta __attribute__ ((aligned (8)));
 
-	union
-	{
-	    struct {
-		union {
-			UNCORE_GLOBAL_PERF_CONTROL Uncore_GlobalPerfControl;
-			UNCORE_PMON_GLOBAL_CONTROL Uncore_PMonGlobalControl;
-		};
-			UNCORE_FIXED_PERF_CONTROL  Uncore_FixedPerfControl;
-	    } Intel;
-	    struct {
-			ZEN_DF_PERF_CTL 	Zen_DataFabricPerfControl;
-	    } AMD;
-	} SaveArea;
-
 	FEATURES		Features;
 
 	BitCC			CR_Mask 	__attribute__ ((aligned (16)));
@@ -939,11 +911,9 @@ typedef struct
 /*16-bits*/	unsigned short		TDC;
 	    };
 	    struct {
-/*64-bits*/	unsigned long long	_pad64[PWR_DOMAIN(SIZE)];
 /*32-bits*/	AMD_17_MTS_MCM_PWR	PWR;
 /*32-bits*/	AMD_17_MTS_MCM_TDP	TDP;
 /*32-bits*/	AMD_17_MTS_MCM_EDC	EDC;
-/*32-bits*/	unsigned int		_pad32;
 	    } Zen;
 	  };
 	} PowerThermal;

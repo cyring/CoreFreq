@@ -10863,15 +10863,15 @@ static void InitTimer(void *Cycle_Function)
 {
 	unsigned int cpu = smp_processor_id();
 
-	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, CREATED) == 0)
-	{
-		hrtimer_init(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
-				CLOCK_MONOTONIC,
-				HRTIMER_MODE_REL_PINNED);
+    if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, CREATED) == 0)
+    {
+	hrtimer_init(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
+			CLOCK_MONOTONIC,
+			HRTIMER_MODE_REL_PINNED);
 
-		PRIVATE(OF(Join, AT(cpu)))->Timer.function = Cycle_Function;
-		BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, CREATED);
-	}
+	PRIVATE(OF(Core, AT(cpu)))->Join.Timer.function = Cycle_Function;
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, CREATED);
+    }
 }
 
 void Controller_Init(void)
@@ -10982,8 +10982,8 @@ void Controller_Start(int wait)
 	unsigned int cpu;
       for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++)
       {
-	if ((BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, CREATED) == 1)
-	 && (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED) == 0))
+	if ((BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, CREATED) == 1)
+	 && (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED) == 0))
 	{
 		smp_call_function_single(cpu,
 					Arch[PUBLIC(RO(Proc))->ArchID].Start,
@@ -10999,8 +10999,8 @@ void Controller_Stop(int wait)
     {
 	unsigned int cpu;
 	for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++)
-	    if ((BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, CREATED) == 1)
-	     && (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED) == 1))
+	    if ((BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, CREATED) == 1)
+	     && (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED) == 1))
 	    {
 		smp_call_function_single(cpu,
 					Arch[PUBLIC(RO(Proc))->ArchID].Stop,
@@ -11019,11 +11019,11 @@ void Controller_Exit(void)
 	}
 	for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++)
 	{
-		BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, CREATED);
+		BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, CREATED);
 	}
 }
 
-void Intel_Core_Counters_Set(CORE_RO *Core)
+void Intel_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 {
     if (PUBLIC(RO(Proc))->Features.PerfMon.EAX.Version >= 2) {
 	CORE_GLOBAL_PERF_CONTROL	Core_GlobalPerfControl = {.value = 0};
@@ -11032,7 +11032,7 @@ void Intel_Core_Counters_Set(CORE_RO *Core)
 	CORE_GLOBAL_PERF_OVF_CTRL	Core_PerfOvfControl = {.value = 0};
 
 	RDMSR(Core_GlobalPerfControl, MSR_CORE_PERF_GLOBAL_CTRL);
-	Core->SaveArea.Core_GlobalPerfControl = Core_GlobalPerfControl;
+	Save->Core_GlobalPerfControl = Core_GlobalPerfControl;
 	Core_GlobalPerfControl.EN_FIXED_CTR0  = 1;
 #if defined(MSR_CORE_PERF_UCC) && MSR_CORE_PERF_UCC == MSR_CORE_PERF_FIXED_CTR1
 	Core_GlobalPerfControl.EN_FIXED_CTR1  = 1;
@@ -11043,7 +11043,7 @@ void Intel_Core_Counters_Set(CORE_RO *Core)
 	WRMSR(Core_GlobalPerfControl, MSR_CORE_PERF_GLOBAL_CTRL);
 
 	RDMSR(Core_FixedPerfControl, MSR_CORE_PERF_FIXED_CTR_CTRL);
-	Core->SaveArea.Core_FixedPerfControl = Core_FixedPerfControl;
+	Save->Core_FixedPerfControl = Core_FixedPerfControl;
 	Core_FixedPerfControl.EN0_OS = 1;
 #if defined(MSR_CORE_PERF_UCC) && MSR_CORE_PERF_UCC == MSR_CORE_PERF_FIXED_CTR1
 	Core_FixedPerfControl.EN1_OS = 1;
@@ -11100,20 +11100,20 @@ void Intel_Core_Counters_Set(CORE_RO *Core)
     }
 }
 
-#define AMD_Core_Counters_Set(Core, PMC)				\
+#define AMD_Core_Counters_Set(Save, Core, PMC)				\
 ({									\
     if (PUBLIC(RO(Proc))->Features.PerfMon.EBX.InstrRetired == 0)	\
     {									\
 	HWCR HwCfgRegister = {.value = 0};				\
 									\
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);				\
-	Core->SaveArea.Core_HardwareConfiguration = HwCfgRegister;	\
+	Save->Core_HardwareConfiguration = HwCfgRegister;		\
 	HwCfgRegister.PMC.IRPerfEn = 1 ;				\
 	WRMSR(HwCfgRegister, MSR_K7_HWCR);				\
     }									\
 })
 
-#define AMD_Zen_PMC_L3_Set(Core)					\
+#define AMD_Zen_PMC_L3_Set(Save, Core)					\
 ({									\
 	const unsigned int bitwiseID = Core->T.ApicID			\
 	& PUBLIC(RO(Proc))->Features.leaf80000008.ECX.ApicIdCoreIdSize; \
@@ -11124,7 +11124,7 @@ void Intel_Core_Counters_Set(CORE_RO *Core)
 	ZEN_L3_PERF_CTL Zen_L3_Cache_PerfControl = {.value = 0};	\
 									\
 	RDMSR(Zen_L3_Cache_PerfControl, MSR_AMD_F17H_L3_PERF_CTL);	\
-	Core->SaveArea.Zen_L3_Cache_PerfControl=Zen_L3_Cache_PerfControl;\
+	Save->Zen_L3_Cache_PerfControl=Zen_L3_Cache_PerfControl;	\
 	Zen_L3_Cache_PerfControl.EventSelect =	0x90;			\
 	Zen_L3_Cache_PerfControl.UnitMask =	0x00;			\
 	Zen_L3_Cache_PerfControl.CounterEn =	1;			\
@@ -11134,7 +11134,7 @@ void Intel_Core_Counters_Set(CORE_RO *Core)
     }									\
 })
 
-#define AMD_Zen_PMC_PERF_Set(Core)					\
+#define AMD_Zen_PMC_PERF_Set(Save, Core)				\
 ({									\
 	const unsigned int bitwiseID = Core->T.ApicID			\
 	& PUBLIC(RO(Proc))->Features.leaf80000008.ECX.ApicIdCoreIdSize; \
@@ -11144,7 +11144,7 @@ void Intel_Core_Counters_Set(CORE_RO *Core)
 	ZEN_PERF_CTL Zen_PerformanceControl = {.value = 0};		\
 									\
 	RDMSR(Zen_PerformanceControl, MSR_AMD_F17H_PERF_CTL);		\
-	Core->SaveArea.Zen_PerformanceControl = Zen_PerformanceControl; \
+	Save->Zen_PerformanceControl = Zen_PerformanceControl;		\
 	Zen_PerformanceControl.EventSelect00 =	0xc1;			\
 	Zen_PerformanceControl.UnitMask =	0x00;			\
 	Zen_PerformanceControl.OsUserMode =	0x03;			\
@@ -11159,18 +11159,18 @@ void Intel_Core_Counters_Set(CORE_RO *Core)
     }									\
 })
 
-#define AMD_Zen_PMC_UMC_Set(Core)			({ /* NOP */ })
+#define AMD_Zen_PMC_UMC_Set(Save, Core)			({ /* NOP */ })
 
-#define AMD_Zen_PMC_PCU_Set(Core)			({ /* NOP */ })
+#define AMD_Zen_PMC_PCU_Set(Save, Core)			({ /* NOP */ })
 
-#define _AMD_Zen_PMC_Set_(Core, _PMC_)					\
+#define _AMD_Zen_PMC_Set_(Save, Core, _PMC_)				\
 ({									\
-	AMD_Zen_PMC_##_PMC_##_Set(Core);				\
+	AMD_Zen_PMC_##_PMC_##_Set(Save, Core);				\
 })
-#define AMD_Zen_PMC_Set(Core, _PMC_)					\
-	_AMD_Zen_PMC_Set_(Core, _PMC_)
+#define AMD_Zen_PMC_Set(Save, Core, _PMC_)				\
+	_AMD_Zen_PMC_Set_(Save, Core, _PMC_)
 
-#define AMD_Zen_PMC_ARCH_PMC_Set(Core)			({ /* NOP */ })
+#define AMD_Zen_PMC_ARCH_PMC_Set(Save, Core)		({ /* NOP */ })
 
 #define Uncore_Counters_Set(PMU)					\
 ({									\
@@ -11184,7 +11184,7 @@ void Intel_Core_Counters_Set(CORE_RO *Core)
 	RDMSR(	Uncore_GlobalPerfControl,				\
 		MSR_##PMU##_UNCORE_PERF_GLOBAL_CTRL );			\
 									\
-	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_GlobalPerfControl =	\
+	PRIVATE(OF(SaveArea)).Intel.Uncore_GlobalPerfControl =		\
 						Uncore_GlobalPerfControl;\
 									\
 	Uncore_GlobalPerfControl.PMU.EN_FIXED_CTR0  = 1;		\
@@ -11194,7 +11194,7 @@ void Intel_Core_Counters_Set(CORE_RO *Core)
 	RDMSR(	Uncore_FixedPerfControl,				\
 		MSR_##PMU##_UNCORE_PERF_FIXED_CTR_CTRL );		\
 									\
-	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl =	\
+	PRIVATE(OF(SaveArea)).Intel.Uncore_FixedPerfControl =		\
 						Uncore_FixedPerfControl;\
 									\
 	Uncore_FixedPerfControl.PMU.EN_CTR0 = 1;			\
@@ -11211,72 +11211,68 @@ void Intel_Core_Counters_Set(CORE_RO *Core)
   }									\
 })
 
-void Intel_Core_Counters_Clear(CORE_RO *Core)
+void Intel_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 {
     if (PUBLIC(RO(Proc))->Features.PerfMon.EAX.Version >= 2)
     {
-	WRMSR(Core->SaveArea.Core_FixedPerfControl,
-					MSR_CORE_PERF_FIXED_CTR_CTRL);
+	WRMSR(Save->Core_FixedPerfControl, MSR_CORE_PERF_FIXED_CTR_CTRL);
 
-	WRMSR(Core->SaveArea.Core_GlobalPerfControl,
-					MSR_CORE_PERF_GLOBAL_CTRL);
+	WRMSR(Save->Core_GlobalPerfControl, MSR_CORE_PERF_GLOBAL_CTRL);
     }
 }
 
-void AMD_Core_Counters_Clear(CORE_RO *Core)
+void AMD_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 {
 	if (PUBLIC(RO(Proc))->Features.PerfMon.EBX.InstrRetired == 0)
 	{
-		WRMSR(Core->SaveArea.Core_HardwareConfiguration, MSR_K7_HWCR);
+		WRMSR(Save->Core_HardwareConfiguration, MSR_K7_HWCR);
 	}
 }
 
-#define AMD_Zen_PMC_L3_Clear(Core)					\
+#define AMD_Zen_PMC_L3_Clear(Save, Core)				\
 ({									\
 	const unsigned int bitwiseID = Core->T.ApicID			\
 	& PUBLIC(RO(Proc))->Features.leaf80000008.ECX.ApicIdCoreIdSize; \
 									\
     if ((PUBLIC(RO(Proc))->Features.ExtInfo.ECX.PerfLLC == 1)		\
      && (Core->T.ThreadID == 0) && (bitwiseID == 0))			\
-	{								\
-		WRMSR(	Core->SaveArea.Zen_L3_Cache_PerfControl,	\
-			MSR_AMD_F17H_L3_PERF_CTL );			\
-	}								\
+    {									\
+	WRMSR(Save->Zen_L3_Cache_PerfControl, MSR_AMD_F17H_L3_PERF_CTL);\
+    }									\
 })
 
-#define AMD_Zen_PMC_PERF_Clear(Core)					\
+#define AMD_Zen_PMC_PERF_Clear(Save, Core)				\
 ({									\
 	const unsigned int bitwiseID = Core->T.ApicID			\
 	& PUBLIC(RO(Proc))->Features.leaf80000008.ECX.ApicIdCoreIdSize; \
 									\
     if ((Core->T.ThreadID == 0) && (bitwiseID == 0))			\
     {									\
-	WRMSR(	Core->SaveArea.Zen_PerformanceControl,			\
-		MSR_AMD_F17H_PERF_CTL );				\
+	WRMSR(Save->Zen_PerformanceControl, MSR_AMD_F17H_PERF_CTL);	\
     }									\
 })
 
-#define AMD_Zen_PMC_UMC_Clear(Core)			({ /* NOP */ })
+#define AMD_Zen_PMC_UMC_Clear(Save, Core)		({ /* NOP */ })
 
-#define AMD_Zen_PMC_PCU_Clear(Core)			({ /* NOP */ })
+#define AMD_Zen_PMC_PCU_Clear(Save, Core)		({ /* NOP */ })
 
-#define _AMD_Zen_PMC_Clear_(Core, _PMC_)				\
+#define _AMD_Zen_PMC_Clear_(Save, Core, _PMC_)				\
 ({									\
-	AMD_Zen_PMC_##_PMC_##_Clear(Core);				\
+	AMD_Zen_PMC_##_PMC_##_Clear(Save, Core);			\
 })
-#define AMD_Zen_PMC_Clear(Core, _PMC_)					\
-	_AMD_Zen_PMC_Clear_(Core, _PMC_)
+#define AMD_Zen_PMC_Clear(Save, Core, _PMC_)				\
+	_AMD_Zen_PMC_Clear_(Save, Core, _PMC_)
 
-#define AMD_Zen_PMC_ARCH_PMC_Clear(Core)		({ /* NOP */ })
+#define AMD_Zen_PMC_ARCH_PMC_Clear(Save, Core)		({ /* NOP */ })
 
 #define Uncore_Counters_Clear(PMU)					\
 ({									\
     if (PUBLIC(RO(Proc))->Features.PerfMon.EAX.Version >= 3)		\
     {									\
-	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl,\
+	WRMSR(	PRIVATE(OF(SaveArea)).Intel.Uncore_FixedPerfControl,	\
 		MSR_##PMU##_UNCORE_PERF_FIXED_CTR_CTRL );		\
 									\
-	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_GlobalPerfControl,\
+	WRMSR(	PRIVATE(OF(SaveArea)).Intel.Uncore_GlobalPerfControl,	\
 		MSR_##PMU##_UNCORE_PERF_GLOBAL_CTRL );			\
     }									\
 })
@@ -12553,7 +12549,7 @@ static enum hrtimer_restart Cycle_VirtualMachine(struct hrtimer *pTimer)
 	} else {
 		RDTSCP64(Core->Overhead.TSC);
 	}
-	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+	if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
 	{
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
@@ -12615,13 +12611,13 @@ static void Start_VirtualMachine(void *arg)
 		PKG_Counters_VirtualMachine(Core, 0);
 	}
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static enum hrtimer_restart Cycle_Safe_VirtualMachine(struct hrtimer *pTimer)
@@ -12637,7 +12633,7 @@ static enum hrtimer_restart Cycle_Safe_VirtualMachine(struct hrtimer *pTimer)
 	} else {
 		RDTSCP64(Core->Overhead.TSC);
 	}
-	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+	if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
 	{
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
@@ -12699,13 +12695,13 @@ static void Start_Safe_VirtualMachine(void *arg)
 		PKG_Counters_Generic(Core, 0);
 	}
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Stop_VirtualMachine(void *arg)
@@ -12714,9 +12710,9 @@ static void Stop_VirtualMachine(void *arg)
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	UNUSED(arg);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Core, AT(cpu)))->Join.Timer);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
@@ -12726,7 +12722,7 @@ static void Stop_VirtualMachine(void *arg)
 	}
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
@@ -12742,7 +12738,7 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 	} else {
 		RDTSCP64(Core->Overhead.TSC);
 	}
-	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+	if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
 	{
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
@@ -12824,13 +12820,13 @@ static void Start_GenuineIntel(void *arg)
 		PKG_Counters_Generic(Core, 0);
 	}
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Stop_GenuineIntel(void *arg)
@@ -12839,9 +12835,9 @@ static void Stop_GenuineIntel(void *arg)
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	UNUSED(arg);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Core, AT(cpu)))->Join.Timer);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
@@ -12851,7 +12847,7 @@ static void Stop_GenuineIntel(void *arg)
 	}
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
@@ -12867,7 +12863,7 @@ static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
 	} else {
 		RDTSCP64(Core->Overhead.TSC);
 	}
-	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+	if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
 	{
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
@@ -12929,13 +12925,13 @@ static void Start_AuthenticAMD(void *arg)
 		PKG_Counters_Generic(Core, 0);
 	}
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Stop_AuthenticAMD(void *arg)
@@ -12944,9 +12940,9 @@ static void Stop_AuthenticAMD(void *arg)
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	UNUSED(arg);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Core, AT(cpu)))->Join.Timer);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
@@ -12956,7 +12952,7 @@ static void Stop_AuthenticAMD(void *arg)
 	}
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
@@ -12973,7 +12969,7 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
     } else {
 	RDTSCP64(Core->Overhead.TSC);
     }
-    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
     {
 	hrtimer_forward(pTimer,
 			hrtimer_cb_get_time(pTimer),
@@ -13072,13 +13068,14 @@ static void Start_Core2(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
 	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
 		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
 	}
 
-	Intel_Core_Counters_Set(Core);
+	Intel_Core_Counters_Set(Save, Core);
 	Counters_Core2(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
@@ -13088,26 +13085,27 @@ static void Start_Core2(void *arg)
 		PKG_Counters_Generic(Core, 0);
 	}
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Stop_Core2(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Core, AT(cpu)))->Join.Timer);
 
-	Intel_Core_Counters_Clear(Core);
+	Intel_Core_Counters_Clear(Save, Core);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
@@ -13117,7 +13115,7 @@ static void Stop_Core2(void *arg)
 	}
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static enum hrtimer_restart Cycle_Silvermont(struct hrtimer *pTimer)
@@ -13131,7 +13129,7 @@ static enum hrtimer_restart Cycle_Silvermont(struct hrtimer *pTimer)
 
 	Mark_OVH(Core);
 
-  if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+  if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
   {
 	hrtimer_forward(pTimer,
 			hrtimer_cb_get_time(pTimer),
@@ -13273,13 +13271,14 @@ static void Start_Silvermont(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
 	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
 		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
 	}
 
-	Intel_Core_Counters_Set(Core);
+	Intel_Core_Counters_Set(Save, Core);
 	Counters_SLM(Core, 0);
 
     if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
@@ -13297,26 +13296,27 @@ static void Start_Silvermont(void *arg)
     }
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Stop_Silvermont(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Core, AT(cpu)))->Join.Timer);
 
-	Intel_Core_Counters_Clear(Core);
+	Intel_Core_Counters_Clear(Save, Core);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
@@ -13326,7 +13326,7 @@ static void Stop_Silvermont(void *arg)
 	}
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
@@ -13340,7 +13340,7 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 
 	Mark_OVH(Core);
 
-    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
     {
 	hrtimer_forward(pTimer,
 			hrtimer_cb_get_time(pTimer),
@@ -13484,13 +13484,14 @@ static void Start_Nehalem(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
 	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
 		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
 	}
 
-	Intel_Core_Counters_Set(Core);
+	Intel_Core_Counters_Set(Save, Core);
 	SMT_Counters_Nehalem(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
@@ -13502,26 +13503,27 @@ static void Start_Nehalem(void *arg)
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Stop_Nehalem(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Core, AT(cpu)))->Join.Timer);
 
-	Intel_Core_Counters_Clear(Core);
+	Intel_Core_Counters_Clear(Save, Core);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
@@ -13531,7 +13533,7 @@ static void Stop_Nehalem(void *arg)
 	}
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Start_Uncore_Nehalem(void *arg)
@@ -13560,7 +13562,7 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 
 	Mark_OVH(Core);
 
-    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
     {
 	hrtimer_forward(pTimer,
 			hrtimer_cb_get_time(pTimer),
@@ -13707,13 +13709,14 @@ static void Start_SandyBridge(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
 	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
 		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
 	}
 
-	Intel_Core_Counters_Set(Core);
+	Intel_Core_Counters_Set(Save, Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
@@ -13726,26 +13729,27 @@ static void Start_SandyBridge(void *arg)
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Stop_SandyBridge(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Core, AT(cpu)))->Join.Timer);
 
-	Intel_Core_Counters_Clear(Core);
+	Intel_Core_Counters_Clear(Save, Core);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
@@ -13755,7 +13759,7 @@ static void Stop_SandyBridge(void *arg)
 	}
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Start_Uncore_SandyBridge(void *arg)
@@ -13785,7 +13789,7 @@ static enum hrtimer_restart Cycle_Intel_Xeon_EP(struct hrtimer *pTimer,
 
 	Mark_OVH(Core);
 
-    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
     {
 	hrtimer_forward(pTimer,
 			hrtimer_cb_get_time(pTimer),
@@ -13938,13 +13942,14 @@ static void Entry_Intel_Xeon_EP(void *arg,
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
 	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
 		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
 	}
 
-	Intel_Core_Counters_Set(Core);
+	Intel_Core_Counters_Set(Save, Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
@@ -13957,26 +13962,27 @@ static void Entry_Intel_Xeon_EP(void *arg,
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Stop_SandyBridge_EP(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Core, AT(cpu)))->Join.Timer);
 
-	Intel_Core_Counters_Clear(Core);
+	Intel_Core_Counters_Clear(Save, Core);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
@@ -13986,7 +13992,7 @@ static void Stop_SandyBridge_EP(void *arg)
 	}
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Start_SandyBridge_EP(void *arg)
@@ -14007,7 +14013,7 @@ static void Start_Uncore_SandyBridge_EP(void *arg)
 
 	RDMSR(Uncore_FixedPerfControl, MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
 
-	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl = \
+	PRIVATE(OF(SaveArea)).Intel.Uncore_FixedPerfControl = \
 						Uncore_FixedPerfControl;
 
 	Uncore_FixedPerfControl.SNB.EN_CTR0 = 1;
@@ -14016,7 +14022,7 @@ static void Start_Uncore_SandyBridge_EP(void *arg)
 
 	RDMSR(Uncore_PMonGlobalControl, MSR_SNB_UNCORE_PERF_GLOBAL_CTRL);
 
-	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_PMonGlobalControl = \
+	PRIVATE(OF(SaveArea)).Intel.Uncore_PMonGlobalControl = \
 						Uncore_PMonGlobalControl;
 
 	Uncore_PMonGlobalControl.Unfreeze_All = 1;
@@ -14031,14 +14037,14 @@ static void Stop_Uncore_SandyBridge_EP(void *arg)
 
   if (PUBLIC(RO(Proc))->Features.PerfMon.EAX.Version > 3)
   {
-    if(PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl.SNB.EN_CTR0==0)
+    if(PRIVATE(OF(SaveArea)).Intel.Uncore_FixedPerfControl.SNB.EN_CTR0 == 0)
     {
-	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_PMonGlobalControl.Freeze_All=1;
+	PRIVATE(OF(SaveArea)).Intel.Uncore_PMonGlobalControl.Freeze_All = 1;
     }
-	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_PMonGlobalControl,
+	WRMSR(	PRIVATE(OF(SaveArea)).Intel.Uncore_PMonGlobalControl,
 		MSR_SNB_UNCORE_PERF_GLOBAL_CTRL);
 
-	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl,
+	WRMSR(	PRIVATE(OF(SaveArea)).Intel.Uncore_FixedPerfControl,
 		MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
   }
 }
@@ -14067,7 +14073,7 @@ static void Start_Uncore_IvyBridge_EP(void *arg)
 
 	RDMSR(Uncore_FixedPerfControl, MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
 
-	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl = \
+	PRIVATE(OF(SaveArea)).Intel.Uncore_FixedPerfControl = \
 						Uncore_FixedPerfControl;
 
 	Uncore_FixedPerfControl.SNB.EN_CTR0 = 1;
@@ -14076,7 +14082,7 @@ static void Start_Uncore_IvyBridge_EP(void *arg)
 
 	RDMSR(Uncore_PMonGlobalControl, MSR_IVB_EP_PMON_GLOBAL_CTRL);
 
-	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_PMonGlobalControl = \
+	PRIVATE(OF(SaveArea)).Intel.Uncore_PMonGlobalControl = \
 						Uncore_PMonGlobalControl;
 
 	Uncore_PMonGlobalControl.Unfreeze_All = 1;
@@ -14088,14 +14094,14 @@ static void Stop_Uncore_IvyBridge_EP(void *arg)
 {
 	UNUSED(arg);
 	/* If fixed counter was disable at entry, force freezing	*/
-  if (PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl.SNB.EN_CTR0 == 0)
+  if (PRIVATE(OF(SaveArea)).Intel.Uncore_FixedPerfControl.SNB.EN_CTR0 == 0)
   {
-	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_PMonGlobalControl.Freeze_All=1;
+	PRIVATE(OF(SaveArea)).Intel.Uncore_PMonGlobalControl.Freeze_All = 1;
   }
-	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_PMonGlobalControl,
+	WRMSR(	PRIVATE(OF(SaveArea)).Intel.Uncore_PMonGlobalControl,
 		MSR_IVB_EP_PMON_GLOBAL_CTRL);
 
-	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl,
+	WRMSR(	PRIVATE(OF(SaveArea)).Intel.Uncore_FixedPerfControl,
 		MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
 }
 
@@ -14111,7 +14117,7 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 
 	Mark_OVH(Core);
 
-    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
     {
 	hrtimer_forward(pTimer,
 			hrtimer_cb_get_time(pTimer),
@@ -14270,13 +14276,14 @@ static void Start_Haswell_ULT(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
 	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
 		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
 	}
 
-	Intel_Core_Counters_Set(Core);
+	Intel_Core_Counters_Set(Save, Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
@@ -14289,26 +14296,27 @@ static void Start_Haswell_ULT(void *arg)
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Stop_Haswell_ULT(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Core, AT(cpu)))->Join.Timer);
 
-	Intel_Core_Counters_Clear(Core);
+	Intel_Core_Counters_Clear(Save, Core);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
@@ -14318,7 +14326,7 @@ static void Stop_Haswell_ULT(void *arg)
 	}
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Start_Uncore_Haswell_ULT(void *arg)
@@ -14351,7 +14359,7 @@ static enum hrtimer_restart Cycle_Goldmont(struct hrtimer *pTimer)
 
 	Mark_OVH(Core);
 
-    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
     {
 	hrtimer_forward(pTimer,
 			hrtimer_cb_get_time(pTimer),
@@ -14494,13 +14502,14 @@ static void Start_Goldmont(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
 	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
 		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
 	}
 
-	Intel_Core_Counters_Set(Core);
+	Intel_Core_Counters_Set(Save, Core);
 	Counters_Goldmont(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
@@ -14513,26 +14522,27 @@ static void Start_Goldmont(void *arg)
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Stop_Goldmont(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Core, AT(cpu)))->Join.Timer);
 
-	Intel_Core_Counters_Clear(Core);
+	Intel_Core_Counters_Clear(Save, Core);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
@@ -14542,7 +14552,7 @@ static void Stop_Goldmont(void *arg)
 	}
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 
@@ -14557,7 +14567,7 @@ static enum hrtimer_restart Cycle_Haswell_EP(struct hrtimer *pTimer)
 
 	Mark_OVH(Core);
 
-    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
     {
 	hrtimer_forward(pTimer,
 			hrtimer_cb_get_time(pTimer),
@@ -14704,13 +14714,14 @@ static void Start_Haswell_EP(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
 	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
 		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
 	}
 
-	Intel_Core_Counters_Set(Core);
+	Intel_Core_Counters_Set(Save, Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
@@ -14723,26 +14734,27 @@ static void Start_Haswell_EP(void *arg)
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Stop_Haswell_EP(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Core, AT(cpu)))->Join.Timer);
 
-	Intel_Core_Counters_Clear(Core);
+	Intel_Core_Counters_Clear(Save, Core);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
@@ -14752,7 +14764,7 @@ static void Stop_Haswell_EP(void *arg)
 	}
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Start_Uncore_Haswell_EP(void *arg)
@@ -14763,7 +14775,7 @@ static void Start_Uncore_Haswell_EP(void *arg)
 
 	RDMSR(Uncore_FixedPerfControl, MSR_HSW_EP_UNCORE_PERF_FIXED_CTR_CTRL);
 
-	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl = \
+	PRIVATE(OF(SaveArea)).Intel.Uncore_FixedPerfControl = \
 						Uncore_FixedPerfControl;
 
 	Uncore_FixedPerfControl.HSW_EP.EN_CTR0 = 1;
@@ -14772,7 +14784,7 @@ static void Start_Uncore_Haswell_EP(void *arg)
 
 	RDMSR(Uncore_PMonGlobalControl, MSR_HSW_EP_PMON_GLOBAL_CTRL);
 
-	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_PMonGlobalControl = \
+	PRIVATE(OF(SaveArea)).Intel.Uncore_PMonGlobalControl = \
 						Uncore_PMonGlobalControl;
 
 	Uncore_PMonGlobalControl.Unfreeze_All = 1;
@@ -14784,14 +14796,14 @@ static void Stop_Uncore_Haswell_EP(void *arg)
 {
 	UNUSED(arg);
 
-  if(PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl.HSW_EP.EN_CTR0==0)
+  if(PRIVATE(OF(SaveArea)).Intel.Uncore_FixedPerfControl.HSW_EP.EN_CTR0 == 0)
   {
-	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_PMonGlobalControl.Freeze_All=1;
+	PRIVATE(OF(SaveArea)).Intel.Uncore_PMonGlobalControl.Freeze_All = 1;
   }
-	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_PMonGlobalControl,
+	WRMSR(	PRIVATE(OF(SaveArea)).Intel.Uncore_PMonGlobalControl,
 		MSR_HSW_EP_PMON_GLOBAL_CTRL );
 
-	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Intel.Uncore_FixedPerfControl,
+	WRMSR(	PRIVATE(OF(SaveArea)).Intel.Uncore_FixedPerfControl,
 		MSR_HSW_EP_UNCORE_PERF_FIXED_CTR_CTRL );
 }
 
@@ -14807,7 +14819,7 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 
 	Mark_OVH(Core);
 
-    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
     {
 	hrtimer_forward(pTimer,
 			hrtimer_cb_get_time(pTimer),
@@ -14963,13 +14975,14 @@ static void Start_Skylake(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
 	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
 		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
 	}
 
-	Intel_Core_Counters_Set(Core);
+	Intel_Core_Counters_Set(Save, Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
@@ -14984,26 +14997,27 @@ static void Start_Skylake(void *arg)
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Stop_Skylake(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Core, AT(cpu)))->Join.Timer);
 
-	Intel_Core_Counters_Clear(Core);
+	Intel_Core_Counters_Clear(Save, Core);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
@@ -15013,7 +15027,7 @@ static void Stop_Skylake(void *arg)
 	}
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Start_Uncore_Skylake(void *arg)
@@ -15045,7 +15059,7 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 
 	Mark_OVH(Core);
 
-    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
     {
 	hrtimer_forward(pTimer,
 			hrtimer_cb_get_time(pTimer),
@@ -15197,13 +15211,14 @@ static void Start_Skylake_X(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
 	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
 		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
 	}
 
-	Intel_Core_Counters_Set(Core);
+	Intel_Core_Counters_Set(Save, Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
@@ -15217,26 +15232,27 @@ static void Start_Skylake_X(void *arg)
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Stop_Skylake_X(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Core, AT(cpu)))->Join.Timer);
 
-	Intel_Core_Counters_Clear(Core);
+	Intel_Core_Counters_Clear(Save, Core);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
@@ -15246,7 +15262,7 @@ static void Stop_Skylake_X(void *arg)
 	}
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Start_Uncore_Skylake_X(void *arg)
@@ -15279,7 +15295,7 @@ static enum hrtimer_restart Cycle_Alderlake_Ecore(struct hrtimer *pTimer)
 
 	Mark_OVH(Core);
 
-    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
     {
 	hrtimer_forward(pTimer,
 			hrtimer_cb_get_time(pTimer),
@@ -15398,7 +15414,7 @@ static enum hrtimer_restart Cycle_Alderlake_Pcore(struct hrtimer *pTimer)
 
 	Mark_OVH(Core);
 
-    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
     {
 	hrtimer_forward(pTimer,
 			hrtimer_cb_get_time(pTimer),
@@ -15570,13 +15586,14 @@ static void Start_Alderlake(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
 	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
 		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
 	}
 
-	Intel_Core_Counters_Set(Core);
+	Intel_Core_Counters_Set(Save, Core);
 
     switch (PUBLIC(RO(Core, AT(cpu)))->T.Cluster.Hybrid.CoreType) {
     case Hybrid_Atom:
@@ -15606,13 +15623,13 @@ static void Start_Alderlake(void *arg)
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Start_Uncore_Alderlake(void *arg)
@@ -15635,7 +15652,7 @@ static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
     {
 	FIDVID_CONTROL FidVidControl = {.value = 0};
 	FIDVID_STATUS FidVidStatus = {.value = 0};
@@ -15748,13 +15765,13 @@ static void Start_AMD_Family_0Fh(void *arg)
 		PKG_Counters_Generic(Core, 0);
 	}
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Stop_AMD_Family_0Fh(void *arg)
@@ -15763,9 +15780,9 @@ static void Stop_AMD_Family_0Fh(void *arg)
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	UNUSED(arg);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Core, AT(cpu)))->Join.Timer);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
@@ -15775,7 +15792,7 @@ static void Stop_AMD_Family_0Fh(void *arg)
 	}
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Start_AMD_Family_10h(void *arg)
@@ -15797,13 +15814,13 @@ static void Start_AMD_Family_10h(void *arg)
 		PKG_Counters_Generic(Core, 0);
 	}
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Stop_AMD_Family_10h(void *arg)
@@ -15812,9 +15829,9 @@ static void Stop_AMD_Family_10h(void *arg)
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	UNUSED(arg);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Core, AT(cpu)))->Join.Timer);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
@@ -15824,7 +15841,7 @@ static void Stop_AMD_Family_10h(void *arg)
 	}
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Start_AMD_Family_11h(void *arg)
@@ -15846,13 +15863,13 @@ static void Start_AMD_Family_11h(void *arg)
 		PKG_Counters_Generic(Core, 0);
 	}
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Start_AMD_Family_12h(void *arg)
@@ -15874,13 +15891,13 @@ static void Start_AMD_Family_12h(void *arg)
 		PKG_Counters_Generic(Core, 0);
 	}
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Start_AMD_Family_14h(void *arg)
@@ -15902,13 +15919,13 @@ static void Start_AMD_Family_14h(void *arg)
 		PKG_Counters_Generic(Core, 0);
 	}
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static enum hrtimer_restart Cycle_AMD_Family_15h(struct hrtimer *pTimer)
@@ -15924,7 +15941,7 @@ static enum hrtimer_restart Cycle_AMD_Family_15h(struct hrtimer *pTimer)
 
 	Mark_OVH(Core);
 
-    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
     {
 	hrtimer_forward(pTimer,
 			hrtimer_cb_get_time(pTimer),
@@ -16048,13 +16065,13 @@ static void Start_AMD_Family_15h(void *arg)
 		PKG_Counters_Generic(Core, 0);
 	}
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 void Cycle_AMD_Family_17h(CORE_RO *Core,
@@ -16268,7 +16285,7 @@ static enum hrtimer_restart Entry_AMD_F17h(struct hrtimer *pTimer,
 
 	Mark_OVH(Core);
 
-	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+	if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
 	{
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
@@ -16331,6 +16348,7 @@ static void Start_AMD_Family_17h(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
 #ifdef CONFIG_PM_SLEEP
@@ -16344,9 +16362,9 @@ static void Start_AMD_Family_17h(void *arg)
 		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
 	}
 
-	AMD_Core_Counters_Set(Core, Family_17h);
+	AMD_Core_Counters_Set(Save, Core, Family_17h);
 
-	AMD_Zen_PMC_Set(Core, ARCH_PMC);
+	AMD_Zen_PMC_Set(Save, Core, ARCH_PMC);
 
 	SMT_Counters_AMD_Family_17h(Core, 0);
 
@@ -16370,28 +16388,29 @@ static void Start_AMD_Family_17h(void *arg)
 
 	AMD_Zen_PMC_Counters(Core, 0, ARCH_PMC);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Stop_AMD_Family_17h(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
-	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Core, AT(cpu)))->Join.Timer);
 
-	AMD_Core_Counters_Clear(Core);
+	AMD_Core_Counters_Clear(Save, Core);
 
-	AMD_Zen_PMC_Clear(Core, ARCH_PMC);
+	AMD_Zen_PMC_Clear(Save, Core, ARCH_PMC);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
@@ -16404,7 +16423,7 @@ static void Stop_AMD_Family_17h(void *arg)
 	}
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
 static void Start_Uncore_AMD_Family_17h(void *arg)
@@ -16414,7 +16433,7 @@ static void Start_Uncore_AMD_Family_17h(void *arg)
 
 	RDMSR(Zen_DataFabricPerfControl, MSR_AMD_F17H_DF_PERF_CTL);
 
-	PUBLIC(RO(Proc))->SaveArea.AMD.Zen_DataFabricPerfControl = \
+	PRIVATE(OF(SaveArea)).AMD.Zen_DataFabricPerfControl = \
 						Zen_DataFabricPerfControl;
 
 	Zen_DataFabricPerfControl.EventSelect00 = 0x0f;
@@ -16430,7 +16449,7 @@ static void Stop_Uncore_AMD_Family_17h(void *arg)
 {
 	UNUSED(arg);
 
-	WRMSR(	PUBLIC(RO(Proc))->SaveArea.AMD.Zen_DataFabricPerfControl,
+	WRMSR(	PRIVATE(OF(SaveArea)).AMD.Zen_DataFabricPerfControl,
 		MSR_AMD_F17H_DF_PERF_CTL );
 }
 
@@ -19533,7 +19552,7 @@ static int CoreFreqK_HotPlug_CPU_Online(unsigned int cpu)
    if (Arch[PUBLIC(RO(Proc))->ArchID].Timer != NULL) {
 	Arch[PUBLIC(RO(Proc))->ArchID].Timer(cpu);
    }
-   if ((BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED) == 0)
+   if ((BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED) == 0)
     && (Arch[PUBLIC(RO(Proc))->ArchID].Start != NULL)) {
 		smp_call_function_single(cpu,
 					Arch[PUBLIC(RO(Proc))->ArchID].Start,
@@ -19569,8 +19588,8 @@ static int CoreFreqK_HotPlug_CPU_Offline(unsigned int cpu)
 {
     if (cpu < PUBLIC(RO(Proc))->CPU.Count) {
 	/*		Stop the associated collect timer.		*/
-	if((BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, CREATED) == 1)
-	&& (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED) == 1)
+	if((BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, CREATED) == 1)
+	&& (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED) == 1)
 	&& (Arch[PUBLIC(RO(Proc))->ArchID].Stop != NULL)) {
 		smp_call_function_single(cpu,
 					Arch[PUBLIC(RO(Proc))->ArchID].Stop,
@@ -19882,7 +19901,8 @@ static void CoreFreqK_Alloc_Private_Level_Down(void)
 static int CoreFreqK_Alloc_Private_Level_Up(INIT_ARG *pArg)
 {
 	const unsigned long privateSize = sizeof(KPRIVATE)
-					+ sizeof(JOIN*) * pArg->SMT_Count;
+					+ sizeof(struct PRIV_CORE_ST *)
+					* pArg->SMT_Count;
 
 	if (((PRIVATE() = kmalloc(privateSize, GFP_KERNEL)) != NULL))
 	{
@@ -20007,7 +20027,8 @@ static void CoreFreqK_Alloc_Private_Cache_Level_Down(void)
 
 static int CoreFreqK_Alloc_Private_Cache_Level_Up(INIT_ARG *pArg)
 {
-	const unsigned long joinSize = ROUND_TO_PAGES(sizeof(JOIN));
+	const unsigned long joinSize = \
+				ROUND_TO_PAGES(sizeof(struct PRIV_CORE_ST));
 	UNUSED(pArg);
 
 	if ( (PRIVATE(OF(Cache)) = kmem_cache_create(	"corefreqk-priv",
@@ -20037,8 +20058,8 @@ static void CoreFreqK_Alloc_Per_CPU_Level_Down(void)
 	}
 	if (PRIVATE(OF(Cache)) != NULL)
 	{
-	    if (PRIVATE(OF(Join, AT(cpu))) != NULL) {
-		kmem_cache_free(PRIVATE(OF(Cache)), PRIVATE(OF(Join, AT(cpu))));
+	    if (PRIVATE(OF(Core, AT(cpu))) != NULL) {
+		kmem_cache_free(PRIVATE(OF(Cache)), PRIVATE(OF(Core, AT(cpu))));
 	    }
 	}
     }
@@ -20048,7 +20069,8 @@ static int CoreFreqK_Alloc_Per_CPU_Level_Up(INIT_ARG *pArg)
 {
 	const unsigned long cacheSize = KMAX( ROUND_TO_PAGES(sizeof(CORE_RO)),
 					      ROUND_TO_PAGES(sizeof(CORE_RW)) );
-	const unsigned long joinSize = ROUND_TO_PAGES(sizeof(JOIN));
+	const unsigned long joinSize = \
+				ROUND_TO_PAGES(sizeof(struct PRIV_CORE_ST));
 	unsigned int cpu;
 	int rc = 0;
 	UNUSED(pArg);
@@ -20076,7 +20098,7 @@ static int CoreFreqK_Alloc_Per_CPU_Level_Up(INIT_ARG *pArg)
 		kcache = kmem_cache_alloc(PRIVATE(OF(Cache)), GFP_KERNEL);
 		if (kcache != NULL) {
 			memset(kcache, 0, joinSize);
-			PRIVATE(OF(Join, AT(cpu))) = kcache;
+			PRIVATE(OF(Core, AT(cpu))) = kcache;
 		} else {
 			rc = -ENOMEM;
 			break;
