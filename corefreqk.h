@@ -1109,7 +1109,7 @@ typedef struct
 			struct pci_dev	*HB;
 			void __iomem	*BAR;
 			unsigned int	ADDR;
-		} Xtra;
+		} PCU;
 	};
 	struct kmem_cache	*Cache;
 	JOIN			*Join[];
@@ -1489,9 +1489,6 @@ static void Stop_Skylake(void *arg) ;
 static void InitTimer_Skylake(unsigned int cpu) ;
 static void Start_Uncore_Skylake(void *arg) ;
 static void Stop_Uncore_Skylake(void *arg) ;
-
-static void Start_Uncore_Xtra(void *arg) ;
-static void Stop_Uncore_Xtra(void *arg) ;
 
 static void Query_Skylake_X(unsigned int cpu) ;
 static void PerCore_Skylake_X_Query(void *arg) ;
@@ -8270,8 +8267,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Kabylake_ids,
 	.Uncore = {
-		.Start = Start_Uncore_Xtra,
-		.Stop = Stop_Uncore_Xtra,
+		.Start = Start_Uncore_Skylake,
+		.Stop = Stop_Uncore_Skylake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,

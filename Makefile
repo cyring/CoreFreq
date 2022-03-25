@@ -13,7 +13,7 @@ TASK_ORDER = 5
 MAX_FREQ_HZ ?= 6575000000
 MSR_CORE_PERF_UCC ?= MSR_IA32_APERF
 MSR_CORE_PERF_URC ?= MSR_IA32_MPERF
-AMD_ZEN_PMC ?= UMC
+ARCH_PMC ?=
 
 obj-m := corefreqk.o
 ccflags-y :=	-D CORE_COUNT=$(CORE_COUNT) \
@@ -45,9 +45,13 @@ DEFINITIONS += -D DELAY_TSC=$(DELAY_TSC)
 ccflags-y += -D DELAY_TSC=$(DELAY_TSC)
 endif
 
+ifneq ($(ARCH_PMC),)
+DEFINITIONS += -D ARCH_PMC=$(ARCH_PMC)
+ccflags-y += -D ARCH_PMC=$(ARCH_PMC)
+endif
+
 ccflags-y += -D MSR_CORE_PERF_UCC=$(MSR_CORE_PERF_UCC)
 ccflags-y += -D MSR_CORE_PERF_URC=$(MSR_CORE_PERF_URC)
-ccflags-y += -D AMD_ZEN_PMC=$(AMD_ZEN_PMC)
 
 ifneq ($(HWM_CHIPSET),)
 	ccflags-y += -D HWM_CHIPSET=$(HWM_CHIPSET)
@@ -120,7 +124,6 @@ corefreq-cli.o: corefreq-cli.c
 corefreq-cli-rsc.o: corefreq-cli-rsc.c
 	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-cli-rsc.c \
 	  $(DEFINITIONS) $(LAYOUT) \
-	  -D AMD_ZEN_PMC=$(AMD_ZEN_PMC) \
 	  -o corefreq-cli-rsc.o
 
 corefreq-cli-json.o: corefreq-cli-json.c
@@ -139,7 +142,6 @@ corefreq-cli: corefreq-cli.o corefreq-ui.o corefreq-cli-rsc.o \
 	  corefreq-cli.c corefreq-ui.c corefreq-cli-rsc.c \
 	  corefreq-cli-json.c corefreq-cli-extra.c \
 	  $(DEFINITIONS) $(LAYOUT) \
-	  -D AMD_ZEN_PMC=$(AMD_ZEN_PMC) \
 	  -o corefreq-cli -lm -lrt
 
 .PHONY: info
@@ -156,7 +158,7 @@ info:
 	$(info OPTIM_LVL [$(OPTIM_LVL)])
 	$(info MSR_CORE_PERF_UCC [$(MSR_CORE_PERF_UCC)])
 	$(info MSR_CORE_PERF_URC [$(MSR_CORE_PERF_URC)])
-	$(info AMD_ZEN_PMC [$(AMD_ZEN_PMC)])
+	$(info ARCH_PMC [$(ARCH_PMC)])
 	$(info NO_HEADER [$(NO_HEADER)])
 	$(info NO_FOOTER [$(NO_FOOTER)])
 	$(info NO_UPPER [$(NO_UPPER)])
@@ -216,6 +218,15 @@ help:
 	"|   | MSR_AMD_F17H_APERF        |  MSR_AMD_F17H_MPERF       |   |\n"\
 	"|    -------------------------------------------------------    |\n"\
 	"|                                                               |\n"\
+	"|  Architectural Counters:                                      |\n"\
+	"|    -------------------------------------------------------    |\n"\
+	"|   |           Intel           |            AMD            |   |\n"\
+	"|   |----------- REG -----------|----------- REG -----------|   |\n"\
+	"|   |       ARCH_PMC=PCU        |      ARCH_PMC=L3          |   |\n"\
+	"|   |                           |      ARCH_PMC=PERF        |   |\n"\
+	"|   |                           |      ARCH_PMC=UMC         |   |\n"\
+	"|    -------------------------------------------------------    |\n"\
+	"|                                                               |\n"\
 	"|  User Interface Layout:                                       |\n"\
 	"|    NO_HEADER=<F>  NO_FOOTER=<F>  NO_UPPER=<F>  NO_LOWER=<F>   |\n"\
 	"|      when <F> is 1: don't build and display this area part    |\n"\
@@ -223,7 +234,7 @@ help:
 	"|      when <F> is 1: build with background transparency        |\n"\
 	"|                                                               |\n"\
 	"|  Example:                                                     |\n"\
-	"|    make CC=gcc OPTIM_LVL=3 FEAT_DBG=1                         |\n"\
+	"|    make CC=gcc OPTIM_LVL=3 FEAT_DBG=1 ARCH_PMC=PCU            |\n"\
 	"|         MSR_CORE_PERF_UCC=MSR_CORE_PERF_FIXED_CTR1            |\n"\
 	"|         MSR_CORE_PERF_URC=MSR_CORE_PERF_FIXED_CTR2            |\n"\
 	"|         HWM_CHIPSET=W83627 MAX_FREQ_HZ=5350000000             |\n"\

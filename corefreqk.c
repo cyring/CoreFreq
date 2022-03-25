@@ -11159,7 +11159,9 @@ void Intel_Core_Counters_Set(CORE_RO *Core)
     }									\
 })
 
-#define AMD_Zen_PMC_UMC_Set(Core)	({})
+#define AMD_Zen_PMC_UMC_Set(Core)			({ /* NOP */ })
+
+#define AMD_Zen_PMC_PCU_Set(Core)			({ /* NOP */ })
 
 #define _AMD_Zen_PMC_Set_(Core, _PMC_)					\
 ({									\
@@ -11167,6 +11169,8 @@ void Intel_Core_Counters_Set(CORE_RO *Core)
 })
 #define AMD_Zen_PMC_Set(Core, _PMC_)					\
 	_AMD_Zen_PMC_Set_(Core, _PMC_)
+
+#define AMD_Zen_PMC_ARCH_PMC_Set(Core)			({ /* NOP */ })
 
 #define Uncore_Counters_Set(PMU)					\
 ({									\
@@ -11252,7 +11256,9 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
     }									\
 })
 
-#define AMD_Zen_PMC_UMC_Clear(Core)	({})
+#define AMD_Zen_PMC_UMC_Clear(Core)			({ /* NOP */ })
+
+#define AMD_Zen_PMC_PCU_Clear(Core)			({ /* NOP */ })
 
 #define _AMD_Zen_PMC_Clear_(Core, _PMC_)				\
 ({									\
@@ -11260,6 +11266,8 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 })
 #define AMD_Zen_PMC_Clear(Core, _PMC_)					\
 	_AMD_Zen_PMC_Clear_(Core, _PMC_)
+
+#define AMD_Zen_PMC_ARCH_PMC_Clear(Core)		({ /* NOP */ })
 
 #define Uncore_Counters_Clear(PMU)					\
 ({									\
@@ -11632,14 +11640,6 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
 		MSR_SKL_UNCORE_PERF_FIXED_CTR0 ,			\
 			PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);	\
-									\
-  if (PRIVATE(OF(Xtra)).BAR != NULL) {					\
-    if (PRIVATE(OF(Xtra)).ADDR != 0x0)					\
-    {									\
-	PUBLIC(RO(Proc))->Counter[T].MC6 =				\
-		readq(PRIVATE(OF(Xtra)).BAR + PRIVATE(OF(Xtra)).ADDR);	\
-    }									\
-  }									\
 })
 
 #define PKG_Counters_Skylake_X(Core, T) 				\
@@ -11670,6 +11670,93 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 	MSR_ADL_UNCORE_PERF_FIXED_CTR0 ,				\
 				PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
 })
+
+/*
+ *		Counter | Description
+ *		--------|------------
+ *		0x5828	| Cycle Sum of All Active Cores
+ *		0x5830	| Cycle Sum of Any Active Core
+ *		0x5838	| Cycle Sum of Active Graphics
+ *		0x5840	| Cycle Sum of Overlapping Active GT and Core
+ *		0x5848	| Cycle Sum of Any Active GT Slice
+ *		0x5850	| Cycle Sum of All Active GT Slice
+ *		0x5858	| Cycle Sum of Any GT Media Engine
+ *		0x5860	| Ratio Sum of Any Active Core
+ *		0x5868	| Ratio Sum of Active GT
+ *		0x5870	| Ratio Sum of Active GT Slice
+ */
+#define Pkg_Intel_PMC_PCU_Set(...)					\
+({									\
+    if (GetMemoryBAR(0, 0, 0, 0, 0x48, 64, 0x10000, 0,			\
+		&PRIVATE(OF(PCU)).HB, &PRIVATE(OF(PCU)).BAR) == 0)	\
+    {									\
+	PRIVATE(OF(PCU)).ADDR = __VA_ARGS__;				\
+    } else {								\
+	PRIVATE(OF(PCU)).ADDR = 0x0;					\
+    }									\
+})
+
+#define Pkg_Intel_PMC_L3_Set(...)			({ /* NOP */ })
+
+#define Pkg_Intel_PMC_PERF_Set(...)			({ /* NOP */ })
+
+#define Pkg_Intel_PMC_UMC_Set(...)			({ /* NOP */ })
+
+#define _Pkg_Intel_PMC_Set_(_PMC_ , ...)				\
+({									\
+	Pkg_Intel_PMC_##_PMC_##_Set(__VA_ARGS__);			\
+})
+#define Pkg_Intel_PMC_Set(_PMC_, ...)					\
+	_Pkg_Intel_PMC_Set_(_PMC_ , __VA_ARGS__)
+
+#define Pkg_Intel_PMC_ARCH_PMC_Set(_PMC_, ...)		({ /* NOP */ })
+
+#define Pkg_Intel_PMC_L3_Clear()			({ /* NOP */ })
+
+#define Pkg_Intel_PMC_PERF_Clear()			({ /* NOP */ })
+
+#define Pkg_Intel_PMC_UMC_Clear()			({ /* NOP */ })
+
+#define Pkg_Intel_PMC_PCU_Clear()					\
+({									\
+	PutMemoryBAR(&PRIVATE(OF(PCU)).HB, &PRIVATE(OF(PCU)).BAR);	\
+	PRIVATE(OF(PCU)).ADDR = 0x0;					\
+})
+
+#define _Pkg_Intel_PMC_Clear_(_PMC_)					\
+({									\
+	Pkg_Intel_PMC_##_PMC_##_Clear();				\
+})
+#define Pkg_Intel_PMC_Clear(_PMC_)					\
+	_Pkg_Intel_PMC_Clear_(_PMC_)
+
+#define Pkg_Intel_PMC_ARCH_PMC_Clear()			({ /* NOP */ })
+
+#define Pkg_Intel_PMC_PCU_Counters(Core, _T)				\
+({									\
+  if (PRIVATE(OF(PCU)).BAR != NULL) {					\
+    if (PRIVATE(OF(PCU)).ADDR != 0x0)					\
+    {									\
+	PUBLIC(RO(Proc))->Counter[_T].MC6 =				\
+		readq(PRIVATE(OF(PCU)).BAR + PRIVATE(OF(PCU)).ADDR);	\
+    }									\
+  }									\
+})
+
+#define Pkg_Intel_PMC_L3_Counters(Core, _T)		({ /* NOP */ })
+
+#define Pkg_Intel_PMC_PERF_Counters(Core, _T)		({ /* NOP */ })
+
+#define Pkg_Intel_PMC_UMC_Counters(Core, _T)		({ /* NOP */ })
+
+#define _Pkg_Intel_PMC_Counters_(Core, _T, _PMC_)			\
+({									\
+	Pkg_Intel_PMC_##_PMC_##_Counters(Core, _T);			\
+})
+#define Pkg_Intel_PMC_Counters(Core, _T, _PMC_) 			\
+	_Pkg_Intel_PMC_Counters_(Core, _T, _PMC_)
+
+#define Pkg_Intel_PMC_ARCH_PMC_Counters(Core, _T)	({ /* NOP */ })
 
 #define AMD_Zen_PMC_L3_Closure(Core, _T)				\
 ({									\
@@ -11728,11 +11815,17 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
     }									\
 })
 
-#define AMD_Zen_PMC_UMC_Closure(Core, _T)				\
+#define AMD_Zen_PMC_UMC_Closure(Core, _T)		({ /* NOP */ })
+
+#define AMD_Zen_PMC_UMC_Counters(Core, _T , ...)			\
 ({									\
+	/*			Closure statement		*/	\
+	__VA_ARGS__;							\
 })
 
-#define AMD_Zen_PMC_UMC_Counters(Core, _T, ...)				\
+#define AMD_Zen_PMC_PCU_Closure(Core, _T)		({ /* NOP */ })
+
+#define AMD_Zen_PMC_PCU_Counters(Core, _T , ...)			\
 ({									\
 	/*			Closure statement		*/	\
 	__VA_ARGS__;							\
@@ -11748,13 +11841,14 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 ({									\
 	AMD_Zen_PMC_##_PMC_##_Counters(Core, _T, __VA_ARGS__);		\
 })
-
 #define AMD_Zen_PMC_Counters(Core, _T, _PMC_, ...)			\
 	_AMD_Zen_PMC_Counters_(Core, _T, _PMC_, __VA_ARGS__)
 
-#define Pkg_AMD_Zen_PMC_L3_Set(Core)		({})
+#define AMD_Zen_PMC_ARCH_PMC_Counters(Core, _T, ...)	({ /* NOP */ })
 
-#define Pkg_AMD_Zen_PMC_PERF_Set(Core)		({})
+#define Pkg_AMD_Zen_PMC_L3_Set(Core)			({ /* NOP */ })
+
+#define Pkg_AMD_Zen_PMC_PERF_Set(Core)			({ /* NOP */ })
 
 #define Pkg_AMD_Zen_PMC_UMC_Set(Core)					\
 ({									\
@@ -11786,6 +11880,8 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
   }									\
 })
 
+#define Pkg_AMD_Zen_PMC_PCU_Set(Core)			({ /* NOP */ })
+
 #define _Pkg_AMD_Zen_PMC_Set_(Core, _PMC_)				\
 ({									\
 	Pkg_AMD_Zen_PMC_##_PMC_##_Set(Core);				\
@@ -11793,9 +11889,11 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 #define Pkg_AMD_Zen_PMC_Set(Core, _PMC_)				\
 	_Pkg_AMD_Zen_PMC_Set_(Core, _PMC_)
 
-#define Pkg_AMD_Zen_PMC_L3_Clear(Core)		({})
+#define Pkg_AMD_Zen_PMC_ARCH_PMC_Set(Core)		({ /* NOP */ })
 
-#define Pkg_AMD_Zen_PMC_PERF_Clear(Core)	({})
+#define Pkg_AMD_Zen_PMC_L3_Clear(Core)			({ /* NOP */ })
+
+#define Pkg_AMD_Zen_PMC_PERF_Clear(Core)		({ /* NOP */ })
 
 #define Pkg_AMD_Zen_PMC_UMC_Clear(Core) 				\
 ({									\
@@ -11823,12 +11921,16 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
   }									\
 })
 
+#define Pkg_AMD_Zen_PMC_PCU_Clear(Core) 		({ /* NOP */ })
+
 #define _Pkg_AMD_Zen_PMC_Clear_(Core, _PMC_)				\
 ({									\
 	Pkg_AMD_Zen_PMC_##_PMC_##_Clear(Core);				\
 })
 #define Pkg_AMD_Zen_PMC_Clear(Core, _PMC_)				\
 	_Pkg_AMD_Zen_PMC_Clear_(Core, _PMC_)
+
+#define Pkg_AMD_Zen_PMC_ARCH_PMC_Clear(Core)		({ /* NOP */ })
 
 #define Pkg_OVH(Pkg, Core)						\
 ({									\
@@ -12122,6 +12224,12 @@ static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T)
 	Save_PTSC(Pkg); 						\
 })
 
+#define Pkg_AMD_Zen_PMC_ARCH_PMC_Closure(Pkg, Core, _T) 		\
+({									\
+	Delta_PTSC_OVH(Pkg, Core);					\
+	Save_PTSC(Pkg); 						\
+})
+
 #define Pkg_AMD_Zen_PMC_L3_Counters(Pkg, Core, T, ...)			\
 ({									\
 	Pkg->Counter[T].PCLK = Core->Counter[T].TSC;			\
@@ -12218,6 +12326,19 @@ static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T)
 	RDCOUNTER(Pkg->Counter[_T].Uncore.FC0, MSR_AMD_F17H_DF_PERF_CTR);\
 })
 
+#define Pkg_AMD_Zen_PMC_PCU_Closure(Pkg, Core, _T)			\
+({									\
+	Delta_PTSC_OVH(Pkg, Core);					\
+	Save_PTSC(Pkg); 						\
+})
+
+#define Pkg_AMD_Zen_PMC_PCU_Counters(Pkg, Core, _T, ...)		\
+({									\
+	Pkg->Counter[_T].PCLK = Core->Counter[_T].TSC;			\
+	/*			Closure statement		*/	\
+	__VA_ARGS__;							\
+})
+
 #define _Pkg_AMD_Zen_PMC_Closure_(Pkg, Core, _T, _PMC_) 		\
 	Pkg_AMD_Zen_PMC_##_PMC_##_Closure(Pkg, Core, _T)
 
@@ -12231,6 +12352,13 @@ static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T)
 
 #define Pkg_AMD_Zen_PMC_Counters(Pkg, Core, _T, _PMC_, ...)		\
 	_Pkg_AMD_Zen_PMC_Counters_(Pkg, Core, _T, _PMC_, __VA_ARGS__)
+
+#define Pkg_AMD_Zen_PMC_ARCH_PMC_Counters(Pkg, Core, _T, ...)		\
+({									\
+	Pkg->Counter[_T].PCLK = Core->Counter[_T].TSC;			\
+	/*			Closure statement		*/	\
+	__VA_ARGS__;							\
+})
 
 void Core_Intel_Temp(CORE_RO *Core)
 {
@@ -14696,6 +14824,7 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
 		PKG_Counters_Skylake(Core, 1);
+		Pkg_Intel_PMC_Counters(Core, 1, ARCH_PMC);
 
 		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
@@ -14848,6 +14977,7 @@ static void Start_Skylake(void *arg)
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
 		}
 		PKG_Counters_Skylake(Core, 0);
+		Pkg_Intel_PMC_Counters(Core, 0, ARCH_PMC);
 
 		Power_ACCU_Skylake(PUBLIC(RO(Proc)), 0);
 	}
@@ -14891,6 +15021,8 @@ static void Start_Uncore_Skylake(void *arg)
 	UNUSED(arg);
 
 	Uncore_Counters_Set(SKL);
+
+	Pkg_Intel_PMC_Set(ARCH_PMC, 0x5838);
 }
 
 static void Stop_Uncore_Skylake(void *arg)
@@ -14898,41 +15030,8 @@ static void Stop_Uncore_Skylake(void *arg)
 	UNUSED(arg);
 
 	Uncore_Counters_Clear(SKL);
-}
 
-static void Start_Uncore_Xtra(void *arg)
-{
-	Start_Uncore_Skylake(arg);
-
-	if (GetMemoryBAR(0, 0, 0, 0, 0x48, 64, 0x10000, 0,
-			&PRIVATE(OF(Xtra)).HB, &PRIVATE(OF(Xtra)).BAR) == 0)
-	{
-		PRIVATE(OF(Xtra)).ADDR = 0x5838;
-/*
- *		Counter | Description
- *		--------|------------
- *		0x5828	| Cycle Sum of All Active Cores
- *		0x5830	| Cycle Sum of Any Active Core
- *		0x5838	| Cycle Sum of Active Graphics
- *		0x5840	| Cycle Sum of Overlapping Active GT and Core
- *		0x5848	| Cycle Sum of Any Active GT Slice
- *		0x5850	| Cycle Sum of All Active GT Slice
- *		0x5858	| Cycle Sum of Any GT Media Engine
- *		0x5860	| Ratio Sum of Any Active Core
- *		0x5868	| Ratio Sum of Active GT
- *		0x5870	| Ratio Sum of Active GT Slice
- */
-	} else {
-		PRIVATE(OF(Xtra)).ADDR = 0x0;
-	}
-}
-
-static void Stop_Uncore_Xtra(void *arg)
-{
-	Stop_Uncore_Skylake(arg);
-
-	PutMemoryBAR(&PRIVATE(OF(Xtra)).HB, &PRIVATE(OF(Xtra)).BAR);
-	PRIVATE(OF(Xtra)).ADDR = 0x0;
+	Pkg_Intel_PMC_Clear(ARCH_PMC);
 }
 
 static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
@@ -14963,6 +15062,7 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
 		PKG_Counters_Skylake_X(Core, 1);
+		Pkg_Intel_PMC_Counters(Core, 1, ARCH_PMC);
 
 		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
@@ -15107,6 +15207,7 @@ static void Start_Skylake_X(void *arg)
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
 		}
 		PKG_Counters_Skylake_X(Core, 0);
+		Pkg_Intel_PMC_Counters(Core, 0, ARCH_PMC);
 		PWR_ACCU_SandyBridge_EP(PUBLIC(RO(Proc)), 0);
 	}
 
@@ -15979,8 +16080,8 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
 
     if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
     {
-	Pkg_AMD_Zen_PMC_Counters(PUBLIC(RO(Proc)), Core, 1, AMD_ZEN_PMC,
-		Pkg_AMD_Zen_PMC_Closure(PUBLIC(RO(Proc)), Core, 1, AMD_ZEN_PMC)
+	Pkg_AMD_Zen_PMC_Counters(PUBLIC(RO(Proc)), Core, 1, ARCH_PMC,
+		Pkg_AMD_Zen_PMC_Closure(PUBLIC(RO(Proc)), Core, 1, ARCH_PMC)
 	);
 
 	Pkg_AMD_Family_17h_Temp(PUBLIC(RO(Proc)), Core);
@@ -16054,8 +16155,8 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
 	Core->Counter[0].Power.ACCU = Core->Counter[1].Power.ACCU;
     }
 
-	AMD_Zen_PMC_Counters(Core, 1, AMD_ZEN_PMC,
-		AMD_Zen_PMC_Closure(Core, 1, AMD_ZEN_PMC)
+	AMD_Zen_PMC_Counters(Core, 1, ARCH_PMC,
+		AMD_Zen_PMC_Closure(Core, 1, ARCH_PMC)
 	);
 
 	Delta_INST(Core);
@@ -16239,18 +16340,18 @@ static void Start_AMD_Family_17h(void *arg)
 
 	AMD_Core_Counters_Set(Core, Family_17h);
 
-	AMD_Zen_PMC_Set(Core, AMD_ZEN_PMC);
+	AMD_Zen_PMC_Set(Core, ARCH_PMC);
 
 	SMT_Counters_AMD_Family_17h(Core, 0);
 
     if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
     {
-	Pkg_AMD_Zen_PMC_Set(Core, AMD_ZEN_PMC);
+	Pkg_AMD_Zen_PMC_Set(Core, ARCH_PMC);
 
 	if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
 		Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
 	}
-	Pkg_AMD_Zen_PMC_Counters(PUBLIC(RO(Proc)), Core, 0, AMD_ZEN_PMC);
+	Pkg_AMD_Zen_PMC_Counters(PUBLIC(RO(Proc)), Core, 0, ARCH_PMC);
 
 	RDCOUNTER(PUBLIC(RO(Proc))->Counter[0].Power.ACCU[PWR_DOMAIN(PKG)],
 			MSR_AMD_PKG_ENERGY_STATUS );
@@ -16261,7 +16362,7 @@ static void Start_AMD_Family_17h(void *arg)
 	Core->Counter[0].Power.ACCU &= 0xffffffff;
     }
 
-	AMD_Zen_PMC_Counters(Core, 0, AMD_ZEN_PMC);
+	AMD_Zen_PMC_Counters(Core, 0, ARCH_PMC);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
@@ -16284,11 +16385,11 @@ static void Stop_AMD_Family_17h(void *arg)
 
 	AMD_Core_Counters_Clear(Core);
 
-	AMD_Zen_PMC_Clear(Core, AMD_ZEN_PMC);
+	AMD_Zen_PMC_Clear(Core, ARCH_PMC);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
-		Pkg_AMD_Zen_PMC_Clear(Core, AMD_ZEN_PMC);
+		Pkg_AMD_Zen_PMC_Clear(Core, ARCH_PMC);
 
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
