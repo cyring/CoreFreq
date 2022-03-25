@@ -899,7 +899,7 @@ typedef struct
 	    struct {
 	      struct {
 /*64-bits*/	DOMAIN_POWER_LIMIT	PowerLimit;
-		unsigned short		Unlock; /* Not Agent Locked */
+/*16-bits*/	unsigned short		Unlock; /* Not Agent Locked */
 	      } Domain[PWR_DOMAIN(SIZE)];
 
 /*64-bits*/	DOMAIN_POWER_INFO	PowerInfo;
@@ -911,9 +911,15 @@ typedef struct
 /*16-bits*/	unsigned short		TDC;
 	    };
 	    struct {
+	      struct {
+/*64-bits*/	unsigned long long	_pad64;
+/*16-bits*/	unsigned short		_pad16;
+	      } Domain[PWR_DOMAIN(SIZE)];
+
 /*32-bits*/	AMD_17_MTS_MCM_PWR	PWR;
 /*32-bits*/	AMD_17_MTS_MCM_TDP	TDP;
 /*32-bits*/	AMD_17_MTS_MCM_EDC	EDC;
+/*32-bits*/	unsigned int		_pad32;
 	    } Zen;
 	  };
 	} PowerThermal;

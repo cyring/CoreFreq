@@ -6831,12 +6831,23 @@ void Query_AMD_Family_17h(unsigned int cpu)
 		/* Assumed PL1 is enabled, clamped, unlocked if value exists */
 		PUBLIC(RO(Proc))->PowerThermal.Domain[
 			PWR_DOMAIN(PKG)
-		].PowerLimit.Domain_Limit1 > 0;
+		].PowerLimit.Domain_Limit1 > 0 ? 1 : 0;
 	    }
 	    else if (IS_HSMP_OOO(rx))
 	    {
-		PUBLIC(RO(Proc))->Features.HSMP_Enable = \
-				PUBLIC(RO(Proc))->Features.TDP_Unlock = 0;
+		PUBLIC(RO(Proc))->PowerThermal.Domain[
+			PWR_DOMAIN(PKG)
+		].PowerLimit.Enable_Limit1 = \
+
+		PUBLIC(RO(Proc))->PowerThermal.Domain[
+			PWR_DOMAIN(PKG)
+		].PowerLimit.Clamping1 = \
+
+		PUBLIC(RO(Proc))->PowerThermal.Domain[
+			PWR_DOMAIN(PKG)
+		].Unlock = 0;
+
+		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
 	    }
 	}
 	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
@@ -6859,10 +6870,18 @@ void Query_AMD_Family_17h(unsigned int cpu)
 		/*	Assumed PL2 is enabled, clamped if value exists */
 		PUBLIC(RO(Proc))->PowerThermal.Domain[
 			PWR_DOMAIN(PKG)
-		].PowerLimit.Domain_Limit2 > 0;
+		].PowerLimit.Domain_Limit2 > 0 ? 1 : 0;
 	    }
 	    else if (IS_HSMP_OOO(rx))
 	    {
+		PUBLIC(RO(Proc))->PowerThermal.Domain[
+			PWR_DOMAIN(PKG)
+		].PowerLimit.Enable_Limit2 = \
+
+		PUBLIC(RO(Proc))->PowerThermal.Domain[
+			PWR_DOMAIN(PKG)
+		].PowerLimit.Clamping2 = 0;
+
 		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
 	    }
 	}
@@ -10591,11 +10610,26 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 			PUBLIC(RO(Proc))->PowerThermal.Domain[
 				PWR_DOMAIN(PKG)
 			].PowerLimit.Domain_Limit1 = arg[0].value / 1000;
+
+			PUBLIC(RO(Proc))->PowerThermal.Domain[
+				PWR_DOMAIN(PKG)
+			].PowerLimit.Enable_Limit1 = \
+
+			PUBLIC(RO(Proc))->PowerThermal.Domain[
+				PWR_DOMAIN(PKG)
+			].PowerLimit.Clamping1 = \
+
+			PUBLIC(RO(Proc))->PowerThermal.Domain[
+				PWR_DOMAIN(PKG)
+			].Unlock = \
+
+			PUBLIC(RO(Proc))->PowerThermal.Domain[
+				PWR_DOMAIN(PKG)
+			].PowerLimit.Domain_Limit1 > 0 ? 1 : 0;
 		    }
 		    else if (IS_HSMP_OOO(rx))
 		    {
-			PUBLIC(RO(Proc))->Features.HSMP_Enable = \
-				PUBLIC(RO(Proc))->Features.TDP_Unlock = 0;
+			PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
 		    }
 		}
 	    }
