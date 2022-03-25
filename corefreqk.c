@@ -15096,6 +15096,8 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 
 		Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
+		Delta_MC6(PUBLIC(RO(Proc)));
+
 		Delta_PWR_ACCU(Proc, PKG);
 
 		Delta_PWR_ACCU(Proc, CORES);
@@ -15113,6 +15115,8 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 		Save_PTSC(PUBLIC(RO(Proc)));
 
 		Save_UNCORE_FC0(PUBLIC(RO(Proc)));
+
+		Save_MC6(PUBLIC(RO(Proc)));
 
 		Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
 
@@ -15251,6 +15255,7 @@ static void Start_Uncore_Skylake_X(void *arg)
 /*TODO(Hardware needed)
 	Uncore_Counters_Set(SKL_X);
 */
+	Pkg_Intel_PMC_Set(ARCH_PMC, 0x5838);
 }
 
 static void Stop_Uncore_Skylake_X(void *arg)
@@ -15259,6 +15264,7 @@ static void Stop_Uncore_Skylake_X(void *arg)
 /*TODO(Hardware needed)
 	Uncore_Counters_Clear(SKL_X);
 */
+	Pkg_Intel_PMC_Clear(ARCH_PMC);
 }
 
 
