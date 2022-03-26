@@ -2154,3 +2154,21 @@ typedef struct {
 		#define fallthrough	/* Fallthrough */
 	#endif
 #endif
+
+#define DECLARE_InsertionSort(_base, _cnt, _start)			\
+void InsertionSort(typeof(_base) base, typeof(_cnt) cnt, typeof(_start) start) \
+{									\
+	typeof(_start) lt = start + 1, rt;				\
+	while (lt < cnt)						\
+	{								\
+		rt = lt;						\
+		while ((rt > start) && (base[rt - 1] > base[rt]))	\
+		{							\
+			typeof(_base[0]) swap = base[rt - 1];		\
+			base[rt - 1] = base[rt];			\
+			base[rt] = swap;				\
+			rt = rt - 1;					\
+		}							\
+		lt = lt + 1;						\
+	}								\
+}

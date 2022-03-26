@@ -114,8 +114,41 @@ struct RULER_ST Ruler = {
 	Ruler.TopOf = (struct TOPOF) { .Top = _cpu , .Boost = _boost}	\
 )
 
+void SetTopOftheTop(	unsigned int cpu, enum RATIO_BOOST rb,
+			unsigned int *lowest, unsigned int *highest )
+{
+    switch (rb) {
+    case BOOST(HWP_MIN):
+    case BOOST(MIN):
+      if(RO(Shm)->Cpu[cpu].Boost[rb] < RO(Shm)->Cpu[ Ruler.Top[rb] ].Boost[rb])
+      {
+	Ruler.Top[rb] = cpu;
+      }
+      if (RO(Shm)->Cpu[cpu].Boost[rb] < (*lowest))
+      {
+	(*lowest) = RO(Shm)->Cpu[cpu].Boost[rb];
+	SetTopOfRuler(Ruler.Top[rb], rb);
+      }
+	break;
+    default:
+      if(RO(Shm)->Cpu[cpu].Boost[rb] > RO(Shm)->Cpu[ Ruler.Top[rb] ].Boost[rb])
+      {
+	Ruler.Top[rb] = cpu;
+      }
+      if (RO(Shm)->Cpu[cpu].Boost[rb] > (*highest))
+      {
+	(*highest) = RO(Shm)->Cpu[cpu].Boost[rb];
+	SetTopOfRuler(Ruler.Top[rb], rb);
+      }
+	break;
+    }
+}
+
+DECLARE_InsertionSort(Ruler.Uniq, Ruler.Count, BOOST(MIN))
+
 void AggregateRatio(void)
 {
+	const size_t dimension = sizeof(Ruler.Uniq) / sizeof(Ruler.Uniq[0]);
 	const unsigned int highestFactory = MAXCLOCK_TO_RATIO(
 		unsigned int, RO(Shm)->Proc.Features.Factory.Clock.Hz
 	);
@@ -125,63 +158,41 @@ void AggregateRatio(void)
 	highest = RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(MIN)];
 
 	Ruler.Count = 0;
-    for (lt = BOOST(MIN); lt < BOOST(SIZE); lt++) {
+	lt = BOOST(MIN);
+    while (lt < BOOST(SIZE))
+    {
 	Ruler.Top[lt] = RO(Shm)->Proc.Service.Core;
-	Ruler.Uniq[lt] = 0;
+
+	for (cpu = 0;
+			!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS)
+			&& (cpu < RO(Shm)->Proc.CPU.Count)
+			&& (Ruler.Count < dimension);
+		cpu++)
+	{
+	    if ((RO(Shm)->Cpu[cpu].Boost[lt] > 0)
+	     && (RO(Shm)->Cpu[cpu].Boost[lt] <= highestFactory) )
+	    {
+		SetTopOftheTop(cpu, lt, &lowest, & highest);
+
+		for (rt = BOOST(MIN); rt < Ruler.Count; rt++)
+		{
+			if (Ruler.Uniq[rt] == RO(Shm)->Cpu[cpu].Boost[lt])
+			{
+				break;
+			}
+		}
+		if (rt == Ruler.Count) {
+			Ruler.Uniq[Ruler.Count] = RO(Shm)->Cpu[cpu].Boost[lt];
+			Ruler.Count++;
+		}
+	    }
+	}
+	lt = lt + 1;
     }
 	SetTopOfRuler(RO(Shm)->Proc.Service.Core, BOOST(MIN));
 
-  for (cpu = 0; cpu < RO(Shm)->Proc.CPU.Count; cpu++)
-  {
-   if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
-   {
-    for (lt = BOOST(MIN); lt < BOOST(SIZE); lt++)
-    {
-     if (RO(Shm)->Cpu[cpu].Boost[lt] > 0)
-     {
-      switch (lt) {
-      case BOOST(HWP_MIN):
-      case BOOST(MIN):
-       if(RO(Shm)->Cpu[cpu].Boost[lt] < RO(Shm)->Cpu[ Ruler.Top[lt] ].Boost[lt])
-       {
-	Ruler.Top[lt] = cpu;
-       }
-       if (RO(Shm)->Cpu[cpu].Boost[lt] < lowest)
-       {
-	lowest = RO(Shm)->Cpu[cpu].Boost[lt];
-	SetTopOfRuler(Ruler.Top[lt], lt);
-       }
-	break;
-     default:
-       if(RO(Shm)->Cpu[cpu].Boost[lt] > RO(Shm)->Cpu[ Ruler.Top[lt] ].Boost[lt])
-       {
-	Ruler.Top[lt] = cpu;
-       }
-       if (RO(Shm)->Cpu[cpu].Boost[lt] > highest)
-       {
-	highest = RO(Shm)->Cpu[cpu].Boost[lt];
-	SetTopOfRuler(Ruler.Top[lt], lt);
-       }
-	break;
-      }
-      for (rt = BOOST(MIN); rt < Ruler.Count; rt++)
-      {
-	if (Ruler.Uniq[rt] == RO(Shm)->Cpu[cpu].Boost[lt])
-	{
-		break;
-	}
-      }
-      if (rt == Ruler.Count)
-      {
-	if (RO(Shm)->Cpu[cpu].Boost[lt] <= highestFactory) {
-		Ruler.Uniq[Ruler.Count] = RO(Shm)->Cpu[cpu].Boost[lt];
-	}
-	Ruler.Count++;
-      }
-     }
-    }
-   }
-  }
+	InsertionSort(Ruler.Uniq, Ruler.Count, BOOST(MIN));
+
 	Ruler.Minimum = (double) lowest;
 	Ruler.Maximum = (double) highest;
 	Ruler.Median  = (double) RO(Shm)->Cpu[
@@ -192,6 +203,8 @@ void AggregateRatio(void)
 		Ruler.Median = (Ruler.Minimum + Ruler.Maximum) / 2.0;
 	}
 }
+
+#undef InsertionSort
 
 ATTRIBUTE *StateToSymbol(short int state, char stateStr[])
 {
