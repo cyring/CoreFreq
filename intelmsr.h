@@ -336,6 +336,8 @@
 #define MSR_THERM_CFG1				0x00000673
 #define MSR_THERM_CFG2				0x00000674
 
+#define MSR_SKL_CORE_PERF_LIMIT_REASONS 	0x0000064f
+
 typedef union
 {
 	unsigned long long value;
@@ -1152,7 +1154,7 @@ typedef union
 } THERM_INTERRUPT;
 
 typedef union
-{	/* R/O-R/WC0: IA32_{PACKAGE_}THERM_STATUS(19Ch{1B1h})	*/
+{	/* R/O-R/WC0: IA32_{PACKAGE_}THERM_STATUS(19Ch{1B1h})		*/
 	unsigned long long	value;
 	struct
 	{
@@ -1181,6 +1183,43 @@ typedef union
 		ReservedBits2	: 64-32;
 	};
 } THERM_STATUS;
+
+typedef union
+{	/* R/O-R/WC0: MSR_CORE_PERF_LIMIT_REASONS(64FH) Package scope	*/
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		PROCHOT 	:  1-0,  /* R/O */
+		ThermalStatus	:  2-1,  /* R/O */
+		ReservedBits1	:  4-2,
+		ResidencyStatus :  5-4,  /* R/O */
+		AvgThmLimit	:  6-5,  /* R/O */
+		VR_ThmAlert	:  7-6,  /* R/O */
+		VR_TDC_Status	:  8-7,  /* R/O */
+		Electrical	:  9-8,  /* R/O */
+		ReservedBits2	: 10-9,
+		PL1Status	: 11-10, /* R/O */
+		PL2Status	: 12-11, /* R/O */
+		MaxTurboLimit	: 13-12, /* R/O */
+		TurboAttenuation: 14-13, /* R/O */
+		ReservedBits3	: 16-14,
+		PROCHOTLog	: 17-16, /* R/WC0 */
+		ThermalLog	: 18-17, /* R/WC0 */
+		ReservedBits4	: 20-18,
+		ResidencyLog	: 21-20, /* R/WC0 */
+		AvgThmLimitLog	: 22-21, /* R/WC0 */
+		VR_ThmAlertLog	: 23-22, /* R/WC0 */
+		VR_TDC_Log	: 24-23, /* R/WC0 */
+		ElectricalLog	: 25-24, /* R/WC0 */
+		ReservedBits5	: 26-25,
+		PL1Log		: 27-26, /* R/WC0 */
+		PL2Log		: 28-27, /* R/WC0 */
+		MaxTurboLimitLog: 29-28, /* R/WC0 */
+		TurboAttenLog	: 30-29, /* R/WC0 */
+		ReservedBits6	: 64-30;
+	};
+} CORE_PERF_LIMIT_REASONS;
 
 typedef union
 {

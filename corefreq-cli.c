@@ -10970,28 +10970,72 @@ int Shortcut(SCANKEY *scan)
 
 	Window *wBox = CreateBox(scan->key, origin, select,
 			(char*) RSC(BOX_EVENT_TITLE).CODE(),
+	/*	Thermal Sensor						*/
 				RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
-	RSC(BOX_EVENT).ATTR()[(ProcessorEvents & EVENT_THERM_SENSOR) ? 1 : 0],
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_THERM_SENSOR) ? 1 : 0
+				],
 				BOXKEY_CLR_THM_SENSOR,
+	/*	PROCHOT# Agent						*/
 				RSC(BOX_EVENT_PROCHOT_AGENT).CODE(),
-	RSC(BOX_EVENT).ATTR()[(ProcessorEvents & EVENT_THERM_PROCHOT) ? 1 : 0],
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_THERM_PROCHOT) ? 1 : 0
+				],
 				BOXKEY_CLR_THM_PROCHOT,
+	/*	Critical Temperature					*/
 				RSC(BOX_EVENT_CRITICAL_TEMP).CODE(),
-	RSC(BOX_EVENT).ATTR()[(ProcessorEvents & EVENT_THERM_CRIT) ? 1 : 0],
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_THERM_CRIT) ? 1 : 0
+				],
 				BOXKEY_CLR_THM_CRIT,
+	/*	Thermal Threshold					*/
 				RSC(BOX_EVENT_THERM_THRESHOLD).CODE(),
-	RSC(BOX_EVENT).ATTR()[(ProcessorEvents & EVENT_THERM_THOLD) ? 1 : 0],
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_THERM_THOLD) ? 1 : 0
+				],
 				BOXKEY_CLR_THM_THOLD,
+	/*	Power Limitation					*/
 				RSC(BOX_EVENT_POWER_LIMIT).CODE(),
-	RSC(BOX_EVENT).ATTR()[(ProcessorEvents & EVENT_POWER_LIMIT) ? 2 : 0],
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_POWER_LIMIT) ? 2 : 0
+				],
 				BOXKEY_CLR_PWR_LIMIT,
+	/*	Current Limitation					*/
 				RSC(BOX_EVENT_CURRENT_LIMIT).CODE(),
-	RSC(BOX_EVENT).ATTR()[(ProcessorEvents & EVENT_CURRENT_LIMIT) ? 2 : 0],
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_CURRENT_LIMIT) ? 2 : 0
+				],
 				BOXKEY_CLR_CUR_LIMIT,
+	/*	Cross Domain Limit.					*/
 				RSC(BOX_EVENT_CROSS_DOM_LIMIT).CODE(),
-	RSC(BOX_EVENT).ATTR()[(ProcessorEvents & EVENT_CROSS_DOMAIN) ? 1 : 0],
-				BOXKEY_CLR_X_DOMAIN);
-
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_CROSS_DOMAIN) ? 1 : 0
+				],
+				BOXKEY_CLR_X_DOMAIN,
+	/*	Package PL1						*/
+				RSC(BOX_EVENT_POWER_PL1).CODE(),
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_POWER_PL1) ? 2 : 0
+				],
+				BOXKEY_CLR_PWR_PL1,
+	/*	Package PL2						*/
+				RSC(BOX_EVENT_POWER_PL2).CODE(),
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_POWER_PL2) ? 2 : 0
+				],
+				BOXKEY_CLR_PWR_PL2,
+	/*	Electrical EDP						*/
+				RSC(BOX_EVENT_ELECTRICAL).CODE(),
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_ELECTRICAL) ? 2 : 0
+				],
+				BOXKEY_CLR_ELECTRICAL,
+	/*	Max Turbo Limit.					*/
+				RSC(BOX_EVENT_MAX_TURBO).CODE(),
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_MAX_TURBO) ? 2 : 0
+				],
+				BOXKEY_CLR_MAX_TURBO);
 	if (wBox != NULL) {
 		AppendWindow(wBox, &winList);
 	} else {
@@ -13219,6 +13263,10 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_CLR_PWR_LIMIT:
     case BOXKEY_CLR_CUR_LIMIT:
     case BOXKEY_CLR_X_DOMAIN:
+    case BOXKEY_CLR_PWR_PL1:
+    case BOXKEY_CLR_PWR_PL2:
+    case BOXKEY_CLR_ELECTRICAL:
+    case BOXKEY_CLR_MAX_TURBO:
     {
 	const enum THERM_PWR_EVENTS events=(scan->key & CLEAR_EVENT_MASK) >> 4;
       if (!RING_FULL(RW(Shm)->Ring[0])) {
@@ -17594,7 +17642,10 @@ void Draw_Footer(Layer *layer, CUINT row)
 	    if (ProcessorEvents &	( EVENT_THERM_SENSOR
 					| EVENT_THERM_PROCHOT
 					| EVENT_THERM_CRIT
-					| EVENT_THERM_THOLD ) )
+					| EVENT_THERM_THOLD
+					| EVENT_POWER_PL1
+					| EVENT_POWER_PL2
+					| EVENT_ELECTRICAL ) )
 	    {
 		_hot = 4;
 		_tmp = 1;

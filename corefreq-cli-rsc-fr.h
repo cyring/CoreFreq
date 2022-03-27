@@ -1167,6 +1167,12 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_EVENT_POWER_LIMIT_CODE_FR	" Limitation de puissance "
 #define RSC_BOX_EVENT_CURRENT_LIMIT_CODE_FR	"  Limitation de courant  "
 #define RSC_BOX_EVENT_CROSS_DOM_LIMIT_CODE_FR	" Limitation interdomaine "
+#define RSC_BOX_EVENT_POWER_PL1_CODE_FR 	"      PL1 du Package     "
+#define RSC_BOX_EVENT_POWER_PL2_CODE_FR 	"      PL2 du Package     "
+#define RSC_BOX_EVENT_ELECTRICAL_CODE_FR	"      EDP " \
+						"\xa9""lectrique     "
+
+#define RSC_BOX_EVENT_MAX_TURBO_CODE_FR 	"  Limitation Turbo Max.  "
 
 #define RSC_BOX_STATE_UNSPECIFIED_CODE_FR	"        "		\
 						"IND""\x89""TERMIN""\x89"\

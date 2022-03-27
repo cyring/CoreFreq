@@ -8069,7 +8069,7 @@ void ThermalMonitor_Set(CORE_RO *Core)
     if (PUBLIC(RO(Proc))->Features.Std.EDX.ACPI)
     {	/*	Clear Thermal Events if requested by User.		*/
 	THERM_INTERRUPT ThermInterrupt = {.value = 0};
-	int ClearBit = 0;
+	unsigned short ClearBit = 0;
 	RDMSR(ThermStatus, MSR_IA32_THERM_STATUS);
 
 	if (Clear_Events & EVENT_THERM_SENSOR) {
@@ -8134,13 +8134,15 @@ void ThermalMonitor_Set(CORE_RO *Core)
 		}
 	}
 	Core->PowerThermal.Events = \
-		( (ThermStatus.StatusBit | ThermStatus.StatusLog ) << 0 )
-		| (ThermStatus.PROCHOTLog << 1)
-		| (ThermStatus.CriticalTempLog << 2)
-		| ((ThermStatus.Threshold1Log | ThermStatus.Threshold2Log) << 3)
-		| (ThermStatus.PwrLimitLog << 4)
-		| (ThermStatus.CurLimitLog << 5)
-		| (ThermStatus.XDomLimitLog << 6);
+		( ( ThermStatus.StatusBit
+		  | ThermStatus.StatusLog )	<< LSHIFT_THERM_SENSOR)
+		| (ThermStatus.PROCHOTLog	<< LSHIFT_THERM_PROCHOT)
+		| (ThermStatus.CriticalTempLog	<< LSHIFT_THERM_CRIT)
+		| ((ThermStatus.Threshold1Log
+		  | ThermStatus.Threshold2Log)	<< LSHIFT_THERM_THOLD)
+		| (ThermStatus.PwrLimitLog	<< LSHIFT_POWER_LIMIT)
+		| (ThermStatus.CurLimitLog	<< LSHIFT_CURRENT_LIMIT)
+		| (ThermStatus.XDomLimitLog	<< LSHIFT_CROSS_DOMAIN);
 
       if (PUBLIC(RO(Proc))->Features.Power.EAX.PTM
       && (Core->Bind == PUBLIC(RO(Proc))->Service.Core))
@@ -8207,11 +8209,13 @@ void ThermalMonitor_Set(CORE_RO *Core)
 		}
 	}
 	PUBLIC(RO(Proc))->PowerThermal.Events = \
-		( (ThermStatus.StatusBit | ThermStatus.StatusLog) << 0 )
-		| (ThermStatus.PROCHOTLog << 1)
-		| (ThermStatus.CriticalTempLog << 2)
-		| ((ThermStatus.Threshold1Log | ThermStatus.Threshold2Log) << 3)
-		| (ThermStatus.PwrLimitLog << 4);
+		( ( ThermStatus.StatusBit
+		  | ThermStatus.StatusLog )	<< LSHIFT_THERM_SENSOR)
+		| (ThermStatus.PROCHOTLog	<< LSHIFT_THERM_PROCHOT)
+		| (ThermStatus.CriticalTempLog	<< LSHIFT_THERM_CRIT)
+		| ((ThermStatus.Threshold1Log
+		  | ThermStatus.Threshold2Log)	<< LSHIFT_THERM_THOLD)
+		| (ThermStatus.PwrLimitLog	<< LSHIFT_POWER_LIMIT);
       }
     }
 	RDMSR(PfInfo, MSR_PLATFORM_INFO);
@@ -8237,6 +8241,44 @@ void ThermalMonitor_Set(CORE_RO *Core)
 			break;
 		}
 	}
+}
+
+void CorePerfLimitReasons_Set(CORE_RO *Core)
+{
+    if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+    {
+	CORE_PERF_LIMIT_REASONS CoreLimit = {.value = 0};
+	unsigned short ClearBit = 0;
+	RDMSR(CoreLimit, MSR_SKL_CORE_PERF_LIMIT_REASONS);
+
+	if (Clear_Events & EVENT_POWER_PL1) {
+		CoreLimit.PL1Log = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_POWER_PL2) {
+		CoreLimit.PL2Log = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_ELECTRICAL) {
+		CoreLimit.ElectricalLog = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_MAX_TURBO) {
+		CoreLimit.MaxTurboLimitLog = 0;
+		ClearBit = 1;
+	}
+	if (ClearBit)
+	{
+		WRMSR(CoreLimit, MSR_SKL_CORE_PERF_LIMIT_REASONS);
+		RDMSR(CoreLimit, MSR_SKL_CORE_PERF_LIMIT_REASONS);
+	}
+	PUBLIC(RO(Proc))->PowerThermal.Events |= (
+		  (CoreLimit.PL1Log		<< LSHIFT_POWER_PL1)
+		| (CoreLimit.PL2Log		<< LSHIFT_POWER_PL2)
+		| (CoreLimit.ElectricalLog	<< LSHIFT_ELECTRICAL)
+		| (CoreLimit.MaxTurboLimitLog	<< LSHIFT_MAX_TURBO)
+	);
+    }
 }
 
 void PowerThermal(CORE_RO *Core)
@@ -10255,6 +10297,7 @@ static void PerCore_Skylake_Query(void *arg)
 	PowerThermal(Core);
 
 	ThermalMonitor_Set(Core);
+	CorePerfLimitReasons_Set(Core);
 
 	Intel_Turbo_Activation_Ratio(Core);
 	Intel_Turbo_TDP_Config(Core);
@@ -10331,6 +10374,7 @@ static void PerCore_Skylake_X_Query(void *arg)
 	PowerThermal(Core);
 
 	ThermalMonitor_Set(Core);
+	CorePerfLimitReasons_Set(Core);
 
 	Intel_Turbo_Activation_Ratio(Core);
 	Intel_Turbo_TDP_Config(Core);
@@ -12396,15 +12440,16 @@ void Core_Intel_Temp(CORE_RO *Core)
 	RDMSR(ThermStatus, MSR_IA32_THERM_STATUS);	/*All Intel families.*/
 
 	Core->PowerThermal.Sensor = ThermStatus.DTS;
-	Core->PowerThermal.Events = (	(ThermStatus.StatusBit
-					|ThermStatus.StatusLog ) << 0)
-				  | (ThermStatus.PROCHOTLog << 1)
-				  | (ThermStatus.CriticalTempLog << 2)
-				  | (	(ThermStatus.Threshold1Log
-					|ThermStatus.Threshold2Log ) << 3)
-				  | (ThermStatus.PwrLimitLog << 4)
-				  | (ThermStatus.CurLimitLog << 5)
-				  | (ThermStatus.XDomLimitLog << 6);
+	Core->PowerThermal.Events = \
+			( ( ThermStatus.StatusBit
+			  | ThermStatus.StatusLog )	<< LSHIFT_THERM_SENSOR)
+			| (ThermStatus.PROCHOTLog	<< LSHIFT_THERM_PROCHOT)
+			| (ThermStatus.CriticalTempLog	<< LSHIFT_THERM_CRIT)
+			| ((ThermStatus.Threshold1Log
+			  | ThermStatus.Threshold2Log)	<< LSHIFT_THERM_THOLD)
+			| (ThermStatus.PwrLimitLog	<< LSHIFT_POWER_LIMIT)
+			| (ThermStatus.CurLimitLog	<< LSHIFT_CURRENT_LIMIT)
+			| (ThermStatus.XDomLimitLog	<< LSHIFT_CROSS_DOMAIN);
 }
 
 #define Pkg_Intel_Temp(Pkg)						\
@@ -12415,15 +12460,29 @@ void Core_Intel_Temp(CORE_RO *Core)
 	RDMSR(ThermStatus, MSR_IA32_PACKAGE_THERM_STATUS);		\
 									\
 	Pkg->PowerThermal.Sensor = ThermStatus.DTS;			\
-	Pkg->PowerThermal.Events = (	(ThermStatus.StatusBit		\
-					|ThermStatus.StatusLog ) << 0)	\
-				 | (ThermStatus.PROCHOTLog << 1)	\
-				 | (ThermStatus.CriticalTempLog << 2)	\
-				 | (	(ThermStatus.Threshold1Log	\
-					|ThermStatus.Threshold2Log )<<3)\
-				 | (ThermStatus.PwrLimitLog << 4);	\
+	Pkg->PowerThermal.Events =					\
+		( ( ThermStatus.StatusBit				\
+		  | ThermStatus.StatusLog )	<< LSHIFT_THERM_SENSOR) \
+		| (ThermStatus.PROCHOTLog	<< LSHIFT_THERM_PROCHOT)\
+		| (ThermStatus.CriticalTempLog	<< LSHIFT_THERM_CRIT)	\
+		| ((ThermStatus.Threshold1Log				\
+		  | ThermStatus.Threshold2Log)	<<LSHIFT_THERM_THOLD)	\
+		| (ThermStatus.PwrLimitLog << LSHIFT_POWER_LIMIT);	\
     }									\
 })
+
+void CorePerfLimitReasons(PROC_RO *Pkg)
+{
+	CORE_PERF_LIMIT_REASONS CoreLimit = {.value = 0};
+	RDMSR(CoreLimit, MSR_SKL_CORE_PERF_LIMIT_REASONS);
+
+	Pkg->PowerThermal.Events |= (
+		  (CoreLimit.PL1Log		<< LSHIFT_POWER_PL1)
+		| (CoreLimit.PL2Log		<< LSHIFT_POWER_PL2)
+		| (CoreLimit.ElectricalLog	<< LSHIFT_ELECTRICAL)
+		| (CoreLimit.MaxTurboLimitLog	<< LSHIFT_MAX_TURBO)
+	);
+}
 
 void Core_AMD_Family_0Fh_Temp(CORE_RO *Core)
 {
@@ -14873,6 +14932,7 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 		Pkg_Intel_PMC_Counters(Core, 1, ARCH_PMC);
 
 		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
+		CorePerfLimitReasons(PUBLIC(RO(Proc)));
 
 	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
 	    {
@@ -15113,6 +15173,7 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 		Pkg_Intel_PMC_Counters(Core, 1, ARCH_PMC);
 
 		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
+		CorePerfLimitReasons(PUBLIC(RO(Proc)));
 
 	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
 	    {
@@ -15467,6 +15528,7 @@ static enum hrtimer_restart Cycle_Alderlake_Pcore(struct hrtimer *pTimer)
 		PKG_Counters_Alderlake_Pcore(Core, 1);
 
 		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
+		CorePerfLimitReasons(PUBLIC(RO(Proc)));
 
 	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
 	    {
@@ -19318,6 +19380,10 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		case EVENT_POWER_LIMIT:
 		case EVENT_CURRENT_LIMIT:
 		case EVENT_CROSS_DOMAIN:
+		case EVENT_POWER_PL1:
+		case EVENT_POWER_PL2:
+		case EVENT_ELECTRICAL:
+		case EVENT_MAX_TURBO:
 			Controller_Stop(1);
 			Clear_Events = arg;
 			Controller_Start(1);

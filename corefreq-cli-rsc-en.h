@@ -1678,6 +1678,10 @@
 #define RSC_BOX_EVENT_POWER_LIMIT_CODE_EN	"    Power Limitation    "
 #define RSC_BOX_EVENT_CURRENT_LIMIT_CODE_EN	"   Current Limitation   "
 #define RSC_BOX_EVENT_CROSS_DOM_LIMIT_CODE_EN	"   Cross Domain Limit.  "
+#define RSC_BOX_EVENT_POWER_PL1_CODE_EN 	"       Package PL1      "
+#define RSC_BOX_EVENT_POWER_PL2_CODE_EN 	"       Package PL2      "
+#define RSC_BOX_EVENT_ELECTRICAL_CODE_EN	"     Electrical EDP     "
+#define RSC_BOX_EVENT_MAX_TURBO_CODE_EN 	"    Max Turbo Limit.    "
 
 #define RSC_BOX_STATE_UNSPECIFIED_CODE_EN	"        UNSPECIFIED        "
 
