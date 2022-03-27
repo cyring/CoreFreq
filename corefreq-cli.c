@@ -7009,7 +7009,8 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					RSC(CREATE_MENU_DISABLE).ATTR());
 #endif
 
-	StoreTCell(wMenu, SCANKEY_VOID, "", RSC(VOID).ATTR());
+	StoreTCell(wMenu, SCANKEY_SHIFT_h, RSC(MENU_ITEM_EVENTS).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
 /* Row 12 */
 	StoreTCell(wMenu, SCANKEY_VOID, "", RSC(VOID).ATTR());
 

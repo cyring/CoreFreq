@@ -906,8 +906,11 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_MENU_ITEM_POW_THERM_CODE_FR   " Puissance-Therm.   [w] "
 #define RSC_MENU_ITEM_CPUID_CODE_FR       " Extraction CPUID   [u] "
 #define RSC_MENU_ITEM_SYS_REGS_CODE_FR    " Registres Syst""\xa8""me  [R] "
-#define RSC_MENU_ITEM_MEM_CTRL_CODE_FR    " Contr""\xb4""leur "		\
+#define RSC_MENU_ITEM_MEM_CTRL_CODE_FR    " Contr""\xb4""leur " 	\
 					  "M""\xa9""moire [M] "
+
+#define RSC_MENU_ITEM_EVENTS_CODE_FR	  " ""\x89""v""\xa8"	\
+					  "nements CPU     [H] "
 
 #define RSC_SETTINGS_TITLE_CODE_FR	" R""\xa9""glages "
 

@@ -1500,6 +1500,7 @@
 #define RSC_MENU_ITEM_CPUID_CODE_EN		" CPUID Hexa Dump    [u] "
 #define RSC_MENU_ITEM_SYS_REGS_CODE_EN		" System Registers   [R] "
 #define RSC_MENU_ITEM_MEM_CTRL_CODE_EN		" Memory Controller  [M] "
+#define RSC_MENU_ITEM_EVENTS_CODE_EN		" Processor Events   [H] "
 
 #define RSC_SETTINGS_TITLE_CODE_EN	    " Settings "
 #define RSC_SETTINGS_DAEMON_CODE_EN	    " Daemon gate                    "
