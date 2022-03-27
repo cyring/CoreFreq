@@ -8127,7 +8127,8 @@ void ThermalMonitor_Set(CORE_RO *Core)
 
 	if (ClearBit)
 	{
-		if (!(ThermInterrupt.High_Temp_Int|ThermInterrupt.Low_Temp_Int))
+		if (!((ThermInterrupt.High_Temp_Int|ThermInterrupt.Low_Temp_Int)
+			&& PUBLIC(RO(Proc))->Features.Power.EAX.HWFB_Cap))
 		{
 			WRMSR(ThermStatus, MSR_IA32_THERM_STATUS);
 			RDMSR(ThermStatus, MSR_IA32_THERM_STATUS);
@@ -8202,7 +8203,8 @@ void ThermalMonitor_Set(CORE_RO *Core)
 
 	if (ClearBit)
 	{
-		if (!(ThermInterrupt.High_Temp_Int|ThermInterrupt.Low_Temp_Int))
+		if (!((ThermInterrupt.High_Temp_Int|ThermInterrupt.Low_Temp_Int)
+			&& PUBLIC(RO(Proc))->Features.Power.EAX.HWFB_Cap))
 		{
 			WRMSR(ThermStatus, MSR_IA32_PACKAGE_THERM_STATUS);
 			RDMSR(ThermStatus, MSR_IA32_PACKAGE_THERM_STATUS);
