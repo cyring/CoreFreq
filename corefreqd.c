@@ -5451,10 +5451,10 @@ void AMD_17h_CAP(RO(SHM_STRUCT) *RO(Shm),
 			/ (RO(Shm)->Proc.Features.Factory.Clock.Hz
 			* (1000LLU * PRECISION * PRECISION));
 
-	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MTS;
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;
 	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
-	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MTS;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 4;
 	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_SDRAM;
 
