@@ -5166,64 +5166,40 @@ void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	unsigned short cha;
   for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
   {
-	unsigned long long DIMM_Size = 0;
-	unsigned short chip;
-   for (chip = 0; chip < 4; chip++)
-   {
-	const unsigned short slot = chip >> 1;
-	unsigned short sec;
-    for (sec = 0; sec < 2; sec++)
+	unsigned long long DIMM_Size;
+	unsigned short slot;
+    for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
     {
-	unsigned int chipSize = 0;
-     if (BITVAL(RO(Proc)->Uncore.MC[mc].Channel[cha]\
-		.AMD17h.CHIP[chip][sec].Chip.value, 0))
-     {	/*			CSEnable				*/
-	__asm__ volatile
-	(
-		"xorl	%%edx, %%edx"		"\n\t"
-		"bsrl	%[base], %%ecx" 	"\n\t"
-		"jz	1f"			"\n\t"
-		"incl	%%edx"			"\n\t"
-		"shll	%%cl, %%edx"	 	"\n\t"
-		"negl	%%edx"			"\n\t"
-		"notl	%%edx"			"\n\t"
-		"andl	$0xfffffffe, %%edx"	"\n\t"
-		"shrl	$2, %%edx"		"\n\t"
-		"incl	%%edx"			"\n\t"
-	"1:"					"\n\t"
-		"movl	%%edx, %[dest]"
-		: [dest] "=m" (chipSize)
-		: [base] "m" (
-	  RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.CHIP[chip][sec].Mask.value
-		)
-		: "cc", "memory", "%ecx", "%edx"
-	);
-	DIMM_Size += chipSize;
-     }
+	const unsigned short chipselect_pair = slot << 1;
+      if (BITVAL(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.CHIP[
+			chipselect_pair
+		][0].Chip.value, 0)
+      )
+      { /*			CSEnable				*/
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8 << \
+	RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.DAC.NumBanks;
+
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << (10
+	+ RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.DAC.NumRowLo);
+
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << (5
+	+ RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.DAC.NumCol);
+
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[
+			slot
+		].AMD17h.CFG.OnDimmMirror ? 2 : 1;
+
+	DIMM_Size = 8LLU;
+	DIMM_Size *= RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks;
+	DIMM_Size *= RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
+	DIMM_Size *= RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows;
+	DIMM_Size *= RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols;
+
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = DIMM_Size >> 20;
+      }
     }
-    if (DIMM_Size > 0)
-    {
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8 \
-	<< RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.DAC.NumBanks;
 
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 \
-    << (10+RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.DAC.NumRowLo);
-
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 \
-    << (5 + RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.DAC.NumCol);
-
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
-						(unsigned int)(DIMM_Size >> 10);
-
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = DIMM_Size
-			/ RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows;
-
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks /= \
-			RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks;
-
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks >>= 3;
-    }
-   }
 	TIMING(mc, cha).tCL = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR1.tCL;
 
