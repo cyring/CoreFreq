@@ -338,6 +338,14 @@
 
 #define MSR_SKL_CORE_PERF_LIMIT_REASONS 	0x0000064f
 
+#ifndef MSR_GRAPHICS_PERF_LIMIT_REASONS
+	#define MSR_GRAPHICS_PERF_LIMIT_REASONS 0x000006b0
+#endif
+
+#ifndef MSR_RING_PERF_LIMIT_REASONS
+	#define MSR_RING_PERF_LIMIT_REASONS	0x000006b1
+#endif
+
 typedef union
 {
 	unsigned long long value;

@@ -261,7 +261,8 @@ typedef struct
 	unsigned short	Value[THM_POINTS_DIM];
 } THERMAL_POINT;
 
-enum {
+enum EVENT_ENUM {
+	/*	MSR_IA32_{PACKAGE}_THERM_STATUS:			*/
 	LSHIFT_THERM_SENSOR,
 	LSHIFT_THERM_PROCHOT,
 	LSHIFT_THERM_CRIT,
@@ -269,6 +270,7 @@ enum {
 	LSHIFT_POWER_LIMIT,
 	LSHIFT_CURRENT_LIMIT,
 	LSHIFT_CROSS_DOMAIN,
+	/*	MSR_SKL_CORE_PERF_LIMIT_REASONS:			*/
 	LSHIFT_POWER_PL1,
 	LSHIFT_POWER_PL2,
 	LSHIFT_ELECTRICAL,
@@ -277,6 +279,7 @@ enum {
 
 enum THERM_PWR_EVENTS {
 	EVENT_THERM_NONE	= 0x0,
+	/*	MSR_IA32_{PACKAGE}_THERM_STATUS:			*/
 	EVENT_THERM_SENSOR	= 0x1 << LSHIFT_THERM_SENSOR,
 	EVENT_THERM_PROCHOT	= 0x1 << LSHIFT_THERM_PROCHOT,
 	EVENT_THERM_CRIT	= 0x1 << LSHIFT_THERM_CRIT,
@@ -284,6 +287,7 @@ enum THERM_PWR_EVENTS {
 	EVENT_POWER_LIMIT	= 0x1 << LSHIFT_POWER_LIMIT,
 	EVENT_CURRENT_LIMIT	= 0x1 << LSHIFT_CURRENT_LIMIT,
 	EVENT_CROSS_DOMAIN	= 0x1 << LSHIFT_CROSS_DOMAIN,
+	/*	MSR_SKL_CORE_PERF_LIMIT_REASONS:			*/
 	EVENT_POWER_PL1 	= 0x1 << LSHIFT_POWER_PL1,
 	EVENT_POWER_PL2 	= 0x1 << LSHIFT_POWER_PL2,
 	EVENT_ELECTRICAL	= 0x1 << LSHIFT_ELECTRICAL,
@@ -2174,15 +2178,17 @@ typedef struct {
 #endif
 
 #define DECLARE_InsertionSort(_base, _cnt, _start)			\
-void InsertionSort(typeof(_base) base, typeof(_cnt) cnt, typeof(_start) start) \
+void InsertionSort(	__typeof__(_base) base	,			\
+			__typeof__(_cnt) cnt	,			\
+			__typeof__(_start) start )			\
 {									\
-	typeof(_start) lt = start + 1, rt;				\
+	__typeof__(_start) lt = start + 1, rt;				\
 	while (lt < cnt)						\
 	{								\
 		rt = lt;						\
 		while ((rt > start) && (base[rt - 1] > base[rt]))	\
 		{							\
-			typeof(_base[0]) swap = base[rt - 1];		\
+			__typeof__(_base[0]) swap = base[rt - 1];	\
 			base[rt - 1] = base[rt];			\
 			base[rt] = swap;				\
 			rt = rt - 1;					\

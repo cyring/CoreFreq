@@ -13269,9 +13269,10 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_CLR_ELECTRICAL:
     case BOXKEY_CLR_MAX_TURBO:
     {
-	const enum THERM_PWR_EVENTS events=(scan->key & CLEAR_EVENT_MASK) >> 4;
+	const enum EVENT_ENUM lshift = (scan->key & CLEAR_EVENT_MASK) >> 2;
+	const enum THERM_PWR_EVENTS event = 0x1 << lshift;
       if (!RING_FULL(RW(Shm)->Ring[0])) {
-	RING_WRITE(RW(Shm)->Ring[0], COREFREQ_IOCTL_CLEAR_EVENTS, events);
+	RING_WRITE(RW(Shm)->Ring[0], COREFREQ_IOCTL_CLEAR_EVENTS, event);
       }
     }
     break;
@@ -18896,6 +18897,8 @@ void TrapSignal(int operation)
 
 int main(int argc, char *argv[])
 {
+	CHECK_DUPLICATE_KEY(0LLU);
+
 	struct {
 		struct stat ro, rw;
 	} stat_st = {
