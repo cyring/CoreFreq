@@ -381,8 +381,10 @@ enum KEY_ENUM {
 	BOXKEY_UNCORE_CLOCK_MIN =((BOXKEY_UNCORE_CLOCK_OR|CLOCK_MOD_MIN) << 32)
 };
 
-#define CHECK_DUPLICATE_KEY(_key)		\
-({						\
+#if defined(FEAT_DBG) && (FEAT_DBG >= 9)
+#define CHECK_DUPLICATE_KEY(_val)		\
+int CheckDuplicateKey(void)			\
+{	enum KEY_ENUM _key = _val;		\
 	switch (_key) { 			\
 	case SORTBY_STATE:			\
 	case SORTBY_RTIME:			\
@@ -707,11 +709,13 @@ enum KEY_ENUM {
 						\
 	case BOXKEY_UNCORE_CLOCK_MAX:		\
 	case BOXKEY_UNCORE_CLOCK_MIN:		\
-						\
-		break;				\
+		return 0;			\
 	}					\
-})
-
+	return -1;				\
+}
+#else
+#define CHECK_DUPLICATE_KEY(_val)
+#endif /* FEAT_DBG */
 
 #define POWERED(bit)	( (bit) ? (char*) RSC(PRESENT).CODE()		\
 				: (char*) RSC(MISSING).CODE() )

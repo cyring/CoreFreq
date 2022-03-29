@@ -18892,10 +18892,10 @@ void TrapSignal(int operation)
 	}
 }
 
+CHECK_DUPLICATE_KEY(0LLU);
+
 int main(int argc, char *argv[])
 {
-	CHECK_DUPLICATE_KEY(0LLU);
-
 	struct {
 		struct stat ro, rw;
 	} stat_st = {
