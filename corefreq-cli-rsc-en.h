@@ -1021,6 +1021,7 @@
 #define RSC_FEATURES_FZRM_CODE_EN	"Fast Zero-length REP MOVSB"
 #define RSC_FEATURES_ERMS_CODE_EN	"Fast-String Operation"
 #define RSC_FEATURES_FMA_CODE_EN	"Fused Multiply Add"
+#define RSC_FEATURES_HFI_CODE_EN	"Hardware Feedback Interface"
 #define RSC_FEATURES_HLE_CODE_EN	"Hardware Lock Elision"
 #define RSC_FEATURES_HwP_CODE_EN	"Hardware P-state control"
 #define RSC_FEATURES_HRESET_CODE_EN	"History Reset"

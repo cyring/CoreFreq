@@ -2165,6 +2165,14 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		NULL
 	},
 	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Features.Power.EAX.HWFB_Cap == 1,
+		attr_Feat,
+		2, "%s%.*sHFI   [%7s]", RSC(FEATURES_HFI).CODE(),
+		width - 18 - RSZ(FEATURES_HFI),
+		NULL
+	},
+	{
 		NULL,
 		RO(Shm)->Proc.Features.ExtFeature.EBX.HLE == 1,
 		attr_Feat,
