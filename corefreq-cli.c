@@ -14606,51 +14606,40 @@ void Layout_Ruler_Load(Layer *layer, CUINT row)
 			RSC(LAYOUT_RULER_ABS_LOAD).CODE()
 		}
 	};
-
-	LayerCopyAt(layer, hLoad0.origin.col, hLoad0.origin.row,
-			hLoad0.length, hLoad0.attr, hLoad0.code);
-
-	LayerCopyAt(layer, hLoad1.origin.col, hLoad1.origin.row, hLoad1.length,
-			hLoad1.attr[Draw.Load], hLoad1.code[Draw.Load]);
-
-	/* Alternate the color of the frequency ratios			*/
 	const ATTRIBUTE attr[2] = {
 		RSC(UI).ATTR()[UI_LAYOUT_RULER_LOAD_TAB_DIM],
 		RSC(UI).ATTR()[UI_LAYOUT_RULER_LOAD_TAB_BRIGHT]
 	};
-	int idx = (int) Ruler.Count, bright = 1;
-    while (idx-- > 0)
-    {
+	unsigned int idx = Ruler.Count, bright = 1;
+	const CUINT margin = 4;
+	CUINT lPos = Draw.Area.LoadWidth + margin;
+
+	LayerCopyAt(layer, hLoad0.origin.col, hLoad0.origin.row,
+			hLoad0.length, hLoad0.attr, hLoad0.code);
+
+	/* Alternate the color of the frequency ratios			*/
+  while (idx--)
+  {
 	double fPos = (Ruler.Uniq[idx] * Draw.Area.LoadWidth) / Ruler.Maximum;
-	int hPos = (int) fPos;
+	CUINT hPos = (CUINT) fPos;
 
-	if (((hPos+6) < hLoad1.origin.col)
-	 || ((hLoad0.origin.col+hPos+3) > (hLoad1.origin.col+hLoad1.length)))
-	{
-		char tabStop[10+1] = "00";
-		if (StrFormat(tabStop, 10+1, "%2u", Ruler.Uniq[idx]) > 0)
-		{
-		    if (tabStop[0] != 0x20) {
-			LayerAt(layer, code,
-				(hLoad0.origin.col + hPos + 2),
-				hLoad0.origin.row) = (ASCII) tabStop[0];
+	ASCII tabStop[10+1] = "00";
+    if ((StrFormat(tabStop, 10+1, "%2u", Ruler.Uniq[idx]) > 0) && (hPos < lPos))
+    {
+	hPos = hLoad0.origin.col + hPos + 2;
+      if (tabStop[0] != 0x20) {
+	LayerAt(layer,code, hPos, hLoad0.origin.row) = tabStop[0];
+	LayerAt(layer,attr, hPos, hLoad0.origin.row) = attr[bright];
+      }
+	LayerAt(layer, code, (hPos + 1), hLoad0.origin.row) = tabStop[1];
+	LayerAt(layer, attr, (hPos + 1), hLoad0.origin.row) = attr[bright];
 
-			LayerAt(layer, attr,
-				(hLoad0.origin.col + hPos + 2),
-				hLoad0.origin.row) = attr[bright];
-		    }
-			LayerAt(layer, code,
-				(hLoad0.origin.col + hPos + 3),
-				hLoad0.origin.row) = (ASCII) tabStop[1];
-
-			LayerAt(layer, attr,
-				(hLoad0.origin.col + hPos + 3),
-				hLoad0.origin.row) = attr[bright];
-
-			bright = !bright;
-		}
-	}
+	bright = !bright;
     }
+	lPos = hPos >= margin ? hPos - margin : margin;
+  }
+	LayerCopyAt(layer, hLoad1.origin.col, hLoad1.origin.row, hLoad1.length,
+			hLoad1.attr[Draw.Load], hLoad1.code[Draw.Load]);
 }
 #endif /* NO_UPPER */
 
