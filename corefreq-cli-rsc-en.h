@@ -2080,6 +2080,7 @@
 #define RSC_XAPIC_CODE			"  xAPIC"
 #define RSC_X2APIC_CODE 		" x2APIC"
 #define RSC_FIRMWARE_CODE		"Firmware"
+#define RSC_HYBRID_CODE 		"Hybrid"
 
 #define RSC_TOPOLOGY_HDR_PKG_CODE	"CPU Pkg  Apic"
 #define RSC_TOPOLOGY_HDR_SMT_CODE	"  Core/Thread"

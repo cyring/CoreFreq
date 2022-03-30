@@ -2565,8 +2565,19 @@ long For_All_Turbo_Clock(CLOCK_ARG *pClockMod, void (*ConfigFunc)(void *))
 static void Intel_Turbo_Cfg8C_PerCore(void *arg)
 {
 	CLOCK_TURBO_ARG *pClockCfg8C = (CLOCK_TURBO_ARG *) arg;
+	unsigned int registerAddress = MSR_TURBO_RATIO_LIMIT;
 
-	RDMSR(pClockCfg8C->Config.Cfg0, MSR_TURBO_RATIO_LIMIT);
+	if (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.Hybrid == 1)
+	{
+		CORE_RO *Core;
+		unsigned int cpu = smp_processor_id();
+		Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+		if (Core->T.Cluster.Hybrid.CoreType == Hybrid_Atom) {
+			registerAddress = MSR_SECONDARY_TURBO_RATIO_LIMIT;
+		}
+	}
+	RDMSR(pClockCfg8C->Config.Cfg0, registerAddress);
 
   if (pClockCfg8C->pClockMod != NULL)	/* Read-Only function called ?	*/
   {
@@ -2644,8 +2655,8 @@ static void Intel_Turbo_Cfg8C_PerCore(void *arg)
 	break;
     }
       if (WrRd8C) {
-	WRMSR(pClockCfg8C->Config.Cfg0, MSR_TURBO_RATIO_LIMIT);
-	RDMSR(pClockCfg8C->Config.Cfg0, MSR_TURBO_RATIO_LIMIT);
+	WRMSR(pClockCfg8C->Config.Cfg0, registerAddress);
+	RDMSR(pClockCfg8C->Config.Cfg0, registerAddress);
 	pClockCfg8C->rc = RC_OK_COMPUTE;
       }
     } else {

@@ -936,8 +936,24 @@ void RefreshTopFreq(TGrid *grid, DATA_TYPE data)
 	struct FLIP_FLOP *CFlop = &RO(Shm)->Cpu[top].FlipFlop[
 					!RO(Shm)->Cpu[top].Toggle
 				];
-	RefreshItemFreq(grid, ratio,
-			ABS_FREQ_MHz(double, ratio, CFlop->Clock));
+	RefreshItemFreq(grid, ratio, ABS_FREQ_MHz(double, ratio, CFlop->Clock));
+}
+
+void RefreshHybridFreq(TGrid *grid, DATA_TYPE data)
+{
+	enum RATIO_BOOST boost = data.uint[0];
+	unsigned int ratio = RO(Shm)->Cpu[
+					RO(Shm)->Proc.Service.Hybrid
+				].Boost[boost];
+
+	struct FLIP_FLOP *CFlop = &RO(Shm)->Cpu[
+					RO(Shm)->Proc.Service.Hybrid
+				].FlipFlop[
+					!RO(Shm)->Cpu[
+						RO(Shm)->Proc.Service.Hybrid
+					].Toggle
+				];
+	RefreshItemFreq(grid, ratio, ABS_FREQ_MHz(double, ratio, CFlop->Clock));
 }
 
 void RefreshConfigTDP(TGrid *grid, DATA_TYPE data)
@@ -1183,7 +1199,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
     }
 	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.Turbo_Unlock],
 		width, 2, "%s%.*s[%7.*s]", RSC(BOOST).CODE(),
-		width - 23, hSpace, 6,
+		width - 12 - RSZ(BOOST), hSpace, 6,
 		RO(Shm)->Proc.Features.Turbo_Unlock ?
 			RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
 
@@ -1248,6 +1264,37 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				width, OutFunc, attrib[3] ),
 		RefreshTopFreq, boost );
       }
+    if (RO(Shm)->Proc.Features.ExtFeature.EDX.Hybrid == 1)
+    {
+	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.Turbo_Unlock],
+		width, 2, "%s%.*s[%7.*s]", RSC(HYBRID).CODE(),
+		width - 12 - RSZ(HYBRID), hSpace, 6,
+		RO(Shm)->Proc.Features.Turbo_Unlock ?
+			RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
+
+      for(boost = BOOST(1C), activeCores = 1;
+      boost > BOOST(1C)-(enum RATIO_BOOST)RO(Shm)->Proc.Features.SpecTurboRatio;
+		boost--, activeCores++)
+      {
+	CLOCK_ARG clockMod={.NC=BOXKEY_TURBO_CLOCK_NC | activeCores,.Offset=0};
+	char pfx[10+1+1];
+	StrFormat(pfx, 10+1+1, "%2uC", activeCores);
+
+	CFlop = &RO(Shm)->Cpu[
+			RO(Shm)->Proc.Service.Hybrid
+		].FlipFlop[
+			!RO(Shm)->Cpu[RO(Shm)->Proc.Service.Hybrid].Toggle
+		];
+
+	GridCall( PrintRatioFreq(win, CFlop,
+				0, pfx, &RO(Shm)->Cpu[
+						RO(Shm)->Proc.Service.Hybrid
+					].Boost[boost],
+				1, clockMod.ullong,
+				width, OutFunc, attrib[3] ),
+		RefreshHybridFreq, boost );
+      }
+    }
 
 	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.Uncore_Unlock],
 		width, 2, "%s%.*s[%7.*s]", RSC(UNCORE).CODE(),
