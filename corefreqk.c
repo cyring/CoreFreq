@@ -19567,6 +19567,15 @@ static struct file_operations CoreFreqK_fops = {
 };
 
 #ifdef CONFIG_PM_SLEEP
+void Print_SuspendResume(void)
+{
+	pr_notice("CoreFreq: %s(%u:%d:%d)\n",
+		CoreFreqK.ResumeFromSuspend ? "Suspend" : "Resume",
+		PUBLIC(RO(Proc))->Service.Core,
+		PUBLIC(RO(Proc))->Service.Thread,
+		PUBLIC(RO(Proc))->Service.Hybrid);
+}
+
 static int CoreFreqK_Suspend(struct device *dev)
 {
 	UNUSED(dev);
@@ -19575,8 +19584,7 @@ static int CoreFreqK_Suspend(struct device *dev)
 
 	Controller_Stop(1);
 
-	pr_notice("CoreFreq: Suspend\n");
-
+	Print_SuspendResume();
 	return 0;
 }
 
@@ -19601,14 +19609,19 @@ static int CoreFreqK_Resume(struct device *dev)
 
 	BITSET(BUS_LOCK, PUBLIC(RW(Proc))->OS.Signal, NTFY); /* Notify Daemon*/
 
-	pr_notice("CoreFreq: Resume\n");
-
 	CoreFreqK.ResumeFromSuspend = false;
 
+	Print_SuspendResume();
 	return 0;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 17, 0)
+static DEFINE_SIMPLE_DEV_PM_OPS(CoreFreqK_pm_ops,	\
+				CoreFreqK_Suspend,	\
+				CoreFreqK_Resume);
+#else
 static SIMPLE_DEV_PM_OPS(CoreFreqK_pm_ops, CoreFreqK_Suspend, CoreFreqK_Resume);
+#endif /* KERNEL_VERSION(5, 17, 0) */
 #define COREFREQ_PM_OPS (&CoreFreqK_pm_ops)
 #else /* CONFIG_PM_SLEEP */
 #define COREFREQ_PM_OPS NULL
@@ -19661,21 +19674,24 @@ static int CoreFreqK_HotPlug_CPU_Online(unsigned int cpu)
 	BITSET(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine, HW);
     }
    }
-	/*		Start the collect timer dedicated to this CPU.	*/
-   if (Arch[PUBLIC(RO(Proc))->ArchID].Timer != NULL) {
-	Arch[PUBLIC(RO(Proc))->ArchID].Timer(cpu);
-   }
-   if ((BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED) == 0)
-    && (Arch[PUBLIC(RO(Proc))->ArchID].Start != NULL)) {
-		smp_call_function_single(cpu,
-					Arch[PUBLIC(RO(Proc))->ArchID].Start,
-					NULL, 0);
-   }
 	PUBLIC(RO(Proc))->CPU.OnLine++;
 	BITCLR(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine, OS);
 
 	MatchPeerForUpService(&PUBLIC(RO(Proc))->Service, cpu);
 
+	/* Start the collect timer dedicated to this CPU iff not STR resuming */
+   if (CoreFreqK.ResumeFromSuspend == false)
+   {
+    if (Arch[PUBLIC(RO(Proc))->ArchID].Timer != NULL) {
+	Arch[PUBLIC(RO(Proc))->ArchID].Timer(cpu);
+    }
+    if ((BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED) == 0)
+     && (Arch[PUBLIC(RO(Proc))->ArchID].Start != NULL)) {
+		smp_call_function_single(cpu,
+					Arch[PUBLIC(RO(Proc))->ArchID].Start,
+					NULL, 0);
+    }
+   }
 #if defined(CONFIG_CPU_IDLE) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
    if (PUBLIC(RO(Proc))->Registration.Driver.CPUidle & REGISTRATION_ENABLE) {
 	struct cpuidle_device *device = per_cpu_ptr(CoreFreqK.IdleDevice, cpu);
@@ -19699,58 +19715,54 @@ static int CoreFreqK_HotPlug_CPU_Online(unsigned int cpu)
 
 static int CoreFreqK_HotPlug_CPU_Offline(unsigned int cpu)
 {
-    if (cpu < PUBLIC(RO(Proc))->CPU.Count) {
-	/*		Stop the associated collect timer.		*/
-	if((BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, CREATED) == 1)
-	&& (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED) == 1)
-	&& (Arch[PUBLIC(RO(Proc))->ArchID].Stop != NULL)) {
-		smp_call_function_single(cpu,
-					Arch[PUBLIC(RO(Proc))->ArchID].Stop,
-					NULL, 1);
-	}
+  if (cpu < PUBLIC(RO(Proc))->CPU.Count)
+  {	/*		Stop the associated collect timer.		*/
+    if ((BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, CREATED) == 1)
+     && (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED) == 1)
+     && (Arch[PUBLIC(RO(Proc))->ArchID].Stop != NULL)) {
+	smp_call_function_single(cpu,
+				Arch[PUBLIC(RO(Proc))->ArchID].Stop,
+				NULL, 1);
+    }
 	PUBLIC(RO(Proc))->CPU.OnLine--;
 	BITSET(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine, OS);
 
 	/*		Seek for an alternate Service Processor.	*/
-	if ((cpu == PUBLIC(RO(Proc))->Service.Core)
-	 || (cpu == PUBLIC(RO(Proc))->Service.Thread))
-	{
-		MatchPeerForDownService(&PUBLIC(RO(Proc))->Service, cpu);
+    if ((cpu == PUBLIC(RO(Proc))->Service.Core)
+     || (cpu == PUBLIC(RO(Proc))->Service.Thread))
+    {
+	MatchPeerForDownService(&PUBLIC(RO(Proc))->Service, cpu);
 
-	  if (PUBLIC(RO(Proc))->Service.Core != cpu)
-	  {
-	    if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL)
-	    {
-		smp_call_function_single(PUBLIC(RO(Proc))->Service.Core,
-					Arch[PUBLIC(RO(Proc))->ArchID].Update,
-			PUBLIC(RO(Core, AT(PUBLIC(RO(Proc))->Service.Core))),1);
-	    }
-#if CONFIG_HAVE_PERF_EVENTS==1
-		/*	Reinitialize the PMU Uncore counters.		*/
-	    if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL)
-	    {
-		smp_call_function_single(PUBLIC(RO(Proc))->Service.Core,
-				Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop,
-					NULL, 1); /* Must wait! */
-	    }
-	    if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL)
-	    {
-		smp_call_function_single(PUBLIC(RO(Proc))->Service.Core,
-				Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start,
-					NULL, 0); /* Don't wait */
-	    }
-#endif /* CONFIG_HAVE_PERF_EVENTS */
-	  }
-	} else if ((cpu == PUBLIC(RO(Proc))->Service.Hybrid)
-		&& (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.Hybrid))
-	{
-		PUBLIC(RO(Proc))->Service.Hybrid=Seek_Topology_Hybrid_Core(cpu);
+     if (PUBLIC(RO(Proc))->Service.Core != cpu)
+     {
+	const unsigned int alt = PUBLIC(RO(Proc))->Service.Core;
+
+      if (BITVAL(PRIVATE(OF(Core, AT(alt)))->Join.TSM, CREATED) == 1)
+      {
+	if ((BITVAL(PRIVATE(OF(Core, AT(alt)))->Join.TSM, STARTED) == 1)
+	 && (Arch[PUBLIC(RO(Proc))->ArchID].Stop != NULL)) {
+		smp_call_function_single(alt,
+					Arch[PUBLIC(RO(Proc))->ArchID].Stop,
+					NULL, 1);
 	}
+	if ((BITVAL(PRIVATE(OF(Core, AT(alt)))->Join.TSM, STARTED) == 0)
+	 && (Arch[PUBLIC(RO(Proc))->ArchID].Start != NULL)) {
+		smp_call_function_single(alt,
+					Arch[PUBLIC(RO(Proc))->ArchID].Start,
+					NULL, 0);
+	}
+      }
+     }
+    } else if ((cpu == PUBLIC(RO(Proc))->Service.Hybrid)
+	&& (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.Hybrid))
+    {
+	PUBLIC(RO(Proc))->Service.Hybrid = Seek_Topology_Hybrid_Core(cpu);
+    }
 #ifdef CONFIG_CPU_FREQ
 	Policy_Aggregate_Turbo();
 #endif /* CONFIG_CPU_FREQ */
 	return 0;
-    } else
+  } else
 	return -EINVAL;
 }
 
