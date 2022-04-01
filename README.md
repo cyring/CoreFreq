@@ -70,7 +70,7 @@ Uncomment and set `draw_bold_text_with_bright_colors: true` in `<config-file>`
 * GNU Make tool
 * Linux Kernel Header files to build modules
   * Mandatory : `CONFIG_MODULES, CONFIG_SMP, CONFIG_X86_MSR`
-  * Optionally: `CONFIG_HOTPLUG_CPU, CONFIG_CPU_IDLE, CONFIG_CPU_FREQ, CONFIG_PM_SLEEP, CONFIG_DMI, CONFIG_XEN, CONFIG_AMD_NB, CONFIG_HAVE_PERF_EVENTS, CONFIG_SCHED_MUQSS, CONFIG_SCHED_BMQ, CONFIG_SCHED_PDS, CONFIG_SCHED_ALT`
+  * Optionally: `CONFIG_HOTPLUG_CPU, CONFIG_CPU_IDLE, CONFIG_CPU_FREQ, CONFIG_PM_SLEEP, CONFIG_DMI, CONFIG_XEN, CONFIG_AMD_NB, CONFIG_SCHED_MUQSS, CONFIG_SCHED_BMQ, CONFIG_SCHED_PDS, CONFIG_SCHED_ALT`
 
 2. Clone the source code into a working directory.  
  `git clone https://github.com/cyring/CoreFreq.git`  
@@ -338,6 +338,13 @@ CPU     IPS            IPC            CPI
   - The registration is confirmed into the `Settings` window  
   - The idle limit can be changed at any time in the `Kernel` window  
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_Idle_Limit.png "Idle Limit")  
+
+* Q: How does _CoreFreq_ work with `cgroups` ?  
+
+  A: The Daemon and the Client have to run in the `root cgroups cpugroup`, by using these commands:  
+  ( _thanks to Conne Beest @connebeest_ )  
+`cgexec -g cpuset:/ ./corefreqd`  
+`cgexec -g cpuset:/ ./cofrefreq-cli`  
 
 * Q: How to enable transparency in the User Interface ?  
 
