@@ -8286,7 +8286,8 @@ void CorePerfLimitReasons(CORE_RO *Core)
 		RDMSR(limit, MSR_SKL_CORE_PERF_LIMIT_REASONS);
 	}
 	PUBLIC(RO(Proc))->PowerThermal.Events |= (
-		  (limit.PL1_Log	<< LSHIFT_CORE_PL1)
+		  (limit.Thermal_Status << LSHIFT_CORE_STS)
+		| (limit.PL1_Log	<< LSHIFT_CORE_PL1)
 		| (limit.PL2_Log	<< LSHIFT_CORE_PL2)
 		| (limit.EDP_Log	<< LSHIFT_CORE_EDP)
 		| (limit.TurboLimitLog	<< LSHIFT_CORE_TURBO)
@@ -8324,7 +8325,8 @@ void GraphicsPerfLimitReasons(CORE_RO *Core)
 		RDMSR(limit, MSR_GRAPHICS_PERF_LIMIT_REASONS);
 	}
 	PUBLIC(RO(Proc))->PowerThermal.Events |= (
-		  (limit.Thermal_Log	<< LSHIFT_GFX_THM)
+		  (limit.Thermal_Status << LSHIFT_GFX_STS)
+		| (limit.Thermal_Log	<< LSHIFT_GFX_THM)
 		| (limit.PL1_Log	<< LSHIFT_GFX_PL1)
 		| (limit.PL2_Log	<< LSHIFT_GFX_PL2)
 		| (limit.EDP_Log	<< LSHIFT_GFX_EDP)
@@ -8362,7 +8364,8 @@ void RingPerfLimitReasons(CORE_RO *Core)
 		RDMSR(limit, MSR_RING_PERF_LIMIT_REASONS);
 	}
 	PUBLIC(RO(Proc))->PowerThermal.Events |= (
-		  (limit.Thermal_Log	<< LSHIFT_RING_THM)
+		  (limit.Thermal_Status << LSHIFT_RING_STS)
+		| (limit.Thermal_Log	<< LSHIFT_RING_THM)
 		| (limit.PL1_Log	<< LSHIFT_RING_PL1)
 		| (limit.PL2_Log	<< LSHIFT_RING_PL2)
 		| (limit.EDP_Log	<< LSHIFT_RING_EDP)
@@ -12570,7 +12573,8 @@ void Monitor_CorePerfLimitReasons(PROC_RO *Pkg)
 	RDMSR(limit, MSR_SKL_CORE_PERF_LIMIT_REASONS);
 
 	Pkg->PowerThermal.Events |= (
-		  (limit.PL1_Log	<< LSHIFT_CORE_PL1)
+		  (limit.Thermal_Status << LSHIFT_CORE_STS)
+		| (limit.PL1_Log	<< LSHIFT_CORE_PL1)
 		| (limit.PL2_Log	<< LSHIFT_CORE_PL2)
 		| (limit.EDP_Log	<< LSHIFT_CORE_EDP)
 		| (limit.TurboLimitLog	<< LSHIFT_CORE_TURBO)
@@ -12583,7 +12587,8 @@ void Monitor_GraphicsPerfLimitReasons(PROC_RO *Pkg)
 	RDMSR(limit, MSR_GRAPHICS_PERF_LIMIT_REASONS);
 
 	Pkg->PowerThermal.Events |= (
-		  (limit.Thermal_Log	<< LSHIFT_GFX_THM)
+		  (limit.Thermal_Status << LSHIFT_GFX_STS)
+		| (limit.Thermal_Log	<< LSHIFT_GFX_THM)
 		| (limit.PL1_Log	<< LSHIFT_GFX_PL1)
 		| (limit.PL2_Log	<< LSHIFT_GFX_PL2)
 		| (limit.EDP_Log	<< LSHIFT_GFX_EDP)
@@ -12596,7 +12601,8 @@ void Monitor_RingPerfLimitReasons(PROC_RO *Pkg)
 	RDMSR(limit, MSR_RING_PERF_LIMIT_REASONS);
 
 	Pkg->PowerThermal.Events |= (
-		  (limit.Thermal_Log	<< LSHIFT_RING_THM)
+		  (limit.Thermal_Status << LSHIFT_RING_STS)
+		| (limit.Thermal_Log	<< LSHIFT_RING_THM)
 		| (limit.PL1_Log	<< LSHIFT_RING_PL1)
 		| (limit.PL2_Log	<< LSHIFT_RING_PL2)
 		| (limit.EDP_Log	<< LSHIFT_RING_EDP)

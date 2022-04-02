@@ -11104,7 +11104,7 @@ int Shortcut(SCANKEY *scan)
 	/*	Thermal Sensor						*/
 				RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
 				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_GFX_THM) ? 2 : 0
+				(ProcessorEvents & EVENT_GFX_THM) ? 1 : 0
 				],
 				BOXKEY_CLR_GFX_THM,
 	/*	Package PL1						*/
@@ -11132,7 +11132,7 @@ int Shortcut(SCANKEY *scan)
 	/*	Thermal Sensor						*/
 				RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
 				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_RING_THM) ? 2 : 0
+				(ProcessorEvents & EVENT_RING_THM) ? 1 : 0
 				],
 				BOXKEY_CLR_RING_THM,
 	/*	Package PL1						*/
@@ -15973,10 +15973,7 @@ CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 					].PowerThermal.Limit[SENSOR_HIGHEST])
 		warning = RSC(UI).ATTR()[UI_DRAW_MONITOR_FREQUENCY_HIGH];
 	}
-	if ( CFlop->Thermal.Events & (	EVENT_THERM_SENSOR
-				     |	EVENT_THERM_PROCHOT
-				     |	EVENT_THERM_CRIT
-				     |	EVENT_THERM_THOLD ) )
+	if (CFlop->Thermal.Events & THERMAL_EVENT_FILTER)
 	{
 		warning = RSC(UI).ATTR()[UI_DRAW_MONITOR_FREQUENCY_HOT];
 	}
@@ -17754,13 +17751,7 @@ void Draw_Footer(Layer *layer, CUINT row)
 		_hot = 0;
 		_tmp = 3;
 	} else {
-	    if (ProcessorEvents &	( EVENT_THERM_SENSOR
-					| EVENT_THERM_PROCHOT
-					| EVENT_THERM_CRIT
-					| EVENT_THERM_THOLD
-					| EVENT_CORE_PL1
-					| EVENT_CORE_PL2
-					| EVENT_CORE_EDP ) )
+	    if (ProcessorEvents & HOT_EVENT_FILTER)
 	    {
 		_hot = 4;
 		_tmp = 1;

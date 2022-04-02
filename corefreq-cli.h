@@ -933,3 +933,18 @@ struct RECORDER_ST {
 	int lret = StrFormat( __VA_ARGS__ );				\
 	_ret = lret > 0 ? ( __typeof__ (_ret) ) lret : 0;		\
 })
+
+#define HOT_EVENT_FILTER (	ALL_EVENT_MASK		\
+			& (	EVENT_THERM_SENSOR	\
+			|	EVENT_THERM_PROCHOT	\
+			|	EVENT_THERM_CRIT	\
+			|	EVENT_THERM_THOLD	\
+			|	EVENT_CORE_STS		\
+			|	EVENT_GFX_STS		\
+			|	EVENT_RING_STS ) )
+
+#define THERMAL_EVENT_FILTER (	ALL_EVENT_MASK		\
+			& (	EVENT_THERM_SENSOR	\
+			|	EVENT_THERM_PROCHOT	\
+			|	EVENT_THERM_CRIT	\
+			|	EVENT_THERM_THOLD ) )
