@@ -1673,6 +1673,7 @@
 
 #define RSC_BOX_EVENT_TITLE_CODE_EN		" Clear Event "
 
+#define RSC_BOX_EVENT_SPACE_CODE_EN		"                        "
 #define RSC_BOX_EVENT_THERMAL_SENSOR_CODE_EN	"     Thermal Sensor     "
 #define RSC_BOX_EVENT_PROCHOT_AGENT_CODE_EN	"     PROCHOT# Agent     "
 #define RSC_BOX_EVENT_CRITICAL_TEMP_CODE_EN	"  Critical Temperature  "

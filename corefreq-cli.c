@@ -11026,6 +11026,7 @@ int Shortcut(SCANKEY *scan)
 
 	Window *wBox = CreateBox(scan->key, origin, select,
 			(char*) RSC(BOX_EVENT_TITLE).CODE(),
+	/*	Section:						*/
 	/*	Thermal Sensor						*/
 				RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
 				RSC(BOX_EVENT).ATTR()[
@@ -11068,30 +11069,90 @@ int Shortcut(SCANKEY *scan)
 				(ProcessorEvents & EVENT_CROSS_DOMAIN) ? 1 : 0
 				],
 				BOXKEY_CLR_X_DOMAIN,
+	/*	Section:						*/
+				RSC(BOX_EVENT_SPACE).CODE(),
+				RSC(BOX_EVENT).ATTR()[0],
+				SCANKEY_NULL,
 	/*	Package PL1						*/
 				RSC(BOX_EVENT_POWER_PL1).CODE(),
 				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_POWER_PL1) ? 2 : 0
+				(ProcessorEvents & EVENT_CORE_PL1) ? 2 : 0
 				],
-				BOXKEY_CLR_PWR_PL1,
+				BOXKEY_CLR_CORE_PL1,
 	/*	Package PL2						*/
 				RSC(BOX_EVENT_POWER_PL2).CODE(),
 				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_POWER_PL2) ? 2 : 0
+				(ProcessorEvents & EVENT_CORE_PL2) ? 2 : 0
 				],
-				BOXKEY_CLR_PWR_PL2,
+				BOXKEY_CLR_CORE_PL2,
 	/*	Electrical EDP						*/
 				RSC(BOX_EVENT_ELECTRICAL).CODE(),
 				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_ELECTRICAL) ? 2 : 0
+				(ProcessorEvents & EVENT_CORE_EDP) ? 2 : 0
 				],
-				BOXKEY_CLR_ELECTRICAL,
+				BOXKEY_CLR_CORE_EDP,
 	/*	Max Turbo Limit.					*/
 				RSC(BOX_EVENT_MAX_TURBO).CODE(),
 				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_MAX_TURBO) ? 2 : 0
+				(ProcessorEvents & EVENT_CORE_TURBO) ? 2 : 0
 				],
-				BOXKEY_CLR_MAX_TURBO);
+				BOXKEY_CLR_CORE_TURBO,
+	/*	Section:						*/
+				RSC(BOX_EVENT_SPACE).CODE(),
+				RSC(BOX_EVENT).ATTR()[0],
+				SCANKEY_NULL,
+	/*	Thermal Sensor						*/
+				RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_GFX_THM) ? 2 : 0
+				],
+				BOXKEY_CLR_GFX_THM,
+	/*	Package PL1						*/
+				RSC(BOX_EVENT_POWER_PL1).CODE(),
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_GFX_PL1) ? 2 : 0
+				],
+				BOXKEY_CLR_GFX_PL1,
+	/*	Package PL2						*/
+				RSC(BOX_EVENT_POWER_PL2).CODE(),
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_GFX_PL2) ? 2 : 0
+				],
+				BOXKEY_CLR_GFX_PL2,
+	/*	Electrical EDP						*/
+				RSC(BOX_EVENT_ELECTRICAL).CODE(),
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_GFX_EDP) ? 2 : 0
+				],
+				BOXKEY_CLR_GFX_EDP,
+	/*	Section:						*/
+				RSC(BOX_EVENT_SPACE).CODE(),
+				RSC(BOX_EVENT).ATTR()[0],
+				SCANKEY_NULL,
+	/*	Thermal Sensor						*/
+				RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_RING_THM) ? 2 : 0
+				],
+				BOXKEY_CLR_RING_THM,
+	/*	Package PL1						*/
+				RSC(BOX_EVENT_POWER_PL1).CODE(),
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_RING_PL1) ? 2 : 0
+				],
+				BOXKEY_CLR_RING_PL1,
+	/*	Package PL2						*/
+				RSC(BOX_EVENT_POWER_PL2).CODE(),
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_RING_PL2) ? 2 : 0
+				],
+				BOXKEY_CLR_RING_PL2,
+	/*	Electrical EDP						*/
+				RSC(BOX_EVENT_ELECTRICAL).CODE(),
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_RING_EDP) ? 2 : 0
+				],
+				BOXKEY_CLR_RING_EDP);
 	if (wBox != NULL) {
 		AppendWindow(wBox, &winList);
 	} else {
@@ -13319,10 +13380,18 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_CLR_PWR_LIMIT:
     case BOXKEY_CLR_CUR_LIMIT:
     case BOXKEY_CLR_X_DOMAIN:
-    case BOXKEY_CLR_PWR_PL1:
-    case BOXKEY_CLR_PWR_PL2:
-    case BOXKEY_CLR_ELECTRICAL:
-    case BOXKEY_CLR_MAX_TURBO:
+    case BOXKEY_CLR_CORE_PL1:
+    case BOXKEY_CLR_CORE_PL2:
+    case BOXKEY_CLR_CORE_EDP:
+    case BOXKEY_CLR_CORE_TURBO:
+    case BOXKEY_CLR_GFX_THM:
+    case BOXKEY_CLR_GFX_PL1:
+    case BOXKEY_CLR_GFX_PL2:
+    case BOXKEY_CLR_GFX_EDP:
+    case BOXKEY_CLR_RING_THM:
+    case BOXKEY_CLR_RING_PL1:
+    case BOXKEY_CLR_RING_PL2:
+    case BOXKEY_CLR_RING_EDP:
     {
 	const enum EVENT_ENUM lshift = (scan->key & CLEAR_EVENT_MASK) >> 2;
 	const enum THERM_PWR_EVENTS event = 0x1 << lshift;
@@ -17689,9 +17758,9 @@ void Draw_Footer(Layer *layer, CUINT row)
 					| EVENT_THERM_PROCHOT
 					| EVENT_THERM_CRIT
 					| EVENT_THERM_THOLD
-					| EVENT_POWER_PL1
-					| EVENT_POWER_PL2
-					| EVENT_ELECTRICAL ) )
+					| EVENT_CORE_PL1
+					| EVENT_CORE_PL2
+					| EVENT_CORE_EDP ) )
 	    {
 		_hot = 4;
 		_tmp = 1;

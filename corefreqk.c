@@ -8084,32 +8084,32 @@ void ThermalMonitor_Set(CORE_RO *Core)
 	RDMSR(ThermStatus, MSR_IA32_THERM_STATUS);
 
 	if (Clear_Events & EVENT_THERM_SENSOR) {
-		ThermStatus.StatusLog = 0;
+		ThermStatus.Thermal_Log = 0;
 		ClearBit = 1;
 	}
 	if (Clear_Events & EVENT_THERM_PROCHOT) {
-		ThermStatus.PROCHOTLog = 0;
+		ThermStatus.PROCHOT_Log = 0;
 		ClearBit = 1;
 	}
 	if (Clear_Events & EVENT_THERM_CRIT) {
-		ThermStatus.CriticalTempLog = 0;
+		ThermStatus.CriticalTemp_Log = 0;
 		ClearBit = 1;
 	}
 	if (Clear_Events & EVENT_THERM_THOLD) {
-		ThermStatus.Threshold1Log = 0;
-		ThermStatus.Threshold2Log = 0;
+		ThermStatus.Threshold1_Log = 0;
+		ThermStatus.Threshold2_Log = 0;
 		ClearBit = 1;
 	}
 	if (Clear_Events & EVENT_POWER_LIMIT) {
-		ThermStatus.PwrLimitLog = 0;
+		ThermStatus.PwrLimit_Log = 0;
 		ClearBit = 1;
 	}
 	if (Clear_Events & EVENT_CURRENT_LIMIT) {
-		ThermStatus.CurLimitLog = 0;
+		ThermStatus.CurLimit_Log = 0;
 		ClearBit = 1;
 	}
 	if (Clear_Events & EVENT_CROSS_DOMAIN) {
-		ThermStatus.XDomLimitLog = 0;
+		ThermStatus.XDomLimit_Log = 0;
 		ClearBit = 1;
 	}
 
@@ -8146,15 +8146,15 @@ void ThermalMonitor_Set(CORE_RO *Core)
 		}
 	}
 	Core->PowerThermal.Events = \
-		( ( ThermStatus.StatusBit
-		  | ThermStatus.StatusLog )	<< LSHIFT_THERM_SENSOR)
-		| (ThermStatus.PROCHOTLog	<< LSHIFT_THERM_PROCHOT)
-		| (ThermStatus.CriticalTempLog	<< LSHIFT_THERM_CRIT)
-		| ((ThermStatus.Threshold1Log
-		  | ThermStatus.Threshold2Log)	<< LSHIFT_THERM_THOLD)
-		| (ThermStatus.PwrLimitLog	<< LSHIFT_POWER_LIMIT)
-		| (ThermStatus.CurLimitLog	<< LSHIFT_CURRENT_LIMIT)
-		| (ThermStatus.XDomLimitLog	<< LSHIFT_CROSS_DOMAIN);
+		( ( ThermStatus.Thermal_Status
+		  | ThermStatus.Thermal_Log )	<< LSHIFT_THERM_SENSOR)
+		| (ThermStatus.PROCHOT_Log	<< LSHIFT_THERM_PROCHOT)
+		| (ThermStatus.CriticalTemp_Log << LSHIFT_THERM_CRIT)
+		| ((ThermStatus.Threshold1_Log
+		  | ThermStatus.Threshold2_Log) << LSHIFT_THERM_THOLD)
+		| (ThermStatus.PwrLimit_Log	<< LSHIFT_POWER_LIMIT)
+		| (ThermStatus.CurLimit_Log	<< LSHIFT_CURRENT_LIMIT)
+		| (ThermStatus.XDomLimit_Log	<< LSHIFT_CROSS_DOMAIN);
 
       if (PUBLIC(RO(Proc))->Features.Power.EAX.PTM
       && (Core->Bind == PUBLIC(RO(Proc))->Service.Core))
@@ -8164,24 +8164,24 @@ void ThermalMonitor_Set(CORE_RO *Core)
 	RDMSR(ThermStatus, MSR_IA32_PACKAGE_THERM_STATUS);
 
 	if (Clear_Events & EVENT_THERM_SENSOR) {
-		ThermStatus.StatusLog = 0;
+		ThermStatus.Thermal_Log = 0;
 		ClearBit = 1;
 	}
 	if (Clear_Events & EVENT_THERM_PROCHOT) {
-		ThermStatus.PROCHOTLog = 0;
+		ThermStatus.PROCHOT_Log = 0;
 		ClearBit = 1;
 	}
 	if (Clear_Events & EVENT_THERM_CRIT) {
-		ThermStatus.CriticalTempLog = 0;
+		ThermStatus.CriticalTemp_Log = 0;
 		ClearBit = 1;
 	}
 	if (Clear_Events & EVENT_THERM_THOLD) {
-		ThermStatus.Threshold1Log = 0;
-		ThermStatus.Threshold2Log = 0;
+		ThermStatus.Threshold1_Log = 0;
+		ThermStatus.Threshold2_Log = 0;
 		ClearBit = 1;
 	}
 	if (Clear_Events & EVENT_POWER_LIMIT) {
-		ThermStatus.PwrLimitLog = 0;
+		ThermStatus.PwrLimit_Log = 0;
 		ClearBit = 1;
 	}
 
@@ -8222,13 +8222,13 @@ void ThermalMonitor_Set(CORE_RO *Core)
 		}
 	}
 	PUBLIC(RO(Proc))->PowerThermal.Events = \
-		( ( ThermStatus.StatusBit
-		  | ThermStatus.StatusLog )	<< LSHIFT_THERM_SENSOR)
-		| (ThermStatus.PROCHOTLog	<< LSHIFT_THERM_PROCHOT)
-		| (ThermStatus.CriticalTempLog	<< LSHIFT_THERM_CRIT)
-		| ((ThermStatus.Threshold1Log
-		  | ThermStatus.Threshold2Log)	<< LSHIFT_THERM_THOLD)
-		| (ThermStatus.PwrLimitLog	<< LSHIFT_POWER_LIMIT);
+		( ( ThermStatus.Thermal_Status
+		  | ThermStatus.Thermal_Log )	<< LSHIFT_THERM_SENSOR)
+		| (ThermStatus.PROCHOT_Log	<< LSHIFT_THERM_PROCHOT)
+		| (ThermStatus.CriticalTemp_Log << LSHIFT_THERM_CRIT)
+		| ((ThermStatus.Threshold1_Log
+		  | ThermStatus.Threshold2_Log) << LSHIFT_THERM_THOLD)
+		| (ThermStatus.PwrLimit_Log	<< LSHIFT_POWER_LIMIT);
       }
     }
 	RDMSR(PfInfo, MSR_PLATFORM_INFO);
@@ -8256,40 +8256,116 @@ void ThermalMonitor_Set(CORE_RO *Core)
 	}
 }
 
-void CorePerfLimitReasons_Set(CORE_RO *Core)
+void CorePerfLimitReasons(CORE_RO *Core)
 {
     if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
     {
-	CORE_PERF_LIMIT_REASONS CoreLimit = {.value = 0};
+	CORE_PERF_LIMIT_REASONS limit = {.value = 0};
 	unsigned short ClearBit = 0;
-	RDMSR(CoreLimit, MSR_SKL_CORE_PERF_LIMIT_REASONS);
+	RDMSR(limit, MSR_SKL_CORE_PERF_LIMIT_REASONS);
 
-	if (Clear_Events & EVENT_POWER_PL1) {
-		CoreLimit.PL1Log = 0;
+	if (Clear_Events & EVENT_CORE_PL1) {
+		limit.PL1_Log = 0;
 		ClearBit = 1;
 	}
-	if (Clear_Events & EVENT_POWER_PL2) {
-		CoreLimit.PL2Log = 0;
+	if (Clear_Events & EVENT_CORE_PL2) {
+		limit.PL2_Log = 0;
 		ClearBit = 1;
 	}
-	if (Clear_Events & EVENT_ELECTRICAL) {
-		CoreLimit.ElectricalLog = 0;
+	if (Clear_Events & EVENT_CORE_EDP) {
+		limit.EDP_Log = 0;
 		ClearBit = 1;
 	}
-	if (Clear_Events & EVENT_MAX_TURBO) {
-		CoreLimit.MaxTurboLimitLog = 0;
+	if (Clear_Events & EVENT_CORE_TURBO) {
+		limit.TurboLimitLog = 0;
 		ClearBit = 1;
 	}
 	if (ClearBit)
 	{
-		WRMSR(CoreLimit, MSR_SKL_CORE_PERF_LIMIT_REASONS);
-		RDMSR(CoreLimit, MSR_SKL_CORE_PERF_LIMIT_REASONS);
+		WRMSR(limit, MSR_SKL_CORE_PERF_LIMIT_REASONS);
+		RDMSR(limit, MSR_SKL_CORE_PERF_LIMIT_REASONS);
 	}
 	PUBLIC(RO(Proc))->PowerThermal.Events |= (
-		  (CoreLimit.PL1Log		<< LSHIFT_POWER_PL1)
-		| (CoreLimit.PL2Log		<< LSHIFT_POWER_PL2)
-		| (CoreLimit.ElectricalLog	<< LSHIFT_ELECTRICAL)
-		| (CoreLimit.MaxTurboLimitLog	<< LSHIFT_MAX_TURBO)
+		  (limit.PL1_Log	<< LSHIFT_CORE_PL1)
+		| (limit.PL2_Log	<< LSHIFT_CORE_PL2)
+		| (limit.EDP_Log	<< LSHIFT_CORE_EDP)
+		| (limit.TurboLimitLog	<< LSHIFT_CORE_TURBO)
+	);
+    }
+}
+
+void GraphicsPerfLimitReasons(CORE_RO *Core)
+{
+    if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+    {
+	GRAPHICS_PERF_LIMIT_REASONS limit = {.value = 0};
+	unsigned short ClearBit = 0;
+	RDMSR(limit, MSR_GRAPHICS_PERF_LIMIT_REASONS);
+
+	if (Clear_Events & EVENT_GFX_THM) {
+		limit.Thermal_Log = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_GFX_PL1) {
+		limit.PL1_Log = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_GFX_PL2) {
+		limit.PL2_Log = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_GFX_EDP) {
+		limit.EDP_Log = 0;
+		ClearBit = 1;
+	}
+	if (ClearBit)
+	{
+		WRMSR(limit, MSR_GRAPHICS_PERF_LIMIT_REASONS);
+		RDMSR(limit, MSR_GRAPHICS_PERF_LIMIT_REASONS);
+	}
+	PUBLIC(RO(Proc))->PowerThermal.Events |= (
+		  (limit.Thermal_Log	<< LSHIFT_GFX_THM)
+		| (limit.PL1_Log	<< LSHIFT_GFX_PL1)
+		| (limit.PL2_Log	<< LSHIFT_GFX_PL2)
+		| (limit.EDP_Log	<< LSHIFT_GFX_EDP)
+	);
+    }
+}
+
+void RingPerfLimitReasons(CORE_RO *Core)
+{
+    if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+    {
+	RING_PERF_LIMIT_REASONS limit = {.value = 0};
+	unsigned short ClearBit = 0;
+	RDMSR(limit, MSR_RING_PERF_LIMIT_REASONS);
+
+	if (Clear_Events & EVENT_RING_THM) {
+		limit.Thermal_Log = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_RING_PL1) {
+		limit.PL1_Log = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_RING_PL2) {
+		limit.PL2_Log = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_RING_EDP) {
+		limit.EDP_Log = 0;
+		ClearBit = 1;
+	}
+	if (ClearBit)
+	{
+		WRMSR(limit, MSR_RING_PERF_LIMIT_REASONS);
+		RDMSR(limit, MSR_RING_PERF_LIMIT_REASONS);
+	}
+	PUBLIC(RO(Proc))->PowerThermal.Events |= (
+		  (limit.Thermal_Log	<< LSHIFT_RING_THM)
+		| (limit.PL1_Log	<< LSHIFT_RING_PL1)
+		| (limit.PL2_Log	<< LSHIFT_RING_PL2)
+		| (limit.EDP_Log	<< LSHIFT_RING_EDP)
 	);
     }
 }
@@ -10310,7 +10386,9 @@ static void PerCore_Skylake_Query(void *arg)
 	PowerThermal(Core);
 
 	ThermalMonitor_Set(Core);
-	CorePerfLimitReasons_Set(Core);
+	CorePerfLimitReasons(Core);
+	GraphicsPerfLimitReasons(Core);
+	RingPerfLimitReasons(Core);
 
 	Intel_Turbo_Activation_Ratio(Core);
 	Intel_Turbo_TDP_Config(Core);
@@ -10387,7 +10465,9 @@ static void PerCore_Skylake_X_Query(void *arg)
 	PowerThermal(Core);
 
 	ThermalMonitor_Set(Core);
-	CorePerfLimitReasons_Set(Core);
+	CorePerfLimitReasons(Core);
+	GraphicsPerfLimitReasons(Core);
+	RingPerfLimitReasons(Core);
 
 	Intel_Turbo_Activation_Ratio(Core);
 	Intel_Turbo_TDP_Config(Core);
@@ -12454,15 +12534,15 @@ void Core_Intel_Temp(CORE_RO *Core)
 
 	Core->PowerThermal.Sensor = ThermStatus.DTS;
 	Core->PowerThermal.Events = \
-			( ( ThermStatus.StatusBit
-			  | ThermStatus.StatusLog )	<< LSHIFT_THERM_SENSOR)
-			| (ThermStatus.PROCHOTLog	<< LSHIFT_THERM_PROCHOT)
-			| (ThermStatus.CriticalTempLog	<< LSHIFT_THERM_CRIT)
-			| ((ThermStatus.Threshold1Log
-			  | ThermStatus.Threshold2Log)	<< LSHIFT_THERM_THOLD)
-			| (ThermStatus.PwrLimitLog	<< LSHIFT_POWER_LIMIT)
-			| (ThermStatus.CurLimitLog	<< LSHIFT_CURRENT_LIMIT)
-			| (ThermStatus.XDomLimitLog	<< LSHIFT_CROSS_DOMAIN);
+			( ( ThermStatus.Thermal_Status
+			  | ThermStatus.Thermal_Log )	<< LSHIFT_THERM_SENSOR)
+			| (ThermStatus.PROCHOT_Log	<< LSHIFT_THERM_PROCHOT)
+			| (ThermStatus.CriticalTemp_Log << LSHIFT_THERM_CRIT)
+			| ((ThermStatus.Threshold1_Log
+			  | ThermStatus.Threshold2_Log) << LSHIFT_THERM_THOLD)
+			| (ThermStatus.PwrLimit_Log	<< LSHIFT_POWER_LIMIT)
+			| (ThermStatus.CurLimit_Log	<< LSHIFT_CURRENT_LIMIT)
+			| (ThermStatus.XDomLimit_Log	<< LSHIFT_CROSS_DOMAIN);
 }
 
 #define Pkg_Intel_Temp(Pkg)						\
@@ -12474,26 +12554,52 @@ void Core_Intel_Temp(CORE_RO *Core)
 									\
 	Pkg->PowerThermal.Sensor = ThermStatus.DTS;			\
 	Pkg->PowerThermal.Events =					\
-		( ( ThermStatus.StatusBit				\
-		  | ThermStatus.StatusLog )	<< LSHIFT_THERM_SENSOR) \
-		| (ThermStatus.PROCHOTLog	<< LSHIFT_THERM_PROCHOT)\
-		| (ThermStatus.CriticalTempLog	<< LSHIFT_THERM_CRIT)	\
-		| ((ThermStatus.Threshold1Log				\
-		  | ThermStatus.Threshold2Log)	<<LSHIFT_THERM_THOLD)	\
-		| (ThermStatus.PwrLimitLog << LSHIFT_POWER_LIMIT);	\
+		( ( ThermStatus.Thermal_Status				\
+		  | ThermStatus.Thermal_Log )	<< LSHIFT_THERM_SENSOR) \
+		| (ThermStatus.PROCHOT_Log	<< LSHIFT_THERM_PROCHOT)\
+		| (ThermStatus.CriticalTemp_Log << LSHIFT_THERM_CRIT)	\
+		| ((ThermStatus.Threshold1_Log				\
+		  | ThermStatus.Threshold2_Log) <<LSHIFT_THERM_THOLD)	\
+		| (ThermStatus.PwrLimit_Log	<< LSHIFT_POWER_LIMIT);	\
     }									\
 })
 
-void CorePerfLimitReasons(PROC_RO *Pkg)
+void Monitor_CorePerfLimitReasons(PROC_RO *Pkg)
 {
-	CORE_PERF_LIMIT_REASONS CoreLimit = {.value = 0};
-	RDMSR(CoreLimit, MSR_SKL_CORE_PERF_LIMIT_REASONS);
+	CORE_PERF_LIMIT_REASONS limit = {.value = 0};
+	RDMSR(limit, MSR_SKL_CORE_PERF_LIMIT_REASONS);
 
 	Pkg->PowerThermal.Events |= (
-		  (CoreLimit.PL1Log		<< LSHIFT_POWER_PL1)
-		| (CoreLimit.PL2Log		<< LSHIFT_POWER_PL2)
-		| (CoreLimit.ElectricalLog	<< LSHIFT_ELECTRICAL)
-		| (CoreLimit.MaxTurboLimitLog	<< LSHIFT_MAX_TURBO)
+		  (limit.PL1_Log	<< LSHIFT_CORE_PL1)
+		| (limit.PL2_Log	<< LSHIFT_CORE_PL2)
+		| (limit.EDP_Log	<< LSHIFT_CORE_EDP)
+		| (limit.TurboLimitLog	<< LSHIFT_CORE_TURBO)
+	);
+}
+
+void Monitor_GraphicsPerfLimitReasons(PROC_RO *Pkg)
+{
+	GRAPHICS_PERF_LIMIT_REASONS limit = {.value = 0};
+	RDMSR(limit, MSR_GRAPHICS_PERF_LIMIT_REASONS);
+
+	Pkg->PowerThermal.Events |= (
+		  (limit.Thermal_Log	<< LSHIFT_GFX_THM)
+		| (limit.PL1_Log	<< LSHIFT_GFX_PL1)
+		| (limit.PL2_Log	<< LSHIFT_GFX_PL2)
+		| (limit.EDP_Log	<< LSHIFT_GFX_EDP)
+	);
+}
+
+void Monitor_RingPerfLimitReasons(PROC_RO *Pkg)
+{
+	RING_PERF_LIMIT_REASONS limit = {.value = 0};
+	RDMSR(limit, MSR_RING_PERF_LIMIT_REASONS);
+
+	Pkg->PowerThermal.Events |= (
+		  (limit.Thermal_Log	<< LSHIFT_RING_THM)
+		| (limit.PL1_Log	<< LSHIFT_RING_PL1)
+		| (limit.PL2_Log	<< LSHIFT_RING_PL2)
+		| (limit.EDP_Log	<< LSHIFT_RING_EDP)
 	);
 }
 
@@ -14945,7 +15051,10 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 		Pkg_Intel_PMC_Counters(Core, 1, ARCH_PMC);
 
 		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
-		CorePerfLimitReasons(PUBLIC(RO(Proc)));
+
+		Monitor_CorePerfLimitReasons(PUBLIC(RO(Proc)));
+		Monitor_GraphicsPerfLimitReasons(PUBLIC(RO(Proc)));
+		Monitor_RingPerfLimitReasons(PUBLIC(RO(Proc)));
 
 	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
 	    {
@@ -15186,7 +15295,10 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 		Pkg_Intel_PMC_Counters(Core, 1, ARCH_PMC);
 
 		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
-		CorePerfLimitReasons(PUBLIC(RO(Proc)));
+
+		Monitor_CorePerfLimitReasons(PUBLIC(RO(Proc)));
+		Monitor_GraphicsPerfLimitReasons(PUBLIC(RO(Proc)));
+		Monitor_RingPerfLimitReasons(PUBLIC(RO(Proc)));
 
 	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
 	    {
@@ -15541,7 +15653,10 @@ static enum hrtimer_restart Cycle_Alderlake_Pcore(struct hrtimer *pTimer)
 		PKG_Counters_Alderlake_Pcore(Core, 1);
 
 		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
-		CorePerfLimitReasons(PUBLIC(RO(Proc)));
+
+		Monitor_CorePerfLimitReasons(PUBLIC(RO(Proc)));
+		Monitor_GraphicsPerfLimitReasons(PUBLIC(RO(Proc)));
+		Monitor_RingPerfLimitReasons(PUBLIC(RO(Proc)));
 
 	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
 	    {
@@ -19393,10 +19508,18 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		case EVENT_POWER_LIMIT:
 		case EVENT_CURRENT_LIMIT:
 		case EVENT_CROSS_DOMAIN:
-		case EVENT_POWER_PL1:
-		case EVENT_POWER_PL2:
-		case EVENT_ELECTRICAL:
-		case EVENT_MAX_TURBO:
+		case EVENT_CORE_PL1:
+		case EVENT_CORE_PL2:
+		case EVENT_CORE_EDP:
+		case EVENT_CORE_TURBO:
+		case EVENT_GFX_THM:
+		case EVENT_GFX_PL1:
+		case EVENT_GFX_PL2:
+		case EVENT_GFX_EDP:
+		case EVENT_RING_THM:
+		case EVENT_RING_PL1:
+		case EVENT_RING_PL2:
+		case EVENT_RING_EDP:
 			Controller_Stop(1);
 			Clear_Events = arg;
 			Controller_Start(1);

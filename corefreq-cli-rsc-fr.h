@@ -1162,6 +1162,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_EVENT_TITLE_CODE_FR		" Effacer "	\
 						"\x89""v""\xa8""nement "
 
+#define RSC_BOX_EVENT_SPACE_CODE_FR		"                         "
 #define RSC_BOX_EVENT_THERMAL_SENSOR_CODE_FR	"    Capteur thermique    "
 #define RSC_BOX_EVENT_PROCHOT_AGENT_CODE_FR	"      Agent PROCHOT#     "
 #define RSC_BOX_EVENT_CRITICAL_TEMP_CODE_FR	"   Temp""\xa9""rature" \

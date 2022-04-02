@@ -1169,22 +1169,22 @@ typedef union
 	struct
 	{
 		unsigned long long
-		StatusBit	:  1-0,
-		StatusLog	:  2-1,
-		PROCHOT 	:  3-2,
-		PROCHOTLog	:  4-3,
+		Thermal_Status	:  1-0,
+		Thermal_Log	:  2-1,
+		PROCHOT_Event	:  3-2,
+		PROCHOT_Log	:  4-3,
 		CriticalTemp	:  5-4,
-		CriticalTempLog :  6-5,
+		CriticalTemp_Log:  6-5,
 		Threshold1	:  7-6,
-		Threshold1Log	:  8-7,
+		Threshold1_Log	:  8-7,
 		Threshold2	:  9-8,
-		Threshold2Log	: 10-9,
-		PwrLimitStatus	: 11-10,
-		PwrLimitLog	: 12-11,
-		CurLimitStatus	: 13-12,	/* HWP Feedback 	*/
-		CurLimitLog	: 14-13,	/* HWP Feedback 	*/
-		XDomLimitStatus : 15-14,	/* HWP Feedback 	*/
-		XDomLimitLog	: 16-15,	/* HWP Feedback 	*/
+		Threshold2_Log	: 10-9,
+		PwrLimit_Status : 11-10,
+		PwrLimit_Log	: 12-11,
+		CurLimit_Status : 13-12,	/* HWP Feedback 	*/
+		CurLimit_Log	: 14-13,	/* HWP Feedback 	*/
+		XDomLimit_Status: 15-14,	/* HWP Feedback 	*/
+		XDomLimit_Log	: 16-15,	/* HWP Feedback 	*/
 		DTS		: 23-16,
 		ReservedBits1	: 26-23,
 		HWP_Status	: 27-26, /* IA32_PACKAGE_THERM_STATUS	*/
@@ -1200,36 +1200,98 @@ typedef union
 	struct
 	{
 		unsigned long long
-		PROCHOT 	:  1-0,  /* R/O */
-		ThermalStatus	:  2-1,  /* R/O */
+		PROCHOT_Event	:  1-0,  /* R/O */
+		Thermal_Status	:  2-1,  /* R/O */
 		ReservedBits1	:  4-2,
-		ResidencyStatus :  5-4,  /* R/O */
+		Residency_Status:  5-4,  /* R/O */
 		AvgThmLimit	:  6-5,  /* R/O */
 		VR_ThmAlert	:  7-6,  /* R/O */
 		VR_TDC_Status	:  8-7,  /* R/O */
-		Electrical	:  9-8,  /* R/O */
+		EDP_Status	:  9-8,  /* R/O */
 		ReservedBits2	: 10-9,
-		PL1Status	: 11-10, /* R/O */
-		PL2Status	: 12-11, /* R/O */
-		MaxTurboLimit	: 13-12, /* R/O */
+		PL1_Status	: 11-10, /* R/O */
+		PL2_Status	: 12-11, /* R/O */
+		TurboLimit	: 13-12, /* R/O */
 		TurboAttenuation: 14-13, /* R/O */
 		ReservedBits3	: 16-14,
-		PROCHOTLog	: 17-16, /* R/WC0 */
-		ThermalLog	: 18-17, /* R/WC0 */
+		PROCHOT_Log	: 17-16, /* R/WC0 */
+		Thermal_Log	: 18-17, /* R/WC0 */
 		ReservedBits4	: 20-18,
 		ResidencyLog	: 21-20, /* R/WC0 */
 		AvgThmLimitLog	: 22-21, /* R/WC0 */
 		VR_ThmAlertLog	: 23-22, /* R/WC0 */
 		VR_TDC_Log	: 24-23, /* R/WC0 */
-		ElectricalLog	: 25-24, /* R/WC0 */
+		EDP_Log 	: 25-24, /* R/WC0 */
 		ReservedBits5	: 26-25,
-		PL1Log		: 27-26, /* R/WC0 */
-		PL2Log		: 28-27, /* R/WC0 */
-		MaxTurboLimitLog: 29-28, /* R/WC0 */
+		PL1_Log 	: 27-26, /* R/WC0 */
+		PL2_Log 	: 28-27, /* R/WC0 */
+		TurboLimitLog	: 29-28, /* R/WC0 */
 		TurboAttenLog	: 30-29, /* R/WC0 */
 		ReservedBits6	: 64-30;
 	};
 } CORE_PERF_LIMIT_REASONS;
+
+typedef union
+{	/* R/O-R/WC0: MSR_GRAPHICS_PERF_LIMIT_REASONS(6B0H) Package scope */
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		PROCHOT_Event	:  1-0,  /* R/O */
+		Thermal_Status	:  2-1,  /* R/O */
+		ReservedBits1	:  5-2,
+		AvgThmLimit	:  6-5,  /* R/O */
+		VR_ThmAlert	:  7-6,  /* R/O */
+		VR_TDC_Status	:  8-7,  /* R/O */
+		EDP_Status	:  9-8,  /* R/O */
+		ReservedBits2	: 10-9,
+		PL1_Status	: 11-10, /* R/O */
+		PL2_Status	: 12-11, /* R/O */
+		ReservedBits3	: 16-12,
+		PROCHOT_Log	: 17-16, /* R/WC0 */
+		Thermal_Log	: 18-17, /* R/WC0 */
+		ReservedBits4	: 21-18,
+		AvgThmLimitLog	: 22-21, /* R/WC0 */
+		VR_ThmAlertLog	: 23-22, /* R/WC0 */
+		VR_TDC_Log	: 24-23, /* R/WC0 */
+		EDP_Log 	: 25-24, /* R/WC0 */
+		ReservedBits5	: 26-25,
+		PL1_Log 	: 27-26, /* R/WC0 */
+		PL2_Log 	: 28-27, /* R/WC0 */
+		ReservedBits6	: 64-28;
+	};
+} GRAPHICS_PERF_LIMIT_REASONS;
+
+typedef union
+{	/* R/O-R/WC0: MSR_RING_PERF_LIMIT_REASONS(6B1H) Package scope	*/
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		PROCHOT_Event	:  1-0,  /* R/O */
+		Thermal_Status	:  2-1,  /* R/O */
+		ReservedBits1	:  5-2,
+		AvgThmLimit	:  6-5,  /* R/O */
+		VR_ThmAlert	:  7-6,  /* R/O */
+		VR_TDC_Status	:  8-7,  /* R/O */
+		EDP_Status	:  9-8,  /* R/O */
+		ReservedBits2	: 10-9,
+		PL1_Status	: 11-10, /* R/O */
+		PL2_Status	: 12-11, /* R/O */
+		ReservedBits3	: 16-12,
+		PROCHOT_Log	: 17-16, /* R/WC0 */
+		Thermal_Log	: 18-17, /* R/WC0 */
+		ReservedBits4	: 21-18,
+		AvgThmLimitLog	: 22-21, /* R/WC0 */
+		VR_ThmAlertLog	: 23-22, /* R/WC0 */
+		VR_TDC_Log	: 24-23, /* R/WC0 */
+		EDP_Log 	: 25-24, /* R/WC0 */
+		ReservedBits5	: 26-25,
+		PL1_Log 	: 27-26, /* R/WC0 */
+		PL2_Log 	: 28-27, /* R/WC0 */
+		ReservedBits6	: 64-28;
+	};
+} RING_PERF_LIMIT_REASONS;
 
 typedef union
 {
