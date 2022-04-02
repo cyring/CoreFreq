@@ -11073,6 +11073,18 @@ int Shortcut(SCANKEY *scan)
 				RSC(BOX_EVENT_SPACE).CODE(),
 				RSC(BOX_EVENT).ATTR()[0],
 				SCANKEY_NULL,
+	/*	PROCHOT# Agent						*/
+				RSC(BOX_EVENT_PROCHOT_AGENT).CODE(),
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_CORE_HOT) ? 1 : 0
+				],
+				BOXKEY_CLR_CORE_HOT,
+	/*	Thermal Sensor						*/
+				RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_CORE_THM) ? 1 : 0
+				],
+				BOXKEY_CLR_CORE_THM,
 	/*	Package PL1						*/
 				RSC(BOX_EVENT_POWER_PL1).CODE(),
 				RSC(BOX_EVENT).ATTR()[
@@ -11101,6 +11113,12 @@ int Shortcut(SCANKEY *scan)
 				RSC(BOX_EVENT_SPACE).CODE(),
 				RSC(BOX_EVENT).ATTR()[0],
 				SCANKEY_NULL,
+	/*	PROCHOT# Agent						*/
+				RSC(BOX_EVENT_PROCHOT_AGENT).CODE(),
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_GFX_HOT) ? 1 : 0
+				],
+				BOXKEY_CLR_GFX_HOT,
 	/*	Thermal Sensor						*/
 				RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
 				RSC(BOX_EVENT).ATTR()[
@@ -11129,6 +11147,12 @@ int Shortcut(SCANKEY *scan)
 				RSC(BOX_EVENT_SPACE).CODE(),
 				RSC(BOX_EVENT).ATTR()[0],
 				SCANKEY_NULL,
+	/*	PROCHOT# Agent						*/
+				RSC(BOX_EVENT_PROCHOT_AGENT).CODE(),
+				RSC(BOX_EVENT).ATTR()[
+				(ProcessorEvents & EVENT_RING_HOT) ? 1 : 0
+				],
+				BOXKEY_CLR_RING_HOT,
 	/*	Thermal Sensor						*/
 				RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
 				RSC(BOX_EVENT).ATTR()[
@@ -13380,14 +13404,18 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_CLR_PWR_LIMIT:
     case BOXKEY_CLR_CUR_LIMIT:
     case BOXKEY_CLR_X_DOMAIN:
+    case BOXKEY_CLR_CORE_HOT:
+    case BOXKEY_CLR_CORE_THM:
     case BOXKEY_CLR_CORE_PL1:
     case BOXKEY_CLR_CORE_PL2:
     case BOXKEY_CLR_CORE_EDP:
     case BOXKEY_CLR_CORE_TURBO:
+    case BOXKEY_CLR_GFX_HOT:
     case BOXKEY_CLR_GFX_THM:
     case BOXKEY_CLR_GFX_PL1:
     case BOXKEY_CLR_GFX_PL2:
     case BOXKEY_CLR_GFX_EDP:
+    case BOXKEY_CLR_RING_HOT:
     case BOXKEY_CLR_RING_THM:
     case BOXKEY_CLR_RING_PL1:
     case BOXKEY_CLR_RING_PL2:

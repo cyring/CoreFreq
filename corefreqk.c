@@ -8264,6 +8264,14 @@ void CorePerfLimitReasons(CORE_RO *Core)
 	unsigned short ClearBit = 0;
 	RDMSR(limit, MSR_SKL_CORE_PERF_LIMIT_REASONS);
 
+	if (Clear_Events & EVENT_CORE_HOT) {
+		limit.PROCHOT_Log = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_CORE_THM) {
+		limit.Thermal_Log = 0;
+		ClearBit = 1;
+	}
 	if (Clear_Events & EVENT_CORE_PL1) {
 		limit.PL1_Log = 0;
 		ClearBit = 1;
@@ -8287,6 +8295,8 @@ void CorePerfLimitReasons(CORE_RO *Core)
 	}
 	PUBLIC(RO(Proc))->PowerThermal.Events |= (
 		  (limit.Thermal_Status << LSHIFT_CORE_STS)
+		| (limit.PROCHOT_Log	<< LSHIFT_CORE_HOT)
+		| (limit.Thermal_Log	<< LSHIFT_CORE_THM)
 		| (limit.PL1_Log	<< LSHIFT_CORE_PL1)
 		| (limit.PL2_Log	<< LSHIFT_CORE_PL2)
 		| (limit.EDP_Log	<< LSHIFT_CORE_EDP)
@@ -8303,6 +8313,10 @@ void GraphicsPerfLimitReasons(CORE_RO *Core)
 	unsigned short ClearBit = 0;
 	RDMSR(limit, MSR_GRAPHICS_PERF_LIMIT_REASONS);
 
+	if (Clear_Events & EVENT_GFX_HOT) {
+		limit.PROCHOT_Log = 0;
+		ClearBit = 1;
+	}
 	if (Clear_Events & EVENT_GFX_THM) {
 		limit.Thermal_Log = 0;
 		ClearBit = 1;
@@ -8326,6 +8340,7 @@ void GraphicsPerfLimitReasons(CORE_RO *Core)
 	}
 	PUBLIC(RO(Proc))->PowerThermal.Events |= (
 		  (limit.Thermal_Status << LSHIFT_GFX_STS)
+		| (limit.PROCHOT_Log	<< LSHIFT_GFX_HOT)
 		| (limit.Thermal_Log	<< LSHIFT_GFX_THM)
 		| (limit.PL1_Log	<< LSHIFT_GFX_PL1)
 		| (limit.PL2_Log	<< LSHIFT_GFX_PL2)
@@ -8342,6 +8357,10 @@ void RingPerfLimitReasons(CORE_RO *Core)
 	unsigned short ClearBit = 0;
 	RDMSR(limit, MSR_RING_PERF_LIMIT_REASONS);
 
+	if (Clear_Events & EVENT_RING_HOT) {
+		limit.PROCHOT_Log = 0;
+		ClearBit = 1;
+	}
 	if (Clear_Events & EVENT_RING_THM) {
 		limit.Thermal_Log = 0;
 		ClearBit = 1;
@@ -8365,6 +8384,7 @@ void RingPerfLimitReasons(CORE_RO *Core)
 	}
 	PUBLIC(RO(Proc))->PowerThermal.Events |= (
 		  (limit.Thermal_Status << LSHIFT_RING_STS)
+		| (limit.PROCHOT_Log	<< LSHIFT_RING_HOT)
 		| (limit.Thermal_Log	<< LSHIFT_RING_THM)
 		| (limit.PL1_Log	<< LSHIFT_RING_PL1)
 		| (limit.PL2_Log	<< LSHIFT_RING_PL2)
@@ -12574,6 +12594,8 @@ void Monitor_CorePerfLimitReasons(PROC_RO *Pkg)
 
 	Pkg->PowerThermal.Events |= (
 		  (limit.Thermal_Status << LSHIFT_CORE_STS)
+		| (limit.PROCHOT_Log	<< LSHIFT_CORE_HOT)
+		| (limit.Thermal_Log	<< LSHIFT_CORE_THM)
 		| (limit.PL1_Log	<< LSHIFT_CORE_PL1)
 		| (limit.PL2_Log	<< LSHIFT_CORE_PL2)
 		| (limit.EDP_Log	<< LSHIFT_CORE_EDP)
@@ -12588,6 +12610,7 @@ void Monitor_GraphicsPerfLimitReasons(PROC_RO *Pkg)
 
 	Pkg->PowerThermal.Events |= (
 		  (limit.Thermal_Status << LSHIFT_GFX_STS)
+		| (limit.PROCHOT_Log	<< LSHIFT_GFX_HOT)
 		| (limit.Thermal_Log	<< LSHIFT_GFX_THM)
 		| (limit.PL1_Log	<< LSHIFT_GFX_PL1)
 		| (limit.PL2_Log	<< LSHIFT_GFX_PL2)
@@ -12602,6 +12625,7 @@ void Monitor_RingPerfLimitReasons(PROC_RO *Pkg)
 
 	Pkg->PowerThermal.Events |= (
 		  (limit.Thermal_Status << LSHIFT_RING_STS)
+		| (limit.PROCHOT_Log	<< LSHIFT_RING_HOT)
 		| (limit.Thermal_Log	<< LSHIFT_RING_THM)
 		| (limit.PL1_Log	<< LSHIFT_RING_PL1)
 		| (limit.PL2_Log	<< LSHIFT_RING_PL2)
@@ -19514,14 +19538,18 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		case EVENT_POWER_LIMIT:
 		case EVENT_CURRENT_LIMIT:
 		case EVENT_CROSS_DOMAIN:
+		case EVENT_CORE_HOT:
+		case EVENT_CORE_THM:
 		case EVENT_CORE_PL1:
 		case EVENT_CORE_PL2:
 		case EVENT_CORE_EDP:
 		case EVENT_CORE_TURBO:
+		case EVENT_GFX_HOT:
 		case EVENT_GFX_THM:
 		case EVENT_GFX_PL1:
 		case EVENT_GFX_PL2:
 		case EVENT_GFX_EDP:
+		case EVENT_RING_HOT:
 		case EVENT_RING_THM:
 		case EVENT_RING_PL1:
 		case EVENT_RING_PL2:
