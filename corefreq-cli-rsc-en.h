@@ -1952,6 +1952,7 @@
 #define RSC_BOX_STATE_C6_CODE		"             C6            "
 #define RSC_BOX_STATE_C4_CODE		"             C4            "
 #define RSC_BOX_STATE_C3_CODE		"             C3            "
+#define RSC_BOX_STATE_C0_CODE		"             C0            "
 
 #define RSC_BOX_PKG_STATE_LIMIT_C10_CODE	"            C10            "
 #define RSC_BOX_PKG_STATE_LIMIT_C9_CODE 	"             C9            "

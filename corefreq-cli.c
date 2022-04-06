@@ -12378,7 +12378,7 @@ int Shortcut(SCANKEY *scan)
      if (win == NULL)
      {
 	const CSINT CST[] = {
-		[   _C0 ] = -1,
+		[   _C0 ] =  6,
 		[   _C1 ] = -1,
 		[   _C2 ] = -1,
 		[   _C3 ] =  5,
@@ -12412,7 +12412,8 @@ int Shortcut(SCANKEY *scan)
 	/* 2 */ RSC(BOX_STATE_C7).CODE(), stateAttr[0], BOXKEY_IORCST_C7,
 	/* 3 */ RSC(BOX_STATE_C6).CODE(), stateAttr[0], BOXKEY_IORCST_C6,
 	/* 4 */ RSC(BOX_STATE_C4).CODE(), stateAttr[0], BOXKEY_IORCST_C4,
-	/* 5 */ RSC(BOX_STATE_C3).CODE(), stateAttr[0], BOXKEY_IORCST_C3);
+	/* 5 */ RSC(BOX_STATE_C3).CODE(), stateAttr[0], BOXKEY_IORCST_C3,
+	/* 6 */ RSC(BOX_STATE_C0).CODE(), stateAttr[0], SCANKEY_NULL);
 
       if (wBox != NULL)
       {
