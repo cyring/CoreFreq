@@ -5571,6 +5571,13 @@ static void Query_Core2(unsigned int cpu)
 	HyperThreading_Technology();
 }
 
+static void Query_Atom_Bonnell(unsigned int cpu)
+{
+	Query_Same_Genuine_Features();
+	Intel_Core_Platform_Info(cpu);
+	HyperThreading_Technology();
+}
+
 static void Query_Silvermont(unsigned int cpu)
 {					/* Tables 2-6, 2-7, 2-8(BT), 2-9(BT) */
 	/*	Query the Min and Max frequency ratios			*/
@@ -8047,20 +8054,10 @@ void ThermalMonitor2_Set(CORE_RO *Core, MISC_PROC_FEATURES MiscFeatures)
   }
 }
 
-void ThermalMonitor_Set(CORE_RO *Core)
+void ThermalMonitor_IA32(CORE_RO *Core)
 {
-	TJMAX TjMax = {.value = 0};
 	MISC_PROC_FEATURES MiscFeatures = {.value = 0};
 	THERM_STATUS ThermStatus = {.value = 0};
-	PLATFORM_INFO PfInfo = {.value = 0};
-	/* Silvermont + Xeon[06_57] + Nehalem + Sandy Bridge & superior arch. */
-	RDMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
-
-	Core->PowerThermal.Param.Offset[0] = TjMax.Target;
-	if (Core->PowerThermal.Param.Offset[0] == 0)
-	{
-		Core->PowerThermal.Param.Offset[0] = 100;
-	}
 	/*		Query the TM1 and TM2 features state.		*/
 	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 	if (MiscFeatures.TCC) {
@@ -8231,6 +8228,32 @@ void ThermalMonitor_Set(CORE_RO *Core)
 		| (ThermStatus.PwrLimit_Log	<< LSHIFT_POWER_LIMIT);
       }
     }
+}
+
+void ThermalMonitor_Atom_Bonnell(CORE_RO *Core)
+{
+	Core->PowerThermal.Param.Offset[0] = 100;
+	Core->PowerThermal.Param.Offset[1] = 0;
+
+	ThermalMonitor_IA32(Core);
+}
+
+void ThermalMonitor_Set(CORE_RO *Core)
+{
+	TJMAX TjMax = {.value = 0};
+	PLATFORM_INFO PfInfo = {.value = 0};
+
+	/* Silvermont + Xeon[06_57] + Nehalem + Sandy Bridge & superior arch. */
+	RDMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
+
+	Core->PowerThermal.Param.Offset[0] = TjMax.Target;
+	if (Core->PowerThermal.Param.Offset[0] == 0)
+	{
+		Core->PowerThermal.Param.Offset[0] = 100;
+	}
+
+	ThermalMonitor_IA32(Core);
+
 	RDMSR(PfInfo, MSR_PLATFORM_INFO);
 
 	if (PfInfo.ProgrammableTj)
@@ -9821,6 +9844,45 @@ static void PerCore_Core2_Query(void *arg)
 	PowerThermal(Core);				/* Shared | Unique */
 
 	ThermalMonitor_Set(Core);
+}
+
+static void PerCore_Atom_Bonnell_Query(void *arg)
+{
+	CORE_RO *Core = (CORE_RO *) arg;
+
+	Intel_Core_Platform_Info(Core->Bind);
+
+	SystemRegisters(Core);
+
+	Intel_VirtualMachine(Core);
+
+	Intel_Microcode(Core);
+
+	Dump_CPUID(Core);
+
+	SpeedStep_Technology(Core);
+	DynamicAcceleration(Core);				/* Unique */
+	Compute_Intel_Core_Burst(Core->Bind);
+
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
+
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
+
+	PowerThermal(Core);				/* Shared | Unique */
+
+	ThermalMonitor_Atom_Bonnell(Core);
 }
 
 void Compute_Intel_Silvermont_Burst(CORE_RO *Core)

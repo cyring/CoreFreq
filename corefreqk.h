@@ -1426,6 +1426,12 @@ static void Start_Core2(void *arg) ;
 static void Stop_Core2(void *arg) ;
 static void InitTimer_Core2(unsigned int cpu) ;
 
+static void Query_Atom_Bonnell(unsigned int cpu) ;
+static void PerCore_Atom_Bonnell_Query(void *arg) ;
+#define     Start_Atom_Bonnell Start_Core2
+#define     Stop_Atom_Bonnell Stop_Core2
+#define     InitTimer_Atom_Bonnell InitTimer_Core2
+
 static void Query_Silvermont(unsigned int cpu) ;
 static void PerCore_Silvermont_Query(void *arg) ;
 static void Start_Silvermont(void *arg) ;
@@ -7095,12 +7101,12 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Atom_Bonnell] = {							/* 17*/
 	.Signature = _Atom_Bonnell,
-	.Query = Query_Core2,
-	.Update = PerCore_Core2_Query,
-	.Start = Start_Core2,
-	.Stop = Stop_Core2,
+	.Query = Query_Atom_Bonnell,
+	.Update = PerCore_Atom_Bonnell_Query,
+	.Start = Start_Atom_Bonnell,
+	.Stop = Stop_Atom_Bonnell,
 	.Exit = NULL,
-	.Timer = InitTimer_Core2,
+	.Timer = InitTimer_Atom_Bonnell,
 	.BaseClock = BaseClock_Atom,
 	.ClockMod = ClockMod_Core2_PPC,
 	.TurboClock = NULL,
@@ -7119,12 +7125,12 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Atom_Silvermont] = {							/* 18*/
 	.Signature = _Atom_Silvermont,
-	.Query = Query_Core2,
-	.Update = PerCore_Core2_Query,
-	.Start = Start_Core2,
-	.Stop = Stop_Core2,
+	.Query = Query_Atom_Bonnell,
+	.Update = PerCore_Atom_Bonnell_Query,
+	.Start = Start_Atom_Bonnell,
+	.Stop = Stop_Atom_Bonnell,
 	.Exit = NULL,
-	.Timer = InitTimer_Core2,
+	.Timer = InitTimer_Atom_Bonnell,
 	.BaseClock = BaseClock_Atom,
 	.ClockMod = ClockMod_Core2_PPC,
 	.TurboClock = NULL,
@@ -7143,12 +7149,12 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Atom_Lincroft] = {							/* 19*/
 	.Signature = _Atom_Lincroft,
-	.Query = Query_Core2,
-	.Update = PerCore_Core2_Query,
-	.Start = Start_Core2,
-	.Stop = Stop_Core2,
+	.Query = Query_Atom_Bonnell,
+	.Update = PerCore_Atom_Bonnell_Query,
+	.Start = Start_Atom_Bonnell,
+	.Stop = Stop_Atom_Bonnell,
 	.Exit = NULL,
-	.Timer = InitTimer_Core2,
+	.Timer = InitTimer_Atom_Bonnell,
 	.BaseClock = BaseClock_Atom,
 	.ClockMod = ClockMod_Core2_PPC,
 	.TurboClock = NULL,
@@ -7167,12 +7173,12 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Atom_Clover_Trail] = {							/* 20*/
 	.Signature = _Atom_Clover_Trail,
-	.Query = Query_Core2,
-	.Update = PerCore_Core2_Query,
-	.Start = Start_Core2,
-	.Stop = Stop_Core2,
+	.Query = Query_Atom_Bonnell,
+	.Update = PerCore_Atom_Bonnell_Query,
+	.Start = Start_Atom_Bonnell,
+	.Stop = Stop_Atom_Bonnell,
 	.Exit = NULL,
-	.Timer = InitTimer_Core2,
+	.Timer = InitTimer_Atom_Bonnell,
 	.BaseClock = BaseClock_Atom,
 	.ClockMod = ClockMod_Core2_PPC,
 	.TurboClock = NULL,
@@ -7191,12 +7197,12 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Atom_Saltwell] = {							/* 21*/
 	.Signature = _Atom_Saltwell,
-	.Query = Query_Core2,
-	.Update = PerCore_Core2_Query,
-	.Start = Start_Core2,
-	.Stop = Stop_Core2,
+	.Query = Query_Atom_Bonnell,
+	.Update = PerCore_Atom_Bonnell_Query,
+	.Start = Start_Atom_Bonnell,
+	.Stop = Stop_Atom_Bonnell,
 	.Exit = NULL,
-	.Timer = InitTimer_Core2,
+	.Timer = InitTimer_Atom_Bonnell,
 	.BaseClock = BaseClock_Atom,
 	.ClockMod = ClockMod_Core2_PPC,
 	.TurboClock = NULL,
