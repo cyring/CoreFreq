@@ -9665,243 +9665,140 @@ void UpdateEvent(TGrid *grid, DATA_TYPE data)
 	memset(grid->cell.attr, attrib.value, grid->cell.length);
 }
 
-Window *CreateEvent(unsigned long long id)
+Window *CreateEvents(unsigned long long id)
 {
-	Window *wEvent = CreateWindow(	wLayer, id,
-					1, 26, 53, TOP_HEADER_ROW + 3 );
-    if (wEvent != NULL)
-    {	/*	Section:						*/
-	DATA_TYPE data;
+    struct EVENT_LDR_ST {
+	SCANKEY 		quick;
+	ASCII			*item;
+	enum THERM_PWR_EVENTS	mask;
+	unsigned short		theme;
+    } evLdr[4][7] = {
+      {
 	/*	Thermal Sensor						*/
-	data = (const DATA_TYPE){.uint = {EVENT_THERM_SENSOR, 1}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_THM_SENSOR,
-				RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_THERM_SENSOR) ? 1 : 0
-				] ),
-		UpdateEvent, data );
+	{	{BOXKEY_CLR_THM_SENSOR},RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
+		EVENT_THERM_SENSOR,	1				},
 	/*	PROCHOT# Agent						*/
-	data = (const DATA_TYPE){.uint = {EVENT_THERM_PROCHOT, 1}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_THM_PROCHOT,
-				RSC(BOX_EVENT_PROCHOT_AGENT).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_THERM_PROCHOT) ? 1 : 0
-				] ),
-		UpdateEvent, data );
+	{	{BOXKEY_CLR_THM_PROCHOT}, RSC(BOX_EVENT_PROCHOT_AGENT).CODE(),
+		EVENT_THERM_PROCHOT,	1				},
 	/*	Critical Temperature					*/
-	data = (const DATA_TYPE){.uint = {EVENT_THERM_CRIT, 1}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_THM_CRIT,
-				RSC(BOX_EVENT_CRITICAL_TEMP).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_THERM_CRIT) ? 1 : 0
-				] ),
-		UpdateEvent, data );
+	{	{BOXKEY_CLR_THM_CRIT},	RSC(BOX_EVENT_CRITICAL_TEMP).CODE(),
+		EVENT_THERM_CRIT,	1				},
 	/*	Thermal Threshold					*/
-	data = (const DATA_TYPE){.uint = {EVENT_THERM_THOLD, 1}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_THM_THOLD,
-				RSC(BOX_EVENT_THERM_THRESHOLD).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_THERM_THOLD) ? 1 : 0
-				] ),
-		UpdateEvent, data );
+	{	{BOXKEY_CLR_THM_THOLD},	RSC(BOX_EVENT_THERM_THRESHOLD).CODE(),
+		EVENT_THERM_THOLD,	1				},
 	/*	Power Limitation					*/
-	data = (const DATA_TYPE){.uint = {EVENT_POWER_LIMIT, 2}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_PWR_LIMIT,
-				RSC(BOX_EVENT_POWER_LIMIT).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_POWER_LIMIT) ? 2 : 0
-				] ),
-		UpdateEvent, data );
+	{	{BOXKEY_CLR_PWR_LIMIT},	RSC(BOX_EVENT_POWER_LIMIT).CODE(),
+		EVENT_POWER_LIMIT,	2				},
 	/*	Current Limitation					*/
-	data = (const DATA_TYPE){.uint = {EVENT_CURRENT_LIMIT, 2}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_CUR_LIMIT,
-				RSC(BOX_EVENT_CURRENT_LIMIT).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_CURRENT_LIMIT) ? 2 : 0
-				] ),
-		UpdateEvent, data );
+	{	{BOXKEY_CLR_CUR_LIMIT},	RSC(BOX_EVENT_CURRENT_LIMIT).CODE(),
+		EVENT_CURRENT_LIMIT,	2				},
 	/*	Cross Domain Limit.					*/
-	data = (const DATA_TYPE){.uint = {EVENT_CROSS_DOMAIN, 1}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_X_DOMAIN,
-				RSC(BOX_EVENT_CROSS_DOM_LIMIT).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_CROSS_DOMAIN) ? 1 : 0
-				] ),
-		UpdateEvent, data );
-	/*	Section:						*/
-		StoreTCell(	wEvent,
-				SCANKEY_NULL,
-				RSC(BOX_EVENT_SPACE).CODE(),
-				RSC(BOX_EVENT).ATTR()[0] );
+	{	{BOXKEY_CLR_X_DOMAIN},	RSC(BOX_EVENT_CROSS_DOM_LIMIT).CODE(),
+		EVENT_CROSS_DOMAIN,	1				}
+      }, {
 	/*	PROCHOT# Agent						*/
-	data = (const DATA_TYPE){.uint = {EVENT_CORE_HOT, 1}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_CORE_HOT,
-				RSC(BOX_EVENT_PROCHOT_AGENT).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_CORE_HOT) ? 1 : 0
-				] ),
-		UpdateEvent, data );
+	{	{BOXKEY_CLR_CORE_HOT},	RSC(BOX_EVENT_PROCHOT_AGENT).CODE(),
+		EVENT_CORE_HOT ,	1				},
 	/*	Thermal Sensor						*/
-	data = (const DATA_TYPE){.uint = {EVENT_CORE_THM, 1}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_CORE_THM,
-				RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_CORE_THM) ? 1 : 0
-				] ),
-		UpdateEvent, data );
+	{	{BOXKEY_CLR_CORE_THM},	RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
+		EVENT_CORE_THM ,	1				},
 	/*	Package PL1						*/
-	data = (const DATA_TYPE){.uint = {EVENT_CORE_PL1, 2}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_CORE_PL1,
-				RSC(BOX_EVENT_POWER_PL1).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_CORE_PL1) ? 2 : 0
-				] ),
-		UpdateEvent, data );
+	{	{BOXKEY_CLR_CORE_PL1},	RSC(BOX_EVENT_POWER_PL1).CODE(),
+		EVENT_CORE_PL1 ,	2				},
 	/*	Package PL2						*/
-	data = (const DATA_TYPE){.uint = {EVENT_CORE_PL2, 2}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_CORE_PL2,
-				RSC(BOX_EVENT_POWER_PL2).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_CORE_PL2) ? 2 : 0
-				] ),
-		UpdateEvent, data );
+	{	{BOXKEY_CLR_CORE_PL2},	RSC(BOX_EVENT_POWER_PL2).CODE(),
+		EVENT_CORE_PL2 ,	2				},
 	/*	Electrical EDP						*/
-	data = (const DATA_TYPE){.uint = {EVENT_CORE_EDP, 2}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_CORE_EDP,
-				RSC(BOX_EVENT_ELECTRICAL).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_CORE_EDP) ? 2 : 0
-				] ),
-		UpdateEvent, data );
+	{	{BOXKEY_CLR_CORE_EDP},	RSC(BOX_EVENT_ELECTRICAL).CODE(),
+		EVENT_CORE_EDP ,	2				},
 	/*	Max Turbo Limit.					*/
-	data = (const DATA_TYPE){.uint = {EVENT_CORE_TURBO, 2}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_CORE_TURBO,
-				RSC(BOX_EVENT_MAX_TURBO).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_CORE_TURBO) ? 2 : 0
-				] ),
-		UpdateEvent, data );
-	/*	Section:						*/
-		StoreTCell(	wEvent,
-				SCANKEY_NULL,
-				RSC(BOX_EVENT_SPACE).CODE(),
-				RSC(BOX_EVENT).ATTR()[0] );
+	{	{BOXKEY_CLR_CORE_TURBO},RSC(BOX_EVENT_MAX_TURBO).CODE(),
+		EVENT_CORE_TURBO,	2				},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL},		RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE,	0				}
+      }, {
 	/*	PROCHOT# Agent						*/
-	data = (const DATA_TYPE){.uint = {EVENT_GFX_HOT, 1}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_GFX_HOT,
-				RSC(BOX_EVENT_PROCHOT_AGENT).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_GFX_HOT) ? 1 : 0
-				] ),
-		UpdateEvent, data );
+	{	{BOXKEY_CLR_GFX_HOT},	RSC(BOX_EVENT_PROCHOT_AGENT).CODE(),
+		EVENT_GFX_HOT,		1				},
 	/*	Thermal Sensor						*/
-	data = (const DATA_TYPE){.uint = {EVENT_GFX_THM, 1}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_GFX_THM,
-				RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_GFX_THM) ? 1 : 0
-				] ),
-		UpdateEvent, data );
+	{	{BOXKEY_CLR_GFX_THM},	RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
+		EVENT_GFX_THM,		1				},
 	/*	Package PL1						*/
-	data = (const DATA_TYPE){.uint = {EVENT_GFX_PL1, 2}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_GFX_PL1,
-				RSC(BOX_EVENT_POWER_PL1).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_GFX_PL1) ? 2 : 0
-				] ),
-		UpdateEvent, data );
+	{	{BOXKEY_CLR_GFX_PL1},	RSC(BOX_EVENT_POWER_PL1).CODE(),
+		EVENT_GFX_PL1,		2				},
 	/*	Package PL2						*/
-	data = (const DATA_TYPE){.uint = {EVENT_GFX_PL2, 2}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_GFX_PL2,
-				RSC(BOX_EVENT_POWER_PL2).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_GFX_PL2) ? 2 : 0
-				] ),
-		UpdateEvent, data );
+	{	{BOXKEY_CLR_GFX_PL2},	RSC(BOX_EVENT_POWER_PL2).CODE(),
+		EVENT_GFX_PL2,		2				},
 	/*	Electrical EDP						*/
-	data = (const DATA_TYPE){.uint = {EVENT_GFX_EDP, 2}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_GFX_EDP,
-				RSC(BOX_EVENT_ELECTRICAL).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_GFX_EDP) ? 2 : 0
-				] ),
-		UpdateEvent, data );
-	/*	Section:						*/
-		StoreTCell(	wEvent,
-				SCANKEY_NULL,
-				RSC(BOX_EVENT_SPACE).CODE(),
-				RSC(BOX_EVENT).ATTR()[0] );
+	{	{BOXKEY_CLR_GFX_EDP},	RSC(BOX_EVENT_ELECTRICAL).CODE(),
+		EVENT_GFX_EDP,		2				},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL},		RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE,	0				},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL},		RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE,	0				}
+      }, {
 	/*	PROCHOT# Agent						*/
-	data = (const DATA_TYPE){.uint = {EVENT_RING_HOT, 1}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_RING_HOT,
-				RSC(BOX_EVENT_PROCHOT_AGENT).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_RING_HOT) ? 1 : 0
-				] ),
-		UpdateEvent, data );
+	{	{BOXKEY_CLR_RING_HOT},	RSC(BOX_EVENT_PROCHOT_AGENT).CODE(),
+		EVENT_RING_HOT ,	1				},
 	/*	Thermal Sensor						*/
-	data = (const DATA_TYPE){.uint = {EVENT_RING_THM, 1}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_RING_THM,
-				RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_RING_THM) ? 1 : 0
-				] ),
-		UpdateEvent, data );
+	{	{BOXKEY_CLR_RING_THM},	RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
+		EVENT_RING_THM ,	1				},
 	/*	Package PL1						*/
-	data = (const DATA_TYPE){.uint = {EVENT_RING_PL1, 2}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_RING_PL1,
-				RSC(BOX_EVENT_POWER_PL1).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_RING_PL1) ? 2 : 0
-				] ),
-		UpdateEvent, data );
+	{	{BOXKEY_CLR_RING_PL1},	RSC(BOX_EVENT_POWER_PL1).CODE(),
+		EVENT_RING_PL1 ,	2				},
 	/*	Package PL2						*/
-	data = (const DATA_TYPE){.uint = {EVENT_RING_PL2, 2}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_RING_PL2,
-				RSC(BOX_EVENT_POWER_PL2).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_RING_PL2) ? 2 : 0
-				] ),
-		UpdateEvent, data );
+	{	{BOXKEY_CLR_RING_PL2},	RSC(BOX_EVENT_POWER_PL2).CODE(),
+		EVENT_RING_PL2 ,	2				},
 	/*	Electrical EDP						*/
-	data = (const DATA_TYPE){.uint = {EVENT_RING_EDP, 2}};
-	GridCall( StoreTCell(	wEvent,
-				BOXKEY_CLR_RING_EDP,
-				RSC(BOX_EVENT_ELECTRICAL).CODE(),
-				RSC(BOX_EVENT).ATTR()[
-				(ProcessorEvents & EVENT_RING_EDP) ? 2 : 0
-				] ),
-		UpdateEvent, data );
+	{	{BOXKEY_CLR_RING_EDP},	RSC(BOX_EVENT_ELECTRICAL).CODE(),
+		EVENT_RING_EDP ,	2				},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL},		RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE,	0				},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL},		RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE,	0				}
+      }
+    };
+	const size_t nmemb = sizeof(evLdr) / sizeof(struct EVENT_LDR_ST);
 
+	Window *wEvent = CreateWindow(	wLayer, id,
+					4, nmemb / 4, 1, TOP_HEADER_ROW + 3 );
+    if (wEvent != NULL)
+    {
+	DATA_TYPE data;
+	CUINT col, row;
+      for (row = 0; row < 7; row++) {
+	for (col = 0; col < 4; col++)
+	{
+	const unsigned short theme = ProcessorEvents & evLdr[col][row].mask ?
+					evLdr[col][row].theme : 0;
+		TGrid *grid = StoreTCell(wEvent,
+					evLdr[col][row].quick.key,
+					evLdr[col][row].item,
+					RSC(BOX_EVENT).ATTR()[theme]);
+
+	    if (evLdr[col][row].mask != EVENT_THERM_NONE)
+	    {
+		data = (const DATA_TYPE){.uint = {evLdr[col][row].mask, theme}};
+		GridCall(grid, UpdateEvent, data);
+	    }
+	}
+      }
 	StoreWindow(wEvent, .title, (char*) RSC(BOX_EVENT_TITLE).CODE());
 
 	StoreWindow(wEvent,	.key.Enter,	Enter_StickyCell);
+	StoreWindow(wEvent,	.key.Left,	MotionLeft_Win);
+	StoreWindow(wEvent,	.key.Right,	MotionRight_Win);
 	StoreWindow(wEvent,	.key.Down,	MotionDown_Win);
 	StoreWindow(wEvent,	.key.Up,	MotionUp_Win);
-	StoreWindow(wEvent,	.key.Home,	MotionTop_Win);
-	StoreWindow(wEvent,	.key.End,	MotionBottom_Win);
+	StoreWindow(wEvent,	.key.PgUp,	MotionPgUp_Win);
+	StoreWindow(wEvent,	.key.PgDw,	MotionPgDw_Win);
+	StoreWindow(wEvent,	.key.Home,	MotionReset_Win);
+	StoreWindow(wEvent,	.key.End,	MotionEnd_Cell);
 
 	StoreWindow(wEvent,	.key.WinLeft,	MotionOriginLeft_Win);
 	StoreWindow(wEvent,	.key.WinRight,	MotionOriginRight_Win);
@@ -11274,7 +11171,7 @@ int Shortcut(SCANKEY *scan)
     {
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL) {
-		AppendWindow(CreateEvent(scan->key), &winList);
+		AppendWindow(CreateEvents(scan->key), &winList);
 	} else {
 		SetHead(&winList, win);
 	}
