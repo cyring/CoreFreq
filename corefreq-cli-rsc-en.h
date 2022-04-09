@@ -1690,6 +1690,7 @@
 #define RSC_BOX_EVENT_ELECTRICAL_CODE_EN	" Electrical EDP "
 #define RSC_BOX_EVENT_MAX_TURBO_CODE_EN 	" Max Turbo      "
 #define RSC_BOX_EVENT_THERMAL_LOG_CODE_EN	" Thermal Log    "
+#define RSC_BOX_EVENT_ALL_OF_THEM_CODE_EN	"  < Clear All>  "
 
 #define RSC_BOX_STATE_UNSPECIFIED_CODE_EN	"        UNSPECIFIED        "
 

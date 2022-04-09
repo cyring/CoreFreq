@@ -1177,6 +1177,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_EVENT_ELECTRICAL_CODE_FR	" EDP ""\xa9""lectrique "
 #define RSC_BOX_EVENT_MAX_TURBO_CODE_FR 	" Turbo Max      "
 #define RSC_BOX_EVENT_THERMAL_LOG_CODE_FR	" Log thermique  "
+#define RSC_BOX_EVENT_ALL_OF_THEM_CODE_FR	"< Tout effacer >"
 
 #define RSC_BOX_STATE_UNSPECIFIED_CODE_FR	"        "		\
 						"IND""\x89""TERMIN""\x89"\

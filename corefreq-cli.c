@@ -9655,18 +9655,26 @@ Window *CreateSelectIdle(unsigned long long id)
 	return wIdle;
 }
 
-void UpdateEvent(TGrid *grid, DATA_TYPE data)
+void UpdateEvent_Thm_1(TGrid *grid, DATA_TYPE data)
 {
-	const enum THERM_PWR_EVENTS event = data.uint[0];
-	const unsigned int thm = data.uint[1];
+	const enum THERM_PWR_EVENTS event = data.ullong;
 	const ATTRIBUTE attrib = RSC(BOX_EVENT).ATTR()[
-					(ProcessorEvents & event) ? thm : 0
+					(ProcessorEvents & event) ? 1 : 0
+				];
+	memset(grid->cell.attr, attrib.value, grid->cell.length);
+}
+
+void UpdateEvent_Thm_2(TGrid *grid, DATA_TYPE data)
+{
+	const enum THERM_PWR_EVENTS event = data.ullong;
+	const ATTRIBUTE attrib = RSC(BOX_EVENT).ATTR()[
+					(ProcessorEvents & event) ? 2 : 0
 				];
 	memset(grid->cell.attr, attrib.value, grid->cell.length);
 }
 
 #define EVENT_DOMAINS	4
-#define EVENT_SECTIONS	10
+#define EVENT_SECTIONS	11
 
 Window *CreateEvents(unsigned long long id)
 {
@@ -9678,14 +9686,17 @@ Window *CreateEvents(unsigned long long id)
     } evLdr[EVENT_DOMAINS][EVENT_SECTIONS] = {
       {
 	/*	Thermal Sensor						*/
-	{	{BOXKEY_CLR_THM_SENSOR},RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
-		EVENT_THERM_SENSOR	, 1				},
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
+		EVENT_THERMAL_STS	, 1				},
 	/*	PROCHOT# Agent						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_PROCHOT_STS).CODE(),
 		EVENT_PROCHOT_STS	, 1				},
 	/*	PROCHOT# Agent Log					*/
 	{	{BOXKEY_CLR_PROCHOT_LOG}, RSC(BOX_EVENT_PROCHOT_LOG).CODE(),
 		EVENT_PROCHOT_LOG	, 1				},
+	/*	Thermal Log						*/
+	{	{BOXKEY_CLR_THM_SENSOR} , RSC(BOX_EVENT_THERMAL_LOG).CODE(),
+		EVENT_THERMAL_LOG	, 1				},
 	/*	Critical Temperature					*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_CRITICAL_TMP).CODE(),
 		EVENT_CRITIC_TMP	, 1				},
@@ -9737,6 +9748,9 @@ Window *CreateEvents(unsigned long long id)
 		EVENT_THERM_NONE	, 0				},
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE	, 0				},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
 		EVENT_THERM_NONE	, 0				}
       }, {
 	/*	Thermal Sensor						*/
@@ -9768,6 +9782,9 @@ Window *CreateEvents(unsigned long long id)
 		EVENT_THERM_NONE	, 0				},
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE	, 0				},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
 		EVENT_THERM_NONE	, 0				}
       }, {
 	/*	Thermal Sensor						*/
@@ -9775,7 +9792,7 @@ Window *CreateEvents(unsigned long long id)
 		EVENT_RING_THM_STS	, 1				},
 	/*	PROCHOT# Agent						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_PROCHOT_STS).CODE(),
-		EVENT_RING_HOT_STS	, 0				},
+		EVENT_RING_HOT_STS	, 1				},
 	/*	PROCHOT# Agent Log					*/
 	{	{BOXKEY_CLR_RING_HOT}	, RSC(BOX_EVENT_PROCHOT_LOG).CODE(),
 		EVENT_RING_HOT_LOG	, 1				},
@@ -9799,6 +9816,9 @@ Window *CreateEvents(unsigned long long id)
 		EVENT_THERM_NONE	, 0				},
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE	, 0				},
+	/*	Clear all events					*/
+	{	{BOXKEY_CLR_ALL_EVENTS} , RSC(BOX_EVENT_ALL_OF_THEM).CODE(),
 		EVENT_THERM_NONE	, 0				}
       }
     };
@@ -9809,7 +9829,6 @@ Window *CreateEvents(unsigned long long id)
 					6, TOP_HEADER_ROW + 2 );
     if (wEvent != NULL)
     {
-	DATA_TYPE data;
 	CUINT col, row;
       for (row = 0; row < EVENT_SECTIONS; row++) {
 	for (col = 0; col < EVENT_DOMAINS; col++) {
@@ -9823,8 +9842,14 @@ Window *CreateEvents(unsigned long long id)
 
 	    if (evLdr[col][row].mask != EVENT_THERM_NONE)
 	    {
-		data = (const DATA_TYPE){.uint = {evLdr[col][row].mask, theme}};
-		GridCall(grid, UpdateEvent, data);
+		switch (evLdr[col][row].theme) {
+		case 1:
+			GridCall(grid, UpdateEvent_Thm_1, evLdr[col][row].mask);
+			break;
+		case 2:
+			GridCall(grid, UpdateEvent_Thm_2, evLdr[col][row].mask);
+			break;
+		}
 	    }
 	}
       }
@@ -13435,6 +13460,14 @@ int Shortcut(SCANKEY *scan)
     }
     break;
 
+    case BOXKEY_CLR_ALL_EVENTS:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_CLEAR_EVENTS,
+				EVENT_ALL_OF_THEM );
+	}
+    break;
+
     case BOXKEY_CLR_THM_SENSOR:
     case BOXKEY_CLR_PROCHOT_LOG:
     case BOXKEY_CLR_THM_CRIT:
@@ -13459,8 +13492,8 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_CLR_RING_PL2:
     case BOXKEY_CLR_RING_EDP:
     {
-	const enum EVENT_ENUM lshift = (scan->key & CLEAR_EVENT_MASK) >> 2;
-	const enum THERM_PWR_EVENTS event = 0x1 << lshift;
+	const enum EVENT_ENUM lshift = (scan->key & CLEAR_EVENT_MASK) >> 1;
+	const enum THERM_PWR_EVENTS event = 0x1LLU << lshift;
       if (!RING_FULL(RW(Shm)->Ring[0])) {
 	RING_WRITE(RW(Shm)->Ring[0], COREFREQ_IOCTL_CLEAR_EVENTS, event);
       }
