@@ -9665,6 +9665,9 @@ void UpdateEvent(TGrid *grid, DATA_TYPE data)
 	memset(grid->cell.attr, attrib.value, grid->cell.length);
 }
 
+#define EVENT_DOMAINS	4
+#define EVENT_SECTIONS	10
+
 Window *CreateEvents(unsigned long long id)
 {
     struct EVENT_LDR_ST {
@@ -9672,20 +9675,29 @@ Window *CreateEvents(unsigned long long id)
 	ASCII			*item;
 	enum THERM_PWR_EVENTS	mask;
 	unsigned short		theme;
-    } evLdr[4][7] = {
+    } evLdr[EVENT_DOMAINS][EVENT_SECTIONS] = {
       {
 	/*	Thermal Sensor						*/
 	{	{BOXKEY_CLR_THM_SENSOR},RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
 		EVENT_THERM_SENSOR	, 1				},
 	/*	PROCHOT# Agent						*/
-	{	{BOXKEY_CLR_THM_PROCHOT}, RSC(BOX_EVENT_PROCHOT_AGENT).CODE(),
-		EVENT_THERM_PROCHOT	, 1				},
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_PROCHOT_STS).CODE(),
+		EVENT_PROCHOT_STS	, 1				},
+	/*	PROCHOT# Agent Log					*/
+	{	{BOXKEY_CLR_PROCHOT_LOG}, RSC(BOX_EVENT_PROCHOT_LOG).CODE(),
+		EVENT_PROCHOT_LOG	, 1				},
 	/*	Critical Temperature					*/
-	{	{BOXKEY_CLR_THM_CRIT}	, RSC(BOX_EVENT_CRITICAL_TEMP).CODE(),
-		EVENT_THERM_CRIT	, 1				},
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_CRITICAL_TMP).CODE(),
+		EVENT_CRITIC_TMP	, 1				},
+	/*	Critical Temperature Log				*/
+	{	{BOXKEY_CLR_THM_CRIT}	, RSC(BOX_EVENT_CRITICAL_LOG).CODE(),
+		EVENT_CRITIC_LOG	, 2				},
 	/*	Thermal Threshold					*/
-	{	{BOXKEY_CLR_THM_THOLD}	, RSC(BOX_EVENT_THERM_THRESHOLD).CODE(),
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_THERM_THRESHOLD).CODE(),
 		EVENT_THERM_THOLD	, 1				},
+	/*	Thermal Threshold Log					*/
+	{	{BOXKEY_CLR_THM_THOLD}	, RSC(BOX_EVENT_THRESHOLD_LOG).CODE(),
+		EVENT_THRESHOLD_LOG	, 2				},
 	/*	Power Limitation					*/
 	{	{BOXKEY_CLR_PWR_LIMIT}	, RSC(BOX_EVENT_POWER_LIMIT).CODE(),
 		EVENT_POWER_LIMIT	, 2				},
@@ -9698,13 +9710,16 @@ Window *CreateEvents(unsigned long long id)
       }, {
 	/*	Thermal Sensor						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
-		EVENT_CORE_STS		, 1				},
+		EVENT_CORE_THM_STS	, 1				},
 	/*	PROCHOT# Agent						*/
-	{	{BOXKEY_CLR_CORE_HOT}	, RSC(BOX_EVENT_PROCHOT_AGENT).CODE(),
-		EVENT_CORE_HOT		, 1				},
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_PROCHOT_STS).CODE(),
+		EVENT_CORE_HOT_STS	, 1				},
+	/*	PROCHOT# Agent Log					*/
+	{	{BOXKEY_CLR_CORE_HOT}	, RSC(BOX_EVENT_PROCHOT_LOG).CODE(),
+		EVENT_CORE_HOT_LOG	, 1				},
 	/*	Thermal Log						*/
 	{	{BOXKEY_CLR_CORE_THM}	, RSC(BOX_EVENT_THERMAL_LOG).CODE(),
-		EVENT_CORE_THM		, 1				},
+		EVENT_CORE_THM_LOG	, 1				},
 	/*	Package PL1						*/
 	{	{BOXKEY_CLR_CORE_PL1}	, RSC(BOX_EVENT_POWER_PL1).CODE(),
 		EVENT_CORE_PL1		, 2				},
@@ -9716,17 +9731,26 @@ Window *CreateEvents(unsigned long long id)
 		EVENT_CORE_EDP		, 2				},
 	/*	Max Turbo Limit.					*/
 	{	{BOXKEY_CLR_CORE_TURBO} , RSC(BOX_EVENT_MAX_TURBO).CODE(),
-		EVENT_CORE_TURBO	, 2				}
+		EVENT_CORE_TURBO	, 2				},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE	, 0				},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE	, 0				}
       }, {
 	/*	Thermal Sensor						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
-		EVENT_GFX_STS		, 1				},
+		EVENT_GFX_THM_STS	, 1				},
 	/*	PROCHOT# Agent						*/
-	{	{BOXKEY_CLR_GFX_HOT}	, RSC(BOX_EVENT_PROCHOT_AGENT).CODE(),
-		EVENT_GFX_HOT		, 1				},
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_PROCHOT_STS).CODE(),
+		EVENT_GFX_HOT_STS	, 1				},
+	/*	PROCHOT# Agent Log					*/
+	{	{BOXKEY_CLR_GFX_HOT}	, RSC(BOX_EVENT_PROCHOT_LOG).CODE(),
+		EVENT_GFX_HOT_LOG	, 1				},
 	/*	Thermal Log						*/
 	{	{BOXKEY_CLR_GFX_THM}	, RSC(BOX_EVENT_THERMAL_LOG).CODE(),
-		EVENT_GFX_THM		, 1				},
+		EVENT_GFX_THM_LOG	, 1				},
 	/*	Package PL1						*/
 	{	{BOXKEY_CLR_GFX_PL1}	, RSC(BOX_EVENT_POWER_PL1).CODE(),
 		EVENT_GFX_PL1		, 2				},
@@ -9738,17 +9762,26 @@ Window *CreateEvents(unsigned long long id)
 		EVENT_GFX_EDP		, 2				},
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE	, 0				},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE	, 0				},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
 		EVENT_THERM_NONE	, 0				}
       }, {
 	/*	Thermal Sensor						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
-		EVENT_RING_STS		, 1				},
+		EVENT_RING_THM_STS	, 1				},
 	/*	PROCHOT# Agent						*/
-	{	{BOXKEY_CLR_RING_HOT}	, RSC(BOX_EVENT_PROCHOT_AGENT).CODE(),
-		EVENT_RING_HOT		, 1				},
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_PROCHOT_STS).CODE(),
+		EVENT_RING_HOT_STS	, 0				},
+	/*	PROCHOT# Agent Log					*/
+	{	{BOXKEY_CLR_RING_HOT}	, RSC(BOX_EVENT_PROCHOT_LOG).CODE(),
+		EVENT_RING_HOT_LOG	, 1				},
 	/*	Thermal Log						*/
 	{	{BOXKEY_CLR_RING_THM}	, RSC(BOX_EVENT_THERMAL_LOG).CODE(),
-		EVENT_RING_THM		, 1				},
+		EVENT_RING_THM_LOG	, 1				},
 	/*	Package PL1						*/
 	{	{BOXKEY_CLR_RING_PL1}	, RSC(BOX_EVENT_POWER_PL1).CODE(),
 		EVENT_RING_PL1		, 2				},
@@ -9760,19 +9793,26 @@ Window *CreateEvents(unsigned long long id)
 		EVENT_RING_EDP		, 2				},
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE	, 0				},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE	, 0				},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
 		EVENT_THERM_NONE	, 0				}
       }
     };
 	const size_t nmemb = sizeof(evLdr) / sizeof(struct EVENT_LDR_ST);
 
 	Window *wEvent = CreateWindow(	wLayer, id,
-					4, nmemb / 4, 6, TOP_HEADER_ROW + 2 );
+					EVENT_DOMAINS, nmemb / EVENT_DOMAINS,
+					6, TOP_HEADER_ROW + 2 );
     if (wEvent != NULL)
     {
 	DATA_TYPE data;
 	CUINT col, row;
-      for (row = 0; row < 7; row++) {
-	for (col = 0; col < 4; col++) {
+      for (row = 0; row < EVENT_SECTIONS; row++) {
+	for (col = 0; col < EVENT_DOMAINS; col++) {
 	const unsigned short theme = ProcessorEvents & evLdr[col][row].mask ?
 					evLdr[col][row].theme : 0;
 
@@ -9814,6 +9854,9 @@ Window *CreateEvents(unsigned long long id)
     }
 	return wEvent;
 }
+
+#undef EVENT_DOMAINS
+#undef EVENT_SECTIONS
 
 Window *CreateRecorder(unsigned long long id)
 {
@@ -13393,7 +13436,7 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case BOXKEY_CLR_THM_SENSOR:
-    case BOXKEY_CLR_THM_PROCHOT:
+    case BOXKEY_CLR_PROCHOT_LOG:
     case BOXKEY_CLR_THM_CRIT:
     case BOXKEY_CLR_THM_THOLD:
     case BOXKEY_CLR_PWR_LIMIT:
