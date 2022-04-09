@@ -1883,7 +1883,8 @@
 {									\
 	HDK,								\
 	LMK,								\
-	HYK								\
+	HYK,								\
+	LCK								\
 }
 
 #define RSC_CREATE_RECORDER_THM_DFLT_ATTR				\

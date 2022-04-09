@@ -9819,7 +9819,7 @@ Window *CreateEvents(unsigned long long id)
 		EVENT_THERM_NONE	, 0				},
 	/*	Clear all events					*/
 	{	{BOXKEY_CLR_ALL_EVENTS} , RSC(BOX_EVENT_ALL_OF_THEM).CODE(),
-		EVENT_THERM_NONE	, 0				}
+		EVENT_ALL_OF_THEM	, 3				}
       }
     };
 	const size_t nmemb = sizeof(evLdr) / sizeof(struct EVENT_LDR_ST);
@@ -9832,9 +9832,17 @@ Window *CreateEvents(unsigned long long id)
 	CUINT col, row;
       for (row = 0; row < EVENT_SECTIONS; row++) {
 	for (col = 0; col < EVENT_DOMAINS; col++) {
-	const unsigned short theme = ProcessorEvents & evLdr[col][row].mask ?
-					evLdr[col][row].theme : 0;
+		unsigned short theme;
 
+		switch (evLdr[col][row].quick.key) {
+		case BOXKEY_CLR_ALL_EVENTS:
+			theme = evLdr[col][row].theme;
+			break;
+		default:
+			theme = ProcessorEvents & evLdr[col][row].mask ?
+				evLdr[col][row].theme : 0;
+			break;
+		}
 		TGrid *grid = StoreTCell(wEvent,
 					evLdr[col][row].quick.key,
 					evLdr[col][row].item,

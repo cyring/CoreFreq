@@ -5,7 +5,7 @@
  */
 
 #define RSC_THEME_USR1_CODE		/* 72 chars */			\
-"        Strawberry theme by CyrIng.  Updated by CyrIng - Mar. 2022      "
+"        Strawberry theme by CyrIng.  Updated by CyrIng - Apr. 2022      "
 
 #define RSC_UI_THM_USR1_ATTR						\
 {									\
@@ -1883,7 +1883,8 @@
 {									\
 	LWK,								\
 	LMK,								\
-	HYK								\
+	HYK,								\
+	LCK								\
 }
 
 #define RSC_CREATE_RECORDER_THM_USR1_ATTR				\

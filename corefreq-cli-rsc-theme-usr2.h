@@ -5,7 +5,7 @@
  */
 
 #define RSC_THEME_USR2_CODE		/* 72 chars */			\
-"        Transparent theme by leaty.  Updated by CyrIng - Mar. 2022      "
+"        Transparent theme by leaty.  Updated by CyrIng - Apr. 2022      "
 
 #define RSC_UI_THM_USR2_ATTR						\
 {									\
@@ -1883,7 +1883,8 @@
 {									\
 	LWK,								\
 	LMK,								\
-	HYK								\
+	HYK,								\
+	LCK								\
 }
 
 #define RSC_CREATE_RECORDER_THM_USR2_ATTR				\
