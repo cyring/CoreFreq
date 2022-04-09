@@ -1159,25 +1159,21 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_OPS_UNREGISTER_COND1_CODE_FR	"         < D""\xa9""s" \
 						"enregistrer >         "
 
-#define RSC_BOX_EVENT_TITLE_CODE_FR		" Effacer "	\
-						"\x89""v""\xa8""nement "
+#define RSC_BOX_EVENT_TITLE_CODE_FR		RSC_BOX_EVENT_TITLE_CODE_EN
 
-#define RSC_BOX_EVENT_SPACE_CODE_FR		"                         "
-#define RSC_BOX_EVENT_THERMAL_SENSOR_CODE_FR	"    Capteur thermique    "
-#define RSC_BOX_EVENT_PROCHOT_AGENT_CODE_FR	"      Agent PROCHOT#     "
-#define RSC_BOX_EVENT_CRITICAL_TEMP_CODE_FR	"   Temp""\xa9""rature" \
-						" critique  "
-
-#define RSC_BOX_EVENT_THERM_THRESHOLD_CODE_FR	"     Seuil thermique     "
-#define RSC_BOX_EVENT_POWER_LIMIT_CODE_FR	" Limitation de puissance "
-#define RSC_BOX_EVENT_CURRENT_LIMIT_CODE_FR	"  Limitation de courant  "
-#define RSC_BOX_EVENT_CROSS_DOM_LIMIT_CODE_FR	" Limitation interdomaine "
-#define RSC_BOX_EVENT_POWER_PL1_CODE_FR 	"      PL1 du Package     "
-#define RSC_BOX_EVENT_POWER_PL2_CODE_FR 	"      PL2 du Package     "
-#define RSC_BOX_EVENT_ELECTRICAL_CODE_FR	"      EDP " \
-						"\xa9""lectrique     "
-
-#define RSC_BOX_EVENT_MAX_TURBO_CODE_FR 	"  Limitation Turbo Max.  "
+#define RSC_BOX_EVENT_SPACE_CODE_FR		"                "
+#define RSC_BOX_EVENT_THERMAL_SENSOR_CODE_FR	" Capteur therm. "
+#define RSC_BOX_EVENT_PROCHOT_AGENT_CODE_FR	" PROCHOT        "
+#define RSC_BOX_EVENT_CRITICAL_TEMP_CODE_FR	" Temp. critique "
+#define RSC_BOX_EVENT_THERM_THRESHOLD_CODE_FR	" Seuil thermique"
+#define RSC_BOX_EVENT_POWER_LIMIT_CODE_FR	" Puissance limit"
+#define RSC_BOX_EVENT_CURRENT_LIMIT_CODE_FR	" Courant limit""\xa9"" "
+#define RSC_BOX_EVENT_CROSS_DOM_LIMIT_CODE_FR	" Interdomaine   "
+#define RSC_BOX_EVENT_POWER_PL1_CODE_FR 	" PL1 du Package "
+#define RSC_BOX_EVENT_POWER_PL2_CODE_FR 	" PL2 du Package "
+#define RSC_BOX_EVENT_ELECTRICAL_CODE_FR	" EDP ""\xa9""lectrique "
+#define RSC_BOX_EVENT_MAX_TURBO_CODE_FR 	" Turbo Max      "
+#define RSC_BOX_EVENT_THERMAL_LOG_CODE_FR	" Log thermique  "
 
 #define RSC_BOX_STATE_UNSPECIFIED_CODE_FR	"        "		\
 						"IND""\x89""TERMIN""\x89"\

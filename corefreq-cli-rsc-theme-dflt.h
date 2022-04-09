@@ -5,7 +5,7 @@
  */
 
 #define RSC_THEME_DFLT_CODE		/* 72 chars */			\
-"           Default theme by CyrIng.  Since 2015; updated Mar. 2022      "
+"           Default theme by CyrIng.  Since 2015; updated Apr. 2022      "
 
 #define RSC_UI_THM_DFLT_ATTR						\
 {									\
@@ -1881,7 +1881,7 @@
 
 #define RSC_BOX_EVENT_THM_DFLT_ATTR					\
 {									\
-	LWK,								\
+	HDK,								\
 	LMK,								\
 	HYK								\
 }

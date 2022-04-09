@@ -1671,20 +1671,22 @@
 #define RSC_BOX_OPS_UNREGISTER_COND1_CODE_EN \
 					"           < Unregister >           "
 
-#define RSC_BOX_EVENT_TITLE_CODE_EN		" Clear Event "
+#define RSC_BOX_EVENT_TITLE_CODE_EN \
+		" DTS ----------- Core ---------- GFX ----------- Ring "
 
-#define RSC_BOX_EVENT_SPACE_CODE_EN		"                        "
-#define RSC_BOX_EVENT_THERMAL_SENSOR_CODE_EN	"     Thermal Sensor     "
-#define RSC_BOX_EVENT_PROCHOT_AGENT_CODE_EN	"     PROCHOT# Agent     "
-#define RSC_BOX_EVENT_CRITICAL_TEMP_CODE_EN	"  Critical Temperature  "
-#define RSC_BOX_EVENT_THERM_THRESHOLD_CODE_EN	"   Thermal Threshold    "
-#define RSC_BOX_EVENT_POWER_LIMIT_CODE_EN	"    Power Limitation    "
-#define RSC_BOX_EVENT_CURRENT_LIMIT_CODE_EN	"   Current Limitation   "
-#define RSC_BOX_EVENT_CROSS_DOM_LIMIT_CODE_EN	"   Cross Domain Limit.  "
-#define RSC_BOX_EVENT_POWER_PL1_CODE_EN 	"       Package PL1      "
-#define RSC_BOX_EVENT_POWER_PL2_CODE_EN 	"       Package PL2      "
-#define RSC_BOX_EVENT_ELECTRICAL_CODE_EN	"     Electrical EDP     "
-#define RSC_BOX_EVENT_MAX_TURBO_CODE_EN 	"    Max Turbo Limit.    "
+#define RSC_BOX_EVENT_SPACE_CODE_EN		"                "
+#define RSC_BOX_EVENT_THERMAL_SENSOR_CODE_EN	" Thermal Sensor "
+#define RSC_BOX_EVENT_PROCHOT_AGENT_CODE_EN	" PROCHOT        "
+#define RSC_BOX_EVENT_CRITICAL_TEMP_CODE_EN	" Critical Temp. "
+#define RSC_BOX_EVENT_THERM_THRESHOLD_CODE_EN	" Therm Threshold"
+#define RSC_BOX_EVENT_POWER_LIMIT_CODE_EN	" Power Limit.   "
+#define RSC_BOX_EVENT_CURRENT_LIMIT_CODE_EN	" Current Limit. "
+#define RSC_BOX_EVENT_CROSS_DOM_LIMIT_CODE_EN	" XDomain Limit. "
+#define RSC_BOX_EVENT_POWER_PL1_CODE_EN 	" Package PL1    "
+#define RSC_BOX_EVENT_POWER_PL2_CODE_EN 	" Package PL2    "
+#define RSC_BOX_EVENT_ELECTRICAL_CODE_EN	" Electrical EDP "
+#define RSC_BOX_EVENT_MAX_TURBO_CODE_EN 	" Max Turbo      "
+#define RSC_BOX_EVENT_THERMAL_LOG_CODE_EN	" Thermal Log    "
 
 #define RSC_BOX_STATE_UNSPECIFIED_CODE_EN	"        UNSPECIFIED        "
 
