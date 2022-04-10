@@ -306,8 +306,10 @@ typedef union {
 #define LMK	{.fg = MAGENTA, .bg = BLACK}
 #define LCK	{.fg = CYAN,	.bg = BLACK}
 #define LWK	{.fg = WHITE,	.bg = BLACK}
+#define LKY	{.fg = BLACK,	.bg = YELLOW}
 #define LWB	{.fg = WHITE,	.bg = BLUE}
 #define LKM	{.fg = BLACK,	.bg = MAGENTA}
+#define LWM	{.fg = WHITE,	.bg = MAGENTA}
 #define LKC	{.fg = BLACK,	.bg = CYAN}
 #define LKW	{.fg = BLACK,	.bg = WHITE}
 #define LRW	{.fg = RED,	.bg = WHITE}

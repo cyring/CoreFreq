@@ -8145,19 +8145,19 @@ void ThermalMonitor_IA32(CORE_RO *Core)
 		}
 	}
 	Core->PowerThermal.Events = \
-		  (ThermStatus.Thermal_Status	<< LSHIFT_THERMAL_STS)
-		| (ThermStatus.Thermal_Log	<< LSHIFT_THERMAL_LOG)
-		| (ThermStatus.PROCHOT_Event	<< LSHIFT_PROCHOT_STS)
-		| (ThermStatus.PROCHOT_Log	<< LSHIFT_PROCHOT_LOG)
-		| (ThermStatus.CriticalTemp	<< LSHIFT_CRITIC_TMP)
-		| (ThermStatus.CriticalTemp_Log << LSHIFT_CRITIC_LOG)
-		| ((ThermStatus.Threshold1
-		  | ThermStatus.Threshold2)	<< LSHIFT_THERM_THOLD)
-		| ((ThermStatus.Threshold1_Log
-		  | ThermStatus.Threshold2_Log) << LSHIFT_THRESHOLD_LOG)
-		| (ThermStatus.PwrLimit_Log	<< LSHIFT_POWER_LIMIT)
-		| (ThermStatus.CurLimit_Log	<< LSHIFT_CURRENT_LIMIT)
-		| ((Bit64)ThermStatus.XDomLimit_Log << LSHIFT_CROSS_DOMAIN);
+		  ((Bit64) ThermStatus.Thermal_Status	<< LSHIFT_THERMAL_STS)
+		| ((Bit64) ThermStatus.Thermal_Log	<< LSHIFT_THERMAL_LOG)
+		| ((Bit64) ThermStatus.PROCHOT_Event	<< LSHIFT_PROCHOT_STS)
+		| ((Bit64) ThermStatus.PROCHOT_Log	<< LSHIFT_PROCHOT_LOG)
+		| ((Bit64) ThermStatus.CriticalTemp	<< LSHIFT_CRITIC_TMP)
+		| ((Bit64) ThermStatus.CriticalTemp_Log << LSHIFT_CRITIC_LOG)
+		| ((Bit64) (ThermStatus.Threshold1
+			  | ThermStatus.Threshold2)	<< LSHIFT_THERM_THOLD)
+		| ((Bit64) (ThermStatus.Threshold1_Log
+			  | ThermStatus.Threshold2_Log) << LSHIFT_THRESHOLD_LOG)
+		| ((Bit64) ThermStatus.PwrLimit_Log	<< LSHIFT_POWER_LIMIT)
+		| ((Bit64) ThermStatus.CurLimit_Log	<< LSHIFT_CURRENT_LIMIT)
+		| ((Bit64) ThermStatus.XDomLimit_Log	<< LSHIFT_CROSS_DOMAIN);
 
       if (PUBLIC(RO(Proc))->Features.Power.EAX.PTM
       && (Core->Bind == PUBLIC(RO(Proc))->Service.Core))
@@ -8225,17 +8225,17 @@ void ThermalMonitor_IA32(CORE_RO *Core)
 		}
 	}
 	PUBLIC(RO(Proc))->PowerThermal.Events = \
-		  (ThermStatus.Thermal_Status	<< LSHIFT_THERMAL_STS)
-		| (ThermStatus.Thermal_Log	<< LSHIFT_THERMAL_LOG)
-		| (ThermStatus.PROCHOT_Event	<< LSHIFT_PROCHOT_STS)
-		| (ThermStatus.PROCHOT_Log	<< LSHIFT_PROCHOT_LOG)
-		| (ThermStatus.CriticalTemp	<< LSHIFT_CRITIC_TMP)
-		| (ThermStatus.CriticalTemp_Log << LSHIFT_CRITIC_LOG)
-		| ((ThermStatus.Threshold1
-		  | ThermStatus.Threshold2)	<< LSHIFT_THERM_THOLD)
-		| ((ThermStatus.Threshold1_Log
-		  | ThermStatus.Threshold2_Log) << LSHIFT_THRESHOLD_LOG)
-		| ((Bit64)ThermStatus.PwrLimit_Log << LSHIFT_POWER_LIMIT);
+		  ((Bit64) ThermStatus.Thermal_Status	<< LSHIFT_THERMAL_STS)
+		| ((Bit64) ThermStatus.Thermal_Log	<< LSHIFT_THERMAL_LOG)
+		| ((Bit64) ThermStatus.PROCHOT_Event	<< LSHIFT_PROCHOT_STS)
+		| ((Bit64) ThermStatus.PROCHOT_Log	<< LSHIFT_PROCHOT_LOG)
+		| ((Bit64) ThermStatus.CriticalTemp	<< LSHIFT_CRITIC_TMP)
+		| ((Bit64) ThermStatus.CriticalTemp_Log << LSHIFT_CRITIC_LOG)
+		| ((Bit64) (ThermStatus.Threshold1
+			  | ThermStatus.Threshold2)	<< LSHIFT_THERM_THOLD)
+		| ((Bit64) (ThermStatus.Threshold1_Log
+			  | ThermStatus.Threshold2_Log) << LSHIFT_THRESHOLD_LOG)
+		| ((Bit64) ThermStatus.PwrLimit_Log	<< LSHIFT_POWER_LIMIT);
       }
     }
 }
@@ -8305,19 +8305,35 @@ void CorePerfLimitReasons(CORE_RO *Core)
 		limit.Thermal_Log = 0;
 		ClearBit = 1;
 	}
-	if (Clear_Events & EVENT_CORE_PL1) {
+	if (Clear_Events & EVENT_CORE_RES_LOG) {
+		limit.Residency_Log = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_CORE_AVG_LOG) {
+		limit.AvgThmLimitLog = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_CORE_VRT_LOG) {
+		limit.VR_ThmAlertLog = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_CORE_TDC_LOG) {
+		limit.VR_TDC_Log = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_CORE_PL1_LOG) {
 		limit.PL1_Log = 0;
 		ClearBit = 1;
 	}
-	if (Clear_Events & EVENT_CORE_PL2) {
+	if (Clear_Events & EVENT_CORE_PL2_LOG) {
 		limit.PL2_Log = 0;
 		ClearBit = 1;
 	}
-	if (Clear_Events & EVENT_CORE_EDP) {
+	if (Clear_Events & EVENT_CORE_EDP_LOG) {
 		limit.EDP_Log = 0;
 		ClearBit = 1;
 	}
-	if (Clear_Events & EVENT_CORE_TURBO) {
+	if (Clear_Events & EVENT_CORE_TURBO_LOG) {
 		limit.TurboLimitLog = 0;
 		ClearBit = 1;
 	}
@@ -8327,14 +8343,26 @@ void CorePerfLimitReasons(CORE_RO *Core)
 		RDMSR(limit, MSR_SKL_CORE_PERF_LIMIT_REASONS);
 	}
 	PUBLIC(RO(Proc))->PowerThermal.Events |= (
-		  (limit.Thermal_Status << LSHIFT_CORE_THM_STS)
-		| (limit.PROCHOT_Event	<< LSHIFT_CORE_HOT_STS)
-		| (limit.PROCHOT_Log	<< LSHIFT_CORE_HOT_LOG)
-		| (limit.Thermal_Log	<< LSHIFT_CORE_THM_LOG)
-		| (limit.PL1_Log	<< LSHIFT_CORE_PL1)
-		| (limit.PL2_Log	<< LSHIFT_CORE_PL2)
-		| (limit.EDP_Log	<< LSHIFT_CORE_EDP)
-		| ((Bit64)limit.TurboLimitLog << LSHIFT_CORE_TURBO)
+		  ((Bit64) limit.Thermal_Status << LSHIFT_CORE_THM_STS)
+		| ((Bit64) limit.PROCHOT_Event	<< LSHIFT_CORE_HOT_STS)
+		| ((Bit64) limit.PROCHOT_Log	<< LSHIFT_CORE_HOT_LOG)
+		| ((Bit64) limit.Thermal_Log	<< LSHIFT_CORE_THM_LOG)
+		| ((Bit64) limit.Residency_Sts	<< LSHIFT_CORE_RES_STS)
+		| ((Bit64) limit.Residency_Log	<< LSHIFT_CORE_RES_LOG)
+		| ((Bit64) limit.AvgThmLimit	<< LSHIFT_CORE_AVG_STS)
+		| ((Bit64) limit.AvgThmLimitLog << LSHIFT_CORE_AVG_LOG)
+		| ((Bit64) limit.VR_ThmAlert	<< LSHIFT_CORE_VRT_STS)
+		| ((Bit64) limit.VR_ThmAlertLog << LSHIFT_CORE_VRT_LOG)
+		| ((Bit64) limit.VR_TDC_Status	<< LSHIFT_CORE_TDC_STS)
+		| ((Bit64) limit.VR_TDC_Log	<< LSHIFT_CORE_TDC_LOG)
+		| ((Bit64) limit.PL1_Status	<< LSHIFT_CORE_PL1_STS)
+		| ((Bit64) limit.PL1_Log	<< LSHIFT_CORE_PL1_LOG)
+		| ((Bit64) limit.PL2_Status	<< LSHIFT_CORE_PL2_STS)
+		| ((Bit64) limit.PL2_Log	<< LSHIFT_CORE_PL2_LOG)
+		| ((Bit64) limit.EDP_Status	<< LSHIFT_CORE_EDP_STS)
+		| ((Bit64) limit.EDP_Log	<< LSHIFT_CORE_EDP_LOG)
+		| ((Bit64) limit.TurboLimit	<< LSHIFT_CORE_TURBO_STS)
+		| ((Bit64) limit.TurboLimitLog	<< LSHIFT_CORE_TURBO_LOG)
 	);
     }
 }
@@ -8355,15 +8383,27 @@ void GraphicsPerfLimitReasons(CORE_RO *Core)
 		limit.Thermal_Log = 0;
 		ClearBit = 1;
 	}
-	if (Clear_Events & EVENT_GFX_PL1) {
+	if (Clear_Events & EVENT_GFX_AVG_LOG) {
+		limit.AvgThmLimitLog = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_GFX_VRT_LOG) {
+		limit.VR_ThmAlertLog = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_GFX_TDC_LOG) {
+		limit.VR_TDC_Log = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_GFX_PL1_LOG) {
 		limit.PL1_Log = 0;
 		ClearBit = 1;
 	}
-	if (Clear_Events & EVENT_GFX_PL2) {
+	if (Clear_Events & EVENT_GFX_PL2_LOG) {
 		limit.PL2_Log = 0;
 		ClearBit = 1;
 	}
-	if (Clear_Events & EVENT_GFX_EDP) {
+	if (Clear_Events & EVENT_GFX_EDP_LOG) {
 		limit.EDP_Log = 0;
 		ClearBit = 1;
 	}
@@ -8373,13 +8413,22 @@ void GraphicsPerfLimitReasons(CORE_RO *Core)
 		RDMSR(limit, MSR_GRAPHICS_PERF_LIMIT_REASONS);
 	}
 	PUBLIC(RO(Proc))->PowerThermal.Events |= (
-		  (limit.Thermal_Status << LSHIFT_GFX_THM_STS)
-		| (limit.PROCHOT_Event	<< LSHIFT_GFX_HOT_STS)
-		| (limit.PROCHOT_Log	<< LSHIFT_GFX_HOT_LOG)
-		| (limit.Thermal_Log	<< LSHIFT_GFX_THM_LOG)
-		| (limit.PL1_Log	<< LSHIFT_GFX_PL1)
-		| (limit.PL2_Log	<< LSHIFT_GFX_PL2)
-		| ((Bit64)limit.EDP_Log << LSHIFT_GFX_EDP)
+		  ((Bit64) limit.Thermal_Status << LSHIFT_GFX_THM_STS)
+		| ((Bit64) limit.PROCHOT_Event	<< LSHIFT_GFX_HOT_STS)
+		| ((Bit64) limit.PROCHOT_Log	<< LSHIFT_GFX_HOT_LOG)
+		| ((Bit64) limit.Thermal_Log	<< LSHIFT_GFX_THM_LOG)
+		| ((Bit64) limit.AvgThmLimit	<< LSHIFT_GFX_AVG_STS)
+		| ((Bit64) limit.AvgThmLimitLog << LSHIFT_GFX_AVG_LOG)
+		| ((Bit64) limit.VR_ThmAlert	<< LSHIFT_GFX_VRT_STS)
+		| ((Bit64) limit.VR_ThmAlertLog << LSHIFT_GFX_VRT_LOG)
+		| ((Bit64) limit.VR_TDC_Status	<< LSHIFT_GFX_TDC_STS)
+		| ((Bit64) limit.VR_TDC_Log	<< LSHIFT_GFX_TDC_LOG)
+		| ((Bit64) limit.PL1_Status	<< LSHIFT_GFX_PL1_STS)
+		| ((Bit64) limit.PL1_Log	<< LSHIFT_GFX_PL1_LOG)
+		| ((Bit64) limit.PL2_Status	<< LSHIFT_GFX_PL2_STS)
+		| ((Bit64) limit.PL2_Log	<< LSHIFT_GFX_PL2_LOG)
+		| ((Bit64) limit.EDP_Status	<< LSHIFT_GFX_EDP_STS)
+		| ((Bit64) limit.EDP_Log	<< LSHIFT_GFX_EDP_LOG)
 	);
     }
 }
@@ -8400,15 +8449,27 @@ void RingPerfLimitReasons(CORE_RO *Core)
 		limit.Thermal_Log = 0;
 		ClearBit = 1;
 	}
-	if (Clear_Events & EVENT_RING_PL1) {
+	if (Clear_Events & EVENT_RING_AVG_LOG) {
+		limit.AvgThmLimitLog = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_RING_VRT_LOG) {
+		limit.VR_ThmAlertLog = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_RING_TDC_LOG) {
+		limit.VR_TDC_Log = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_RING_PL1_LOG) {
 		limit.PL1_Log = 0;
 		ClearBit = 1;
 	}
-	if (Clear_Events & EVENT_RING_PL2) {
+	if (Clear_Events & EVENT_RING_PL2_LOG) {
 		limit.PL2_Log = 0;
 		ClearBit = 1;
 	}
-	if (Clear_Events & EVENT_RING_EDP) {
+	if (Clear_Events & EVENT_RING_EDP_LOG) {
 		limit.EDP_Log = 0;
 		ClearBit = 1;
 	}
@@ -8418,13 +8479,22 @@ void RingPerfLimitReasons(CORE_RO *Core)
 		RDMSR(limit, MSR_RING_PERF_LIMIT_REASONS);
 	}
 	PUBLIC(RO(Proc))->PowerThermal.Events |= (
-		  (limit.Thermal_Status << LSHIFT_RING_THM_STS)
-		| (limit.PROCHOT_Event	<< LSHIFT_RING_HOT_STS)
-		| (limit.PROCHOT_Log	<< LSHIFT_RING_HOT_LOG)
-		| (limit.Thermal_Log	<< LSHIFT_RING_THM_LOG)
-		| (limit.PL1_Log	<< LSHIFT_RING_PL1)
-		| (limit.PL2_Log	<< LSHIFT_RING_PL2)
-		| ((Bit64)limit.EDP_Log << LSHIFT_RING_EDP)
+		  ((Bit64) limit.Thermal_Status << LSHIFT_RING_THM_STS)
+		| ((Bit64) limit.PROCHOT_Event	<< LSHIFT_RING_HOT_STS)
+		| ((Bit64) limit.PROCHOT_Log	<< LSHIFT_RING_HOT_LOG)
+		| ((Bit64) limit.Thermal_Log	<< LSHIFT_RING_THM_LOG)
+		| ((Bit64) limit.AvgThmLimit	<< LSHIFT_RING_AVG_STS)
+		| ((Bit64) limit.AvgThmLimitLog << LSHIFT_RING_AVG_LOG)
+		| ((Bit64) limit.VR_ThmAlert	<< LSHIFT_RING_VRT_STS)
+		| ((Bit64) limit.VR_ThmAlertLog << LSHIFT_RING_VRT_LOG)
+		| ((Bit64) limit.VR_TDC_Status	<< LSHIFT_RING_TDC_STS)
+		| ((Bit64) limit.VR_TDC_Log	<< LSHIFT_RING_TDC_LOG)
+		| ((Bit64) limit.PL1_Status	<< LSHIFT_RING_PL1_STS)
+		| ((Bit64) limit.PL1_Log	<< LSHIFT_RING_PL1_LOG)
+		| ((Bit64) limit.PL2_Status	<< LSHIFT_RING_PL2_STS)
+		| ((Bit64) limit.PL2_Log	<< LSHIFT_RING_PL2_LOG)
+		| ((Bit64) limit.EDP_Status	<< LSHIFT_RING_EDP_STS)
+		| ((Bit64) limit.EDP_Log	<< LSHIFT_RING_EDP_LOG)
 	);
     }
 }
@@ -12632,19 +12702,19 @@ void Core_Intel_Temp(CORE_RO *Core)
 
 	Core->PowerThermal.Sensor = ThermStatus.DTS;
 	Core->PowerThermal.Events = \
-			  (ThermStatus.Thermal_Status	<< LSHIFT_THERMAL_STS)
-			| (ThermStatus.Thermal_Log	<< LSHIFT_THERMAL_LOG)
-			| (ThermStatus.PROCHOT_Event	<< LSHIFT_PROCHOT_STS)
-			| (ThermStatus.PROCHOT_Log	<< LSHIFT_PROCHOT_LOG)
-			| (ThermStatus.CriticalTemp	<< LSHIFT_CRITIC_TMP)
-			| (ThermStatus.CriticalTemp_Log << LSHIFT_CRITIC_LOG)
-			| ((ThermStatus.Threshold1
+		  ((Bit64) ThermStatus.Thermal_Status	<< LSHIFT_THERMAL_STS)
+		| ((Bit64) ThermStatus.Thermal_Log	<< LSHIFT_THERMAL_LOG)
+		| ((Bit64) ThermStatus.PROCHOT_Event	<< LSHIFT_PROCHOT_STS)
+		| ((Bit64) ThermStatus.PROCHOT_Log	<< LSHIFT_PROCHOT_LOG)
+		| ((Bit64) ThermStatus.CriticalTemp	<< LSHIFT_CRITIC_TMP)
+		| ((Bit64) ThermStatus.CriticalTemp_Log << LSHIFT_CRITIC_LOG)
+		| ((Bit64) (ThermStatus.Threshold1
 			  | ThermStatus.Threshold2)	<< LSHIFT_THERM_THOLD)
-			| ((ThermStatus.Threshold1_Log
+		| ((Bit64) (ThermStatus.Threshold1_Log
 			  | ThermStatus.Threshold2_Log) << LSHIFT_THRESHOLD_LOG)
-			| (ThermStatus.PwrLimit_Log	<< LSHIFT_POWER_LIMIT)
-			| (ThermStatus.CurLimit_Log	<< LSHIFT_CURRENT_LIMIT)
-		    | ((Bit64)ThermStatus.XDomLimit_Log << LSHIFT_CROSS_DOMAIN);
+		| ((Bit64) ThermStatus.PwrLimit_Log	<< LSHIFT_POWER_LIMIT)
+		| ((Bit64) ThermStatus.CurLimit_Log	<< LSHIFT_CURRENT_LIMIT)
+		| ((Bit64) ThermStatus.XDomLimit_Log	<< LSHIFT_CROSS_DOMAIN);
 }
 
 #define Pkg_Intel_Temp(Pkg)						\
@@ -12656,17 +12726,17 @@ void Core_Intel_Temp(CORE_RO *Core)
 									\
 	Pkg->PowerThermal.Sensor = ThermStatus.DTS;			\
 	Pkg->PowerThermal.Events =					\
-		  (ThermStatus.Thermal_Status	<< LSHIFT_THERMAL_STS)	\
-		| (ThermStatus.Thermal_Log	<< LSHIFT_THERMAL_LOG)	\
-		| (ThermStatus.PROCHOT_Event	<< LSHIFT_PROCHOT_STS)	\
-		| (ThermStatus.PROCHOT_Log	<< LSHIFT_PROCHOT_LOG)	\
-		| (ThermStatus.CriticalTemp	<< LSHIFT_CRITIC_TMP)	\
-		| (ThermStatus.CriticalTemp_Log << LSHIFT_CRITIC_LOG)	\
-		| ((ThermStatus.Threshold1				\
-		  | ThermStatus.Threshold2)	<<LSHIFT_THERM_THOLD)	\
-		| ((ThermStatus.Threshold1_Log				\
-		  | ThermStatus.Threshold2_Log) <<LSHIFT_THRESHOLD_LOG) \
-		| ((Bit64)ThermStatus.PwrLimit_Log << LSHIFT_POWER_LIMIT); \
+	  ((Bit64) ThermStatus.Thermal_Status	<< LSHIFT_THERMAL_STS)	\
+	| ((Bit64) ThermStatus.Thermal_Log	<< LSHIFT_THERMAL_LOG)	\
+	| ((Bit64) ThermStatus.PROCHOT_Event	<< LSHIFT_PROCHOT_STS)	\
+	| ((Bit64) ThermStatus.PROCHOT_Log	<< LSHIFT_PROCHOT_LOG)	\
+	| ((Bit64) ThermStatus.CriticalTemp	<< LSHIFT_CRITIC_TMP)	\
+	| ((Bit64) ThermStatus.CriticalTemp_Log << LSHIFT_CRITIC_LOG)	\
+	| ((Bit64) (ThermStatus.Threshold1				\
+		  | ThermStatus.Threshold2)	<< LSHIFT_THERM_THOLD)	\
+	| ((Bit64) (ThermStatus.Threshold1_Log				\
+		  | ThermStatus.Threshold2_Log) << LSHIFT_THRESHOLD_LOG)\
+	| ((Bit64) ThermStatus.PwrLimit_Log	<< LSHIFT_POWER_LIMIT); \
     }									\
 })
 
@@ -12676,14 +12746,26 @@ void Monitor_CorePerfLimitReasons(PROC_RO *Pkg)
 	RDMSR(limit, MSR_SKL_CORE_PERF_LIMIT_REASONS);
 
 	Pkg->PowerThermal.Events |= (
-		  (limit.Thermal_Status << LSHIFT_CORE_THM_STS)
-		| (limit.PROCHOT_Event	<< LSHIFT_CORE_HOT_STS)
-		| (limit.PROCHOT_Log	<< LSHIFT_CORE_HOT_LOG)
-		| (limit.Thermal_Log	<< LSHIFT_CORE_THM_LOG)
-		| (limit.PL1_Log	<< LSHIFT_CORE_PL1)
-		| (limit.PL2_Log	<< LSHIFT_CORE_PL2)
-		| (limit.EDP_Log	<< LSHIFT_CORE_EDP)
-		| ((Bit64)limit.TurboLimitLog << LSHIFT_CORE_TURBO)
+		  ((Bit64) limit.Thermal_Status << LSHIFT_CORE_THM_STS)
+		| ((Bit64) limit.PROCHOT_Event	<< LSHIFT_CORE_HOT_STS)
+		| ((Bit64) limit.PROCHOT_Log	<< LSHIFT_CORE_HOT_LOG)
+		| ((Bit64) limit.Thermal_Log	<< LSHIFT_CORE_THM_LOG)
+		| ((Bit64) limit.Residency_Sts	<< LSHIFT_CORE_RES_STS)
+		| ((Bit64) limit.Residency_Log	<< LSHIFT_CORE_RES_LOG)
+		| ((Bit64) limit.AvgThmLimit	<< LSHIFT_CORE_AVG_STS)
+		| ((Bit64) limit.AvgThmLimitLog << LSHIFT_CORE_AVG_LOG)
+		| ((Bit64) limit.VR_ThmAlert	<< LSHIFT_CORE_VRT_STS)
+		| ((Bit64) limit.VR_ThmAlertLog << LSHIFT_CORE_VRT_LOG)
+		| ((Bit64) limit.VR_TDC_Status	<< LSHIFT_CORE_TDC_STS)
+		| ((Bit64) limit.VR_TDC_Log	<< LSHIFT_CORE_TDC_LOG)
+		| ((Bit64) limit.PL1_Status	<< LSHIFT_CORE_PL1_STS)
+		| ((Bit64) limit.PL1_Log	<< LSHIFT_CORE_PL1_LOG)
+		| ((Bit64) limit.PL2_Status	<< LSHIFT_CORE_PL2_STS)
+		| ((Bit64) limit.PL2_Log	<< LSHIFT_CORE_PL2_LOG)
+		| ((Bit64) limit.EDP_Status	<< LSHIFT_CORE_EDP_STS)
+		| ((Bit64) limit.EDP_Log	<< LSHIFT_CORE_EDP_LOG)
+		| ((Bit64) limit.TurboLimit	<< LSHIFT_CORE_TURBO_STS)
+		| ((Bit64) limit.TurboLimitLog	<< LSHIFT_CORE_TURBO_LOG)
 	);
 }
 
@@ -12693,13 +12775,22 @@ void Monitor_GraphicsPerfLimitReasons(PROC_RO *Pkg)
 	RDMSR(limit, MSR_GRAPHICS_PERF_LIMIT_REASONS);
 
 	Pkg->PowerThermal.Events |= (
-		  (limit.Thermal_Status << LSHIFT_GFX_THM_STS)
-		| (limit.PROCHOT_Event	<< LSHIFT_GFX_HOT_STS)
-		| (limit.PROCHOT_Log	<< LSHIFT_GFX_HOT_LOG)
-		| (limit.Thermal_Log	<< LSHIFT_GFX_THM_LOG)
-		| (limit.PL1_Log	<< LSHIFT_GFX_PL1)
-		| (limit.PL2_Log	<< LSHIFT_GFX_PL2)
-		| ((Bit64)limit.EDP_Log << LSHIFT_GFX_EDP)
+		  ((Bit64) limit.Thermal_Status << LSHIFT_GFX_THM_STS)
+		| ((Bit64) limit.PROCHOT_Event	<< LSHIFT_GFX_HOT_STS)
+		| ((Bit64) limit.PROCHOT_Log	<< LSHIFT_GFX_HOT_LOG)
+		| ((Bit64) limit.Thermal_Log	<< LSHIFT_GFX_THM_LOG)
+		| ((Bit64) limit.AvgThmLimit	<< LSHIFT_GFX_AVG_STS)
+		| ((Bit64) limit.AvgThmLimitLog << LSHIFT_GFX_AVG_LOG)
+		| ((Bit64) limit.VR_ThmAlert	<< LSHIFT_GFX_VRT_STS)
+		| ((Bit64) limit.VR_ThmAlertLog << LSHIFT_GFX_VRT_LOG)
+		| ((Bit64) limit.VR_TDC_Status	<< LSHIFT_GFX_TDC_STS)
+		| ((Bit64) limit.VR_TDC_Log	<< LSHIFT_GFX_TDC_LOG)
+		| ((Bit64) limit.PL1_Status	<< LSHIFT_GFX_PL1_STS)
+		| ((Bit64) limit.PL1_Log	<< LSHIFT_GFX_PL1_LOG)
+		| ((Bit64) limit.PL2_Status	<< LSHIFT_GFX_PL2_STS)
+		| ((Bit64) limit.PL2_Log	<< LSHIFT_GFX_PL2_LOG)
+		| ((Bit64) limit.EDP_Status	<< LSHIFT_GFX_EDP_STS)
+		| ((Bit64) limit.EDP_Log	<< LSHIFT_GFX_EDP_LOG)
 	);
 }
 
@@ -12709,13 +12800,22 @@ void Monitor_RingPerfLimitReasons(PROC_RO *Pkg)
 	RDMSR(limit, MSR_RING_PERF_LIMIT_REASONS);
 
 	Pkg->PowerThermal.Events |= (
-		  (limit.Thermal_Status << LSHIFT_RING_THM_STS)
-		| (limit.PROCHOT_Event	<< LSHIFT_RING_HOT_STS)
-		| (limit.PROCHOT_Log	<< LSHIFT_RING_HOT_LOG)
-		| (limit.Thermal_Log	<< LSHIFT_RING_THM_LOG)
-		| (limit.PL1_Log	<< LSHIFT_RING_PL1)
-		| (limit.PL2_Log	<< LSHIFT_RING_PL2)
-		| ((Bit64)limit.EDP_Log << LSHIFT_RING_EDP)
+		  ((Bit64) limit.Thermal_Status << LSHIFT_RING_THM_STS)
+		| ((Bit64) limit.PROCHOT_Event	<< LSHIFT_RING_HOT_STS)
+		| ((Bit64) limit.PROCHOT_Log	<< LSHIFT_RING_HOT_LOG)
+		| ((Bit64) limit.Thermal_Log	<< LSHIFT_RING_THM_LOG)
+		| ((Bit64) limit.AvgThmLimit	<< LSHIFT_RING_AVG_STS)
+		| ((Bit64) limit.AvgThmLimitLog << LSHIFT_RING_AVG_LOG)
+		| ((Bit64) limit.VR_ThmAlert	<< LSHIFT_RING_VRT_STS)
+		| ((Bit64) limit.VR_ThmAlertLog << LSHIFT_RING_VRT_LOG)
+		| ((Bit64) limit.VR_TDC_Status	<< LSHIFT_RING_TDC_STS)
+		| ((Bit64) limit.VR_TDC_Log	<< LSHIFT_RING_TDC_LOG)
+		| ((Bit64) limit.PL1_Status	<< LSHIFT_RING_PL1_STS)
+		| ((Bit64) limit.PL1_Log	<< LSHIFT_RING_PL1_LOG)
+		| ((Bit64) limit.PL2_Status	<< LSHIFT_RING_PL2_STS)
+		| ((Bit64) limit.PL2_Log	<< LSHIFT_RING_PL2_LOG)
+		| ((Bit64) limit.EDP_Status	<< LSHIFT_RING_EDP_STS)
+		| ((Bit64) limit.EDP_Log	<< LSHIFT_RING_EDP_LOG)
 	);
 }
 
@@ -19631,20 +19731,31 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		case EVENT_CROSS_DOMAIN:
 		case EVENT_CORE_HOT_LOG:
 		case EVENT_CORE_THM_LOG:
-		case EVENT_CORE_PL1:
-		case EVENT_CORE_PL2:
-		case EVENT_CORE_EDP:
-		case EVENT_CORE_TURBO:
+		case EVENT_CORE_RES_LOG:
+		case EVENT_CORE_AVG_LOG:
+		case EVENT_CORE_VRT_LOG:
+		case EVENT_CORE_TDC_LOG:
+		case EVENT_CORE_PL1_LOG:
+		case EVENT_CORE_PL2_LOG:
+		case EVENT_CORE_EDP_LOG:
+		case EVENT_CORE_TURBO_LOG:
+	/*TODO	case EVENT_CORE_ATTEN_LOG:*/
 		case EVENT_GFX_HOT_LOG:
 		case EVENT_GFX_THM_LOG:
-		case EVENT_GFX_PL1:
-		case EVENT_GFX_PL2:
-		case EVENT_GFX_EDP:
+		case EVENT_GFX_AVG_LOG:
+		case EVENT_GFX_VRT_LOG:
+		case EVENT_GFX_TDC_LOG:
+		case EVENT_GFX_PL1_LOG:
+		case EVENT_GFX_PL2_LOG:
+		case EVENT_GFX_EDP_LOG:
 		case EVENT_RING_HOT_LOG:
 		case EVENT_RING_THM_LOG:
-		case EVENT_RING_PL1:
-		case EVENT_RING_PL2:
-		case EVENT_RING_EDP:
+		case EVENT_RING_AVG_LOG:
+		case EVENT_RING_VRT_LOG:
+		case EVENT_RING_TDC_LOG:
+		case EVENT_RING_PL1_LOG:
+		case EVENT_RING_PL2_LOG:
+		case EVENT_RING_EDP_LOG:
 			Controller_Stop(1);
 			Clear_Events = arg;
 			Controller_Start(1);

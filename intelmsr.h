@@ -1203,7 +1203,7 @@ typedef union
 		PROCHOT_Event	:  1-0,  /* R/O */
 		Thermal_Status	:  2-1,  /* R/O */
 		ReservedBits1	:  4-2,
-		Residency_Status:  5-4,  /* R/O */
+		Residency_Sts	:  5-4,  /* R/O */
 		AvgThmLimit	:  6-5,  /* R/O */
 		VR_ThmAlert	:  7-6,  /* R/O */
 		VR_TDC_Status	:  8-7,  /* R/O */
@@ -1217,7 +1217,7 @@ typedef union
 		PROCHOT_Log	: 17-16, /* R/WC0 */
 		Thermal_Log	: 18-17, /* R/WC0 */
 		ReservedBits4	: 20-18,
-		ResidencyLog	: 21-20, /* R/WC0 */
+		Residency_Log	: 21-20, /* R/WC0 */
 		AvgThmLimitLog	: 22-21, /* R/WC0 */
 		VR_ThmAlertLog	: 23-22, /* R/WC0 */
 		VR_TDC_Log	: 24-23, /* R/WC0 */
@@ -1247,7 +1247,8 @@ typedef union
 		ReservedBits2	: 10-9,
 		PL1_Status	: 11-10, /* R/O */
 		PL2_Status	: 12-11, /* R/O */
-		ReservedBits3	: 16-12,
+		InefficientOp	: 13-12, /* R/O */
+		ReservedBits3	: 16-13,
 		PROCHOT_Log	: 17-16, /* R/WC0 */
 		Thermal_Log	: 18-17, /* R/WC0 */
 		ReservedBits4	: 21-18,
@@ -1258,6 +1259,7 @@ typedef union
 		ReservedBits5	: 26-25,
 		PL1_Log 	: 27-26, /* R/WC0 */
 		PL2_Log 	: 28-27, /* R/WC0 */
+		InefficientOpLog: 29-28, /* R/WC0 */
 		ReservedBits6	: 64-28;
 	};
 } GRAPHICS_PERF_LIMIT_REASONS;
