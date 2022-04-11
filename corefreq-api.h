@@ -281,7 +281,7 @@ typedef struct
 	unsigned int			Sensor;
 	signed int			VID;
 	struct {
-		enum THERM_PWR_EVENTS	Events;
+		enum THERM_PWR_EVENTS	Events[eDIM];
 	};
 	PERF_CONTROL			PerfControl;
 	CLOCK_MODULATION		ClockModulation;
@@ -893,7 +893,7 @@ typedef struct
 		signed int	CPU, SOC;
 	    } VID;
 
-	enum THERM_PWR_EVENTS	Events;
+	enum THERM_PWR_EVENTS	Events[eDIM];
 		RAPL_POWER_UNIT Unit;
 	  union {
 	    struct {

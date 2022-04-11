@@ -1144,9 +1144,11 @@ static void *Core_Cycle(void *arg)
 
 	TEST_AND_SET_SENSOR( ABS_FREQ, HIGHEST, CFlip->Absolute.Freq,
 						Cpu->Absolute.Freq );
+	/* Core Processor events					*/
+	memcpy( CFlip->Thermal.Events, RO(Core)->PowerThermal.Events,
+		sizeof(CFlip->Thermal.Events) );
 	/* Per Core, evaluate thermal properties.			*/
 	CFlip->Thermal.Sensor	= RO(Core)->PowerThermal.Sensor;
-	CFlip->Thermal.Events	= RO(Core)->PowerThermal.Events;
 	CFlip->Thermal.Param	= RO(Core)->PowerThermal.Param;
 
 	ComputeThermalFormula[SCOPE_OF_FORMULA(RO(Shm)->Proc.thermalFormula)](
@@ -7360,9 +7362,10 @@ REASON_CODE Core_Manager(REF *Ref)
 				RO(Shm)->Proc.State.Power[pw].Current,
 				RO(Shm)->Proc.State.Power[pw].Limit );
       }
+	/*	Package Processor & Plaftorm events			*/
+	memcpy( PFlip->Thermal.Events, RO(Proc)->PowerThermal.Events,
+		sizeof(PFlip->Thermal.Events) );
 	/*	Package thermal formulas				*/
-	PFlip->Thermal.Events = RO(Proc)->PowerThermal.Events;
-
       if (RO(Shm)->Proc.Features.Power.EAX.PTM)
       {
 	PFlip->Thermal.Sensor = RO(Proc)->PowerThermal.Sensor;

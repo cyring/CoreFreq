@@ -230,7 +230,7 @@ typedef struct
 		struct {
 		unsigned int		Sensor,
 					Temp;
-		enum THERM_PWR_EVENTS	Events;
+		enum THERM_PWR_EVENTS	Events[eDIM];
 		THERMAL_PARAM		Param;
 		} Thermal;
 
@@ -391,7 +391,7 @@ typedef struct
 		struct {
 		unsigned int		Sensor,
 					Temp;
-		enum THERM_PWR_EVENTS	Events;
+		enum THERM_PWR_EVENTS	Events[eDIM];
 		} Thermal;
 
 		struct {

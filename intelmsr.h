@@ -1212,7 +1212,7 @@ typedef union
 		PL1_Status	: 11-10, /* R/O */
 		PL2_Status	: 12-11, /* R/O */
 		TurboLimit	: 13-12, /* R/O */
-		TurboAttenuation: 14-13, /* R/O */
+		TurboAtten	: 14-13, /* R/O */
 		ReservedBits3	: 16-14,
 		PROCHOT_Log	: 17-16, /* R/WC0 */
 		Thermal_Log	: 18-17, /* R/WC0 */
@@ -1247,7 +1247,7 @@ typedef union
 		ReservedBits2	: 10-9,
 		PL1_Status	: 11-10, /* R/O */
 		PL2_Status	: 12-11, /* R/O */
-		InefficientOp	: 13-12, /* R/O */
+		Inefficiency	: 13-12, /* R/O */
 		ReservedBits3	: 16-13,
 		PROCHOT_Log	: 17-16, /* R/WC0 */
 		Thermal_Log	: 18-17, /* R/WC0 */
@@ -1259,7 +1259,7 @@ typedef union
 		ReservedBits5	: 26-25,
 		PL1_Log 	: 27-26, /* R/WC0 */
 		PL2_Log 	: 28-27, /* R/WC0 */
-		InefficientOpLog: 29-28, /* R/WC0 */
+		InefficiencyLog : 29-28, /* R/WC0 */
 		ReservedBits6	: 64-28;
 	};
 } GRAPHICS_PERF_LIMIT_REASONS;

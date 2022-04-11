@@ -1179,6 +1179,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_EVENT_POWER_PL1_CODE_FR 	" PL1 du Package "
 #define RSC_BOX_EVENT_POWER_PL2_CODE_FR 	" PL2 du Package "
 #define RSC_BOX_EVENT_ELECTRICAL_CODE_FR	" EDP ""\xa9""lectrique "
+#define RSC_BOX_EVENT_INEFFICIENCY_CODE_FR	" Inefficacit""\xa9""   "
 #define RSC_BOX_EVENT_MAX_TURBO_CODE_FR 	" Turbo Max      "
 #define RSC_BOX_EVENT_TURBO_ATTEN_CODE_FR	" Turbo Atten.   "
 #define RSC_BOX_EVENT_THERMAL_LOG_CODE_FR	" Log thermique  "

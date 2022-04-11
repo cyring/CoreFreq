@@ -6764,7 +6764,10 @@ struct DRAW_ST Draw = {
 	.Theme		= THM_DFLT
 };
 
-enum THERM_PWR_EVENTS ProcessorEvents = EVENT_THERM_NONE;
+enum THERM_PWR_EVENTS ProcessorEvents[eDIM] = {
+	EVENT_THERM_NONE,
+	EVENT_THERM_NONE
+};
 
 struct RECORDER_ST Recorder = {
 		.Reset = 0,
@@ -9655,26 +9658,26 @@ Window *CreateSelectIdle(unsigned long long id)
 	return wIdle;
 }
 
-void UpdateEvent_Thm_1(TGrid *grid, DATA_TYPE data)
+void Update_STS_Event(TGrid *grid, DATA_TYPE data)
 {
 	const enum THERM_PWR_EVENTS event = data.ullong;
-	const ATTRIBUTE *attrib = ProcessorEvents & event ?
+	const ATTRIBUTE *attrib = ProcessorEvents[eSTS] & event ?
 		RSC(BOX_EVENT_COND1).ATTR() : RSC(BOX_EVENT_COND0).ATTR();
 
 	memcpy(grid->cell.attr, attrib, grid->cell.length);
 }
 
-void UpdateEvent_Thm_2(TGrid *grid, DATA_TYPE data)
+void Update_LOG_Event(TGrid *grid, DATA_TYPE data)
 {
 	const enum THERM_PWR_EVENTS event = data.ullong;
-	const ATTRIBUTE *attrib = ProcessorEvents & event ?
+	const ATTRIBUTE *attrib = ProcessorEvents[eLOG] & event ?
 		RSC(BOX_EVENT_COND2).ATTR() : RSC(BOX_EVENT_COND0).ATTR();
 
 	memcpy(grid->cell.attr, attrib, grid->cell.length);
 }
 
 #define EVENT_DOMAINS	4
-#define EVENT_SECTIONS	20
+#define EVENT_SECTIONS	22
 
 Window *CreateEvents(unsigned long long id)
 {
@@ -9683,7 +9686,7 @@ Window *CreateEvents(unsigned long long id)
 	ASCII			*item;
 	enum THERM_PWR_EVENTS	mask;
 	unsigned short		theme;
-    } evLdr[EVENT_DOMAINS][EVENT_SECTIONS] = {
+    } eLdr[EVENT_DOMAINS][EVENT_SECTIONS] = {
       {
 	/*	Thermal Sensor						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
@@ -9718,6 +9721,12 @@ Window *CreateEvents(unsigned long long id)
 	/*	Cross Domain Limit.					*/
 	{	{BOXKEY_CLR_X_DOMAIN}	, RSC(BOX_EVENT_CROSS_DOM_LIMIT).CODE(),
 		EVENT_CROSS_DOMAIN	, 2				},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE	, 0				},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE	, 0				},
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
 		EVENT_THERM_NONE	, 0				},
@@ -9802,16 +9811,16 @@ Window *CreateEvents(unsigned long long id)
 		EVENT_CORE_RES_LOG	, 2				},
 	/*	Max Turbo Limit.					*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_MAX_TURBO).CODE(),
-		EVENT_CORE_TURBO_STS	, 1				},
+		EVENT_CORE_BST_STS	, 1				},
 	/*	Max Turbo Limit.					*/
-	{	{BOXKEY_CLR_CORE_TURBO} , RSC(BOX_EVENT_MAX_TURBO).CODE(),
-		EVENT_CORE_TURBO_LOG	, 2				},
-	/*TODO	Turbo Transition Attenuation
+	{	{BOXKEY_CLR_CORE_BST}	, RSC(BOX_EVENT_MAX_TURBO).CODE(),
+		EVENT_CORE_BST_LOG	, 2				},
+	/*	Turbo Transition Attenuation				*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_TURBO_ATTEN).CODE(),
-		EVENT_CORE_ATTEN_STS	, 1				},
-	**	Turbo Transition Attenuation Log			**
-	{	{BOXKEY_CLR_CORE_ATTEN} , RSC(BOX_EVENT_TURBO_ATTEN).CODE(),
-		EVENT_CORE_ATTEN_LOG	, 2				}*/
+		EVENT_CORE_ATT_STS	, 1				},
+	/*	Turbo Transition Attenuation Log			*/
+	{	{BOXKEY_CLR_CORE_ATT}	, RSC(BOX_EVENT_TURBO_ATTEN).CODE(),
+		EVENT_CORE_ATT_LOG	, 2				}
       }, {
 	/*	Thermal Sensor						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
@@ -9864,6 +9873,12 @@ Window *CreateEvents(unsigned long long id)
 	/*	Electrical EDP						*/
 	{	{BOXKEY_CLR_GFX_EDP}	, RSC(BOX_EVENT_ELECTRICAL).CODE(),
 		EVENT_GFX_EDP_LOG	, 2				},
+	/*	Inefficiency Ops					*/
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_INEFFICIENCY).CODE(),
+		EVENT_GFX_EFF_STS	, 1				},
+	/*	Inefficiency Ops Log					*/
+	{	{BOXKEY_CLR_GFX_EFF}	, RSC(BOX_EVENT_INEFFICIENCY).CODE(),
+		EVENT_GFX_EFF_LOG	, 2				},
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
 		EVENT_THERM_NONE	, 0				},
@@ -9931,15 +9946,22 @@ Window *CreateEvents(unsigned long long id)
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
 		EVENT_THERM_NONE	, 0				},
-	/*	Clear all events					*/
-	{	{BOXKEY_CLR_ALL_EVENTS} , RSC(BOX_EVENT_ALL_OF_THEM).CODE(),
-		EVENT_ALL_OF_THEM	, 3				}
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE	, 0				},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE	, 0				},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE	, 0				}
       }
     };
-	const size_t nmemb = sizeof(evLdr) / sizeof(struct EVENT_LDR_ST);
+	const size_t nmemb = sizeof(eLdr) / sizeof(struct EVENT_LDR_ST);
 
 	Window *wEvent = CreateWindow(	wLayer, id,
-					EVENT_DOMAINS, nmemb / EVENT_DOMAINS,
+					EVENT_DOMAINS,
+					1 + (nmemb / EVENT_DOMAINS),
 					6, TOP_HEADER_ROW + 2 );
     if (wEvent != NULL)
     {
@@ -9952,35 +9974,43 @@ Window *CreateEvents(unsigned long long id)
 	CUINT col, row;
       for (row = 0; row < EVENT_SECTIONS; row++) {
 	for (col = 0; col < EVENT_DOMAINS; col++) {
-		unsigned short theme;
+		unsigned short theme = 0;
 
-		switch (evLdr[col][row].quick.key) {
-		case BOXKEY_CLR_ALL_EVENTS:
-			theme = evLdr[col][row].theme;
-			break;
-		default:
-			theme = ProcessorEvents & evLdr[col][row].mask ?
-				evLdr[col][row].theme : 0;
-			break;
-		}
-		TGrid *grid = StoreTCell(wEvent,
-					evLdr[col][row].quick.key,
-					evLdr[col][row].item,
-					attrib[theme]);
-
-	    if (evLdr[col][row].mask != EVENT_THERM_NONE)
-	    {
-		switch (evLdr[col][row].theme) {
+		switch (eLdr[col][row].theme) {
 		case 1:
-			GridCall(grid, UpdateEvent_Thm_1, evLdr[col][row].mask);
+			theme = ProcessorEvents[eSTS] & eLdr[col][row].mask ?
+				eLdr[col][row].theme : 0;
 			break;
 		case 2:
-			GridCall(grid, UpdateEvent_Thm_2, evLdr[col][row].mask);
+			theme = ProcessorEvents[eLOG] & eLdr[col][row].mask ?
+				eLdr[col][row].theme : 0;
+			break;
+		}
+
+		TGrid *grid = StoreTCell(wEvent,
+					eLdr[col][row].quick.key,
+					eLdr[col][row].item,
+					attrib[theme]);
+
+	    if (eLdr[col][row].mask != EVENT_THERM_NONE)
+	    {
+		switch (eLdr[col][row].theme) {
+		case 1:
+			GridCall(grid, Update_STS_Event, eLdr[col][row].mask);
+			break;
+		case 2:
+			GridCall(grid, Update_LOG_Event, eLdr[col][row].mask);
 			break;
 		}
 	    }
 	}
       }
+	StoreTCell(wEvent, SCANKEY_NULL, RSC(BOX_EVENT_SPACE).CODE(),attrib[0]);
+	StoreTCell(wEvent, SCANKEY_NULL, RSC(BOX_EVENT_SPACE).CODE(),attrib[0]);
+	StoreTCell(wEvent, SCANKEY_NULL, RSC(BOX_EVENT_SPACE).CODE(),attrib[0]);
+	StoreTCell(wEvent, BOXKEY_CLR_ALL_EVENTS,
+				RSC(BOX_EVENT_ALL_OF_THEM).CODE(), attrib[3]);
+
 	wEvent->matrix.select.col = wEvent->matrix.size.wth - 1;
 	wEvent->matrix.select.row = wEvent->matrix.size.hth - 1;
 
@@ -13612,10 +13642,8 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_CLR_CORE_PL1:
     case BOXKEY_CLR_CORE_PL2:
     case BOXKEY_CLR_CORE_EDP:
-    case BOXKEY_CLR_CORE_TURBO:
-/*TODO
-    case BOXKEY_CLR_CORE_ATTEN:
-*/
+    case BOXKEY_CLR_CORE_BST:
+    case BOXKEY_CLR_CORE_ATT:
     case BOXKEY_CLR_GFX_HOT:
     case BOXKEY_CLR_GFX_THM:
     case BOXKEY_CLR_GFX_AVG:
@@ -13624,6 +13652,7 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_CLR_GFX_PL1:
     case BOXKEY_CLR_GFX_PL2:
     case BOXKEY_CLR_GFX_EDP:
+    case BOXKEY_CLR_GFX_EFF:
     case BOXKEY_CLR_RING_HOT:
     case BOXKEY_CLR_RING_THM:
     case BOXKEY_CLR_RING_AVG:
@@ -13633,7 +13662,7 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_CLR_RING_PL2:
     case BOXKEY_CLR_RING_EDP:
     {
-	const enum EVENT_ENUM lshift = (scan->key & CLEAR_EVENT_MASK) >> 1;
+	const enum EVENT_LOG lshift = (scan->key & CLEAR_EVENT_MASK) >> 1;
 	const enum THERM_PWR_EVENTS event = 0x1LLU << lshift;
       if (!RING_FULL(RW(Shm)->Ring[0])) {
 	RING_WRITE(RW(Shm)->Ring[0], COREFREQ_IOCTL_CLEAR_EVENTS, event);
@@ -16213,7 +16242,7 @@ CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 					].PowerThermal.Limit[SENSOR_HIGHEST])
 		warning = RSC(UI).ATTR()[UI_DRAW_MONITOR_FREQUENCY_HIGH];
 	}
-	if (CFlop->Thermal.Events & THERMAL_EVENT_FILTER)
+	if (CFlop->Thermal.Events[eSTS] & STATUS_EVENT_FILTER)
 	{
 		warning = RSC(UI).ATTR()[UI_DRAW_MONITOR_FREQUENCY_HOT];
 	}
@@ -17987,11 +18016,12 @@ void Draw_Footer(Layer *layer, CUINT row)
 	};
 	register unsigned int _hot = 0, _tmp = 0;
 
-	if (!ProcessorEvents) {
+	if (!ProcessorEvents[eLOG] && !ProcessorEvents[eSTS]) {
 		_hot = 0;
 		_tmp = 3;
 	} else {
-	    if (ProcessorEvents & HOT_EVENT_FILTER)
+	    if ((ProcessorEvents[eLOG] & HOT_LOG_EVENT_FILTER)
+	     || (ProcessorEvents[eSTS] & HOT_STS_EVENT_FILTER))
 	    {
 		_hot = 4;
 		_tmp = 1;
@@ -18293,7 +18323,7 @@ void Dynamic_Header_DualView_Footer(Layer *layer)
 	struct PKG_FLIP_FLOP *PFlop = \
 		&RO(Shm)->Proc.FlipFlop[!RO(Shm)->Proc.Toggle];
 
-	ProcessorEvents = PFlop->Thermal.Events;
+	memcpy(ProcessorEvents, PFlop->Thermal.Events, sizeof(ProcessorEvents));
 #ifndef NO_HEADER
 	Draw_Header(layer, row);
 #endif
@@ -18304,7 +18334,8 @@ void Dynamic_Header_DualView_Footer(Layer *layer)
 	struct FLIP_FLOP *CFlop = \
 		&RO(Shm)->Cpu[cpu].FlipFlop[!RO(Shm)->Cpu[cpu].Toggle];
 
-	ProcessorEvents |= CFlop->Thermal.Events;
+	ProcessorEvents[eLOG] |= CFlop->Thermal.Events[eLOG];
+	ProcessorEvents[eSTS] |= CFlop->Thermal.Events[eSTS];
 
 	row++;
 
@@ -18651,7 +18682,7 @@ void Draw_Card_Core(Layer *layer, Card *card)
 		warning = RSC(UI).ATTR()[UI_DRAW_CARD_CORE_MEDIUM];
 	    }
 	}
-	if (CFlop->Thermal.Events) {
+	if (CFlop->Thermal.Events[eSTS]) {
 		warning = RSC(UI).ATTR()[UI_DRAW_CARD_CORE_HIGH];
 	}
 

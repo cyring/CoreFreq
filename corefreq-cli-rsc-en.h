@@ -1692,6 +1692,7 @@
 #define RSC_BOX_EVENT_POWER_PL1_CODE_EN 	" Package PL1    "
 #define RSC_BOX_EVENT_POWER_PL2_CODE_EN 	" Package PL2    "
 #define RSC_BOX_EVENT_ELECTRICAL_CODE_EN	" Electrical EDP "
+#define RSC_BOX_EVENT_INEFFICIENCY_CODE_EN	" Inefficiency   "
 #define RSC_BOX_EVENT_MAX_TURBO_CODE_EN 	" Max Turbo      "
 #define RSC_BOX_EVENT_TURBO_ATTEN_CODE_EN	" Turbo Atten.   "
 #define RSC_BOX_EVENT_THERMAL_LOG_CODE_EN	" Thermal Log    "
