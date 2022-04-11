@@ -31,7 +31,7 @@
 		.fg = BLACK, .un = 0, .bg = BLACK, .bf = 1		\
 	},								\
 	[UI_MAKE_SELECT_FOCUS] = {					\
-		.fg = MAGENTA, .un = 0, .bg = BLACK, .bf = 0		\
+		.fg = MAGENTA, .un = 1, .bg = BLACK, .bf = 0		\
 	},								\
 	[UI_MAKE_PRINT_UNFOCUS] = {					\
 		.fg = WHITE, .un = 0, .bg = BLACK, .bf = 0		\
