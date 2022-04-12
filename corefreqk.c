@@ -8118,10 +8118,15 @@ void ThermalMonitor_IA32(CORE_RO *Core)
 	RDMSR(ThermInterrupt, MSR_IA32_THERM_INTERRUPT);
 
 	Core->ThermalPoint.Value[THM_THRESHOLD_1] = \
-						ThermInterrupt.Threshold1_Value;
+			Core->PowerThermal.Param.Offset[0]
+		-	Core->PowerThermal.Param.Offset[1]
+		-	ThermInterrupt.Threshold1_Value;
 
 	Core->ThermalPoint.Value[THM_THRESHOLD_2] = \
-						ThermInterrupt.Threshold2_Value;
+			Core->PowerThermal.Param.Offset[0]
+		-	Core->PowerThermal.Param.Offset[1]
+		-	ThermInterrupt.Threshold2_Value;
+
 	if (ThermInterrupt.Threshold1_Int) {
 		BITSET(LOCKLESS, Core->ThermalPoint.State, THM_THRESHOLD_1);
 	} else {
@@ -8199,10 +8204,15 @@ void ThermalMonitor_IA32(CORE_RO *Core)
 	RDMSR(ThermInterrupt, MSR_IA32_PACKAGE_THERM_INTERRUPT);
 
 	PUBLIC(RO(Proc))->ThermalPoint.Value[THM_THRESHOLD_1] = \
-						ThermInterrupt.Threshold1_Value;
+			Core->PowerThermal.Param.Offset[0]
+		-	Core->PowerThermal.Param.Offset[1]
+		-	ThermInterrupt.Threshold1_Value;
 
 	PUBLIC(RO(Proc))->ThermalPoint.Value[THM_THRESHOLD_2] = \
-						ThermInterrupt.Threshold2_Value;
+			Core->PowerThermal.Param.Offset[0]
+		-	Core->PowerThermal.Param.Offset[1]
+		-	ThermInterrupt.Threshold2_Value;
+
 	if (ThermInterrupt.Threshold1_Int) {
 		BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State,
 				 THM_THRESHOLD_1);
@@ -8272,8 +8282,6 @@ void ThermalMonitor_Set(CORE_RO *Core)
 		Core->PowerThermal.Param.Offset[0] = 100;
 	}
 
-	ThermalMonitor_IA32(Core);
-
 	RDMSR(PfInfo, MSR_PLATFORM_INFO);
 
 	if (PfInfo.ProgrammableTj)
@@ -8297,6 +8305,8 @@ void ThermalMonitor_Set(CORE_RO *Core)
 			break;
 		}
 	}
+
+	ThermalMonitor_IA32(Core);
 }
 
 void CorePerfLimitReasons(CORE_RO *Core)
