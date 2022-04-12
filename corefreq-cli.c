@@ -9977,7 +9977,7 @@ Window *CreateEvents(unsigned long long id)
 	CUINT col, row;
       for (row = 0; row < EVENT_SECTIONS; row++) {
 	for (col = 0; col < EVENT_DOMAINS; col++) {
-		const unsigned short theme[ATTRIBS] = {
+		const enum THEME_ATTRIB theme[ATTRIBS] = {
 			ATTRIB0,
 			ProcessorEvents[eSTS] & eLdr[col][row].mask ?
 				eLdr[col][row].theme : ATTRIB0,
