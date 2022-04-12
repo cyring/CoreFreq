@@ -8094,8 +8094,11 @@ void ThermalMonitor_IA32(CORE_RO *Core)
 		ThermStatus.CriticalTemp_Log = 0;
 		ClearBit = 1;
 	}
-	if (Clear_Events & EVENT_THERM_THOLD) {
+	if (Clear_Events & EVENT_THOLD1_LOG) {
 		ThermStatus.Threshold1_Log = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_THOLD2_LOG) {
 		ThermStatus.Threshold2_Log = 0;
 		ClearBit = 1;
 	}
@@ -8148,8 +8151,8 @@ void ThermalMonitor_IA32(CORE_RO *Core)
 		  ((Bit64) ThermStatus.Thermal_Log	<< LSHIFT_THERMAL_LOG)
 		| ((Bit64) ThermStatus.PROCHOT_Log	<< LSHIFT_PROCHOT_LOG)
 		| ((Bit64) ThermStatus.CriticalTemp_Log << LSHIFT_CRITIC_LOG)
-		| ((Bit64) (ThermStatus.Threshold1_Log
-			  | ThermStatus.Threshold2_Log) << LSHIFT_THRESHOLD_LOG)
+		| ((Bit64) ThermStatus.Threshold1_Log	<< LSHIFT_THOLD1_LOG)
+		| ((Bit64) ThermStatus.Threshold2_Log	<< LSHIFT_THOLD2_LOG)
 		| ((Bit64) ThermStatus.PwrLimit_Log	<< LSHIFT_POWER_LIMIT)
 		| ((Bit64) ThermStatus.CurLimit_Log	<< LSHIFT_CURRENT_LIMIT)
 		| ((Bit64) ThermStatus.XDomLimit_Log	<< LSHIFT_CROSS_DOMAIN);
@@ -8158,8 +8161,8 @@ void ThermalMonitor_IA32(CORE_RO *Core)
 		  ((Bit64) ThermStatus.Thermal_Status	<< LSHIFT_THERMAL_STS)
 		| ((Bit64) ThermStatus.PROCHOT_Event	<< LSHIFT_PROCHOT_STS)
 		| ((Bit64) ThermStatus.CriticalTemp	<< LSHIFT_CRITIC_TMP)
-		| ((Bit64) (ThermStatus.Threshold1
-			  | ThermStatus.Threshold2)	<< LSHIFT_THERM_THOLD);
+		| ((Bit64) ThermStatus.Threshold1	<< LSHIFT_THOLD1_STS)
+		| ((Bit64) ThermStatus.Threshold2	<< LSHIFT_THOLD2_STS);
 
       if (PUBLIC(RO(Proc))->Features.Power.EAX.PTM
       && (Core->Bind == PUBLIC(RO(Proc))->Service.Core))
@@ -8180,8 +8183,11 @@ void ThermalMonitor_IA32(CORE_RO *Core)
 		ThermStatus.CriticalTemp_Log = 0;
 		ClearBit = 1;
 	}
-	if (Clear_Events & EVENT_THERM_THOLD) {
+	if (Clear_Events & EVENT_THOLD1_LOG) {
 		ThermStatus.Threshold1_Log = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_THOLD2_LOG) {
 		ThermStatus.Threshold2_Log = 0;
 		ClearBit = 1;
 	}
@@ -8230,16 +8236,16 @@ void ThermalMonitor_IA32(CORE_RO *Core)
 		  ((Bit64) ThermStatus.Thermal_Log	<< LSHIFT_THERMAL_LOG)
 		| ((Bit64) ThermStatus.PROCHOT_Log	<< LSHIFT_PROCHOT_LOG)
 		| ((Bit64) ThermStatus.CriticalTemp_Log << LSHIFT_CRITIC_LOG)
-		| ((Bit64) (ThermStatus.Threshold1_Log
-			  | ThermStatus.Threshold2_Log) << LSHIFT_THRESHOLD_LOG)
+		| ((Bit64) ThermStatus.Threshold1_Log	<< LSHIFT_THOLD1_LOG)
+		| ((Bit64) ThermStatus.Threshold2_Log	<< LSHIFT_THOLD2_LOG)
 		| ((Bit64) ThermStatus.PwrLimit_Log	<< LSHIFT_POWER_LIMIT);
 
 	PUBLIC(RO(Proc))->PowerThermal.Events[eSTS] = \
 		  ((Bit64) ThermStatus.Thermal_Status	<< LSHIFT_THERMAL_STS)
 		| ((Bit64) ThermStatus.PROCHOT_Event	<< LSHIFT_PROCHOT_STS)
 		| ((Bit64) ThermStatus.CriticalTemp	<< LSHIFT_CRITIC_TMP)
-		| ((Bit64) (ThermStatus.Threshold1
-			  | ThermStatus.Threshold2)	<< LSHIFT_THERM_THOLD);
+		| ((Bit64) ThermStatus.Threshold1	<< LSHIFT_THOLD1_STS)
+		| ((Bit64) ThermStatus.Threshold2	<< LSHIFT_THOLD2_STS);
       }
     }
 }
@@ -12728,8 +12734,8 @@ void Core_Intel_Temp(CORE_RO *Core)
 		  ((Bit64) ThermStatus.Thermal_Log	<< LSHIFT_THERMAL_LOG)
 		| ((Bit64) ThermStatus.PROCHOT_Log	<< LSHIFT_PROCHOT_LOG)
 		| ((Bit64) ThermStatus.CriticalTemp_Log << LSHIFT_CRITIC_LOG)
-		| ((Bit64) (ThermStatus.Threshold1_Log
-			  | ThermStatus.Threshold2_Log) << LSHIFT_THRESHOLD_LOG)
+		| ((Bit64) ThermStatus.Threshold1_Log	<< LSHIFT_THOLD1_LOG)
+		| ((Bit64) ThermStatus.Threshold2_Log	<< LSHIFT_THOLD2_LOG)
 		| ((Bit64) ThermStatus.PwrLimit_Log	<< LSHIFT_POWER_LIMIT)
 		| ((Bit64) ThermStatus.CurLimit_Log	<< LSHIFT_CURRENT_LIMIT)
 		| ((Bit64) ThermStatus.XDomLimit_Log	<< LSHIFT_CROSS_DOMAIN);
@@ -12738,8 +12744,8 @@ void Core_Intel_Temp(CORE_RO *Core)
 		  ((Bit64) ThermStatus.Thermal_Status	<< LSHIFT_THERMAL_STS)
 		| ((Bit64) ThermStatus.PROCHOT_Event	<< LSHIFT_PROCHOT_STS)
 		| ((Bit64) ThermStatus.CriticalTemp	<< LSHIFT_CRITIC_TMP)
-		| ((Bit64) (ThermStatus.Threshold1
-			  | ThermStatus.Threshold2)	<< LSHIFT_THERM_THOLD);
+		| ((Bit64) ThermStatus.Threshold1	<< LSHIFT_THOLD1_STS)
+		| ((Bit64) ThermStatus.Threshold2	<< LSHIFT_THOLD2_STS);
 }
 
 #define Pkg_Intel_Temp(Pkg)						\
@@ -12754,16 +12760,16 @@ void Core_Intel_Temp(CORE_RO *Core)
 	  ((Bit64) ThermStatus.Thermal_Log	<< LSHIFT_THERMAL_LOG)	\
 	| ((Bit64) ThermStatus.PROCHOT_Log	<< LSHIFT_PROCHOT_LOG)	\
 	| ((Bit64) ThermStatus.CriticalTemp_Log << LSHIFT_CRITIC_LOG)	\
-	| ((Bit64) (ThermStatus.Threshold1_Log				\
-		  | ThermStatus.Threshold2_Log) << LSHIFT_THRESHOLD_LOG)\
+	| ((Bit64) ThermStatus.Threshold1_Log	<< LSHIFT_THOLD1_LOG)	\
+	| ((Bit64) ThermStatus.Threshold2_Log	<< LSHIFT_THOLD2_LOG)	\
 	| ((Bit64) ThermStatus.PwrLimit_Log	<< LSHIFT_POWER_LIMIT); \
 									\
 	Pkg->PowerThermal.Events[eSTS] =				\
 	  ((Bit64) ThermStatus.Thermal_Status	<< LSHIFT_THERMAL_STS)	\
 	| ((Bit64) ThermStatus.PROCHOT_Event	<< LSHIFT_PROCHOT_STS)	\
 	| ((Bit64) ThermStatus.CriticalTemp	<< LSHIFT_CRITIC_TMP)	\
-	| ((Bit64) (ThermStatus.Threshold1				\
-		  | ThermStatus.Threshold2)	<< LSHIFT_THERM_THOLD); \
+	| ((Bit64) ThermStatus.Threshold1	<< LSHIFT_THOLD1_STS)	\
+	| ((Bit64) ThermStatus.Threshold2	<< LSHIFT_THOLD2_STS);	\
     }									\
 })
 
@@ -19765,7 +19771,8 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		case EVENT_THERMAL_LOG:
 		case EVENT_PROCHOT_LOG:
 		case EVENT_CRITIC_LOG:
-		case EVENT_THERM_THOLD:
+		case EVENT_THOLD1_LOG:
+		case EVENT_THOLD2_LOG:
 		case EVENT_POWER_LIMIT:
 		case EVENT_CURRENT_LIMIT:
 		case EVENT_CROSS_DOMAIN:
