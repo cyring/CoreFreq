@@ -283,6 +283,14 @@ static unsigned long long Clear_Events = 0;
 module_param(Clear_Events, ullong, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Clear_Events, "Clear Thermal and Power Events");
 
+static unsigned int ThermalPoint_Count = 0;
+static signed short ThermalPoint[THM_POINTS_DIM] = {
+			-1, -1, -1, -1, -1
+};
+module_param_array(ThermalPoint, short, &ThermalPoint_Count,	\
+					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(ThermalPoint, "Thermal Point");
+
 static int ThermalScope = -1;
 module_param(ThermalScope, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ThermalScope, "[0:None; 1:SMT; 2:Core; 3:Package]");
@@ -8117,15 +8125,60 @@ void ThermalMonitor_IA32(CORE_RO *Core)
 
 	RDMSR(ThermInterrupt, MSR_IA32_THERM_INTERRUPT);
 
-	Core->ThermalPoint.Value[THM_THRESHOLD_1] = \
-			Core->PowerThermal.Param.Offset[0]
-		-	Core->PowerThermal.Param.Offset[1]
-		-	ThermInterrupt.Threshold1_Value;
+	if (ThermalPoint_Count < THM_POINTS_DIM)
+	{
+		unsigned short WrRdMSR = 0;
 
-	Core->ThermalPoint.Value[THM_THRESHOLD_2] = \
-			Core->PowerThermal.Param.Offset[0]
-		-	Core->PowerThermal.Param.Offset[1]
-		-	ThermInterrupt.Threshold2_Value;
+	    if (ThermalPoint_Count > THM_THRESHOLD_1) {
+		if (ThermalPoint[THM_THRESHOLD_1] > 0)
+		{
+			COMPUTE_THERMAL(INVERSE_INTEL,
+					ThermInterrupt.Threshold1_Value,
+					Core->PowerThermal.Param,
+					ThermalPoint[THM_THRESHOLD_1]);
+
+			ThermInterrupt.Threshold1_Int = 1;
+			WrRdMSR = 1;
+		}
+		else if (ThermalPoint[THM_THRESHOLD_1] == 0)
+		{
+			ThermInterrupt.Threshold1_Value = 0;
+			ThermInterrupt.Threshold1_Int = 0;
+			WrRdMSR = 1;
+		}
+	    }
+	    if (ThermalPoint_Count > THM_THRESHOLD_2) {
+		if (ThermalPoint[THM_THRESHOLD_2] > 0)
+		{
+			COMPUTE_THERMAL(INVERSE_INTEL,
+					ThermInterrupt.Threshold2_Value,
+					Core->PowerThermal.Param,
+					ThermalPoint[THM_THRESHOLD_2]);
+
+			ThermInterrupt.Threshold2_Int = 1;
+			WrRdMSR = 1;
+		}
+		else if (ThermalPoint[THM_THRESHOLD_2] == 0)
+		{
+			ThermInterrupt.Threshold2_Value = 0;
+			ThermInterrupt.Threshold2_Int = 0;
+			WrRdMSR = 1;
+		}
+	    }
+	    if (WrRdMSR == 1) {
+		WRMSR(ThermInterrupt, MSR_IA32_THERM_INTERRUPT);
+		RDMSR(ThermInterrupt, MSR_IA32_THERM_INTERRUPT);
+	    }
+	}
+	COMPUTE_THERMAL(INTEL,
+			Core->ThermalPoint.Value[THM_THRESHOLD_1],
+			Core->PowerThermal.Param,
+			ThermInterrupt.Threshold1_Value);
+
+	COMPUTE_THERMAL(INTEL,
+			Core->ThermalPoint.Value[THM_THRESHOLD_2],
+			Core->PowerThermal.Param,
+			ThermInterrupt.Threshold2_Value);
 
 	if (ThermInterrupt.Threshold1_Int) {
 		BITSET(LOCKLESS, Core->ThermalPoint.State, THM_THRESHOLD_1);
@@ -8203,15 +8256,61 @@ void ThermalMonitor_IA32(CORE_RO *Core)
 
 	RDMSR(ThermInterrupt, MSR_IA32_PACKAGE_THERM_INTERRUPT);
 
-	PUBLIC(RO(Proc))->ThermalPoint.Value[THM_THRESHOLD_1] = \
-			Core->PowerThermal.Param.Offset[0]
-		-	Core->PowerThermal.Param.Offset[1]
-		-	ThermInterrupt.Threshold1_Value;
+	if (ThermalPoint_Count < THM_POINTS_DIM)
+	{
+		unsigned short WrRdMSR = 0;
 
-	PUBLIC(RO(Proc))->ThermalPoint.Value[THM_THRESHOLD_2] = \
-			Core->PowerThermal.Param.Offset[0]
-		-	Core->PowerThermal.Param.Offset[1]
-		-	ThermInterrupt.Threshold2_Value;
+	    if (ThermalPoint_Count > THM_THRESHOLD_1) {
+		if (ThermalPoint[THM_THRESHOLD_1] > 0)
+		{
+			COMPUTE_THERMAL(INVERSE_INTEL,
+					ThermInterrupt.Threshold1_Value,
+					Core->PowerThermal.Param,
+					ThermalPoint[THM_THRESHOLD_1]);
+
+			ThermInterrupt.Threshold1_Int = 1;
+			WrRdMSR = 1;
+		}
+		else if (ThermalPoint[THM_THRESHOLD_1] == 0)
+		{
+			ThermInterrupt.Threshold1_Value = 0;
+			ThermInterrupt.Threshold1_Int = 0;
+			WrRdMSR = 1;
+		}
+	    }
+	    if (ThermalPoint_Count > THM_THRESHOLD_2) {
+		if (ThermalPoint[THM_THRESHOLD_2] > 0)
+		{
+			COMPUTE_THERMAL(INVERSE_INTEL,
+					ThermInterrupt.Threshold2_Value,
+					Core->PowerThermal.Param,
+					ThermalPoint[THM_THRESHOLD_2]);
+
+			ThermInterrupt.Threshold2_Int = 1;
+			WrRdMSR = 1;
+		}
+		else if (ThermalPoint[THM_THRESHOLD_2] == 0)
+		{
+			ThermInterrupt.Threshold2_Value = 0;
+			ThermInterrupt.Threshold2_Int = 0;
+			WrRdMSR = 1;
+		}
+	    }
+	    if (WrRdMSR == 1) {
+		WRMSR(ThermInterrupt, MSR_IA32_PACKAGE_THERM_INTERRUPT);
+		RDMSR(ThermInterrupt, MSR_IA32_PACKAGE_THERM_INTERRUPT);
+	    }
+	}
+
+	COMPUTE_THERMAL(INTEL,
+			PUBLIC(RO(Proc))->ThermalPoint.Value[THM_THRESHOLD_1],
+			Core->PowerThermal.Param,
+			ThermInterrupt.Threshold1_Value);
+
+	COMPUTE_THERMAL(INTEL,
+			PUBLIC(RO(Proc))->ThermalPoint.Value[THM_THRESHOLD_2],
+			Core->PowerThermal.Param,
+			ThermInterrupt.Threshold2_Value);
 
 	if (ThermInterrupt.Threshold1_Int) {
 		BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State,

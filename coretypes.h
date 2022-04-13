@@ -526,6 +526,155 @@ POWER_FORMULA_AMD_17h	=(POWER_KIND_AMD_17h << 8)	| FORMULA_SCOPE_CORE
 
 #define KIND_OF_FORMULA(formula) ((formula >> 8) & 0b111111111111111111111111)
 
+/* Sensors formulas and definitions.
+  MIN = [SENSOR] > [TRIGGER] AND ([SENSOR] < [LOWEST] OR [LOWEST] <= [CAPPED])
+  MAX = [SENSOR] > [HIGHEST]
+*/
+
+#define THRESHOLD_LOWEST_CAPPED_THERMAL 	1
+#define THRESHOLD_LOWEST_CAPPED_VOLTAGE 	0.15
+#define THRESHOLD_LOWEST_CAPPED_ENERGY		0.000001
+#define THRESHOLD_LOWEST_CAPPED_POWER		0.000001
+#define THRESHOLD_LOWEST_CAPPED_REL_FREQ	0.0
+#define THRESHOLD_LOWEST_CAPPED_ABS_FREQ	0.0
+
+#define THRESHOLD_LOWEST_TRIGGER_THERMAL	0
+#define THRESHOLD_LOWEST_TRIGGER_VOLTAGE	0.0
+#define THRESHOLD_LOWEST_TRIGGER_ENERGY 	0.0
+#define THRESHOLD_LOWEST_TRIGGER_POWER		0.0
+#define THRESHOLD_LOWEST_TRIGGER_REL_FREQ	0.0
+#define THRESHOLD_LOWEST_TRIGGER_ABS_FREQ	0.0
+
+#define _RESET_SENSOR_LIMIT(THRESHOLD, Limit)				\
+({									\
+	Limit =  THRESHOLD;						\
+})
+
+#define RESET_SENSOR_LOWEST(CLASS, Limit)				\
+	_RESET_SENSOR_LIMIT(THRESHOLD_LOWEST_CAPPED_##CLASS,		\
+				Limit[SENSOR_LOWEST])
+
+#define RESET_SENSOR_HIGHEST(CLASS, Limit)				\
+	_RESET_SENSOR_LIMIT(THRESHOLD_LOWEST_TRIGGER_##CLASS,		\
+				Limit[SENSOR_HIGHEST])
+
+#define RESET_SENSOR_LIMIT(CLASS, STAT, Limit)				\
+	RESET_SENSOR_##STAT(CLASS, Limit)
+
+#define TEST_SENSOR_LOWEST(CLASS, TRIGGER, CAPPED, Sensor, Limit)	\
+	(Sensor > TRIGGER##CLASS) 					\
+	&& ((Sensor < Limit) || (Limit <= CAPPED##CLASS))
+
+#define TEST_SENSOR_HIGHEST(CLASS, TRIGGER, CAPPED, Sensor, Limit)	\
+	(Sensor > Limit)
+
+#define _TEST_SENSOR(CLASS, STAT, THRESHOLD, TRIGGER, CAPPED, Sensor, Limit) \
+	TEST_SENSOR_##STAT(CLASS, THRESHOLD##TRIGGER, THRESHOLD##CAPPED, \
+				Sensor, Limit)
+
+#define TEST_SENSOR(CLASS, STAT, Sensor, Limit) 			\
+	_TEST_SENSOR(CLASS, STAT, THRESHOLD_##STAT, _TRIGGER_, _CAPPED_, \
+			Sensor, Limit[SENSOR_##STAT])
+
+#define TEST_AND_SET_SENSOR(CLASS, STAT, Sensor, Limit) 		\
+({									\
+	if (TEST_SENSOR(CLASS, STAT, Sensor, Limit))			\
+	{								\
+		Limit[SENSOR_##STAT] = Sensor;				\
+	}								\
+})
+
+#define COMPUTE_THERMAL_INVERSE_INTEL(Sensor, Param, Temp)		\
+	(Sensor = Param.Offset[0] - Param.Offset[1] - Temp)
+
+#define COMPUTE_THERMAL_INTEL(Temp, Param, Sensor)			\
+	(Temp = Param.Offset[0] - Param.Offset[1] - Sensor)
+
+#define COMPUTE_THERMAL_AMD(Temp, Param, Sensor)			\
+	UNUSED(Param);							\
+	UNUSED(Sensor);							\
+	/*( TODO )*/
+
+#define COMPUTE_THERMAL_AMD_0Fh(Temp, Param, Sensor)			\
+	(Temp = Sensor - (Param.Target * 2) - 49)
+
+#define COMPUTE_THERMAL_AMD_15h(Temp, Param, Sensor)			\
+	UNUSED(Param);							\
+	(Temp = Sensor * 5 / 40)
+
+#define COMPUTE_THERMAL_AMD_17h(Temp, Param, Sensor)			\
+	(Temp = ((Sensor * 5 / 40) - Param.Offset[1]) - Param.Offset[2])
+
+#define COMPUTE_THERMAL(_ARCH_, Temp, Param, Sensor)			\
+	COMPUTE_THERMAL_##_ARCH_(Temp, Param, Sensor)
+
+#define COMPUTE_VOLTAGE_INTEL_CORE2(Vcore, VID) 			\
+		(Vcore = 0.8875 + (double) (VID) * 0.0125)
+
+#define COMPUTE_VOLTAGE_INTEL_SOC(Vcore, VID) 				\
+({									\
+	switch (VID) {							\
+	case 0x00:							\
+		Vcore = 0.0f;						\
+		break;							\
+	case 0xfc:							\
+	case 0xfe:							\
+		Vcore = 1.495f;						\
+		break;							\
+	case 0xfd:							\
+	case 0xff:							\
+		Vcore = 1.5f;						\
+		break;							\
+	default:							\
+		Vcore = 0.245 + (double) (VID) * 0.005;			\
+		break;							\
+	}								\
+})
+
+#define COMPUTE_VOLTAGE_INTEL_SNB(Vcore, VID) 				\
+		(Vcore = (double) (VID) / 8192.0)
+
+#define COMPUTE_VOLTAGE_INTEL_SKL_X(Vcore, VID) 			\
+		(Vcore = (double) (VID) / 8192.0)
+
+#define COMPUTE_VOLTAGE_AMD(Vcore, VID)					\
+		/*( TODO )*/
+
+#define COMPUTE_VOLTAGE_AMD_0Fh(Vcore, VID)				\
+({									\
+	short	Vselect =(VID & 0b110000) >> 4, Vnibble = VID & 0b1111; \
+									\
+	switch (Vselect) {						\
+	case 0b00:							\
+		Vcore = 1.550 - (double) (Vnibble) * 0.025;		\
+		break;							\
+	case 0b01:							\
+		Vcore = 1.150 - (double) (Vnibble) * 0.025;		\
+		break;							\
+	case 0b10:							\
+		Vcore = 0.7625 - (double) (Vnibble) * 0.0125;		\
+		break;							\
+	case 0b11:							\
+		Vcore = 0.5625 - (double) (Vnibble) * 0.0125;		\
+		break;							\
+	}								\
+})
+
+#define COMPUTE_VOLTAGE_AMD_15h(Vcore, VID)				\
+		(Vcore = 1.550 -(0.00625 * (double) (VID)))
+
+#define COMPUTE_VOLTAGE_AMD_17h(Vcore, VID)				\
+		(Vcore = 1.550 -(0.00625 * (double) (VID)))
+
+#define COMPUTE_VOLTAGE_WINBOND_IO(Vcore, VID)				\
+		(Vcore = (double) (VID) * 0.008)
+
+#define COMPUTE_VOLTAGE_ITETECH_IO(Vcore, VID)				\
+		(Vcore = (double) (VID) * 0.016)
+
+#define COMPUTE_VOLTAGE(_ARCH_, Vcore, VID)	\
+		COMPUTE_VOLTAGE_##_ARCH_(Vcore, VID)
+
 enum RATIO_BOOST {
 	RATIO_MIN,
 	RATIO_MAX,
