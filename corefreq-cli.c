@@ -6764,11 +6764,6 @@ struct DRAW_ST Draw = {
 	.Theme		= THM_DFLT
 };
 
-enum THERM_PWR_EVENTS ProcessorEvents[eDIM] = {
-	EVENT_THERM_NONE,
-	EVENT_THERM_NONE
-};
-
 struct RECORDER_ST Recorder = {
 		.Reset = 0,
 		.Select = 1,
@@ -9661,7 +9656,7 @@ Window *CreateSelectIdle(unsigned long long id)
 void Update_STS_Event(TGrid *grid, DATA_TYPE data)
 {
 	const enum THERM_PWR_EVENTS event = data.ullong;
-	const ATTRIBUTE *attrib = ProcessorEvents[eSTS] & event ?
+	const ATTRIBUTE *attrib = RO(Shm)->ProcessorEvents[eSTS] & event ?
 		RSC(BOX_EVENT_COND1).ATTR() : RSC(BOX_EVENT_COND0).ATTR();
 
 	memcpy(grid->cell.attr, attrib, grid->cell.length);
@@ -9670,7 +9665,7 @@ void Update_STS_Event(TGrid *grid, DATA_TYPE data)
 void Update_LOG_Event(TGrid *grid, DATA_TYPE data)
 {
 	const enum THERM_PWR_EVENTS event = data.ullong;
-	const ATTRIBUTE *attrib = ProcessorEvents[eLOG] & event ?
+	const ATTRIBUTE *attrib = RO(Shm)->ProcessorEvents[eLOG] & event ?
 		RSC(BOX_EVENT_COND2).ATTR() : RSC(BOX_EVENT_COND0).ATTR();
 
 	memcpy(grid->cell.attr, attrib, grid->cell.length);
@@ -9979,10 +9974,10 @@ Window *CreateEvents(unsigned long long id)
 	for (col = 0; col < EVENT_DOMAINS; col++) {
 		const enum THEME_ATTRIB theme[ATTRIBS] = {
 			ATTRIB0,
-			ProcessorEvents[eSTS] & eLdr[col][row].mask ?
+			RO(Shm)->ProcessorEvents[eSTS] & eLdr[col][row].mask ?
 				eLdr[col][row].theme : ATTRIB0,
 
-			ProcessorEvents[eLOG] & eLdr[col][row].mask ?
+			RO(Shm)->ProcessorEvents[eLOG] & eLdr[col][row].mask ?
 				eLdr[col][row].theme : ATTRIB0,
 			ATTRIB0
 		};
@@ -18022,12 +18017,15 @@ void Draw_Footer(Layer *layer, CUINT row)
 	};
 	register unsigned int _hot = 0, _tmp = 0;
 
-	if (!ProcessorEvents[eLOG] && !ProcessorEvents[eSTS]) {
+	if (!RO(Shm)->ProcessorEvents[eLOG] && !RO(Shm)->ProcessorEvents[eSTS])
+	{
 		_hot = 0;
 		_tmp = 3;
-	} else {
-	    if ((ProcessorEvents[eLOG] & HOT_LOG_EVENT_FILTER)
-	     || (ProcessorEvents[eSTS] & HOT_STS_EVENT_FILTER))
+	}
+	else
+	{
+	    if ((RO(Shm)->ProcessorEvents[eLOG] & HOT_LOG_EVENT_FILTER)
+	     || (RO(Shm)->ProcessorEvents[eSTS] & HOT_STS_EVENT_FILTER))
 	    {
 		_hot = 4;
 		_tmp = 1;
@@ -18325,11 +18323,6 @@ void Dynamic_Header_DualView_Footer(Layer *layer)
 {
 	unsigned int cpu;
 	CUINT row = 0;
-
-	struct PKG_FLIP_FLOP *PFlop = \
-		&RO(Shm)->Proc.FlipFlop[!RO(Shm)->Proc.Toggle];
-
-	memcpy(ProcessorEvents, PFlop->Thermal.Events, sizeof(ProcessorEvents));
 #ifndef NO_HEADER
 	Draw_Header(layer, row);
 #endif
@@ -18337,12 +18330,6 @@ void Dynamic_Header_DualView_Footer(Layer *layer)
 
   for (cpu = Draw.cpuScroll; cpu < (Draw.cpuScroll + Draw.Area.MaxRows); cpu++)
   {
-	struct FLIP_FLOP *CFlop = \
-		&RO(Shm)->Cpu[cpu].FlipFlop[!RO(Shm)->Cpu[cpu].Toggle];
-
-	ProcessorEvents[eLOG] |= CFlop->Thermal.Events[eLOG];
-	ProcessorEvents[eSTS] |= CFlop->Thermal.Events[eSTS];
-
 	row++;
 
     if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))

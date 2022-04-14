@@ -7188,6 +7188,9 @@ REASON_CODE Core_Manager(REF *Ref)
 	prevTop.AbsFreq = 0.0;
 
 	Pkg_ResetPowerFormula(RW(Proc));
+	/*	Reset with Package Events				*/
+	memcpy( RO(Shm)->ProcessorEvents, PFlip->Thermal.Events,
+		sizeof(RO(Shm)->ProcessorEvents) );
 
     for (cpu=0; !BITVAL(Shutdown, SYNC)&&(cpu < RO(Shm)->Proc.CPU.Count);cpu++)
     {
@@ -7277,6 +7280,9 @@ REASON_CODE Core_Manager(REF *Ref)
 	RO(Shm)->Proc.Avg.C6    += CFlop->State.C6;
 	RO(Shm)->Proc.Avg.C7    += CFlop->State.C7;
 	RO(Shm)->Proc.Avg.C1    += CFlop->State.C1;
+	/*	Aggregate all Cores Events.				*/
+	RO(Shm)->ProcessorEvents[eLOG] |= CFlop->Thermal.Events[eLOG];
+	RO(Shm)->ProcessorEvents[eSTS] |= CFlop->Thermal.Events[eSTS];
       }
     }
     if (!BITVAL(Shutdown, SYNC) && ROOM_READY(room))

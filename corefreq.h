@@ -476,6 +476,8 @@ typedef struct
 
 	BitCC			roomSched __attribute__ ((aligned (16)));
 
+	enum THERM_PWR_EVENTS	ProcessorEvents[eDIM];
+
 	struct {	/*	NMI bits: 0 is Unregistered; 1 is Registered */
 		Bit64		NMI	__attribute__ ((aligned (8)));
 		signed int	AutoClock, /* 10: Auto, 01: Init, 00: Specs */
