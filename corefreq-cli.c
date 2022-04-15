@@ -9659,7 +9659,7 @@ void Update_STS_Event(TGrid *grid, DATA_TYPE data)
 	const ATTRIBUTE *attrib = RO(Shm)->ProcessorEvents[eSTS] & event ?
 		RSC(BOX_EVENT_COND1).ATTR() : RSC(BOX_EVENT_COND0).ATTR();
 
-	memcpy(grid->cell.attr, attrib, grid->cell.length);
+	memcpy(grid->cell.attr, attrib, grid->cell.length - 1);
 }
 
 void Update_LOG_Event(TGrid *grid, DATA_TYPE data)
@@ -9668,7 +9668,7 @@ void Update_LOG_Event(TGrid *grid, DATA_TYPE data)
 	const ATTRIBUTE *attrib = RO(Shm)->ProcessorEvents[eLOG] & event ?
 		RSC(BOX_EVENT_COND2).ATTR() : RSC(BOX_EVENT_COND0).ATTR();
 
-	memcpy(grid->cell.attr, attrib, grid->cell.length);
+	memcpy(grid->cell.attr, attrib, grid->cell.length - 1);
 }
 
 #define EVENT_DOMAINS	4
@@ -9989,23 +9989,27 @@ Window *CreateEvents(unsigned long long id)
 			NULL
 		};
 
-		GridCall( StoreTCell(	wEvent,
+		TGrid *grid=StoreTCell( wEvent,
 					eLdr[col][row].quick.key,
 					eLdr[col][row].item,
-					attrib[theme[eLdr[col][row].theme]] ),
-			Update_Event[eLdr[col][row].theme],
-			eLdr[col][row].mask );
+					attrib[theme[eLdr[col][row].theme]] );
+
+	    if ((grid != NULL) && (col < EVENT_DOMAINS - 1)) {
+		const size_t rt = grid->cell.length - 1;
+		grid->cell.attr[rt] = RSC(UI).ATTR()[UI_MAKE_SELECT_FOCUS];
+	    }
+		GridCall( grid, Update_Event[eLdr[col][row].theme],
+				eLdr[col][row].mask );
 	}
       }
-	StoreTCell(wEvent,SCANKEY_NULL, RSC(BOX_EVENT_SPACE).CODE(),
-					attrib[ATTRIB0]);
-
-	StoreTCell(wEvent,SCANKEY_NULL, RSC(BOX_EVENT_SPACE).CODE(),
-					attrib[ATTRIB0]);
-
-	StoreTCell(wEvent,SCANKEY_NULL, RSC(BOX_EVENT_SPACE).CODE(),
-					attrib[ATTRIB0]);
-
+      for (col = 0; col < EVENT_DOMAINS - 1; col++) {
+	TGrid *grid=StoreTCell( wEvent, SCANKEY_NULL,
+				RSC(BOX_EVENT_SPACE).CODE(), attrib[ATTRIB0] );
+	if (grid != NULL) {
+		const size_t rt = grid->cell.length - 1;
+		grid->cell.attr[rt] = RSC(UI).ATTR()[UI_MAKE_SELECT_FOCUS];
+	}
+      }
 	StoreTCell(wEvent,BOXKEY_CLR_ALL_EVENTS,
 					RSC(BOX_EVENT_ALL_OF_THEM).CODE(),
 					attrib[ATTRIB3]);
@@ -10023,8 +10027,8 @@ Window *CreateEvents(unsigned long long id)
 	StoreWindow(wEvent,	.key.Up,	MotionUp_Win);
 	StoreWindow(wEvent,	.key.PgUp,	MotionPgUp_Win);
 	StoreWindow(wEvent,	.key.PgDw,	MotionPgDw_Win);
-	StoreWindow(wEvent,	.key.Home,	MotionReset_Win);
-	StoreWindow(wEvent,	.key.End,	MotionEnd_Cell);
+	StoreWindow(wEvent,	.key.Home,	MotionHome_Win);
+	StoreWindow(wEvent,	.key.End,	MotionEnd_Win);
 
 	StoreWindow(wEvent,	.key.WinLeft,	MotionOriginLeft_Win);
 	StoreWindow(wEvent,	.key.WinRight,	MotionOriginRight_Win);
