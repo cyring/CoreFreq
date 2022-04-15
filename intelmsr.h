@@ -348,6 +348,19 @@
 	#define MSR_RING_PERF_LIMIT_REASONS	0x000006b1
 #endif
 
+/*	Package C-State Interrupt Response Limit			*/
+#ifndef MSR_PKGC3_IRTL
+	#define MSR_PKGC3_IRTL			0x0000060a
+#endif
+
+#ifndef MSR_PKGC6_IRTL
+	#define MSR_PKGC6_IRTL			0x0000060b
+#endif
+
+#ifndef MSR_PKGC7_IRTL
+	#define MSR_PKGC7_IRTL			0x0000060c
+#endif
+
 typedef union
 {
 	unsigned long long value;
@@ -1635,6 +1648,25 @@ typedef union
 
 #define PKG_POWER_LIMIT_LOCK_MASK	0x8000000000000000
 #define PPn_POWER_LIMIT_LOCK_MASK	0x0000000080000000
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long		/* Pkg: R/W		*/
+		TimeLimit	: 10-0,
+		TimeUnit	: 13-10,
+		ReservedBits1	: 15-13,
+		Valid		: 16-15,
+		ReservedBits2	: 64-16;
+	};
+} PKGCST_IRTL;
+/*
+	IRTL-PC:3/6/7	{ GDM[06_5C] Gemini Lake[06_7A] }
+	IRTL-PC:3/6/7	{ SNB[06_2A] SNB/EP[06_2D] }
+	IRTL-PC:6/7	{ HSW[06_3C/06_45/06_46] HSW/EP[06_3F] }
+*/
 
 /* TODO
 typedef struct

@@ -3562,6 +3562,11 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 	PUBLIC(RO(Proc))->PowerThermal.Domain[pw].PowerLimit = PowerLimit;
 }
 
+void Intel_Pkg_CST_IRTL(const unsigned int MSR, PKGCST_IRTL *PCST)
+{
+	RDMSR((*PCST), MSR);
+}
+
 void Intel_Processor_PIN(bool capable)
 {
 	if (capable) {
@@ -10298,6 +10303,16 @@ static void PerCore_Goldmont_Query(void *arg)
 					PPn_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(RAM) );
 
+	    if (PUBLIC(RO(Proc))->Registration.Experimental) {
+		Intel_Pkg_CST_IRTL(MSR_PKGC3_IRTL,
+				&PUBLIC(RO(Proc))->PowerThermal.IRTL.PC03);
+
+		Intel_Pkg_CST_IRTL(MSR_PKGC6_IRTL,
+				&PUBLIC(RO(Proc))->PowerThermal.IRTL.PC06);
+
+		Intel_Pkg_CST_IRTL(MSR_PKGC7_IRTL,
+				&PUBLIC(RO(Proc))->PowerThermal.IRTL.PC07);
+	    }
 		Intel_Watchdog(Core);
 	}
 }
@@ -10446,6 +10461,16 @@ static void PerCore_SandyBridge_Query(void *arg)
 					PPn_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(CORES) );
 
+	    if (PUBLIC(RO(Proc))->Registration.Experimental) {
+		Intel_Pkg_CST_IRTL(MSR_PKGC3_IRTL,
+				&PUBLIC(RO(Proc))->PowerThermal.IRTL.PC03);
+
+		Intel_Pkg_CST_IRTL(MSR_PKGC6_IRTL,
+				&PUBLIC(RO(Proc))->PowerThermal.IRTL.PC06);
+
+		Intel_Pkg_CST_IRTL(MSR_PKGC7_IRTL,
+				&PUBLIC(RO(Proc))->PowerThermal.IRTL.PC07);
+	    }
 		Intel_Watchdog(Core);
 	}
 }
@@ -10575,6 +10600,13 @@ static void PerCore_Haswell_EP_Query(void *arg)
 					PPn_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(RAM) );
 
+	    if (PUBLIC(RO(Proc))->Registration.Experimental) {
+		Intel_Pkg_CST_IRTL(MSR_PKGC6_IRTL,	/* Table 2-29	*/
+				&PUBLIC(RO(Proc))->PowerThermal.IRTL.PC06);
+
+		Intel_Pkg_CST_IRTL(MSR_PKGC7_IRTL,	/* Table 2-29	*/
+				&PUBLIC(RO(Proc))->PowerThermal.IRTL.PC07);
+	    }
 		Intel_Watchdog(Core);
 	}
 }

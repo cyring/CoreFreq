@@ -894,7 +894,15 @@ typedef struct
 	    } VID;
 
 	enum THERM_PWR_EVENTS	Events[eDIM];
+
 		RAPL_POWER_UNIT Unit;
+
+	    struct {
+		PKGCST_IRTL	PC03,
+				PC06,
+				PC07;
+	    } IRTL;
+
 	  union {
 	    struct {
 	      struct {
