@@ -13104,6 +13104,8 @@ static void CTL_AMD_Family_17h_Temp(CORE_RO *Core)
 		Core->PowerThermal.Events[eSTS] = \
 				(Bit64)ThermTrip.THERM_TP << LSHIFT_THERMAL_STS;
 	}
+	Core->PowerThermal.Events[eSTS] = \
+			(Bit64)ThermTrip.CTF_THRESHOLD << LSHIFT_CRITIC_TMP;
 }
 
 static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
@@ -13133,6 +13135,8 @@ static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 		Core->PowerThermal.Events[eSTS] = \
 				(Bit64)ThermTrip.THERM_TP << LSHIFT_THERMAL_STS;
 	}
+	Core->PowerThermal.Events[eSTS] = \
+			(Bit64)ThermTrip.CTF_THRESHOLD << LSHIFT_CRITIC_TMP;
 }
 
 #define Pkg_AMD_Family_17h_Temp(Pkg, Core)				\

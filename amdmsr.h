@@ -1203,9 +1203,9 @@ typedef union
 	struct
 	{
 		unsigned int
-		CTF_PAD_POLARITY:  1-0,
+		CTF_PAD_POLARITY:  1-0,  /* Critical Temperature Fault	*/
 		THERM_TP	:  2-1,  /* Asserted if THERM_TP_EN == 1 */
-		CTF_THRESHOLD	:  3-2,  /* CTF_THRESHOLD_EXCEEDED */
+		CTF_THRESHOLD	:  3-2,  /* CTF_THRESHOLD_EXCEEDED	*/
 		THERM_TP_SENSE	:  4-3,
 		ReservedBits1	:  5-4,
 		THERM_TP_EN	:  6-5,  /* 1: ThermTrip is enabled	*/
