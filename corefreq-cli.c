@@ -5098,7 +5098,11 @@ char *ScrambleSMBIOS(enum SMB_STRING idx, const size_t mod, const char thing)
 		{.pString = RO(Shm)->SMB.Board.Vendor	,	.secret = 0},
 		{.pString = RO(Shm)->SMB.Board.Name	,	.secret = 0},
 		{.pString = RO(Shm)->SMB.Board.Version	,	.secret = 0},
-		{.pString = RO(Shm)->SMB.Board.Serial	,	.secret = 1}
+		{.pString = RO(Shm)->SMB.Board.Serial	,	.secret = 1},
+		{.pString = RO(Shm)->SMB.Memory[0].DIMM ,	.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory[1].DIMM ,	.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory[2].DIMM ,	.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory[3].DIMM ,	.secret = 0}
 	};
 	if (smb[idx].secret && Setting.secret) {
 		static char outStr[MAX_UTS_LEN];
@@ -5126,7 +5130,11 @@ const char *SMB_Comment[SMB_STRING_COUNT] = {
 	" "	COREFREQ_STRINGIFY(SMB_BOARD_VENDOR)	" ",
 	" "	COREFREQ_STRINGIFY(SMB_BOARD_NAME)	" ",
 	" "	COREFREQ_STRINGIFY(SMB_BOARD_VERSION)	" ",
-	" "	COREFREQ_STRINGIFY(SMB_BOARD_SERIAL)	" "
+	" "	COREFREQ_STRINGIFY(SMB_BOARD_SERIAL)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_MEMORY_DEVICE_0) " ",
+	" "	COREFREQ_STRINGIFY(SMB_MEMORY_DEVICE_1) " ",
+	" "	COREFREQ_STRINGIFY(SMB_MEMORY_DEVICE_2) " ",
+	" "	COREFREQ_STRINGIFY(SMB_MEMORY_DEVICE_3) " "
 };
 
 REASON_CODE SysInfoSMBIOS(Window *win, CUINT width, CELL_FUNC OutFunc)
@@ -6679,11 +6687,21 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 		iSplit(RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size,str);
 		PRT(IMC, attrib[1], "%5s", &str[0]);
 		PRT(IMC, attrib[1], "%5s", &str[8]);
-	    }
-	    else for (nc = 0; nc < (MC_MATX - 6); nc++) {
+
+	     if (strlen(RO(Shm)->SMB.Memory[slot].Brand) > 0)
+	     {
+		chipStr[0] = chipStr[1] = 0x20;
+		memcpy(&chipStr[2], RO(Shm)->SMB.Memory[slot].Brand, 17);
+
+	      for (nc = 0; nc < (MC_MATX - 11); nc++) {
+		StrCopy(str, &chipStr[nc * MC_MATY], MC_MATY + 1);
+		PRT(IMC, attrib[1], "%5s", str);
+	      }
+	     } else  for (nc = 0; nc < (MC_MATX - 11); nc++) {
 		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+	     }
 	    }
-	    for (nc = 0; nc < (MC_MATX - 11); nc++) {
+	    else for (nc = 0; nc < (MC_MATX - 2); nc++) {
 		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
 	    }
 	  }

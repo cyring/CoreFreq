@@ -20409,6 +20409,69 @@ void SMBIOS_Collect(void)
 #endif /* CONFIG_DMI */
 }
 
+#ifdef CONFIG_DMI
+/* Sources: drivers/edac/ghes_edac.c; drivers/edac/i7core_edac.c	*/
+struct memdev_dmi_entry {
+/* 0*/	u8	type;
+/* 1*/	u8	length;
+/* 2*/	u16	handle;
+/* 4*/	u16	phys_mem_array_handle;
+/* 6*/	u16	mem_err_info_handle;
+/* 8*/	u16	total_width;
+/*10*/	u16	data_width;
+/*12*/	u16	size;
+/*13*/	u8	form;
+/*14*/	u8	device_set;
+/*15*/	u8	device_locator;
+/*16*/	u8	bank_locator;
+/*17*/	u8	memory_type;
+/*18*/	u16	type_detail;
+/*20*/	u16	speed;
+/*22*/	u8	manufacturer;
+/*23*/	u8	serial_number;
+/*24*/	u8	asset_tag;
+/*25*/	u8	part_number;
+/*26*/	u8	attributes;
+/*27*/	u32	extended_size;
+/*31*/	u16	conf_mem_clk_speed;
+	/* Specs extension */
+/*33*/	u8	_spec1[14 + (3 * 16) + 11];
+	u8	supplier[12 + 1];
+	u8	_spec2[8 + 1];
+	u8	brand[17 + 1];
+} __attribute__((__packed__));
+
+void SPD_Parser(const struct dmi_header *dh, void *priv)
+{
+	size_t *count = (size_t*) priv;
+    if (dh->type == DMI_ENTRY_MEM_DEVICE)
+    {
+	struct memdev_dmi_entry *entry = (struct memdev_dmi_entry*) dh;
+	if ((entry->length >= 92) && (entry->size > 0))
+	{
+		const char *bank = NULL, *device = NULL;
+		dmi_memdev_name(entry->handle, &bank, &device);
+
+	    if ((*count) < MC_MAX_DIMM)
+	    {
+		snprintf(PUBLIC(RO(Proc))->SMB.Memory[(*count)].DIMM,
+			MAX_UTS_LEN, "%-17s%-16s%-13s%-17s",
+			bank, device, entry->supplier, entry->brand);
+	    }
+	}
+		(*count) = (*count) + 1;
+    }
+}
+#endif /* CONFIG_DMI */
+
+void SMBIOS_DIMM(void)
+{
+#ifdef CONFIG_DMI
+	size_t count = 0;
+	dmi_walk(SPD_Parser, &count);
+#endif /* CONFIG_DMI */
+}
+
 static char *CoreFreqK_DevNode(struct device *dev, umode_t *mode)
 {
 	UNUSED(dev);
@@ -20971,6 +21034,7 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 
 	/*	Copy various SMBIOS data [version 3.2]			*/
 	SMBIOS_Collect();
+	SMBIOS_DIMM();
 
 	/*	Initialize the CoreFreq controller			*/
 	Controller_Init();

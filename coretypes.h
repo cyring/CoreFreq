@@ -2345,6 +2345,10 @@ enum SMB_STRING {
 	SMB_BOARD_NAME,
 	SMB_BOARD_VERSION,
 	SMB_BOARD_SERIAL,
+	SMB_MEM_DEVICE_0,
+	SMB_MEM_DEVICE_1,
+	SMB_MEM_DEVICE_2,
+	SMB_MEM_DEVICE_3,
 	SMB_STRING_COUNT
 };
 
@@ -2372,6 +2376,15 @@ typedef union {
 				Version[MAX_UTS_LEN],
 				Serial[MAX_UTS_LEN];
 		} Board;
+		union {
+			char	DIMM[MAX_UTS_LEN];
+		    struct {
+			char	Bank[17],
+				Device[16],
+				Supplier[13],
+				Brand[17];
+		    };
+		} Memory[MC_MAX_DIMM];
 	};
 } SMBIOS_ST;
 
