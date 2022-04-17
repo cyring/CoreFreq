@@ -961,15 +961,6 @@ struct RECORDER_ST {
 			Ratios[];
 };
 
-#define StrFormat( _str, _size, _fmt, ... )				\
-	snprintf((char*) _str, (size_t) _size, (char*) _fmt, __VA_ARGS__)
-
-#define StrLenFormat( _ret, ... )					\
-({									\
-	int lret = StrFormat( __VA_ARGS__ );				\
-	_ret = lret > 0 ? ( __typeof__ (_ret) ) lret : 0;		\
-})
-
 #define HOT_LOG_EVENT_FILTER (	EVENT_PROCHOT_LOG	\
 			|	EVENT_CRITIC_LOG	\
 			|	EVENT_CORE_HOT_LOG	\

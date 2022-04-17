@@ -5099,10 +5099,19 @@ char *ScrambleSMBIOS(enum SMB_STRING idx, const size_t mod, const char thing)
 		{.pString = RO(Shm)->SMB.Board.Name	,	.secret = 0},
 		{.pString = RO(Shm)->SMB.Board.Version	,	.secret = 0},
 		{.pString = RO(Shm)->SMB.Board.Serial	,	.secret = 1},
-		{.pString = RO(Shm)->SMB.Memory[0].DIMM ,	.secret = 0},
-		{.pString = RO(Shm)->SMB.Memory[1].DIMM ,	.secret = 0},
-		{.pString = RO(Shm)->SMB.Memory[2].DIMM ,	.secret = 0},
-		{.pString = RO(Shm)->SMB.Memory[3].DIMM ,	.secret = 0}
+		{.pString = RO(Shm)->SMB.Phys.Memory.Array ,	.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory[0].Locator ,	.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory[1].Locator ,	.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory[2].Locator ,	.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory[3].Locator ,	.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory[0].Manufacturer,.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory[1].Manufacturer,.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory[2].Manufacturer,.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory[3].Manufacturer,.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory[0].PartNumber,	.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory[1].PartNumber,	.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory[2].PartNumber,	.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory[3].PartNumber,	.secret = 0}
 	};
 	if (smb[idx].secret && Setting.secret) {
 		static char outStr[MAX_UTS_LEN];
@@ -5118,23 +5127,32 @@ char *ScrambleSMBIOS(enum SMB_STRING idx, const size_t mod, const char thing)
 }
 
 const char *SMB_Comment[SMB_STRING_COUNT] = {
-	" "	COREFREQ_STRINGIFY(SMB_BIOS_VENDOR)	" ",
-	" "	COREFREQ_STRINGIFY(SMB_BIOS_VERSION)	" ",
-	" "	COREFREQ_STRINGIFY(SMB_BIOS_RELEASE)	" ",
-	" "	COREFREQ_STRINGIFY(SMB_SYSTEM_VENDOR)	" ",
-	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_NAME)	" ",
-	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_VERSION) " ",
-	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_SERIAL)	" ",
-	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_SKU)	" ",
-	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_FAMILY)	" ",
-	" "	COREFREQ_STRINGIFY(SMB_BOARD_VENDOR)	" ",
-	" "	COREFREQ_STRINGIFY(SMB_BOARD_NAME)	" ",
-	" "	COREFREQ_STRINGIFY(SMB_BOARD_VERSION)	" ",
-	" "	COREFREQ_STRINGIFY(SMB_BOARD_SERIAL)	" ",
-	" "	COREFREQ_STRINGIFY(SMB_MEMORY_DEVICE_0) " ",
-	" "	COREFREQ_STRINGIFY(SMB_MEMORY_DEVICE_1) " ",
-	" "	COREFREQ_STRINGIFY(SMB_MEMORY_DEVICE_2) " ",
-	" "	COREFREQ_STRINGIFY(SMB_MEMORY_DEVICE_3) " "
+	" "	COREFREQ_STRINGIFY(SMB_BIOS_VENDOR)		" ",
+	" "	COREFREQ_STRINGIFY(SMB_BIOS_VERSION)		" ",
+	" "	COREFREQ_STRINGIFY(SMB_BIOS_RELEASE)		" ",
+	" "	COREFREQ_STRINGIFY(SMB_SYSTEM_VENDOR)		" ",
+	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_NAME)		" ",
+	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_VERSION) 	" ",
+	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_SERIAL)		" ",
+	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_SKU)		" ",
+	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_FAMILY)		" ",
+	" "	COREFREQ_STRINGIFY(SMB_BOARD_VENDOR)		" ",
+	" "	COREFREQ_STRINGIFY(SMB_BOARD_NAME)		" ",
+	" "	COREFREQ_STRINGIFY(SMB_BOARD_VERSION)		" ",
+	" "	COREFREQ_STRINGIFY(SMB_BOARD_SERIAL)		" ",
+	" "	COREFREQ_STRINGIFY(SMB_PHYS_MEM_ARRAY)		" ",
+	" "	COREFREQ_STRINGIFY(SMB_MEM_0_LOCATOR)		" ",
+	" "	COREFREQ_STRINGIFY(SMB_MEM_1_LOCATOR)		" ",
+	" "	COREFREQ_STRINGIFY(SMB_MEM_2_LOCATOR)		" ",
+	" "	COREFREQ_STRINGIFY(SMB_MEM_3_LOCATOR)		" ",
+	" "	COREFREQ_STRINGIFY(SMB_MEM_0_MANUFACTURER)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_MEM_1_MANUFACTURER)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_MEM_2_MANUFACTURER)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_MEM_3_MANUFACTURER)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_MEM_0_PARTNUMBER)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_MEM_1_PARTNUMBER)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_MEM_2_PARTNUMBER)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_MEM_3_PARTNUMBER)	" "
 };
 
 REASON_CODE SysInfoSMBIOS(Window *win, CUINT width, CELL_FUNC OutFunc)
@@ -6508,7 +6526,7 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 	nc = ni + (nc & 0x1);
 
 	StrLenFormat(li, chipStr, (MC_MATX * MC_MATY) + 1,
-			"%*.s" "%s" "%*.s",
+			"%.*s" "%s" "%.*s",
 			nc, HSPACE, str, ni, HSPACE);
 
     for (nc = 0; nc < MC_MATX; nc++) {
@@ -6688,14 +6706,18 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 		PRT(IMC, attrib[1], "%5s", &str[0]);
 		PRT(IMC, attrib[1], "%5s", &str[8]);
 
-	     if (strlen(RO(Shm)->SMB.Memory[slot].Brand) > 0)
+	     if ((li = strlen(RO(Shm)->SMB.Memory[slot].PartNumber)) > 0)
 	     {
-		chipStr[0] = chipStr[1] = 0x20;
-		memcpy(&chipStr[2], RO(Shm)->SMB.Memory[slot].Brand, 17);
+		StrFormat(str, CODENAME_LEN + 4 + 10,
+			"%%%d.*s", (MC_MATX - 11) * MC_MATY);
+
+		StrFormat(chipStr, (MC_MATX * MC_MATY) + 1,
+			str, li, RO(Shm)->SMB.Memory[slot].PartNumber);
 
 	      for (nc = 0; nc < (MC_MATX - 11); nc++) {
-		StrCopy(str, &chipStr[nc * MC_MATY], MC_MATY + 1);
-		PRT(IMC, attrib[1], "%5s", str);
+		memcpy(item, &chipStr[nc * MC_MATY], MC_MATY);
+		item[MC_MATY] = '\0';
+		PRT(IMC, attrib[1], "%5s", item);
 	      }
 	     } else  for (nc = 0; nc < (MC_MATX - 11); nc++) {
 		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);

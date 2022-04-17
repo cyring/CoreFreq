@@ -1327,6 +1327,64 @@ static const CPUID_STRUCT CpuIDforVendor[CPUID_MAX_FUNC] = {
 	= {.func = 0x40000006, .sub = 0x00000000},
 };
 
+struct SMBIOS16
+{					/*	DMTF	2.7.1		*/
+	u8	type;			/*	0x00	BYTE		*/
+	u8	length; 		/*	0x01	BYTE		*/
+	u16	handle; 		/*	0x02	WORD		*/
+	u8	location;		/*	0x04	BYTE		*/
+	u8	use;			/*	0x05	BYTE		*/
+	u8	error_correction;	/*	0x06	BYTE		*/
+	u32	maximum_capacity;	/*	0x07	DWORD		*/
+	u16	error_handle;		/*	0x0b	WORD		*/
+	u16	number_devices; 	/*	0x0d	WORD		*/
+	u64	extended_capacity;	/*	0x0f	QWORD		*/
+} __attribute__((__packed__))s;
+
+struct SMBIOS17
+{					/*	DMTF 2.7.1		*/
+	u8	type;			/*	0x00	BYTE		*/
+	u8	length; 		/*	0x01	BYTE		*/
+	u16	handle; 		/*	0x02	WORD		*/
+	u16	phys_mem_array_handle;	/*	0x04	WORD		*/
+	u16	mem_err_info_handle;	/*	0x06	WORD		*/
+	u16	total_width;		/*	0x08	WORD		*/
+	u16	data_width;		/*	0x0a	WORD		*/
+	u16	size;			/*	0x0c	WORD		*/
+	u8	form_factor;		/*	0x0e	BYTE		*/
+	u8	device_set;		/*	0x0f	BYTE		*/
+	u8	device_locator_id;	/*	0x10	BYTE	STRING	*/
+	u8	bank_locator_id;	/*	0x11	BYTE	STRING	*/
+	u8	memory_type;		/*	0x12	BYTE		*/
+	u16	type_detail;		/*	0x13	WORD		*/
+	u16	speed;			/*	0x15	WORD		*/
+	u8	manufacturer_id;	/*	0x17	BYTE	STRING	*/
+	u8	serial_number_id;	/*	0x18	BYTE	STRING	*/
+	u8	asset_tag_id;		/*	0x19	BYTE	STRING	*/
+	u8	part_number_id; 	/*	0x1a	BYTE	STRING	*/
+	u8	attributes;		/*	0x1b	BYTE		*/
+	u32	extended_size;		/*	0x1c	DWORD		*/
+	u16	conf_mem_clk_speed;	/*	0x20	WORD		*/
+					/*	DMTF 3.2.0		*/
+	u16	min_voltage;		/*	0x22	WORD		*/
+	u16	max_voltage;		/*	0x24	WORD		*/
+	u16	configured_voltage;	/*	0x26	WORD		*/
+	u8	memory_tech;		/*	0x28	BYTE		*/
+	u16	memory_capability;	/*	0x29	WORD		*/
+	u8	firmware_version_id;	/*	0x2b	BYTE	STRING	*/
+	u16	manufacturer_spd;	/*	0x2c	WORD		*/
+	u16	product_spd;		/*	0x2e	WORD		*/
+	u16	controller_mfr_spd;	/*	0x30	WORD		*/
+	u16	controller_pdt_spd;	/*	0x32	WORD		*/
+	u64	non_volatile_size;	/*	0x34	QWORD		*/
+	u64	volatile_size;		/*	0x3c	QWORD		*/
+	u64	cache_size;		/*	0x44	QWORD		*/
+	u64	logical_size;		/*	0x4c	QWORD		*/
+					/*	DMTF 3.3.0		*/
+	u32	extended_speed; 	/*	0x54	DWORD		*/
+	u32	extended_conf_speed;	/*	0x58	DWORD		*/
+} __attribute__((__packed__));
+
 #if !defined(RHEL_MAJOR)
 	#define RHEL_MAJOR 0
 #endif

@@ -2345,10 +2345,19 @@ enum SMB_STRING {
 	SMB_BOARD_NAME,
 	SMB_BOARD_VERSION,
 	SMB_BOARD_SERIAL,
-	SMB_MEM_DEVICE_0,
-	SMB_MEM_DEVICE_1,
-	SMB_MEM_DEVICE_2,
-	SMB_MEM_DEVICE_3,
+	SMB_PHYS_MEM_ARRAY,
+	SMB_MEM_0_LOCATOR,
+	SMB_MEM_1_LOCATOR,
+	SMB_MEM_2_LOCATOR,
+	SMB_MEM_3_LOCATOR,
+	SMB_MEM_0_MANUFACTURER,
+	SMB_MEM_1_MANUFACTURER,
+	SMB_MEM_2_MANUFACTURER,
+	SMB_MEM_3_MANUFACTURER,
+	SMB_MEM_0_PARTNUMBER,
+	SMB_MEM_1_PARTNUMBER,
+	SMB_MEM_2_PARTNUMBER,
+	SMB_MEM_3_PARTNUMBER,
 	SMB_STRING_COUNT
 };
 
@@ -2376,14 +2385,15 @@ typedef union {
 				Version[MAX_UTS_LEN],
 				Serial[MAX_UTS_LEN];
 		} Board;
-		union {
-			char	DIMM[MAX_UTS_LEN];
+		struct {
 		    struct {
-			char	Bank[17],
-				Device[16],
-				Supplier[13],
-				Brand[17];
-		    };
+			char	Array[MAX_UTS_LEN];
+		    } Memory;
+		} Phys;
+		struct {
+			char	Locator[MAX_UTS_LEN],
+				Manufacturer[MAX_UTS_LEN],
+				PartNumber[MAX_UTS_LEN];
 		} Memory[MC_MAX_DIMM];
 	};
 } SMBIOS_ST;
@@ -2403,6 +2413,15 @@ typedef union {
 	size_t _min = KMIN((_max - 1), strlen(_src));			\
 	memcpy(_dest, _src, _min);					\
 	_dest[_min] = '\0';						\
+})
+
+#define StrFormat( _str, _size, _fmt, ... )				\
+	snprintf((char*) _str, (size_t) _size, (char*) _fmt, __VA_ARGS__)
+
+#define StrLenFormat( _ret, ... )					\
+({									\
+	int lret = StrFormat( __VA_ARGS__ );				\
+	_ret = lret > 0 ? ( __typeof__ (_ret) ) lret : 0;		\
 })
 
 #define ZLIST( ... ) (char *[]) { __VA_ARGS__ , NULL }
