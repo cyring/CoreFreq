@@ -5100,18 +5100,18 @@ char *ScrambleSMBIOS(enum SMB_STRING idx, const size_t mod, const char thing)
 		{.pString = RO(Shm)->SMB.Board.Version	,	.secret = 0},
 		{.pString = RO(Shm)->SMB.Board.Serial	,	.secret = 1},
 		{.pString = RO(Shm)->SMB.Phys.Memory.Array ,	.secret = 0},
-		{.pString = RO(Shm)->SMB.Memory[0].Locator ,	.secret = 0},
-		{.pString = RO(Shm)->SMB.Memory[1].Locator ,	.secret = 0},
-		{.pString = RO(Shm)->SMB.Memory[2].Locator ,	.secret = 0},
-		{.pString = RO(Shm)->SMB.Memory[3].Locator ,	.secret = 0},
-		{.pString = RO(Shm)->SMB.Memory[0].Manufacturer,.secret = 0},
-		{.pString = RO(Shm)->SMB.Memory[1].Manufacturer,.secret = 0},
-		{.pString = RO(Shm)->SMB.Memory[2].Manufacturer,.secret = 0},
-		{.pString = RO(Shm)->SMB.Memory[3].Manufacturer,.secret = 0},
-		{.pString = RO(Shm)->SMB.Memory[0].PartNumber,	.secret = 0},
-		{.pString = RO(Shm)->SMB.Memory[1].PartNumber,	.secret = 0},
-		{.pString = RO(Shm)->SMB.Memory[2].PartNumber,	.secret = 0},
-		{.pString = RO(Shm)->SMB.Memory[3].PartNumber,	.secret = 0}
+		{.pString = RO(Shm)->SMB.Memory.Locator[0],	.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory.Locator[1],	.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory.Locator[2],	.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory.Locator[3],	.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory.Manufacturer[0],.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory.Manufacturer[1],.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory.Manufacturer[2],.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory.Manufacturer[3],.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory.PartNumber[0],	.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory.PartNumber[1],	.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory.PartNumber[2],	.secret = 0},
+		{.pString = RO(Shm)->SMB.Memory.PartNumber[3],	.secret = 0}
 	};
 	if (smb[idx].secret && Setting.secret) {
 		static char outStr[MAX_UTS_LEN];
@@ -6706,13 +6706,13 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 		PRT(IMC, attrib[1], "%5s", &str[0]);
 		PRT(IMC, attrib[1], "%5s", &str[8]);
 
-	     if ((li = strlen(RO(Shm)->SMB.Memory[slot].PartNumber)) > 0)
+	     if ((li = strlen(RO(Shm)->SMB.Memory.PartNumber[slot])) > 0)
 	     {
 		StrFormat(str, CODENAME_LEN + 4 + 10,
 			"%%%d.*s", (MC_MATX - 11) * MC_MATY);
 
 		StrFormat(chipStr, (MC_MATX * MC_MATY) + 1,
-			str, li, RO(Shm)->SMB.Memory[slot].PartNumber);
+			str, li, RO(Shm)->SMB.Memory.PartNumber[slot]);
 
 	      for (nc = 0; nc < (MC_MATX - 11); nc++) {
 		memcpy(item, &chipStr[nc * MC_MATY], MC_MATY);
@@ -7875,7 +7875,15 @@ Window *CreateSysInfo(unsigned long long id)
 			StoreWindow(wSysInfo,	.key.Enter, MotionEnter_Cell);
 			break;
 		case SCANKEY_SHIFT_b:
+		    if (Draw.SmbIndex >= matrixSize.hth) {
+			wSysInfo->matrix.scroll.vert = 1
+					+ (Draw.SmbIndex - matrixSize.hth);
+
+			wSysInfo->matrix.select.row = matrixSize.hth - 1;
+		    } else {
+			wSysInfo->matrix.scroll.vert = 0;
 			wSysInfo->matrix.select.row = Draw.SmbIndex;
+		    }
 			fallthrough;
 		default:
 			StoreWindow(wSysInfo,	.key.Enter, MotionEnter_Cell);

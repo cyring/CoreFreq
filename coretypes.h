@@ -2391,10 +2391,10 @@ typedef union {
 		    } Memory;
 		} Phys;
 		struct {
-			char	Locator[MAX_UTS_LEN],
-				Manufacturer[MAX_UTS_LEN],
-				PartNumber[MAX_UTS_LEN];
-		} Memory[MC_MAX_DIMM];
+			char	Locator[MC_MAX_DIMM][MAX_UTS_LEN],
+				Manufacturer[MC_MAX_DIMM][MAX_UTS_LEN],
+				PartNumber[MC_MAX_DIMM][MAX_UTS_LEN];
+		} Memory;
 	};
 } SMBIOS_ST;
 

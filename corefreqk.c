@@ -20434,7 +20434,7 @@ void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
 		const struct SMBIOS16 *entry = (struct SMBIOS16*) dh;
 
 		StrFormat(PUBLIC(RO(Proc))->SMB.Phys.Memory.Array, MAX_UTS_LEN,
-			"Number Of Devices:%d \\ Maximum Capacity:%lld bytes",
+			"Number Of Devices:%d\\Maximum Capacity:%lld bytes",
 			entry->number_devices,
 			entry->maximum_capacity >= 0x80000000 ?
 			entry->extended_capacity : entry->maximum_capacity);
@@ -20447,16 +20447,29 @@ void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
 	    {
 		if ((*count) < MC_MAX_DIMM)
 		{
-		StrFormat(PUBLIC(RO(Proc))->SMB.Memory[(*count)].Locator,
-			MAX_UTS_LEN, "%.*s\\%.*s",
-			12, strim(SMBIOS_String(dh, entry->device_locator_id)),
-			50, strim(SMBIOS_String(dh, entry->bank_locator_id)));
+		const char *locator[2] = {
+			strim(SMBIOS_String(dh, entry->device_locator_id)),
+			strim(SMBIOS_String(dh, entry->bank_locator_id))
+		};
+		const size_t len[2] = {
+			strlen(locator[0]),
+			strlen(locator[1])
+		},prop = len[0] + len[1];
 
-		StrCopy(PUBLIC(RO(Proc))->SMB.Memory[(*count)].Manufacturer,
+		const int ratio[2] = {
+			DIV_ROUND_CLOSEST(len[0] * (MAX_UTS_LEN - (1+1)), prop),
+			DIV_ROUND_CLOSEST(len[1] * (MAX_UTS_LEN - (1+1)), prop)
+		};
+		StrFormat(PUBLIC(RO(Proc))->SMB.Memory.Locator[(*count)],
+			MAX_UTS_LEN, "%.*s\\%.*s",
+			ratio[0], locator[0],
+			ratio[1], locator[1]);
+
+		StrCopy(PUBLIC(RO(Proc))->SMB.Memory.Manufacturer[(*count)],
 			strim(SMBIOS_String(dh, entry->manufacturer_id)),
 			MAX_UTS_LEN);
 
-		StrCopy(PUBLIC(RO(Proc))->SMB.Memory[(*count)].PartNumber,
+		StrCopy(PUBLIC(RO(Proc))->SMB.Memory.PartNumber[(*count)],
 			strim(SMBIOS_String(dh, entry->part_number_id)),
 			MAX_UTS_LEN);
 		}
