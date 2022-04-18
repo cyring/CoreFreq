@@ -20443,18 +20443,19 @@ void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
     case DMI_ENTRY_MEM_DEVICE:
 	{
 		const struct SMBIOS17 *entry = (struct SMBIOS17*) dh;
-	    if ((entry->length >= 0x5c) && (entry->size > 0))
+	  if ((entry->length >= 0x5c) && (entry->size > 0))
+	  {
+	    if ((*count) < MC_MAX_DIMM)
 	    {
-		if ((*count) < MC_MAX_DIMM)
-		{
 		const char *locator[2] = {
 			strim(SMBIOS_String(dh, entry->device_locator_id)),
 			strim(SMBIOS_String(dh, entry->bank_locator_id))
 		};
+		size_t calc;
 		const size_t len[2] = {
-			strlen(locator[0]),
-			strlen(locator[1])
-		},prop = len[0] + len[1];
+			(calc = strlen(locator[0])) > 0 ? calc : 0,
+			(calc = strlen(locator[1])) > 0 ? calc : 0
+		}, prop = (calc = len[0] + len[1]) > 0 ? calc : 1;
 
 		const int ratio[2] = {
 			DIV_ROUND_CLOSEST(len[0] * (MAX_UTS_LEN - (1+1)), prop),
@@ -20472,8 +20473,8 @@ void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
 		StrCopy(PUBLIC(RO(Proc))->SMB.Memory.PartNumber[(*count)],
 			strim(SMBIOS_String(dh, entry->part_number_id)),
 			MAX_UTS_LEN);
-		}
 	    }
+	  }
 		(*count) = (*count) + 1;
 	}
 	break;
