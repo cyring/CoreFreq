@@ -20306,6 +20306,7 @@ static int CoreFreqK_HotPlug_CPU_Offline(unsigned int cpu)
 	BITSET(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine, OS);
 
 	/*		Seek for an alternate Service Processor.	*/
+   if (CoreFreqK.ResumeFromSuspend == false) {
     if ((cpu == PUBLIC(RO(Proc))->Service.Core)
      || (cpu == PUBLIC(RO(Proc))->Service.Thread))
     {
@@ -20336,6 +20337,7 @@ static int CoreFreqK_HotPlug_CPU_Offline(unsigned int cpu)
     {
 	PUBLIC(RO(Proc))->Service.Hybrid = Seek_Topology_Hybrid_Core(cpu);
     }
+   }
 #ifdef CONFIG_CPU_FREQ
 	Policy_Aggregate_Turbo();
 #endif /* CONFIG_CPU_FREQ */
