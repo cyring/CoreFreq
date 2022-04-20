@@ -1226,7 +1226,8 @@ typedef union
 		PL2_Status	: 12-11, /* R/O */
 		TurboLimit	: 13-12, /* R/O */
 		TurboAtten	: 14-13, /* R/O */
-		ReservedBits3	: 16-14,
+		TVB_Status	: 15-14, /* Unspecified */
+		ReservedBits3	: 16-15,
 		PROCHOT_Log	: 17-16, /* R/WC0 */
 		Thermal_Log	: 18-17, /* R/WC0 */
 		ReservedBits4	: 20-18,
@@ -1240,7 +1241,8 @@ typedef union
 		PL2_Log 	: 28-27, /* R/WC0 */
 		TurboLimitLog	: 29-28, /* R/WC0 */
 		TurboAttenLog	: 30-29, /* R/WC0 */
-		ReservedBits6	: 64-30;
+		TVB_Log 	: 31-30, /* Unspecified */
+		ReservedBits6	: 64-31;
 	};
 } CORE_PERF_LIMIT_REASONS;
 

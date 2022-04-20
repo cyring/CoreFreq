@@ -9757,7 +9757,7 @@ void Update_LOG_Event(TGrid *grid, DATA_TYPE data)
 }
 
 #define EVENT_DOMAINS	4
-#define EVENT_SECTIONS	22
+#define EVENT_SECTIONS	24
 
 Window *CreateEvents(unsigned long long id)
 {
@@ -9816,6 +9816,12 @@ Window *CreateEvents(unsigned long long id)
 	/*	Cross Domain Limit.					*/
 	{	{BOXKEY_CLR_X_DOMAIN}	, RSC(BOX_EVENT_CROSS_DOM_LIMIT).CODE(),
 		EVENT_CROSS_DOMAIN	, ATTRIB2			},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE	, ATTRIB0			},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE	, ATTRIB0			},
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
 		EVENT_THERM_NONE	, ATTRIB0			},
@@ -9909,7 +9915,13 @@ Window *CreateEvents(unsigned long long id)
 		EVENT_CORE_ATT_STS	, ATTRIB1			},
 	/*	Turbo Transition Attenuation Log			*/
 	{	{BOXKEY_CLR_CORE_ATT}	, RSC(BOX_EVENT_TURBO_ATTEN).CODE(),
-		EVENT_CORE_ATT_LOG	, ATTRIB2			}
+		EVENT_CORE_ATT_LOG	, ATTRIB2			},
+	/*	Thermal Velocity Boost					*/
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_THERMAL_TVB).CODE(),
+		EVENT_CORE_TVB_STS	, ATTRIB1			},
+	/*	Thermal Velocity Boost Log				*/
+	{	{BOXKEY_CLR_CORE_TVB}	, RSC(BOX_EVENT_THERMAL_TVB).CODE(),
+		EVENT_CORE_TVB_LOG	, ATTRIB2			}
       }, {
 	/*	Thermal Sensor						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
@@ -9976,6 +9988,12 @@ Window *CreateEvents(unsigned long long id)
 		EVENT_THERM_NONE	, ATTRIB0			},
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE	, ATTRIB0			},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE	, ATTRIB0			},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
 		EVENT_THERM_NONE	, ATTRIB0			}
       }, {
 	/*	Thermal Sensor						*/
@@ -10026,6 +10044,12 @@ Window *CreateEvents(unsigned long long id)
 	/*	Electrical EDP						*/
 	{	{BOXKEY_CLR_RING_EDP}	, RSC(BOX_EVENT_ELECTRICAL).CODE(),
 		EVENT_RING_EDP_LOG	, ATTRIB2			},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE	, ATTRIB0			},
+	/*	Blank cell						*/
+	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
+		EVENT_THERM_NONE	, ATTRIB0			},
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
 		EVENT_THERM_NONE	, ATTRIB0			},
@@ -13809,6 +13833,7 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_CLR_CORE_EDP:
     case BOXKEY_CLR_CORE_BST:
     case BOXKEY_CLR_CORE_ATT:
+    case BOXKEY_CLR_CORE_TVB:
     case BOXKEY_CLR_GFX_HOT:
     case BOXKEY_CLR_GFX_THM:
     case BOXKEY_CLR_GFX_AVG:

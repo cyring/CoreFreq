@@ -8484,6 +8484,10 @@ void CorePerfLimitReasons(CORE_RO *Core)
 		limit.TurboAttenLog = 0;
 		ClearBit = 1;
 	}
+	if (Clear_Events & EVENT_CORE_TVB_LOG) {
+		limit.TVB_Log = 0;
+		ClearBit = 1;
+	}
 	if (ClearBit)
 	{
 		WRMSR(limit, MSR_SKL_CORE_PERF_LIMIT_REASONS);
@@ -8501,6 +8505,7 @@ void CorePerfLimitReasons(CORE_RO *Core)
 		| ((Bit64) limit.EDP_Log	<< LSHIFT_CORE_EDP_LOG)
 		| ((Bit64) limit.TurboLimitLog	<< LSHIFT_CORE_BST_LOG)
 		| ((Bit64) limit.TurboAttenLog	<< LSHIFT_CORE_ATT_LOG)
+		| ((Bit64) limit.TVB_Log	<< LSHIFT_CORE_TVB_LOG)
 	);
 	PUBLIC(RO(Proc))->PowerThermal.Events[eSTS] |= (
 		  ((Bit64) limit.Thermal_Status << LSHIFT_CORE_THM_STS)
@@ -8514,6 +8519,7 @@ void CorePerfLimitReasons(CORE_RO *Core)
 		| ((Bit64) limit.EDP_Status	<< LSHIFT_CORE_EDP_STS)
 		| ((Bit64) limit.TurboLimit	<< LSHIFT_CORE_BST_STS)
 		| ((Bit64) limit.TurboAtten	<< LSHIFT_CORE_ATT_STS)
+		| ((Bit64) limit.TVB_Status	<< LSHIFT_CORE_TVB_STS)
 	);
     }
 }
@@ -12950,6 +12956,7 @@ void Monitor_CorePerfLimitReasons(PROC_RO *Pkg)
 		| ((Bit64) limit.EDP_Log	<< LSHIFT_CORE_EDP_LOG)
 		| ((Bit64) limit.TurboLimitLog	<< LSHIFT_CORE_BST_LOG)
 		| ((Bit64) limit.TurboAttenLog	<< LSHIFT_CORE_ATT_LOG)
+		| ((Bit64) limit.TVB_Log	<< LSHIFT_CORE_TVB_LOG)
 	);
 
 	Pkg->PowerThermal.Events[eSTS] |= (
@@ -12964,6 +12971,7 @@ void Monitor_CorePerfLimitReasons(PROC_RO *Pkg)
 		| ((Bit64) limit.EDP_Status	<< LSHIFT_CORE_EDP_STS)
 		| ((Bit64) limit.TurboLimit	<< LSHIFT_CORE_BST_STS)
 		| ((Bit64) limit.TurboAtten	<< LSHIFT_CORE_ATT_STS)
+		| ((Bit64) limit.TVB_Status	<< LSHIFT_CORE_TVB_STS)
 	);
 }
 
@@ -19951,6 +19959,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		case EVENT_CORE_EDP_LOG:
 		case EVENT_CORE_BST_LOG:
 		case EVENT_CORE_ATT_LOG:
+		case EVENT_CORE_TVB_LOG:
 		case EVENT_GFX_HOT_LOG:
 		case EVENT_GFX_THM_LOG:
 		case EVENT_GFX_AVG_LOG:
