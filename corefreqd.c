@@ -6582,25 +6582,26 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 {
     if (state == 0) {
 	if (BITWISEAND(LOCKLESS, Ref->RO(Shm)->SysGate.Operation, 0x1)) {
-		/*	Stop SysGate 					*/
+		/*		Stop SysGate 				*/
 		BITCLR(LOCKLESS, Ref->RO(Shm)->SysGate.Operation, 0);
-		/*	Notify						*/
+		/*		Notify					*/
 		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_NTFY);
 	}
     } else {
-	SysOnce(Ref->fd->drv);
-
 	if (!BITWISEAND(LOCKLESS, Ref->RO(Shm)->SysGate.Operation, 0x1)) {
 	    if (SysGate_OnDemand(Ref, 1) == 0) {
-		/*	Copy system information.		*/
-		SysGate_Kernel(Ref);
-		/*	Start SysGate				*/
+		/*		Start SysGate				*/
 		BITSET(LOCKLESS, Ref->RO(Shm)->SysGate.Operation, 0);
-		/*	Notify					*/
+		/*		Notify					*/
 		BITWISESET(LOCKLESS, PendingSync,BIT_MASK_NTFY);
 	    }
 	}
     }
+    if (BITWISEAND(LOCKLESS, Ref->RO(Shm)->SysGate.Operation, 0x1))
+	if (SysOnce(Ref->fd->drv) == RC_OK_SYSGATE) {
+		/*		Copy system information.		*/
+		SysGate_Kernel(Ref);
+	}
 }
 
 void Master_Ring_Handler(REF *Ref, unsigned int rid)
