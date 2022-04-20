@@ -1766,6 +1766,67 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
     }
 }
 
+#define CS_Reset_Array(_CS)						\
+({									\
+	_CS.index[0] = 0;						\
+})
+
+#define CS_Seek_Store(_fd, _ptr, _CS)					\
+({									\
+	size_t	length; 						\
+	if (fscanf(_fd, "%s", _ptr) == 1) {				\
+		unsigned char offset;					\
+		length = strlen(_ptr);					\
+		_ptr += length; 					\
+		(*_ptr) = 0x0;						\
+		_ptr++; 						\
+		length = _ptr - _CS.array;				\
+		offset = (unsigned char) length;			\
+		_CS.index[0]++; 					\
+		_CS.index[_CS.index[0]] = offset;			\
+	}								\
+})
+
+#define CLOCKSOURCE_PATH "/sys/devices/system/clocksource/clocksource0"
+void ClockSource_Update(RO(SHM_STRUCT) *RO(Shm))
+{
+	FILE	*fd;
+	char	*ptr;
+
+	CS_Reset_Array(RO(Shm)->CS);
+
+	if ((fd = fopen(CLOCKSOURCE_PATH"/current_clocksource", "r")) != NULL)
+	{
+		ptr = RO(Shm)->CS.array;
+		CS_Seek_Store(fd, ptr, RO(Shm)->CS);
+		fclose(fd);
+	}
+	if ((fd = fopen(CLOCKSOURCE_PATH"/available_clocksource", "r")) != NULL)
+	{
+		do {
+			CS_Seek_Store(fd, ptr, RO(Shm)->CS);
+		} while (!feof(fd) && (RO(Shm)->CS.index[0] < 7));
+		fclose(fd);
+	}
+}
+
+long ClockSource_Submit(RO(SHM_STRUCT) *RO(Shm), unsigned char index)
+{
+    if (index <= RO(Shm)->CS.index[0])
+    {
+	FILE	*fd;
+	if ((fd = fopen(CLOCKSOURCE_PATH"/current_clocksource", "w")) != NULL)
+	{
+		char *ptr = &RO(Shm)->CS.array[RO(Shm)->CS.index[index]];
+		fprintf(fd, ptr);
+		fclose(fd);
+		return 0;
+	}
+    }
+	return -EINVAL;
+}
+#undef CLOCKSOURCE_PATH
+
 void Package_Update(	RO(SHM_STRUCT) *RO(Shm),
 			RO(PROC) *RO(Proc), RW(PROC) *RW(Proc) )
 {	/*	Copy the operational settings.				*/
@@ -1796,6 +1857,8 @@ void Package_Update(	RO(SHM_STRUCT) *RO(Shm),
 	ThermalPoint(RO(Shm), RO(Proc));
 
 	Mitigation_1st_Stage(RO(Shm), RO(Proc), RW(Proc));
+
+	ClockSource_Update(RO(Shm));
 }
 
 #define TIMING(_mc, _cha)	RO(Shm)->Uncore.MC[_mc].Channel[_cha].Timing
@@ -6596,6 +6659,15 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 	RING_READ(Ref->RW(Shm)->Ring[rid], ctrl);
 
    switch (ctrl.cmd) {
+   case COREFREQ_KERNEL_MISC:
+     switch (ctrl.dl.hi) {
+     case MACHINE_CLOCK_SOURCE:
+	if (ClockSource_Submit(Ref->RO(Shm), (unsigned char) ctrl.dl.lo) == 0) {
+		ClockSource_Update(Ref->RO(Shm));
+	}
+	break;
+     }
+     break;
    case COREFREQ_SESSION_APP:
 	switch (ctrl.sub) {
 	case SESSION_CLI:

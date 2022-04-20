@@ -1187,6 +1187,7 @@
 #define RSC_KERNEL_GOVERNOR_CODE_EN	"Governor"
 #define RSC_KERNEL_FREQ_DRIVER_CODE_EN	"CPU-Freq driver"
 #define RSC_KERNEL_IDLE_DRIVER_CODE_EN	"CPU-Idle driver"
+#define RSC_KERNEL_CLOCK_SOURCE_CODE_EN "Clock Source"
 #define RSC_KERNEL_RELEASE_CODE_EN	"Release"
 #define RSC_KERNEL_VERSION_CODE_EN	"Version"
 #define RSC_KERNEL_MACHINE_CODE_EN	"Machine"

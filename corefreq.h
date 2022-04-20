@@ -520,6 +520,11 @@ typedef struct
 	} SysGate;
 
 	struct {
+		unsigned char	index[8];
+		char		array[MAX_UTS_LEN];
+	} CS;
+
+	struct {
 		unsigned int	Interval;
 		struct timespec pollingWait,
 				ringWaiting,

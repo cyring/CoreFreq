@@ -4704,6 +4704,24 @@ void Kernel_RAM_Update(TGrid *grid, DATA_TYPE data)
 	memcpy(&grid->cell.item[grid->cell.length - len - 1], item, len);
 }
 
+void Kernel_ClockSource_Update(TGrid *grid, DATA_TYPE data)
+{
+	char item[CPUFREQ_NAME_LEN+1];
+	size_t fmtLen;
+	const signed int len = KMIN(strlen(RO(Shm)->CS.array),CPUFREQ_NAME_LEN);
+
+	if (len > 0) {
+		StrLenFormat(	fmtLen, item, CPUFREQ_NAME_LEN+1, "%.*s""%-.*s",
+				CPUFREQ_NAME_LEN - len, hSpace,
+				len, RO(Shm)->CS.array );
+	} else {
+		StrLenFormat(	fmtLen, item, CPUFREQ_NAME_LEN+1, "%.*s""%-.*s",
+				CPUFREQ_NAME_LEN - RSZ(MISSING), hSpace,
+				CPUFREQ_NAME_LEN, RSC(MISSING).CODE() );
+	}
+	memcpy(&grid->cell.item[grid->cell.length - fmtLen - 2], item, fmtLen);
+}
+
 void Kernel_CPU_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
 	char item[CPUFREQ_NAME_LEN+1];
@@ -4883,6 +4901,26 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 			"%s%.*s" "%s KB", RSC(KERNEL_FREE_HIGH).CODE(),
 			width - 6 - RSZ(KERNEL_FREE_HIGH) - len, hSpace, str ),
 		Kernel_RAM_Update, &RO(Shm)->SysGate.memInfo.freehigh );
+/* Section Mark */
+	StrFormat(item[0], 2+4+1+6+1+1, "%%s%%.*s<%%%d.*s>", CPUFREQ_NAME_LEN);
+
+	len = KMIN(strlen(RO(Shm)->CS.array), CPUFREQ_NAME_LEN);
+    if (len > 0)
+    {
+	GridCall( PUT(	OPS_CLOCK_SOURCE_SEL, RSC(KERNEL_CLOCK_SOURCE).ATTR(),
+			width, 0, item[0], RSC(KERNEL_CLOCK_SOURCE).CODE(),
+			width - (OutFunc == NULL ? 2 : 3)
+			- RSZ(KERNEL_CLOCK_SOURCE) - CPUFREQ_NAME_LEN, hSpace,
+			len, RO(Shm)->CS.array ),
+		Kernel_ClockSource_Update );
+    } else {
+	GridCall( PUT(	OPS_CLOCK_SOURCE_SEL, RSC(KERNEL_CLOCK_SOURCE).ATTR(),
+			width, 0, item[0], RSC(KERNEL_CLOCK_SOURCE).CODE(),
+			width - (OutFunc == NULL ? 2 : 3)
+			- RSZ(KERNEL_CLOCK_SOURCE) - CPUFREQ_NAME_LEN, hSpace,
+			CPUFREQ_NAME_LEN, RSC(MISSING).CODE() ),
+		Kernel_CPU_Freq_Update );
+    }
 /* Section Mark */
 	StrFormat(item[0], 2+4+1+6+1+1, "%%s%%.*s[%%%d.*s]", CPUFREQ_NAME_LEN);
 
@@ -7821,7 +7859,7 @@ Window *CreateSysInfo(unsigned long long id)
 		break;
 	case SCANKEY_k:
 		{
-		CUINT height = 15
+		CUINT height = 16
 			+ ( RO(Shm)->SysGate.OS.IdleDriver.stateCount > 0 ) * 5;
 		winOrigin.col = 1;
 		winWidth = 78;
@@ -10093,6 +10131,50 @@ Window *CreateEvents(unsigned long long id)
 #undef EVENT_DOMAINS
 #undef EVENT_SECTIONS
 
+Window *CreateClockSource(unsigned long long id)
+{
+	const unsigned int count = (unsigned int) RO(Shm)->CS.index[0];
+	Window *wCS = CreateWindow(	wLayer, id, 1, count - 1,
+					22, TOP_HEADER_ROW + 7,
+					WINFLAG_NO_STOCK );
+    if (wCS != NULL)
+    {
+	const char *current = RO(Shm)->CS.array;
+	CUINT row = 1;
+	unsigned int idx;
+	for (idx = 1; idx < count; idx++)
+	{
+		const unsigned long long key = OPS_CLOCK_SOURCE | idx;
+		const char *avail = &RO(Shm)->CS.array[RO(Shm)->CS.index[idx]];
+		ATTRIBUTE attrib;
+
+	    if (!strcmp(current, avail)) {
+		StrFormat(Buffer, MAX_UTS_LEN,
+			"        >>  " "%-16s" "        ", avail);
+
+		attrib = RSC(UI).ATTR()[UI_BOX_DISABLE_STATE];
+		row = (CUINT) (idx - 1);
+	    } else {
+		StrFormat(Buffer, MAX_UTS_LEN,
+			"            " "%-16s" "        ", avail);
+
+		attrib = RSC(UI).ATTR()[UI_BOX_ENABLE_STATE];
+	    }
+		StoreTCell(wCS, key, Buffer, attrib);
+	}
+	wCS->matrix.select.row = row;
+
+	StoreWindow(wCS, .title, (char*) RSC(BOX_CLOCK_SOURCE_TITLE).CODE());
+
+	StoreWindow(wCS,	.key.Enter,	MotionEnter_Cell);
+	StoreWindow(wCS,	.key.Down,	MotionDown_Win);
+	StoreWindow(wCS,	.key.Up,	MotionUp_Win);
+	StoreWindow(wCS,	.key.Home,	MotionReset_Win);
+	StoreWindow(wCS,	.key.End,	MotionEnd_Cell);
+    }
+	return wCS;
+}
+
 Window *CreateRecorder(unsigned long long id)
 {
 	Window *wRec = CreateWindow(	wLayer, id,
@@ -11096,6 +11178,37 @@ int Shortcut(SCANKEY *scan)
 			ops_Str[1][bix == 0], stateAttr[bix == 0], ops_key_off,
 			RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
 		&winList);
+      } else {
+	SetHead(&winList, win);
+      }
+    }
+    break;
+
+    case OPS_CLOCK_SOURCE_1:
+    case OPS_CLOCK_SOURCE_2:
+    case OPS_CLOCK_SOURCE_3:
+    case OPS_CLOCK_SOURCE_4:
+    case OPS_CLOCK_SOURCE_5:
+    case OPS_CLOCK_SOURCE_6:
+    case OPS_CLOCK_SOURCE_7:
+    {
+	const unsigned short indexCS = scan->key & CLOCK_SOURCE_MASK;
+
+	if (!RING_FULL(RW(Shm)->Ring[1])) {
+		RING_WRITE(	RW(Shm)->Ring[1],
+				COREFREQ_KERNEL_MISC,
+				indexCS,
+				MACHINE_CLOCK_SOURCE );
+	}
+    }
+    break;
+
+    case OPS_CLOCK_SOURCE_SEL:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	AppendWindow(CreateClockSource(scan->key), &winList);
       } else {
 	SetHead(&winList, win);
       }

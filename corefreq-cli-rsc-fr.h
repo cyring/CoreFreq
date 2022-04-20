@@ -702,6 +702,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_KERNEL_GOVERNOR_CODE_FR	"Gouverneur"
 #define RSC_KERNEL_FREQ_DRIVER_CODE_FR	"Pilote CPU-Freq"
 #define RSC_KERNEL_IDLE_DRIVER_CODE_FR	"Pilote CPU-Idle"
+#define RSC_KERNEL_CLOCK_SOURCE_CODE_FR "Source Horloge"
 #define RSC_KERNEL_RELEASE_CODE_FR	"\x89""dition"
 #define RSC_KERNEL_VERSION_CODE_FR	"Version"
 #define RSC_KERNEL_MACHINE_CODE_FR	"Machine"
