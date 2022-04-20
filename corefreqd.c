@@ -1766,101 +1766,6 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
     }
 }
 
-#define CS_Reset_Array(_CS)						\
-({									\
-	_CS.index[0] = 0;						\
-})
-
-#define CS_Seek_Store(_fd, _ptr, _CS)					\
-({									\
-	size_t	length; 						\
-	if (fscanf(_fd, "%s", _ptr) == 1) {				\
-		unsigned char offset;					\
-		length = strlen(_ptr);					\
-		_ptr += length; 					\
-		(*_ptr) = 0x0;						\
-		_ptr++; 						\
-		length = _ptr - _CS.array;				\
-		offset = (unsigned char) length;			\
-		_CS.index[0]++; 					\
-		_CS.index[_CS.index[0]] = offset;			\
-	}								\
-})
-
-#define CLOCKSOURCE_PATH "/sys/devices/system/clocksource/clocksource0"
-void ClockSource_Update(RO(SHM_STRUCT) *RO(Shm))
-{
-	FILE	*fd;
-	char	*ptr;
-
-	CS_Reset_Array(RO(Shm)->CS);
-
-	if ((fd = fopen(CLOCKSOURCE_PATH"/current_clocksource", "r")) != NULL)
-	{
-		ptr = RO(Shm)->CS.array;
-		CS_Seek_Store(fd, ptr, RO(Shm)->CS);
-		fclose(fd);
-	}
-	if ((fd = fopen(CLOCKSOURCE_PATH"/available_clocksource", "r")) != NULL)
-	{
-		do {
-			CS_Seek_Store(fd, ptr, RO(Shm)->CS);
-		} while (!feof(fd) && (RO(Shm)->CS.index[0] < 7));
-		fclose(fd);
-	}
-}
-
-long ClockSource_Submit(RO(SHM_STRUCT) *RO(Shm), unsigned char index)
-{
-    if (index <= RO(Shm)->CS.index[0])
-    {
-	FILE	*fd;
-	if ((fd = fopen(CLOCKSOURCE_PATH"/current_clocksource", "w")) != NULL)
-	{
-		char *ptr = &RO(Shm)->CS.array[RO(Shm)->CS.index[index]];
-		fprintf(fd, ptr);
-		fclose(fd);
-		return 0;
-	}
-    }
-	return -EINVAL;
-}
-#undef CLOCKSOURCE_PATH
-
-void Package_Update(	RO(SHM_STRUCT) *RO(Shm),
-			RO(PROC) *RO(Proc), RW(PROC) *RW(Proc) )
-{	/*	Copy the operational settings.				*/
-	RO(Shm)->Registration.AutoClock = RO(Proc)->Registration.AutoClock;
-	RO(Shm)->Registration.Experimental= RO(Proc)->Registration.Experimental;
-	RO(Shm)->Registration.HotPlug = RO(Proc)->Registration.HotPlug;
-	RO(Shm)->Registration.PCI = RO(Proc)->Registration.PCI;
-	RO(Shm)->Registration.HSMP= RO(Proc)->Features.HSMP_Enable;
-	BITSTOR(LOCKLESS,RO(Shm)->Registration.NMI, RO(Proc)->Registration.NMI);
-	RO(Shm)->Registration.Driver = RO(Proc)->Registration.Driver;
-	/*	Copy the timer interval delay.				*/
-	RO(Shm)->Sleep.Interval = RO(Proc)->SleepInterval;
-	/*	Compute the polling wait time based on the timer interval. */
-	RO(Shm)->Sleep.pollingWait=TIMESPEC((RO(Shm)->Sleep.Interval * 1000000L)
-					/ WAKEUP_RATIO);
-	/*	Copy the SysGate tick steps.					*/
-	RO(Shm)->SysGate.tickReset = RO(Proc)->tickReset;
-	RO(Shm)->SysGate.tickStep  = RO(Proc)->tickStep;
-
-	Architecture(RO(Shm), RO(Proc));
-
-	PerformanceMonitoring(RO(Shm), RO(Proc));
-
-	HyperThreading(RO(Shm), RO(Proc));
-
-	PowerInterface(RO(Shm), RO(Proc));
-
-	ThermalPoint(RO(Shm), RO(Proc));
-
-	Mitigation_1st_Stage(RO(Shm), RO(Proc), RW(Proc));
-
-	ClockSource_Update(RO(Shm));
-}
-
 #define TIMING(_mc, _cha)	RO(Shm)->Uncore.MC[_mc].Channel[_cha].Timing
 
 typedef struct {
@@ -6343,11 +6248,8 @@ void SystemRegisters(	RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core),
 				RO(Core, AT(cpu))->SystemRegister.EFCR;
 }
 
-void SysGate_OS_Driver(REF *Ref)
+void SysGate_OS_Driver(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
-	RO(SHM_STRUCT) *RO(Shm) = Ref->RO(Shm);
-	RO(PROC) *RO(Proc) = Ref->RO(Proc);
-
 	memset(&RO(Shm)->SysGate.OS, 0, sizeof(OS_DRIVER));
     if (strlen(RO(Proc)->OS.IdleDriver.Name) > 0) {
 	int idx;
@@ -6409,6 +6311,67 @@ void SysGate_Kernel(REF *Ref)
 	memcpy(RO(Shm)->SysGate.version, SysGate->version, MAX_UTS_LEN);
 	memcpy(RO(Shm)->SysGate.machine, SysGate->machine, MAX_UTS_LEN);
 }
+
+#define CS_Reset_Array(_CS)						\
+({									\
+	_CS.index[0] = 0;						\
+})
+
+#define CS_Seek_Store(_fd, _ptr, _CS)					\
+({									\
+	size_t	length; 						\
+	if (fscanf(_fd, "%s", _ptr) == 1) {				\
+		unsigned char offset;					\
+		length = strlen(_ptr);					\
+		_ptr += length; 					\
+		(*_ptr) = 0x0;						\
+		_ptr++; 						\
+		length = _ptr - _CS.array;				\
+		offset = (unsigned char) length;			\
+		_CS.index[0]++; 					\
+		_CS.index[_CS.index[0]] = offset;			\
+	}								\
+})
+
+#define CLOCKSOURCE_PATH "/sys/devices/system/clocksource/clocksource0"
+void ClockSource_Update(RO(SHM_STRUCT) *RO(Shm))
+{
+	FILE	*fd;
+	char	*ptr;
+
+	CS_Reset_Array(RO(Shm)->CS);
+
+	if ((fd = fopen(CLOCKSOURCE_PATH"/current_clocksource", "r")) != NULL)
+	{
+		ptr = RO(Shm)->CS.array;
+		CS_Seek_Store(fd, ptr, RO(Shm)->CS);
+		fclose(fd);
+	}
+	if ((fd = fopen(CLOCKSOURCE_PATH"/available_clocksource", "r")) != NULL)
+	{
+		do {
+			CS_Seek_Store(fd, ptr, RO(Shm)->CS);
+		} while (!feof(fd) && (RO(Shm)->CS.index[0] < 7));
+		fclose(fd);
+	}
+}
+
+long ClockSource_Submit(RO(SHM_STRUCT) *RO(Shm), unsigned char index)
+{
+    if (index <= RO(Shm)->CS.index[0])
+    {
+	FILE	*fd;
+	if ((fd = fopen(CLOCKSOURCE_PATH"/current_clocksource", "w")) != NULL)
+	{
+		char *ptr = &RO(Shm)->CS.array[RO(Shm)->CS.index[index]];
+		fprintf(fd, ptr);
+		fclose(fd);
+		return 0;
+	}
+    }
+	return -EINVAL;
+}
+#undef CLOCKSOURCE_PATH
 
 static const int reverseSign[2] = {+1, -1};
 
@@ -6521,6 +6484,41 @@ void SysGate_Update(REF *Ref)
 					RO(Proc)->OS.IdleDriver.stateLimit;
 }
 
+void Package_Update(	RO(SHM_STRUCT) *RO(Shm),
+			RO(PROC) *RO(Proc), RW(PROC) *RW(Proc) )
+{	/*	Copy the operational settings.				*/
+	RO(Shm)->Registration.AutoClock = RO(Proc)->Registration.AutoClock;
+	RO(Shm)->Registration.Experimental= RO(Proc)->Registration.Experimental;
+	RO(Shm)->Registration.HotPlug = RO(Proc)->Registration.HotPlug;
+	RO(Shm)->Registration.PCI = RO(Proc)->Registration.PCI;
+	RO(Shm)->Registration.HSMP= RO(Proc)->Features.HSMP_Enable;
+	BITSTOR(LOCKLESS,RO(Shm)->Registration.NMI, RO(Proc)->Registration.NMI);
+	RO(Shm)->Registration.Driver = RO(Proc)->Registration.Driver;
+	/*	Copy the timer interval delay.				*/
+	RO(Shm)->Sleep.Interval = RO(Proc)->SleepInterval;
+	/*	Compute the polling wait time based on the timer interval. */
+	RO(Shm)->Sleep.pollingWait=TIMESPEC((RO(Shm)->Sleep.Interval * 1000000L)
+					/ WAKEUP_RATIO);
+	/*	Copy the SysGate tick steps.				*/
+	RO(Shm)->SysGate.tickReset = RO(Proc)->tickReset;
+	RO(Shm)->SysGate.tickStep  = RO(Proc)->tickStep;
+
+	Architecture(RO(Shm), RO(Proc));
+
+	PerformanceMonitoring(RO(Shm), RO(Proc));
+
+	HyperThreading(RO(Shm), RO(Proc));
+
+	PowerInterface(RO(Shm), RO(Proc));
+
+	ThermalPoint(RO(Shm), RO(Proc));
+
+	Mitigation_1st_Stage(RO(Shm), RO(Proc), RW(Proc));
+	/*	Aggregate OS idle driver data and Clock Source		*/
+	SysGate_OS_Driver(RO(Shm), RO(Proc));
+	ClockSource_Update(RO(Shm));
+}
+
 void PerCore_Update(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 			RO(CORE) **RO(Core), unsigned int cpu )
 {
@@ -6545,6 +6543,8 @@ void PerCore_Update(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 
 	CPUID_Dump(RO(Shm), RO(Core), cpu);
 }
+
+#define SysOnce(drv)	ioctl(drv, COREFREQ_IOCTL_SYSONCE)
 
 int SysGate_OnDemand(REF *Ref, int operation)
 {
@@ -6588,18 +6588,16 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_NTFY);
 	}
     } else {
+	SysOnce(Ref->fd->drv);
+
 	if (!BITWISEAND(LOCKLESS, Ref->RO(Shm)->SysGate.Operation, 0x1)) {
 	    if (SysGate_OnDemand(Ref, 1) == 0) {
-		if (ioctl(Ref->fd->drv, COREFREQ_IOCTL_SYSONCE) != -EPERM) {
-			/*	Aggregate the OS idle driver data.	*/
-			SysGate_OS_Driver(Ref);
-			/*	Copy system information.		*/
-			SysGate_Kernel(Ref);
-			/*	Start SysGate				*/
-			BITSET(LOCKLESS, Ref->RO(Shm)->SysGate.Operation, 0);
-			/*	Notify					*/
-			BITWISESET(LOCKLESS, PendingSync,BIT_MASK_NTFY);
-		}
+		/*	Copy system information.		*/
+		SysGate_Kernel(Ref);
+		/*	Start SysGate				*/
+		BITSET(LOCKLESS, Ref->RO(Shm)->SysGate.Operation, 0);
+		/*	Notify					*/
+		BITWISESET(LOCKLESS, PendingSync,BIT_MASK_NTFY);
 	    }
 	}
     }
@@ -6639,7 +6637,7 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 	    }
 		break;
 	case RC_OK_SYSGATE:
-		SysGate_OS_Driver(Ref);
+		SysGate_OS_Driver(Ref->RO(Shm), Ref->RO(Proc));
 		fallthrough;
 	case RC_SUCCESS: /* Platform changed -> pending notification.	*/
 		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_NTFY);

@@ -4831,7 +4831,8 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	}
 /* Section Mark */
 	PUT(	SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 0,
-		"%s:", RO(Shm)->SysGate.sysname );
+		"%s:", BITWISEAND(LOCKLESS, RO(Shm)->SysGate.Operation, 0x1) ?
+		RO(Shm)->SysGate.sysname : (char*) RSC(SYSGATE).CODE() );
 
 	PUT(	SCANKEY_NULL, RSC(KERNEL_RELEASE).ATTR(), width, 2,
 		"%s%.*s[%s]", RSC(KERNEL_RELEASE).CODE(),
@@ -7040,9 +7041,7 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					   RSC(CREATE_MENU_SHORTKEY).ATTR());
 /* Row  5 */
 	StoreTCell(wMenu, SCANKEY_k,	RSC(MENU_ITEM_KERNEL).CODE(),
-			BITWISEAND(LOCKLESS, RO(Shm)->SysGate.Operation, 0x1) ?
-					RSC(CREATE_MENU_SHORTKEY).ATTR()
-					: RSC(CREATE_MENU_DISABLE).ATTR());
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
 #ifndef NO_LOWER
 	StoreTCell(wMenu, SCANKEY_l,	RSC(MENU_ITEM_IDLE_STATES).CODE(),
@@ -14365,10 +14364,6 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case SCANKEY_k:
-	if (BITWISEAND(LOCKLESS, RO(Shm)->SysGate.Operation, 0x1) == 0) {
-		break;
-	}
-	fallthrough;
     case SCANKEY_e:
     case SCANKEY_o:
     case SCANKEY_p:
