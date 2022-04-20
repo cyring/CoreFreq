@@ -4919,7 +4919,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 			width - (OutFunc == NULL ? 2 : 3)
 			- RSZ(KERNEL_CLOCK_SOURCE) - CPUFREQ_NAME_LEN, hSpace,
 			CPUFREQ_NAME_LEN, RSC(MISSING).CODE() ),
-		Kernel_CPU_Freq_Update );
+		Kernel_ClockSource_Update );
     }
 /* Section Mark */
 	StrFormat(item[0], 2+4+1+6+1+1, "%%s%%.*s[%%%d.*s]", CPUFREQ_NAME_LEN);
