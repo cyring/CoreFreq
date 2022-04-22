@@ -10157,7 +10157,8 @@ Window *CreateEvents(unsigned long long id)
 Window *CreateClockSource(unsigned long long id)
 {
 	const unsigned int count = (unsigned int) RO(Shm)->CS.index[0];
-	Window *wCS = CreateWindow(	wLayer, id, 1, count - 1,
+
+	Window *wCS = CreateWindow(	wLayer, id, 1, count + 1,
 					22, TOP_HEADER_ROW + 7,
 					WINFLAG_NO_STOCK );
     if (wCS != NULL)
@@ -10165,26 +10166,40 @@ Window *CreateClockSource(unsigned long long id)
 	const char *current = RO(Shm)->CS.array;
 	CUINT row = 1;
 	unsigned int idx;
+
+	StoreTCell(wCS, SCANKEY_NULL, RSC(BOX_BLANK_DESC).CODE(),
+			RSC(UI).ATTR()[UI_BOX_ENABLE_STATE]);
+
 	for (idx = 1; idx < count; idx++)
 	{
 		const unsigned long long key = OPS_CLOCK_SOURCE | idx;
 		const char *avail = &RO(Shm)->CS.array[RO(Shm)->CS.index[idx]];
+		char *format;
+		CUINT lt, rt, li = strlen(avail);
 		ATTRIBUTE attrib;
 
-	    if (!strcmp(current, avail)) {
-		StrFormat(Buffer, MAX_UTS_LEN,
-			"        >>  " "%-16s" "        ", avail);
+		lt = RSZ(BOX_BLANK_DESC) - li;
+		rt = lt >> 1;
+		lt = rt + (lt & 0x1);
 
+	    if (!strcmp(current, avail)) {
+		format = "%.*s" "<  %s  >" "%.*s";
 		attrib = RSC(UI).ATTR()[UI_BOX_DISABLE_STATE];
 		row = (CUINT) (idx - 1);
+		lt = lt - 3;
+		rt = rt - 3;
 	    } else {
-		StrFormat(Buffer, MAX_UTS_LEN,
-			"            " "%-16s" "        ", avail);
-
+		format = "%.*s" "%s" "%.*s";
 		attrib = RSC(UI).ATTR()[UI_BOX_ENABLE_STATE];
 	    }
+		StrLenFormat(li, Buffer, MAX_UTS_LEN,
+				format, lt, HSPACE, avail, rt, HSPACE);
+
 		StoreTCell(wCS, key, Buffer, attrib);
 	}
+	StoreTCell(wCS, SCANKEY_NULL, RSC(BOX_BLANK_DESC).CODE(),
+			RSC(UI).ATTR()[UI_BOX_ENABLE_STATE]);
+
 	wCS->matrix.select.row = row;
 
 	StoreWindow(wCS, .title, (char*) RSC(BOX_CLOCK_SOURCE_TITLE).CODE());
