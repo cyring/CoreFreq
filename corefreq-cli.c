@@ -865,7 +865,7 @@ TGrid *PrintRatioFreq(	Window *win, struct FLIP_FLOP *CFlop,
 	return pGrid;
 }
 
-void RefreshBaseClock(TGrid *grid, DATA_TYPE data)
+void RefreshBaseClock(TGrid *grid, DATA_TYPE data[])
 {
 	struct FLIP_FLOP *CFlop = \
 		&RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].FlipFlop[
@@ -879,7 +879,7 @@ void RefreshBaseClock(TGrid *grid, DATA_TYPE data)
 	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
 }
 
-void RefreshFactoryClock(TGrid *grid, DATA_TYPE data)
+void RefreshFactoryClock(TGrid *grid, DATA_TYPE data[])
 {
 	char item[8+1];
 	UNUSED(data);
@@ -890,7 +890,7 @@ void RefreshFactoryClock(TGrid *grid, DATA_TYPE data)
 	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
 }
 
-void RefreshFactoryFreq(TGrid *grid, DATA_TYPE data)
+void RefreshFactoryFreq(TGrid *grid, DATA_TYPE data[])
 {
 	char item[11+11+1];
 	UNUSED(data);
@@ -916,20 +916,20 @@ void RefreshItemFreq(TGrid *grid, unsigned int ratio, double Freq_MHz)
 	memcpy(&grid->cell.item[51], &item[0], 4);
 }
 
-void RefreshRatioFreq(TGrid *grid, DATA_TYPE data)
+void RefreshRatioFreq(TGrid *grid, DATA_TYPE data[])
 {
 	struct FLIP_FLOP *CFlop = \
 		&RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].FlipFlop[
 			!RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Toggle
 		];
 	RefreshItemFreq(grid,
-			(*data.puint),
-			ABS_FREQ_MHz(double, (*data.puint), CFlop->Clock));
+			(*data[0].puint),
+			ABS_FREQ_MHz(double, (*data[0].puint), CFlop->Clock));
 }
 
-void RefreshTopFreq(TGrid *grid, DATA_TYPE data)
+void RefreshTopFreq(TGrid *grid, DATA_TYPE data[])
 {
-	enum RATIO_BOOST boost = data.uint[0];
+	enum RATIO_BOOST boost = data[0].uint[0];
 	unsigned int top = Ruler.Top[boost];
 	unsigned int ratio = RO(Shm)->Cpu[top].Boost[boost];
 
@@ -939,9 +939,9 @@ void RefreshTopFreq(TGrid *grid, DATA_TYPE data)
 	RefreshItemFreq(grid, ratio, ABS_FREQ_MHz(double, ratio, CFlop->Clock));
 }
 
-void RefreshHybridFreq(TGrid *grid, DATA_TYPE data)
+void RefreshHybridFreq(TGrid *grid, DATA_TYPE data[])
 {
-	enum RATIO_BOOST boost = data.uint[0];
+	enum RATIO_BOOST boost = data[0].uint[0];
 	unsigned int ratio = RO(Shm)->Cpu[
 					RO(Shm)->Proc.Service.Hybrid
 				].Boost[boost];
@@ -956,7 +956,7 @@ void RefreshHybridFreq(TGrid *grid, DATA_TYPE data)
 	RefreshItemFreq(grid, ratio, ABS_FREQ_MHz(double, ratio, CFlop->Clock));
 }
 
-void RefreshConfigTDP(TGrid *grid, DATA_TYPE data)
+void RefreshConfigTDP(TGrid *grid, DATA_TYPE data[])
 {
 	char item[11+11+1];
 	UNUSED(data);
@@ -2856,7 +2856,7 @@ void TechUpdate(TGrid *grid,	const int unsigned bix, const signed int pos,
 	memcpy(&grid->cell.item[pos], item, len);
 }
 
-void L1_HW_Prefetch_Update(TGrid *grid, DATA_TYPE data)
+void L1_HW_Prefetch_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Technology.L1_HW_Prefetch == 1;
 	const signed int pos = grid->cell.length - 5;
@@ -2865,7 +2865,7 @@ void L1_HW_Prefetch_Update(TGrid *grid, DATA_TYPE data)
 	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void L1_HW_IP_Prefetch_Update(TGrid *grid, DATA_TYPE data)
+void L1_HW_IP_Prefetch_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix=RO(Shm)->Proc.Technology.L1_HW_IP_Prefetch == 1;
 	const signed int pos = grid->cell.length - 5;
@@ -2874,7 +2874,7 @@ void L1_HW_IP_Prefetch_Update(TGrid *grid, DATA_TYPE data)
 	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void L2_HW_Prefetch_Update(TGrid *grid, DATA_TYPE data)
+void L2_HW_Prefetch_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Technology.L2_HW_Prefetch == 1;
 	const signed int pos = grid->cell.length - 5;
@@ -2883,7 +2883,7 @@ void L2_HW_Prefetch_Update(TGrid *grid, DATA_TYPE data)
 	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void L2_HW_CL_Prefetch_Update(TGrid *grid, DATA_TYPE data)
+void L2_HW_CL_Prefetch_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix=RO(Shm)->Proc.Technology.L2_HW_CL_Prefetch == 1;
 	const signed int pos = grid->cell.length - 5;
@@ -2892,7 +2892,7 @@ void L2_HW_CL_Prefetch_Update(TGrid *grid, DATA_TYPE data)
 	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void SpeedStepUpdate(TGrid *grid, DATA_TYPE data)
+void SpeedStepUpdate(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Technology.EIST == 1;
 	const signed int pos = grid->cell.length - 5;
@@ -2901,7 +2901,7 @@ void SpeedStepUpdate(TGrid *grid, DATA_TYPE data)
 	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void IDA_Update(TGrid *grid, DATA_TYPE data)
+void IDA_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Features.Power.EAX.TurboIDA == 1;
 	const signed int pos = grid->cell.length - 5;
@@ -2910,7 +2910,7 @@ void IDA_Update(TGrid *grid, DATA_TYPE data)
 	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void TurboUpdate(TGrid *grid, DATA_TYPE data)
+void TurboUpdate(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Technology.Turbo == 1;
 	const signed int pos = grid->cell.length - 5;
@@ -2919,7 +2919,7 @@ void TurboUpdate(TGrid *grid, DATA_TYPE data)
 	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void EEO_Update(TGrid *grid, DATA_TYPE data)
+void EEO_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Features.EEO_Enable == 1;
 	const signed int pos = grid->cell.length - 5;
@@ -2928,7 +2928,7 @@ void EEO_Update(TGrid *grid, DATA_TYPE data)
 	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void R2H_Update(TGrid *grid, DATA_TYPE data)
+void R2H_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Features.R2H_Enable == 1;
 	const signed int pos = grid->cell.length - 5;
@@ -2937,7 +2937,7 @@ void R2H_Update(TGrid *grid, DATA_TYPE data)
 	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void WDT_Update(TGrid *grid, DATA_TYPE data)
+void WDT_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Technology.WDT == 1;
 	const signed int pos = grid->cell.length - 5;
@@ -2973,7 +2973,7 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 		const CUINT		spaces;
 		const char		*context;
 		const unsigned long long shortkey;
-		void			(*Update)(struct _Grid*, DATA_TYPE);
+		void			(*Update)(struct _Grid*, DATA_TYPE[]);
 	} TECH[] = \
     {
 	{
@@ -3294,7 +3294,7 @@ void PerfMonUpdate(TGrid *grid, const unsigned int bix, const signed int pos,
 	memcpy(&grid->cell.item[pos], item, len);
 }
 
-void C1E_Update(TGrid *grid, DATA_TYPE data)
+void C1E_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Technology.C1E == 1;
 	const signed int pos = grid->cell.length - 5;
@@ -3303,7 +3303,7 @@ void C1E_Update(TGrid *grid, DATA_TYPE data)
 	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void C1A_Update(TGrid *grid, DATA_TYPE data)
+void C1A_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Technology.C1A == 1;
 	const signed int pos = grid->cell.length - 5;
@@ -3312,7 +3312,7 @@ void C1A_Update(TGrid *grid, DATA_TYPE data)
 	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void C3A_Update(TGrid *grid, DATA_TYPE data)
+void C3A_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Technology.C3A == 1;
 	const signed int pos = grid->cell.length - 5;
@@ -3321,7 +3321,7 @@ void C3A_Update(TGrid *grid, DATA_TYPE data)
 	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void C1U_Update(TGrid *grid, DATA_TYPE data)
+void C1U_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Technology.C1U == 1;
 	const signed int pos = grid->cell.length - 5;
@@ -3330,7 +3330,7 @@ void C1U_Update(TGrid *grid, DATA_TYPE data)
 	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void C3U_Update(TGrid *grid, DATA_TYPE data)
+void C3U_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Technology.C3U == 1;
 	const signed int pos = grid->cell.length - 5;
@@ -3339,7 +3339,7 @@ void C3U_Update(TGrid *grid, DATA_TYPE data)
 	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void CC6_Update(TGrid *grid, DATA_TYPE data)
+void CC6_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Technology.CC6 == 1;
 	const signed int pos = grid->cell.length - 5;
@@ -3348,7 +3348,7 @@ void CC6_Update(TGrid *grid, DATA_TYPE data)
 	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void PC6_Update(TGrid *grid, DATA_TYPE data)
+void PC6_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Technology.PC6 == 1;
 	const signed int pos = grid->cell.length - 5;
@@ -3357,7 +3357,7 @@ void PC6_Update(TGrid *grid, DATA_TYPE data)
 	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void HWP_Update(TGrid *grid, DATA_TYPE data)
+void HWP_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Features.HWP_Enable == 1;
 	const signed int pos = grid->cell.length - 5;
@@ -3366,7 +3366,7 @@ void HWP_Update(TGrid *grid, DATA_TYPE data)
 	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void Refresh_HWP_Cap_Freq(TGrid *grid, DATA_TYPE data)
+void Refresh_HWP_Cap_Freq(TGrid *grid, DATA_TYPE data[])
 {
 	ATTRIBUTE *HWP_Cap_Attr[2] = {
 		RSC(SYSINFO_PERFMON_HWP_CAP_COND0).ATTR(),
@@ -3379,7 +3379,7 @@ void Refresh_HWP_Cap_Freq(TGrid *grid, DATA_TYPE data)
 	RefreshRatioFreq(grid, data);
 }
 
-void HDC_Update(TGrid *grid, DATA_TYPE data)
+void HDC_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Features.HDC_Enable == 1;
 	const signed int pos = grid->cell.length - 5;
@@ -3388,7 +3388,7 @@ void HDC_Update(TGrid *grid, DATA_TYPE data)
 	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void IOMWAIT_Update(TGrid *grid, DATA_TYPE data)
+void IOMWAIT_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = \
 		RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Query.IORedir == 1;
@@ -3400,7 +3400,7 @@ void IOMWAIT_Update(TGrid *grid, DATA_TYPE data)
 		(char *)(bix ? RSC(ENABLE).CODE() : RSC(DISABLE).CODE()) );
 }
 
-void CStateLimit_Update(TGrid *grid, DATA_TYPE data)
+void CStateLimit_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const ASCII *CST_Encoding[] = {
 		[ _C0]	= RSC(PERF_ENCODING_C0).CODE(),
@@ -3426,7 +3426,7 @@ void CStateLimit_Update(TGrid *grid, DATA_TYPE data)
 		].Query.CStateLimit], 3);
 }
 
-void CStateRange_Update(TGrid *grid, DATA_TYPE data)
+void CStateRange_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const ASCII *CST_Encoding[] = {
 		[ _C0]	= RSC(PERF_ENCODING_C0).CODE(),
@@ -3935,7 +3935,7 @@ void PwrThermalUpdate(TGrid *grid, const unsigned int bix,const signed int pos,
 	memcpy(&grid->cell.item[pos], item, len);
 }
 
-void ODCM_Update(TGrid *grid, DATA_TYPE data)
+void ODCM_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Technology.ODCM == 1;
 	const signed int pos = grid->cell.length - 9;
@@ -3945,7 +3945,7 @@ void ODCM_Update(TGrid *grid, DATA_TYPE data)
 		(char *)(bix ? RSC(ENABLE).CODE() : RSC(DISABLE).CODE()) );
 }
 
-void DutyCycle_Update(TGrid *grid, DATA_TYPE data)
+void DutyCycle_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const signed int pos = grid->cell.length - 10;
 	const unsigned int bix = (RO(Shm)->Proc.Features.Std.EDX.ACPI == 1)
@@ -3967,16 +3967,16 @@ void DutyCycle_Update(TGrid *grid, DATA_TYPE data)
 	grid->cell.quick.key = bix ? BOXKEY_DUTYCYCLE : SCANKEY_NULL;
 }
 
-void Hint_Update(TGrid *grid, DATA_TYPE data)
+void Hint_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const signed int pos = grid->cell.length - 9;
 	char item[10+1];
 
-	StrFormat(item, 10+1, "%7u", (*data.puint));
+	StrFormat(item, 10+1, "%7u", (*data[0].puint));
 	memcpy(&grid->cell.item[pos], item, 7);
 }
 
-void TjMax_Update(TGrid *grid, DATA_TYPE data)
+void TjMax_Update(TGrid *grid, DATA_TYPE data[])
 {
 	struct FLIP_FLOP *SFlop = &RO(Shm)->Cpu[
 		RO(Shm)->Proc.Service.Core
@@ -3999,9 +3999,9 @@ void TjMax_Update(TGrid *grid, DATA_TYPE data)
 	memcpy(&grid->cell.item[pos], item, 9);
 }
 
-void TDP_State(TGrid *grid, DATA_TYPE data)
+void TDP_State(TGrid *grid, DATA_TYPE data[])
 {
-	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data.sint[0];
+	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data[0].sint[0];
 	const unsigned int bix = \
 			  RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Enable
 			| RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Enable;
@@ -4028,7 +4028,7 @@ void PCT_Update(TGrid *grid, const char *item, const unsigned int cix)
 	memcpy(&grid->cell.item[pos], item, 7);
 }
 
-void TDP_Update(TGrid *grid, DATA_TYPE data)
+void TDP_Update(TGrid *grid, DATA_TYPE data[])
 {
 	UNUSED(data);
 	char item[7+1];
@@ -4037,9 +4037,9 @@ void TDP_Update(TGrid *grid, DATA_TYPE data)
 	PCT_Update(grid, item, RO(Shm)->Proc.Power.TDP > 0 ? 5 : 0);
 }
 
-void PL1_Update(TGrid *grid, DATA_TYPE data)
+void PL1_Update(TGrid *grid, DATA_TYPE data[])
 {
-	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data.sint[0];
+	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data[0].sint[0];
 	char item[7+1];
 	StrFormat(item, 7+1, "%5u W", RO(Shm)->Proc.Power.Domain[pw].PL1);
 
@@ -4048,9 +4048,9 @@ void PL1_Update(TGrid *grid, DATA_TYPE data)
 			3 : 5 : 0 );
 }
 
-void PL2_Update(TGrid *grid, DATA_TYPE data)
+void PL2_Update(TGrid *grid, DATA_TYPE data[])
 {
-	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data.sint[0];
+	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data[0].sint[0];
 	char item[7+1];
 	StrFormat(item, 7+1, "%5u W", RO(Shm)->Proc.Power.Domain[pw].PL2);
 
@@ -4097,9 +4097,9 @@ char *FormatTW(const size_t fsz, char *fmt, const double fTW)
 	return fmt;
 }
 
-void TW1_Update(TGrid *grid, DATA_TYPE data)
+void TW1_Update(TGrid *grid, DATA_TYPE data[])
 {
-	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data.sint[0];
+	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data[0].sint[0];
 	char item[7+1];
 
 	PCT_Update(	grid,
@@ -4109,9 +4109,9 @@ void TW1_Update(TGrid *grid, DATA_TYPE data)
 			3 : 5 : 0 );
 }
 
-void TW2_Update(TGrid *grid, DATA_TYPE data)
+void TW2_Update(TGrid *grid, DATA_TYPE data[])
 {
-	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data.sint[0];
+	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data[0].sint[0];
 	char item[7+1];
 
 	PCT_Update(	grid,
@@ -4121,7 +4121,7 @@ void TW2_Update(TGrid *grid, DATA_TYPE data)
 			3 : 5 : 0 );
 }
 
-void TDC_Update(TGrid *grid, DATA_TYPE data)
+void TDC_Update(TGrid *grid, DATA_TYPE data[])
 {
 	UNUSED(data);
 	char item[7+1];
@@ -4435,7 +4435,8 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Enable ? 3 : 5 : 0;
 
 	GridCall(
-	    PUT(SCANKEY_NULL,
+	    PUT(RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Unlock ?
+		(BOXKEY_TW_OR | (pw << 5) | PL1) : SCANKEY_NULL,
 		attrib[cix],
 		width, 3,
 		"%s%.*s%s   %c%s%c",
@@ -4472,7 +4473,8 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Enable ? 3 : 5 : 0;
 
 	GridCall(
-	    PUT(SCANKEY_NULL,
+	    PUT(RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Unlock ?
+		(BOXKEY_TW_OR | (pw << 5) | PL2) : SCANKEY_NULL,
 		attrib[cix],
 		width, 3,
 		"%s%.*s%s   %c%s%c",
@@ -4693,19 +4695,20 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	return reason;
 }
 
-void Kernel_RAM_Update(TGrid *grid, DATA_TYPE data)
+void Kernel_RAM_Update(TGrid *grid, DATA_TYPE data[])
 {
 	char item[CPUFREQ_NAME_LEN+4+3];
 	size_t len;
 
 	StrLenFormat(len, item, CPUFREQ_NAME_LEN+4+3,
-			"%18lu KB", (*data.pulong));
+			"%18lu KB", (*data[0].pulong));
 
 	memcpy(&grid->cell.item[grid->cell.length - len - 1], item, len);
 }
 
-void Kernel_ClockSource_Update(TGrid *grid, DATA_TYPE data)
+void Kernel_ClockSource_Update(TGrid *grid, DATA_TYPE data[])
 {
+	UNUSED(data);
 	char item[CPUFREQ_NAME_LEN+1];
 	size_t fmtLen;
 	const signed int len = KMIN(strlen(RO(Shm)->CS.array),CPUFREQ_NAME_LEN);
@@ -4722,8 +4725,9 @@ void Kernel_ClockSource_Update(TGrid *grid, DATA_TYPE data)
 	memcpy(&grid->cell.item[grid->cell.length - fmtLen - 2], item, fmtLen);
 }
 
-void Kernel_CPU_Freq_Update(TGrid *grid, DATA_TYPE data)
+void Kernel_CPU_Freq_Update(TGrid *grid, DATA_TYPE data[])
 {
+	UNUSED(data);
 	char item[CPUFREQ_NAME_LEN+1];
 	size_t fmtLen;
 	const signed int len = \
@@ -4741,8 +4745,9 @@ void Kernel_CPU_Freq_Update(TGrid *grid, DATA_TYPE data)
 	memcpy(&grid->cell.item[grid->cell.length - fmtLen - 2], item, fmtLen);
 }
 
-void Kernel_Governor_Update(TGrid *grid, DATA_TYPE data)
+void Kernel_Governor_Update(TGrid *grid, DATA_TYPE data[])
 {
+	UNUSED(data);
 	char item[CPUFREQ_NAME_LEN+1];
 	size_t fmtLen;
 	const signed int len = \
@@ -4760,8 +4765,9 @@ void Kernel_Governor_Update(TGrid *grid, DATA_TYPE data)
 	memcpy(&grid->cell.item[grid->cell.length - fmtLen - 2], item, fmtLen);
 }
 
-void Kernel_CPU_Idle_Update(TGrid *grid, DATA_TYPE data)
+void Kernel_CPU_Idle_Update(TGrid *grid, DATA_TYPE data[])
 {
+	UNUSED(data);
 	char item[CPUIDLE_NAME_LEN+1];
 	size_t fmtLen;
 	signed int len = \
@@ -4779,11 +4785,11 @@ void Kernel_CPU_Idle_Update(TGrid *grid, DATA_TYPE data)
 	memcpy(&grid->cell.item[grid->cell.length - fmtLen - 2], item, fmtLen);
 }
 
-void Kernel_IdleLimit_Update(TGrid *grid, DATA_TYPE data)
+void Kernel_IdleLimit_Update(TGrid *grid, DATA_TYPE data[])
 {
 	char item[CPUIDLE_NAME_LEN+1];
 	size_t len;
-	signed int idx = (*data.psint) - 1;
+	signed int idx = (*data[0].psint) - 1;
 
 	if (RO(Shm)->SysGate.OS.IdleDriver.stateCount > 0)
 	{
@@ -7192,14 +7198,14 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 	return wMenu;
 }
 
-void IntervalUpdate(TGrid *grid, DATA_TYPE data)
+void IntervalUpdate(TGrid *grid, DATA_TYPE data[])
 {
 	UNUSED(data);
 	StrFormat(Buffer, 10+1, "%4u", RO(Shm)->Sleep.Interval);
 	memcpy(&grid->cell.item[grid->cell.length - 6], Buffer, 4);
 }
 
-void SysTickUpdate(TGrid *grid, DATA_TYPE data)
+void SysTickUpdate(TGrid *grid, DATA_TYPE data[])
 {
 	UNUSED(data);
 	StrFormat(Buffer, 10+1, "%4u",
@@ -7208,15 +7214,15 @@ void SysTickUpdate(TGrid *grid, DATA_TYPE data)
 	memcpy(&grid->cell.item[grid->cell.length - 6], Buffer, 4);
 }
 
-void SvrWaitUpdate(TGrid *grid, DATA_TYPE data)
+void SvrWaitUpdate(TGrid *grid, DATA_TYPE data[])
 {
-	StrFormat(Buffer, 21+1, "%4ld", (*data.pslong) / 1000000L);
+	StrFormat(Buffer, 21+1, "%4ld", (*data[0].pslong) / 1000000L);
 	memcpy(&grid->cell.item[grid->cell.length - 6], Buffer, 4);
 }
 
-void RecorderUpdate(TGrid *grid, DATA_TYPE data)
+void RecorderUpdate(TGrid *grid, DATA_TYPE data[])
 {
-	unsigned int duration = RECORDER_SECONDS((*data.puint),
+	unsigned int duration = RECORDER_SECONDS((*data[0].puint),
 						RO(Shm)->Sleep.Interval);
 	if (duration <= 9999) {
 		StrFormat(Buffer, 11+1, "%4u", duration);
@@ -7235,7 +7241,7 @@ void SettingUpdate(TGrid *grid, const unsigned int bix, const int pos,
 	memcpy(&grid->cell.item[pos], item, len);
 }
 
-void AutoClockUpdate(TGrid *grid, DATA_TYPE data)
+void AutoClockUpdate(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = (RO(Shm)->Registration.AutoClock & 0b10) != 0;
 	const signed int pos = grid->cell.length - 5;
@@ -7244,7 +7250,7 @@ void AutoClockUpdate(TGrid *grid, DATA_TYPE data)
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void ExperimentalUpdate(TGrid *grid, DATA_TYPE data)
+void ExperimentalUpdate(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Registration.Experimental != 0;
 	const signed int pos = grid->cell.length - 5;
@@ -7253,7 +7259,7 @@ void ExperimentalUpdate(TGrid *grid, DATA_TYPE data)
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void HotPlug_Update(TGrid *grid, DATA_TYPE data)
+void HotPlug_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = !(RO(Shm)->Registration.HotPlug < 0);
 	const signed int pos = grid->cell.length - 5;
@@ -7262,7 +7268,7 @@ void HotPlug_Update(TGrid *grid, DATA_TYPE data)
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void PCI_Probe_Update(TGrid *grid, DATA_TYPE data)
+void PCI_Probe_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Registration.PCI == 1;
 	const signed int pos = grid->cell.length - 5;
@@ -7271,7 +7277,7 @@ void PCI_Probe_Update(TGrid *grid, DATA_TYPE data)
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void HSMP_Registration_Update(TGrid *grid, DATA_TYPE data)
+void HSMP_Registration_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Registration.HSMP == 1;
 	const signed int pos = grid->cell.length - 5;
@@ -7280,7 +7286,7 @@ void HSMP_Registration_Update(TGrid *grid, DATA_TYPE data)
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void IdleRoute_Update(TGrid *grid, DATA_TYPE data)
+void IdleRoute_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const ASCII *instructions[ROUTE_SIZE] = {
 		[ROUTE_DEFAULT] = RSC(SETTINGS_ROUTE_DFLT).CODE(),
@@ -7302,7 +7308,7 @@ void IdleRoute_Update(TGrid *grid, DATA_TYPE data)
 	grid->cell.quick.key = bix ? OPS_IDLE_ROUTE : SCANKEY_NULL;
 }
 
-void NMI_Registration_Update(TGrid *grid, DATA_TYPE data)
+void NMI_Registration_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = BITWISEAND(	LOCKLESS,
 						RO(Shm)->Registration.NMI,
@@ -7313,7 +7319,7 @@ void NMI_Registration_Update(TGrid *grid, DATA_TYPE data)
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void CPU_Idle_Update(TGrid *grid, DATA_TYPE data)
+void CPU_Idle_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Registration.Driver.CPUidle
 				& REGISTRATION_ENABLE;
@@ -7324,7 +7330,7 @@ void CPU_Idle_Update(TGrid *grid, DATA_TYPE data)
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void CPU_Freq_Update(TGrid *grid, DATA_TYPE data)
+void CPU_Freq_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Registration.Driver.CPUfreq
 				& REGISTRATION_ENABLE;
@@ -7335,7 +7341,7 @@ void CPU_Freq_Update(TGrid *grid, DATA_TYPE data)
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void Governor_Update(TGrid *grid, DATA_TYPE data)
+void Governor_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Registration.Driver.Governor
 				& REGISTRATION_ENABLE;
@@ -7346,7 +7352,7 @@ void Governor_Update(TGrid *grid, DATA_TYPE data)
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void ClockSource_Update(TGrid *grid, DATA_TYPE data)
+void ClockSource_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Registration.Driver.CS
 				& REGISTRATION_ENABLE;
@@ -7357,7 +7363,7 @@ void ClockSource_Update(TGrid *grid, DATA_TYPE data)
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void ScopeUpdate(TGrid *grid, DATA_TYPE data)
+void ScopeUpdate(TGrid *grid, DATA_TYPE data[])
 {
 	ASCII *code[] = {
 		RSC(SCOPE_NONE).CODE(),
@@ -7365,7 +7371,7 @@ void ScopeUpdate(TGrid *grid, DATA_TYPE data)
 		RSC(SCOPE_CORE).CODE(),
 		RSC(SCOPE_PACKAGE).CODE()
 	};
-	const enum FORMULA_SCOPE scope = SCOPE_OF_FORMULA(*data.psint);
+	const enum FORMULA_SCOPE scope = SCOPE_OF_FORMULA(*data[0].psint);
 	const size_t size = (size_t) RSZ(SCOPE_NONE);
 	memcpy(&grid->cell.item[grid->cell.length - size-2], code[scope], size);
 }
@@ -8184,12 +8190,12 @@ int SortTaskListByForest(const void *p1, const void *p2)
 	}
 }
 
-void UpdateTracker(TGrid *grid, DATA_TYPE data)
+void UpdateTracker(TGrid *grid, DATA_TYPE data[])
 {
-	signed int *tracked = &data.sint[1];
+	signed int *tracked = &data[0].sint[1];
   if ((*tracked) == 1)
   {
-	const pid_t pid = data.sint[0];
+	const pid_t pid = data[0].sint[0];
 	signed int idx;
     for (idx = 0; idx < RO(Shm)->SysGate.taskCount; idx++)
     {
@@ -8344,13 +8350,13 @@ Window *CreateTracking(unsigned long long id)
 	return wTrack;
 }
 
-void UpdateHotPlugCPU(TGrid *grid, DATA_TYPE data)
+void UpdateHotPlugCPU(TGrid *grid, DATA_TYPE data[])
 {
-	const unsigned int cpu = data.ullong & CPU_MASK;
+	const unsigned int cpu = data[0].ullong & CPU_MASK;
 
 	if (BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
 	{
-	    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
+	    if ((data[0].ullong & CPU_STATE_MASK) == CPU_ONLINE)
 	    {
 		StrFormat(Buffer, 9+10+1,
 			RSC(CREATE_HOTPLUG_CPU_OFFLINE).CODE(), cpu);
@@ -8359,12 +8365,12 @@ void UpdateHotPlugCPU(TGrid *grid, DATA_TYPE data)
 		memcpy(grid->cell.attr, RSC(CREATE_HOTPLUG_CPU_OFFLINE).ATTR(),
 					grid->cell.length);
 
-		grid->data.ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+		grid->data[0].ullong = (unsigned long long) (CPU_OFFLINE | cpu);
 	    }
 	}
 	else
 	{
-	    if ((data.ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+	    if ((data[0].ullong & CPU_STATE_MASK) == CPU_OFFLINE)
 	    {
 		StrFormat(Buffer, 9+10+1,
 			RSC(CREATE_HOTPLUG_CPU_ONLINE).CODE(), cpu);
@@ -8373,18 +8379,18 @@ void UpdateHotPlugCPU(TGrid *grid, DATA_TYPE data)
 		memcpy(grid->cell.attr, RSC(CREATE_HOTPLUG_CPU_ONLINE).ATTR(),
 					grid->cell.length);
 
-		grid->data.ullong = (unsigned long long) (CPU_ONLINE | cpu);
+		grid->data[0].ullong = (unsigned long long) (CPU_ONLINE | cpu);
 	    }
 	}
 }
 
-void UpdateHotPlugTrigger(TGrid *grid, DATA_TYPE data)
+void UpdateHotPlugTrigger(TGrid *grid, DATA_TYPE data[])
 {
-	const unsigned int cpu = data.ullong & CPU_MASK;
+	const unsigned int cpu = data[0].ullong & CPU_MASK;
 
 	if (BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
 	{
-	    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
+	    if ((data[0].ullong & CPU_STATE_MASK) == CPU_ONLINE)
 	    {
 		memcpy( grid->cell.item,
 			RSC(CREATE_HOTPLUG_CPU_ENABLE).CODE(),
@@ -8395,12 +8401,12 @@ void UpdateHotPlugTrigger(TGrid *grid, DATA_TYPE data)
 			grid->cell.length );
 
 		grid->cell.quick.key = (unsigned long long) (CPU_ONLINE | cpu);
-		grid->data.ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+		grid->data[0].ullong = (unsigned long long) (CPU_OFFLINE | cpu);
 	    }
 	}
 	else
 	{
-	    if ((data.ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+	    if ((data[0].ullong & CPU_STATE_MASK) == CPU_OFFLINE)
 	    {
 		memcpy( grid->cell.item,
 			RSC(CREATE_HOTPLUG_CPU_DISABLE).CODE(),
@@ -8411,7 +8417,7 @@ void UpdateHotPlugTrigger(TGrid *grid, DATA_TYPE data)
 			grid->cell.length );
 
 		grid->cell.quick.key = (unsigned long long) (CPU_OFFLINE | cpu);
-		grid->data.ullong = (unsigned long long) (CPU_ONLINE | cpu);
+		grid->data[0].ullong = (unsigned long long) (CPU_ONLINE | cpu);
 	    }
 	}
 }
@@ -8479,18 +8485,18 @@ Window *CreateHotPlugCPU(unsigned long long id)
 	return wCPU;
 }
 
-void UpdateRatioClock(TGrid *grid, DATA_TYPE data)
+void UpdateRatioClock(TGrid *grid, DATA_TYPE data[])
 {
 	struct FLIP_FLOP *CFlop = \
 		&RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].FlipFlop[
 				!RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Toggle
 		];
-	if (data.uint[0] > MAXCLOCK_TO_RATIO(unsigned int, CFlop->Clock.Hz))
+	if (data[0].uint[0] > MAXCLOCK_TO_RATIO(unsigned int, CFlop->Clock.Hz))
 	{
 		StrFormat(Buffer, 1+6+1, " %-6s", RSC(NOT_AVAILABLE).CODE());
 	} else {
 		StrFormat(Buffer, 8+1, "%7.2f",
-			ABS_FREQ_MHz(double, data.uint[0], CFlop->Clock));
+			ABS_FREQ_MHz(double, data[0].uint[0], CFlop->Clock));
 	}
 	memcpy(&grid->cell.item[1], Buffer, 7);
 }
@@ -8690,38 +8696,38 @@ Window *CreateRatioClock(unsigned long long id,
 	return wCK;
 }
 
-void UpdateRoomSchedule(TGrid *grid, DATA_TYPE data)
+void UpdateRoomSchedule(TGrid *grid, DATA_TYPE data[])
 {
-	const unsigned int cpu = data.ullong & CPU_MASK;
+	const unsigned int cpu = data[0].ullong & CPU_MASK;
 	const signed int pos = grid->cell.length - 8;
 
 	if (BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
 	{
-	    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
+	    if ((data[0].ullong & CPU_STATE_MASK) == CPU_ONLINE)
 	    {
 		memcpy( grid->cell.attr,
 			RSC(CREATE_SELECT_CPU_COND0).ATTR(),
 			grid->cell.length );
 
 		grid->cell.quick.key = SCANKEY_NULL;
-		grid->data.ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+		grid->data[0].ullong = (unsigned long long) (CPU_OFFLINE | cpu);
 	    }
 	}
 	else
 	{
-	    if ((data.ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+	    if ((data[0].ullong & CPU_STATE_MASK) == CPU_OFFLINE)
 	    {
 		memcpy( grid->cell.attr,
 			RSC(CREATE_SELECT_CPU_COND1).ATTR(),
 			grid->cell.length );
 
 		grid->cell.quick.key = (unsigned long long) (CPU_SELECT | cpu);
-		grid->data.ullong = (unsigned long long) (CPU_ONLINE | cpu);
+		grid->data[0].ullong = (unsigned long long) (CPU_ONLINE | cpu);
 	    }
 	}
 
 	const unsigned int run = BITVAL_CC(RO(Shm)->roomSched, cpu);
-	unsigned int sched = BITVAL(data.ullong, 63);
+	unsigned int sched = BITVAL(data[0].ullong, 63);
 
 	if (run != sched)
 	{
@@ -8729,13 +8735,13 @@ void UpdateRoomSchedule(TGrid *grid, DATA_TYPE data)
 			ENABLED(run), __builtin_strlen(ENABLED(0)) );
 
 		if (run) {
-			BITSET(LOCKLESS, grid->data.ullong, 63);
+			BITSET(LOCKLESS, grid->data[0].ullong, 63);
 		} else {
-			BITCLR(LOCKLESS, grid->data.ullong, 63);
+			BITCLR(LOCKLESS, grid->data[0].ullong, 63);
 		}
 	    if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
 	    {
-		sched = BITVAL(grid->data.ullong, 63);
+		sched = BITVAL(grid->data[0].ullong, 63);
 		if (sched) {
 			memcpy( &grid->cell.attr[pos],
 				&RSC(CREATE_SELECT_CPU_COND2).ATTR()[pos],
@@ -8905,7 +8911,7 @@ DECLARE_Pkg_Item_Turbo(18C)
 #undef DECLARE_Pkg_Item_Turbo
 
 #define DECLARE_Pkg_Update_Turbo(_NC)					\
-void Pkg_Update_Turbo_##_NC(TGrid *grid, DATA_TYPE data)		\
+void Pkg_Update_Turbo_##_NC(TGrid *grid, DATA_TYPE data[])		\
 {									\
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];		\
 	unsigned int top = Ruler.Top[BOOST(_NC)];			\
@@ -8986,13 +8992,13 @@ DECLARE_CPU_Item_Turbo(18C)
 #undef DECLARE_CPU_Item_Turbo
 
 #define DECLARE_CPU_Update_Turbo(_NC)					\
-void CPU_Update_Turbo_##_NC(TGrid *grid, DATA_TYPE data)		\
+void CPU_Update_Turbo_##_NC(TGrid *grid, DATA_TYPE data[])		\
 {									\
-	const unsigned int cpu = data.ullong & CPU_MASK;		\
+	const unsigned int cpu = data[0].ullong & CPU_MASK;		\
 	ASCII item[ RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+1 ];	\
   if (BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))				\
   {									\
-    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)			\
+    if ((data[0].ullong & CPU_STATE_MASK) == CPU_ONLINE)		\
     {									\
 	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,	\
 			RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);	\
@@ -9004,21 +9010,21 @@ void CPU_Update_Turbo_##_NC(TGrid *grid, DATA_TYPE data)		\
 		grid->cell.length );					\
 									\
 	grid->cell.quick.key = SCANKEY_NULL;				\
-	grid->data.ullong = (unsigned long long) (CPU_OFFLINE | cpu);	\
+	grid->data[0].ullong = (unsigned long long) (CPU_OFFLINE | cpu);\
     }									\
   }									\
   else									\
   {									\
 	CPU_Item_Turbo_##_NC(cpu, item);				\
 	memcpy(grid->cell.item, item, grid->cell.length);		\
-    if ((data.ullong & CPU_STATE_MASK) == CPU_OFFLINE)			\
+    if ((data[0].ullong & CPU_STATE_MASK) == CPU_OFFLINE)		\
     {									\
 	memcpy( grid->cell.attr,					\
 		RSC(CREATE_SELECT_FREQ_COND0).ATTR(),			\
 		grid->cell.length );					\
 									\
 	grid->cell.quick.key = BOXKEY_TURBO_CLOCK_##_NC | (cpu ^ CORE_COUNT);\
-	grid->data.ullong = (unsigned long long) (CPU_ONLINE | cpu);	\
+	grid->data[0].ullong = (unsigned long long) (CPU_ONLINE | cpu); \
     }									\
   }									\
 }
@@ -9054,7 +9060,7 @@ void Pkg_Item_Target_Freq(ASCII *item)
 			RO(Shm)->Proc.Features.TgtRatio_Unlock );
 }
 
-void Pkg_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
+void Pkg_Target_Freq_Update(TGrid *grid, DATA_TYPE data[])
 {
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];
 	unsigned int top = Ruler.Top[BOOST(TGT)];
@@ -9094,14 +9100,14 @@ void CPU_Item_Target_Freq(unsigned int cpu, ASCII *item)
     }
 }
 
-void CPU_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
+void CPU_Target_Freq_Update(TGrid *grid, DATA_TYPE data[])
 {
-	const unsigned int cpu = data.ullong & CPU_MASK;
+	const unsigned int cpu = data[0].ullong & CPU_MASK;
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+1];
 
   if (BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
   {
-    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
+    if ((data[0].ullong & CPU_STATE_MASK) == CPU_ONLINE)
     {
 	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,
 			RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
@@ -9113,7 +9119,7 @@ void CPU_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
 		grid->cell.length );
 
 	grid->cell.quick.key = SCANKEY_NULL;
-	grid->data.ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+	grid->data[0].ullong = (unsigned long long) (CPU_OFFLINE | cpu);
     }
   }
   else
@@ -9122,14 +9128,14 @@ void CPU_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
 
 	memcpy(grid->cell.item, item, grid->cell.length);
 
-    if ((data.ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+    if ((data[0].ullong & CPU_STATE_MASK) == CPU_OFFLINE)
     {
 	memcpy( grid->cell.attr,
 		RSC(CREATE_SELECT_FREQ_COND0).ATTR(),
 		grid->cell.length );
 
 	grid->cell.quick.key = BOXKEY_RATIO_CLOCK_TGT | (cpu ^ CORE_COUNT);
-	grid->data.ullong = (unsigned long long) (CPU_ONLINE | cpu);
+	grid->data[0].ullong = (unsigned long long) (CPU_ONLINE | cpu);
     }
   }
 }
@@ -9146,7 +9152,7 @@ void Pkg_Item_HWP_Target_Freq(ASCII *item)
 			RO(Shm)->Proc.Features.HWP_Enable );
 }
 
-void Pkg_HWP_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
+void Pkg_HWP_Target_Freq_Update(TGrid *grid, DATA_TYPE data[])
 {
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];
 	unsigned int top = Ruler.Top[BOOST(HWP_TGT)];
@@ -9189,14 +9195,14 @@ void CPU_Item_HWP_Target_Freq(unsigned int cpu, ASCII *item)
     }
 }
 
-void CPU_HWP_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
+void CPU_HWP_Target_Freq_Update(TGrid *grid, DATA_TYPE data[])
 {
-	const unsigned int cpu = data.ullong & CPU_MASK;
+	const unsigned int cpu = data[0].ullong & CPU_MASK;
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+1];
 
   if (BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
   {
-    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
+    if ((data[0].ullong & CPU_STATE_MASK) == CPU_ONLINE)
     {
 	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,
 			RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
@@ -9208,7 +9214,7 @@ void CPU_HWP_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
 		grid->cell.length );
 
 	grid->cell.quick.key = SCANKEY_NULL;
-	grid->data.ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+	grid->data[0].ullong = (unsigned long long) (CPU_OFFLINE | cpu);
     }
   }
   else
@@ -9217,14 +9223,14 @@ void CPU_HWP_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
 
 	memcpy(grid->cell.item, item, grid->cell.length);
 
-    if ((data.ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+    if ((data[0].ullong & CPU_STATE_MASK) == CPU_OFFLINE)
     {
 	memcpy( grid->cell.attr,
 		RSC(CREATE_SELECT_FREQ_COND0).ATTR(),
 		grid->cell.length );
 
 	grid->cell.quick.key = BOXKEY_RATIO_CLOCK_HWP_TGT | (cpu ^ CORE_COUNT);
-	grid->data.ullong = (unsigned long long) (CPU_ONLINE | cpu);
+	grid->data[0].ullong = (unsigned long long) (CPU_ONLINE | cpu);
     }
   }
 }
@@ -9241,7 +9247,7 @@ void Pkg_Item_HWP_Max_Freq(ASCII *item)
 			RO(Shm)->Proc.Features.HWP_Enable );
 }
 
-void Pkg_HWP_Max_Freq_Update(TGrid *grid, DATA_TYPE data)
+void Pkg_HWP_Max_Freq_Update(TGrid *grid, DATA_TYPE data[])
 {
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];
 	unsigned int top = Ruler.Top[BOOST(HWP_MAX)];
@@ -9284,14 +9290,14 @@ void CPU_Item_HWP_Max_Freq(unsigned int cpu, ASCII *item)
     }
 }
 
-void CPU_HWP_Max_Freq_Update(TGrid *grid, DATA_TYPE data)
+void CPU_HWP_Max_Freq_Update(TGrid *grid, DATA_TYPE data[])
 {
-	const unsigned int cpu = data.ullong & CPU_MASK;
+	const unsigned int cpu = data[0].ullong & CPU_MASK;
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+1];
 
   if (BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
   {
-    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
+    if ((data[0].ullong & CPU_STATE_MASK) == CPU_ONLINE)
     {
 	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,
 			RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
@@ -9303,7 +9309,7 @@ void CPU_HWP_Max_Freq_Update(TGrid *grid, DATA_TYPE data)
 		grid->cell.length );
 
 	grid->cell.quick.key = SCANKEY_NULL;
-	grid->data.ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+	grid->data[0].ullong = (unsigned long long) (CPU_OFFLINE | cpu);
     }
   }
   else
@@ -9312,14 +9318,14 @@ void CPU_HWP_Max_Freq_Update(TGrid *grid, DATA_TYPE data)
 
 	memcpy(grid->cell.item, item, grid->cell.length);
 
-    if ((data.ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+    if ((data[0].ullong & CPU_STATE_MASK) == CPU_OFFLINE)
     {
 	memcpy( grid->cell.attr,
 		RSC(CREATE_SELECT_FREQ_COND0).ATTR(),
 		grid->cell.length );
 
 	grid->cell.quick.key = BOXKEY_RATIO_CLOCK_HWP_MAX | (cpu ^ CORE_COUNT);
-	grid->data.ullong = (unsigned long long) (CPU_ONLINE | cpu);
+	grid->data[0].ullong = (unsigned long long) (CPU_ONLINE | cpu);
     }
   }
 }
@@ -9336,7 +9342,7 @@ void Pkg_Item_HWP_Min_Freq(ASCII *item)
 			RO(Shm)->Proc.Features.HWP_Enable );
 }
 
-void Pkg_HWP_Min_Freq_Update(TGrid *grid, DATA_TYPE data)
+void Pkg_HWP_Min_Freq_Update(TGrid *grid, DATA_TYPE data[])
 {
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];
 	unsigned int top = Ruler.Top[BOOST(HWP_MIN)];
@@ -9379,14 +9385,14 @@ void CPU_Item_HWP_Min_Freq(unsigned int cpu, ASCII *item)
     }
 }
 
-void CPU_HWP_Min_Freq_Update(TGrid *grid, DATA_TYPE data)
+void CPU_HWP_Min_Freq_Update(TGrid *grid, DATA_TYPE data[])
 {
-	const unsigned int cpu = data.ullong & CPU_MASK;
+	const unsigned int cpu = data[0].ullong & CPU_MASK;
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+1];
 
   if (BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
   {
-    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
+    if ((data[0].ullong & CPU_STATE_MASK) == CPU_ONLINE)
     {
 	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,
 			RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
@@ -9398,7 +9404,7 @@ void CPU_HWP_Min_Freq_Update(TGrid *grid, DATA_TYPE data)
 		grid->cell.length );
 
 	grid->cell.quick.key = SCANKEY_NULL;
-	grid->data.ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+	grid->data[0].ullong = (unsigned long long) (CPU_OFFLINE | cpu);
     }
   }
   else
@@ -9407,14 +9413,14 @@ void CPU_HWP_Min_Freq_Update(TGrid *grid, DATA_TYPE data)
 
 	memcpy(grid->cell.item, item, grid->cell.length);
 
-    if ((data.ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+    if ((data[0].ullong & CPU_STATE_MASK) == CPU_OFFLINE)
     {
 	memcpy( grid->cell.attr,
 		RSC(CREATE_SELECT_FREQ_COND0).ATTR(),
 		grid->cell.length );
 
 	grid->cell.quick.key = BOXKEY_RATIO_CLOCK_HWP_MIN | (cpu ^ CORE_COUNT);
-	grid->data.ullong = (unsigned long long) (CPU_ONLINE | cpu);
+	grid->data[0].ullong = (unsigned long long) (CPU_ONLINE | cpu);
     }
   }
 }
@@ -9431,7 +9437,7 @@ void Pkg_Item_Max_Freq(ASCII *item)
 		       (RO(Shm)->Proc.Features.ClkRatio_Unlock & 0b10) == 0b10);
 }
 
-void Pkg_Max_Freq_Update(TGrid *grid, DATA_TYPE data)
+void Pkg_Max_Freq_Update(TGrid *grid, DATA_TYPE data[])
 {
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];
 	unsigned int top = Ruler.Top[BOOST(MAX)];
@@ -9474,14 +9480,14 @@ void CPU_Item_Max_Freq(unsigned int cpu, ASCII *item)
     }
 }
 
-void CPU_Max_Freq_Update(TGrid *grid, DATA_TYPE data)
+void CPU_Max_Freq_Update(TGrid *grid, DATA_TYPE data[])
 {
-	const unsigned int cpu = data.ullong & CPU_MASK;
+	const unsigned int cpu = data[0].ullong & CPU_MASK;
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+1];
 
   if (BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
   {
-    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
+    if ((data[0].ullong & CPU_STATE_MASK) == CPU_ONLINE)
     {
 	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,
 			RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
@@ -9493,7 +9499,7 @@ void CPU_Max_Freq_Update(TGrid *grid, DATA_TYPE data)
 		grid->cell.length );
 
 	grid->cell.quick.key = SCANKEY_NULL;
-	grid->data.ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+	grid->data[0].ullong = (unsigned long long) (CPU_OFFLINE | cpu);
     }
   }
   else
@@ -9502,14 +9508,14 @@ void CPU_Max_Freq_Update(TGrid *grid, DATA_TYPE data)
 
 	memcpy(grid->cell.item, item, grid->cell.length);
 
-    if ((data.ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+    if ((data[0].ullong & CPU_STATE_MASK) == CPU_OFFLINE)
     {
 	memcpy( grid->cell.attr,
 		RSC(CREATE_SELECT_FREQ_COND0).ATTR(),
 		grid->cell.length );
 
 	grid->cell.quick.key = BOXKEY_RATIO_CLOCK_MAX | (cpu ^ CORE_COUNT);
-	grid->data.ullong = (unsigned long long) (CPU_ONLINE | cpu);
+	grid->data[0].ullong = (unsigned long long) (CPU_ONLINE | cpu);
     }
   }
 }
@@ -9526,7 +9532,7 @@ void Pkg_Item_Min_Freq(ASCII *item)
 		       (RO(Shm)->Proc.Features.ClkRatio_Unlock & 0b01) == 0b01);
 }
 
-void Pkg_Min_Freq_Update(TGrid *grid, DATA_TYPE data)
+void Pkg_Min_Freq_Update(TGrid *grid, DATA_TYPE data[])
 {
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];
 	unsigned int top = Ruler.Top[BOOST(MIN)];
@@ -9569,14 +9575,14 @@ void CPU_Item_Min_Freq(unsigned int cpu, ASCII *item)
     }
 }
 
-void CPU_Min_Freq_Update(TGrid *grid, DATA_TYPE data)
+void CPU_Min_Freq_Update(TGrid *grid, DATA_TYPE data[])
 {
-	const unsigned int cpu = data.ullong & CPU_MASK;
+	const unsigned int cpu = data[0].ullong & CPU_MASK;
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+1];
 
   if (BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
   {
-    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
+    if ((data[0].ullong & CPU_STATE_MASK) == CPU_ONLINE)
     {
 	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+1,
 			RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
@@ -9588,7 +9594,7 @@ void CPU_Min_Freq_Update(TGrid *grid, DATA_TYPE data)
 		grid->cell.length );
 
 	grid->cell.quick.key = SCANKEY_NULL;
-	grid->data.ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+	grid->data[0].ullong = (unsigned long long) (CPU_OFFLINE | cpu);
     }
   }
   else
@@ -9597,14 +9603,14 @@ void CPU_Min_Freq_Update(TGrid *grid, DATA_TYPE data)
 
 	memcpy(grid->cell.item, item, grid->cell.length);
 
-    if ((data.ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+    if ((data[0].ullong & CPU_STATE_MASK) == CPU_OFFLINE)
     {
 	memcpy( grid->cell.attr,
 		RSC(CREATE_SELECT_FREQ_COND0).ATTR(),
 		grid->cell.length );
 
 	grid->cell.quick.key = BOXKEY_RATIO_CLOCK_MIN | (cpu ^ CORE_COUNT);
-	grid->data.ullong = (unsigned long long) (CPU_ONLINE | cpu);
+	grid->data[0].ullong = (unsigned long long) (CPU_ONLINE | cpu);
     }
   }
 }
@@ -9738,18 +9744,116 @@ Window *CreateSelectIdle(unsigned long long id)
 	return wIdle;
 }
 
-void Update_STS_Event(TGrid *grid, DATA_TYPE data)
+#define TW_MAX_Z	0b100
+#define TW_MAX_Y	0b100000
+#define TW_CELL_COUNT	(TW_MAX_Z * TW_MAX_Y)
+#define TW_CELL_HEIGHT	(24 - TOP_HEADER_ROW - 1)
+#define TW_CELL_WIDTH	16
+
+void MotionUp_Wheel(Window *win)
 {
-	const enum THERM_PWR_EVENTS event = data.ullong;
+	if (win->matrix.scroll.vert > 0) {
+		win->matrix.scroll.vert--;
+	} else {
+		win->matrix.scroll.vert = TW_CELL_COUNT - 1;
+	}
+}
+
+void MotionDown_Wheel(Window *win)
+{
+	if (win->matrix.scroll.vert < TW_CELL_COUNT) {
+		win->matrix.scroll.vert++;
+	} else {
+		win->matrix.scroll.vert = 1;
+	}
+}
+
+Window *CreatePowerTimeWindow(unsigned long long id)
+{
+	Window *wPTW = CreateWindow(wLayer, id,
+				1, TW_CELL_HEIGHT,
+				37, TOP_HEADER_ROW + 1,
+				WINFLAG_NO_STOCK|WINFLAG_NO_VSB);
+  if (wPTW != NULL)
+  {
+	const enum PWR_DOMAIN	pw = (id >> 5) & BOXKEY_TDP_MASK;
+	const enum PWR_LIMIT	pl = id & (PL1 | PL2);
+
+	const double cTW[PWR_LIMIT_SIZE] = {
+		RO(Shm)->Proc.Power.Domain[pw].TW1,
+		RO(Shm)->Proc.Power.Domain[pw].TW2
+	};
+	const char *labelTW[PWR_LIMIT_SIZE] = {
+		(char*) RSC(POWER_LABEL_TW1).CODE(),
+		(char*) RSC(POWER_LABEL_TW2).CODE()
+	};
+	const char *labelDomain[DOMAIN_SIZE] = {
+		(char*) RSC(POWER_LABEL_PKG).CODE(),
+		(char*) RSC(POWER_LABEL_CORE).CODE(),
+		(char*) RSC(POWER_LABEL_UNCORE).CODE(),
+		(char*) RSC(POWER_LABEL_DRAM).CODE(),
+		(char*) RSC(POWER_LABEL_PLATFORM).CODE()
+	};
+	char item[TW_CELL_WIDTH + 1];
+
+	unsigned short Y, Z, circle;
+   for (circle = 0; circle < 2; circle++)
+    for (Z = 0b0; Z < TW_MAX_Z; Z++)
+     for (Y = 0b0; Y < TW_MAX_Y; Y++)
+     {
+	double xTW = COMPUTE_TW_Intel(Y, Z, RO(Shm)->Proc.Power.Unit.Times);
+
+	const unsigned long long bits = (Z << 5) | Y,
+				 key = (BOXKEY_TW_OP | (0x8ULL << pl))
+					| (pw << 5)
+					| (bits << 20);
+	ATTRIBUTE attrib;
+	char fmt[7 + 1];
+
+	StrFormat(item, TW_CELL_WIDTH + 1, " %s%7llx ",
+			FormatTW(7 + 1, fmt, xTW), bits);
+
+	if (xTW == cTW[pl]) {
+		attrib = MakeAttr(WHITE, 0, BLACK, 1);
+	} else {
+		attrib = MakeAttr(WHITE, 0, BLACK, 0);
+	}
+	StoreTCell(wPTW, key, item, attrib);
+     }
+	wPTW->matrix.select.row = TW_CELL_HEIGHT >> 1;
+	wPTW->matrix.scroll.vert = 0;
+
+	StrFormat(item, TW_CELL_WIDTH + 1, " %s %s ",
+			labelDomain[pw], labelTW[pl]);
+
+	StoreWindow(wPTW,	.title, 	item);
+	StoreWindow(wPTW,	.key.Enter,	MotionEnter_Cell);
+	StoreWindow(wPTW,	.key.Up,	MotionUp_Wheel);
+	StoreWindow(wPTW,	.key.Down,	MotionDown_Wheel);
+
+	StoreWindow(wPTW,	.color[1].select,
+				MakeAttr(CYAN, 1, BLACK, 1));
+  }
+	return wPTW;
+}
+#undef TW_CELL_WIDTH
+#undef TW_CELL_HEIGHT
+#undef TW_CELL_COUNT
+#undef TW_MAX_Y
+#undef TW_MAX_Z
+
+void Update_STS_Event(TGrid *grid, DATA_TYPE data[])
+{
+	const enum THERM_PWR_EVENTS event = data[0].ullong;
 	const ATTRIBUTE *attrib = RO(Shm)->ProcessorEvents[eSTS] & event ?
 		RSC(BOX_EVENT_COND1).ATTR() : RSC(BOX_EVENT_COND0).ATTR();
 
 	memcpy(grid->cell.attr, attrib, grid->cell.length - 1);
 }
 
-void Update_LOG_Event(TGrid *grid, DATA_TYPE data)
+void Update_LOG_Event(TGrid *grid, DATA_TYPE data[])
 {
-	const enum THERM_PWR_EVENTS event = data.ullong;
+	const enum THERM_PWR_EVENTS event = data[0].ullong;
 	const ATTRIBUTE *attrib = RO(Shm)->ProcessorEvents[eLOG] & event ?
 		RSC(BOX_EVENT_COND2).ATTR() : RSC(BOX_EVENT_COND0).ATTR();
 
@@ -10091,7 +10195,7 @@ Window *CreateEvents(unsigned long long id)
 			ATTRIB0
 		};
 
-		void (*Update_Event[ATTRIBS])(TGrid*, DATA_TYPE) = {
+		void (*Update_Event[ATTRIBS])(TGrid*, DATA_TYPE[]) = {
 			NULL,
 			Update_STS_Event,
 			Update_LOG_Event,
@@ -13702,6 +13806,27 @@ int Shortcut(SCANKEY *scan)
     }
     break;
 
+    case BOXKEY_TW1_PKG:
+    case BOXKEY_TW1_CORES:
+    case BOXKEY_TW1_UNCORE:
+    case BOXKEY_TW1_RAM:
+    case BOXKEY_TW1_PLATFORM:
+	fallthrough;
+    case BOXKEY_TW2_PKG:
+    case BOXKEY_TW2_CORES:
+    case BOXKEY_TW2_UNCORE:
+    case BOXKEY_TW2_RAM:
+    case BOXKEY_TW2_PLATFORM:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL) {
+		AppendWindow(CreatePowerTimeWindow(scan->key), &winList);
+	} else {
+		SetHead(&winList, win);
+	}
+    }
+    break;
+
     case BOXKEY_TDC:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
@@ -14537,6 +14662,21 @@ int Shortcut(SCANKEY *scan)
 				COREFREQ_IOCTL_TECHNOLOGY,
 				offset,
 				TECHNOLOGY_TDC_OFFSET );
+	}
+      }
+      else if ((scan->key & BOXKEY_TW_OP) == BOXKEY_TW_OP)
+      {
+	const enum PWR_DOMAIN	pw = (scan->key >> 5) & BOXKEY_TDP_MASK;
+	const enum PWR_LIMIT	pl = (scan->key & BOXKEY_PLX_MASK) >> 4;
+	const unsigned short	tw = (scan->key & BOXKEY_TDP_OFFSET) >> 20;
+
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				tw,
+				TECHNOLOGY_TW_POWER,
+				pw,
+				pl );
 	}
       }
       else

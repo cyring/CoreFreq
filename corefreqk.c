@@ -19783,7 +19783,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 
 		Controller_Start(1);
 		RESET_ARRAY(Custom_TDP_Offset, Custom_TDP_Count, 0);
-		Custom_TDP_Offset[idx] = 0;
+		Custom_TDP_Count = 0;
 		rc = RC_SUCCESS;
 	      }
 	    }
@@ -19810,6 +19810,28 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		Controller_Start(1);
 		Custom_TDC_Offset = 0;
 		rc = RC_SUCCESS;
+	    }
+		break;
+
+	case TECHNOLOGY_TW_POWER:
+	    {
+		const enum PWR_DOMAIN	pw = prm.dh.lo;
+		const enum PWR_LIMIT	pl = prm.dh.hi;
+		const signed short	tw = prm.dl.lo;
+
+		const unsigned int idx = (PWR_LIMIT_SIZE * pw) + pl;
+	      if (idx < PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE))
+	      {
+		Controller_Stop(1);
+		PowerTimeWindow_Count = PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE);
+		RESET_ARRAY(PowerTimeWindow, PowerTimeWindow_Count, -1);
+		PowerTimeWindow[idx] = tw;
+
+		Controller_Start(1);
+		RESET_ARRAY(PowerTimeWindow, PowerTimeWindow_Count, -1);
+		PowerTimeWindow_Count = 0;
+		rc = RC_SUCCESS;
+	      }
 	    }
 		break;
 

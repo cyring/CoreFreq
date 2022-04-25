@@ -637,76 +637,90 @@ TGrid *GridHover(TGrid *pGrid, const char *comment)
 	return pGrid;
 }
 
-__inline__ void Set_Data(TGrid *pGrid, DATA_TYPE data)
+__inline__
+void Set_Data(TGrid *pGrid, DATA_TYPE data, unsigned int order)
 {
-	pGrid->data = data;
+	pGrid->data[order] = data;
 }
 
-__inline__ void Set_pVOID(TGrid *pGrid, void *pVOID)
+__inline__
+void Set_pVOID(TGrid *pGrid, void *pVOID, unsigned int order)
 {
-	pGrid->data.pvoid = pVOID;
+	pGrid->data[order].pvoid = pVOID;
 }
 
-__inline__ void Set_pULLONG(TGrid *pGrid, unsigned long long *pULLONG)
+__inline__
+void Set_pULLONG(TGrid *pGrid, unsigned long long *pULLONG, unsigned int order)
 {
-	pGrid->data.pullong = pULLONG;
+	pGrid->data[order].pullong = pULLONG;
 }
 
-__inline__ void Set_pSLLONG(TGrid *pGrid, signed long long *pSLLONG)
+__inline__
+void Set_pSLLONG(TGrid *pGrid, signed long long *pSLLONG, unsigned int order)
 {
-	pGrid->data.psllong = pSLLONG;
+	pGrid->data[order].psllong = pSLLONG;
 }
 
-__inline__ void Set_pULONG(TGrid *pGrid, unsigned long *pULONG)
+__inline__
+void Set_pULONG(TGrid *pGrid, unsigned long *pULONG, unsigned int order)
 {
-	pGrid->data.pulong = pULONG;
+	pGrid->data[order].pulong = pULONG;
 }
 
-__inline__ void Set_pSLONG(TGrid *pGrid, signed long *pSLONG)
+__inline__
+void Set_pSLONG(TGrid *pGrid, signed long *pSLONG, unsigned int order)
 {
-	pGrid->data.pslong = pSLONG;
+	pGrid->data[order].pslong = pSLONG;
 }
 
-__inline__ void Set_pUINT(TGrid *pGrid, unsigned int *pUINT)
+__inline__
+void Set_pUINT(TGrid *pGrid, unsigned int *pUINT, unsigned int order)
 {
-	pGrid->data.puint = pUINT;
+	pGrid->data[order].puint = pUINT;
 }
 
-__inline__ void Set_pSINT(TGrid *pGrid, signed int *pSINT)
+__inline__
+void Set_pSINT(TGrid *pGrid, signed int *pSINT, unsigned int order)
 {
-	pGrid->data.psint = pSINT;
+	pGrid->data[order].psint = pSINT;
 }
 
-__inline__ void Set_ULLONG(TGrid *pGrid, unsigned long long _ULLONG)
+__inline__
+void Set_ULLONG(TGrid *pGrid, unsigned long long _ULLONG, unsigned int order)
 {
-	pGrid->data.ullong = _ULLONG;
+	pGrid->data[order].ullong = _ULLONG;
 }
 
-__inline__ void Set_SLLONG(TGrid *pGrid, signed long long _SLLONG)
+__inline__
+void Set_SLLONG(TGrid *pGrid, signed long long _SLLONG, unsigned int order)
 {
-	pGrid->data.sllong = _SLLONG;
+	pGrid->data[order].sllong = _SLLONG;
 }
 
-__inline__ void Set_ULONG(TGrid *pGrid, unsigned long _ULONG)
+__inline__
+void Set_ULONG(TGrid *pGrid, unsigned long _ULONG, unsigned int order)
 {
-	pGrid->data.ulong = _ULONG;
+	pGrid->data[order].ulong = _ULONG;
 }
 
-__inline__ void Set_SLONG(TGrid *pGrid, signed long _SLONG)
+__inline__
+void Set_SLONG(TGrid *pGrid, signed long _SLONG, unsigned int order)
 {
-	pGrid->data.slong = _SLONG;
+	pGrid->data[order].slong = _SLONG;
 }
 
-__inline__ void Set_UINT(TGrid *pGrid, unsigned int _UINT)
+__inline__
+void Set_UINT(TGrid *pGrid, unsigned int _UINT, unsigned int order)
 {
-	pGrid->data.uint[0] = _UINT;
-	pGrid->data.uint[1] = 0;
+	pGrid->data[order].uint[0] = _UINT;
+	pGrid->data[order].uint[1] = 0;
 }
 
-__inline__ void Set_SINT(TGrid *pGrid, signed int _SINT)
+__inline__
+void Set_SINT(TGrid *pGrid, signed int _SINT, unsigned int order)
 {
-	pGrid->data.sint[0] = _SINT;
-	pGrid->data.sint[1] = 0;
+	pGrid->data[order].sint[0] = _SINT;
+	pGrid->data[order].sint[1] = 0;
 }
 
 void HookCellFunc(TCELLFUNC *with, TCELLFUNC what) { *with=what; }
@@ -1164,8 +1178,9 @@ void ForEachCellPrint(Window *win, WinList *list)
 		(win->matrix.origin.col + win->lazyComp.rowLen - 2),
 		(win->matrix.origin.row + win->matrix.size.hth)) = 0x20;
 	/* Vertical Scrolling Bar					*/
-	if (win->dim / win->matrix.size.wth > win->matrix.size.hth)
-	{
+	if (!(win->flag & WINFLAG_NO_VSB)) {
+	    if (win->dim / win->matrix.size.wth > win->matrix.size.hth)
+	    {
 		CUINT vScrollbar = win->matrix.origin.row
 				 + (win->matrix.size.hth - 1)
 				 * win->matrix.scroll.vert
@@ -1181,6 +1196,7 @@ void ForEachCellPrint(Window *win, WinList *list)
 		LayerAt(win->layer, code,
 			(win->matrix.origin.col + win->lazyComp.rowLen - 2),
 			vScrollbar) =  '=';
+	    }
 	}
 }
 

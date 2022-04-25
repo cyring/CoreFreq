@@ -385,26 +385,26 @@ typedef union {
 typedef struct _Grid {
 	TCell		cell;
 	THover		hover;
-	DATA_TYPE	data;
-	void		(*Update)(struct _Grid *grid, DATA_TYPE data);
+	void		(*Update)(struct _Grid *grid, DATA_TYPE data[]);
+	DATA_TYPE	data[2];
 } TGrid;
 
-extern void Set_Data(TGrid *pGrid	, DATA_TYPE data) ;
-extern void Set_pVOID(TGrid *pGrid	, void *pVOID) ;
-extern void Set_pULLONG(TGrid *pGrid	, unsigned long long *pULLONG) ;
-extern void Set_pSLLONG(TGrid *pGrid	, signed long long *pSLLONG) ;
-extern void Set_pULONG(TGrid *pGrid	, unsigned long *pULONG) ;
-extern void Set_pSLONG(TGrid *pGrid	, signed long *pSLONG) ;
-extern void Set_pUINT(TGrid *pGrid	, unsigned int *pUINT) ;
-extern void Set_pSINT(TGrid *pGrid	, signed int *pSINT) ;
-extern void Set_ULLONG(TGrid *pGrid	, unsigned long long _ULLONG) ;
-extern void Set_SLLONG(TGrid *pGrid	, signed long long _SLLONG) ;
-extern void Set_ULONG(TGrid *pGrid	, unsigned long _ULONG) ;
-extern void Set_SLONG(TGrid *pGrid	, signed long _SLONG) ;
-extern void Set_UINT(TGrid *pGrid	, unsigned int _UINT) ;
-extern void Set_SINT(TGrid *pGrid	, signed int _SINT) ;
+extern void Set_Data(TGrid*,	DATA_TYPE data, 		unsigned int) ;
+extern void Set_pVOID(TGrid*,	void *pVOID,			unsigned int) ;
+extern void Set_pULLONG(TGrid*, unsigned long long *pULLONG,	unsigned int) ;
+extern void Set_pSLLONG(TGrid*, signed long long *pSLLONG,	unsigned int) ;
+extern void Set_pULONG(TGrid*,	unsigned long *pULONG,		unsigned int) ;
+extern void Set_pSLONG(TGrid*,	signed long *pSLONG,		unsigned int) ;
+extern void Set_pUINT(TGrid*,	unsigned int *pUINT,		unsigned int) ;
+extern void Set_pSINT(TGrid*,	signed int *pSINT,		unsigned int) ;
+extern void Set_ULLONG(TGrid*,	unsigned long long _ULLONG,	unsigned int) ;
+extern void Set_SLLONG(TGrid*,	signed long long _SLLONG,	unsigned int) ;
+extern void Set_ULONG(TGrid*,	unsigned long _ULONG,		unsigned int) ;
+extern void Set_SLONG(TGrid*,	signed long _SLONG,		unsigned int) ;
+extern void Set_UINT(TGrid*,	unsigned int _UINT,		unsigned int) ;
+extern void Set_SINT(TGrid*,	signed int _SINT,		unsigned int) ;
 
-#define SET_DATA(_pGrid , _data)					\
+#define SET_DATA(_pGrid , _data , _order)				\
 	__builtin_choose_expr(__builtin_types_compatible_p (		\
 		__typeof__(_data), __typeof__(DATA_TYPE)),		\
 			Set_Data,					\
@@ -447,7 +447,7 @@ extern void Set_SINT(TGrid *pGrid	, signed int _SINT) ;
 	__builtin_choose_expr(__builtin_types_compatible_p (		\
 		__typeof__(_data), __typeof__(signed int)) ,		\
 			Set_SINT,					\
-	(void)0))))))))))))))(_pGrid, _data)
+	(void)0))))))))))))))(_pGrid, _data, _order)
 
 typedef struct _Stock {
 	struct _Stock	*next;
@@ -468,7 +468,8 @@ typedef enum {
 	WINFLAG_NO_FLAGS = 0,
 	WINFLAG_NO_STOCK = 1,
 	WINFLAG_NO_SCALE = 2,
-	WINFLAG_NO_BORDER= 4
+	WINFLAG_NO_BORDER= 4,
+	WINFLAG_NO_VSB	 = 8
 } WINDOW_FLAG;
 
 typedef struct _Win {
@@ -583,7 +584,8 @@ extern void HookPointer(REGPTR *with, REGPTR what) ;
 	if (pGrid != NULL)						\
 	{								\
 		pGrid->Update = updateFunc;				\
-		pGrid->data.pvoid = NULL;				\
+		pGrid->data[0].pvoid = NULL;				\
+		pGrid->data[1].pvoid = NULL;				\
 	}								\
 	pGrid;								\
 })
@@ -594,15 +596,29 @@ extern void HookPointer(REGPTR *with, REGPTR what) ;
 	if (pGrid != NULL)						\
 	{								\
 		pGrid->Update = updateFunc;				\
-		SET_DATA(pGrid, arg0);					\
+		SET_DATA(pGrid, arg0, 0);				\
+		pGrid->data[1].pvoid = NULL;				\
 	}								\
 	pGrid;								\
 })
 
-#define DISPATCH_GridCall(_1,_2,_3,_CURSOR, ... ) _CURSOR
+#define GridCall_4xArg(gridCall, updateFunc,	arg0,	arg1)		\
+({									\
+	TGrid *pGrid = gridCall;					\
+	if (pGrid != NULL)						\
+	{								\
+		pGrid->Update = updateFunc;				\
+		SET_DATA(pGrid, arg0, 0);				\
+		SET_DATA(pGrid, arg1, 1);				\
+	}								\
+	pGrid;								\
+})
+
+#define DISPATCH_GridCall(_1,_2,_3,_4,_CURSOR, ... ) _CURSOR
 
 #define GridCall(...)							\
-	DISPATCH_GridCall( __VA_ARGS__ ,GridCall_3xArg ,		\
+	DISPATCH_GridCall( __VA_ARGS__ ,GridCall_4xArg ,		\
+					GridCall_3xArg ,		\
 					GridCall_2xArg ,		\
 					NULL)( __VA_ARGS__ )
 
@@ -671,8 +687,9 @@ extern void FreeAllTCells(Window *win) ;
 	pGrid->cell.length = strlen((char *) item);			\
 	pGrid->hover.comm = NULL;					\
 	pGrid->hover.length = 0;					\
-	pGrid->data.pvoid = NULL;					\
 	pGrid->Update = NULL;						\
+	pGrid->data[0].pvoid = NULL;					\
+	pGrid->data[1].pvoid = NULL;					\
 									\
 	__builtin_choose_expr(__builtin_types_compatible_p(		\
 		__typeof__(attrib),__typeof__(ATTRIBUTE[])),AllocCopyAttr,\

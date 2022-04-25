@@ -1386,7 +1386,7 @@ void HyperThreading(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 double TW_Manufacturer(unsigned short Y, unsigned short Z, double TU)
 {
-	return (1 << Y) * (1.0 + Z / 4.0) * TU;
+	return COMPUTE_TW_Intel(Y, Z, TU);
 }
 
 void PowerInterface(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
