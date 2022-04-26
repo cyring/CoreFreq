@@ -10304,7 +10304,7 @@ Window *CreateClockSource(unsigned long long id)
 	StoreTCell(wCS, SCANKEY_NULL, RSC(BOX_BLANK_DESC).CODE(),
 			RSC(UI).ATTR()[UI_BOX_ENABLE_STATE]);
 
-	wCS->matrix.select.row = row;
+	wCS->matrix.select.row = 1 + row;
 
 	StoreWindow(wCS, .title, (char*) RSC(BOX_CLOCK_SOURCE_TITLE).CODE());
 
