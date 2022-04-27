@@ -989,6 +989,7 @@ static void *Core_Cycle(void *arg)
 		ComputeVoltageFormula = ComputeVoltage_Intel_SoC_Matrix;
 		break;
 	case VOLTAGE_KIND_INTEL_SNB:
+	case VOLTAGE_KIND_INTEL_SAV:
 		ComputeVoltageFormula = ComputeVoltage_Intel_SNB_Matrix;
 		break;
 	case VOLTAGE_KIND_INTEL_SKL_X:
@@ -1386,7 +1387,7 @@ void HyperThreading(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 double TW_Manufacturer(unsigned short Y, unsigned short Z, double TU)
 {
-	return COMPUTE_TW_Intel(Y, Z, TU);
+	return COMPUTE_TW_INTEL(Y, Z, TU);
 }
 
 void PowerInterface(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))

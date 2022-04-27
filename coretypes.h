@@ -681,8 +681,8 @@ POWER_FORMULA_AMD_17h	=(POWER_KIND_AMD_17h << 8)	| FORMULA_SCOPE_CORE
 #define COMPUTE_VOLTAGE(_ARCH_, Vcore, VID)				\
 		COMPUTE_VOLTAGE_##_ARCH_(Vcore, VID)
 
-#define COMPUTE_TW_Intel(Y, Z, TU) (					\
-	(1 << Y) * (1.0 + Z / 4.0) * TU					\
+#define COMPUTE_TW_INTEL(Y, Z, TU) (					\
+	(1LLU << Y) * (1.0 + Z / 4.0) * TU				\
 )
 
 enum PWR_LIMIT {

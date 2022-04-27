@@ -9801,7 +9801,7 @@ Window *CreatePowerTimeWindow(unsigned long long id)
     for (Z = 0b0; Z < TW_MAX_Z; Z++)
      for (Y = 0b0; Y < TW_MAX_Y; Y++)
      {
-	double xTW = COMPUTE_TW_Intel(Y, Z, RO(Shm)->Proc.Power.Unit.Times);
+	double xTW = COMPUTE_TW_INTEL(Y, Z, RO(Shm)->Proc.Power.Unit.Times);
 
 	const unsigned long long bits = (Z << 5) | Y,
 				 key = (BOXKEY_TW_OP | (0x8ULL << pl))
