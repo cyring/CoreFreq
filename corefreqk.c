@@ -4457,6 +4457,9 @@ void Query_SKL_IMC(void __iomem *mchmap, unsigned short mc)
 inline void RKL_SA(void __iomem *mchmap)
 {
 	PUBLIC(RO(Proc))->Uncore.Bus.ADL_SA_Pll.value = readq(mchmap+0x5918);
+
+	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = \
+			PUBLIC(RO(Proc))->Uncore.Bus.ADL_SA_Pll.SA_VOLTAGE;
 }
 
 void Query_RKL_IMC(void __iomem *mchmap, unsigned short mc)

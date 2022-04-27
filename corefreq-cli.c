@@ -15829,12 +15829,22 @@ CUINT Layout_Ruler_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 	LayerCopyAt(	layer, hVolt.origin.col, hVolt.origin.row,
 			hVolt.length, hVolt.attr, hVolt.code );
 
+    if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+    {
+	LayerDeclare(	LAYOUT_RULER_VPKG_SAV, Draw.Size.width,
+			0, (row + Draw.Area.MaxRows + 1), hVPkg );
+
+	LayerCopyAt(	layer, hVPkg.origin.col, hVPkg.origin.row,
+			hVPkg.length, hVPkg.attr, hVPkg.code );
+    }
+    else
+    {
 	LayerDeclare(	LAYOUT_RULER_VPKG_SOC, Draw.Size.width,
 			0, (row + Draw.Area.MaxRows + 1), hVPkg );
 
 	LayerCopyAt(	layer, hVPkg.origin.col, hVPkg.origin.row,
 			hVPkg.length, hVPkg.attr, hVPkg.code );
-
+    }
 	row += Draw.Area.MaxRows + 2;
 	return row;
 }
@@ -18215,12 +18225,21 @@ size_t Draw_AltMonitor_Custom_Energy_Joule(void)
 
 	size_t len;
 	StrLenFormat(len, Buffer, MAX_WIDTH,
+			(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
+
+			" RAM:%8.4f(J) -" "- SA:%8.4f(J)/%5.4f(V)"	\
+			" - Pkg:%8.4f(J) - "				\
+			"%5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f -"	\
+			" c2:%-5.1f"	" c3:%-5.1f"	" c4:%-5.1f"	\
+			" c6:%-5.1f"	" c7:%-5.1f"	" c8:%-5.1f"	\
+			" c9:%-5.1f"	" c10:%-5.1f":
+
 			" RAM:%8.4f(J) -" " SoC:%8.4f(J)/%5.4f(V)"	\
 			" - Pkg:%8.4f(J) - "				\
 			"%5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f -"	\
 			" c2:%-5.1f"	" c3:%-5.1f"	" c4:%-5.1f"	\
 			" c6:%-5.1f"	" c7:%-5.1f"	" c8:%-5.1f"	\
-			" c9:%-5.1f"	" c10:%-5.1f",
+			" c9:%-5.1f"	" c10:%-5.1f"),
 
 			RO(Shm)->Proc.State.Energy[PWR_DOMAIN(RAM)].Current,
 			RO(Shm)->Proc.State.Energy[PWR_DOMAIN(UNCORE)].Current,
@@ -18254,12 +18273,21 @@ size_t Draw_AltMonitor_Custom_Power_Watt(void)
 
 	size_t len;
 	StrLenFormat(len, Buffer, MAX_WIDTH,
+			(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
+
+			" RAM:%8.4f(W) -" "- SA:%8.4f(W)/%5.4f(V)"	\
+			" - Pkg:%8.4f(W) - "				\
+			"%5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f -"	\
+			" c2:%-5.1f"	" c3:%-5.1f"	" c4:%-5.1f"	\
+			" c6:%-5.1f"	" c7:%-5.1f"	" c8:%-5.1f"	\
+			" c9:%-5.1f"	" c10:%-5.1f":
+
 			" RAM:%8.4f(W) -" " SoC:%8.4f(W)/%5.4f(V)"	\
 			" - Pkg:%8.4f(W) - "				\
 			"%5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f -"	\
 			" c2:%-5.1f"	" c3:%-5.1f"	" c4:%-5.1f"	\
 			" c6:%-5.1f"	" c7:%-5.1f"	" c8:%-5.1f"	\
-			" c9:%-5.1f"	" c10:%-5.1f",
+			" c9:%-5.1f"	" c10:%-5.1f"),
 
 			RO(Shm)->Proc.State.Power[PWR_DOMAIN(RAM)].Current,
 			RO(Shm)->Proc.State.Power[PWR_DOMAIN(UNCORE)].Current,

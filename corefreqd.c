@@ -7004,6 +7004,17 @@ static void Pkg_ComputeVoltage_Intel_SNB(struct PKG_FLIP_FLOP *PFlip)
 
 #define Pkg_ComputeVoltage_Intel_SKL_X	Pkg_ComputeVoltage_None
 
+static void Pkg_ComputeVoltage_Intel_SAV(struct PKG_FLIP_FLOP *PFlip)
+{
+	COMPUTE_VOLTAGE(INTEL_SNB,
+			PFlip->Voltage.CPU,
+			PFlip->Voltage.VID.CPU);
+
+	COMPUTE_VOLTAGE(INTEL_SAV,
+			PFlip->Voltage.SOC,
+			PFlip->Voltage.VID.SOC);
+}
+
 #define Pkg_ComputeVoltage_AMD		Pkg_ComputeVoltage_None
 
 #define Pkg_ComputeVoltage_AMD_0Fh	Pkg_ComputeVoltage_None
@@ -7154,6 +7165,9 @@ REASON_CODE Core_Manager(REF *Ref)
 		break;
 	case VOLTAGE_KIND_INTEL_SKL_X:
 		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_Intel_SKL_X;
+		break;
+	case VOLTAGE_KIND_INTEL_SAV:
+		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_Intel_SAV;
 		break;
 	case VOLTAGE_KIND_AMD:
 		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_AMD;
