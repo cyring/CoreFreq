@@ -144,7 +144,24 @@ void SetTopOftheTop(	unsigned int cpu, enum RATIO_BOOST rb,
     }
 }
 
-DECLARE_InsertionSort(Ruler.Uniq, Ruler.Count, BOOST(MIN))
+void InsertionSortRuler(unsigned int base[],
+			unsigned int cnt,
+			enum RATIO_BOOST start)
+{
+	__typeof__(start) lt = start + 1, rt;
+	while (lt < cnt)
+	{
+		rt = lt;
+		while ((rt > start) && (base[rt - 1] > base[rt]))
+		{
+			__typeof__(base[0]) swap = base[rt - 1];
+			base[rt - 1] = base[rt];
+			base[rt] = swap;
+			rt = rt - 1;
+		}
+		lt = lt + 1;
+	}
+}
 
 void AggregateRatio(void)
 {
@@ -191,7 +208,7 @@ void AggregateRatio(void)
 	}
 	lt = lt + 1;
     }
-	InsertionSort(Ruler.Uniq, Ruler.Count, BOOST(MIN));
+	InsertionSortRuler(Ruler.Uniq, Ruler.Count, BOOST(MIN));
 
 	Ruler.Minimum = (double) lowest;
 	Ruler.Maximum = (double) highest;
@@ -4037,88 +4054,76 @@ void TDP_Update(TGrid *grid, DATA_TYPE data[])
 	PCT_Update(grid, item, RO(Shm)->Proc.Power.TDP > 0 ? 5 : 0);
 }
 
-void PL1_Update(TGrid *grid, DATA_TYPE data[])
+void PWL_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data[0].sint[0];
+	const enum PWR_LIMIT pl = (enum PWR_LIMIT) data[1].uint[0];
 	char item[7+1];
-	StrFormat(item, 7+1, "%5u W", RO(Shm)->Proc.Power.Domain[pw].PL1);
+	StrFormat(item, 7+1, "%5u W", RO(Shm)->Proc.Power.Domain[pw].PWL[pl]);
 
-	PCT_Update(	grid, item, RO(Shm)->Proc.Power.Domain[pw].PL1 > 0 ?
-			RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Enable ?
+	PCT_Update(	grid, item, RO(Shm)->Proc.Power.Domain[pw].PWL[pl] > 0 ?
+			RO(Shm)->Proc.Power.Domain[pw].Feature[pl].Enable ?
 			3 : 5 : 0 );
 }
 
-void PL2_Update(TGrid *grid, DATA_TYPE data[])
+char *FormatTime(const size_t fsz, char *str, const double fTime)
 {
-	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data[0].sint[0];
-	char item[7+1];
-	StrFormat(item, 7+1, "%5u W", RO(Shm)->Proc.Power.Domain[pw].PL2);
-
-	PCT_Update(	grid, item, RO(Shm)->Proc.Power.Domain[pw].PL2 > 0 ?
-			RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Enable ?
-			3 : 5 : 0 );
-}
-
-char *FormatTW(const size_t fsz, char *fmt, const double fTW)
-{
-    if (fTW >= 1.0) {
-	unsigned long long iTW, rTW;
-	if (fTW >= 36000.0) {
-		iTW = fTW / 86400LLU;
-		rTW = fTW - (iTW * 86400LLU);
-		rTW = (100LLU * rTW) / 86400LLU;
-		StrFormat(fmt, fsz, "%2llu.%02llu d", iTW, rTW);
-	} else if (fTW >= 60.0) {
-		unsigned long long hTW = fTW / 3600LLU, mTW;
-		iTW = fTW / 60LLU;
-		rTW = fTW - (iTW * 60LLU);
-		mTW = (fTW - (hTW * 3600LLU)) / 60LLU;
-		StrFormat(fmt, fsz, "%1llu:%02llu:%02llu", hTW, mTW, rTW);
+    if (fTime >= 1.0) {
+	unsigned long long iTime, rTime;
+	if (fTime >= 36000.0) {
+		iTime = fTime / 86400LLU;
+		rTime = fTime - (iTime * 86400LLU);
+		rTime = (100LLU * rTime) / 86400LLU;
+		StrFormat(str, fsz, "%2llu.%02llu d", iTime, rTime);
+	} else if (fTime >= 60.0) {
+		unsigned long long hTW = fTime / 3600LLU, mTime;
+		iTime = fTime / 60LLU;
+		rTime = fTime - (iTime * 60LLU);
+		mTime = (fTime - (hTW * 3600LLU)) / 60LLU;
+	    if (hTW) {
+		StrFormat(str, fsz, "%1lluh%02llum%02llu", hTW, mTime, rTime);
+	    } else if (rTime) {
+		StrFormat(str, fsz, " %2llum%02llus", mTime, rTime);
+	    } else {
+		StrFormat(str, fsz, "   %2llu m", mTime);
+	    }
 	} else {
-		iTW = fTW;
-		rTW = (100LLU * fTW) - (100LLU * iTW);
-		StrFormat(fmt, fsz, "%2llu.%02llu s", iTW, rTW);
+		iTime = fTime;
+		rTime = (100LLU * fTime) - (100LLU * iTime);
+	    if (rTime) {
+		StrFormat(str, fsz, "%2llu.%02llu s", iTime, rTime);
+	    } else {
+		StrFormat(str, fsz, "   %2llu s", iTime);
+	    }
 	}
     } else {
-	unsigned long long iTW;
+	unsigned long long iTime;
 	char unit;
-	if (fTW < 0.000001) {
-		iTW = 1000LLU * 1000LLU * 1000LLU * fTW;
+	if (fTime < 0.000001) {
+		iTime = 1000LLU * 1000LLU * 1000LLU * fTime;
 		unit = 'n';
-	} else if (fTW < 0.001) {
-		iTW = 1000LLU * 1000LLU * fTW;
+	} else if (fTime < 0.001) {
+		iTime = 1000LLU * 1000LLU * fTime;
 		unit = 'u';
 	} else {
-		iTW = 1000LLU * fTW;
+		iTime = 1000LLU * fTime;
 		unit = 'm';
 	}
-	StrFormat(fmt, fsz, "%4llu %cs", iTW, unit);
+	StrFormat(str, fsz, "%4llu %cs", iTime, unit);
     }
-	return fmt;
+	return str;
 }
 
-void TW1_Update(TGrid *grid, DATA_TYPE data[])
+void TAU_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data[0].sint[0];
+	const enum PWR_LIMIT pl = (enum PWR_LIMIT) data[1].uint[0];
 	char item[7+1];
 
-	PCT_Update(	grid,
-			FormatTW(7+1, item, RO(Shm)->Proc.Power.Domain[pw].TW1),
-			RO(Shm)->Proc.Power.Domain[pw].TW1 > 0 ?
-			RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Enable ?
-			3 : 5 : 0 );
-}
-
-void TW2_Update(TGrid *grid, DATA_TYPE data[])
-{
-	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data[0].sint[0];
-	char item[7+1];
-
-	PCT_Update(	grid,
-			FormatTW(7+1, item, RO(Shm)->Proc.Power.Domain[pw].TW2),
-			RO(Shm)->Proc.Power.Domain[pw].TW2 > 0 ?
-			RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Enable ?
-			3 : 5 : 0 );
+	PCT_Update(grid,
+		FormatTime(7+1, item, RO(Shm)->Proc.Power.Domain[pw].TAU[pl]),
+		RO(Shm)->Proc.Power.Domain[pw].TAU[pl] > 0 ?
+		RO(Shm)->Proc.Power.Domain[pw].Feature[pl].Enable ? 3 : 5 : 0);
 }
 
 void TDC_Update(TGrid *grid, DATA_TYPE data[])
@@ -4127,9 +4132,8 @@ void TDC_Update(TGrid *grid, DATA_TYPE data[])
 	char item[7+1];
 	StrFormat(item, 7+1, "%5u A", RO(Shm)->Proc.Power.TDC);
 
-	PCT_Update(	grid, item, RO(Shm)->Proc.Power.TDC > 0 ?
-			RO(Shm)->Proc.Power.Feature.TDC ?
-			3 : 5 : 0 );
+	PCT_Update(grid, item, RO(Shm)->Proc.Power.TDC > 0 ?
+		RO(Shm)->Proc.Power.Feature.TDC ? 3 : 5 : 0);
 }
 
 REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
@@ -4413,7 +4417,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Unlock ? '>' : ']'),
 	TDP_State, pw );
 
-	cix = RO(Shm)->Proc.Power.Domain[pw].PL1 > 0 ?
+	cix = RO(Shm)->Proc.Power.Domain[pw].PWL[PL1] > 0 ?
 		RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Enable ? 3 : 5 : 0;
 
 	GridCall(
@@ -4427,11 +4431,11 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		hSpace,
 		RSC(POWER_LABEL_PL1).CODE(),
 		RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Unlock ? '<' : '[',
-		RO(Shm)->Proc.Power.Domain[pw].PL1,
+		RO(Shm)->Proc.Power.Domain[pw].PWL[PL1],
 		RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Unlock ? '>' : ']'),
-	PL1_Update, pw );
+	PWL_Update, pw, PL1 );
 
-	cix = RO(Shm)->Proc.Power.Domain[pw].TW1 > 0 ?
+	cix = RO(Shm)->Proc.Power.Domain[pw].TAU[PL1] > 0 ?
 		RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Enable ? 3 : 5 : 0;
 
 	GridCall(
@@ -4445,13 +4449,13 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		hSpace,
 		RSC(POWER_LABEL_TW1).CODE(),
 		RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Unlock ? '<' : '[',
-		FormatTW(7+1, item, RO(Shm)->Proc.Power.Domain[pw].TW1),
+		FormatTime(7+1, item, RO(Shm)->Proc.Power.Domain[pw].TAU[PL1]),
 		RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Unlock ? '>' : ']'),
-	TW1_Update, pw );
+	TAU_Update, pw, PL1 );
 
       if (pw == PWR_DOMAIN(PKG) || pw == PWR_DOMAIN(PLATFORM))
       {
-	cix = RO(Shm)->Proc.Power.Domain[pw].PL2 > 0 ?
+	cix = RO(Shm)->Proc.Power.Domain[pw].PWL[PL2] > 0 ?
 		RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Enable ? 3 : 5 : 0;
 
 	GridCall(
@@ -4465,11 +4469,11 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		hSpace,
 		RSC(POWER_LABEL_PL2).CODE(),
 		RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Unlock ? '<' : '[',
-		RO(Shm)->Proc.Power.Domain[pw].PL2,
+		RO(Shm)->Proc.Power.Domain[pw].PWL[PL2],
 		RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Unlock ? '>' : ']'),
-	PL2_Update, pw );
+	PWL_Update, pw, PL2 );
 
-	cix = RO(Shm)->Proc.Power.Domain[pw].TW2 > 0 ?
+	cix = RO(Shm)->Proc.Power.Domain[pw].TAU[PL2] > 0 ?
 		RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Enable ? 3 : 5 : 0;
 
 	GridCall(
@@ -4483,9 +4487,9 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		hSpace,
 		RSC(POWER_LABEL_TW2).CODE(),
 		RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Unlock ? '<' : '[',
-		FormatTW(7+1, item, RO(Shm)->Proc.Power.Domain[pw].TW2),
+		FormatTime(7+1, item, RO(Shm)->Proc.Power.Domain[pw].TAU[PL2]),
 		RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Unlock ? '>' : ']'),
-	TW2_Update, pw );
+	TAU_Update, pw, PL2 );
       }
     }
 /* Section Mark */
@@ -9744,103 +9748,229 @@ Window *CreateSelectIdle(unsigned long long id)
 	return wIdle;
 }
 
-#define TW_MAX_Z	0b100
-#define TW_MAX_Y	0b100000
-#define TW_CELL_COUNT	(TW_MAX_Z * TW_MAX_Y)
-#define TW_CELL_HEIGHT	(24 - TOP_HEADER_ROW - 1)
-#define TW_CELL_WIDTH	16
+#define TW_START_Z	0b000
+#define TW_START_Y	0b00000
+#define TW_STOP_Z	0b011
+#define TW_STOP_Y	0b10010
+#define TW_POST_Y	0b10011
+#define TW_POST_Z	0b000
+
+#define TW_CELL_COUNT(adj) (					\
+	  (1 + (TW_STOP_Z - TW_START_Z))			\
+	* (1 + (TW_STOP_Y - TW_START_Y))			\
+	+ adj							\
+)
+
+#define TW_ADJ_ALLOC	+1
+
+#define TW_CELL_HEIGHT	(TW_CELL_COUNT(TW_ADJ_ALLOC) >> 2)
+#define TW_CELL_WIDTH	18
+
+struct TW_ST {
+	double TAU;
+	unsigned char TW;
+};
+
+void InsertionSortTW(	struct TW_ST base[],
+			unsigned int cnt,
+			enum RATIO_BOOST start )
+{
+	__typeof__(start) lt = start + 1, rt;
+	while (lt < cnt)
+	{
+		rt = lt;
+		while ((rt > start) && (base[rt - 1].TAU > base[rt].TAU))
+		{
+			__typeof__(base[0]) swap;
+			swap.TAU = base[rt - 1].TAU;
+			swap.TW = base[rt - 1].TW;
+
+			base[rt - 1].TAU = base[rt].TAU;
+			base[rt - 1].TW = base[rt].TW;
+
+			base[rt].TAU = swap.TAU;
+			base[rt].TW = swap.TW;
+
+			rt = rt - 1;
+		}
+		lt = lt + 1;
+	}
+}
 
 void MotionUp_Wheel(Window *win)
 {
 	if (win->matrix.scroll.vert > 0) {
 		win->matrix.scroll.vert--;
 	} else {
-		win->matrix.scroll.vert = TW_CELL_COUNT - 1;
+		win->matrix.scroll.vert = (win->dim >> 1) - 1;
 	}
 }
 
 void MotionDown_Wheel(Window *win)
 {
-	if (win->matrix.scroll.vert < TW_CELL_COUNT) {
+	if (win->matrix.scroll.vert < (win->dim >> 1)) {
 		win->matrix.scroll.vert++;
 	} else {
 		win->matrix.scroll.vert = 1;
 	}
 }
 
+void MotionPgUp_Wheel(Window *win)
+{
+    if (win->matrix.scroll.vert > (win->matrix.size.hth >> 1)) {
+	win->matrix.scroll.vert -= (win->matrix.size.hth >> 1);
+    } else {
+	win->matrix.scroll.vert = (win->dim >> 1) - win->matrix.scroll.vert;
+    }
+}
+
+void MotionPgDw_Wheel(Window *win)
+{
+  if (win->matrix.scroll.vert < (win->dim >> 1) - (win->matrix.size.hth >> 1)) {
+	win->matrix.scroll.vert += (win->matrix.size.hth >> 1);
+  } else {
+	win->matrix.scroll.vert = (win->dim >> 1) - win->matrix.scroll.vert;
+  }
+}
+
+void MotionHome_Wheel(Window *win)
+{
+	win->matrix.scroll.vert = (win->dim >> 1) - win->matrix.select.row;
+}
+
+void MotionEnd_Wheel(Window *win)
+{
+	win->matrix.scroll.vert = (win->dim >> 1) - win->matrix.select.row - 1;
+}
+
 Window *CreatePowerTimeWindow(unsigned long long id)
 {
-	Window *wPTW = CreateWindow(wLayer, id,
-				1, TW_CELL_HEIGHT,
-				37, TOP_HEADER_ROW + 1,
-				WINFLAG_NO_STOCK|WINFLAG_NO_VSB);
-  if (wPTW != NULL)
-  {
+	Window *wPTW = NULL;
 	const enum PWR_DOMAIN	pw = (id >> 5) & BOXKEY_TDP_MASK;
-	const enum PWR_LIMIT	pl = id & (PL1 | PL2);
+	const enum PWR_LIMIT	pl = id & 0b11;
 
-	const double cTW[PWR_LIMIT_SIZE] = {
-		RO(Shm)->Proc.Power.Domain[pw].TW1,
-		RO(Shm)->Proc.Power.Domain[pw].TW2
+	struct TW_ST *array = calloc(	TW_CELL_COUNT(TW_ADJ_ALLOC),
+					sizeof(struct TW_ST) );
+  if (array != NULL)
+  {
+	signed int idx = 0,fdx = -1;
+	unsigned char Y, Z;
+   for (Y = TW_START_Y; Y <= TW_STOP_Y; Y++)
+     for (Z = TW_START_Z; Z <= TW_STOP_Z; Z++)
+     {
+	array[idx].TAU = COMPUTE_TAU(Y, Z, RO(Shm)->Proc.Power.Unit.Times);
+	array[idx].TW = COMPUTE_TW(Y, Z);
+
+	if ((fdx == -1)
+	 && (array[idx].TW == RO(Shm)->Proc.Power.Domain[pw].Feature[pl].TW)) {
+		fdx = idx;
+	}
+	idx++;
+     }
+    if (fdx == -1) {
+	array[idx].TAU = RO(Shm)->Proc.Power.Domain[pw].TAU[pl];
+	array[idx].TW = RO(Shm)->Proc.Power.Domain[pw].Feature[pl].TW;
+    } else {
+	array[idx].TAU = COMPUTE_TAU(TW_POST_Y, TW_POST_Z, RO(Shm)->Proc.Power.Unit.Times);
+	array[idx].TW = COMPUTE_TW(TW_POST_Y, TW_POST_Z);
+    }
+
+	InsertionSortTW(array, TW_CELL_COUNT(TW_ADJ_ALLOC), 0);
+
+	wPTW = CreateWindow(	wLayer, id,
+				1, TW_CELL_HEIGHT,
+				(MIN_WIDTH >> 1) - (TW_CELL_WIDTH >> 1),
+				TOP_HEADER_ROW + 1,
+				WINFLAG_NO_VSB );
+    if (wPTW != NULL)
+    {
+	const ASCII *labelTW[PWR_LIMIT_SIZE] = {
+		RSC(POWER_LABEL_TW1).CODE(),
+		RSC(POWER_LABEL_TW2).CODE()
 	};
-	const char *labelTW[PWR_LIMIT_SIZE] = {
-		(char*) RSC(POWER_LABEL_TW1).CODE(),
-		(char*) RSC(POWER_LABEL_TW2).CODE()
-	};
-	const char *labelDomain[DOMAIN_SIZE] = {
-		(char*) RSC(POWER_LABEL_PKG).CODE(),
-		(char*) RSC(POWER_LABEL_CORE).CODE(),
-		(char*) RSC(POWER_LABEL_UNCORE).CODE(),
-		(char*) RSC(POWER_LABEL_DRAM).CODE(),
-		(char*) RSC(POWER_LABEL_PLATFORM).CODE()
+	const ASCII *labelDom[DOMAIN_SIZE] = {
+		RSC(POWER_LABEL_PKG).CODE(),
+		RSC(POWER_LABEL_CORE).CODE(),
+		RSC(POWER_LABEL_UNCORE).CODE(),
+		RSC(POWER_LABEL_DRAM).CODE(),
+		RSC(POWER_LABEL_PLATFORM).CODE()
 	};
 	char item[TW_CELL_WIDTH + 1];
 
-	unsigned short Y, Z, circle;
-   for (circle = 0; circle < 2; circle++)
-    for (Z = 0b0; Z < TW_MAX_Z; Z++)
-     for (Y = 0b0; Y < TW_MAX_Y; Y++)
-     {
-	double xTW = COMPUTE_TW_INTEL(Y, Z, RO(Shm)->Proc.Power.Unit.Times);
+	unsigned long long us, ms, ss, bits, key;
+	unsigned char circle;
+     for (circle = 0, fdx = -1; circle < 2; circle++)
+      for (idx = 0; idx < TW_CELL_COUNT(TW_ADJ_ALLOC); idx++)
+      {
+	bits = ((unsigned long long) array[idx].TW) << 20,
+	key = (BOXKEY_TW_OP | (0x8ULL << pl)) | (pw << 5) | bits;
 
-	const unsigned long long bits = (Z << 5) | Y,
-				 key = (BOXKEY_TW_OP | (0x8ULL << pl))
-					| (pw << 5)
-					| (bits << 20);
-	ATTRIBUTE attrib;
-	char fmt[7 + 1];
+	us = 1000LLU * 1000LLU * array[idx].TAU;
+	ms = 1000LLU * array[idx].TAU;
+	ss = array[idx].TAU;
+	us = us % 1000LLU;
+	ms = ms % 1000LLU;
 
-	StrFormat(item, TW_CELL_WIDTH + 1, " %s%7llx ",
-			FormatTW(7 + 1, fmt, xTW), bits);
-
-	if (xTW == cTW[pl]) {
-		attrib = MakeAttr(WHITE, 0, BLACK, 1);
+       if (us) {
+	StrFormat(item, TW_CELL_WIDTH + 1, "  %7llu,%03llu%-3llu  ",ss, ms, us);
+       } else if (ms) {
+	StrFormat(item, TW_CELL_WIDTH + 1, "  %7llu,%-3llu     ", ss, ms);
+       } else {
+	StrFormat(item, TW_CELL_WIDTH + 1, "  %7llu         ", ss);
+       }
+	if (array[idx].TW == RO(Shm)->Proc.Power.Domain[pw].Feature[pl].TW) {
+		StoreTCell(wPTW, key, item, RSC(UI).ATTR()[UI_WHEEL_CURRENT]);
+		fdx = idx;
 	} else {
-		attrib = MakeAttr(WHITE, 0, BLACK, 0);
+		StoreTCell(wPTW, key, item, RSC(UI).ATTR()[UI_WHEEL_LIST]);
 	}
-	StoreTCell(wPTW, key, item, attrib);
-     }
+      }
+
 	wPTW->matrix.select.row = TW_CELL_HEIGHT >> 1;
+     if (fdx >= 0) {
+	if (fdx >= wPTW->matrix.select.row) {
+		wPTW->matrix.scroll.vert = fdx - wPTW->matrix.select.row;
+	} else {
+		wPTW->matrix.scroll.vert = (wPTW->dim >> 1)
+					 - (wPTW->matrix.select.row - fdx);
+	}
+     } else {
 	wPTW->matrix.scroll.vert = 0;
+     }
 
-	StrFormat(item, TW_CELL_WIDTH + 1, " %s %s ",
-			labelDomain[pw], labelTW[pl]);
-
+	StrFormat(item, TW_CELL_WIDTH+1, " %s %s ", labelDom[pw], labelTW[pl]);
 	StoreWindow(wPTW,	.title, 	item);
+
 	StoreWindow(wPTW,	.key.Enter,	MotionEnter_Cell);
 	StoreWindow(wPTW,	.key.Up,	MotionUp_Wheel);
 	StoreWindow(wPTW,	.key.Down,	MotionDown_Wheel);
+	StoreWindow(wPTW,	.key.PgUp,	MotionPgUp_Wheel);
+	StoreWindow(wPTW,	.key.PgDw,	MotionPgDw_Wheel);
+	StoreWindow(wPTW,	.key.Home,	MotionHome_Wheel);
+	StoreWindow(wPTW,	.key.End,	MotionEnd_Wheel);
 
-	StoreWindow(wPTW,	.color[1].select,
-				MakeAttr(CYAN, 1, BLACK, 1));
+	StoreWindow(wPTW,	.key.WinLeft,	MotionOriginLeft_Win);
+	StoreWindow(wPTW,	.key.WinRight,	MotionOriginRight_Win);
+	StoreWindow(wPTW,	.key.WinDown,	MotionOriginDown_Win);
+	StoreWindow(wPTW,	.key.WinUp,	MotionOriginUp_Win);
+
+	StoreWindow(wPTW, .color[1].select, RSC(UI).ATTR()[UI_WHEEL_SELECT]);
+    }
+	free(array);
   }
 	return wPTW;
 }
+
 #undef TW_CELL_WIDTH
 #undef TW_CELL_HEIGHT
+#undef TW_ADJ_ALLOC
 #undef TW_CELL_COUNT
-#undef TW_MAX_Y
-#undef TW_MAX_Z
+#undef TW_POST_Y
+#undef TW_POST_Z
+#undef TW_STOP_Y
+#undef TW_STOP_Z
+#undef TW_START_Y
+#undef TW_START_Z
 
 void Update_STS_Event(TGrid *grid, DATA_TYPE data[])
 {

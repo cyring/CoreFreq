@@ -444,15 +444,22 @@ typedef struct
 					Times;
 		} Unit;
 		struct {
-			double		TW1, TW2;
-			unsigned short	PL1, PL2;
-		    struct {
-			unsigned short
-					Enable	:  1-0,
+			double		TAU[PWR_LIMIT_SIZE];
+			unsigned short	PWL[PWR_LIMIT_SIZE];
+		  struct {
+			unsigned char	Enable	:  1-0,
 					Clamping:  2-1,
 					Unlock	:  3-2,
-					_Unused : 16-3;
-		    } Feature[PWR_LIMIT_SIZE];
+					_Unused :  8-3;
+		    union {
+			unsigned char	TW;
+		      struct {
+			unsigned char	TW_Y	:  5-0,
+					TW_Z	:  7-5,
+					MaskBit :  8-7;
+		      };
+		    };
+		  } Feature[PWR_LIMIT_SIZE];
 		} Domain[PWR_DOMAIN(SIZE)];
 		unsigned short		TDP, Min, Max;
 		unsigned short		PPT, EDC, TDC;

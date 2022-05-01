@@ -1602,7 +1602,7 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 				json_start_arr(&s);
 				for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
 				{
-					json_literal(&s, "%u", RO(Shm)->Proc.Power.Domain[pw].PL1);
+					json_literal(&s, "%u", RO(Shm)->Proc.Power.Domain[pw].PWL[PL1]);
 				}
 				json_end_arr(&s);
 			}
@@ -1611,7 +1611,7 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 				json_start_arr(&s);
 				for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
 				{
-					json_literal(&s, "%u", RO(Shm)->Proc.Power.Domain[pw].PL2);
+					json_literal(&s, "%u", RO(Shm)->Proc.Power.Domain[pw].PWL[PL2]);
 				}
 				json_end_arr(&s);
 			}

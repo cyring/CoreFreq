@@ -1385,9 +1385,9 @@ void HyperThreading(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	RO(Shm)->Proc.Features.HyperThreading = RO(Proc)->Features.HTT_Enable;
 }
 
-double TW_Manufacturer(unsigned short Y, unsigned short Z, double TU)
+double ComputeTAU(unsigned char Y, unsigned char Z, double TU)
 {
-	return COMPUTE_TW_INTEL(Y, Z, TU);
+	return COMPUTE_TAU(Y, Z, TU);
 }
 
 void PowerInterface(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
@@ -1457,10 +1457,10 @@ void PowerInterface(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 			RO(Proc)->PowerThermal.Domain[pw].PowerLimit.Clamping2;
 
 	pwrVal = RO(Proc)->PowerThermal.Domain[pw].PowerLimit.Domain_Limit1;
-	RO(Shm)->Proc.Power.Domain[pw].PL1 = pwrVal;
+	RO(Shm)->Proc.Power.Domain[pw].PWL[PL1] = pwrVal;
 
 	pwrVal = RO(Proc)->PowerThermal.Domain[pw].PowerLimit.Domain_Limit2;
-	RO(Shm)->Proc.Power.Domain[pw].PL2 = pwrVal;
+	RO(Shm)->Proc.Power.Domain[pw].PWL[PL2] = pwrVal;
 
 	RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Unlock = \
 	RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Unlock = \
@@ -1487,11 +1487,11 @@ void PowerInterface(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	pwrVal	= RO(Proc)->PowerThermal.Domain[pw].PowerLimit.Domain_Limit1
 		/ pwrUnits;
-	RO(Shm)->Proc.Power.Domain[pw].PL1 = pwrVal;
+	RO(Shm)->Proc.Power.Domain[pw].PWL[PL1] = pwrVal;
 
 	pwrVal	= RO(Proc)->PowerThermal.Domain[pw].PowerLimit.Domain_Limit2
 		/ pwrUnits;
-	RO(Shm)->Proc.Power.Domain[pw].PL2 = pwrVal;
+	RO(Shm)->Proc.Power.Domain[pw].PWL[PL2] = pwrVal;
       }
 	pwrVal = RO(Proc)->PowerThermal.PowerInfo.ThermalSpecPower / pwrUnits;
 	RO(Shm)->Proc.Power.TDP = pwrVal;
@@ -1504,16 +1504,24 @@ void PowerInterface(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
     }
     for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
     {
-	RO(Shm)->Proc.Power.Domain[pw].TW1 = TW_Manufacturer(
-		RO(Proc)->PowerThermal.Domain[pw].PowerLimit.TimeWindow1_Y,
-		RO(Proc)->PowerThermal.Domain[pw].PowerLimit.TimeWindow1_Z,
+	RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].TW = \
+		RO(Proc)->PowerThermal.Domain[pw].PowerLimit.TimeWindow1;
+
+	RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].TW = \
+		RO(Proc)->PowerThermal.Domain[pw].PowerLimit.TimeWindow2;
+
+	RO(Shm)->Proc.Power.Domain[pw].TAU[PL1] = ComputeTAU(
+		RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].TW_Y,
+		RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].TW_Z,
 		RO(Shm)->Proc.Power.Unit.Times
 	);
-	RO(Shm)->Proc.Power.Domain[pw].TW2 = TW_Manufacturer(
-		RO(Proc)->PowerThermal.Domain[pw].PowerLimit.TimeWindow2_Y,
-		RO(Proc)->PowerThermal.Domain[pw].PowerLimit.TimeWindow2_Z,
+
+	RO(Shm)->Proc.Power.Domain[pw].TAU[PL2] = ComputeTAU(
+		RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].TW_Y,
+		RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].TW_Z,
 		RO(Shm)->Proc.Power.Unit.Times
 	);
+
 	RO(Shm)->Proc.Power.Domain[pw].Feature[PL1].Unlock = \
 	RO(Shm)->Proc.Power.Domain[pw].Feature[PL2].Unlock = \
 				RO(Proc)->PowerThermal.Domain[pw].Unlock;

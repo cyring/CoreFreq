@@ -380,6 +380,15 @@
 	},								\
 	[UI_BOX_TOOLS_STOP] =  {					\
 		.fg = RED, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
+	[UI_WHEEL_CURRENT] = {						\
+		.fg = MAGENTA, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
+	[UI_WHEEL_SELECT] = {						\
+		.fg = BLACK, .un = 0, .bg = MAGENTA, .bf = 0		\
+	},								\
+	[UI_WHEEL_LIST] = {						\
+		.fg = WHITE, .un = 0, .bg = BLACK, .bf = 0		\
 	}								\
 }
 

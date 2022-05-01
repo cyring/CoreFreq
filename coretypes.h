@@ -681,8 +681,12 @@ POWER_FORMULA_AMD_17h	=(POWER_KIND_AMD_17h << 8)	| FORMULA_SCOPE_CORE
 #define COMPUTE_VOLTAGE(_ARCH_, Vcore, VID)				\
 		COMPUTE_VOLTAGE_##_ARCH_(Vcore, VID)
 
-#define COMPUTE_TW_INTEL(Y, Z, TU) (					\
+#define COMPUTE_TAU(Y, Z, TU) ( 					\
 	(1LLU << Y) * (1.0 + Z / 4.0) * TU				\
+)
+
+#define COMPUTE_TW(Y, Z) (						\
+	((unsigned char) Z << 5) | (unsigned char) Y			\
 )
 
 enum PWR_LIMIT {
@@ -2504,23 +2508,3 @@ typedef struct {
 		#define fallthrough	/* Fallthrough */
 	#endif
 #endif
-
-#define DECLARE_InsertionSort(_base, _cnt, _start)			\
-void InsertionSort(	__typeof__(_base) base	,			\
-			__typeof__(_cnt) cnt	,			\
-			__typeof__(_start) start )			\
-{									\
-	__typeof__(_start) lt = start + 1, rt;				\
-	while (lt < cnt)						\
-	{								\
-		rt = lt;						\
-		while ((rt > start) && (base[rt - 1] > base[rt]))	\
-		{							\
-			__typeof__(_base[0]) swap = base[rt - 1];	\
-			base[rt - 1] = base[rt];			\
-			base[rt] = swap;				\
-			rt = rt - 1;					\
-		}							\
-		lt = lt + 1;						\
-	}								\
-}
