@@ -5609,8 +5609,23 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 static PROCESSOR_SPECIFIC AMD_Zen3_VMR_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD Ryzen 5 5600X",	\
-			"AMD Ryzen 7 5800X"	),
+			"AMD Ryzen 7 5800X",
+			"AMD Ryzen 5 5600"	),
 	.Boost = {+9, +1},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_VERMEER,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 7 5800",
+			"AMD Ryzen 7 5700X"	),
+	.Boost = {+12, +1},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_VERMEER,
 	.TgtRatioUnlocked = 1,
@@ -5648,13 +5663,26 @@ static PROCESSOR_SPECIFIC AMD_Zen3_VMR_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
+	.Brand = ZLIST("AMD Ryzen 9 5900"),
+	.Boost = {+17, +1},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_VERMEER,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
 	.Brand = ZLIST("5800X3D"),
 	.Boost = {+11, +1},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_VERMEER,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
-	.TurboUnlocked = 1,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.HSMP_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
@@ -5743,6 +5771,17 @@ static PROCESSOR_SPECIFIC AMD_Zen3_CZN_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 5600G"),
 	.Boost = {+5, +1},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_CEZANNE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 5 5500"),
+	.Boost = {+6, +1},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_CEZANNE,
 	.TgtRatioUnlocked = 1,
