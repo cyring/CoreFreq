@@ -786,6 +786,18 @@ extern void MotionShrink_Win(Window *win) ;
 
 extern void MotionExpand_Win(Window *win) ;
 
+extern void MotionUp_Wheel(Window *win) ;
+
+extern void MotionDown_Wheel(Window *win) ;
+
+extern void MotionPgUp_Wheel(Window *win) ;
+
+extern void MotionPgDw_Wheel(Window *win) ;
+
+extern void MotionHome_Wheel(Window *win) ;
+
+extern void MotionEnd_Wheel(Window *win) ;
+
 extern void ReScaleAllWindows(WinList *list) ;
 
 extern int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list) ;

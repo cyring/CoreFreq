@@ -9761,9 +9761,7 @@ Window *CreateSelectIdle(unsigned long long id)
 	+ adj							\
 )
 
-#define TW_ADJ_ALLOC	+1
-
-#define TW_CELL_HEIGHT	(TW_CELL_COUNT(TW_ADJ_ALLOC) >> 2)
+#define TW_CELL_HEIGHT	(TW_CELL_COUNT(0) >> 2)
 #define TW_CELL_WIDTH	18
 
 struct TW_ST {
@@ -9797,63 +9795,16 @@ void InsertionSortTW(	struct TW_ST base[],
 	}
 }
 
-void MotionUp_Wheel(Window *win)
-{
-	if (win->matrix.scroll.vert > 0) {
-		win->matrix.scroll.vert--;
-	} else {
-		win->matrix.scroll.vert = (win->dim >> 1) - 1;
-	}
-}
-
-void MotionDown_Wheel(Window *win)
-{
-	if (win->matrix.scroll.vert < (win->dim >> 1)) {
-		win->matrix.scroll.vert++;
-	} else {
-		win->matrix.scroll.vert = 1;
-	}
-}
-
-void MotionPgUp_Wheel(Window *win)
-{
-    if (win->matrix.scroll.vert > (win->matrix.size.hth >> 1)) {
-	win->matrix.scroll.vert -= (win->matrix.size.hth >> 1);
-    } else {
-	win->matrix.scroll.vert = (win->dim >> 1) - win->matrix.scroll.vert;
-    }
-}
-
-void MotionPgDw_Wheel(Window *win)
-{
-  if (win->matrix.scroll.vert < (win->dim >> 1) - (win->matrix.size.hth >> 1)) {
-	win->matrix.scroll.vert += (win->matrix.size.hth >> 1);
-  } else {
-	win->matrix.scroll.vert = (win->dim >> 1) - win->matrix.scroll.vert;
-  }
-}
-
-void MotionHome_Wheel(Window *win)
-{
-	win->matrix.scroll.vert = (win->dim >> 1) - win->matrix.select.row;
-}
-
-void MotionEnd_Wheel(Window *win)
-{
-	win->matrix.scroll.vert = (win->dim >> 1) - win->matrix.select.row - 1;
-}
-
 Window *CreatePowerTimeWindow(unsigned long long id)
 {
 	Window *wPTW = NULL;
 	const enum PWR_DOMAIN	pw = (id >> 5) & BOXKEY_TDP_MASK;
 	const enum PWR_LIMIT	pl = id & 0b11;
 
-	struct TW_ST *array = calloc(	TW_CELL_COUNT(TW_ADJ_ALLOC),
-					sizeof(struct TW_ST) );
+	struct TW_ST *array = calloc(TW_CELL_COUNT(+1), sizeof(struct TW_ST));
   if (array != NULL)
   {
-	signed int idx = 0,fdx = -1;
+	signed int idx = 0, fdx = -1;
 	unsigned char Y, Z;
    for (Y = TW_START_Y; Y <= TW_STOP_Y; Y++)
      for (Z = TW_START_Z; Z <= TW_STOP_Z; Z++)
@@ -9871,15 +9822,17 @@ Window *CreatePowerTimeWindow(unsigned long long id)
 	array[idx].TAU = RO(Shm)->Proc.Power.Domain[pw].TAU[pl];
 	array[idx].TW = RO(Shm)->Proc.Power.Domain[pw].Feature[pl].TW;
     } else {
-	array[idx].TAU = COMPUTE_TAU(TW_POST_Y, TW_POST_Z, RO(Shm)->Proc.Power.Unit.Times);
+	array[idx].TAU = COMPUTE_TAU(	TW_POST_Y, TW_POST_Z,
+					RO(Shm)->Proc.Power.Unit.Times );
+
 	array[idx].TW = COMPUTE_TW(TW_POST_Y, TW_POST_Z);
     }
 
-	InsertionSortTW(array, TW_CELL_COUNT(TW_ADJ_ALLOC), 0);
+	InsertionSortTW(array, TW_CELL_COUNT(+1), 0);
 
 	wPTW = CreateWindow(	wLayer, id,
 				1, TW_CELL_HEIGHT,
-				(MIN_WIDTH >> 1) - (TW_CELL_WIDTH >> 1),
+				(MIN_WIDTH - TW_CELL_WIDTH) >> 1,
 				TOP_HEADER_ROW + 1,
 				WINFLAG_NO_VSB );
     if (wPTW != NULL)
@@ -9900,7 +9853,7 @@ Window *CreatePowerTimeWindow(unsigned long long id)
 	unsigned long long us, ms, ss, bits, key;
 	unsigned char circle;
      for (circle = 0, fdx = -1; circle < 2; circle++)
-      for (idx = 0; idx < TW_CELL_COUNT(TW_ADJ_ALLOC); idx++)
+      for (idx = 0; idx < TW_CELL_COUNT(+1); idx++)
       {
 	bits = ((unsigned long long) array[idx].TW) << 20,
 	key = (BOXKEY_TW_OP | (0x8ULL << pl)) | (pw << 5) | bits;
@@ -9926,7 +9879,8 @@ Window *CreatePowerTimeWindow(unsigned long long id)
 	}
       }
 
-	wPTW->matrix.select.row = TW_CELL_HEIGHT >> 1;
+	wPTW->matrix.select.row = wPTW->matrix.size.hth >> 1;
+
      if (fdx >= 0) {
 	if (fdx >= wPTW->matrix.select.row) {
 		wPTW->matrix.scroll.vert = fdx - wPTW->matrix.select.row;
@@ -9963,7 +9917,6 @@ Window *CreatePowerTimeWindow(unsigned long long id)
 
 #undef TW_CELL_WIDTH
 #undef TW_CELL_HEIGHT
-#undef TW_ADJ_ALLOC
 #undef TW_CELL_COUNT
 #undef TW_POST_Y
 #undef TW_POST_Z

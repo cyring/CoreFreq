@@ -1395,6 +1395,58 @@ void MotionExpand_Win(Window *win)
     }
 }
 
+void MotionUp_Wheel(Window *win)
+{
+	const size_t dim = win->dim >> 1;
+	if (win->matrix.scroll.vert > 0) {
+		win->matrix.scroll.vert--;
+	} else {
+		win->matrix.scroll.vert = dim - 1;
+	}
+}
+
+void MotionDown_Wheel(Window *win)
+{
+	const size_t dim = win->dim >> 1;
+	if (win->matrix.scroll.vert < dim) {
+		win->matrix.scroll.vert++;
+	} else {
+		win->matrix.scroll.vert = 1;
+	}
+}
+
+void MotionPgUp_Wheel(Window *win)
+{
+	const size_t dim = win->dim >> 1;
+	if (win->matrix.scroll.vert > win->matrix.select.row) {
+		win->matrix.scroll.vert -= win->matrix.select.row;
+	} else {
+		win->matrix.scroll.vert = dim - win->matrix.scroll.vert;
+	}
+}
+
+void MotionPgDw_Wheel(Window *win)
+{
+	const size_t dim = win->dim >> 1;
+	if (win->matrix.scroll.vert + win->matrix.select.row < dim) {
+		win->matrix.scroll.vert += win->matrix.select.row;
+	} else {
+		win->matrix.scroll.vert = dim - win->matrix.scroll.vert;
+	}
+}
+
+void MotionHome_Wheel(Window *win)
+{
+	const size_t dim = win->dim >> 1;
+	win->matrix.scroll.vert = dim - win->matrix.select.row;
+}
+
+void MotionEnd_Wheel(Window *win)
+{
+	const size_t dim = win->dim >> 1;
+	win->matrix.scroll.vert = dim - win->matrix.select.row - 1;
+}
+
 void MotionReScale(Window *win)
 {
 	CSINT	col = -1, row = -1, height = -1;
