@@ -1934,10 +1934,11 @@ static void Query_Hygon_F18h(unsigned int cpu);
 /*	[Family 19h]		AF_00h
 	[Zen3/Vermeer]		AF_21h Stepping 0	 7 nm
 	[Zen3/Cezanne]		AF_50h Stepping 0	 7 nm
-	[EPYC/Milan]		AF_01h Stepping 0	 7 nm	[Genesis][GN]
+	[EPYC/Milan]		AF_01h Stepping 1	 7 nm	[Genesis][GN]
+	[EPYC/Milan-X]		AF_01h Stepping 2	 7 nm
 	[Zen3/Chagall]		AF_08h Stepping 2	 7 nm	HEDT/TRX4 */
 /*
-	[Zen3/Badami/Milan-X]	AF_30h		[BA]	 7 nm	SVR
+	[Zen3/Badami]		AF_30h		[BA]	 7 nm	SVR
 	[Zen3+ Rembrandt]	AF_44h Stepping 1	 6 nm	[RMB]
 	[Zen4/Genoa/Stones]	A10F00			 5 nm
 	[Zen4/Raphael]		A60F00		[RPL]	 5 nm
