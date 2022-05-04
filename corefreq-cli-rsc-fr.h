@@ -1173,13 +1173,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_EVENT_SPACE_CODE_FR		"                 "
 #define RSC_BOX_EVENT_THERMAL_SENSOR_CODE_FR	" Capteur therm.  "
 #define RSC_BOX_EVENT_PROCHOT_STS_CODE_FR	" PROCHOT         "
-#define RSC_BOX_EVENT_PROCHOT_LOG_CODE_FR	" PROCHOT Log     "
-#define RSC_BOX_EVENT_CRITICAL_TMP_CODE_FR	" Temp. critique  "
-#define RSC_BOX_EVENT_CRITICAL_LOG_CODE_FR	" Log critique    "
+#define RSC_BOX_EVENT_CRITICAL_TEMP_CODE_FR	" Temp. critique  "
 #define RSC_BOX_EVENT_THOLD1_STS_CODE_FR	" Seuil1 therm.   "
 #define RSC_BOX_EVENT_THOLD2_STS_CODE_FR	" Seuil2 therm.   "
-#define RSC_BOX_EVENT_THOLD1_LOG_CODE_FR	" Log seuil1 th.  "
-#define RSC_BOX_EVENT_THOLD2_LOG_CODE_FR	" Log seuil2 th.  "
 #define RSC_BOX_EVENT_POWER_LIMIT_CODE_FR	" Puissance max.  "
 #define RSC_BOX_EVENT_CURRENT_LIMIT_CODE_FR	" Courant limit""\xa9""  "
 #define RSC_BOX_EVENT_CROSS_DOM_LIMIT_CODE_FR	" Interdomaine    "
@@ -1194,7 +1190,6 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_EVENT_MAX_TURBO_CODE_FR 	" Turbo Max       "
 #define RSC_BOX_EVENT_TURBO_ATTEN_CODE_FR	" Turbo Atten.    "
 #define RSC_BOX_EVENT_THERMAL_TVB_CODE_FR	" TVB thermique   "
-#define RSC_BOX_EVENT_THERMAL_LOG_CODE_FR	" Log thermique   "
 #define RSC_BOX_EVENT_ALL_OF_THEM_CODE_FR	"  <Tout effacer> "
 
 #define RSC_BOX_STATE_UNSPECIFIED_CODE_FR	"        "		\

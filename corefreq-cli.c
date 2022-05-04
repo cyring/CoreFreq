@@ -9925,336 +9925,185 @@ Window *CreatePowerTimeWindow(unsigned long long id)
 #undef TW_START_Y
 #undef TW_START_Z
 
-void Update_STS_Event(TGrid *grid, DATA_TYPE data[])
-{
-	const enum THERM_PWR_EVENTS event = data[0].ullong;
-	const ATTRIBUTE *attrib = RO(Shm)->ProcessorEvents[eSTS] & event ?
-		RSC(BOX_EVENT_COND1).ATTR() : RSC(BOX_EVENT_COND0).ATTR();
-
-	memcpy(grid->cell.attr, attrib, grid->cell.length - 1);
-}
-
-void Update_LOG_Event(TGrid *grid, DATA_TYPE data[])
-{
-	const enum THERM_PWR_EVENTS event = data[0].ullong;
-	const ATTRIBUTE *attrib = RO(Shm)->ProcessorEvents[eLOG] & event ?
-		RSC(BOX_EVENT_COND2).ATTR() : RSC(BOX_EVENT_COND0).ATTR();
-
-	memcpy(grid->cell.attr, attrib, grid->cell.length - 1);
-}
-
 #define EVENT_DOMAINS	4
-#define EVENT_SECTIONS	24
+#define EVENT_SECTIONS	12
+
+void Update_Event(TGrid *grid, DATA_TYPE data[])
+{
+	const enum THERM_PWR_EVENTS events[eDIM] = {
+		data[eLOG].ullong, data[eSTS].ullong
+	};
+	const ATTRIBUTE *attrib[eDIM][eDIM] = {
+		{RSC(BOX_EVENT_COND00).ATTR(), RSC(BOX_EVENT_COND01).ATTR()},
+		{RSC(BOX_EVENT_COND10).ATTR(), RSC(BOX_EVENT_COND11).ATTR()}
+	};
+	const unsigned int eTheme[eDIM] = {
+		(events[eLOG] != EVENT_THERM_NONE)
+	    &&	(RO(Shm)->ProcessorEvents[eLOG] & events[eLOG]),
+
+		(events[eSTS] != EVENT_THERM_NONE)
+	    &&	(RO(Shm)->ProcessorEvents[eSTS] & events[eSTS])
+	};
+	memcpy( grid->cell.attr,
+		attrib[eTheme[eLOG]][eTheme[eSTS]],
+		grid->cell.length - 1 );
+}
 
 Window *CreateEvents(unsigned long long id)
 {
-	ATTRIBUTE *attrib[] = {
-		RSC(BOX_EVENT_COND0).ATTR(),
-		RSC(BOX_EVENT_COND1).ATTR(),
-		RSC(BOX_EVENT_COND2).ATTR(),
-		RSC(BOX_EVENT_COND3).ATTR(),
-	};
-	#define ATTRIBS sizeof(attrib) / sizeof(attrib[0])
-	enum THEME_ATTRIB {ATTRIB0, ATTRIB1, ATTRIB2, ATTRIB3};
-
     struct EVENT_LDR_ST {
 	SCANKEY 		quick;
 	ASCII			*item;
-	enum THERM_PWR_EVENTS	mask;
-	enum THEME_ATTRIB	theme;
+	enum THERM_PWR_EVENTS	events[eDIM];
     } eLdr[EVENT_DOMAINS][EVENT_SECTIONS] = {
       {
 	/*	Thermal Sensor						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
-		EVENT_THERMAL_STS	, ATTRIB1			},
+	{	{BOXKEY_CLR_THM_SENSOR} , RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
+		{EVENT_THERMAL_LOG	, EVENT_THERMAL_STS}		},
 	/*	PROCHOT# Agent						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_PROCHOT_STS).CODE(),
-		EVENT_PROCHOT_STS	, ATTRIB1			},
-	/*	PROCHOT# Agent Log					*/
-	{	{BOXKEY_CLR_PROCHOT_LOG}, RSC(BOX_EVENT_PROCHOT_LOG).CODE(),
-		EVENT_PROCHOT_LOG	, ATTRIB2			},
-	/*	Thermal Log						*/
-	{	{BOXKEY_CLR_THM_SENSOR} , RSC(BOX_EVENT_THERMAL_LOG).CODE(),
-		EVENT_THERMAL_LOG	, ATTRIB2			},
+	{	{BOXKEY_CLR_PROCHOT_LOG}, RSC(BOX_EVENT_PROCHOT_STS).CODE(),
+		{EVENT_PROCHOT_LOG	, EVENT_PROCHOT_STS}		},
 	/*	Critical Temperature					*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_CRITICAL_TMP).CODE(),
-		EVENT_CRITIC_TMP	, ATTRIB1			},
-	/*	Critical Temperature Log				*/
-	{	{BOXKEY_CLR_THM_CRIT}	, RSC(BOX_EVENT_CRITICAL_LOG).CODE(),
-		EVENT_CRITIC_LOG	, ATTRIB2			},
+	{	{BOXKEY_CLR_THM_CRIT}	, RSC(BOX_EVENT_CRITICAL_TEMP).CODE(),
+		{EVENT_CRITIC_LOG	, EVENT_CRITIC_TMP}		},
 	/*	Thermal Threshold					*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_THOLD1_STS).CODE(),
-		EVENT_THOLD1_STS	, ATTRIB1			},
-	/*	Thermal Threshold Log					*/
-	{	{BOXKEY_CLR_THM_THOLD1} , RSC(BOX_EVENT_THOLD1_LOG).CODE(),
-		EVENT_THOLD1_LOG	, ATTRIB2			},
+	{	{BOXKEY_CLR_THM_THOLD1} , RSC(BOX_EVENT_THOLD1_STS).CODE(),
+		{EVENT_THOLD1_LOG	, EVENT_THOLD1_STS}		},
 	/*	Thermal Threshold					*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_THOLD2_STS).CODE(),
-		EVENT_THOLD2_STS	, ATTRIB1			},
-	/*	Thermal Threshold Log					*/
-	{	{BOXKEY_CLR_THM_THOLD2} , RSC(BOX_EVENT_THOLD2_LOG).CODE(),
-		EVENT_THOLD2_LOG	, ATTRIB2			},
+	{	{BOXKEY_CLR_THM_THOLD2} , RSC(BOX_EVENT_THOLD2_STS).CODE(),
+		{EVENT_THOLD2_LOG	, EVENT_THOLD2_STS}		},
 	/*	Power Limitation					*/
 	{	{BOXKEY_CLR_PWR_LIMIT}	, RSC(BOX_EVENT_POWER_LIMIT).CODE(),
-		EVENT_POWER_LIMIT	, ATTRIB2			},
+		{EVENT_POWER_LIMIT	, EVENT_THERM_NONE}		},
 	/*	Current Limitation					*/
 	{	{BOXKEY_CLR_CUR_LIMIT}	, RSC(BOX_EVENT_CURRENT_LIMIT).CODE(),
-		EVENT_CURRENT_LIMIT	, ATTRIB2			},
+		{EVENT_CURRENT_LIMIT	, EVENT_THERM_NONE}		},
 	/*	Cross Domain Limit.					*/
 	{	{BOXKEY_CLR_X_DOMAIN}	, RSC(BOX_EVENT_CROSS_DOM_LIMIT).CODE(),
-		EVENT_CROSS_DOMAIN	, ATTRIB2			},
+		{EVENT_CROSS_DOMAIN	, EVENT_THERM_NONE}		},
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
+		{EVENT_THERM_NONE	, EVENT_THERM_NONE}		},
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
+		{EVENT_THERM_NONE	, EVENT_THERM_NONE}		},
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
+		{EVENT_THERM_NONE	, EVENT_THERM_NONE}		},
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
-	/*	Blank cell						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
-	/*	Blank cell						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
-	/*	Blank cell						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
-	/*	Blank cell						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
-	/*	Blank cell						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
-	/*	Blank cell						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
-	/*	Blank cell						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			}
+		{EVENT_THERM_NONE	, EVENT_THERM_NONE}		}
       }, {
 	/*	Thermal Sensor						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
-		EVENT_CORE_THM_STS	, ATTRIB1			},
+	{	{BOXKEY_CLR_CORE_THM}	, RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
+		{EVENT_CORE_THM_LOG	, EVENT_CORE_THM_STS}		},
 	/*	PROCHOT# Agent						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_PROCHOT_STS).CODE(),
-		EVENT_CORE_HOT_STS	, ATTRIB1			},
-	/*	PROCHOT# Agent Log					*/
-	{	{BOXKEY_CLR_CORE_HOT}	, RSC(BOX_EVENT_PROCHOT_LOG).CODE(),
-		EVENT_CORE_HOT_LOG	, ATTRIB2			},
-	/*	Thermal Log						*/
-	{	{BOXKEY_CLR_CORE_THM}	, RSC(BOX_EVENT_THERMAL_LOG).CODE(),
-		EVENT_CORE_THM_LOG	, ATTRIB2			},
+	{	{BOXKEY_CLR_CORE_HOT}	, RSC(BOX_EVENT_PROCHOT_STS).CODE(),
+		{EVENT_CORE_HOT_LOG	, EVENT_CORE_HOT_STS}		},
 	/*	Avg Thermal						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_AVG_THERMAL).CODE(),
-		EVENT_CORE_AVG_STS	, ATTRIB1			},
-	/*	Avg Thermal Log 					*/
 	{	{BOXKEY_CLR_CORE_AVG}	, RSC(BOX_EVENT_AVG_THERMAL).CODE(),
-		EVENT_CORE_AVG_LOG	, ATTRIB2			},
+		{EVENT_CORE_AVG_LOG	, EVENT_CORE_AVG_STS}		},
 	/*	VR Thermal						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_VR_THERMAL).CODE(),
-		EVENT_CORE_VRT_STS	, ATTRIB1			},
-	/*	VR Thermal Log						*/
 	{	{BOXKEY_CLR_CORE_VRT}	, RSC(BOX_EVENT_VR_THERMAL).CODE(),
-		EVENT_CORE_VRT_LOG	, ATTRIB2			},
+		{EVENT_CORE_VRT_LOG	, EVENT_CORE_VRT_STS}		},
 	/*	VR TDC							*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_VR_TDC).CODE(),
-		EVENT_CORE_TDC_STS	, ATTRIB1			},
-	/*	VR TDC Log						*/
 	{	{BOXKEY_CLR_CORE_TDC}	, RSC(BOX_EVENT_VR_TDC).CODE(),
-		EVENT_CORE_TDC_LOG	, ATTRIB2			},
-	/*	Package PL1						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_POWER_PL1).CODE(),
-		EVENT_CORE_PL1_STS	, ATTRIB1			},
+		{EVENT_CORE_TDC_LOG	, EVENT_CORE_TDC_STS}		},
 	/*	Package PL1						*/
 	{	{BOXKEY_CLR_CORE_PL1}	, RSC(BOX_EVENT_POWER_PL1).CODE(),
-		EVENT_CORE_PL1_LOG	, ATTRIB2			},
-	/*	Package PL2						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_POWER_PL2).CODE(),
-		EVENT_CORE_PL2_STS	, ATTRIB1			},
+		{EVENT_CORE_PL1_LOG	, EVENT_CORE_PL1_STS}		},
 	/*	Package PL2						*/
 	{	{BOXKEY_CLR_CORE_PL2}	, RSC(BOX_EVENT_POWER_PL2).CODE(),
-		EVENT_CORE_PL2_LOG	, ATTRIB2			},
-	/*	Electrical EDP						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_ELECTRICAL).CODE(),
-		EVENT_CORE_EDP_STS	, ATTRIB1			},
+		{EVENT_CORE_PL2_LOG	, EVENT_CORE_PL2_STS}		},
 	/*	Electrical EDP						*/
 	{	{BOXKEY_CLR_CORE_EDP}	, RSC(BOX_EVENT_ELECTRICAL).CODE(),
-		EVENT_CORE_EDP_LOG	, ATTRIB2			},
+		{EVENT_CORE_EDP_LOG	, EVENT_CORE_EDP_STS}		},
 	/*	Residency						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_RESIDENCY).CODE(),
-		EVENT_CORE_RES_STS	, ATTRIB1			},
-	/*	Residency Log						*/
 	{	{BOXKEY_CLR_CORE_RES}	, RSC(BOX_EVENT_RESIDENCY).CODE(),
-		EVENT_CORE_RES_LOG	, ATTRIB2			},
-	/*	Max Turbo Limit.					*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_MAX_TURBO).CODE(),
-		EVENT_CORE_BST_STS	, ATTRIB1			},
+		{EVENT_CORE_RES_LOG	, EVENT_CORE_RES_STS}		},
 	/*	Max Turbo Limit.					*/
 	{	{BOXKEY_CLR_CORE_BST}	, RSC(BOX_EVENT_MAX_TURBO).CODE(),
-		EVENT_CORE_BST_LOG	, ATTRIB2			},
+		{EVENT_CORE_BST_LOG	, EVENT_CORE_BST_STS}		},
 	/*	Turbo Transition Attenuation				*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_TURBO_ATTEN).CODE(),
-		EVENT_CORE_ATT_STS	, ATTRIB1			},
-	/*	Turbo Transition Attenuation Log			*/
 	{	{BOXKEY_CLR_CORE_ATT}	, RSC(BOX_EVENT_TURBO_ATTEN).CODE(),
-		EVENT_CORE_ATT_LOG	, ATTRIB2			},
+		{EVENT_CORE_ATT_LOG	, EVENT_CORE_ATT_STS}		},
 	/*	Thermal Velocity Boost					*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_THERMAL_TVB).CODE(),
-		EVENT_CORE_TVB_STS	, ATTRIB1			},
-	/*	Thermal Velocity Boost Log				*/
 	{	{BOXKEY_CLR_CORE_TVB}	, RSC(BOX_EVENT_THERMAL_TVB).CODE(),
-		EVENT_CORE_TVB_LOG	, ATTRIB2			}
+		{EVENT_CORE_TVB_LOG	, EVENT_CORE_TVB_STS}		}
       }, {
 	/*	Thermal Sensor						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
-		EVENT_GFX_THM_STS	, ATTRIB1			},
+	{	{BOXKEY_CLR_GFX_THM}	, RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
+		{EVENT_GFX_THM_LOG	, EVENT_GFX_THM_STS}		},
 	/*	PROCHOT# Agent						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_PROCHOT_STS).CODE(),
-		EVENT_GFX_HOT_STS	, ATTRIB1			},
-	/*	PROCHOT# Agent Log					*/
-	{	{BOXKEY_CLR_GFX_HOT}	, RSC(BOX_EVENT_PROCHOT_LOG).CODE(),
-		EVENT_GFX_HOT_LOG	, ATTRIB2			},
-	/*	Thermal Log						*/
-	{	{BOXKEY_CLR_GFX_THM}	, RSC(BOX_EVENT_THERMAL_LOG).CODE(),
-		EVENT_GFX_THM_LOG	, ATTRIB2			},
+	{	{BOXKEY_CLR_GFX_HOT}	, RSC(BOX_EVENT_PROCHOT_STS).CODE(),
+		{EVENT_GFX_HOT_LOG	, EVENT_GFX_HOT_STS}		},
 	/*	Avg Thermal						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_AVG_THERMAL).CODE(),
-		EVENT_GFX_AVG_STS	, ATTRIB1			},
-	/*	Avg Thermal Log 					*/
 	{	{BOXKEY_CLR_GFX_AVG}	, RSC(BOX_EVENT_AVG_THERMAL).CODE(),
-		EVENT_GFX_AVG_LOG	, ATTRIB2			},
+		{EVENT_GFX_AVG_LOG	, EVENT_GFX_AVG_STS}		},
 	/*	VR Thermal						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_VR_THERMAL).CODE(),
-		EVENT_GFX_VRT_STS	, ATTRIB1			},
-	/*	VR Thermal Log						*/
 	{	{BOXKEY_CLR_GFX_VRT}	, RSC(BOX_EVENT_VR_THERMAL).CODE(),
-		EVENT_GFX_VRT_LOG	, ATTRIB2			},
+		{EVENT_GFX_VRT_LOG	, EVENT_GFX_VRT_STS}		},
 	/*	VR TDC							*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_VR_TDC).CODE(),
-		EVENT_GFX_TDC_STS	, ATTRIB1			},
-	/*	VR TDC Log						*/
 	{	{BOXKEY_CLR_GFX_TDC}	, RSC(BOX_EVENT_VR_TDC).CODE(),
-		EVENT_GFX_TDC_LOG	, ATTRIB2			},
-	/*	Package PL1						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_POWER_PL1).CODE(),
-		EVENT_GFX_PL1_STS	, ATTRIB1			},
+		{EVENT_GFX_TDC_LOG	, EVENT_GFX_TDC_STS}		},
 	/*	Package PL1						*/
 	{	{BOXKEY_CLR_GFX_PL1}	, RSC(BOX_EVENT_POWER_PL1).CODE(),
-		EVENT_GFX_PL1_LOG	, ATTRIB2			},
-	/*	Package PL2						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_POWER_PL2).CODE(),
-		EVENT_GFX_PL2_STS	, ATTRIB1			},
+		{EVENT_GFX_PL1_LOG	, EVENT_GFX_PL1_STS}		},
 	/*	Package PL2						*/
 	{	{BOXKEY_CLR_GFX_PL2}	, RSC(BOX_EVENT_POWER_PL2).CODE(),
-		EVENT_GFX_PL2_LOG	, ATTRIB2			},
-	/*	Electrical EDP						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_ELECTRICAL).CODE(),
-		EVENT_GFX_EDP_STS	, ATTRIB1			},
+		{EVENT_GFX_PL2_LOG	, EVENT_GFX_PL2_STS}		},
 	/*	Electrical EDP						*/
 	{	{BOXKEY_CLR_GFX_EDP}	, RSC(BOX_EVENT_ELECTRICAL).CODE(),
-		EVENT_GFX_EDP_LOG	, ATTRIB2			},
+		{EVENT_GFX_EDP_LOG	, EVENT_GFX_EDP_STS}		},
 	/*	Inefficiency Ops					*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_INEFFICIENCY).CODE(),
-		EVENT_GFX_EFF_STS	, ATTRIB1			},
-	/*	Inefficiency Ops Log					*/
 	{	{BOXKEY_CLR_GFX_EFF}	, RSC(BOX_EVENT_INEFFICIENCY).CODE(),
-		EVENT_GFX_EFF_LOG	, ATTRIB2			},
+		{EVENT_GFX_EFF_LOG	, EVENT_GFX_EFF_STS}		},
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
+		{EVENT_THERM_NONE	, EVENT_THERM_NONE}		},
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
+		{EVENT_THERM_NONE	, EVENT_THERM_NONE}		},
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
-	/*	Blank cell						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
-	/*	Blank cell						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
-	/*	Blank cell						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			}
+		{EVENT_THERM_NONE	, EVENT_THERM_NONE}		}
       }, {
 	/*	Thermal Sensor						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
-		EVENT_RING_THM_STS	, ATTRIB1			},
+	{	{BOXKEY_CLR_RING_THM}	, RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
+		{EVENT_RING_THM_LOG	, EVENT_RING_THM_STS}		},
 	/*	PROCHOT# Agent						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_PROCHOT_STS).CODE(),
-		EVENT_RING_HOT_STS	, ATTRIB1			},
-	/*	PROCHOT# Agent Log					*/
-	{	{BOXKEY_CLR_RING_HOT}	, RSC(BOX_EVENT_PROCHOT_LOG).CODE(),
-		EVENT_RING_HOT_LOG	, ATTRIB2			},
-	/*	Thermal Log						*/
-	{	{BOXKEY_CLR_RING_THM}	, RSC(BOX_EVENT_THERMAL_LOG).CODE(),
-		EVENT_RING_THM_LOG	, ATTRIB2			},
+	{	{BOXKEY_CLR_RING_HOT}	, RSC(BOX_EVENT_PROCHOT_STS).CODE(),
+		{EVENT_RING_HOT_LOG	, EVENT_RING_HOT_STS}		},
 	/*	Avg Thermal						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_AVG_THERMAL).CODE(),
-		EVENT_RING_AVG_STS	, ATTRIB1			},
-	/*	Avg Thermal Log 					*/
 	{	{BOXKEY_CLR_RING_AVG}	, RSC(BOX_EVENT_AVG_THERMAL).CODE(),
-		EVENT_RING_AVG_LOG	, ATTRIB2			},
+		{EVENT_RING_AVG_LOG	, EVENT_RING_AVG_STS}		},
 	/*	VR Thermal						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_VR_THERMAL).CODE(),
-		EVENT_RING_VRT_STS	, ATTRIB1			},
-	/*	VR Thermal Log 						*/
 	{	{BOXKEY_CLR_RING_VRT}	, RSC(BOX_EVENT_VR_THERMAL).CODE(),
-		EVENT_RING_VRT_LOG	, ATTRIB2			},
+		{EVENT_RING_VRT_LOG	, EVENT_RING_VRT_STS}		},
 	/*	VR TDC							*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_VR_TDC).CODE(),
-		EVENT_RING_TDC_STS	, ATTRIB1			},
-	/*	VR TDC Log						*/
 	{	{BOXKEY_CLR_RING_TDC}	, RSC(BOX_EVENT_VR_TDC).CODE(),
-		EVENT_RING_TDC_LOG	, ATTRIB2			},
-	/*	Package PL1						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_POWER_PL1).CODE(),
-		EVENT_RING_PL1_STS	, ATTRIB1			},
+		{EVENT_RING_TDC_LOG	, EVENT_RING_TDC_STS}		},
 	/*	Package PL1						*/
 	{	{BOXKEY_CLR_RING_PL1}	, RSC(BOX_EVENT_POWER_PL1).CODE(),
-		EVENT_RING_PL1_LOG	, ATTRIB2			},
-	/*	Package PL2						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_POWER_PL2).CODE(),
-		EVENT_RING_PL2_STS	, ATTRIB1			},
+		{EVENT_RING_PL1_LOG	, EVENT_RING_PL1_STS}		},
 	/*	Package PL2						*/
 	{	{BOXKEY_CLR_RING_PL2}	, RSC(BOX_EVENT_POWER_PL2).CODE(),
-		EVENT_RING_PL2_LOG	, ATTRIB2			},
-	/*	Electrical EDP						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_ELECTRICAL).CODE(),
-		EVENT_RING_EDP_STS	, ATTRIB1			},
+		{EVENT_RING_PL2_LOG	, EVENT_RING_PL2_STS}		},
 	/*	Electrical EDP						*/
 	{	{BOXKEY_CLR_RING_EDP}	, RSC(BOX_EVENT_ELECTRICAL).CODE(),
-		EVENT_RING_EDP_LOG	, ATTRIB2			},
+		{EVENT_RING_EDP_LOG	, EVENT_RING_EDP_STS}		},
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
+		{EVENT_THERM_NONE	, EVENT_THERM_NONE}		},
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
+		{EVENT_THERM_NONE	, EVENT_THERM_NONE}		},
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
+		{EVENT_THERM_NONE	, EVENT_THERM_NONE}		},
 	/*	Blank cell						*/
 	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
-	/*	Blank cell						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
-	/*	Blank cell						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
-	/*	Blank cell						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			},
-	/*	Blank cell						*/
-	{	{SCANKEY_NULL}		, RSC(BOX_EVENT_SPACE).CODE(),
-		EVENT_THERM_NONE	, ATTRIB0			}
+		{EVENT_THERM_NONE	, EVENT_THERM_NONE}		}
       }
     };
 	const size_t nmemb = sizeof(eLdr) / sizeof(struct EVENT_LDR_ST);
@@ -10263,52 +10112,40 @@ Window *CreateEvents(unsigned long long id)
 					EVENT_DOMAINS,
 					1 + (nmemb / EVENT_DOMAINS),
 					6, TOP_HEADER_ROW + 2 );
-    if (wEvent != NULL)
-    {
+  if (wEvent != NULL)
+  {
+	ATTRIBUTE *attrib[eDIM][eDIM] = {
+		{RSC(BOX_EVENT_COND00).ATTR(), RSC(BOX_EVENT_COND01).ATTR()},
+		{RSC(BOX_EVENT_COND10).ATTR(), RSC(BOX_EVENT_COND11).ATTR()}
+	};
 	CUINT col, row;
-      for (row = 0; row < EVENT_SECTIONS; row++) {
-	for (col = 0; col < EVENT_DOMAINS; col++) {
-		const enum THEME_ATTRIB theme[ATTRIBS] = {
-			ATTRIB0,
-			RO(Shm)->ProcessorEvents[eSTS] & eLdr[col][row].mask ?
-				eLdr[col][row].theme : ATTRIB0,
+    for (row = 0; row < EVENT_SECTIONS; row++) {
+      for (col = 0; col < EVENT_DOMAINS; col++) {
+	const unsigned int eTheme[eDIM] = {
+		(eLdr[col][row].events[eLOG] != EVENT_THERM_NONE)
+	    &&	(RO(Shm)->ProcessorEvents[eLOG] & eLdr[col][row].events[eLOG]),
 
-			RO(Shm)->ProcessorEvents[eLOG] & eLdr[col][row].mask ?
-				eLdr[col][row].theme : ATTRIB0,
-			ATTRIB0
-		};
+		(eLdr[col][row].events[eSTS] != EVENT_THERM_NONE)
+	    &&	(RO(Shm)->ProcessorEvents[eSTS] & eLdr[col][row].events[eSTS])
+	};
 
-		void (*Update_Event[ATTRIBS])(TGrid*, DATA_TYPE[]) = {
-			NULL,
-			Update_STS_Event,
-			Update_LOG_Event,
-			NULL
-		};
+	TGrid *grid=StoreTCell( wEvent,
+				eLdr[col][row].quick.key,
+				eLdr[col][row].item,
+				attrib[eTheme[eLOG]][eTheme[eSTS]] );
 
-		TGrid *grid=StoreTCell( wEvent,
-					eLdr[col][row].quick.key,
-					eLdr[col][row].item,
-					attrib[theme[eLdr[col][row].theme]] );
-
-	    if ((grid != NULL) && (col < EVENT_DOMAINS - 1)) {
-		const size_t rt = grid->cell.length - 1;
-		grid->cell.attr[rt] = RSC(UI).ATTR()[UI_MAKE_SELECT_FOCUS];
-	    }
-		GridCall( grid, Update_Event[eLdr[col][row].theme],
-				eLdr[col][row].mask );
-	}
+	GridCall(grid, Update_Event,
+		eLdr[col][row].events[eLOG], eLdr[col][row].events[eSTS]);
       }
-      for (col = 0; col < EVENT_DOMAINS - 1; col++) {
-	TGrid *grid=StoreTCell( wEvent, SCANKEY_NULL,
-				RSC(BOX_EVENT_SPACE).CODE(), attrib[ATTRIB0] );
-	if (grid != NULL) {
-		const size_t rt = grid->cell.length - 1;
-		grid->cell.attr[rt] = RSC(UI).ATTR()[UI_MAKE_SELECT_FOCUS];
-	}
-      }
-	StoreTCell(wEvent,BOXKEY_CLR_ALL_EVENTS,
-					RSC(BOX_EVENT_ALL_OF_THEM).CODE(),
-					attrib[ATTRIB3]);
+    }
+    for (col = 0; col < EVENT_DOMAINS - 1; col++) {
+	StoreTCell(wEvent,	SCANKEY_NULL,
+				RSC(BOX_EVENT_SPACE).CODE(),
+				RSC(BOX_EVENT_COND00).ATTR());
+    }
+	StoreTCell(wEvent,	BOXKEY_CLR_ALL_EVENTS,
+				RSC(BOX_EVENT_ALL_OF_THEM).CODE(),
+				RSC(BOX_EVENT_BUTTON).ATTR());
 
 	wEvent->matrix.select.col = wEvent->matrix.size.wth - 1;
 	wEvent->matrix.select.row = wEvent->matrix.size.hth - 1;
@@ -10333,9 +10170,8 @@ Window *CreateEvents(unsigned long long id)
 
 	StoreWindow(wEvent,	.key.Shrink,	MotionShrink_Win);
 	StoreWindow(wEvent,	.key.Expand,	MotionExpand_Win);
-    }
+  }
 	return wEvent;
-	#undef ATTRIBS
 }
 
 #undef EVENT_DOMAINS
