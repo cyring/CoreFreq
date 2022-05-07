@@ -2329,10 +2329,9 @@ void Default_Unlock_Reset(void)
 void OverrideCodeNameString(PROCESSOR_SPECIFIC *pSpecific)
 {
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
-		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[
-							pSpecific->CodeNameIdx
-						].CodeName,
-		CODENAME_LEN);
+		Arch[
+			PUBLIC(RO(Proc))->ArchID
+		].Architecture[pSpecific->CodeNameIdx], CODENAME_LEN);
 }
 
 void OverrideUnlockCapability(PROCESSOR_SPECIFIC *pSpecific)
@@ -3738,17 +3737,17 @@ void Skylake_X_Platform_Info(unsigned int cpu)
     case 11:
     case 10:
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
-	  Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_COOPERLAKE_X].CodeName,
+		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_COOPERLAKE_X],
 		CODENAME_LEN);
 	break;
     case 7:
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
-	 Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_CASCADELAKE_X].CodeName,
+		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_CASCADELAKE_X],
 		CODENAME_LEN);
 	break;
     case 4:
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
-	  Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_SKYLAKE_X].CodeName,
+		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_SKYLAKE_X],
 		CODENAME_LEN);
 	break;
     }
@@ -6145,7 +6144,7 @@ static void Query_AMD_Family_15h(unsigned int cpu)
 	&& (PUBLIC(RO(Proc))->Features.Std.EAX.Model <= 0xf) )
       {
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
-	  Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_PILEDRIVER].CodeName,
+		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_PILEDRIVER],
 		CODENAME_LEN);
       }
 	break;
@@ -6154,7 +6153,7 @@ static void Query_AMD_Family_15h(unsigned int cpu)
 	&& (PUBLIC(RO(Proc))->Features.Std.EAX.Model <= 0xf) )
       {
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
-	  Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_PILEDRIVER].CodeName,
+		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_PILEDRIVER],
 		CODENAME_LEN);
       }
 	break;
@@ -6163,8 +6162,8 @@ static void Query_AMD_Family_15h(unsigned int cpu)
 	&& (PUBLIC(RO(Proc))->Features.Std.EAX.Model <= 0xf) )
       {
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
-	  Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_STEAMROLLER].CodeName,
-			CODENAME_LEN);
+		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_STEAMROLLER],
+		CODENAME_LEN);
       }
 	break;
     case 0x6:
@@ -6173,7 +6172,7 @@ static void Query_AMD_Family_15h(unsigned int cpu)
 	&& (PUBLIC(RO(Proc))->Features.Std.EAX.Model <= 0xf) )
       {
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
-	    Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_EXCAVATOR].CodeName,
+		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_EXCAVATOR],
 		CODENAME_LEN);
 	/*	One thermal sensor through the SMU interface		*/
 	PUBLIC(RO(Proc))->thermalFormula = \
@@ -6994,7 +6993,7 @@ static void Query_Hygon_F18h(unsigned int cpu)
 		switch (PUBLIC(RO(Proc))->Features.Std.EAX.Stepping) {
 		case 0x2:
 			StrCopy(PUBLIC(RO(Proc))->Architecture,
-				Arch_Hygon_Family_18h[CN_DHYANA_V1].CodeName,
+				Arch_Hygon_Family_18h[CN_DHYANA_V1],
 				CODENAME_LEN);
 			break;
 		}
@@ -7003,7 +7002,7 @@ static void Query_Hygon_F18h(unsigned int cpu)
 		switch (PUBLIC(RO(Proc))->Features.Std.EAX.Stepping) {
 		case 0x1:
 			StrCopy(PUBLIC(RO(Proc))->Architecture,
-				Arch_Hygon_Family_18h[CN_DHYANA_V2].CodeName,
+				Arch_Hygon_Family_18h[CN_DHYANA_V2],
 				CODENAME_LEN);
 			break;
 		}
@@ -20807,7 +20806,7 @@ static int CoreFreqK_Scale_And_Compute_Level_Up(INIT_ARG *pArg)
 	memcpy(&PUBLIC(RO(Proc))->Features, pArg->Features, sizeof(FEATURES));
 
 	/* Initialize default uArch's codename with the CPUID brand. */
-	Arch[GenuineArch].Architecture->CodeName = \
+	Arch[GenuineArch].Architecture[0] = \
 				PUBLIC(RO(Proc))->Features.Info.Vendor.ID;
 	return 0;
 }
@@ -21016,7 +21015,7 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 	}
 	/*	Set the uArch's name with the first found codename	*/
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
-		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[0].CodeName,
+		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[0],
 		CODENAME_LEN);
 
 	/*	Check if the Processor is actually virtualized ?	*/

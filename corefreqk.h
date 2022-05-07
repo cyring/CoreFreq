@@ -1029,10 +1029,6 @@ enum CSTATES_CLASS {
 #define LATCH_HSMP_CAPABLE	0b000000010000	/* <H>	HSMP Capability  */
 
 typedef struct {
-	char			*CodeName;
-} MICRO_ARCH;
-
-typedef struct {
 	char			**Brand;
 	unsigned int		Boost[2];
 	THERMAL_PARAM		Param;
@@ -1430,7 +1426,7 @@ typedef struct
 	} Uncore;
 	PROCESSOR_SPECIFIC	*Specific;
 	SYSTEM_DRIVER		SystemDriver;
-	MICRO_ARCH		*Architecture;
+	char			**Architecture;
 } ARCH;
 
 static CLOCK BaseClock_GenuineIntel(unsigned int ratio) ;
@@ -2821,16 +2817,13 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 
 #define PCI_AMD_19h_ids PCI_AMD_17h_ids
 
+	 /*	Left as empty for initialization purpose.	*/
+static char *Arch_Misc_Processor[]	=	ZLIST(NULL);
 
-static MICRO_ARCH Arch_Misc_Processor[] = {
-	{NULL}, /* Left as Void for initialization purpose.		*/
-	{NULL}
-};
-
-static MICRO_ARCH Arch_Core_Yonah[]	= {{"Core/Yonah"}	, {NULL}};
-static MICRO_ARCH Arch_Core_Conroe[]	= {{"Core2/Conroe/Merom"},{NULL}};
-static MICRO_ARCH Arch_Core_Kentsfield[]= {{"Core2/Kentsfield"} , {NULL}};
-static MICRO_ARCH Arch_Core_Conroe_616[]= {{"Core2/Conroe/Yonah"},{NULL}};
+static char *Arch_Core_Yonah[]		=	ZLIST("Core/Yonah");
+static char *Arch_Core_Conroe[] 	=	ZLIST("Core2/Conroe/Merom");
+static char *Arch_Core_Kentsfield[]	=	ZLIST("Core2/Kentsfield");
+static char *Arch_Core_Conroe_616[]	=	ZLIST("Core2/Conroe/Yonah");
 
 enum {
 	CN_PENRYN,
@@ -2838,27 +2831,26 @@ enum {
 	CN_WOLFDALE
 };
 
-static MICRO_ARCH Arch_Core_Penryn[] = {
-	[CN_PENRYN]		= {"Core2/Penryn"},
-	[CN_YORKFIELD]		= {"Core2/Yorkfield"},
-	[CN_WOLFDALE]		= {"Core2/Wolfdale"},
-	{NULL}
-};
+static char *Arch_Core_Penryn[] = ZLIST(
+			[CN_PENRYN]	=	"Core2/Penryn",
+			[CN_YORKFIELD]	=	"Core2/Yorkfield",
+			[CN_WOLFDALE]	=	"Core2/Wolfdale"
+);
 
-static MICRO_ARCH Arch_Core_Dunnington[]= {{"Xeon/Dunnington"}	, {NULL}};
-static MICRO_ARCH Arch_Atom_Bonnell[]	= {{"Atom/Bonnell"}	, {NULL}};
-static MICRO_ARCH Arch_Atom_Silvermont[]= {{"Atom/Silvermont"}	, {NULL}};
-static MICRO_ARCH Arch_Atom_Lincroft[]	= {{"Atom/Lincroft"}	, {NULL}};
-static MICRO_ARCH Arch_Atom_Clover_Trail[]={{"Atom/Clovertrail"}, {NULL}};
-static MICRO_ARCH Arch_Atom_Saltwell[]	= {{"Atom/Saltwell"}	, {NULL}};
-static MICRO_ARCH Arch_Silvermont_Bay_Trail[]={{"Silvermont/SoC"},{NULL}};
-static MICRO_ARCH Arch_Atom_Avoton[]	= {{"Atom/Avoton"}	, {NULL}};
-static MICRO_ARCH Arch_Atom_Airmont[]	= {{"Atom/Airmont"}	, {NULL}};
-static MICRO_ARCH Arch_Atom_Goldmont[]	= {{"Atom/Goldmont"}	, {NULL}};
-static MICRO_ARCH Arch_Atom_Sofia[]	= {{"Atom/Sofia"}	, {NULL}};
-static MICRO_ARCH Arch_Atom_Merrifield[]= {{"Atom/Merrifield"}	, {NULL}};
-static MICRO_ARCH Arch_Atom_Moorefield[]= {{"Atom/Moorefield"}	, {NULL}};
-static MICRO_ARCH Arch_Nehalem_Bloomfield[]={{"Nehalem/Bloomfield"},{NULL}};
+static char *Arch_Core_Dunnington[]	=	ZLIST("Xeon/Dunnington");
+static char *Arch_Atom_Bonnell[]	=	ZLIST("Atom/Bonnell");
+static char *Arch_Atom_Silvermont[]	=	ZLIST("Atom/Silvermont");
+static char *Arch_Atom_Lincroft[]	=	ZLIST("Atom/Lincroft");
+static char *Arch_Atom_Clover_Trail[]	=	ZLIST("Atom/Clovertrail");
+static char *Arch_Atom_Saltwell[]	=	ZLIST("Atom/Saltwell");
+static char *Arch_Silvermont_Bay_Trail[]=	ZLIST("Silvermont/SoC");
+static char *Arch_Atom_Avoton[] 	=	ZLIST("Atom/Avoton");
+static char *Arch_Atom_Airmont[]	=	ZLIST("Atom/Airmont");
+static char *Arch_Atom_Goldmont[]	=	ZLIST("Atom/Goldmont");
+static char *Arch_Atom_Sofia[]		=	ZLIST("Atom/Sofia");
+static char *Arch_Atom_Merrifield[]	=	ZLIST("Atom/Merrifield");
+static char *Arch_Atom_Moorefield[]	=	ZLIST("Atom/Moorefield");
+static char *Arch_Nehalem_Bloomfield[]	=	ZLIST("Nehalem/Bloomfield");
 
 enum {
 	CN_LYNNFIELD,
@@ -2866,30 +2858,28 @@ enum {
 	CN_JASPER_FOREST
 };
 
-static MICRO_ARCH Arch_Nehalem_Lynnfield[] = {
-	[CN_LYNNFIELD]		= {"Nehalem/Lynnfield"},
-	[CN_CLARKSFIELD]	= {"Nehalem/Clarksfield"},
-	[CN_JASPER_FOREST]	= {"Nehalem/Jasper Forest"},
-	{NULL}
-};
+static char *Arch_Nehalem_Lynnfield[] = ZLIST(
+		[CN_LYNNFIELD]		=	"Nehalem/Lynnfield",
+		[CN_CLARKSFIELD]	=	"Nehalem/Clarksfield",
+		[CN_JASPER_FOREST]	=	"Nehalem/Jasper Forest"
+);
 
-static MICRO_ARCH Arch_Nehalem_MB[]	= {{"Nehalem/Mobile"}	, {NULL}};
-static MICRO_ARCH Arch_Nehalem_EX[]	= {{"Nehalem/eXtreme.EP"},{NULL}};
-static MICRO_ARCH Arch_Westmere[]	= {{"Westmere"} 	, {NULL}};
+static char *Arch_Nehalem_MB[]		=	ZLIST("Nehalem/Mobile");
+static char *Arch_Nehalem_EX[]		=	ZLIST("Nehalem/eXtreme.EP");
+static char *Arch_Westmere[]		=	ZLIST("Westmere");
 
 enum {
 	CN_WESTMERE_EP,
 	CN_GULFTOWN
 };
 
-static MICRO_ARCH Arch_Westmere_EP[] = {
-	[CN_WESTMERE_EP]	= {"Westmere/EP"},
-	[CN_GULFTOWN]		= {"Westmere/Gulftown"},
-	{NULL}
-};
+static char *Arch_Westmere_EP[] = ZLIST(
+		[CN_WESTMERE_EP]	=	"Westmere/EP",
+		[CN_GULFTOWN]		=	"Westmere/Gulftown"
+);
 
-static MICRO_ARCH Arch_Westmere_EX[]	= {{"Westmere/eXtreme"} , {NULL}};
-static MICRO_ARCH Arch_SandyBridge[]	= {{"SandyBridge"}	, {NULL}};
+static char *Arch_Westmere_EX[]		=	ZLIST("Westmere/eXtreme");
+static char *Arch_SandyBridge[]		=	ZLIST("SandyBridge");
 
 enum {
 	CN_SANDYBRIDGE_EP,
@@ -2897,14 +2887,13 @@ enum {
 	CN_SNB_EXTREME
 };
 
-static MICRO_ARCH Arch_SandyBridge_EP[] = {
-	[CN_SANDYBRIDGE_EP]	= {"SandyBridge/EP"},
-	[CN_SNB_ROMLEY_EP]	= {"SandyBridge/EP/Romley"},
-	[CN_SNB_EXTREME]	= {"SandyBridge/eXtreme"},
-	{NULL}
-};
+static char *Arch_SandyBridge_EP[] = ZLIST(
+		[CN_SANDYBRIDGE_EP]	=	"SandyBridge/EP",
+		[CN_SNB_ROMLEY_EP]	=	"SandyBridge/EP/Romley",
+		[CN_SNB_EXTREME]	=	"SandyBridge/eXtreme"
+);
 
-static MICRO_ARCH Arch_IvyBridge[] = {{"IvyBridge"}, {NULL}};
+static char *Arch_IvyBridge[]		=	ZLIST("IvyBridge");
 
 enum {
 	CN_IVYBRIDGE_EP,
@@ -2912,12 +2901,11 @@ enum {
 	CN_IVB_EXTREME
 };
 
-static MICRO_ARCH Arch_IvyBridge_EP[]	= {
-	[CN_IVYBRIDGE_EP]	= {"IvyBridge/EP"},
-	[CN_IVB_ROMLEY_EP]	= {"IvyBridge/EP/Romley"},
-	[CN_IVB_EXTREME]	= {"IvyBridge/eXtreme"},
-	{NULL}
-};
+static char *Arch_IvyBridge_EP[] = ZLIST(
+		[CN_IVYBRIDGE_EP]	=	"IvyBridge/EP",
+		[CN_IVB_ROMLEY_EP]	=	"IvyBridge/EP/Romley",
+		[CN_IVB_EXTREME]	=	"IvyBridge/eXtreme"
+);
 
 enum {
 	CN_HASWELL_DESKTOP,
@@ -2929,16 +2917,15 @@ enum {
 	CN_HASWELL_MOBILE
 };
 
-static MICRO_ARCH Arch_Haswell_DT[] = {
-	[CN_HASWELL_DESKTOP]	= {"Haswell/Desktop"},
-	[CN_HASWELL_MOBILE_EX]	= {"Haswell/Mobile/eXtreme"},
-	[CN_HASWELL_CRYSTALWELL]= {"Haswell/Crystal Well"},
-	[CN_HASWELL_CANYON]	= {"Haswell/Canyon"},
-	[CN_HASWELL_DENLOW]	= {"Haswell/Denlow"},
-	[CN_HASWELL_EMBEDDED]	= {"Haswell/Embedded"},
-	[CN_HASWELL_MOBILE]	= {"Haswell/Mobile"},
-	{NULL}
-};
+static char *Arch_Haswell_DT[] = ZLIST(
+		[CN_HASWELL_DESKTOP]	=	"Haswell/Desktop",
+		[CN_HASWELL_MOBILE_EX]	=	"Haswell/Mobile/eXtreme",
+		[CN_HASWELL_CRYSTALWELL]=	"Haswell/Crystal Well",
+		[CN_HASWELL_CANYON]	=	"Haswell/Canyon",
+		[CN_HASWELL_DENLOW]	=	"Haswell/Denlow",
+		[CN_HASWELL_EMBEDDED]	=	"Haswell/Embedded",
+		[CN_HASWELL_MOBILE]	=	"Haswell/Mobile"
+);
 
 enum {
 	CN_HASWELL_EP,
@@ -2946,33 +2933,31 @@ enum {
 	CN_HSW_EXTREME
 };
 
-static MICRO_ARCH Arch_Haswell_EP[]	= {
-	[CN_HASWELL_EP] 	= {"Haswell/EP"},
-	[CN_HSW_GRANTLEY_EP]	= {"Haswell/EP/Grantley"},
-	[CN_HSW_EXTREME]	= {"Haswell/eXtreme"},
-	{NULL}
-};
+static char *Arch_Haswell_EP[] = ZLIST(
+		[CN_HASWELL_EP] 	=	"Haswell/EP",
+		[CN_HSW_GRANTLEY_EP]	=	"Haswell/EP/Grantley",
+		[CN_HSW_EXTREME]	=	"Haswell/eXtreme"
+);
 
-static MICRO_ARCH Arch_Haswell_ULT[]	= {{"Haswell/Ultra Low TDP"},{NULL}};
-static MICRO_ARCH Arch_Haswell_ULX[]	={{"Haswell/Ultra Low eXtreme"},{NULL}};
-static MICRO_ARCH Arch_Broadwell[]	= {{"Broadwell/Mobile"} , {NULL}};
-static MICRO_ARCH Arch_Broadwell_D[]	= {{"Broadwell/D"}	, {NULL}};
-static MICRO_ARCH Arch_Broadwell_H[]	= {{"Broadwell/H"}	, {NULL}};
+static char *Arch_Haswell_ULT[] =	ZLIST("Haswell/Ultra Low TDP");
+static char *Arch_Haswell_ULX[] =	ZLIST("Haswell/Ultra Low eXtreme");
+static char *Arch_Broadwell[]	=	ZLIST("Broadwell/Mobile");
+static char *Arch_Broadwell_D[] =	ZLIST("Broadwell/D");
+static char *Arch_Broadwell_H[] =	ZLIST("Broadwell/H");
 
 enum {
 	CN_BROADWELL_EP,
 	CN_BDW_GRANTLEY_EP,
 	CN_BDW_EXTREME
 };
-static MICRO_ARCH Arch_Broadwell_EP[]	= {
-	[CN_BROADWELL_EP]	= {"Broadwell/EP"},
-	[CN_BDW_GRANTLEY_EP]	= {"Broadwell/EP/Grantley"},
-	[CN_BDW_EXTREME]	= {"Broadwell/eXtreme"},
-	{NULL}
-};
+static char *Arch_Broadwell_EP[] = ZLIST(
+		[CN_BROADWELL_EP]	=	"Broadwell/EP",
+		[CN_BDW_GRANTLEY_EP]	=	"Broadwell/EP/Grantley",
+		[CN_BDW_EXTREME]	=	"Broadwell/eXtreme"
+);
 
-static MICRO_ARCH Arch_Skylake_UY[]	= {{"Skylake/UY"}	, {NULL}};
-static MICRO_ARCH Arch_Skylake_S[]	= {{"Skylake/S"}	, {NULL}};
+static char *Arch_Skylake_UY[]		=	ZLIST("Skylake/UY");
+static char *Arch_Skylake_S[]		=	ZLIST("Skylake/S");
 
 enum {
 	CN_SKYLAKE_X,
@@ -2980,14 +2965,13 @@ enum {
 	CN_COOPERLAKE_X
 };
 
-static MICRO_ARCH Arch_Skylake_X[] = {
-	[CN_SKYLAKE_X]		= {"Skylake/X"},
-	[CN_CASCADELAKE_X]	= {"Cascade Lake/X"},
-	[CN_COOPERLAKE_X]	= {"Cooper Lake/X"},
-	{NULL}
-};
+static char *Arch_Skylake_X[] = ZLIST(
+		[CN_SKYLAKE_X]		=	"Skylake/X",
+		[CN_CASCADELAKE_X]	=	"Cascade Lake/X",
+		[CN_COOPERLAKE_X]	=	"Cooper Lake/X"
+);
 
-static MICRO_ARCH Arch_Xeon_Phi[] = {{"Knights Landing"}, {NULL}};
+static char *Arch_Xeon_Phi[]		=	ZLIST("Knights Landing");
 
 enum {
 	CN_KABYLAKE,
@@ -3005,22 +2989,21 @@ enum {
 	CN_COFFEELAKE_HR
 };
 
-static MICRO_ARCH Arch_Kabylake[] = {
-	[CN_KABYLAKE]		= {"Kaby Lake"},
-	[CN_KABYLAKE_S] 	= {"Kaby Lake/S"},
-	[CN_KABYLAKE_X] 	= {"Kaby Lake/X"},
-	[CN_KABYLAKE_H] 	= {"Kaby Lake/H"},
-	[CN_KABYLAKE_U] 	= {"Kaby Lake/U"},
-	[CN_KABYLAKE_Y] 	= {"Kaby Lake/Y"},
-	[CN_KABYLAKE_R] 	= {"Kaby Lake/R"},
-	[CN_KABYLAKE_G] 	= {"Kaby Lake/G"},
-	[CN_COFFEELAKE_S]	= {"Coffee Lake/S"},
-	[CN_COFFEELAKE_H]	= {"Coffee Lake/H"},
-	[CN_COFFEELAKE_U]	= {"Coffee Lake/U"},
-	[CN_COFFEELAKE_R]	= {"Coffee Lake/R"},
-	[CN_COFFEELAKE_HR]	= {"Coffee Lake/HR"},
-	{NULL}
-};
+static char *Arch_Kabylake[] = ZLIST(
+		[CN_KABYLAKE]		=	"Kaby Lake",
+		[CN_KABYLAKE_S] 	=	"Kaby Lake/S",
+		[CN_KABYLAKE_X] 	=	"Kaby Lake/X",
+		[CN_KABYLAKE_H] 	=	"Kaby Lake/H",
+		[CN_KABYLAKE_U] 	=	"Kaby Lake/U",
+		[CN_KABYLAKE_Y] 	=	"Kaby Lake/Y",
+		[CN_KABYLAKE_R] 	=	"Kaby Lake/R",
+		[CN_KABYLAKE_G] 	=	"Kaby Lake/G",
+		[CN_COFFEELAKE_S]	=	"Coffee Lake/S",
+		[CN_COFFEELAKE_H]	=	"Coffee Lake/H",
+		[CN_COFFEELAKE_U]	=	"Coffee Lake/U",
+		[CN_COFFEELAKE_R]	=	"Coffee Lake/R",
+		[CN_COFFEELAKE_HR]	=	"Coffee Lake/HR"
+);
 
 enum {
 	CN_KABYLAKE_UY,
@@ -3030,45 +3013,44 @@ enum {
 	CN_COMETLAKE_U
 };
 
-static MICRO_ARCH Arch_Kabylake_UY[] = {
-	[CN_KABYLAKE_UY]	= {"Kaby Lake/UY"},
-	[CN_WHISKEYLAKE_U]	= {"Whiskey Lake/U"},
-	[CN_AMBERLAKE_Y]	= {"Amber Lake/Y"},
-	[CN_COMETLAKE_H]	= {"Comet Lake/H"},
-	[CN_COMETLAKE_U]	= {"Comet Lake/U"},
-	{NULL}
-};
+static char *Arch_Kabylake_UY[] = ZLIST(
+		[CN_KABYLAKE_UY]	=	"Kaby Lake/UY",
+		[CN_WHISKEYLAKE_U]	=	"Whiskey Lake/U",
+		[CN_AMBERLAKE_Y]	=	"Amber Lake/Y",
+		[CN_COMETLAKE_H]	=	"Comet Lake/H",
+		[CN_COMETLAKE_U]	=	"Comet Lake/U"
+);
 
-static MICRO_ARCH Arch_Cannonlake_U[]	= {{"Cannon Lake/U"}	, {NULL}};
-static MICRO_ARCH Arch_Cannonlake_H[]	= {{"Cannon Lake/H"}	, {NULL}};
-static MICRO_ARCH Arch_Geminilake[]	= {{"Atom/Gemini Lake"} , {NULL}};
-static MICRO_ARCH Arch_Icelake[]	= {{"Ice Lake"} 	, {NULL}};
-static MICRO_ARCH Arch_Icelake_UY[]	= {{"Ice Lake/UY"}	, {NULL}};
-static MICRO_ARCH Arch_Icelake_X[]	= {{"Ice Lake/X"}	, {NULL}};
-static MICRO_ARCH Arch_Icelake_D[]	= {{"Ice Lake/D"}	, {NULL}};
-static MICRO_ARCH Arch_Sunny_Cove[]	= {{"Sunny Cove"}	, {NULL}};
-static MICRO_ARCH Arch_Tigerlake[]	= {{"Tiger Lake"}	, {NULL}};
-static MICRO_ARCH Arch_Tigerlake_U[]	= {{"Tiger Lake/U"}	, {NULL}};
-static MICRO_ARCH Arch_Cometlake[]	= {{"Comet Lake"}	, {NULL}};
-static MICRO_ARCH Arch_Cometlake_UY[]	= {{"Comet Lake/UY"}	, {NULL}};
+static char *Arch_Cannonlake_U[]	=	ZLIST("Cannon Lake/U");
+static char *Arch_Cannonlake_H[]	=	ZLIST("Cannon Lake/H");
+static char *Arch_Geminilake[]		=	ZLIST("Atom/Gemini Lake");
+static char *Arch_Icelake[]		=	ZLIST("Ice Lake");
+static char *Arch_Icelake_UY[]		=	ZLIST("Ice Lake/UY");
+static char *Arch_Icelake_X[]		=	ZLIST("Ice Lake/X");
+static char *Arch_Icelake_D[]		=	ZLIST("Ice Lake/D");
+static char *Arch_Sunny_Cove[]		=	ZLIST("Sunny Cove");
+static char *Arch_Tigerlake[]		=	ZLIST("Tiger Lake");
+static char *Arch_Tigerlake_U[] 	=	ZLIST("Tiger Lake/U");
+static char *Arch_Cometlake[]		=	ZLIST("Comet Lake");
+static char *Arch_Cometlake_UY[]	=	ZLIST("Comet Lake/UY");
 
-static MICRO_ARCH Arch_Atom_Denverton[] = {{"Atom/Denverton"}	, {NULL}};
+static char *Arch_Atom_Denverton[]	=	ZLIST("Atom/Denverton");
 
-static MICRO_ARCH Arch_Tremont_Jacobsville[]={{"Tremont/Jacobsville"} ,{NULL}};
-static MICRO_ARCH Arch_Tremont_Lakefield[]  ={{"Tremont/Lakefield"}   ,{NULL}};
-static MICRO_ARCH Arch_Tremont_Elkhartlake[]={{"Tremont/Elkhart Lake"},{NULL}};
-static MICRO_ARCH Arch_Tremont_Jasperlake[] ={{"Tremont/Jasper Lake"} ,{NULL}};
-static MICRO_ARCH Arch_Sapphire_Rapids[] ={{"Sapphire Rapids"}	, {NULL}};
-static MICRO_ARCH Arch_Rocketlake[]	= {{"Rocket Lake"}	, {NULL}};
-static MICRO_ARCH Arch_Rocketlake_U[]	= {{"Rocket Lake/U"}	, {NULL}};
-static MICRO_ARCH Arch_Alderlake_S[]	= {{"Alder Lake"}	, {NULL}};
-static MICRO_ARCH Arch_Alderlake_H[]	= {{"Alder Lake/H"}	, {NULL}};
-static MICRO_ARCH Arch_Alderlake_N[]	= {{"Alder Lake/N"}	, {NULL}};
-static MICRO_ARCH Arch_Meteorlake_M[]	= {{"Meteor Lake/M"}	, {NULL}};
-static MICRO_ARCH Arch_Meteorlake_N[]	= {{"Meteor Lake/N"}	, {NULL}};
-static MICRO_ARCH Arch_Meteorlake_S[]	= {{"Meteor Lake/S"}	, {NULL}};
-static MICRO_ARCH Arch_Raptorlake_S[]	= {{"Raptor Lake/S"}	, {NULL}};
-static MICRO_ARCH Arch_Raptorlake_P[]	= {{"Raptor Lake/P"}	, {NULL}};
+static char *Arch_Tremont_Jacobsville[] =	ZLIST("Tremont/Jacobsville");
+static char *Arch_Tremont_Lakefield[]	=	ZLIST("Tremont/Lakefield");
+static char *Arch_Tremont_Elkhartlake[] =	ZLIST("Tremont/Elkhart Lake");
+static char *Arch_Tremont_Jasperlake[]	=	ZLIST("Tremont/Jasper Lake");
+static char *Arch_Sapphire_Rapids[]	=	ZLIST("Sapphire Rapids");
+static char *Arch_Rocketlake[]		=	ZLIST("Rocket Lake");
+static char *Arch_Rocketlake_U[]	=	ZLIST("Rocket Lake/U");
+static char *Arch_Alderlake_S[] 	=	ZLIST("Alder Lake");
+static char *Arch_Alderlake_H[] 	=	ZLIST("Alder Lake/H");
+static char *Arch_Alderlake_N[] 	=	ZLIST("Alder Lake/N");
+static char *Arch_Meteorlake_M[]	=	ZLIST("Meteor Lake/M");
+static char *Arch_Meteorlake_N[]	=	ZLIST("Meteor Lake/N");
+static char *Arch_Meteorlake_S[]	=	ZLIST("Meteor Lake/S");
+static char *Arch_Raptorlake_S[]	=	ZLIST("Raptor Lake/S");
+static char *Arch_Raptorlake_P[]	=	ZLIST("Raptor Lake/P");
 
 enum {
 	CN_BULLDOZER,
@@ -3077,19 +3059,18 @@ enum {
 	CN_EXCAVATOR
 };
 
-static MICRO_ARCH Arch_AMD_Family_0Fh[] = {{"Hammer"}	, {NULL}};
-static MICRO_ARCH Arch_AMD_Family_10h[] = {{"K10"}	, {NULL}};
-static MICRO_ARCH Arch_AMD_Family_11h[] = {{"Turion"}	, {NULL}};
-static MICRO_ARCH Arch_AMD_Family_12h[] = {{"Fusion"}	, {NULL}};
-static MICRO_ARCH Arch_AMD_Family_14h[] = {{"Bobcat"}	, {NULL}};
-static MICRO_ARCH Arch_AMD_Family_15h[] = {
-	[CN_BULLDOZER]		= {"Bulldozer"},
-	[CN_PILEDRIVER] 	= {"Bulldozer/Piledriver"},
-	[CN_STEAMROLLER]	= {"Bulldozer/Steamroller"},
-	[CN_EXCAVATOR]		= {"Bulldozer/Excavator"},
-	{NULL}
-};
-static MICRO_ARCH Arch_AMD_Family_16h[] = {{"Jaguar"}, {NULL}};
+static char *Arch_AMD_Family_0Fh[]	=	ZLIST("Hammer");
+static char *Arch_AMD_Family_10h[]	=	ZLIST("K10");
+static char *Arch_AMD_Family_11h[]	=	ZLIST("Turion");
+static char *Arch_AMD_Family_12h[]	=	ZLIST("Fusion");
+static char *Arch_AMD_Family_14h[] 	=	ZLIST("Bobcat");
+static char *Arch_AMD_Family_15h[] = ZLIST(
+		[CN_BULLDOZER]		=	"Bulldozer",
+		[CN_PILEDRIVER] 	=	"Bulldozer/Piledriver",
+		[CN_STEAMROLLER]	=	"Bulldozer/Steamroller",
+		[CN_EXCAVATOR]		=	"Bulldozer/Excavator"
+);
+static char *Arch_AMD_Family_16h[]	=	ZLIST("Jaguar");
 
 enum {
 	CN_SUMMIT_RIDGE,
@@ -3147,84 +3128,69 @@ enum {
 	CN_DHYANA_V2
 };
 
-static MICRO_ARCH Arch_AMD_Zen[] = {
-	[CN_SUMMIT_RIDGE]	= {"Zen/Summit Ridge"},
-	[CN_WHITEHAVEN] 	= {"Zen/Whitehaven"},
-	[CN_NAPLES]		= {"Zen/EPYC/Naples"},
-	{NULL}
-};
-static MICRO_ARCH Arch_AMD_Zen_APU[] = {
-	[CN_RAVEN_RIDGE]	= {"Zen/Raven Ridge"},
-	[CN_SNOWY_OWL]		= {"Zen/Snowy Owl"},
-	{NULL}
-};
-static MICRO_ARCH Arch_AMD_ZenPlus[] = {
-	[CN_PINNACLE_RIDGE]	= {"Zen+ Pinnacle Ridge"},
-	[CN_COLFAX]		= {"Zen+ Colfax"},
-	{NULL}
-};
-static MICRO_ARCH Arch_AMD_ZenPlus_APU[] = {
-	[CN_PICASSO]		= {"Zen+ Picasso"},
-	{NULL}
-};
-static MICRO_ARCH Arch_AMD_Zen_Dali[] = {
-	[CN_DALI]		= {"Zen/Dali"},
-	[CN_POLLOCK]		= {"Zen/Pollock"},
-	{NULL}
-};
-static MICRO_ARCH Arch_AMD_EPYC_Rome_CPK[] = {
-	[CN_ROME]		= {"Zen2/EPYC/Rome"},
-	[CN_CASTLE_PEAK]	= {"Zen2/Castle Peak"},
-	{NULL}
-};
-static MICRO_ARCH Arch_AMD_Zen2_Renoir[] = {
-	[CN_RENOIR]		= {"Zen2/Renoir"},
-	{NULL}
-};
-static MICRO_ARCH Arch_AMD_Zen2_LCN[] = {
-	[CN_LUCIENNE]		= {"Zen2/Lucienne"},
-	{NULL}
-};
-static MICRO_ARCH Arch_AMD_Zen2_MTS[] = {
-	[CN_MATISSE]		= {"Zen2/Matisse"},
-	{NULL}
-};
-static MICRO_ARCH Arch_AMD_Zen2_Ariel[] = {{"Zen2/Ariel"}, {NULL}};
+static char *Arch_AMD_Zen[] = ZLIST(
+		[CN_SUMMIT_RIDGE]	=	"Zen/Summit Ridge",
+		[CN_WHITEHAVEN] 	=	"Zen/Whitehaven",
+		[CN_NAPLES]		=	"Zen/EPYC/Naples"
+);
+static char *Arch_AMD_Zen_APU[] = ZLIST(
+		[CN_RAVEN_RIDGE]	=	"Zen/Raven Ridge",
+		[CN_SNOWY_OWL]		=	"Zen/Snowy Owl"
+);
+static char *Arch_AMD_ZenPlus[] = ZLIST(
+		[CN_PINNACLE_RIDGE]	=	"Zen+ Pinnacle Ridge",
+		[CN_COLFAX]		=	"Zen+ Colfax"
+);
+static char *Arch_AMD_ZenPlus_APU[] = ZLIST(
+		[CN_PICASSO]		=	"Zen+ Picasso"
+);
+static char *Arch_AMD_Zen_Dali[] = ZLIST(
+		[CN_DALI]		=	"Zen/Dali",
+		[CN_POLLOCK]		=	"Zen/Pollock"
+);
+static char *Arch_AMD_EPYC_Rome_CPK[] = ZLIST(
+		[CN_ROME]		=	"Zen2/EPYC/Rome",
+		[CN_CASTLE_PEAK]	=	"Zen2/Castle Peak"
+);
+static char *Arch_AMD_Zen2_Renoir[] = ZLIST(
+		[CN_RENOIR]		=	"Zen2/Renoir"
+);
+static char *Arch_AMD_Zen2_LCN[] = ZLIST(
+		[CN_LUCIENNE]		=	"Zen2/Lucienne"
+);
+static char *Arch_AMD_Zen2_MTS[] = ZLIST(
+		[CN_MATISSE]		=	"Zen2/Matisse"
+);
+static char *Arch_AMD_Zen2_Ariel[]	=	ZLIST("Zen2/Ariel");
 
-static MICRO_ARCH Arch_AMD_Zen3_VMR[] = {
-	[CN_VERMEER]		= {"Zen3/Vermeer"},
-	{NULL}
-};
-static MICRO_ARCH Arch_AMD_Zen3_CZN[] = {
-	[CN_CEZANNE]		= {"Zen3/Cezanne"},
-	[CN_BARCELO]		= {"Zen3/Barcelo"},
-	{NULL}
-};
-static MICRO_ARCH Arch_AMD_EPYC_Milan[] = {
-	[CN_MILAN]		= {"EPYC/Milan"},
-	{NULL}
-};
-static MICRO_ARCH Arch_AMD_Zen3_Chagall[] = {
-	[CN_CHAGALL]		= {"Zen3/Chagall"},
-	{NULL}
-};
-static MICRO_ARCH Arch_AMD_Zen3_Badami[] = {{"Zen3/Milan-X"}, {NULL}};
+static char *Arch_AMD_Zen3_VMR[] = ZLIST(
+		[CN_VERMEER]		=	"Zen3/Vermeer"
+);
+static char *Arch_AMD_Zen3_CZN[] = ZLIST(
+		[CN_CEZANNE]		=	"Zen3/Cezanne",
+		[CN_BARCELO]		=	"Zen3/Barcelo"
+);
+static char *Arch_AMD_EPYC_Milan[] = ZLIST(
+		[CN_MILAN]		=	"EPYC/Milan"
+);
+static char *Arch_AMD_Zen3_Chagall[] = ZLIST(
+		[CN_CHAGALL]		=	"Zen3/Chagall"
+);
+static char *Arch_AMD_Zen3_Badami[]	=	ZLIST("Zen3/Milan-X");
 
-static MICRO_ARCH Arch_AMD_Zen3Plus_RMB[] = {
-	[CN_REMBRANDT]		= {"Zen3+ Rembrandt"},
-	{NULL}
-};
+static char *Arch_AMD_Zen3Plus_RMB[] = ZLIST(
+		[CN_REMBRANDT]		=	"Zen3+ Rembrandt"
+);
 
-static MICRO_ARCH Arch_AMD_Family_17h[] = {{"AMD Zen"}, {NULL}};
+static char *Arch_AMD_Family_17h[] = ZLIST("AMD Zen");
 
-static MICRO_ARCH Arch_Hygon_Family_18h[] = {
-	[CN_DHYANA]		= {"Dhyana"},
-	[CN_DHYANA_V1]		= {"Dhyana V1"},
-	[CN_DHYANA_V2]		= {"Dhyana V2"},
-	{NULL}
-};
+static char *Arch_Hygon_Family_18h[] = ZLIST(
+		[CN_DHYANA]		=	"Dhyana",
+		[CN_DHYANA_V1]		=	"Dhyana V1",
+		[CN_DHYANA_V2]		=	"Dhyana V2"
+);
 
-static MICRO_ARCH Arch_AMD_Family_19h[] = {{"AMD Zen3"}, {NULL}};
+static char *Arch_AMD_Family_19h[]	=	ZLIST("AMD Zen3");
 
 static PROCESSOR_SPECIFIC Void_Specific[] = { {0} };
 
