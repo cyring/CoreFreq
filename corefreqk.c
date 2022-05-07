@@ -5162,7 +5162,8 @@ static void AMD_Zen_UMC(struct pci_dev *dev, unsigned int UMC_BAR,
 			UMC_BAR + 0xd0, dev );
 }
 
-static PCI_CALLBACK AMD_17h_DataFabric(struct pci_dev *pdev)
+static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
+					const unsigned short umc_max )
 {
 	struct pci_dev *dev;
 	enum UNCORE_BOOST Mem_Clock = 0, Div_Clock = 0;
@@ -5170,12 +5171,13 @@ static PCI_CALLBACK AMD_17h_DataFabric(struct pci_dev *pdev)
 	bool Got_Mem_Clock = false, Got_Div_Clock = false;
 
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 0;
-  for (umc = 0; umc < 4; umc++)
+  for (umc = 0; umc < umc_max; umc++)
   {
+	const unsigned int domain = pci_domain_nr(pdev->bus);
+	const unsigned int devfn = PCI_DEVFN(0x18 + umc, 0x0);
 	unsigned short cha;
 
-	dev = pci_get_domain_bus_and_slot(pci_domain_nr(pdev->bus),
-					0x0, PCI_DEVFN(0x18 + umc, 0x0));
+	dev = pci_get_domain_bus_and_slot(domain, 0x0, devfn);
    if (dev != NULL)
    {
 		PUBLIC(RO(Proc))->Uncore.CtrlCount++;
@@ -5216,6 +5218,11 @@ static PCI_CALLBACK AMD_17h_DataFabric(struct pci_dev *pdev)
      }
     }
 	pci_dev_put(dev);
+   } else {
+	pr_err( "CoreFreq: AMD_17h_DataFabric()"	\
+		" Break UMC(%hu) probing @ PCI(0x%x:0x0:0x%x)\n",
+		umc, domain, devfn);
+	break;
    }
   }
   if (Got_Mem_Clock) {
@@ -5227,6 +5234,61 @@ static PCI_CALLBACK AMD_17h_DataFabric(struct pci_dev *pdev)
     }
   }
 	return (PCI_CALLBACK) 0;
+}
+
+static PCI_CALLBACK AMD_DataFabric_Zeppelin(struct pci_dev *pdev)
+{
+	return AMD_17h_DataFabric(pdev, 1);
+}
+
+static PCI_CALLBACK AMD_DataFabric_Raven(struct pci_dev *pdev)
+{
+	return AMD_17h_DataFabric(pdev, 1);
+}
+
+static PCI_CALLBACK AMD_DataFabric_Matisse(struct pci_dev *pdev)
+{
+	return AMD_17h_DataFabric(pdev, 1);
+}
+
+static PCI_CALLBACK AMD_DataFabric_Starship(struct pci_dev *pdev)
+{
+	return AMD_17h_DataFabric(pdev, 1);
+}
+
+static PCI_CALLBACK AMD_DataFabric_Renoir(struct pci_dev *pdev)
+{
+	return AMD_17h_DataFabric(pdev, 1);
+}
+
+static PCI_CALLBACK AMD_DataFabric_Ariel(struct pci_dev *pdev)
+{
+	return AMD_17h_DataFabric(pdev, 1);
+}
+
+static PCI_CALLBACK AMD_DataFabric_Raven2(struct pci_dev *pdev)
+{
+	return AMD_17h_DataFabric(pdev, 1);
+}
+
+static PCI_CALLBACK AMD_DataFabric_Fireflight(struct pci_dev *pdev)
+{
+	return AMD_17h_DataFabric(pdev, 1);
+}
+
+static PCI_CALLBACK AMD_DataFabric_Arden(struct pci_dev *pdev)
+{
+	return AMD_17h_DataFabric(pdev, 1);
+}
+
+static PCI_CALLBACK AMD_DataFabric_Vermeer(struct pci_dev *pdev)
+{
+	return AMD_17h_DataFabric(pdev, 1);
+}
+
+static PCI_CALLBACK AMD_DataFabric_Cezanne(struct pci_dev *pdev)
+{
+	return AMD_17h_DataFabric(pdev, 1);
 }
 
 static void CoreFreqK_ResetChip(struct pci_dev *dev)
