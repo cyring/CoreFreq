@@ -7506,7 +7506,7 @@ REASON_CODE Core_Manager(REF *Ref)
      {
 	Package_Update(RO(Shm), RO(Proc), RW(Proc));
 
-	Uncore_Update(RO(Shm),RO(Proc),RO(Core,AT(RO(Proc)->Service.Core)));
+	Uncore_Update(RO(Shm), RO(Proc), RO(Core, AT(RO(Proc)->Service.Core)));
 
       for (cpu = 0; cpu < Ref->RO(Shm)->Proc.CPU.Count; cpu++)
       {

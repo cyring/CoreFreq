@@ -20568,6 +20568,13 @@ static int CoreFreqK_Alloc_Features_Level_Up(INIT_ARG *pArg)
 static int CoreFreqK_Query_Features_Level_Up(INIT_ARG *pArg)
 {
 	int rc = 0;
+
+	if ((CPU_Count > 0) && (CPU_Count <= CORE_COUNT)
+	 && (CPU_Count <= NR_CPUS)
+	 && ((ServiceProcessor == -1) || (ServiceProcessor >= CPU_Count)))
+	{	/*	Force Service to a Core with allocated memory	*/
+		ServiceProcessor = CPU_Count - 1;
+	}
 	if (ServiceProcessor == -1)
 	{	/*	Query features on any processor.		*/
 		pArg->localProcessor = get_cpu(); /* TODO(preempt_disable) */
@@ -20689,19 +20696,18 @@ static void CoreFreqK_Alloc_Public_Level_Down(void)
 
 static int CoreFreqK_Alloc_Public_Level_Up(INIT_ARG *pArg)
 {
-	const unsigned long publicSize	= sizeof(KPUBLIC)
-					+ sizeof(CORE_RO*) * pArg->SMT_Count
-					+ sizeof(CORE_RW*) * pArg->SMT_Count;
+	const unsigned long
+			coreSizeRO = sizeof(CORE_RO*) * pArg->SMT_Count,
+			coreSizeRW = sizeof(CORE_RW*) * pArg->SMT_Count,
+			publicSize = sizeof(KPUBLIC) + coreSizeRO + coreSizeRW;
 
 	if (((PUBLIC() = kmalloc(publicSize, GFP_KERNEL)) != NULL))
 	{
 		memset(PUBLIC(), 0, publicSize);
 
-		PUBLIC(RO(Core))	= (CORE_RO**) &PUBLIC()
-					+ sizeof(KPUBLIC);
+		PUBLIC(RO(Core)) = (CORE_RO**) &PUBLIC() + sizeof(KPUBLIC);
 
-		PUBLIC(RW(Core))	= (CORE_RW**) PUBLIC(RO(Core))
-					+ sizeof(CORE_RO*) * pArg->SMT_Count;
+		PUBLIC(RW(Core)) = (CORE_RW**) PUBLIC(RO(Core)) + coreSizeRO;
 
 		return 0;
 	} else{
@@ -20719,9 +20725,9 @@ static void CoreFreqK_Alloc_Private_Level_Down(void)
 
 static int CoreFreqK_Alloc_Private_Level_Up(INIT_ARG *pArg)
 {
-	const unsigned long privateSize = sizeof(KPRIVATE)
-					+ sizeof(struct PRIV_CORE_ST *)
-					* pArg->SMT_Count;
+	const unsigned long
+		privCoreSize = sizeof(struct PRIV_CORE_ST *) * pArg->SMT_Count,
+		privateSize = sizeof(KPRIVATE) + privCoreSize;
 
 	if (((PRIVATE() = kmalloc(privateSize, GFP_KERNEL)) != NULL))
 	{
