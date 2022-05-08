@@ -696,7 +696,7 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
     }									\
 })
 
-#if defined(CONFIG_AMD_NB) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
+#if defined(CONFIG_AMD_NB) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
 #define AMD_SMN_RW(node, address, value, write, indexPort, dataPort)	\
 ({									\
 	struct pci_dev *root;						\
@@ -893,7 +893,7 @@ typedef union
 	MSG_RSP.value;							\
 })
 
-#if defined(CONFIG_AMD_NB) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
+#if defined(CONFIG_AMD_NB) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
 
 #define AMD_HSMP_Mailbox(	MSG_FUNC,				\
 				MSG_ARG,				\
