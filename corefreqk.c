@@ -6805,6 +6805,8 @@ unsigned int Query_AMD_HSMP_Interface(void)
 	} else {
 		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
 	}
+
+	PUBLIC(RO(Proc))->Features.Factory.SMU.Version = 0;
 	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
 	{
 		RESET_ARRAY(arg, 8, 0, .value);
@@ -6818,6 +6820,8 @@ unsigned int Query_AMD_HSMP_Interface(void)
 		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
 	    }
 	}
+
+	PUBLIC(RO(Proc))->Features.Factory.SMU.Interface = 0;
 	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
 	{
 		RESET_ARRAY(arg, 8, 0, .value);
@@ -6831,6 +6835,22 @@ unsigned int Query_AMD_HSMP_Interface(void)
 		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
 	    }
 	}
+
+	PUBLIC(RO(Proc))->PowerThermal.Domain[
+		PWR_DOMAIN(PKG)
+	].PowerLimit.Enable_Limit1 = \
+
+	PUBLIC(RO(Proc))->PowerThermal.Domain[
+		PWR_DOMAIN(PKG)
+	].PowerLimit.Clamping1 = \
+
+	PUBLIC(RO(Proc))->PowerThermal.Domain[
+		PWR_DOMAIN(PKG)
+	].Unlock = \
+
+	PUBLIC(RO(Proc))->PowerThermal.Domain[
+		PWR_DOMAIN(PKG)
+	].PowerLimit.Domain_Limit1 = 0;
 	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
 	{
 		RESET_ARRAY(arg, 8, 0, .value);
@@ -6859,21 +6879,21 @@ unsigned int Query_AMD_HSMP_Interface(void)
 	    }
 	    else if (IS_HSMP_OOO(rx))
 	    {
-		PUBLIC(RO(Proc))->PowerThermal.Domain[
-			PWR_DOMAIN(PKG)
-		].PowerLimit.Enable_Limit1 = \
-
-		PUBLIC(RO(Proc))->PowerThermal.Domain[
-			PWR_DOMAIN(PKG)
-		].PowerLimit.Clamping1 = \
-
-		PUBLIC(RO(Proc))->PowerThermal.Domain[
-			PWR_DOMAIN(PKG)
-		].Unlock = 0;
-
 		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
 	    }
 	}
+
+	PUBLIC(RO(Proc))->PowerThermal.Domain[
+		PWR_DOMAIN(PKG)
+	].PowerLimit.Enable_Limit2 = \
+
+	PUBLIC(RO(Proc))->PowerThermal.Domain[
+		PWR_DOMAIN(PKG)
+	].PowerLimit.Clamping2 = \
+
+	PUBLIC(RO(Proc))->PowerThermal.Domain[
+		PWR_DOMAIN(PKG)
+	].PowerLimit.Domain_Limit2 = 0;
 	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
 	{
 		RESET_ARRAY(arg, 8, 0, .value);
@@ -6898,17 +6918,13 @@ unsigned int Query_AMD_HSMP_Interface(void)
 	    }
 	    else if (IS_HSMP_OOO(rx))
 	    {
-		PUBLIC(RO(Proc))->PowerThermal.Domain[
-			PWR_DOMAIN(PKG)
-		].PowerLimit.Enable_Limit2 = \
-
-		PUBLIC(RO(Proc))->PowerThermal.Domain[
-			PWR_DOMAIN(PKG)
-		].PowerLimit.Clamping2 = 0;
-
 		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
 	    }
 	}
+
+	PUBLIC(RO(Proc))->Counter[0].FCLK = \
+	PUBLIC(RO(Proc))->Counter[1].FCLK = \
+	PUBLIC(RO(Proc))->Delta.FCLK = 0;
 	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
 	{
 		RESET_ARRAY(arg, 8, 0, .value);
@@ -7889,6 +7905,7 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 	}
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask, Core->Bind);
 
+	PUBLIC(RO(Proc))->PowerThermal.Events[eSTS] = EVENT_THERM_NONE;
 	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
 	{
 		unsigned int rx;
@@ -19876,7 +19893,8 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			PUBLIC(RO(Proc))->Features.HSMP_Capable = prm.dl.lo;
 			rx = Query_AMD_HSMP_Interface();
 			Controller_Start(1);
-			rc = RC_SUCCESS;
+			rc = (rx >= HSMP_FAIL_BGN && rx <= HSMP_FAIL_END) ?
+				-RC_UNIMPLEMENTED : RC_SUCCESS;
 		    }
 			break;
 		}
