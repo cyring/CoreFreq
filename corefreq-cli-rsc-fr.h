@@ -941,7 +941,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_SETTINGS_CPU_HOTPLUG_CODE_FR    " Hot-Plug CPU             [   ] "
 #define RSC_SETTINGS_PCI_ENABLED_CODE_FR    " Activation PCI           [   ] "
-#define RSC_SETTINGS_HSMP_ENABLED_CODE_FR   " Activation HSMP          [   ] "
+#define RSC_SETTINGS_HSMP_ENABLED_CODE_FR   " Activation HSMP          <   > "
 #define RSC_SETTINGS_NMI_REGISTERED_CODE_FR " Activation NMI           <   > "
 #define RSC_SETTINGS_CPUIDLE_REGISTERED_CODE_FR \
 					    " Pilote CPU-IDLE          <   > "
@@ -1133,6 +1133,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_R2H_DESC_CODE_FR	"      Optimisation Race To Halt     "
 
 #define RSC_BOX_WDT_DESC_CODE_FR	"         Compteur Watchdog          "
+
+#define RSC_BOX_HSMP_DESC_CODE_FR	"     Host System Management Port    "
 
 #define RSC_BOX_NOMINAL_MODE_COND0_CODE_FR \
 					"       Fonctionnement" \

@@ -359,6 +359,10 @@ static signed short WDT_Enable = -1;
 module_param(WDT_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(WDT_Enable, "Watchdog Hardware Timer");
 
+static signed short HSMP_Attempt = -1;
+module_param(HSMP_Attempt, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(HSMP_Attempt, "Attempt the HSMP interface");
+
 static struct {
 	signed int		Major;
 	struct cdev		*kcdev;
@@ -2322,6 +2326,12 @@ void Default_Unlock_Reset(void)
     case COREFREQ_TOGGLE_OFF:
     case COREFREQ_TOGGLE_ON:
 	PUBLIC(RO(Proc))->Features.Uncore_Unlock = Uncore_Ratio_Unlock;
+	break;
+    }
+    switch (HSMP_Attempt) {
+    case COREFREQ_TOGGLE_OFF:
+    case COREFREQ_TOGGLE_ON:
+	PUBLIC(RO(Proc))->Features.HSMP_Capable = HSMP_Attempt;
 	break;
     }
 }
@@ -6775,37 +6785,10 @@ void Query_AMD_F17h_Power_Limits(PROC_RO *Pkg)
 				PRIVATE(OF(Zen)).Device.DF );
 }
 
-void Query_AMD_Family_17h(unsigned int cpu)
+unsigned int Query_AMD_HSMP_Interface(void)
 {
-	unsigned int rx;
 	HSMP_ARG arg[8];
-
-	PRIVATE(OF(Specific)) = LookupProcessor();
-    if (PRIVATE(OF(Specific)) != NULL)
-    {
-	/*	Save thermal parameters for later use in the Daemon	*/
-	PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
-	/*	Override Processor CodeName & Locking capabilities	*/
-	OverrideCodeNameString(PRIVATE(OF(Specific)));
-	OverrideUnlockCapability(PRIVATE(OF(Specific)));
-    } else {
-	PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
-    }
-	Default_Unlock_Reset();
-
-	if (Compute_AMD_Zen_Boost(cpu) == true)
-	{	/*	Count the Xtra Boost ratios			*/
-		PUBLIC(RO(Proc))->Features.XtraCOF = 2;
-	}
-	else {	/*	Disabled CPB: Hide ratios			*/
-		PUBLIC(RO(Proc))->Features.XtraCOF = 0;
-	}
-	/*	Apply same register bit fields as Intel RAPL_POWER_UNIT */
-	RDMSR(PUBLIC(RO(Proc))->PowerThermal.Unit, MSR_AMD_RAPL_POWER_UNIT);
-
-	HyperThreading_Technology();
-
-	AMD_Processor_PIN(PUBLIC(RO(Proc))->Features.leaf80000008.EBX.PPIN);
+	unsigned int rx = HSMP_UNSPECIFIED;
 
 	if (PUBLIC(RO(Proc))->Features.HSMP_Capable)
 	{ /* Mark the SMU as Enable if the reachability test is successful */
@@ -6941,6 +6924,39 @@ void Query_AMD_Family_17h(unsigned int cpu)
 		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
 	    }
 	}
+	return rx;
+}
+
+void Query_AMD_Family_17h(unsigned int cpu)
+{
+	PRIVATE(OF(Specific)) = LookupProcessor();
+    if (PRIVATE(OF(Specific)) != NULL)
+    {
+	/*	Save thermal parameters for later use in the Daemon	*/
+	PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
+	/*	Override Processor CodeName & Locking capabilities	*/
+	OverrideCodeNameString(PRIVATE(OF(Specific)));
+	OverrideUnlockCapability(PRIVATE(OF(Specific)));
+    } else {
+	PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
+    }
+	Default_Unlock_Reset();
+
+	if (Compute_AMD_Zen_Boost(cpu) == true)
+	{	/*	Count the Xtra Boost ratios			*/
+		PUBLIC(RO(Proc))->Features.XtraCOF = 2;
+	}
+	else {	/*	Disabled CPB: Hide ratios			*/
+		PUBLIC(RO(Proc))->Features.XtraCOF = 0;
+	}
+	/*	Apply same register bit fields as Intel RAPL_POWER_UNIT */
+	RDMSR(PUBLIC(RO(Proc))->PowerThermal.Unit, MSR_AMD_RAPL_POWER_UNIT);
+
+	HyperThreading_Technology();
+
+	AMD_Processor_PIN(PUBLIC(RO(Proc))->Features.leaf80000008.EBX.PPIN);
+
+	Query_AMD_HSMP_Interface();
 }
 
 static void Exit_AMD_F17h(void)
@@ -19846,6 +19862,22 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			Controller_Start(1);
 			WDT_Enable = -1;
 			rc = RC_SUCCESS;
+			break;
+		}
+		break;
+
+	case TECHNOLOGY_HSMP:
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+		    {
+			unsigned int rx;
+			Controller_Stop(1);
+			PUBLIC(RO(Proc))->Features.HSMP_Capable = prm.dl.lo;
+			rx = Query_AMD_HSMP_Interface();
+			Controller_Start(1);
+			rc = RC_SUCCESS;
+		    }
 			break;
 		}
 		break;

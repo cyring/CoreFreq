@@ -7472,7 +7472,7 @@ Window *CreateSettings(unsigned long long id)
      || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
 	bix = (RO(Shm)->Registration.HSMP == 1);
-	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+	GridCall( StoreTCell(	wSet, BOXKEY_HSMP,
 				RSC(SETTINGS_HSMP_ENABLED).CODE(),
 				attrib[bix] ),
 		HSMP_Registration_Update );
@@ -13512,6 +13512,56 @@ int Shortcut(SCANKEY *scan)
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_WDT );
+	}
+    break;
+
+    case BOXKEY_HSMP:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	const Coordinate origin = {
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.row = TOP_HEADER_ROW + 9
+	}, select = {
+		.col = 0,
+		.row = RO(Shm)->Registration.HSMP ? 4 : 3
+	};
+	AppendWindow(
+		CreateBox(scan->key, origin, select,
+			(char*) RSC(BOX_HSMP_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			RSC(BOX_HSMP_DESC).CODE()  , descAttr,	SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][RO(Shm)->Registration.HSMP],
+				stateAttr[RO(Shm)->Registration.HSMP],
+								BOXKEY_HSMP_OFF,
+			stateStr[0][!RO(Shm)->Registration.HSMP],
+				stateAttr[!RO(Shm)->Registration.HSMP],
+								BOXKEY_HSMP_ON,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+		&winList);
+      } else {
+	SetHead(&winList, win);
+      }
+    }
+    break;
+
+    case BOXKEY_HSMP_OFF:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_HSMP );
+	}
+    break;
+
+    case BOXKEY_HSMP_ON:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_HSMP );
 	}
     break;
 

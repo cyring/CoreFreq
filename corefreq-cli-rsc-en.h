@@ -1525,7 +1525,7 @@
 #define RSC_SETTINGS_EXPERIMENTAL_CODE_EN   " Experimental             <   > "
 #define RSC_SETTINGS_CPU_HOTPLUG_CODE_EN    " CPU Hot-Plug             [   ] "
 #define RSC_SETTINGS_PCI_ENABLED_CODE_EN    " PCI enablement           [   ] "
-#define RSC_SETTINGS_HSMP_ENABLED_CODE_EN   " HSMP enablement          [   ] "
+#define RSC_SETTINGS_HSMP_ENABLED_CODE_EN   " HSMP enablement          <   > "
 #define RSC_SETTINGS_NMI_REGISTERED_CODE_EN " NMI registered           <   > "
 #define RSC_SETTINGS_CPUIDLE_REGISTERED_CODE_EN \
 					    " CPU-IDLE driver          <   > "
@@ -1649,6 +1649,7 @@
 #define RSC_BOX_EEO_DESC_CODE_EN	"   Energy Efficiency Optimization   "
 #define RSC_BOX_R2H_DESC_CODE_EN	"      Race To Halt Optimization     "
 #define RSC_BOX_WDT_DESC_CODE_EN	"           Watchdog Timer           "
+#define RSC_BOX_HSMP_DESC_CODE_EN	"     Host System Management Port    "
 
 #define RSC_BOX_NOMINAL_MODE_COND0_CODE_EN \
 					"       Nominal operating mode       "
@@ -2019,6 +2020,8 @@
 #define RSC_BOX_R2H_TITLE_CODE		" R2H "
 
 #define RSC_BOX_WDT_TITLE_CODE		" WDT "
+
+#define RSC_BOX_HSMP_TITLE_CODE		" HSMP "
 
 #define RSC_BOX_POWER_POLICY_1_CODE	"            1           "
 #define RSC_BOX_POWER_POLICY_2_CODE	"            2           "

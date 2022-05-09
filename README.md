@@ -497,6 +497,7 @@ parm:           Mech_IBPB:Mitigation Mechanism IBPB (short)
 parm:           Mech_L1D_FLUSH:Mitigation Mechanism Cache L1D Flush (short)
 parm:           Mech_PSFD:Mitigation Mechanism PSFD (short)
 parm:           WDT_Enable:Watchdog Hardware Timer (short)
+parm:           HSMP_Attempt:Attempt the HSMP interface (short)
 ```  
 
 ## Algorithm
