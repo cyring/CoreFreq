@@ -9534,6 +9534,15 @@ void PerCore_AMD_Family_0Fh_PStates(CORE_RO *Core)
 
 void SystemRegisters(CORE_RO *Core)
 {
+	__asm__ volatile
+	(
+		"# RFLAGS"		"\n\t"
+		"pushfq"		"\n\t"
+		"popq	%0"		"\n\t"
+		: "=r" (Core->SystemRegister.RFLAGS)
+		:
+		:
+	);
 	if (RDPMC_Enable) {
 		__asm__ volatile
 		(
@@ -9548,23 +9557,19 @@ void SystemRegisters(CORE_RO *Core)
 	}
 	__asm__ volatile
 	(
-		"# RFLAGS"		"\n\t"
-		"pushfq"		"\n\t"
-		"popq	%0"		"\n\t"
-		"movq	%%cr0, %1"	"\n\t"
-		"movq	%%cr3, %2"	"\n\t"
-		"movq	%%cr4, %3"	"\n\t"
-		"movq	%%cr8, %4"	"\n\t"
+		"movq	%%cr0, %0"	"\n\t"
+		"movq	%%cr3, %1"	"\n\t"
+		"movq	%%cr4, %2"	"\n\t"
+		"movq	%%cr8, %3"	"\n\t"
 		"# EFER"		"\n\t"
 		"xorq	%%rax, %%rax"	"\n\t"
 		"xorq	%%rdx, %%rdx"	"\n\t"
-		"movq	%6,%%rcx"	"\n\t"
+		"movq	%5,%%rcx"	"\n\t"
 		"rdmsr"			"\n\t"
 		"shlq	$32, %%rdx"	"\n\t"
 		"orq	%%rdx, %%rax"	"\n\t"
-		"movq	%%rax, %5"
-		: "=r" (Core->SystemRegister.RFLAGS),
-		  "=r" (Core->SystemRegister.CR0),
+		"movq	%%rax, %4"
+		: "=r" (Core->SystemRegister.CR0),
 		  "=r" (Core->SystemRegister.CR3),
 		  "=r" (Core->SystemRegister.CR4),
 		  "=r" (Core->SystemRegister.CR8),
@@ -17399,22 +17404,16 @@ static int CoreFreqK_S2_MWAIT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 static int CoreFreqK_HALT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-	const unsigned int cpu = smp_processor_id();
-	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
-
 	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
 /*	Source: /arch/x86/include/asm/irqflags.h: native_safe_halt();	*/
 	__asm__ volatile
 	(
 		"sti"		"\n\t"
-		"hlt"		"\n\t"
-		"# RFLAGS"	"\n\t"
-		"pushfq"	"\n\t"
-		"popq	%0"
-		: "=m" (Core->SystemRegister.RFLAGS)
+		"hlt"
 		:
-		: "cc", "memory"
+		:
+		:
 	);
 	return index;
 }
@@ -17441,22 +17440,16 @@ static int CoreFreqK_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 #endif /* 5.9.0 */
 {
-	const unsigned int cpu = smp_processor_id();
-	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
-
 	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
 
 	__asm__ volatile
 	(
 		"sti"		"\n\t"
-		"hlt"		"\n\t"
-		"# RFLAGS"	"\n\t"
-		"pushfq"	"\n\t"
-		"popq	%0"
-		: "=m" (Core->SystemRegister.RFLAGS)
+		"hlt"
 		:
-		: "cc", "memory"
+		:
+		:
 	);
 #if ((LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)) || (RHEL_MINOR >= 4))
 	return index;
@@ -17503,14 +17496,11 @@ static int CoreFreqK_IO_Handler(struct cpuidle_device *pIdleDevice,
 	__asm__ volatile
 	(
 		"xorw	%%ax,	%%ax"	"\n\t"
-		"movw	%1,	%%dx"	"\n\t"
+		"movw	%0,	%%dx"	"\n\t"
 		"inb	%%dx,	%%al"	"\n\t"
-		"# RFLAGS"		"\n\t"
-		"pushfq"		"\n\t"
-		"popq	%0"
-		: "=m" (Core->SystemRegister.RFLAGS)
+		:
 		: "ir" (Core->Query.CStateBaseAddr)
-		: "%ax", "%dx", "cc", "memory"
+		: "%ax", "%dx"
 	);
 	return index;
 }
@@ -17546,14 +17536,11 @@ static int CoreFreqK_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
 	__asm__ volatile
 	(
 		"xorw	%%ax,	%%ax"	"\n\t"
-		"movw	%1,	%%dx"	"\n\t"
+		"movw	%0,	%%dx"	"\n\t"
 		"inb	%%dx,	%%al"	"\n\t"
-		"# RFLAGS"		"\n\t"
-		"pushfq"		"\n\t"
-		"popq	%0"
-		: "=m" (Core->SystemRegister.RFLAGS)
+		:
 		: "ir" (Core->Query.CStateBaseAddr)
-		: "%ax", "%dx", "cc", "memory"
+		: "%ax", "%dx"
 	);
 #if ((LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)) || (RHEL_MINOR >= 4))
 	return index;

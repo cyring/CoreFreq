@@ -21,10 +21,13 @@ ccflags-y :=	-D CORE_COUNT=$(CORE_COUNT) \
 		-D MAX_FREQ_HZ=$(MAX_FREQ_HZ)
 ccflags-y += $(WARNING)
 
-ifneq ($(OPTIM_LVL),)
-	OPTIM_FLG = -O$(OPTIM_LVL)
-	ccflags-y += -D OPTIM_LVL=$(OPTIM_LVL)
-	ccflags-y += $(OPTIM_FLG)
+ifeq ($(OPTIM_LVL),0)
+OPTIM_FLG = -O$(OPTIM_LVL)
+ccflags-y += -fno-inline
+else ifneq ($(OPTIM_LVL),)
+OPTIM_FLG = -O$(OPTIM_LVL)
+ccflags-y += -D OPTIM_LVL=$(OPTIM_LVL)
+ccflags-y += $(OPTIM_FLG)
 endif
 
 DEFINITIONS =	-D CORE_COUNT=$(CORE_COUNT) -D TASK_ORDER=$(TASK_ORDER) \

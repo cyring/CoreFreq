@@ -3391,7 +3391,7 @@ void Refresh_HWP_Cap_Freq(TGrid *grid, DATA_TYPE data[])
 	};
 	const unsigned int bix = RO(Shm)->Proc.Features.HWP_Enable == 1;
 
-	memcpy(grid->cell.attr, HWP_Cap_Attr[bix], 76);
+	memcpy(grid->cell.attr, HWP_Cap_Attr[bix], grid->cell.length);
 
 	RefreshRatioFreq(grid, data);
 }
@@ -4118,12 +4118,16 @@ void TAU_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data[0].sint[0];
 	const enum PWR_LIMIT pl = (enum PWR_LIMIT) data[1].uint[0];
-	char item[7+1];
 
+	char *item = malloc(64);
+    if (item != NULL) {
 	PCT_Update(grid,
-		FormatTime(7+1, item, RO(Shm)->Proc.Power.Domain[pw].TAU[pl]),
+		FormatTime(64, item, RO(Shm)->Proc.Power.Domain[pw].TAU[pl]),
 		RO(Shm)->Proc.Power.Domain[pw].TAU[pl] > 0 ?
 		RO(Shm)->Proc.Power.Domain[pw].Feature[pl].Enable ? 3 : 5 : 0);
+
+	free(item);
+    }
 }
 
 void TDC_Update(TGrid *grid, DATA_TYPE data[])

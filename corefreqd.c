@@ -6346,16 +6346,16 @@ void SysGate_Kernel(REF *Ref)
 void ClockSource_Update(RO(SHM_STRUCT) *RO(Shm))
 {
 	FILE	*fd;
-	char	*ptr;
 
 	CS_Reset_Array(RO(Shm)->CS);
 
-	if ((fd = fopen(CLOCKSOURCE_PATH"/current_clocksource", "r")) != NULL)
-	{
-		ptr = RO(Shm)->CS.array;
-		CS_Seek_Store(fd, ptr, RO(Shm)->CS);
-		fclose(fd);
-	}
+    if ((fd = fopen(CLOCKSOURCE_PATH"/current_clocksource", "r")) != NULL)
+    {
+	char *ptr = RO(Shm)->CS.array;
+
+	CS_Seek_Store(fd, ptr, RO(Shm)->CS);
+
+	fclose(fd);
 	if ((fd = fopen(CLOCKSOURCE_PATH"/available_clocksource", "r")) != NULL)
 	{
 		do {
@@ -6363,6 +6363,7 @@ void ClockSource_Update(RO(SHM_STRUCT) *RO(Shm))
 		} while (!feof(fd) && (RO(Shm)->CS.index[0] < 7));
 		fclose(fd);
 	}
+    }
 }
 
 long ClockSource_Submit(RO(SHM_STRUCT) *RO(Shm), unsigned char index)
