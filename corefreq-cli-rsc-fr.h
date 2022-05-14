@@ -1192,7 +1192,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_EVENT_MAX_TURBO_CODE_FR 	" Turbo Max       "
 #define RSC_BOX_EVENT_TURBO_ATTEN_CODE_FR	" Turbo Atten.    "
 #define RSC_BOX_EVENT_THERMAL_TVB_CODE_FR	" TVB thermique   "
-#define RSC_BOX_EVENT_ALL_OF_THEM_CODE_FR	"  <Tout effacer> "
+#define RSC_BOX_EVENT_ALL_OF_THEM_CODE_FR	"<  Tout effacer >"
 
 #define RSC_BOX_STATE_UNSPECIFIED_CODE_FR	"        "		\
 						"IND""\x89""TERMIN""\x89"\
