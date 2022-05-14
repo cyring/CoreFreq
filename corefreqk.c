@@ -21149,7 +21149,6 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 
 		switch (PUBLIC(RO(Proc))->HypervisorID) {
 		case HYPERV_NONE:
-		case HYPERV_KBOX:
 			PUBLIC(RO(Proc))->ArchID = GenuineArch;
 			Arch[GenuineArch].Query = Query_VirtualMachine;
 			Arch[GenuineArch].Update= PerCore_VirtualMachine;
@@ -21163,6 +21162,7 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 			break;
 		case HYPERV_KVM:
 		case HYPERV_VBOX:
+		case HYPERV_KBOX:
 		case HYPERV_VMWARE:
 		case HYPERV_HYPERV:
 			PUBLIC(RO(Proc))->ArchID = GenuineArch;
