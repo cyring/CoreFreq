@@ -4703,6 +4703,9 @@ static PCI_CALLBACK P35(struct pci_dev *dev)
 
 static PCI_CALLBACK ICH_TCO(struct pci_dev *dev)
 {
+	kernel_ulong_t rc;
+    if ((rc = pci_request_regions(dev, DRV_DEVNAME)) == 0)
+    {
 	Intel_TCO1_CNT TCO1_CNT = {.value = 0};
 
 	pci_read_config_word(dev, 0x40 + 8, &TCO1_CNT.value);
@@ -4725,7 +4728,9 @@ static PCI_CALLBACK ICH_TCO(struct pci_dev *dev)
 	BITSET_CC( LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
 				PUBLIC(RO(Proc))->Service.Core );
 
-	return (PCI_CALLBACK) 0;
+	pci_release_regions(dev);
+    }
+	return (PCI_CALLBACK) rc;
 }
 
 static PCI_CALLBACK SoC_SLM(struct pci_dev *dev)
