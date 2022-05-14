@@ -999,11 +999,9 @@ struct DRAW_ST {
     } Unit;
 	enum SMB_STRING SmbIndex;
 	enum THEMES	Theme;
-#ifndef NO_UPPER
-    struct BAR_ST {
-	CUINT		col;
-    } *Bar;
-#endif /* NO_UPPER */
+    #ifndef NO_UPPER
+	BitCC		garbage;
+    #endif /* NO_UPPER */
 };
 
 struct RECORDER_ST {

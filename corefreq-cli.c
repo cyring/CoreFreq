@@ -6854,7 +6854,10 @@ struct DRAW_ST Draw = {
 	.Load		= 0,
 	.Unit		= { .Memory = 0 },
 	.SmbIndex	= SMB_BOARD_NAME,
-	.Theme		= THM_DFLT
+	.Theme		= THM_DFLT,
+    #ifndef NO_UPPER
+	.garbage	= InitCC(0)
+    #endif
 };
 
 struct RECORDER_ST Recorder = {
@@ -16224,7 +16227,7 @@ CUINT Draw_Frequency_Load(	Layer *layer, CUINT row,
 
 	LayerFillAt(layer, LOAD_LEAD, row, col, hBar, attr);
     }
-    if (Draw.Bar[cpu].col > 0) {
+    if (BITVAL(Draw.garbage, cpu)) {
 	struct {
 		const CUINT col, wth;
 	} garbage = {
@@ -16236,8 +16239,11 @@ CUINT Draw_Frequency_Load(	Layer *layer, CUINT row,
 
 	ClearGarbage(	layer, code, garbage.col, row, garbage.wth, 0x0 );
     }
-	Draw.Bar[cpu].col = col;
-
+    if (!col) {
+	BITCLR(LOCKLESS, Draw.garbage, cpu);
+    } else {
+	BITSET(LOCKLESS, Draw.garbage, cpu);
+    }
 	return 0;
 }
 
@@ -16246,7 +16252,7 @@ CUINT Draw_Relative_Load(Layer *layer, const unsigned int cpu, CUINT row)
 	struct FLIP_FLOP *CFlop = \
 			&RO(Shm)->Cpu[cpu].FlipFlop[!RO(Shm)->Cpu[cpu].Toggle];
 	/*		Draw the relative Core frequency ratio		*/
-	return Draw_Frequency_Load(layer,row, cpu,CFlop->Relative.Ratio);
+	return Draw_Frequency_Load(layer, row, cpu, CFlop->Relative.Ratio);
 }
 
 CUINT Draw_Absolute_Load(Layer *layer, const unsigned int cpu, CUINT row)
@@ -16254,7 +16260,7 @@ CUINT Draw_Absolute_Load(Layer *layer, const unsigned int cpu, CUINT row)
 	struct FLIP_FLOP *CFlop = \
 		&RO(Shm)->Cpu[cpu].FlipFlop[!RO(Shm)->Cpu[cpu].Toggle];
 	/*		Draw the absolute Core frequency ratio		*/
-	return Draw_Frequency_Load(layer,row, cpu,CFlop->Absolute.Ratio.Perf);
+	return Draw_Frequency_Load(layer, row, cpu, CFlop->Absolute.Ratio.Perf);
 }
 #endif /* NO_UPPER */
 
@@ -19352,13 +19358,6 @@ REASON_CODE Top(char option)
   {
 	REASON_SET(reason, RC_MEM_ERR);
   }
-#ifndef NO_UPPER
-  else if ( (Draw.Bar = calloc( RO(Shm)->Proc.CPU.Count,
-				sizeof(struct BAR_ST) )) == NULL )
-  {
-	REASON_SET(reason, RC_MEM_ERR);
-  }
-#endif /* NO_UPPER */
   else if (AllocAll(&Buffer) == ENOMEM) {
 	REASON_SET(reason, RC_MEM_ERR, ENOMEM);
   }
@@ -19477,11 +19476,7 @@ REASON_CODE Top(char option)
     SaveGeometries(BuildConfigFQN("CoreFreq"));
   }
 	FreeAll(Buffer);
-#ifndef NO_UPPER
-  if (Draw.Bar != NULL) {
-	free(Draw.Bar);
-  }
-#endif /* NO_UPPER */
+
   if (cTask != NULL) {
 	free(cTask);
   }
