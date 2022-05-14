@@ -2002,8 +2002,17 @@ static PCI_CALLBACK ADL_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev) ;
-static PCI_CALLBACK AMD_17h_DataFabric(struct pci_dev *pdev) ;
-#define AMD_19h_DataFabric AMD_17h_DataFabric
+static PCI_CALLBACK AMD_DataFabric_Zeppelin(struct pci_dev *pdev) ;
+static PCI_CALLBACK AMD_DataFabric_Raven(struct pci_dev *pdev) ;
+static PCI_CALLBACK AMD_DataFabric_Matisse(struct pci_dev *pdev) ;
+static PCI_CALLBACK AMD_DataFabric_Starship(struct pci_dev *pdev) ;
+static PCI_CALLBACK AMD_DataFabric_Renoir(struct pci_dev *pdev) ;
+static PCI_CALLBACK AMD_DataFabric_Ariel(struct pci_dev *pdev) ;
+static PCI_CALLBACK AMD_DataFabric_Raven2(struct pci_dev *pdev) ;
+static PCI_CALLBACK AMD_DataFabric_Fireflight(struct pci_dev *pdev) ;
+static PCI_CALLBACK AMD_DataFabric_Arden(struct pci_dev *pdev) ;
+static PCI_CALLBACK AMD_DataFabric_Vermeer(struct pci_dev *pdev) ;
+static PCI_CALLBACK AMD_DataFabric_Cezanne(struct pci_dev *pdev) ;
 
 static struct pci_device_id PCI_Void_ids[] = {
 	{0, }
@@ -2768,49 +2777,49 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 	/* Source: SMU > Data Fabric > UMC				*/
 	{
 		PCI_VDEVICE(AMD, DID_AMD_17H_ZEPPELIN_DF_UMC),
-		.driver_data = (kernel_ulong_t) AMD_17h_DataFabric
+		.driver_data = (kernel_ulong_t) AMD_DataFabric_Zeppelin
 	},
 	{
 		PCI_VDEVICE(AMD, DID_AMD_17H_RAVEN_DF_UMC),
-		.driver_data = (kernel_ulong_t) AMD_17h_DataFabric
+		.driver_data = (kernel_ulong_t) AMD_DataFabric_Raven
 	},
 	{
 		PCI_VDEVICE(AMD, DID_AMD_17H_MATISSE_DF_UMC),
-		.driver_data = (kernel_ulong_t) AMD_17h_DataFabric
+		.driver_data = (kernel_ulong_t) AMD_DataFabric_Matisse
 	},
 	{
 		PCI_VDEVICE(AMD, DID_AMD_17H_STARSHIP_DF_UMC),
-		.driver_data = (kernel_ulong_t) AMD_17h_DataFabric
+		.driver_data = (kernel_ulong_t) AMD_DataFabric_Starship
 	},
 	{
 		PCI_VDEVICE(AMD, DID_AMD_17H_RENOIR_DF_UMC),
-		.driver_data = (kernel_ulong_t) AMD_17h_DataFabric
+		.driver_data = (kernel_ulong_t) AMD_DataFabric_Renoir
 	},
 	{
 		PCI_VDEVICE(AMD, DID_AMD_17H_ARIEL_DF_UMC),
-		.driver_data = (kernel_ulong_t) AMD_17h_DataFabric
+		.driver_data = (kernel_ulong_t) AMD_DataFabric_Ariel
 	},
 	{
 		PCI_VDEVICE(AMD, DID_AMD_17H_RAVEN2_DF_UMC),
-		.driver_data = (kernel_ulong_t) AMD_17h_DataFabric
+		.driver_data = (kernel_ulong_t) AMD_DataFabric_Raven2
 	},
 	{
 		PCI_VDEVICE(AMD, DID_AMD_17H_FIREFLIGHT_DF_UMC),
-		.driver_data = (kernel_ulong_t) AMD_17h_DataFabric
+		.driver_data = (kernel_ulong_t) AMD_DataFabric_Fireflight
 	},
 	{
 		PCI_VDEVICE(AMD, DID_AMD_17H_ARDEN_DF_UMC),
-		.driver_data = (kernel_ulong_t) AMD_17h_DataFabric
+		.driver_data = (kernel_ulong_t) AMD_DataFabric_Arden
 	},
 /* AMD Family 19h							*/
 	/* Source: SMU > Data Fabric > UMC				*/
 	{
 		PCI_VDEVICE(AMD, DID_AMD_19H_VERMEER_DF_UMC),
-		.driver_data = (kernel_ulong_t) AMD_19h_DataFabric
+		.driver_data = (kernel_ulong_t) AMD_DataFabric_Vermeer
 	},
 	{
 		PCI_VDEVICE(AMD, DID_AMD_19H_CEZANNE_DF_UMC),
-		.driver_data = (kernel_ulong_t) AMD_19h_DataFabric
+		.driver_data = (kernel_ulong_t) AMD_DataFabric_Cezanne
 	},
 	{0, }
 };
