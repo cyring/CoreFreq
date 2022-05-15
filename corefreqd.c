@@ -5588,6 +5588,10 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		P4S_MCH(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_EAGLELAKE_G);
 		break;
+	case DID_INTEL_N10_HB:
+		P965_CLK(RO(Shm), RO(Proc), RO(Core));
+		P965_MCH(RO(Shm), RO(Proc));
+		SET_CHIPSET(IC_LAKEPORT_P);
 	case DID_INTEL_SLM_PTR:
 		SLM_PTR(RO(Shm), RO(Proc), RO(Core));
 		SET_CHIPSET(IC_BAYTRAIL);
