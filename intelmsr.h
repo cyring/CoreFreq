@@ -2147,7 +2147,7 @@ typedef union
 	unsigned short		value;
 	struct {
 		unsigned short
-		tPCHG		:  1-0,
+		tPCHG		:  2-0,
 		tRD		:  6-2,
 		tWR		: 11-6,
 		ReservedBits	: 16-11;
@@ -2188,8 +2188,8 @@ typedef union
 		unsigned int
 		tRD_RD_DR	:  4-0,
 		tRD_RD_SR	:  8-4,
-		tWR_RD		: 12-8,
-		tWTR		: 17-12,
+		tWR_RD_DR	: 12-8,
+		tWR_RD_SR	: 17-12, /* tWTR			*/
 		tRCD_RD 	: 21-17,
 		ReservedBits	: 24-21,
 		tREF		: 32-24;	/* Offset 25Bh		*/
