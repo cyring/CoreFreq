@@ -2092,7 +2092,7 @@ static struct pci_device_id PCI_Core2_ids[] = {
 		.driver_data = (kernel_ulong_t) P35
 	},
 	{	/* N10 - Atom N400/N500				*/
-		PCI_VDEVICE(INTEL, DID_INTEL_N10_HB),
+		PCI_VDEVICE(INTEL, DID_INTEL_BONNELL_HB),
 		.driver_data = (kernel_ulong_t) P965
 	},
 	{0, }

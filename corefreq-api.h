@@ -1045,7 +1045,7 @@ typedef struct
 #define DID_INTEL_G45_HB		0x2e20
 #define DID_INTEL_G41_HB		0x2e30
 /* Source: Intel Atom Processor N400 & N500 Series Datasheet– Volume 2	*/
-#define DID_INTEL_N10_HB		0xa010
+#define DID_INTEL_BONNELL_HB		0xa010
 /* Source: SoC / Silvermont / Processor Transaction Router		*/
 #define DID_INTEL_SLM_PTR		0x0f00
 /* Source: /include/linux/pci_ids.h					*/

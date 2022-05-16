@@ -2012,7 +2012,7 @@ typedef union
 	unsigned short		value;
 	struct {
 		unsigned short
-		tPCHG		:  1-0,
+		tPCHG		:  2-0,
 		tRD		:  6-2,
 		tWR		: 11-6,
 		tRAS		: 16-11;
