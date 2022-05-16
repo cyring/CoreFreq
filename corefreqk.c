@@ -3999,9 +3999,12 @@ void Query_P965(void __iomem *mchmap, unsigned short mc)
 		+ (PUBLIC(RO(Proc))->Uncore.MC[mc].P965.CKE1.RankPop0 != 0);
 
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = \
-	  (PUBLIC(RO(Proc))->Uncore.MC[mc].P965.CKE0.SingleDimmPop ? 1 : 2)
-	+ (PUBLIC(RO(Proc))->Uncore.MC[mc].P965.CKE1.SingleDimmPop ? 1 : 2);
+		PUBLIC(RO(Proc))->Uncore.MC[mc].P965.CKE0.SingleDimmPop ? 1 : 2;
 
+	if (PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount > 1) {
+		PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount += \
+		PUBLIC(RO(Proc))->Uncore.MC[mc].P965.CKE1.SingleDimmPop ? 1 : 2;
+	}
 	for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
 	{
 		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P965.DRT0.value = \

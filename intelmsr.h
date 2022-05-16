@@ -2053,25 +2053,24 @@ typedef union
 		unsigned int
 		tRD_RD_DR	:  4-0,
 		tRD_RD_SR	:  8-4,
-		tWR_RD		: 11-8,
-		tWTR		: 16-11,
-		tRCD_RD 	: 20-16,
-		ReservedBits	: 24-20,
-		tREF		: 32-24;	/* Offset 25Bh		*/
+		tWR_RD_DR	: 12-8,
+		tWR_RD_SR	: 17-12, /* tWTR			*/
+		tRCD_RD 	: 21-17,
+		ReservedBits	: 24-21,
+		tREF		: 32-24; /* See P965_MC_CYCTRK_REFR	*/
 	};
 } P965_MC_CYCTRK_RD;
 
 typedef union
-{	/* Offset Channel0: 29Ch & Channel1: 69Ch			*/
-	unsigned int		value;
-	struct {
-		unsigned int
-		ReservedBits1	: 17-0,
-		tCL		: 20-17,
-		MCH_ODT_Latency : 24-20,
-		ReservedBits2	: 32-24;
+{	/* Offset Channel0: 25Bh					*/
+	unsigned short		value;
+	struct {			/*	Atom N400-500		*/
+		unsigned short
+		RFSH_RFSH_SR	:  9-0,  /* Same Rank REF to REF Delayed */
+		PALL_RFSH_SR	: 13-9,  /* Same Rank PALL to REF Delayed */
+		ReservedBits	: 16-13;
 	};
-} P965_MC_ODTCTRL;
+} P965_MC_CYCTRK_REFR;
 
 typedef union
 {	/* Offset Channel0: 260h & Channel1: 660h			*/
@@ -2095,6 +2094,52 @@ typedef union
 		CLK_RdODT_Safe	: 32-30;
 	};
 } P965_MC_CKECTRL;
+
+typedef union
+{	/* Offset Channel0: 269h					*/
+	unsigned int		value;
+	struct {			/*	Atom N400-500		*/
+		unsigned int
+		REFTIMEOUT	: 14-0,
+		REFLOWWM	: 16-14,
+		REFHIGHWM	: 18-16,
+		REFPANICWM	: 20-18,
+		REFHYSTERISIS	: 22-20,
+		DDR_INITDONE	: 23-22,
+		REFEN		: 24-23,
+		ALLRKREF	: 25-24,
+		REFCNTEN	: 26-25,
+		ZQCALEN		: 27-26,
+		RCOMPWAIT	: 32-27;
+	};
+} P965_MC_REFRCTRL_LO48;
+
+typedef union
+{	/* Offset Channel0: 26Dh					*/
+	unsigned short		value;
+	struct {			/*	Atom N400-500		*/
+		unsigned short
+		INDIRQUIET	: 38-32,
+		DIRQUIET	: 44-38,
+		Init_RefrCnt	: 47-44,
+		ReservedBits	: 48-47;
+	};
+} P965_MC_REFRCTRL_HI48;
+
+typedef union
+{	/* Offset Channel0: 29Ch & Channel1: 69Ch			*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		RD_IMC_ODT	:  4-0,  /* N400-500: IMC Read Duration	*/
+		WR_DRAM_ODT	:  8-4,  /* N400-500: DRAM Write Duration */
+		RD_DRAM_ODT	: 12-8,  /* N400-500: DRAM Read Duration */
+		ReservedBits1	: 17-12,
+		tCL		: 20-17,
+		MCH_ODT_Latency : 24-20,
+		ReservedBits2	: 32-24;
+	};
+} P965_MC_ODTCTRL;
 
 
 typedef union

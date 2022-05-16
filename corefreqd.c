@@ -2052,28 +2052,57 @@ void P965_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
     for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
     {
-	TIMING(mc, cha).tCL   = \
+	TIMING(mc, cha).tCL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT0.tCL;
-	TIMING(mc, cha).tRAS  = \
+
+	TIMING(mc, cha).tRAS = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT1.tRAS;
-	TIMING(mc, cha).tWR   = \
+
+	TIMING(mc, cha).tWR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT1.tWR;
-	TIMING(mc, cha).tRFC  = \
+
+	TIMING(mc, cha).tRFC = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT2.tRFC;
-	TIMING(mc, cha).tRP   = \
+
+	TIMING(mc, cha).tRP = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT2.tRP;
-	TIMING(mc, cha).tRRD  = \
+
+	TIMING(mc, cha).tRRD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT2.tRRD;
-	TIMING(mc, cha).tRCD  = \
+
+	TIMING(mc, cha).tRCD_WR = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT3.tRCD_WR;
+
+	TIMING(mc, cha).tRCD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT4.tRCD_RD;
+
+	TIMING(mc, cha).tFAW = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT2.ACT_Count;
+
 /* TODO(Timings)
-	TIMING(mc, cha).tFAW  = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT_.tFAW;
-	TIMING(mc, cha).tRTPr = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT_.tRTPr;
+	TIMING(mc, cha).tRTP = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT_.tRTP;
 	TIMING(mc, cha).tCWL  = ?
 */
 	TIMING(mc, cha).tCL  += 3;
+
+	TIMING(mc, cha).tsrRdTRd = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT4.tRD_RD_SR;
+
+	TIMING(mc, cha).tdrRdTRd = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT4.tRD_RD_DR;
+
+	TIMING(mc, cha).tsrWrTWr = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT3.tWR_WR_SR;
+
+	TIMING(mc, cha).tdrWrTWr = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT3.tWR_WR_DR;
+
+	TIMING(mc, cha).tsrWrTRd = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT4.tWR_RD_SR;
+
+	TIMING(mc, cha).tdrWrTRd = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT4.tWR_RD_DR;
 
 	for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
 	{
@@ -5592,6 +5621,7 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		P965_CLK(RO(Shm), RO(Proc), RO(Core));
 		P965_MCH(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_LAKEPORT_P);
+		break;
 	case DID_INTEL_SLM_PTR:
 		SLM_PTR(RO(Shm), RO(Proc), RO(Core));
 		SET_CHIPSET(IC_BAYTRAIL);
