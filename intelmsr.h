@@ -1759,6 +1759,29 @@ typedef union
 	};
 } Intel_TCO1_CNT;
 
+typedef union
+{	/* PCH SMBus Device; 31 Function; 4				*/
+	unsigned int	value;
+	struct {
+		unsigned int
+		IOS		:  1-0,
+		ReservedBits1	:  5-1,
+		TCOBA		: 16-5,
+		ReservedBits2	: 32-16;
+	};
+} Intel_TCOBASE;
+
+typedef union
+{	/* PCH SMBus Device; 31 Function; 4				*/
+	unsigned int	value;
+	struct {
+		unsigned int
+		BASE_LOCK	:  1-0,
+		ReservedBits1	:  8-1,
+		BASE_EN		:  9-8,
+		ReservedBits2	: 32-9;
+	};
+} Intel_TCOCTL;
 
 typedef union
 {	/* Offset Channel0: 110h & Channel1: 190h			*/

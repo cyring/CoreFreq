@@ -1316,6 +1316,7 @@ typedef struct
 #define DID_INTEL_ALDERLAKE_H_IMC	0x4641
 /* Source: Intel 600 Series Chipset Family Platform Controller Hub	*/
 #define DID_INTEL_ALDERLAKE_Z690_PCH	0x7a84
+#define DID_INTEL_PCH_600_SMBUS 	0xa0a3
 /* Source: /include/linux/pci_ids.h					*/
 #define DID_AMD_K8_NB_MEMCTL		0x1102
 #define DID_AMD_K8_NB			0x1100

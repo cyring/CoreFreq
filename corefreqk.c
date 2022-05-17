@@ -4704,6 +4704,27 @@ static PCI_CALLBACK P35(struct pci_dev *dev)
 	return Router(dev, 0x48, 64, 0x4000, Query_P35, 0);
 }
 
+#define WDT_Technology(TCO1_CNT, Halt_Get_Method, Halt_Set_Method)	\
+({									\
+	Halt_Get_Method							\
+									\
+	switch (WDT_Enable) {						\
+	case COREFREQ_TOGGLE_OFF:					\
+	case COREFREQ_TOGGLE_ON:					\
+		TCO1_CNT.TCO_TMR_HALT = !WDT_Enable;			\
+		Halt_Set_Method						\
+		Halt_Get_Method						\
+		break;							\
+	}								\
+	if (TCO1_CNT.TCO_TMR_HALT) {					\
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT,		\
+				    PUBLIC(RO(Proc))->Service.Core);	\
+	} else {							\
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT,		\
+				    PUBLIC(RO(Proc))->Service.Core);	\
+	}								\
+})
+
 static PCI_CALLBACK ICH_TCO(struct pci_dev *dev)
 {
 	kernel_ulong_t rc;
@@ -4711,30 +4732,44 @@ static PCI_CALLBACK ICH_TCO(struct pci_dev *dev)
     {
 	Intel_TCO1_CNT TCO1_CNT = {.value = 0};
 
-	pci_read_config_word(dev, 0x40 + 8, &TCO1_CNT.value);
-
-	switch (WDT_Enable) {
-	case COREFREQ_TOGGLE_OFF:
-	case COREFREQ_TOGGLE_ON:
-		TCO1_CNT.TCO_TMR_HALT = !WDT_Enable;
-		pci_write_config_word(dev, 0x40 + 8, TCO1_CNT.value);
-		pci_read_config_word(dev, 0x40 + 8, &TCO1_CNT.value);
-		break;
-	}
-	if (TCO1_CNT.TCO_TMR_HALT) {
-		BITCLR_CC( LOCKLESS,	PUBLIC(RW(Proc))->WDT,
-					PUBLIC(RO(Proc))->Service.Core );
-	} else {
-		BITSET_CC( LOCKLESS,	PUBLIC(RW(Proc))->WDT,
-					PUBLIC(RO(Proc))->Service.Core );
-	}
-	BITSET_CC( LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
-				PUBLIC(RO(Proc))->Service.Core );
+	WDT_Technology( TCO1_CNT,
+		{ pci_read_config_word(dev, 0x40 + 8, &TCO1_CNT.value); },
+		{ pci_write_config_word(dev, 0x40 + 8, TCO1_CNT.value); } );
 
 	pci_release_regions(dev);
     }
 	return (PCI_CALLBACK) rc;
 }
+
+static PCI_CALLBACK TCOBASE(struct pci_dev *dev)
+{
+	kernel_ulong_t rc = -ENODEV;
+	struct device *parent = &dev->dev;
+
+	Intel_TCOCTL CTL = {.value = 0};
+	Intel_TCOBASE TCO = {.value = 0};
+
+	pci_read_config_dword(dev, 0x50, &TCO.value);
+	pci_read_config_dword(dev, 0x54, &CTL.value);
+
+    if (TCO.IOS && CTL.BASE_EN) {
+	if (!devm_request_region(parent, TCO.TCOBA, 2, DRV_DEVNAME))
+	{
+		Intel_TCO1_CNT TCO1_CNT = {.value = 0};
+
+		WDT_Technology( TCO1_CNT,
+				{ TCO1_CNT.value = inw(TCO.TCOBA + 8); },
+				{ outw(TCO1_CNT.value, TCO.TCOBA + 8); } );
+
+		devm_request_region(parent, TCO.TCOBA, 2, DRV_DEVNAME);
+
+		rc = RC_SUCCESS;
+	}
+    }
+	return (PCI_CALLBACK) rc;
+}
+
+#undef WDT_Technology
 
 static PCI_CALLBACK SoC_SLM(struct pci_dev *dev)
 {/* DRP */
@@ -8011,11 +8046,17 @@ void Intel_Watchdog(CORE_RO *Core)
 		PCI_VDEVICE(INTEL, DID_INTEL_ICH10_LPC),
 		.driver_data = (kernel_ulong_t) ICH_TCO
 		},
+		{
+		PCI_VDEVICE(INTEL, DID_INTEL_PCH_600_SMBUS),
+		.driver_data = (kernel_ulong_t) TCOBASE
+		},
 		{0, }
 	};
-	UNUSED(Core);
-
-	CoreFreqK_ProbePCI(PCI_WDT_ids, NULL, NULL);
+	if (CoreFreqK_ProbePCI(PCI_WDT_ids, NULL, NULL) >= RC_SUCCESS) {
+		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
+	}
 }
 
 void Intel_Turbo_Activation_Ratio(CORE_RO *Core)
@@ -10960,8 +11001,9 @@ static void PerCore_Skylake_X_Query(void *arg)
 		Intel_DomainPowerLimit( MSR_DRAM_POWER_LIMIT,
 					PPn_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(RAM) );
-
-		Intel_Watchdog(Core);
+*/
+		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
+/*TODO		Intel_Watchdog(Core);
 */
 	}
 }
@@ -20803,16 +20845,16 @@ static void CoreFreqK_Alloc_Public_Level_Down(void)
 
 static int CoreFreqK_Alloc_Public_Level_Up(INIT_ARG *pArg)
 {
-	const unsigned long
-			coreSizeRO = sizeof(CORE_RO*) * pArg->SMT_Count,
+	const size_t	coreSizeRO = sizeof(CORE_RO*) * pArg->SMT_Count,
 			coreSizeRW = sizeof(CORE_RW*) * pArg->SMT_Count,
-			publicSize = sizeof(KPUBLIC) + coreSizeRO + coreSizeRW;
+			publicSize = sizeof(KPUBLIC),
+			alloc_size = publicSize + coreSizeRO + coreSizeRW;
 
-	if (((PUBLIC() = kmalloc(publicSize, GFP_KERNEL)) != NULL))
+	if (((PUBLIC() = kmalloc(alloc_size, GFP_KERNEL)) != NULL))
 	{
-		memset(PUBLIC(), 0, publicSize);
+		memset(PUBLIC(), 0, alloc_size);
 
-		PUBLIC(RO(Core)) = (CORE_RO**) &PUBLIC() + sizeof(KPUBLIC);
+		PUBLIC(RO(Core)) = (CORE_RO**) &PUBLIC() + publicSize;
 
 		PUBLIC(RW(Core)) = (CORE_RW**) PUBLIC(RO(Core)) + coreSizeRO;
 
