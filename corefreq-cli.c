@@ -11737,17 +11737,17 @@ int Shortcut(SCANKEY *scan)
 
     case BOXKEY_THEME_DFLT:
 	SET_THEME(THM_DFLT);
-	Draw.Flag.layout = 1;
+	Draw.Flag.clear = 1;
     break;
 
     case BOXKEY_THEME_USR1:
 	SET_THEME(THM_USR1);
-	Draw.Flag.layout = 1;
+	Draw.Flag.clear = 1;
     break;
 
     case BOXKEY_THEME_USR2:
 	SET_THEME(THM_USR2);
-	Draw.Flag.layout = 1;
+	Draw.Flag.clear = 1;
     break;
 
     case SCANKEY_SHIFT_m:
@@ -16227,7 +16227,7 @@ CUINT Draw_Frequency_Load(	Layer *layer, CUINT row,
 
 	LayerFillAt(layer, LOAD_LEAD, row, col, hBar, attr);
     }
-    if (BITVAL(Draw.garbage, cpu)) {
+    if (BITVAL(Draw.garbage, row)) {
 	struct {
 		const CUINT col, wth;
 	} garbage = {
@@ -16240,9 +16240,9 @@ CUINT Draw_Frequency_Load(	Layer *layer, CUINT row,
 	ClearGarbage(	layer, code, garbage.col, row, garbage.wth, 0x0 );
     }
     if (!col) {
-	BITCLR(LOCKLESS, Draw.garbage, cpu);
+	BITCLR(LOCKLESS, Draw.garbage, row);
     } else {
-	BITSET(LOCKLESS, Draw.garbage, cpu);
+	BITSET(LOCKLESS, Draw.garbage, row);
     }
 	return 0;
 }
