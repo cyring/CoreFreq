@@ -3508,15 +3508,17 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 17 - RSZ(VERSION), hSpace,
 		RSC(PERF_LABEL_VER).CODE(), RSC(NOT_AVAILABLE).CODE() );
     }
-	PUT(	SCANKEY_NULL, attrib[0], width, 2,
-		"%s:%.*s%s%.*s%s",
-		RSC(COUNTERS).CODE(),10, hSpace, RSC(GENERAL_CTRS).CODE(),
-		width - 61, hSpace, RSC(FIXED_CTRS).CODE() );
+	PUT(	SCANKEY_NULL, attrib[0], width, 2, "%s:%.*s%s%.*s%s",
+		RSC(COUNTERS).CODE(),
+		8 + (10 - RSZ(COUNTERS)), hSpace,
+		RSC(GENERAL_CTRS).CODE(),
+		width - (54 + RSZ(GENERAL_CTRS)), hSpace,
+		RSC(FIXED_CTRS).CODE() );
 
     if (OutFunc == NULL) {
 	PUT(	SCANKEY_NULL, attrib[0], width, 1,
-		"%.*s%3u%3u%3u x%3u %s%.*s%3u x%3u %s",
-		16, hSpace,	RO(Shm)->Proc.Features.PerfMon.EAX.MonCtrs,
+		"%.*s{%3u,%3u,%3u } x%3u %s%.*s%3u x%3u %s",
+		11, hSpace,	RO(Shm)->Proc.Features.PerfMon.EAX.MonCtrs,
 				RO(Shm)->Proc.Features.Factory.PMC.LLC,
 				RO(Shm)->Proc.Features.Factory.PMC.NB,
 				RO(Shm)->Proc.Features.PerfMon.EAX.MonWidth,
@@ -3525,16 +3527,17 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 				RO(Shm)->Proc.Features.PerfMon.EDX.FixWidth,
 				RSC(PERF_MON_UNIT_BIT).CODE() );
     } else {
-	PUT(	SCANKEY_NULL, attrib[0], width, 0,
-		"%.*s%3u%3u%3u x%3u %s%.*s%3u x%3u %s",
-		16, hSpace,	RO(Shm)->Proc.Features.PerfMon.EAX.MonCtrs,
+	GridHover( PUT( SCANKEY_NULL, attrib[0], width, 0,
+		"%.*s{%3u,%3u,%3u } x%3u %s%.*s%3u x%3u %s",
+		11, hSpace,	RO(Shm)->Proc.Features.PerfMon.EAX.MonCtrs,
 				RO(Shm)->Proc.Features.Factory.PMC.LLC,
 				RO(Shm)->Proc.Features.Factory.PMC.NB,
 				RO(Shm)->Proc.Features.PerfMon.EAX.MonWidth,
 				RSC(PERF_MON_UNIT_BIT).CODE(),
 		4, hSpace,	RO(Shm)->Proc.Features.PerfMon.EDX.FixCtrs,
 				RO(Shm)->Proc.Features.PerfMon.EDX.FixWidth,
-				RSC(PERF_MON_UNIT_BIT).CODE() );
+				RSC(PERF_MON_UNIT_BIT).CODE() ),
+		(char *) RSC(PERF_MON_PMC_COMM).CODE() );
     }
 /* Section Mark */
 	bix = RO(Shm)->Proc.Technology.C1E == 1;
@@ -3671,10 +3674,11 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
      {
       if (RO(Shm)->Proc.Features.ACPI_CPPC == 1)
       {
-		PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+	GridHover( PUT( SCANKEY_NULL, attrib[bix], width, 2,
 			"%s%.*s%s       [%3s]", RSC(PERF_MON_CPPC).CODE(),
 			width - 19 - RSZ(PERF_MON_CPPC), hSpace,
-			RSC(PERF_LABEL_CPPC).CODE(), RSC(FMW).CODE() );
+			RSC(PERF_LABEL_CPPC).CODE(), RSC(FMW).CODE() ),
+		(char *) RSC(PERF_MON_CPPC_COMM).CODE() );
       }
       else
       {

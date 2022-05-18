@@ -1148,6 +1148,9 @@
 #define RSC_PERF_MON_NB_DF_CODE_EN	"Data Fabric Performance Counter"
 #define RSC_PERF_MON_CORE_CODE_EN	"Core Performance Counter"
 
+#define RSC_PERF_MON_PMC_COMM_CODE_EN " { Monitoring, LLC cache, Northbridge } "
+#define RSC_PERF_MON_CPPC_COMM_CODE_EN	" Firmware "
+
 #define RSC_POWER_THERMAL_TITLE_CODE_EN " Power, Current & Thermal "
 #define RSC_POWER_THERMAL_ODCM_CODE_EN	"Clock Modulation"
 #define RSC_POWER_THERMAL_DUTY_CODE_EN	"DutyCycle"
