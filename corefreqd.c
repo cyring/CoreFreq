@@ -3333,6 +3333,46 @@ void SNB_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		break;
 	}
 
+	TIMING(mc, cha).tddWrTRd = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tWRDD;
+
+	TIMING(mc, cha).tdrWrTRd = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tWRDR;
+
+	TIMING(mc, cha).tsrWrTRd = \
+		4U + RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.DBP.tCWL
+		+ RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RAP.tWTPr;
+
+	TIMING(mc, cha).tddRdTWr = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tRWDD;
+
+	TIMING(mc, cha).tdrRdTWr = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tRWDR;
+
+	TIMING(mc, cha).tsrRdTWr = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tRWSR;
+
+	TIMING(mc, cha).tddRdTRd = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tRRDD;
+
+	TIMING(mc, cha).tdrRdTRd = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tRRDR;
+/* TODO
+	TIMING(mc, cha).tsrRdTRd = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tRRSR;
+*/
+	TIMING(mc, cha).tddWrTWr = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tWWDD;
+
+	TIMING(mc, cha).tdrWrTWr = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tWWDR;
+/* TODO
+	TIMING(mc, cha).tsrWrTWr = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tWWSR;
+*/
+	TIMING(mc, cha).B2B = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tCCD;
+
 	TIMING(mc, cha).tXS = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.SRFTP.tXS;
 

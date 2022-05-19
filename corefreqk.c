@@ -4268,6 +4268,9 @@ void Query_SNB_IMC(void __iomem *mchmap, unsigned short mc)
 		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.RAP.value = \
 					readl(mchmap + 0x4004 + 0x400 * cha);
 
+		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.RWP.value = \
+					readl(mchmap + 0x4008 + 0x400 * cha);
+
 		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.RFTP.value = \
 					readl(mchmap + 0x4298 + 0x400 * cha);
 

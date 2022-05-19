@@ -2771,15 +2771,40 @@ typedef union
 		tRRDD		:  6-3,
 		tWWDR		:  9-6,
 		tWWDD		: 12-9,
-		tRWDR		: 15-12,
-		tRWDD		: 18-15,
+		tRWDR		: 15-12, /*	(1)	*/
+		tRWDD		: 18-15, /*	(1)	*/
 		tWRDR		: 21-18,
 		tWRDD		: 24-21,
-		tRWSR		: 27-24,
+		tRWSR		: 27-24, /*	(1)	*/
 		tCCD		: 30-27,
 		tWRDR_UPPER	: 32-30;
 	} EP;
 } SNB_IMC_TC_RWP;
+
+/*
+ * (1)	This field is no longer used starting in ES2 steppings.
+ *	Please refer to TCOTHP for the new register field location.
+ *
+ * Goto SNB_IMC_TC_OTP
+*/
+
+typedef union
+{
+	unsigned int		value;
+	/* Device 16,30 - Function: 0,1,4,5 - Offset 20Ch		*/
+	struct {
+		unsigned int
+		tXPDLL		:  5-0,
+		tXP		:  8-5,
+		tCWL_ADJ	: 11-8,
+		Shift_ODT_Early : 12-11,
+		tRWDR		: 16-12,
+		tRWDD		: 20-16,
+		tRWSR		: 24-20,
+		tODT_OE 	: 28-24,
+		tCS_OE		: 32-28;
+	} EP;
+} SNB_IMC_TC_OTP;
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 4298h & Channel1: 4698h */
