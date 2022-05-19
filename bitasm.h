@@ -48,7 +48,7 @@ typedef unsigned int		Bit32;
 #define BitCC			BitT1(CORE_COUNT)
 
 #if (CORE_COUNT == 64)
-#define InitCC(_val)		{_val}
+#define InitCC(_val)		(_val)
 #else
 #define InitCC(_val)		{[0 ... CORE_WORD_TOP(CORE_COUNT) - 1] = _val}
 #endif
