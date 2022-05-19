@@ -4753,7 +4753,7 @@ static PCI_CALLBACK TCOBASE(struct pci_dev *dev)
 	pci_read_config_dword(dev, 0x54, &CTL.value);
 
     if (TCO.IOS && CTL.BASE_EN) {
-	if (!devm_request_region(parent, TCO.TCOBA, 2, DRV_DEVNAME))
+	if (!devm_request_region(parent, TCO.TCOBA, 32, DRV_DEVNAME))
 	{
 		Intel_TCO1_CNT TCO1_CNT = {.value = 0};
 
@@ -4761,7 +4761,7 @@ static PCI_CALLBACK TCOBASE(struct pci_dev *dev)
 				{ TCO1_CNT.value = inw(TCO.TCOBA + 8); },
 				{ outw(TCO1_CNT.value, TCO.TCOBA + 8); } );
 
-		devm_request_region(parent, TCO.TCOBA, 2, DRV_DEVNAME);
+		devm_request_region(parent, TCO.TCOBA, 32, DRV_DEVNAME);
 
 		rc = RC_SUCCESS;
 	}
@@ -8047,16 +8047,20 @@ void Intel_Watchdog(CORE_RO *Core)
 		.driver_data = (kernel_ulong_t) ICH_TCO
 		},
 		{
+		PCI_VDEVICE(INTEL, DID_INTEL_PCH_C216_LPC),
+		.driver_data = (kernel_ulong_t) ICH_TCO
+		},
+		{
 		PCI_VDEVICE(INTEL, DID_INTEL_PCH_600_SMBUS),
 		.driver_data = (kernel_ulong_t) TCOBASE
 		},
 		{0, }
 	};
-	if (CoreFreqK_ProbePCI(PCI_WDT_ids, NULL, NULL) >= RC_SUCCESS) {
-		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
-	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
+	if (CoreFreqK_ProbePCI(PCI_WDT_ids, NULL, NULL) < RC_SUCCESS) {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT,
+				    PUBLIC(RO(Proc))->Service.Core);
 	}
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 }
 
 void Intel_Turbo_Activation_Ratio(CORE_RO *Core)

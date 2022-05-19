@@ -1177,6 +1177,8 @@ typedef struct
 /*	Power Control Unit						*/
 /*	PCU: Device=10 - Function=3					*/
 #define DID_INTEL_IVB_EP_CAPABILITY	0x0ec3
+/* Source: Intel 7 Series / C216 Chipset Family Platform Controller Hub */
+#define DID_INTEL_PCH_C216_LPC		0x1e44
 /* Source: Intel Xeon Processor E5 & E7 v3 Datasheet Vol 2		*/
 /*	DMI2: Device=0 - Function=0					*/
 #define DID_INTEL_HSW_EP_HOST_BRIDGE	0x2f00
