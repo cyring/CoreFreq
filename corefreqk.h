@@ -1676,8 +1676,9 @@ static void Query_Hygon_F18h(unsigned int cpu);
 #define     Start_AMD_Family_19h Start_AMD_Family_17h
 #define     Stop_AMD_Family_19h Stop_AMD_Family_17h
 #define     InitTimer_AMD_Family_19h InitTimer_AMD_Family_17h
-#define     InitTimer_AMD_F17h_Zen3_SP InitTimer_AMD_F17h_Zen2_SP
-#define     InitTimer_AMD_F17h_Zen3_MP InitTimer_AMD_F17h_Zen2_MP
+#define     InitTimer_AMD_F19h_Zen3_SP InitTimer_AMD_F17h_Zen2_SP
+#define     InitTimer_AMD_F19h_Zen3_MP InitTimer_AMD_F17h_Zen2_MP
+#define     InitTimer_AMD_F19h_Zen3_APU InitTimer_AMD_F17h_Zen2_APU
 #define     Start_Uncore_AMD_Family_19h Start_Uncore_AMD_Family_17h
 #define     Stop_Uncore_AMD_Family_19h Stop_Uncore_AMD_Family_17h
 
@@ -9144,7 +9145,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
 	.Exit = Exit_AMD_F19h,
-	.Timer = InitTimer_AMD_F17h_Zen3_SP,
+	.Timer = InitTimer_AMD_F19h_Zen3_SP,
 	.BaseClock = BaseClock_AMD_Family_19h,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
@@ -9168,7 +9169,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
 	.Exit = Exit_AMD_F19h,
-	.Timer = InitTimer_AMD_F17h_Zen3_SP,
+	.Timer = InitTimer_AMD_F19h_Zen3_APU,
 	.BaseClock = BaseClock_AMD_Family_19h,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
@@ -9192,7 +9193,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
 	.Exit = Exit_AMD_F19h,
-	.Timer = InitTimer_AMD_F17h_Zen3_MP,
+	.Timer = InitTimer_AMD_F19h_Zen3_MP,
 	.BaseClock = BaseClock_AMD_Family_19h,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
@@ -9216,7 +9217,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
 	.Exit = Exit_AMD_F19h,
-	.Timer = InitTimer_AMD_F17h_Zen3_MP,
+	.Timer = InitTimer_AMD_F19h_Zen3_MP,
 	.BaseClock = BaseClock_AMD_Family_19h,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
@@ -9240,7 +9241,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
 	.Exit = Exit_AMD_F19h,
-	.Timer = InitTimer_AMD_F17h_Zen3_MP,
+	.Timer = InitTimer_AMD_F19h_Zen3_MP,
 	.BaseClock = BaseClock_AMD_Family_19h,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
@@ -9264,7 +9265,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
 	.Exit = Exit_AMD_F19h,
-	.Timer = InitTimer_AMD_F17h_Zen3_SP,
+	.Timer = InitTimer_AMD_F19h_Zen3_APU,
 	.BaseClock = BaseClock_AMD_Family_19h,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
