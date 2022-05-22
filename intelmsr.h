@@ -2764,8 +2764,21 @@ typedef union
 typedef union
 {
 	unsigned int		value;
-	/* Device 16,30 - Function: 0,1,4,5 - Offset 208h		*/
-	struct {
+	struct { /* MCHBAR - Offset Channel0: 4008h & Channel1: 4408h	*/
+		unsigned int
+		tRRDR		:  3-0,
+		tRRSR		:  5-3,
+		tWWDR		:  8-5,
+		tWWDD		: 12-8,
+		tRWDR		: 15-12,
+		tWWSR		: 18-15,
+		tWRDR		: 21-18,
+		tWRDD		: 24-21,
+		tRWSR		: 27-24,
+		tCCD		: 30-27,
+		tWRDR_UPPER	: 32-30;
+	};
+	struct { /* Device 16,30 - Function: 0,1,4,5 - Offset 208h	*/
 		unsigned int
 		tRRDR		:  3-0,
 		tRRDD		:  6-3,
@@ -2791,6 +2804,10 @@ typedef union
 typedef union
 {
 	unsigned int		value;
+	struct { /* MCHBAR - Offset Channel0: 400Ch & Channel1: 440Ch	*/
+		unsigned int
+		ReservedBits	:  32-0;	/*	0x000058d7	*/
+	};
 	/* Device 16,30 - Function: 0,1,4,5 - Offset 20Ch		*/
 	struct {
 		unsigned int

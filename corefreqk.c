@@ -4262,19 +4262,22 @@ void Query_SNB_IMC(void __iomem *mchmap, unsigned short mc)
     }
     for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
     {
-		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.DBP.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.DBP.value = \
 					readl(mchmap + 0x4000 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.RAP.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.RAP.value = \
 					readl(mchmap + 0x4004 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.RWP.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.RWP.value = \
 					readl(mchmap + 0x4008 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.RFTP.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.OTP.value = \
+					readl(mchmap + 0x400c + 0x400 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.RFTP.value = \
 					readl(mchmap + 0x4298 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.SRFTP.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.SRFTP.value = \
 					readl(mchmap + 0x42a4 + 0x400 * cha);
     }
 	/*		Is Dual DIMM Per Channel Disable ?		*/

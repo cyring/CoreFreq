@@ -3333,45 +3333,44 @@ void SNB_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		break;
 	}
 
-	TIMING(mc, cha).tddWrTRd = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tWRDD;
+	TIMING(mc, cha).tddWrTRd = 1
+		+ RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.tWRDD;
 
-	TIMING(mc, cha).tdrWrTRd = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tWRDR;
-
+	TIMING(mc, cha).tdrWrTRd = 1
+		+ RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.tWRDR;
+/*
 	TIMING(mc, cha).tsrWrTRd = \
-		4U + RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.DBP.tCWL
-		+ RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RAP.tWTPr;
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.tWRSR;
 
 	TIMING(mc, cha).tddRdTWr = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tRWDD;
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.tRWDD;
+*/
+	TIMING(mc, cha).tdrRdTWr = 1
+		+ RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.tRWDR;
 
-	TIMING(mc, cha).tdrRdTWr = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tRWDR;
-
-	TIMING(mc, cha).tsrRdTWr = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tRWSR;
-
+	TIMING(mc, cha).tsrRdTWr = 1
+		+ RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.tRWSR;
+/*
 	TIMING(mc, cha).tddRdTRd = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tRRDD;
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.tRRDD;
+*/
+	TIMING(mc, cha).tdrRdTRd = 1
+		+ RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.tRRDR;
 
-	TIMING(mc, cha).tdrRdTRd = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tRRDR;
-/* TODO
 	TIMING(mc, cha).tsrRdTRd = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tRRSR;
-*/
-	TIMING(mc, cha).tddWrTWr = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tWWDD;
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.tRRSR;
 
-	TIMING(mc, cha).tdrWrTWr = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tWWDR;
-/* TODO
+	TIMING(mc, cha).tddWrTWr = 1
+		+ RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.tWWDD;
+
+	TIMING(mc, cha).tdrWrTWr = 1
+		+ RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.tWWDR;
+
 	TIMING(mc, cha).tsrWrTWr = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tWWSR;
-*/
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.tWWSR;
+
 	TIMING(mc, cha).B2B = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.EP.tCCD;
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.tCCD;
 
 	TIMING(mc, cha).tXS = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.SRFTP.tXS;
