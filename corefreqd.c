@@ -2055,36 +2055,39 @@ void P965_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	TIMING(mc, cha).tCL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT0.tCL;
 
+	TIMING(mc, cha).tCL += 3;
+
 	TIMING(mc, cha).tRAS = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT1.tRAS;
+		RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT1.tRAS;
 
 	TIMING(mc, cha).tWR = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT1.tWR;
+		RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT1.tWR;
 
 	TIMING(mc, cha).tRFC = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT2.tRFC;
+		RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT2.tRFC;
 
 	TIMING(mc, cha).tRP = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT2.tRP;
+		RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT2.tRP;
 
 	TIMING(mc, cha).tRRD = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT2.tRRD;
+		RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT2.tRRD;
 
 	TIMING(mc, cha).tRCD_WR = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT3.tRCD_WR;
+		RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT3.tRCD_WR;
 
 	TIMING(mc, cha).tRCD = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT4.tRCD_RD;
+		RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT4.tRCD_RD;
 
 	TIMING(mc, cha).tFAW = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT2.ACT_Count;
 
+	TIMING(mc, cha).tRTPr = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT2.ReservedBits;
 /* TODO(Timings)
-	TIMING(mc, cha).tRTP = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT_.tRTP;
 	TIMING(mc, cha).tCWL  = ?
 */
-	TIMING(mc, cha).tCL  += 3;
+	TIMING(mc, cha).tddRdTWr = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT3.tRD_WR;
 
 	TIMING(mc, cha).tsrRdTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT4.tRD_RD_SR;
@@ -2595,27 +2598,59 @@ void G965_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 void P3S_MCH(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 		unsigned short mc,unsigned short cha )
 {
-	TIMING(mc, cha).tCL   = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT0.tCL;
-	TIMING(mc, cha).tWR   = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT1.tWR;
-	TIMING(mc, cha).tRFC  = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT2.tRFC;
-	TIMING(mc, cha).tRP   = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT2.tRP;
-	TIMING(mc, cha).tRRD  = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT2.tRRD;
-	TIMING(mc, cha).tRCD  = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT4.tRCD_RD;
-	TIMING(mc, cha).tRAS  = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT5.tRAS;
-/* TODO(Timings)
-	TIMING(mc, cha).tFAW  = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRTn.tFAW;
+	TIMING(mc, cha).tCL = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT0.tCL;
+
+	TIMING(mc, cha).tWR = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT1.tWR;
+
+	TIMING(mc, cha).tRFC = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT2.tRFC;
+
+	TIMING(mc, cha).tRP = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT2.tRP;
+
+	TIMING(mc, cha).tRRD = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT2.tRRD;
+
+	TIMING(mc, cha).tRCD_WR = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT3.tRCD_WR;
+
+	TIMING(mc, cha).tRCD = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT4.tRCD_RD;
+
+	TIMING(mc, cha).tRAS = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT5.tRAS;
+
+	TIMING(mc, cha).tFAW = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT2.ACT_Count;
+
 	TIMING(mc, cha).tRTPr = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRTn.tRTPr;
-	TIMING(mc, cha).tWL   = ?
+		RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT2.ReservedBits;
+/* TODO(Timings)
+	TIMING(mc, cha).tCWL = ?
 */
+	TIMING(mc, cha).tddRdTWr = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT3.tRD_WR;
+
+	TIMING(mc, cha).tsrRdTRd = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT4.tRD_RD_SR;
+
+	TIMING(mc, cha).tdrRdTRd = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT4.tRD_RD_DR;
+
+	TIMING(mc, cha).tsrWrTWr = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT3.tWR_WR_SR;
+
+	TIMING(mc, cha).tdrWrTWr = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT3.tWR_WR_DR;
+
+	TIMING(mc, cha).tsrWrTRd = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT4.tWR_RD_SR;
+
+	TIMING(mc, cha).tdrWrTRd = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT4.tWR_RD_DR;
+
 	TIMING(mc, cha).tXS = (cha == 0) ?
 				  RO(Proc)->Uncore.MC[mc].P35.CKE0.tXSNR
 				: RO(Proc)->Uncore.MC[mc].P35.CKE1.tXSNR;
@@ -5658,8 +5693,8 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		SET_CHIPSET(IC_EAGLELAKE_G);
 		break;
 	case DID_INTEL_BONNELL_HB:
-		P965_CLK(RO(Shm), RO(Proc), RO(Core));
-		P965_MCH(RO(Shm), RO(Proc));
+		P35_CLK(RO(Shm), RO(Proc), RO(Core));
+		P4S_MCH(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_PINEVIEW);
 		break;
 	case DID_INTEL_SLM_PTR:

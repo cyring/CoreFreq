@@ -4076,9 +4076,12 @@ void Query_P35(void __iomem *mchmap, unsigned short mc)
 		+ (PUBLIC(RO(Proc))->Uncore.MC[mc].P35.CKE1.RankPop0 != 0);
 
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = \
-	  (PUBLIC(RO(Proc))->Uncore.MC[mc].P35.CKE0.SingleDimmPop ? 1 : 2)
-	+ (PUBLIC(RO(Proc))->Uncore.MC[mc].P35.CKE1.SingleDimmPop ? 1 : 2);
+		PUBLIC(RO(Proc))->Uncore.MC[mc].P35.CKE0.SingleDimmPop ? 1 : 2;
 
+	if (PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount > 1) {
+		PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount += \
+		PUBLIC(RO(Proc))->Uncore.MC[mc].P35.CKE1.SingleDimmPop ? 1 : 2;
+	}
 	for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
 	{
 		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRT0.value = \
@@ -4091,7 +4094,7 @@ void Query_P35(void __iomem *mchmap, unsigned short mc)
 					readl(mchmap + 0x252 + 0x400 * cha);
 
 		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRT3.value = \
-					readl(mchmap + 0x256 + 0x400 * cha);
+					readw(mchmap + 0x256 + 0x400 * cha);
 
 		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRT4.value = \
 					readl(mchmap + 0x258 + 0x400 * cha);

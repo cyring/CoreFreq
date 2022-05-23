@@ -2119,6 +2119,18 @@ typedef union
 } P965_MC_CKECTRL;
 
 typedef union
+{	/* Offset Channel0: 29Ch & Channel1: 69Ch			*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		ReservedBits1	: 17-0,
+		tCL		: 20-17,
+		MCH_ODT_Latency : 24-20,
+		ReservedBits2	: 32-24;
+	};
+} P965_MC_ODTCTRL;
+
+typedef union
 {	/* Offset Channel0: 269h					*/
 	unsigned int		value;
 	struct {			/*	Atom N400-500		*/
@@ -2135,7 +2147,7 @@ typedef union
 		ZQCALEN		: 27-26,
 		RCOMPWAIT	: 32-27;
 	};
-} P965_MC_REFRCTRL_LO48;
+} N400_MC_REFRCTRL_LO48;
 
 typedef union
 {	/* Offset Channel0: 26Dh					*/
@@ -2147,23 +2159,19 @@ typedef union
 		Init_RefrCnt	: 47-44,
 		ReservedBits	: 48-47;
 	};
-} P965_MC_REFRCTRL_HI48;
+} N400_MC_REFRCTRL_HI48;
 
 typedef union
-{	/* Offset Channel0: 29Ch & Channel1: 69Ch			*/
+{	/* Offset Channel0: 29Ch					*/
 	unsigned int		value;
 	struct {
 		unsigned int
 		RD_IMC_ODT	:  4-0,  /* N400-500: IMC Read Duration	*/
 		WR_DRAM_ODT	:  8-4,  /* N400-500: DRAM Write Duration */
 		RD_DRAM_ODT	: 12-8,  /* N400-500: DRAM Read Duration */
-		ReservedBits1	: 17-12,
-		tCL		: 20-17,
-		MCH_ODT_Latency : 24-20,
-		ReservedBits2	: 32-24;
+		ReservedBits	: 32-12;
 	};
-} P965_MC_ODTCTRL;
-
+} N400_MC_ODTCTRL;
 
 typedef union
 {	/* Offset Channel0: 250h & Channel1: 650h			*/
