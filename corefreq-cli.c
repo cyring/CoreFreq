@@ -16231,7 +16231,7 @@ CUINT Draw_Frequency_Load(	Layer *layer, CUINT row,
 
 	LayerFillAt(layer, LOAD_LEAD, row, col, hBar, attr);
     }
-    if (BITVAL(Draw.garbage, row)) {
+    if (BITVAL_CC(Draw.garbage, row)) {
 	struct {
 		const CUINT col, wth;
 	} garbage = {
@@ -16244,9 +16244,9 @@ CUINT Draw_Frequency_Load(	Layer *layer, CUINT row,
 	ClearGarbage(	layer, code, garbage.col, row, garbage.wth, 0x0 );
     }
     if (!col) {
-	BITCLR(LOCKLESS, Draw.garbage, row);
+	BITCLR_CC(LOCKLESS, Draw.garbage, row);
     } else {
-	BITSET(LOCKLESS, Draw.garbage, row);
+	BITSET_CC(LOCKLESS, Draw.garbage, row);
     }
 	return 0;
 }
@@ -18591,7 +18591,7 @@ void Layout_Header_DualView_Footer(Layer *layer)
 #ifndef NO_UPPER
 	Layout_Ruler_Load(layer, row);
 #endif
-  for(cpu = Draw.cpuScroll; cpu < (Draw.cpuScroll + Draw.Area.MaxRows); cpu++)
+  for (cpu = Draw.cpuScroll; cpu < (Draw.cpuScroll + Draw.Area.MaxRows); cpu++)
   {
 	Layout_CPU_To_String(cpu);
 #ifndef NO_UPPER
