@@ -5566,6 +5566,7 @@ static char *Chipset[CHIPSETS] = {
 	[IC_EAGLELAKE_P]	= "G45/Eaglelake-P",
 	[IC_EAGLELAKE_G]	= "G41/Eaglelake-G",
 	[IC_PINEVIEW]		= "Pineview",
+	[IC_CEDARVIEW]		= "Cedarview",
 	[IC_BAYTRAIL]		= "Bay Trail",
 	[IC_TYLERSBURG] 	= "X58/Tylersburg",
 	[IC_IBEXPEAK]		= "P55/Ibex Peak",
@@ -5696,6 +5697,10 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		P35_CLK(RO(Shm), RO(Proc), RO(Core));
 		P4S_MCH(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_PINEVIEW);
+		break;
+	case DID_INTEL_SALTWELL_HB:
+		SLM_PTR(RO(Shm), RO(Proc), RO(Core));
+		SET_CHIPSET(IC_CEDARVIEW);
 		break;
 	case DID_INTEL_SLM_PTR:
 		SLM_PTR(RO(Shm), RO(Proc), RO(Core));

@@ -2100,6 +2100,10 @@ static struct pci_device_id PCI_Core2_ids[] = {
 };
 
 static struct pci_device_id PCI_SoC_ids[] = {
+	{	/* Saltwell - Cedarview					*/
+		PCI_VDEVICE(INTEL, DID_INTEL_SALTWELL_HB),
+		.driver_data = (kernel_ulong_t) SoC_SLM
+	},
 	{	/* 82945G - Lakeport					*/
 		PCI_VDEVICE(INTEL, DID_INTEL_SLM_PTR),
 		.driver_data = (kernel_ulong_t) SoC_SLM
@@ -7356,7 +7360,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
 	.powerFormula   = POWER_FORMULA_NONE,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_SoC_ids,
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL,
