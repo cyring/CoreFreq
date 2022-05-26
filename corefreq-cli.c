@@ -6584,7 +6584,9 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 
 	StrLenFormat(li, chipStr, (MC_MATX * MC_MATY) + 1,
 			"%.*s" "%s" "%.*s",
-			nc, HSPACE, str, ni, HSPACE);
+			nc % ((MC_MATX * MC_MATY) / 2), HSPACE,
+			str,
+			ni % ((MC_MATX * MC_MATY) / 2), HSPACE);
 
     for (nc = 0; nc < MC_MATX; nc++) {
 	memcpy(item, &chipStr[nc * MC_MATY], MC_MATY);

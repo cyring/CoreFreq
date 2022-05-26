@@ -20866,7 +20866,7 @@ static int CoreFreqK_Alloc_Public_Level_Up(INIT_ARG *pArg)
 	if (((PUBLIC() = kmalloc(alloc_size, GFP_KERNEL)) != NULL))
 	{
 		memset(PUBLIC(), 0, alloc_size);
-
+/*FIXME[-Warray-bounds] */
 		PUBLIC(RO(Core)) = (CORE_RO**) &PUBLIC() + publicSize;
 
 		PUBLIC(RW(Core)) = (CORE_RW**) PUBLIC(RO(Core)) + coreSizeRO;
