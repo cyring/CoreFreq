@@ -537,6 +537,7 @@ typedef struct
 	/* 4070h */		RKL_IMC_CR_TC_ODT	ODT;	/* 64 bits    */
 	/* 4088h */		RKL_IMC_SC_GS_CFG	Sched;	/* 64 bits    */
 	/* 423Ch */		RKL_IMC_REFRESH_TC	Refresh; /*32 bits    */
+	/* 42C4h */		RKL_IMC_SREXITTP	SRExit;	/* 32 bits    */
 			} RKL;
 			struct {
 	/* 4000h */		TGL_IMC_CR_TC_PRE	Timing; /* 64 bits    */
@@ -549,6 +550,7 @@ typedef struct
 	/* 4070h */		TGL_IMC_CR_TC_ODT	ODT;	/* 64 bits    */
 	/* 4088h */		TGL_IMC_SC_GS_CFG	Sched;	/* 64 bits    */
 	/* 423Ch */		TGL_IMC_REFRESH_TC	Refresh; /*32 bits    */
+	/* 42C0h */		TGL_IMC_SREXITTP	SRExit;	/* 64 bits    */
 			} TGL;
 			struct {
 	/* E000h */		ADL_IMC_CR_TC_PRE	Timing; /* 64 bits    */
@@ -561,6 +563,7 @@ typedef struct
 	/* E070h */		ADL_IMC_CR_TC_ODT	ODT;	/* 64 bits    */
 	/* E088h */		ADL_IMC_SC_GS_CFG	Sched;	/* 64 bits    */
 	/* E43Ch */		ADL_IMC_REFRESH_TC	Refresh; /*32 bits    */
+	/* E4C0h */		ADL_IMC_SREXITTP	SRExit;	/* 64 bits    */
 			} ADL;
 			struct {
 	/* 88h */		AMD_0F_DRAM_TIMING_LOW	DTRL;	/* 32 bits    */

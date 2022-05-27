@@ -3726,6 +3726,38 @@ typedef union
 } ADL_IMC_REFRESH_TC;	/* Refresh timing parameters			*/
 
 typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: 42C4h & Channel1: 46C4h */
+	unsigned int		value;
+	struct {
+		unsigned int
+		tXSR		: 10-0,
+		ReservedBits	: 32-10;
+	};
+} RKL_IMC_SREXITTP;	/* Self-Refresh Exit timing parameters		*/
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: 42C0h & Channel1: 46C0h */
+	unsigned long long	value;
+	struct {
+		unsigned long long
+		tXSR		: 12-0,
+		ReservedBits	: 64-12;
+	};
+} TGL_IMC_SREXITTP;	/* Self-Refresh Exit timing parameters		*/
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: E4C0h & Channel1: ECC0h */
+	unsigned long long	value;
+	struct {
+		unsigned long long
+		tXSR		: 13-0,
+		ReservedBits1	: 52-13,
+		tSR		: 58-52,
+		ReservedBits2	: 64-58;
+	};
+} ADL_IMC_SREXITTP;	/* Self-Refresh Exit timing parameters		*/
+
+typedef union
 {	/* Device: 0 - Function: 0 - Offset 5000h			*/
 	unsigned int		value;
 	struct {

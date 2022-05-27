@@ -4539,6 +4539,9 @@ void Query_RKL_IMC(void __iomem *mchmap, unsigned short mc)
 
 	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].RKL.Refresh.value = \
 					readl(mchmap + 0x423c + 0x400 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].RKL.SRExit.value = \
+					readl(mchmap + 0x42c4 + 0x400 * cha);
     }
     if (mc == 0) {
 	Query_Turbo_TDP_Config(mchmap);
@@ -4605,6 +4608,9 @@ void Query_TGL_IMC(void __iomem *mchmap, unsigned short mc)
 
 	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.Refresh.value = \
 					readl(mchmap + 0x423c + 0x400 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].TGL.SRExit.value = \
+					readq(mchmap + 0x42c0 + 0x400 * cha);
     }
     if (mc == 0) {
 	Query_Turbo_TDP_Config(mchmap);
@@ -4671,6 +4677,9 @@ void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
 
 	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].ADL.Refresh.value = \
 					readl(mchmap + 0xe43c + 0x800 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].ADL.SRExit.value = \
+					readq(mchmap + 0xe4c0 + 0x800 * cha);
     }
     if (mc == 0) {
 	Query_Turbo_TDP_Config(mchmap);

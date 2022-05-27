@@ -4329,6 +4329,9 @@ void RKL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		break;
 	}
 
+	TIMING(mc, cha).tXS = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.SRExit.tXSR;
+
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[0].Banks = \
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[1].Banks = \
 	!RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Sched.ReservedBits1 ? 16 : 8;
@@ -4630,6 +4633,9 @@ void TGL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		break;
 	}
 
+	TIMING(mc, cha).tXS = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.SRExit.tXSR;
+
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[0].Banks = \
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[1].Banks = \
 	!RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Sched.ReservedBits1 ? 16 : 8;
@@ -4826,6 +4832,9 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		TIMING(mc, cha).CMD_Rate = 3;
 		break;
 	}
+
+	TIMING(mc, cha).tXS = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.SRExit.tXSR;
 
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[0].Banks = \
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[1].Banks = \
