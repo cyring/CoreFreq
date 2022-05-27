@@ -5704,7 +5704,7 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		break;
 	case DID_INTEL_BONNELL_HB:
 		P35_CLK(RO(Shm), RO(Proc), RO(Core));
-		P4S_MCH(RO(Shm), RO(Proc));
+		P35_MCH(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_PINEVIEW);
 		break;
 	case DID_INTEL_SALTWELL_HB:
