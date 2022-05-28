@@ -3898,6 +3898,11 @@ void HSW_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 					  RO(Proc)->Uncore.MC[mc].SNB.MAD0.ECC
 					: RO(Proc)->Uncore.MC[mc].SNB.MAD1.ECC;
     }
+    if (RO(Proc)->Uncore.MC[mc].SNB.MADCH.LPDDR) {
+	RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_LPDDR;
+    } else {
+	RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_SDRAM;
+    }
   }
 }
 

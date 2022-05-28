@@ -2870,6 +2870,20 @@ typedef union
 } SNB_IMC_TC_SRFTP;
 
 typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: 5000h		*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		CH_A		:  2-0,
+		CH_B		:  4-2,
+		CH_C		:  6-4,
+		ReservedBits1	: 10-6,
+		LPDDR		: 11-10, /* Since Sept. 2013 Haswell	*/
+		ReservedBits2	: 32-11;
+	};
+} SNB_IMC_MAD_MAPPING;
+
+typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 5004h & Channel1: 5008h */
 	unsigned int		value;
 	struct {

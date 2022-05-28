@@ -651,6 +651,7 @@ typedef struct
 	/* 3:0 4Ch */	NHM_IMC_STATUS		STATUS; 	/* 32 bits    */
 		} NHM;
 		struct {
+	/* 5000h */	SNB_IMC_MAD_MAPPING	MADCH;		/* 32 bits    */
 	/* 5004h */	SNB_IMC_MAD_CHANNEL	MAD0,		/* 32 bits    */
 	/* 5008h */				MAD1;		/* 32 bits    */
 		} SNB;
