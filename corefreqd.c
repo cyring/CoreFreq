@@ -3412,40 +3412,26 @@ void SNB_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
       for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
       {
-	unsigned int width, DIMM_Banks;
+	unsigned int width = 1;
 
 	if (slot == 0) {
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
 					RO(Proc)->Uncore.MC[mc].SNB.MAD0.DANOR;
 
-		width = RO(Proc)->Uncore.MC[mc].SNB.MAD0.DAW;
+		width += RO(Proc)->Uncore.MC[mc].SNB.MAD0.DAW;
 	} else {
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
 					RO(Proc)->Uncore.MC[mc].SNB.MAD0.DBNOR;
 
-		width = RO(Proc)->Uncore.MC[mc].SNB.MAD0.DBW;
+		width += RO(Proc)->Uncore.MC[mc].SNB.MAD0.DBW;
 	}
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks++;
-
-	if (width == 0) {
-		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 14;
-	} else {
-		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 15;
-	}
-
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 4 << width;
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << (14 + width);
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
 
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size =
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
 						dimmSize[cha][slot] * 256;
-
-	DIMM_Banks = 8 * dimmSize[cha][slot] * 1024 * 1024;
-
-	DIMM_Banks = DIMM_Banks
-		/ (RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
-		*  RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
-		*  RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks);
-
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = DIMM_Banks;
       }
 	TIMING(mc, cha).ECC = (cha == 0) ?
 					  RO(Proc)->Uncore.MC[mc].SNB.MAD0.ECC
