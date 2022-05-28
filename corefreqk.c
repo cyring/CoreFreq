@@ -4367,7 +4367,7 @@ void Query_HSW_IMC(void __iomem *mchmap, unsigned short mc)
 {	/*Source: Desktop 4th & 5th Generation Intel® Core™ Processor Family.*/
 	unsigned short cha, dimmCount[2];
 
-	PUBLIC(RO(Proc))->Uncore.MC[mc].SNB.MADCH.value = readl(mchmap + 0x5000);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SNB.MADCH.value= readl(mchmap + 0x5000);
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SNB.MAD0.value = readl(mchmap + 0x5004);
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SNB.MAD1.value = readl(mchmap + 0x5008);
 
@@ -4412,9 +4412,21 @@ void Query_HSW_IMC(void __iomem *mchmap, unsigned short mc)
     }
 }
 
+inline void HSW_BIOS(void __iomem *mchmap)
+{
+	PUBLIC(RO(Proc))->Uncore.Bus.HSW_BIOS.value = readl(mchmap + 0x5e00);
+}
+
+void Query_HSW_CLK(void __iomem *mchmap, unsigned short mc)
+{
+	HSW_BIOS(mchmap);
+
+	Query_HSW_IMC(mchmap, mc);
+}
+
 inline void SKL_SA(void __iomem *mchmap)
 {
-	PUBLIC(RO(Proc))->Uncore.Bus.SKL_SA_Pll.value = readl(mchmap+0x5918);
+	PUBLIC(RO(Proc))->Uncore.Bus.SKL_SA_Pll.value = readl(mchmap + 0x5918);
 }
 
 void Query_SKL_IMC(void __iomem *mchmap, unsigned short mc)
@@ -5184,7 +5196,7 @@ static PCI_CALLBACK SNB_EP_QPI(struct pci_dev *dev)
 	return (PCI_CALLBACK) 0;
 }
 
-static PCI_CALLBACK HSW_IMC(struct pci_dev *dev)
+static PCI_CALLBACK HSW_HOST(struct pci_dev *dev, ROUTER Query)
 {
 	pci_read_config_dword(dev, 0xe4,
 				&PUBLIC(RO(Proc))->Uncore.Bus.SNB_Cap.value);
@@ -5194,7 +5206,17 @@ static PCI_CALLBACK HSW_IMC(struct pci_dev *dev)
 
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
 
-	return Router(dev, 0x48, 64, 0x8000, Query_HSW_IMC, 0);
+	return Router(dev, 0x48, 64, 0x8000, Query, 0);
+}
+
+static PCI_CALLBACK HSW_IMC(struct pci_dev *dev)
+{
+	return HSW_HOST(dev, Query_HSW_IMC);
+}
+
+static PCI_CALLBACK HSW_CLK(struct pci_dev *dev)
+{
+	return HSW_HOST(dev, Query_HSW_CLK);
 }
 
 void SoC_SKL_VTD(void)

@@ -718,6 +718,7 @@ typedef struct
 		struct {
 			SNB_CAPID		SNB_Cap;
 			IVB_CAPID		IVB_Cap;
+			HSW_BIOS_MEMCLOCK	HSW_BIOS;
 		};
 		struct {
 			SNB_EP_CAPID0		SNB_EP_Cap0;

@@ -3198,6 +3198,16 @@ typedef union
 	};
 } HSW_TC_REFRESH_TIMING;
 
+typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: 5E00h		*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		MEMCLK		:  4-0,  /* 0101=1333, 0110=1600 MT/s	*/
+		ReservedBits 	: 32-4;
+	};
+} HSW_BIOS_MEMCLOCK;
+
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 4000h & Channel1: 4400h */

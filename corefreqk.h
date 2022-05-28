@@ -1992,6 +1992,7 @@ static PCI_CALLBACK SNB_EP_TAD_CTRL1_CHA1(struct pci_dev *dev) ;
 static PCI_CALLBACK SNB_EP_TAD_CTRL1_CHA2(struct pci_dev *dev) ;
 static PCI_CALLBACK SNB_EP_TAD_CTRL1_CHA3(struct pci_dev *dev) ;
 static PCI_CALLBACK HSW_IMC(struct pci_dev *dev) ;
+static PCI_CALLBACK HSW_CLK(struct pci_dev *dev) ;
 static PCI_CALLBACK SKL_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK CML_PCH(struct pci_dev *dev) ;
 #define RKL_PCH CML_PCH
@@ -2342,11 +2343,11 @@ static struct pci_device_id PCI_Haswell_ids[] = {
 	},
 	{	/* Desktop: IMC_SystemAgent=0x0c00			*/
 		PCI_VDEVICE(INTEL, DID_INTEL_HASWELL_IMC_SA),
-		.driver_data = (kernel_ulong_t) HSW_IMC
+		.driver_data = (kernel_ulong_t) HSW_CLK
 	},
 	{	/* Mobile M/H: Host Agent=0x0c04			*/
 		PCI_VDEVICE(INTEL, DID_INTEL_HASWELL_MH_IMC_HA0),
-		.driver_data = (kernel_ulong_t) HSW_IMC
+		.driver_data = (kernel_ulong_t) HSW_CLK
 	},
 	{	/* Mobile U/Y: Host Agent=0x0a04			*/
 		PCI_VDEVICE(INTEL, DID_INTEL_HASWELL_UY_IMC_HA0),
@@ -2372,7 +2373,7 @@ static struct pci_device_id PCI_Broadwell_ids[] = {
 	},
 	{	/* Desktop: IMC_SystemAgent=0x0c00			*/
 		PCI_VDEVICE(INTEL, DID_INTEL_HASWELL_IMC_SA),
-		.driver_data = (kernel_ulong_t) HSW_IMC
+		.driver_data = (kernel_ulong_t) HSW_CLK
 	},
 	{0, }
 };

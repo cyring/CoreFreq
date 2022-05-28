@@ -3906,6 +3906,20 @@ void HSW_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
   }
 }
 
+void HSW_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
+{
+	IVB_CAP(RO(Shm), RO(Proc), RO(Core));
+
+	switch (RO(Proc)->Uncore.Bus.HSW_BIOS.MEMCLK) {
+	case 0b0101:
+		RO(Shm)->Uncore.CtrlSpeed = 1333;
+		break;
+	case 0b0110:
+		RO(Shm)->Uncore.CtrlSpeed = 1600;
+		break;
+	}
+}
+
 unsigned int SKL_DimmWidthToRows(unsigned int width)
 {
 	unsigned int rows = 0;
@@ -5761,6 +5775,10 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		break;
 	case DID_INTEL_HASWELL_IMC_SA:		/* HSW & BDW Desktop	*/
 	case DID_INTEL_HASWELL_MH_IMC_HA0:	/* HSW Mobile M/H	*/
+		HSW_CAP(RO(Shm), RO(Proc), RO(Core));
+		HSW_IMC(RO(Shm), RO(Proc));
+		SET_CHIPSET(IC_LYNXPOINT_M);
+		break;
 	case DID_INTEL_HASWELL_UY_IMC_HA0:	/* HSW Mobile U/Y	*/
 		IVB_CAP(RO(Shm), RO(Proc), RO(Core));
 		HSW_IMC(RO(Shm), RO(Proc));
