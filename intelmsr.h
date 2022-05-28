@@ -2124,7 +2124,7 @@ typedef union
 	struct {
 		unsigned int
 		ReservedBits1	: 17-0,
-		tCL		: 20-17,
+		tCL		: 20-17,  /* tCL = value + 3 memory clocks */
 		MCH_ODT_Latency : 24-20,
 		ReservedBits2	: 32-24;
 	};

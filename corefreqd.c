@@ -6497,7 +6497,7 @@ long ClockSource_Submit(RO(SHM_STRUCT) *RO(Shm), unsigned char index)
 	if ((fd = fopen(CLOCKSOURCE_PATH"/current_clocksource", "w")) != NULL)
 	{
 		char *ptr = &RO(Shm)->CS.array[RO(Shm)->CS.index[index]];
-		fprintf(fd, ptr);
+		fprintf(fd, "%s", ptr);
 		fclose(fd);
 		return 0;
 	}
@@ -6752,7 +6752,7 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 		drc = errno;
 	}
 	if (Quiet & 0x100) {
-		printf("\tRING[%u](%x,%x)(%lx)>(%d,%d)\n",
+		printf("\tRING[%u](%x,%x)(%llx)>(%d,%d)\n",
 			rid, ctrl.cmd, ctrl.sub, ctrl.arg, rc, drc);
 	}
 	switch (rc) {

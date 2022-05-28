@@ -10393,7 +10393,7 @@ Window *PopUpMessage(ASCII *title, RING_CTRL *pCtrl)
 	if ((hdrLen > 0) && (hdrLen < POPUP_WIDTH)) {
 		memcpy(&item[POPUP_WIDTH - hdrLen], outStr, hdrLen);
 	}
-	hdrLen = (size_t) sprintf(outStr, "[%x:%lx]", pCtrl->cmd, pCtrl->arg);
+	hdrLen = (size_t) sprintf(outStr, "[%x:%llx]", pCtrl->cmd, pCtrl->arg);
 	if ((hdrLen > 0) && (hdrLen < POPUP_WIDTH)) {
 		memcpy(item, outStr, hdrLen);
 	}

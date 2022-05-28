@@ -2217,7 +2217,7 @@ typedef struct {
 } RING_ARG_DWORD;
 
 typedef union {
-	unsigned long	arg: 64;
+    unsigned long long	arg: 64;
     struct {
 	RING_ARG_DWORD	dl;
 	RING_ARG_DWORD	dh;
@@ -2226,7 +2226,7 @@ typedef union {
 
 typedef struct {
 	union {
-		unsigned long		arg: 64;
+		unsigned long long	arg: 64;
 		struct {
 			RING_ARG_DWORD	dl;
 			RING_ARG_DWORD	dh;
