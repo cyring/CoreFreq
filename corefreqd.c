@@ -3410,6 +3410,15 @@ void SNB_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	TIMING(mc, cha).tXS = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.SRFTP.tXS;
 
+	TIMING(mc, cha).PDM_EN = \
+		0 != RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.PDWN.PDWN_Mode;
+
+	TIMING(mc, cha).PDM_MODE = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.PDWN.GLPDN;
+
+	TIMING(mc, cha).PDM_AGGR = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.PDWN.PDWN_Mode;
+
       for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
       {
 	unsigned int width = 1;

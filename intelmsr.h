@@ -2741,7 +2741,7 @@ typedef union
 } SNB_IMC_TC_DBP;
 
 typedef union
-{	/* Device: 0 - Function: 0 - Offset Channel0: 4004h & Channel1: 4400h */
+{	/* Device: 0 - Function: 0 - Offset Channel0: 4004h & Channel1: 4404h */
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -2830,6 +2830,31 @@ typedef union
 		tCS_OE		: 32-28;
 	} EP;
 } SNB_IMC_TC_OTP;
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: 40B0h & Channel1: 44B0h */
+	unsigned int		value;
+	struct {
+		unsigned int
+		PDWN_Idle_Ctr	:  8-0,  /* Rank Power-down idle timer (DCLK) */
+		PDWN_Mode	: 12-8,  /*	(1)			*/
+		GLPDN		: 13-12, /*	(2)			*/
+		ReservedBits	: 32-13;
+	};
+} SNB_IMC_PDWN;
+
+/*
+ * (1)	The value 0h (no power-down) is a don't care.
+ *	0h = No Power Down
+ *	1h = APD
+ *	2h = PPD
+ *	3h = APD - PPD
+ *	6h = DLL Off
+ *	7h = APD-DLL Off
+ *
+ * (2)	1 = Power-down decision is global for channel.
+ *	0 = A separate decision is taken for each rank.
+*/
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 4298h & Channel1: 4698h */

@@ -1881,15 +1881,15 @@ typedef struct
 	union {
 	  unsigned int	B2B;
 	  unsigned int	GEAR;
-	  struct {
+	};
+	struct {
 	  unsigned int	GDM	:  1-0,
 			BGS	:  2-1,
 			BGS_ALT :  3-2,
 			PDM_EN	:  4-3,
 			PDM_MODE:  5-4,
-			PDM_AGGR:  6-5,
-			Unused	: 32-6;
-	  };
+			PDM_AGGR:  9-5,
+			Unused	: 32-9;
 	};
 	unsigned int	ECC;
 } RAM_TIMING;
