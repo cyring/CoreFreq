@@ -2241,21 +2241,37 @@ static struct pci_device_id PCI_IvyBridge_ids[] = {
 
 static struct pci_device_id PCI_SandyBridge_EP_ids[] = {
 	{
-		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_HOST_BRIDGE),
+		PCI_VDEVICE(INTEL, DID_INTEL_SNB_EP_HOST_BRIDGE),
 		.driver_data = (kernel_ulong_t) SNB_EP_HB
 	},
 	{
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_HOST_BRIDGE),
+		.driver_data = (kernel_ulong_t) SNB_EP_HB
+	},
 /*	QPIMISCSTAT							*/
-		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_QPI_LINK0),
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_SNB_EP_QPI_LINK0),
 		.driver_data = (kernel_ulong_t) SNB_EP_QPI
 	},
 	{
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_QPI_LINK0),
+		.driver_data = (kernel_ulong_t) SNB_EP_QPI
+	},
 /*	Power Control Unit						*/
-		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_CAPABILITY),
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_SNB_EP_CAPABILITY),
 		.driver_data = (kernel_ulong_t) SNB_EP_CAP
 	},
 	{
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_CAPABILITY),
+		.driver_data = (kernel_ulong_t) SNB_EP_CAP
+	},
 /*	Integrated Memory Controller # : General and MemHot Registers	*/
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_SNB_EP_IMC_CTRL0_CPGC),
+		.driver_data = (kernel_ulong_t) SNB_EP_CTRL0
+	},
+	{
 		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_IMC_CTRL0_CPGC),
 		.driver_data = (kernel_ulong_t) SNB_EP_CTRL0
 	},
@@ -2263,8 +2279,40 @@ static struct pci_device_id PCI_SandyBridge_EP_ids[] = {
 		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_IMC_CTRL1_CPGC),
 		.driver_data = (kernel_ulong_t) SNB_EP_CTRL1
 	},
-	{
 /*	Integrated Memory Controller # : Channel [m-M] Thermal Registers*/
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_SNB_EP_IMC_CTRL0_CH0),
+		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL0_CHA0
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_SNB_EP_IMC_CTRL0_CH1),
+		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL0_CHA1
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_SNB_EP_IMC_CTRL0_CH2),
+		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL0_CHA2
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_SNB_EP_IMC_CTRL0_CH3),
+		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL0_CHA3
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_SNB_EP_IMC_CTRL1_CH0),
+		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL1_CHA0
+	},
+	{
+		PCI_VDEVICE(INTEL ,DID_INTEL_SNB_EP_IMC_CTRL1_CH1),
+		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL1_CHA1
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_SNB_EP_IMC_CTRL1_CH2),
+		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL1_CHA2
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_SNB_EP_IMC_CTRL1_CH3),
+		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL1_CHA3
+	},
+	{
 		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_IMC_CTRL0_CH0),
 		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL0_CHA0
 	},
@@ -2297,6 +2345,23 @@ static struct pci_device_id PCI_SandyBridge_EP_ids[] = {
 		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL1_CHA3
 	},
 /*	Integrated Memory Controller 0 : Channel # TAD Registers	*/
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_SNB_EP_TAD_CTRL0_CH0),
+		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL0_CHA0
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_SNB_EP_TAD_CTRL0_CH1),
+		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL0_CHA1
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_SNB_EP_TAD_CTRL0_CH2),
+		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL0_CHA2
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_SNB_EP_TAD_CTRL0_CH3),
+		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL0_CHA3
+	},
+	/*		TODO(DID_INTEL_SNB_EP_TAD_CTRL0_CH4)		*/
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_TAD_CTRL0_CH0),
 		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL0_CHA0
@@ -2369,6 +2434,10 @@ static struct pci_device_id PCI_Broadwell_ids[] = {
 	},
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_BROADWELL_H_IMC_HA0),
+		.driver_data = (kernel_ulong_t) HSW_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_BROADWELL_U_IMC_HA0),
 		.driver_data = (kernel_ulong_t) HSW_IMC
 	},
 	{	/* Desktop: IMC_SystemAgent=0x0c00			*/

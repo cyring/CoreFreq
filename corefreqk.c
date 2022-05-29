@@ -5015,7 +5015,7 @@ static PCI_CALLBACK IVB_IMC(struct pci_dev *dev)
 static PCI_CALLBACK SNB_EP_HB(struct pci_dev *dev)
 {
 	UNUSED(dev);
-/*TODO(Harware missing! for testings)					*/
+/*TODO(Harware E5-2640 for testings)					*/
 	return (PCI_CALLBACK) 0;
 }
 

@@ -5781,6 +5781,7 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		SNB_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_IBEXPEAK_M);
 		break;
+	case DID_INTEL_SNB_EP_HOST_BRIDGE:	/* Xeon E5-2640		*/
 	case DID_INTEL_IVB_EP_HOST_BRIDGE:	/* Xeon E5 & E7 v2	*/
 		SNB_EP_CAP(RO(Shm), RO(Proc), RO(Core));
 		SNB_EP_IMC(RO(Shm), RO(Proc));
@@ -5819,6 +5820,7 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		break;
 	case DID_INTEL_BROADWELL_D_IMC_HA0:	/*	BDW/Desktop	*/
 	case DID_INTEL_BROADWELL_H_IMC_HA0:	/*	Broadwell/H	*/
+	case DID_INTEL_BROADWELL_U_IMC_HA0:	/*	Broadwell/U	*/
 		IVB_CAP(RO(Shm), RO(Proc), RO(Core));
 		HSW_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_WELLSBURG);

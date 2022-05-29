@@ -1146,7 +1146,7 @@ typedef struct
 #define DID_INTEL_SNB_EP_TAD_CTRL1_CH3	0x0
 #define DID_INTEL_SNB_EP_TAD_CTRL1_CH4	0x0				*/
 /*	Power Control Unit						*/
-/*TODO( PCU: Device=10 - Function=3 )					*/
+/*	PCU: Device=10 - Function=3					*/
 #define DID_INTEL_SNB_EP_CAPABILITY	0x3cd0
 /* Source: Intel Xeon Processor E5 & E7 v2 Datasheet Vol 2		*/
 /*	DMI2: Device=0 - Function=0					*/
@@ -1230,6 +1230,7 @@ typedef struct
 #define DID_INTEL_BROADWELL_IMC_HA0	0x1604
 #define DID_INTEL_BROADWELL_D_IMC_HA0	0x1610
 #define DID_INTEL_BROADWELL_H_IMC_HA0	0x1614
+#define DID_INTEL_BROADWELL_U_IMC_HA0	0x1618
 /* Source: 6th Generation Intel® Processor Datasheet for U/Y-Platforms Vol2 */
 #define DID_INTEL_SKYLAKE_U_IMC_HA	0x1904
 #define DID_INTEL_SKYLAKE_Y_IMC_HA	0x190c
