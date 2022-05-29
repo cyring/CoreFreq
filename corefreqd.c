@@ -3440,6 +3440,29 @@ void SNB_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
   }
 }
 
+const unsigned long long SNB_MCLK(RO(PROC) *RO(Proc),
+				const unsigned long long fallback)
+{
+	switch (RO(Proc)->Uncore.Bus.ClkCfg.FSB_Select) {
+	case 0b111:
+		return 1067;
+	case 0b110:
+		return 1333;
+	case 0b101:
+		return 1600;
+	case 0b100:
+		return 1867;
+	case 0b011:
+		return 2133;
+	case 0b010:
+		return 2400;
+	case 0b001:
+		return 2667;
+	case 0b000:
+		return fallback;
+	}
+}
+
 void SNB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	switch (RO(Proc)->Uncore.Bus.SNB_Cap.DMFC) {
@@ -3450,7 +3473,7 @@ void SNB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		RO(Shm)->Uncore.CtrlSpeed = 1333;
 		break;
 	case 0b101:
-		RO(Shm)->Uncore.CtrlSpeed = 1600;
+		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK(RO(Proc), 1600);
 		break;
 	case 0b100:
 		RO(Shm)->Uncore.CtrlSpeed = 1867;
@@ -3469,15 +3492,15 @@ void SNB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		break;
 	}
 
-	RO(Shm)->Uncore.Bus.Rate = 5000;
+	RO(Shm)->Uncore.Bus.Rate = RO(Shm)->Uncore.CtrlSpeed;
 	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
 				* RO(Shm)->Uncore.Bus.Rate)
 				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MTS;
-	RO(Shm)->Uncore.Unit.BusSpeed = MC_MTS;
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
-	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MTS;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
 	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_UNSPEC;
 
@@ -3702,7 +3725,7 @@ void IVB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		RO(Shm)->Uncore.CtrlSpeed = 1333;
 		break;
 	case 0b101:
-		RO(Shm)->Uncore.CtrlSpeed = 1600;
+		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK(RO(Proc), 1600);
 		break;
 	case 0b100:
 		RO(Shm)->Uncore.CtrlSpeed = 1867;
@@ -3737,15 +3760,15 @@ void IVB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		break;
 	}
 
-	RO(Shm)->Uncore.Bus.Rate = 5000;
+	RO(Shm)->Uncore.Bus.Rate = RO(Shm)->Uncore.CtrlSpeed;
 	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
 				* RO(Shm)->Uncore.Bus.Rate)
 				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MTS;
-	RO(Shm)->Uncore.Unit.BusSpeed = MC_MTS;
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
-	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MTS;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
 	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_UNSPEC;
 

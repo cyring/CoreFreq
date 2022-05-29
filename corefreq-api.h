@@ -709,13 +709,11 @@ typedef struct
 {
 	union {
 		struct {
-			MCH_CLKCFG		ClkCfg;
-		};
-		struct {
 			NHM_IMC_CLK_RATIO_STATUS DimmClock;
 			QPI_FREQUENCY		QuickPath;
 		};
 		struct {
+			MCH_CLKCFG		ClkCfg;
 			SNB_CAPID		SNB_Cap;
 			IVB_CAPID		IVB_Cap;
 			HSW_BIOS_MEMCLOCK	HSW_BIOS;

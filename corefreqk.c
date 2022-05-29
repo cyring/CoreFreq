@@ -4249,6 +4249,8 @@ void Query_SNB_IMC(void __iomem *mchmap, unsigned short mc)
 			Intel® Xeon Processor E3-1200 Family		*/
 	unsigned short cha, dimmCount[2];
 
+	PUBLIC(RO(Proc))->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
+
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SNB.MADCH.value = readl(mchmap + 0x5000);
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SNB.MAD0.value = readl(mchmap + 0x5004);
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SNB.MAD1.value = readl(mchmap + 0x5008);
@@ -4366,6 +4368,8 @@ void Query_Turbo_TDP_Config(void __iomem *mchmap)
 void Query_HSW_IMC(void __iomem *mchmap, unsigned short mc)
 {	/*Source: Desktop 4th & 5th Generation Intel® Core™ Processor Family.*/
 	unsigned short cha, dimmCount[2];
+
+	PUBLIC(RO(Proc))->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
 
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SNB.MADCH.value= readl(mchmap + 0x5000);
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SNB.MAD0.value = readl(mchmap + 0x5004);
