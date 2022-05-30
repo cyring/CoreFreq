@@ -3952,6 +3952,78 @@ void HSW_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	}
 }
 
+#define HSW_EP_IMC	SNB_EP_IMC
+
+void HSW_EP_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
+{
+	switch (RO(Proc)->Uncore.Bus.SNB_EP_Cap1.DMFC) {
+	case 0b111:
+		RO(Shm)->Uncore.CtrlSpeed = 1066;
+		break;
+	case 0b110:
+		RO(Shm)->Uncore.CtrlSpeed = 1333;
+		break;
+	case 0b101:
+		RO(Shm)->Uncore.CtrlSpeed = 1600;
+		break;
+	case 0b100:
+		RO(Shm)->Uncore.CtrlSpeed = 1866;
+		break;
+	case 0b011:
+		RO(Shm)->Uncore.CtrlSpeed = 2133;
+		break;
+	case 0b010:
+		RO(Shm)->Uncore.CtrlSpeed = 2400;
+		break;
+	case 0b001:
+		RO(Shm)->Uncore.CtrlSpeed = 2666;
+		break;
+	case 0b000:
+		RO(Shm)->Uncore.CtrlSpeed = 2933;
+		break;
+	}
+
+	RO(Shm)->Uncore.CtrlSpeed *= RO(Core)->Clock.Hz;
+	RO(Shm)->Uncore.CtrlSpeed /= RO(Shm)->Proc.Features.Factory.Clock.Hz;
+
+	RO(Shm)->Uncore.Bus.Rate = \
+		RO(Proc)->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b010 ?
+	5600 :	RO(Proc)->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b011 ?
+	6400 :	RO(Proc)->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b100 ?
+	7200 :	RO(Proc)->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b101 ?
+	8000 :	RO(Proc)->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b111 ?
+	9600 : 6400;
+
+	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
+				* RO(Shm)->Uncore.Bus.Rate)
+				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
+
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MTS;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MTS;
+	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
+
+	if (RO(Proc)->Uncore.MC[0].HSW_EP.TECH.DDR4_Mode) {
+		RO(Shm)->Uncore.Unit.DDR_Ver = 4;
+	} else {
+		RO(Shm)->Uncore.Unit.DDR_Ver = 3;
+	}
+	if (RO(Proc)->Uncore.Bus.SNB_EP_Cap3.RDIMM_DIS)
+	{
+		if (RO(Proc)->Uncore.Bus.SNB_EP_Cap3.UDIMM_DIS) {
+			RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_UNSPEC;
+		} else {
+			RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_SDRAM;
+		}
+	} else {
+		RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_RDIMM;
+	}
+/*TODO(VT-d capability from device 30 in CAPID# registers among offsets 0x80)*/
+	RO(Shm)->Proc.Technology.IOMMU = 0;
+	RO(Shm)->Proc.Technology.IOMMU_Ver_Major = 0;
+	RO(Shm)->Proc.Technology.IOMMU_Ver_Minor = 0;
+}
+
 unsigned int SKL_DimmWidthToRows(unsigned int width)
 {
 	unsigned int rows = 0;
@@ -5821,6 +5893,11 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		IVB_CAP(RO(Shm), RO(Proc), RO(Core));
 		HSW_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_LYNXPOINT);
+		break;
+	case DID_INTEL_HSW_EP_HOST_BRIDGE:
+		HSW_EP_CAP(RO(Shm), RO(Proc), RO(Core));
+		HSW_EP_IMC(RO(Shm), RO(Proc));
+		SET_CHIPSET(IC_WELLSBURG);
 		break;
 	case DID_INTEL_BROADWELL_IMC_HA0:	/* Broadwell/Y/U Core m */
 		IVB_CAP(RO(Shm), RO(Proc), RO(Core));

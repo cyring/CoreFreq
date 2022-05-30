@@ -657,9 +657,13 @@ typedef struct
 	/* 5008h */				MAD1;		/* 32 bits    */
 		} SNB;
 		struct {
-			SNB_EP_MC_TECH		TECH;		/* 32 bits    */
+	/* 7Ch*/	SNB_EP_MC_TECH		TECH;		/* 32 bits    */
 	/* 80h */	SNB_EP_TADWAYNESS	TAD;		/* 12x32 bits */
 		} SNB_EP;
+		struct {
+	/* 7Ch*/	HSW_EP_MC_TECH		TECH;		/* 32 bits    */
+	/* 80h */	HSW_EP_TADWAYNESS	TAD;		/* 12x32 bits */
+		} HSW_EP;
 		struct {
 	/* 5000h */	SKL_IMC_MAD_MAPPING	MADCH;		/* 32 bits    */
 	/* 5004h */	SKL_IMC_MAD_CHANNEL	MADC0,		/* 32 bits    */
@@ -1193,21 +1197,23 @@ typedef struct
 /*	QPIMISCSTAT: Device=8 - Function=0				*/
 #define DID_INTEL_HSW_EP_QPI_LINK0	0x2f80
 /*	Integrated Memory Controller # : General and MemHot Registers	*/
-/*	Xeon E5 - CPGC: Device=19 - Function=0				*/
-#define DID_INTEL_HSW_EP_IMC_CTRL0_CPGC 0x2fa8
-/*	Xeon E7 - CPGC: Device=22 - Function=0				*/
-#define DID_INTEL_HSW_EP_IMC_CTRL1_CPGC 0x2f68
+/*	Xeon E7 - CPGC: Device=19 - Function=0,1			*/
+#define DID_INTEL_HSW_E7_IMC_CTRL0_F0_CPGC 0x2fa8
+#define DID_INTEL_HSW_E7_IMC_CTRL0_F1_CPGC 0x2f71
+/*	Xeon E7 - CPGC: Device=22 - Function=0,1			*/
+#define DID_INTEL_HSW_E7_IMC_CTRL1_F0_CPGC 0x2f68
+#define DID_INTEL_HSW_E7_IMC_CTRL1_F1_CPGC 0x2f79
 /*	Integrated Memory Controller # : Channel [m-M] Thermal Registers*/
-/*TODO( Controller #0: Device=?? - Function=0,1,2,3 )
-#define DID_INTEL_HSW_EP_IMC_CTRL0_CH0	0x0
-#define DID_INTEL_HSW_EP_IMC_CTRL0_CH1	0x0
-#define DID_INTEL_HSW_EP_IMC_CTRL0_CH2	0x0
-#define DID_INTEL_HSW_EP_IMC_CTRL0_CH3	0x0				*/
-/*TODO( Controller #1: Device=?? - Function=4,5,6,7 )
-#define DID_INTEL_HSW_EP_IMC_CTRL1_CH0	0x0
-#define DID_INTEL_HSW_EP_IMC_CTRL1_CH1	0x0
-#define DID_INTEL_HSW_EP_IMC_CTRL1_CH2	0x0
-#define DID_INTEL_HSW_EP_IMC_CTRL1_CH3	0x0			*/
+/*	Controller #0: Device=20,21 - Function=0,1			*/
+#define DID_INTEL_HSW_EP_IMC_CTRL0_CH0	0x2fb4
+#define DID_INTEL_HSW_EP_IMC_CTRL0_CH1	0x2fb5
+#define DID_INTEL_HSW_EP_IMC_CTRL0_CH2	0x2fb0
+#define DID_INTEL_HSW_EP_IMC_CTRL0_CH3	0x2fb1
+/*	Controller #1: Device=23,24 - Function=2,3			*/
+#define DID_INTEL_HSW_EP_IMC_CTRL1_CH0	0x2fd6
+#define DID_INTEL_HSW_EP_IMC_CTRL1_CH1	0x2fd7
+#define DID_INTEL_HSW_EP_IMC_CTRL1_CH2	0x2fd2
+#define DID_INTEL_HSW_EP_IMC_CTRL1_CH3	0x2fd3
 /*	Integrated Memory Controller 0 : Channel # TAD Registers	*/
 /*	Xeon E5 - TAD Controller #0: Device=19 - Function=2,3,4,5	*/
 #define DID_INTEL_HSW_EP_TAD_CTRL0_CH0	0x2faa

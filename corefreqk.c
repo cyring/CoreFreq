@@ -5018,7 +5018,7 @@ static PCI_CALLBACK IVB_IMC(struct pci_dev *dev)
 static PCI_CALLBACK SNB_EP_HB(struct pci_dev *dev)
 {
 	UNUSED(dev);
-/*TODO(Harware E5-2640 for testings)					*/
+	/* For post decoding, record HostBridge as present		*/
 	return (PCI_CALLBACK) 0;
 }
 
@@ -5049,14 +5049,12 @@ kernel_ulong_t SNB_EP_CTRL(struct pci_dev *dev, unsigned short mc)
 
 	pci_read_config_dword(dev, 0x80,
 			&PUBLIC(RO(Proc))->Uncore.MC[mc].SNB_EP.TAD.value);
-
+/*TODO(CleanUp)
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
 			PUBLIC(RO(Proc))->Uncore.MC[mc].SNB_EP.TAD.CH_WAY;
 
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount++;
-/*TODO(Specs missing)*/
-	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
-
+*/
 	return 0;
 }
 
@@ -5103,47 +5101,129 @@ kernel_ulong_t SNB_EP_IMC(struct pci_dev *dev , unsigned short mc,
 
 static PCI_CALLBACK SNB_EP_IMC_CTRL0_CHA0(struct pci_dev *dev)
 {
-	return (PCI_CALLBACK) SNB_EP_IMC(dev, 0, 0);
+	const unsigned short
+	channelMap = PUBLIC(RO(Proc))->Uncore.MC[0].SNB_EP.TECH.CHN_DISABLE;
+
+	if (BITVAL(channelMap, 0) == 0) {
+		if (PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount < 1) {
+			PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = 1;
+		}
+		return (PCI_CALLBACK) SNB_EP_IMC(dev, 0, 0);
+	} else {
+		return (PCI_CALLBACK) -ENODEV;
+	}
 }
 
 static PCI_CALLBACK SNB_EP_IMC_CTRL0_CHA1(struct pci_dev *dev)
 {
-	return (PCI_CALLBACK) SNB_EP_IMC(dev, 0, 1);
+	const unsigned short
+	channelMap = PUBLIC(RO(Proc))->Uncore.MC[0].SNB_EP.TECH.CHN_DISABLE;
+
+	if (BITVAL(channelMap, 1) == 0) {
+		if (PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount < 2) {
+			PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = 2;
+		}
+		return (PCI_CALLBACK) SNB_EP_IMC(dev, 0, 1);
+	} else {
+		return (PCI_CALLBACK) -ENODEV;
+	}
 }
 
 static PCI_CALLBACK SNB_EP_IMC_CTRL0_CHA2(struct pci_dev *dev)
 {
-	return (PCI_CALLBACK) SNB_EP_IMC(dev, 0, 2);
+	const unsigned short
+	channelMap = PUBLIC(RO(Proc))->Uncore.MC[0].SNB_EP.TECH.CHN_DISABLE;
+
+	if (BITVAL(channelMap, 2) == 0) {
+		if (PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount < 3) {
+			PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = 3;
+		}
+		return (PCI_CALLBACK) SNB_EP_IMC(dev, 0, 2);
+	} else {
+		return (PCI_CALLBACK) -ENODEV;
+	}
 }
 
 static PCI_CALLBACK SNB_EP_IMC_CTRL0_CHA3(struct pci_dev *dev)
 {
-	return (PCI_CALLBACK) SNB_EP_IMC(dev, 0, 3);
+	const unsigned short
+	channelMap = PUBLIC(RO(Proc))->Uncore.MC[0].SNB_EP.TECH.CHN_DISABLE;
+
+	if (BITVAL(channelMap, 3) == 0) {
+		if (PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount < 4) {
+			PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = 4;
+		}
+		return (PCI_CALLBACK) SNB_EP_IMC(dev, 0, 3);
+	} else {
+		return (PCI_CALLBACK) -ENODEV;
+	}
 }
 
 static PCI_CALLBACK SNB_EP_IMC_CTRL1_CHA0(struct pci_dev *dev)
 {
-	return (PCI_CALLBACK) SNB_EP_IMC(dev, 1, 0);
+	const unsigned short
+	channelMap = PUBLIC(RO(Proc))->Uncore.MC[1].SNB_EP.TECH.CHN_DISABLE;
+
+	if (BITVAL(channelMap, 0) == 0) {
+		if (PUBLIC(RO(Proc))->Uncore.MC[1].ChannelCount < 1) {
+			PUBLIC(RO(Proc))->Uncore.MC[1].ChannelCount = 1;
+		}
+		return (PCI_CALLBACK) SNB_EP_IMC(dev, 1, 0);
+	} else {
+		return (PCI_CALLBACK) -ENODEV;
+	}
 }
 
 static PCI_CALLBACK SNB_EP_IMC_CTRL1_CHA1(struct pci_dev *dev)
 {
-	return (PCI_CALLBACK) SNB_EP_IMC(dev, 1, 1);
+	const unsigned short
+	channelMap = PUBLIC(RO(Proc))->Uncore.MC[1].SNB_EP.TECH.CHN_DISABLE;
+
+	if (BITVAL(channelMap, 1) == 0) {
+		if (PUBLIC(RO(Proc))->Uncore.MC[1].ChannelCount < 2) {
+			PUBLIC(RO(Proc))->Uncore.MC[1].ChannelCount = 2;
+		}
+		return (PCI_CALLBACK) SNB_EP_IMC(dev, 1, 1);
+	} else {
+		return (PCI_CALLBACK) -ENODEV;
+	}
 }
 
 static PCI_CALLBACK SNB_EP_IMC_CTRL1_CHA2(struct pci_dev *dev)
 {
-	return (PCI_CALLBACK) SNB_EP_IMC(dev, 1, 2);
+	const unsigned short
+	channelMap = PUBLIC(RO(Proc))->Uncore.MC[1].SNB_EP.TECH.CHN_DISABLE;
+
+	if (BITVAL(channelMap, 2) == 0) {
+		if (PUBLIC(RO(Proc))->Uncore.MC[1].ChannelCount < 3) {
+			PUBLIC(RO(Proc))->Uncore.MC[1].ChannelCount = 3;
+		}
+		return (PCI_CALLBACK) SNB_EP_IMC(dev, 1, 2);
+	} else {
+		return (PCI_CALLBACK) -ENODEV;
+	}
 }
 
 static PCI_CALLBACK SNB_EP_IMC_CTRL1_CHA3(struct pci_dev *dev)
 {
-	return (PCI_CALLBACK) SNB_EP_IMC(dev, 1, 3);
+	const unsigned short
+	channelMap = PUBLIC(RO(Proc))->Uncore.MC[1].SNB_EP.TECH.CHN_DISABLE;
+
+	if (BITVAL(channelMap, 3) == 0) {
+		if (PUBLIC(RO(Proc))->Uncore.MC[1].ChannelCount < 4) {
+			PUBLIC(RO(Proc))->Uncore.MC[1].ChannelCount = 4;
+		}
+		return (PCI_CALLBACK) SNB_EP_IMC(dev, 1, 3);
+	} else {
+		return (PCI_CALLBACK) -ENODEV;
+	}
 }
 
 kernel_ulong_t SNB_EP_TAD(struct pci_dev *dev,	unsigned short mc,
 						unsigned short cha)
 {
+	unsigned short slotCount;
+
 	pci_read_config_dword(dev, 0x80,
 	    &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[0].MTR.value);
 
@@ -5152,6 +5232,15 @@ kernel_ulong_t SNB_EP_TAD(struct pci_dev *dev,	unsigned short mc,
 
 	pci_read_config_dword(dev, 0x88,
 	    &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[2].MTR.value);
+
+	slotCount = \
+	  PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[0].MTR.DIMM_POP
+	+ PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[1].MTR.DIMM_POP
+	+ PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[2].MTR.DIMM_POP;
+
+	if (slotCount > PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount) {
+		PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = slotCount;
+	}
 	return 0;
 }
 
@@ -5224,6 +5313,164 @@ static PCI_CALLBACK HSW_IMC(struct pci_dev *dev)
 static PCI_CALLBACK HSW_CLK(struct pci_dev *dev)
 {
 	return HSW_HOST(dev, Query_HSW_CLK);
+}
+
+kernel_ulong_t HSW_EP_CTRL(struct pci_dev *dev, unsigned short mc)
+{
+	pci_read_config_dword(dev, 0x7c,
+			&PUBLIC(RO(Proc))->Uncore.MC[mc].HSW_EP.TECH.value);
+
+	pci_read_config_dword(dev, 0x80,
+			&PUBLIC(RO(Proc))->Uncore.MC[mc].HSW_EP.TAD.value);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
+			PUBLIC(RO(Proc))->Uncore.MC[mc].HSW_EP.TAD.CH_WAY;
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount++;
+
+	return 0;
+}
+
+static PCI_CALLBACK HSW_EP_CTRL0(struct pci_dev *dev)
+{
+	if (PUBLIC(RO(Proc))->Uncore.CtrlCount < 1) {
+		PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+	}
+	HSW_EP_CTRL(dev, 0);
+
+	return (PCI_CALLBACK) 0;
+}
+
+static PCI_CALLBACK HSW_EP_CTRL1(struct pci_dev *dev)
+{
+	if (PUBLIC(RO(Proc))->Uncore.CtrlCount < 2) {
+		PUBLIC(RO(Proc))->Uncore.CtrlCount = 2;
+	}
+	HSW_EP_CTRL(dev, 1);
+
+	return (PCI_CALLBACK) 0;
+}
+
+#define HSW_EP_IMC	SNB_EP_IMC
+
+static PCI_CALLBACK HSW_EP_IMC_CTRL0_CHA0(struct pci_dev *dev)
+{
+	const unsigned short
+	channelMap = PUBLIC(RO(Proc))->Uncore.MC[0].HSW_EP.TECH.CHN_DISABLE;
+
+	if (BITVAL(channelMap, 0) == 0) {
+		if (PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount < 1) {
+			PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = 1;
+		}
+		return (PCI_CALLBACK) HSW_EP_IMC(dev, 0, 0);
+	} else {
+		return (PCI_CALLBACK) -ENODEV;
+	}
+}
+
+static PCI_CALLBACK HSW_EP_IMC_CTRL0_CHA1(struct pci_dev *dev)
+{
+	const unsigned short
+	channelMap = PUBLIC(RO(Proc))->Uncore.MC[0].HSW_EP.TECH.CHN_DISABLE;
+
+	if (BITVAL(channelMap, 1) == 0) {
+		if (PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount < 2) {
+			PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = 2;
+		}
+		return (PCI_CALLBACK) HSW_EP_IMC(dev, 0, 1);
+	} else {
+		return (PCI_CALLBACK) -ENODEV;
+	}
+}
+
+static PCI_CALLBACK HSW_EP_IMC_CTRL0_CHA2(struct pci_dev *dev)
+{
+	const unsigned short
+	channelMap = PUBLIC(RO(Proc))->Uncore.MC[0].HSW_EP.TECH.CHN_DISABLE;
+
+	if (BITVAL(channelMap, 2) == 0) {
+		if (PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount < 3) {
+			PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = 3;
+		}
+		return (PCI_CALLBACK) HSW_EP_IMC(dev, 0, 2);
+	} else {
+		return (PCI_CALLBACK) -ENODEV;
+	}
+}
+
+static PCI_CALLBACK HSW_EP_IMC_CTRL0_CHA3(struct pci_dev *dev)
+{
+	const unsigned short
+	channelMap = PUBLIC(RO(Proc))->Uncore.MC[0].HSW_EP.TECH.CHN_DISABLE;
+
+	if (BITVAL(channelMap, 3) == 0) {
+		if (PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount < 4) {
+			PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = 4;
+		}
+		return (PCI_CALLBACK) HSW_EP_IMC(dev, 0, 3);
+	} else {
+		return (PCI_CALLBACK) -ENODEV;
+	}
+}
+
+static PCI_CALLBACK HSW_EP_IMC_CTRL1_CHA0(struct pci_dev *dev)
+{
+	const unsigned short
+	channelMap = PUBLIC(RO(Proc))->Uncore.MC[1].HSW_EP.TECH.CHN_DISABLE;
+
+	if (BITVAL(channelMap, 0) == 0) {
+		if (PUBLIC(RO(Proc))->Uncore.MC[1].ChannelCount < 1) {
+			PUBLIC(RO(Proc))->Uncore.MC[1].ChannelCount = 1;
+		}
+		return (PCI_CALLBACK) HSW_EP_IMC(dev, 1, 0);
+	} else {
+		return (PCI_CALLBACK) -ENODEV;
+	}
+}
+
+static PCI_CALLBACK HSW_EP_IMC_CTRL1_CHA1(struct pci_dev *dev)
+{
+	const unsigned short
+	channelMap = PUBLIC(RO(Proc))->Uncore.MC[1].HSW_EP.TECH.CHN_DISABLE;
+
+	if (BITVAL(channelMap, 1) == 0) {
+		if (PUBLIC(RO(Proc))->Uncore.MC[1].ChannelCount < 2) {
+			PUBLIC(RO(Proc))->Uncore.MC[1].ChannelCount = 2;
+		}
+		return (PCI_CALLBACK) HSW_EP_IMC(dev, 1, 1);
+	} else {
+		return (PCI_CALLBACK) -ENODEV;
+	}
+}
+
+static PCI_CALLBACK HSW_EP_IMC_CTRL1_CHA2(struct pci_dev *dev)
+{
+	const unsigned short
+	channelMap = PUBLIC(RO(Proc))->Uncore.MC[1].HSW_EP.TECH.CHN_DISABLE;
+
+	if (BITVAL(channelMap, 2) == 0) {
+		if (PUBLIC(RO(Proc))->Uncore.MC[1].ChannelCount < 3) {
+			PUBLIC(RO(Proc))->Uncore.MC[1].ChannelCount = 3;
+		}
+		return (PCI_CALLBACK) HSW_EP_IMC(dev, 1, 2);
+	} else {
+		return (PCI_CALLBACK) -ENODEV;
+	}
+}
+
+static PCI_CALLBACK HSW_EP_IMC_CTRL1_CHA3(struct pci_dev *dev)
+{
+	const unsigned short
+	channelMap = PUBLIC(RO(Proc))->Uncore.MC[1].HSW_EP.TECH.CHN_DISABLE;
+
+	if (BITVAL(channelMap, 3) == 0) {
+		if (PUBLIC(RO(Proc))->Uncore.MC[1].ChannelCount < 4) {
+			PUBLIC(RO(Proc))->Uncore.MC[1].ChannelCount = 4;
+		}
+		return (PCI_CALLBACK) HSW_EP_IMC(dev, 1, 3);
+	} else {
+		return (PCI_CALLBACK) -ENODEV;
+	}
 }
 
 void SoC_SKL_VTD(void)

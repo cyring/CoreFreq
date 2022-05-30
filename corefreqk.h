@@ -1993,6 +1993,27 @@ static PCI_CALLBACK SNB_EP_TAD_CTRL1_CHA2(struct pci_dev *dev) ;
 static PCI_CALLBACK SNB_EP_TAD_CTRL1_CHA3(struct pci_dev *dev) ;
 static PCI_CALLBACK HSW_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK HSW_CLK(struct pci_dev *dev) ;
+#define HSW_EP_HB SNB_EP_HB
+#define HSW_EP_QPI SNB_EP_QPI
+#define HSW_EP_CAP SNB_EP_CAP
+static PCI_CALLBACK HSW_EP_CTRL0(struct pci_dev *dev) ;
+static PCI_CALLBACK HSW_EP_CTRL1(struct pci_dev *dev) ;
+static PCI_CALLBACK HSW_EP_IMC_CTRL0_CHA0(struct pci_dev *dev) ;
+static PCI_CALLBACK HSW_EP_IMC_CTRL0_CHA1(struct pci_dev *dev) ;
+static PCI_CALLBACK HSW_EP_IMC_CTRL0_CHA2(struct pci_dev *dev) ;
+static PCI_CALLBACK HSW_EP_IMC_CTRL0_CHA3(struct pci_dev *dev) ;
+static PCI_CALLBACK HSW_EP_IMC_CTRL1_CHA0(struct pci_dev *dev) ;
+static PCI_CALLBACK HSW_EP_IMC_CTRL1_CHA1(struct pci_dev *dev) ;
+static PCI_CALLBACK HSW_EP_IMC_CTRL1_CHA2(struct pci_dev *dev) ;
+static PCI_CALLBACK HSW_EP_IMC_CTRL1_CHA3(struct pci_dev *dev) ;
+#define HSW_EP_TAD_CTRL0_CHA0 SNB_EP_TAD_CTRL0_CHA0
+#define HSW_EP_TAD_CTRL0_CHA1 SNB_EP_TAD_CTRL0_CHA1
+#define HSW_EP_TAD_CTRL0_CHA2 SNB_EP_TAD_CTRL0_CHA2
+#define HSW_EP_TAD_CTRL0_CHA3 SNB_EP_TAD_CTRL0_CHA3
+#define HSW_EP_TAD_CTRL1_CHA0 SNB_EP_TAD_CTRL1_CHA0
+#define HSW_EP_TAD_CTRL1_CHA1 SNB_EP_TAD_CTRL1_CHA1
+#define HSW_EP_TAD_CTRL1_CHA2 SNB_EP_TAD_CTRL1_CHA2
+#define HSW_EP_TAD_CTRL1_CHA3 SNB_EP_TAD_CTRL1_CHA3
 static PCI_CALLBACK SKL_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK CML_PCH(struct pci_dev *dev) ;
 #define RKL_PCH CML_PCH
@@ -2417,6 +2438,105 @@ static struct pci_device_id PCI_Haswell_ids[] = {
 	{	/* Mobile U/Y: Host Agent=0x0a04			*/
 		PCI_VDEVICE(INTEL, DID_INTEL_HASWELL_UY_IMC_HA0),
 		.driver_data = (kernel_ulong_t) HSW_IMC
+	},
+/*				Haswell-EP				*/
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_EP_HOST_BRIDGE),
+		.driver_data = (kernel_ulong_t) HSW_EP_HB
+	},
+/*	QPIMISCSTAT							*/
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_EP_QPI_LINK0),
+		.driver_data = (kernel_ulong_t) HSW_EP_QPI
+	},
+/*	Power Control Unit						*/
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_EP_CAPABILITY),
+		.driver_data = (kernel_ulong_t) HSW_EP_CAP
+	},
+/*	Integrated Memory Controller # : IMC Configuration Registers	*/
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_E7_IMC_CTRL0_F0_CPGC),
+		.driver_data = (kernel_ulong_t) HSW_EP_CTRL0
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_E7_IMC_CTRL0_F1_CPGC),
+		.driver_data = (kernel_ulong_t) HSW_EP_CTRL0
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_E7_IMC_CTRL1_F0_CPGC),
+		.driver_data = (kernel_ulong_t) HSW_EP_CTRL1
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_E7_IMC_CTRL1_F1_CPGC),
+		.driver_data = (kernel_ulong_t) HSW_EP_CTRL1
+	},
+/*	Integrated Memory Controller # : Channel [m-M] Thermal Registers*/
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_EP_IMC_CTRL0_CH0),
+		.driver_data = (kernel_ulong_t) HSW_EP_IMC_CTRL0_CHA0
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_EP_IMC_CTRL0_CH1),
+		.driver_data = (kernel_ulong_t) HSW_EP_IMC_CTRL0_CHA1
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_EP_IMC_CTRL0_CH2),
+		.driver_data = (kernel_ulong_t) HSW_EP_IMC_CTRL0_CHA2
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_EP_IMC_CTRL0_CH3),
+		.driver_data = (kernel_ulong_t) HSW_EP_IMC_CTRL0_CHA3
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_EP_IMC_CTRL1_CH0),
+		.driver_data = (kernel_ulong_t) HSW_EP_IMC_CTRL1_CHA0
+	},
+	{
+		PCI_VDEVICE(INTEL ,DID_INTEL_HSW_EP_IMC_CTRL1_CH1),
+		.driver_data = (kernel_ulong_t) HSW_EP_IMC_CTRL1_CHA1
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_EP_IMC_CTRL1_CH2),
+		.driver_data = (kernel_ulong_t) HSW_EP_IMC_CTRL1_CHA2
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_EP_IMC_CTRL1_CH3),
+		.driver_data = (kernel_ulong_t) HSW_EP_IMC_CTRL1_CHA3
+	},
+/*	Integrated Memory Controller 0 : Channel # TAD Registers	*/
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_EP_TAD_CTRL0_CH0),
+		.driver_data = (kernel_ulong_t) HSW_EP_TAD_CTRL0_CHA0
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_EP_TAD_CTRL0_CH1),
+		.driver_data = (kernel_ulong_t) HSW_EP_TAD_CTRL0_CHA1
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_EP_TAD_CTRL0_CH2),
+		.driver_data = (kernel_ulong_t) HSW_EP_TAD_CTRL0_CHA2
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_EP_TAD_CTRL0_CH3),
+		.driver_data = (kernel_ulong_t) HSW_EP_TAD_CTRL0_CHA3
+	},
+	{
+/*	Integrated Memory Controller 1 : Channel # TAD Registers	*/
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_EP_TAD_CTRL1_CH0),
+		.driver_data = (kernel_ulong_t) HSW_EP_TAD_CTRL1_CHA0
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_EP_TAD_CTRL1_CH1),
+		.driver_data = (kernel_ulong_t) HSW_EP_TAD_CTRL1_CHA1
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_EP_TAD_CTRL1_CH2),
+		.driver_data = (kernel_ulong_t) HSW_EP_TAD_CTRL1_CHA2
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_EP_TAD_CTRL1_CH3),
+		.driver_data = (kernel_ulong_t) HSW_EP_TAD_CTRL1_CHA3
 	},
 	{0, }
 };

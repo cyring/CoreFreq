@@ -2710,7 +2710,7 @@ typedef union
 		ReservedBits1	:  4-3,
 		Slow_Mode	:  5-4,
 		ReservedBits2	: 32-5;
-	} IVB_EP; /*TODO( was first defined in SNB_EP as QPIMISCSTAT )	*/
+	} IVB_EP; /* Defined in SNB_EP as QPIMISCSTAT. HSW_EP: 111=9600 */
 } QPI_FREQUENCY;
 
 
@@ -3077,13 +3077,13 @@ typedef union
 {	/* Device: 15,29 - Function: 0 - Offset: 7Ch			*/
 	unsigned int		value;
 	struct {
-		unsigned int
+		unsigned int		/* E5-1600/2400/2600/4600	*/
 		CLOSE_PG	:  1-0,
 		LS_EN		:  2-1,
 		ECC_EN		:  3-2,
 		DIR_EN		:  4-3,
 		ReservedBits1	:  8-4,
-		Mode		:  9-8,
+		Normal_Mode	:  9-8,
 		BANK_XOR_EN	: 10-9,
 		CPGC_IOSAV	: 12-10,
 		IMC_MODE	: 14-12,
@@ -3233,6 +3233,49 @@ typedef union
 	};
 } HSW_BIOS_MEMCLOCK;
 
+typedef union
+{	/* Device: 19,22 - Function: 0 - Offset: 7Ch			*/
+	unsigned int		value;
+	struct {
+		unsigned int		/* E5-1600/2600 and E7 v3 (HSW-2015) */
+		CLOSE_PG	:  1-0,
+		LS_EN		:  2-1,
+		ECC_EN		:  3-2,
+		DIR_EN		:  4-3,
+		ReservedBits1	:  8-4,
+		Normal_Mode	:  9-8,  /* 0: Training ; 1: Normal	*/
+		ReservedBits2	: 12-9,
+		IMC_MODE	: 14-12, /* 00:Native DDR; 10:SubCh; 11:Perf */
+		DDR4_Mode	: 15-14,
+		ReservedBits3	: 16-15,
+		Pass76		: 18-16,
+		CHN_DISABLE	: 22-18,
+		ReservedBits4	: 32-22;
+	};
+} HSW_EP_MC_TECH;
+
+#define HSW_EP_TADWAYNESS	SNB_EP_TADWAYNESS
+
+typedef union
+{	/* Device: 19,22 - Function: 2,3,4,5 - Offset: 80h, 84h, 88h	*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		CA_WIDTH	:  2-0,
+		RA_WIDTH	:  5-2,
+		DDR3_DNSTY	:  7-5,
+		DDR3_WIDTH	:  9-7,
+		ReservedBits1	: 12-9,
+		RANK_CNT	: 14-12,
+		DIMM_POP	: 15-14,
+		ReservedBits2	: 16-15,
+		RANK_DISABLE	: 20-16,
+		DDR4_Mode	: 21-20, /* Must be the same on all channels */
+		HDRL		: 22-21, /* High Density Reduced Load mode */
+		HDRL_Parity	: 23-22,
+		ReservedBits3	: 32-23;
+	};
+} HSW_EP_DIMM_MTR;
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 4000h & Channel1: 4400h */
