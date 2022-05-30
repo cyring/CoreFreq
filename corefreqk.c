@@ -5322,12 +5322,12 @@ kernel_ulong_t HSW_EP_CTRL(struct pci_dev *dev, unsigned short mc)
 
 	pci_read_config_dword(dev, 0x80,
 			&PUBLIC(RO(Proc))->Uncore.MC[mc].HSW_EP.TAD.value);
-
+/*TODO(CleanUp)
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
 			PUBLIC(RO(Proc))->Uncore.MC[mc].HSW_EP.TAD.CH_WAY;
 
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount++;
-
+*/
 	return 0;
 }
 
