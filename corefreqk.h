@@ -2275,7 +2275,19 @@ static struct pci_device_id PCI_SandyBridge_EP_ids[] = {
 		.driver_data = (kernel_ulong_t) SNB_EP_QPI
 	},
 	{
+		PCI_VDEVICE(INTEL, DID_INTEL_SNB_EP_QPI_LINK1),
+		.driver_data = (kernel_ulong_t) SNB_EP_QPI
+	},
+	{
 		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_QPI_LINK0),
+		.driver_data = (kernel_ulong_t) SNB_EP_QPI
+	},
+	{	/*	Bus: 1 Device: 9 Function: 0 (From B stepping)	*/
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_QPI_LINK1),
+		.driver_data = (kernel_ulong_t) SNB_EP_QPI
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_IVB_EP_QPI_LINK2),
 		.driver_data = (kernel_ulong_t) SNB_EP_QPI
 	},
 /*	Power Control Unit						*/
@@ -2447,6 +2459,10 @@ static struct pci_device_id PCI_Haswell_ids[] = {
 /*	QPIMISCSTAT							*/
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_HSW_EP_QPI_LINK0),
+		.driver_data = (kernel_ulong_t) HSW_EP_QPI
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_HSW_EP_QPI_LINK2),
 		.driver_data = (kernel_ulong_t) HSW_EP_QPI
 	},
 /*	Power Control Unit						*/

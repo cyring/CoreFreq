@@ -2704,13 +2704,13 @@ typedef union
 		ReservedBits	: 31-2,
 		VT_d		: 32-31; /* Placeholder for VT-d: 0=Enable */
 	} X58;
-	struct {	/* Xeon E7 v2 & Xeon E5 v2			*/
+	struct {	/* Xeon E7 v2 & Xeon E5 v1,v2,v3		*/
 		unsigned int
 		QPIFREQSEL	:  3-0,  /*010=5600,011=6400,100=7200,101=8000*/
 		ReservedBits1	:  4-3,
 		Slow_Mode	:  5-4,
 		ReservedBits2	: 32-5;
-	} IVB_EP; /* Defined in SNB_EP as QPIMISCSTAT. HSW_EP: 111=9600 */
+	} EP; /* Defined in SNB_EP as QPIMISCSTAT. HSW_EP: 111=9600 */
 } QPI_FREQUENCY;
 
 

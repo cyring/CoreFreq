@@ -3694,10 +3694,10 @@ void SNB_EP_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.CtrlSpeed /= RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
 	RO(Shm)->Uncore.Bus.Rate = \
-		RO(Proc)->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b010 ?
-	5600 :	RO(Proc)->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b011 ?
-	6400 :	RO(Proc)->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b100 ?
-	7200 :	RO(Proc)->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b101 ?
+		RO(Proc)->Uncore.Bus.QuickPath.EP.QPIFREQSEL == 0b010 ?
+	5600 :	RO(Proc)->Uncore.Bus.QuickPath.EP.QPIFREQSEL == 0b011 ?
+	6400 :	RO(Proc)->Uncore.Bus.QuickPath.EP.QPIFREQSEL == 0b100 ?
+	7200 :	RO(Proc)->Uncore.Bus.QuickPath.EP.QPIFREQSEL == 0b101 ?
 	8000 : 5000;
 
 	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
@@ -3987,11 +3987,11 @@ void HSW_EP_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.CtrlSpeed /= RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
 	RO(Shm)->Uncore.Bus.Rate = \
-		RO(Proc)->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b010 ?
-	5600 :	RO(Proc)->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b011 ?
-	6400 :	RO(Proc)->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b100 ?
-	7200 :	RO(Proc)->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b101 ?
-	8000 :	RO(Proc)->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b111 ?
+		RO(Proc)->Uncore.Bus.QuickPath.EP.QPIFREQSEL == 0b010 ?
+	5600 :	RO(Proc)->Uncore.Bus.QuickPath.EP.QPIFREQSEL == 0b011 ?
+	6400 :	RO(Proc)->Uncore.Bus.QuickPath.EP.QPIFREQSEL == 0b100 ?
+	7200 :	RO(Proc)->Uncore.Bus.QuickPath.EP.QPIFREQSEL == 0b101 ?
+	8000 :	RO(Proc)->Uncore.Bus.QuickPath.EP.QPIFREQSEL == 0b111 ?
 	9600 : 6400;
 
 	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz

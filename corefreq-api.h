@@ -1118,8 +1118,9 @@ typedef struct
 /* Source: Intel Xeon Processor E5 & E7 v1 Datasheet Vol 2		*/
 /*	DMI2: Device=0 - Function=0					*/
 #define DID_INTEL_SNB_EP_HOST_BRIDGE	0x3c00
-/*	QPIMISCSTAT: Device=8 - Function=0				*/
+/*	QPIMISCSTAT: Device=8,9 - Function=0				*/
 #define DID_INTEL_SNB_EP_QPI_LINK0	0x3c80
+#define DID_INTEL_SNB_EP_QPI_LINK1	0x3c90
 /*	Integrated Memory Controller # : General and MemHot Registers	*/
 /*	Xeon E5 - CPGC: Device=15 - Function=0				*/
 #define DID_INTEL_SNB_EP_IMC_CTRL0_CPGC 0x3ca8
@@ -1156,8 +1157,10 @@ typedef struct
 /* Source: Intel Xeon Processor E5 & E7 v2 Datasheet Vol 2		*/
 /*	DMI2: Device=0 - Function=0					*/
 #define DID_INTEL_IVB_EP_HOST_BRIDGE	0x0e00
-/*	QPIMISCSTAT: Device=8 - Function=0				*/
+/*	QPIMISCSTAT: Device={8,9},10 - Function=0			*/
 #define DID_INTEL_IVB_EP_QPI_LINK0	0x0e80
+#define DID_INTEL_IVB_EP_QPI_LINK1	0x0e90
+#define DID_INTEL_IVB_EP_QPI_LINK2	0x0e40
 /*	Integrated Memory Controller # : General and MemHot Registers	*/
 /*	Xeon E5 - CPGC: Device=15 - Function=0				*/
 #define DID_INTEL_IVB_EP_IMC_CTRL0_CPGC 0x0ea8
@@ -1194,8 +1197,10 @@ typedef struct
 /* Source: Intel Xeon Processor E5 & E7 v3 Datasheet Vol 2		*/
 /*	DMI2: Device=0 - Function=0					*/
 #define DID_INTEL_HSW_EP_HOST_BRIDGE	0x2f00
-/*	QPIMISCSTAT: Device=8 - Function=0				*/
+/*	QPIMISCSTAT: Device={8,9},10 - Function=0			*/
 #define DID_INTEL_HSW_EP_QPI_LINK0	0x2f80
+#define DID_INTEL_HSW_EP_QPI_LINK1	0x2f90
+#define DID_INTEL_HSW_EP_QPI_LINK2	0x2f40
 /*	Integrated Memory Controller # : General and MemHot Registers	*/
 /*	Xeon E7 - CPGC: Device=19 - Function=0,1			*/
 #define DID_INTEL_HSW_E7_IMC_CTRL0_F0_CPGC 0x2fa8

@@ -5286,9 +5286,13 @@ static PCI_CALLBACK SNB_EP_TAD_CTRL1_CHA3(struct pci_dev *dev)
 
 static PCI_CALLBACK SNB_EP_QPI(struct pci_dev *dev)
 {
-	pci_read_config_dword(dev, 0xd4,
-				&PUBLIC(RO(Proc))->Uncore.Bus.QuickPath.value);
+	QPI_FREQUENCY QuickPath = {.value = 0};
+	pci_read_config_dword(dev, 0xd4, &QuickPath.value);
 
+	if ((PUBLIC(RO(Proc))->Uncore.Bus.QuickPath.EP.QPIFREQSEL == 0b000)
+	 && (QuickPath.EP.QPIFREQSEL != 0b000)) {
+		PUBLIC(RO(Proc))->Uncore.Bus.QuickPath = QuickPath;
+	}
 	return (PCI_CALLBACK) 0;
 }
 
