@@ -6585,7 +6585,6 @@ void SysGate_Kernel(REF *Ref)
 	}								\
 })
 
-#define CLOCKSOURCE_PATH "/sys/devices/system/clocksource/clocksource0"
 void ClockSource_Update(RO(SHM_STRUCT) *RO(Shm))
 {
 	FILE	*fd;
@@ -6624,7 +6623,6 @@ long ClockSource_Submit(RO(SHM_STRUCT) *RO(Shm), unsigned char index)
     }
 	return -EINVAL;
 }
-#undef CLOCKSOURCE_PATH
 
 static const int reverseSign[2] = {+1, -1};
 

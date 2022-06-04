@@ -10372,6 +10372,10 @@ Window *PopUpMessage(ASCII *title, RING_CTRL *pCtrl)
 		{
 		RC_PSTATE_NOT_FOUND,
 		RSC(ERROR_PSTATE_NOT_FOUND).CODE(), RSZ(ERROR_PSTATE_NOT_FOUND)
+		},
+		{
+		RC_CLOCKSOURCE,
+		RSC(ERROR_CLOCKSOURCE).CODE(), RSZ(ERROR_CLOCKSOURCE)
 		}
 	    };
 		const size_t count = sizeof(drvReason) / sizeof(drvReason[0]);

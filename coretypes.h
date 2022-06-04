@@ -1966,6 +1966,8 @@ enum IDLE_ROUTE {
 	ROUTE_SIZE
 };
 
+#define CLOCKSOURCE_PATH "/sys/devices/system/clocksource/clocksource0"
+
 typedef struct {	/* 0: Disable; 1: Enable; 2: Full-control	*/
 	enum IDLE_ROUTE Route;
 	unsigned short	CPUidle :  2-0,
@@ -2207,7 +2209,8 @@ enum REASON_CLASS {
 	RC_TURBO_PREREQ 	=	RC_DRIVER_BASE + 3,
 	RC_UNCORE_PREREQ	=	RC_DRIVER_BASE + 4,
 	RC_PSTATE_NOT_FOUND	=	RC_DRIVER_BASE + 5,
-	RC_DRIVER_LAST		=	RC_DRIVER_BASE + 5
+	RC_CLOCKSOURCE		=	RC_DRIVER_BASE + 6,
+	RC_DRIVER_LAST		=	RC_DRIVER_BASE + 6
 };
 
 /* Definition of Ring structures - The message is 128 bits long.	*/

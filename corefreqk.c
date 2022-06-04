@@ -518,7 +518,7 @@ CoreFreqK_Read_CS_From_Variant_TSC(struct clocksource *cs)
 }
 
 static struct clocksource CoreFreqK_CS = {
-	.name	= "corefreq",
+	.name	= "corefreq_tsc",
 	.rating = 300,
 	.mask	= CLOCKSOURCE_MASK(64),
 	.flags	= CLOCK_SOURCE_IS_CONTINUOUS
@@ -7081,13 +7081,62 @@ long For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
 	return rc;
 }
 
+long ClockSource_OC_Granted(void)
+{
+	long rc = -RC_CLOCKSOURCE;
+
+	char *clockName = kmalloc(PAGE_SIZE, GFP_KERNEL);
+    if (clockName != NULL)
+    {
+	struct file *clockFile=filp_open(CLOCKSOURCE_PATH"/current_clocksource",
+					O_RDWR, (umode_t) 0);
+      if (clockFile != NULL)
+      {
+	loff_t pos = 0;
+	ssize_t len;
+
+	if ((len = kernel_read(clockFile, clockName, PAGE_SIZE - 1,  &pos)) > 0)
+	{
+		const struct {
+			char *name;
+			size_t len;
+		} whiteList[] = {
+			{ "hpet",	__builtin_strlen("hpet")	},
+			{ "acpi_pm",	__builtin_strlen("acpi_pm")	},
+			{ "jiffies",	__builtin_strlen("jiffies")	}
+		};
+		const size_t dim = sizeof(whiteList) / sizeof(whiteList[0]);
+		size_t idx;
+
+		for (idx = 0; idx < dim; idx++) {
+			if (0 == strncmp(whiteList[idx].name, clockName,
+					whiteList[idx].len))
+			{
+				rc = RC_SUCCESS;
+				break;
+			}
+		}
+	} else {
+		rc = len == 0 ? -EAGAIN : len;
+	}
+	filp_close(clockFile, NULL);
+      } else {
+	rc = -ENOENT;
+      }
+	kfree(clockName);
+    } else {
+	rc = -ENOMEM;
+    }
+	return rc;
+}
+
 long For_All_AMD_Zen_BaseClock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void*))
 {
 	long rc;
 	unsigned int cpu = PUBLIC(RO(Proc))->Service.Core;
 
-	CoreFreqK_UnRegister_ClockSource();
-
+  if ((rc = ClockSource_OC_Granted()) == RC_SUCCESS)
+  {
 	rc = For_All_AMD_Zen_Clock(pClockZen, PerCore);
 
     if (rc == RC_OK_COMPUTE)
@@ -7103,8 +7152,7 @@ long For_All_AMD_Zen_BaseClock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void*))
 
 	cpu_khz = tsc_khz = (unsigned int) ((loops_per_jiffy * HZ) / 1000LU);
     }
-	CoreFreqK_Register_ClockSource(cpu);
-
+  }
 	return rc;
 }
 
