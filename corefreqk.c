@@ -10915,8 +10915,9 @@ static void PerCore_SandyBridge_Query(void *arg)
 
 		Intel_Pkg_CST_IRTL(MSR_PKGC7_IRTL,
 				&PUBLIC(RO(Proc))->PowerThermal.IRTL.PC07);
-	    }
+
 		Intel_Watchdog(Core);
+	    }
 	}
 }
 
