@@ -3720,8 +3720,6 @@ void SNB_EP_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	} else {
 		RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_RDIMM;
 	}
-/* TODO(I/O MMU capabiility registers for SandyBridge-EP) */
-	RO(Shm)->Proc.Technology.IOMMU = 0;
 }
 
 void IVB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
@@ -5829,6 +5827,7 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		break;
 	case DID_INTEL_X58_HUB_CORE:
 	case DID_INTEL_IIO_CORE_REG:
+	case DID_INTEL_IVB_EP_IIO_VTD:
 		X58_VTD(RO(Shm), RO(Proc), RO(Core));
 		break;
 	case DID_INTEL_I7_MCR:			/*	Bloomfield	*/

@@ -712,11 +712,11 @@ typedef struct
 
 typedef struct
 {
-	union {
 		struct {
 			NHM_IMC_CLK_RATIO_STATUS DimmClock;
 			QPI_FREQUENCY		QuickPath;
 		};
+	union {
 		struct {
 			MCH_CLKCFG		ClkCfg;
 			SNB_CAPID		SNB_Cap;
@@ -1157,6 +1157,8 @@ typedef struct
 /* Source: Intel Xeon Processor E5 & E7 v2 Datasheet Vol 2		*/
 /*	DMI2: Device=0 - Function=0					*/
 #define DID_INTEL_IVB_EP_HOST_BRIDGE	0x0e00
+/*	IIO - Bus0: 0x0, Bus1:0x40 - Device=5 - Function=0		*/
+#define DID_INTEL_IVB_EP_IIO_VTD	0x0e28
 /*	QPIMISCSTAT: Device={8,9},10 - Function=0			*/
 #define DID_INTEL_IVB_EP_QPI_LINK0	0x0e80
 #define DID_INTEL_IVB_EP_QPI_LINK1	0x0e90

@@ -2714,6 +2714,33 @@ typedef union
 } QPI_FREQUENCY;
 
 
+/*
+ * Xeon E5 and E7
+ * Bus: 0 - Device: 5 - Function: 0 - Offset: 108h
+ *
+ * Xeon E5 and E7
+ * Bus: 1 - Device: 11 - Function: 3 - Offset: D0h
+*/
+typedef union
+{
+	unsigned int		value;
+	struct {
+		unsigned int
+		IIO		:  8-0,  /* CPUBUSNO(0) Devices 0-15	*/
+		UNC		: 16-8,  /* CPUBUSNO(1) Uncore		*/
+		Valid		: 17-16,
+		Segment		: 25-17, /* Xeon E7: PCI domain/segment */
+		ReservedBits	: 32-25;
+	} CFG;
+	struct {
+		unsigned int
+		IIO		:  8-0,  /* CPUBUSNO(0) Devices 16-31	*/
+		UNC		: 16-8,  /* CPUBUSNO(1)	Uncore		*/
+		ReservedBits	: 31-16,
+		Valid		: 32-31;
+	} UBOX;
+} CPUBUSNO;
+
 typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 4000h & Channel1: 4400h */
 	unsigned int		value;
