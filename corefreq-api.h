@@ -498,6 +498,7 @@ typedef struct
 	/* 4008h */		SNB_IMC_TC_RWP		RWP;	/* 32 bits    */
 	/* 400Ch */		SNB_IMC_TC_OTP		OTP;	/* 32 bits    */
 	/* 40B0h */		SNB_IMC_PDWN		PDWN;	/* 32 bits    */
+	/* 4294h */		SNB_IMC_TC_RFP		RFP;	/* 32 bits    */
 	/* 4298h */		SNB_IMC_TC_RFTP 	RFTP;	/* 32 bits    */
 	/* 42A4h */		SNB_IMC_TC_SRFTP	SRFTP;	/* 32 bits    */
 			} SNB;
@@ -505,6 +506,8 @@ typedef struct
 	/*  200h */		SNB_IMC_TC_DBP		DBP;	/* 32 bits    */
 	/*  204h */		SNB_IMC_TC_RAP		RAP;	/* 32 bits    */
 	/*  208h */		SNB_IMC_TC_RWP		RWP;	/* 32 bits    */
+	/*  20Ch */		SNB_IMC_TC_OTP		OTP;	/* 32 bits    */
+	/*  210h */		SNB_IMC_TC_RFP		RFP;	/* 32 bits    */
 	/*  214h */		SNB_IMC_TC_RFTP 	RFTP;	/* 32 bits    */
 	/*  218h */		SNB_IMC_TC_SRFTP	SRFTP;	/* 32 bits    */
 			} SNB_EP;

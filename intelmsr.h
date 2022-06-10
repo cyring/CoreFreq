@@ -2825,7 +2825,7 @@ typedef union
 		tWRDD		: 24-21,
 		tRWSR		: 27-24, /*	(1)	*/
 		tCCD		: 30-27,
-		tWRDR_UPPER	: 32-30;
+		tWRDR_UPPER	: 32-30; /* Xeon E7	*/
 	} EP;
 } SNB_IMC_TC_RWP;
 
@@ -2882,6 +2882,27 @@ typedef union
  * (2)	1 = Power-down decision is global for channel.
  *	0 = A separate decision is taken for each rank.
 */
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: 4294h & Channel1: 4694h */
+	unsigned int		value;
+	struct {
+		unsigned int
+		OREF_RI		:  8-0,
+		REF_HP_WM	: 12-8,
+		REF_PANIC_WM	: 16-12,
+		DOUBLE_REF_CTRL : 18-16,
+		ReservedBits	: 32-18;
+	};
+	/* Device 16,30 - Function: 0,1,4,5 - Offset 210h		*/
+	struct {
+		unsigned int
+		OREFNI		:  8-0,
+		REF_HI_WM	: 12-8,
+		REF_PANIC_WM	: 16-12,
+		ReservedBits	: 32-16;
+	} EP;
+} SNB_IMC_TC_RFP;
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 4298h & Channel1: 4698h */

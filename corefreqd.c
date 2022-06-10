@@ -3373,9 +3373,9 @@ void SNB_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	TIMING(mc, cha).tdrWrTRd = 1
 		+ RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.tWRDR;
-/*
+/*TODO
 	TIMING(mc, cha).tsrWrTRd = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.tWRSR;
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.???.t????;
 
 	TIMING(mc, cha).tddRdTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.tRWDD;
@@ -3385,7 +3385,7 @@ void SNB_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	TIMING(mc, cha).tsrRdTWr = 1
 		+ RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.tRWSR;
-/*
+/*TODO
 	TIMING(mc, cha).tddRdTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB.RWP.tRRDD;
 */
@@ -3571,19 +3571,18 @@ void SNB_EP_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	TIMING(mc, cha).tdrWrTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tWRDR;
-
+/*TODO
 	TIMING(mc, cha).tsrWrTRd = \
-		4U + RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.DBP.EP.tCWL
-		+ RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.EP.tWTPr;
-
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.???.EP.t????;
+*/
 	TIMING(mc, cha).tddRdTWr = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tRWDD;
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.OTP.EP.tRWDD;
 
 	TIMING(mc, cha).tdrRdTWr = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tRWDR;
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.OTP.EP.tRWDR;
 
 	TIMING(mc, cha).tsrRdTWr = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tRWSR;
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.OTP.EP.tRWSR;
 
 	TIMING(mc, cha).tddRdTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tRRDD;
@@ -3592,7 +3591,7 @@ void SNB_EP_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tRRDR;
 /* TODO
 	TIMING(mc, cha).tsrRdTRd = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tRRSR;
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.???.EP.t????;
 */
 	TIMING(mc, cha).tddWrTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tWWDD;
@@ -3601,7 +3600,7 @@ void SNB_EP_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tWWDR;
 /* TODO
 	TIMING(mc, cha).tsrWrTWr = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tWWSR;
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.???.EP.t????;
 */
 	TIMING(mc, cha).B2B = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tCCD;
@@ -3624,6 +3623,9 @@ void SNB_EP_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	TIMING(mc, cha).tXS = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.SRFTP.EP.tXS_DLL;
+
+	TIMING(mc, cha).tXP = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.OTP.EP.tXP;
 
 	for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
 	{

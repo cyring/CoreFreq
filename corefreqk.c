@@ -4283,6 +4283,9 @@ void Query_SNB_IMC(void __iomem *mchmap, unsigned short mc)
 	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.PDWN.value = \
 					readl(mchmap + 0x40b0 + 0x400 * cha);
 
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.RFP.value = \
+					readl(mchmap + 0x4294 + 0x400 * cha);
+
 	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB.RFTP.value = \
 					readl(mchmap + 0x4298 + 0x400 * cha);
 
@@ -5056,6 +5059,12 @@ kernel_ulong_t SNB_EP_IMC(struct pci_dev *dev , unsigned short mc,
 
 	pci_read_config_dword(dev, 0x208,
 		&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.value);
+
+	pci_read_config_dword(dev, 0x20c,
+		&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB_EP.OTP.value);
+
+	pci_read_config_dword(dev, 0x210,
+	    &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB_EP.RFP.value);
 
 	pci_read_config_dword(dev, 0x214,
 	    &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB_EP.RFTP.value);
