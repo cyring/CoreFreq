@@ -1361,7 +1361,8 @@ typedef struct
 #define DID_AMD_17H_ZEN2_APU_NB_IOMMU	0x1631	/*	Renoir		*/
 #define DID_AMD_17H_FIREFLIGHT_NB_IOMMU 0x15f9	/*	FireFlight	*/
 #define DID_AMD_17H_ARDEN_NB_IOMMU	0x1627	/*	Arden		*/
-#define DID_AMD_19H_CEZANNE_NB_IOMMU	0x1630	/*	Cezanne 	*/
+/* Source: AMD PPR for AMD Family 19h Model 51h, Rev A1 Processors	*/
+#define DID_AMD_19H_CEZANNE_NB_IOMMU	0x1631	/*	Cezanne 	*/
 /* Source: /include/linux/pci_ids.h					*/
 #define DID_AMD_17H_ZEPPELIN_DF_UMC	0x1460	/*	Zeppelin	*/
 #define DID_AMD_17H_RAVEN_DF_UMC	0x15e8	/*	Raven		*/

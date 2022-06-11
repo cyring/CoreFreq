@@ -5863,7 +5863,11 @@ static PCI_CALLBACK AMD_DataFabric_Vermeer(struct pci_dev *pdev)
 
 static PCI_CALLBACK AMD_DataFabric_Cezanne(struct pci_dev *pdev)
 {
+    if (PUBLIC(RO(Proc))->Registration.Experimental) {
 	return AMD_17h_DataFabric(pdev, 1);
+    } else {
+	return (PCI_CALLBACK) -EAGAIN;
+    }
 }
 
 static void CoreFreqK_ResetChip(struct pci_dev *dev)
