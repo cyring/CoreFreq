@@ -8350,8 +8350,7 @@ void Intel_Watchdog(CORE_RO *Core)
 		{0, }
 	};
 	if (CoreFreqK_ProbePCI(PCI_WDT_ids, NULL, NULL) < RC_SUCCESS) {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT,
-				    PUBLIC(RO(Proc))->Service.Core);
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT, Core->Bind);
 	}
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 }
@@ -10926,6 +10925,8 @@ static void PerCore_SandyBridge_Query(void *arg)
 				&PUBLIC(RO(Proc))->PowerThermal.IRTL.PC07);
 
 		Intel_Watchdog(Core);
+	    } else {
+		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 	    }
 	}
 }
@@ -11300,9 +11301,11 @@ static void PerCore_Skylake_X_Query(void *arg)
 					PPn_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(RAM) );
 */
+	    if (PUBLIC(RO(Proc))->Registration.Experimental) {
+		Intel_Watchdog(Core);
+	    } else {
 		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
-/*TODO		Intel_Watchdog(Core);
-*/
+	    }
 	}
 }
 
