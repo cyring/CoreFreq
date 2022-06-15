@@ -17879,6 +17879,23 @@ CUINT Draw_AltMonitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 
 		memcpy(&LayerAt(layer, code, 20, row), Buffer, len);
 	} else {
+	#if defined(ARCH_PMC) && (ARCH_PMC == UMC)
+		struct PKG_FLIP_FLOP *PFlop = \
+			&RO(Shm)->Proc.FlipFlop[!RO(Shm)->Proc.Toggle];
+
+		StrLenFormat(len, Buffer, ((20*8)+(4*6)+1),
+				"   %5llu"	"   :%5llu"	"   :%5llu" \
+				"   :%5llu"	"   :%5llu"	"   :%5llu" \
+				"   :%5llu"	"    :%5llu",
+				PFlop->Delta.PC02 / (1000LLU * 1000LLU),
+				PFlop->Delta.PC03 / (1000LLU * 1000LLU),
+				PFlop->Delta.PC04 / (1000LLU * 1000LLU),
+				PFlop->Delta.PC06 / (1000LLU * 1000LLU),
+				PFlop->Delta.PC07 / (1000LLU * 1000LLU),
+				PFlop->Delta.PC08 / (1000LLU * 1000LLU),
+				PFlop->Delta.PC09 / (1000LLU * 1000LLU),
+				PFlop->Delta.PC10 / (1000LLU * 1000LLU));
+	#else
 		StrLenFormat(len, Buffer, ((6*4)+3+5)+(8*6)+1,
 				"c2:%-5.1f"	" c3:%-5.1f"	" c4:%-5.1f" \
 				" c6:%-5.1f"	" c7:%-5.1f"	" c8:%-5.1f" \
@@ -17891,7 +17908,7 @@ CUINT Draw_AltMonitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 				100.f * RO(Shm)->Proc.State.PC08,
 				100.f * RO(Shm)->Proc.State.PC09,
 				100.f * RO(Shm)->Proc.State.PC10);
-
+	#endif
 		memcpy(&LayerAt(layer, code, 7, row), Buffer, len);
 	}
 	row += 1;
@@ -18207,6 +18224,49 @@ CUINT Draw_AltMonitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 	return row;
 }
 
+#if defined(ARCH_PMC) && (ARCH_PMC == UMC)
+
+#define CUST_CTR_FMT	" -- UMC [ "					\
+			"%4llu "	"%4llu "	"%4llu "	\
+			"%4llu "	"%4llu "	"%4llu "	\
+			"%4llu "	"%4llu "	"MHz]"
+
+#define CUST_CTR_VAR0	PFlop->Delta.PC02 / (1000LLU * 1000LLU)
+#define CUST_CTR_VAR1	PFlop->Delta.PC03 / (1000LLU * 1000LLU)
+#define CUST_CTR_VAR2	PFlop->Delta.PC04 / (1000LLU * 1000LLU)
+#define CUST_CTR_VAR3	PFlop->Delta.PC06 / (1000LLU * 1000LLU)
+#define CUST_CTR_VAR4	PFlop->Delta.PC07 / (1000LLU * 1000LLU)
+#define CUST_CTR_VAR5	PFlop->Delta.PC08 / (1000LLU * 1000LLU)
+#define CUST_CTR_VAR6	PFlop->Delta.PC09 / (1000LLU * 1000LLU)
+#define CUST_CTR_VAR7	PFlop->Delta.PC10 / (1000LLU * 1000LLU)
+
+#else
+
+#define CUST_CTR_FMT	" c2:%-5.1f"	" c3:%-5.1f"	" c4:%-5.1f"	\
+			" c6:%-5.1f"	" c7:%-5.1f"	" c8:%-5.1f"	\
+			" c9:%-5.1f"	" c10:%-5.1f"
+
+#define CUST_CTR_VAR0	100.f * RO(Shm)->Proc.State.PC02
+#define CUST_CTR_VAR1	100.f * RO(Shm)->Proc.State.PC03
+#define CUST_CTR_VAR2	100.f * RO(Shm)->Proc.State.PC04
+#define CUST_CTR_VAR3	100.f * RO(Shm)->Proc.State.PC06
+#define CUST_CTR_VAR4	100.f * RO(Shm)->Proc.State.PC07
+#define CUST_CTR_VAR5	100.f * RO(Shm)->Proc.State.PC08
+#define CUST_CTR_VAR6	100.f * RO(Shm)->Proc.State.PC09
+#define CUST_CTR_VAR7	100.f * RO(Shm)->Proc.State.PC10
+
+#endif /* ARCH_PMC */
+
+#define CUST_INTEL(unit) " RAM:%8.4f(" COREFREQ_STRINGIFY(unit) ") -"	\
+			"- SA:%8.4f(U)/%5.4f(V)"			\
+			" - Pkg:%8.4f(" COREFREQ_STRINGIFY(unit) ") - " \
+			"%5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f -"
+
+#define CUST_AMD(unit)	" RAM:%8.4f(" COREFREQ_STRINGIFY(unit) ") -"	\
+			" SoC:%8.4f(" COREFREQ_STRINGIFY(unit) ")/%5.4f(V)" \
+			" - Pkg:%8.4f(" COREFREQ_STRINGIFY(unit) ") - " \
+			"%5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f"
+
 size_t Draw_AltMonitor_Custom_Energy_Joule(void)
 {
 	struct PKG_FLIP_FLOP *PFlop = \
@@ -18215,20 +18275,7 @@ size_t Draw_AltMonitor_Custom_Energy_Joule(void)
 	size_t len;
 	StrLenFormat(len, Buffer, MAX_WIDTH,
 			(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
-
-			" RAM:%8.4f(J) -" "- SA:%8.4f(J)/%5.4f(V)"	\
-			" - Pkg:%8.4f(J) - "				\
-			"%5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f -"	\
-			" c2:%-5.1f"	" c3:%-5.1f"	" c4:%-5.1f"	\
-			" c6:%-5.1f"	" c7:%-5.1f"	" c8:%-5.1f"	\
-			" c9:%-5.1f"	" c10:%-5.1f":
-
-			" RAM:%8.4f(J) -" " SoC:%8.4f(J)/%5.4f(V)"	\
-			" - Pkg:%8.4f(J) - "				\
-			"%5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f -"	\
-			" c2:%-5.1f"	" c3:%-5.1f"	" c4:%-5.1f"	\
-			" c6:%-5.1f"	" c7:%-5.1f"	" c8:%-5.1f"	\
-			" c9:%-5.1f"	" c10:%-5.1f"),
+			CUST_INTEL(J) CUST_CTR_FMT : CUST_AMD(J) CUST_CTR_FMT),
 
 			RO(Shm)->Proc.State.Energy[PWR_DOMAIN(RAM)].Current,
 			RO(Shm)->Proc.State.Energy[PWR_DOMAIN(UNCORE)].Current,
@@ -18243,15 +18290,14 @@ size_t Draw_AltMonitor_Custom_Energy_Joule(void)
 			RO(Shm)->Proc.State.Energy[PWR_DOMAIN(CORES)].Current,
 	  RO(Shm)->Proc.State.Energy[PWR_DOMAIN(CORES)].Limit[SENSOR_HIGHEST],
 
-			100.f * RO(Shm)->Proc.State.PC02,
-			100.f * RO(Shm)->Proc.State.PC03,
-			100.f * RO(Shm)->Proc.State.PC04,
-			100.f * RO(Shm)->Proc.State.PC06,
-			100.f * RO(Shm)->Proc.State.PC07,
-			100.f * RO(Shm)->Proc.State.PC08,
-			100.f * RO(Shm)->Proc.State.PC09,
-			100.f * RO(Shm)->Proc.State.PC10);
-
+			CUST_CTR_VAR0,
+			CUST_CTR_VAR1,
+			CUST_CTR_VAR2,
+			CUST_CTR_VAR3,
+			CUST_CTR_VAR4,
+			CUST_CTR_VAR5,
+			CUST_CTR_VAR6,
+			CUST_CTR_VAR7);
 	return len;
 }
 
@@ -18263,20 +18309,7 @@ size_t Draw_AltMonitor_Custom_Power_Watt(void)
 	size_t len;
 	StrLenFormat(len, Buffer, MAX_WIDTH,
 			(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
-
-			" RAM:%8.4f(W) -" "- SA:%8.4f(W)/%5.4f(V)"	\
-			" - Pkg:%8.4f(W) - "				\
-			"%5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f -"	\
-			" c2:%-5.1f"	" c3:%-5.1f"	" c4:%-5.1f"	\
-			" c6:%-5.1f"	" c7:%-5.1f"	" c8:%-5.1f"	\
-			" c9:%-5.1f"	" c10:%-5.1f":
-
-			" RAM:%8.4f(W) -" " SoC:%8.4f(W)/%5.4f(V)"	\
-			" - Pkg:%8.4f(W) - "				\
-			"%5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f -"	\
-			" c2:%-5.1f"	" c3:%-5.1f"	" c4:%-5.1f"	\
-			" c6:%-5.1f"	" c7:%-5.1f"	" c8:%-5.1f"	\
-			" c9:%-5.1f"	" c10:%-5.1f"),
+			CUST_INTEL(W) CUST_CTR_FMT : CUST_AMD(W) CUST_CTR_FMT),
 
 			RO(Shm)->Proc.State.Power[PWR_DOMAIN(RAM)].Current,
 			RO(Shm)->Proc.State.Power[PWR_DOMAIN(UNCORE)].Current,
@@ -18291,17 +18324,28 @@ size_t Draw_AltMonitor_Custom_Power_Watt(void)
 			RO(Shm)->Proc.State.Power[PWR_DOMAIN(CORES)].Current,
 	  RO(Shm)->Proc.State.Power[PWR_DOMAIN(CORES)].Limit[SENSOR_HIGHEST],
 
-			100.f * RO(Shm)->Proc.State.PC02,
-			100.f * RO(Shm)->Proc.State.PC03,
-			100.f * RO(Shm)->Proc.State.PC04,
-			100.f * RO(Shm)->Proc.State.PC06,
-			100.f * RO(Shm)->Proc.State.PC07,
-			100.f * RO(Shm)->Proc.State.PC08,
-			100.f * RO(Shm)->Proc.State.PC09,
-			100.f * RO(Shm)->Proc.State.PC10);
-
+			CUST_CTR_VAR0,
+			CUST_CTR_VAR1,
+			CUST_CTR_VAR2,
+			CUST_CTR_VAR3,
+			CUST_CTR_VAR4,
+			CUST_CTR_VAR5,
+			CUST_CTR_VAR6,
+			CUST_CTR_VAR7);
 	return len;
 }
+
+#undef CUST_CTR_FMT
+#undef CUST_CTR_VAR0
+#undef CUST_CTR_VAR1
+#undef CUST_CTR_VAR2
+#undef CUST_CTR_VAR3
+#undef CUST_CTR_VAR4
+#undef CUST_CTR_VAR5
+#undef CUST_CTR_VAR6
+#undef CUST_CTR_VAR7
+#undef CUST_INTEL
+#undef CUST_AMD
 
 size_t (*Draw_AltMonitor_Custom_Matrix[])(void) = {
 	Draw_AltMonitor_Custom_Energy_Joule,
