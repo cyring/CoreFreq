@@ -7042,9 +7042,12 @@ long ClockSource_OC_Granted(void)
       if (clockFile != NULL)
       {
 	loff_t pos = 0;
-	ssize_t len;
-
-	if ((len = kernel_read(clockFile, clockName, PAGE_SIZE - 1,  &pos)) > 0)
+	#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
+	ssize_t len = kernel_read(clockFile, clockName, PAGE_SIZE - 1, &pos);
+	#else
+	int len = kernel_read(clockFile, pos, clockName, PAGE_SIZE - 1);
+	#endif
+	if (len > 0)
 	{
 		const struct {
 			char *name;
