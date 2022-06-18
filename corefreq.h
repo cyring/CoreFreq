@@ -522,6 +522,8 @@ typedef struct
 				minor;
 		} kernel;
 
+		unsigned short	procCount;
+
 		char		sysname[MAX_UTS_LEN],
 				release[MAX_UTS_LEN],
 				version[MAX_UTS_LEN],

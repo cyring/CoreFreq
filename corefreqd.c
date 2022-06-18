@@ -6712,7 +6712,7 @@ static int SortByTracker(const void *p1, const void *p2, void *arg)
 
 void SysGate_Update(REF *Ref)
 {
-	struct sysinfo memInfo;
+	struct sysinfo info;
 	RO(SHM_STRUCT) *RO(Shm) = Ref->RO(Shm);
 	RO(SYSGATE) *SysGate = Ref->RO(SysGate);
 	RO(PROC) *RO(Proc) = Ref->RO(Proc);
@@ -6728,13 +6728,14 @@ void SysGate_Update(REF *Ref)
 			  SortByTracker
 			: SortByFunc[RO(Shm)->SysGate.sortByField], Ref);
 
-    if (sysinfo(&memInfo) == 0) {
-	RO(Shm)->SysGate.memInfo.totalram  = memInfo.totalram	>> 10;
-	RO(Shm)->SysGate.memInfo.sharedram = memInfo.sharedram	>> 10;
-	RO(Shm)->SysGate.memInfo.freeram   = memInfo.freeram	>> 10;
-	RO(Shm)->SysGate.memInfo.bufferram = memInfo.bufferram	>> 10;
-	RO(Shm)->SysGate.memInfo.totalhigh = memInfo.totalhigh	>> 10;
-	RO(Shm)->SysGate.memInfo.freehigh  = memInfo.freehigh	>> 10;
+    if (sysinfo(&info) == 0) {
+	RO(Shm)->SysGate.memInfo.totalram  = info.totalram	>> 10;
+	RO(Shm)->SysGate.memInfo.sharedram = info.sharedram	>> 10;
+	RO(Shm)->SysGate.memInfo.freeram   = info.freeram	>> 10;
+	RO(Shm)->SysGate.memInfo.bufferram = info.bufferram	>> 10;
+	RO(Shm)->SysGate.memInfo.totalhigh = info.totalhigh	>> 10;
+	RO(Shm)->SysGate.memInfo.freehigh  = info.freehigh	>> 10;
+	RO(Shm)->SysGate.procCount = info.procs;
     }
 	RO(Shm)->SysGate.OS.IdleDriver.stateLimit =
 					RO(Proc)->OS.IdleDriver.stateLimit;

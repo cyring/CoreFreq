@@ -6817,7 +6817,7 @@ struct DRAW_ST Draw = {
 	    #endif
 	    #ifndef NO_FOOTER
 		.FreeRAM= 0,
-		.TaskCount = 0
+		.procCount = 0
 	    #endif
 	},
 	.Flag = {
@@ -15121,13 +15121,13 @@ int Shortcut(SCANKEY *scan)
 
 #ifndef NO_FOOTER
 void PrintTaskMemory(Layer *layer, CUINT row,
-			int taskCount,
+			unsigned short procCount,
 			unsigned long freeRAM,
 			unsigned long totalRAM)
 {
-	StrFormat(Buffer, 11+20+20+1,
-			"%6d" "%9lu" "%-9lu",
-			taskCount,
+	StrFormat(Buffer, 6+20+20+1,
+			"%6u" "%9lu" "%-9lu",
+			procCount,
 			freeRAM >> Draw.Unit.Memory,
 			totalRAM >> Draw.Unit.Memory);
 
@@ -16188,7 +16188,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 	/* Reset Tasks count & Memory usage				*/
 	if (BITWISEAND(LOCKLESS, RO(Shm)->SysGate.Operation, 0x1)) {
 		PrintTaskMemory(layer, row,
-				RO(Shm)->SysGate.taskCount,
+				RO(Shm)->SysGate.procCount,
 				RO(Shm)->SysGate.memInfo.freeram,
 				RO(Shm)->SysGate.memInfo.totalram);
 	}
@@ -18459,14 +18459,14 @@ void Draw_Footer(Layer *layer, CUINT row)
 
 	if (BITWISEAND(LOCKLESS, RO(Shm)->SysGate.Operation, 0x1)
 	&& (RO(Shm)->SysGate.tickStep == RO(Shm)->SysGate.tickReset)) {
-		if ((Draw.Cache.TaskCount != RO(Shm)->SysGate.taskCount)
+		if ((Draw.Cache.procCount != RO(Shm)->SysGate.procCount)
 		 || (Draw.Cache.FreeRAM != RO(Shm)->SysGate.memInfo.freeram))
 		{
-			Draw.Cache.TaskCount = RO(Shm)->SysGate.taskCount;
+			Draw.Cache.procCount = RO(Shm)->SysGate.procCount;
 			Draw.Cache.FreeRAM = RO(Shm)->SysGate.memInfo.freeram;
 
 			PrintTaskMemory(layer, (row + 1),
-					RO(Shm)->SysGate.taskCount,
+					RO(Shm)->SysGate.procCount,
 					RO(Shm)->SysGate.memInfo.freeram,
 					RO(Shm)->SysGate.memInfo.totalram);
 		}
@@ -19227,13 +19227,13 @@ void Draw_Card_Task(Layer *layer, Card *card)
     {
       if (RO(Shm)->SysGate.tickStep == RO(Shm)->SysGate.tickReset) {
 	size_t	pb, pe;
-	int	cl = (int) strnlen(RO(Shm)->SysGate.taskList[0].comm, 12),
-		hl = (12 - cl) / 2, hr = hl + (cl & 1);
+	const int cl = (int) strnlen(RO(Shm)->SysGate.taskList[0].comm, 12),
+		hl = ((12 - cl) / 2) % 12, hr = (hl + (cl & 1)) % 12;
 	char	stateStr[TASK_COMM_LEN];
 	ATTRIBUTE *stateAttr;
 	stateAttr = StateToSymbol(RO(Shm)->SysGate.taskList[0].state, stateStr);
 
-	StrFormat(Buffer, 12+11+3+11+1, "%.*s%.*s%.*s%zn%7d(%c)%zn%5d",
+	StrFormat(Buffer, 3*12+11+3+5+1+1, "%.*s%.*s%.*s%zn%7d(%c)%zn%5u",
 				hl, hSpace,
 				cl, RO(Shm)->SysGate.taskList[0].comm,
 				hr, hSpace,
@@ -19241,7 +19241,7 @@ void Draw_Card_Task(Layer *layer, Card *card)
 				RO(Shm)->SysGate.taskList[0].pid,
 				stateStr[0],
 			(ssize_t*)&pe,
-				RO(Shm)->SysGate.taskCount);
+				RO(Shm)->SysGate.procCount);
 
 	LayerCopyAt(layer,	(card->origin.col + 0),
 				(card->origin.row + 1),

@@ -953,7 +953,7 @@ struct DRAW_ST {
     #endif
     #ifndef NO_FOOTER
 	unsigned long	FreeRAM;
-	int		TaskCount;
+	int		procCount;
     #endif
     } Cache;
     struct {
