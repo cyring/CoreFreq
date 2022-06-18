@@ -2027,8 +2027,7 @@ typedef struct {
 				freehigh;
 } MEM_MCB;
 
-#define SYSGATE_STRUCT_SIZE	( sizeof(OS_DRIVER)			\
-				+ sizeof(int)				\
+#define SYSGATE_STRUCT_SIZE	( sizeof(int)				\
 				+ sizeof(unsigned int)			\
 				+ 4 * MAX_UTS_LEN )
 
