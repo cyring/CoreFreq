@@ -10,6 +10,7 @@
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
+#include <sys/sysinfo.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -6711,6 +6712,7 @@ static int SortByTracker(const void *p1, const void *p2, void *arg)
 
 void SysGate_Update(REF *Ref)
 {
+	struct sysinfo memInfo;
 	RO(SHM_STRUCT) *RO(Shm) = Ref->RO(Shm);
 	RO(SYSGATE) *SysGate = Ref->RO(SysGate);
 	RO(PROC) *RO(Proc) = Ref->RO(Proc);
@@ -6726,12 +6728,14 @@ void SysGate_Update(REF *Ref)
 			  SortByTracker
 			: SortByFunc[RO(Shm)->SysGate.sortByField], Ref);
 
-	RO(Shm)->SysGate.memInfo.totalram  = SysGate->memInfo.totalram;
-	RO(Shm)->SysGate.memInfo.sharedram = SysGate->memInfo.sharedram;
-	RO(Shm)->SysGate.memInfo.freeram   = SysGate->memInfo.freeram;
-	RO(Shm)->SysGate.memInfo.bufferram = SysGate->memInfo.bufferram;
-	RO(Shm)->SysGate.memInfo.totalhigh = SysGate->memInfo.totalhigh;
-	RO(Shm)->SysGate.memInfo.freehigh  = SysGate->memInfo.freehigh;
+    if (sysinfo(&memInfo) == 0) {
+	RO(Shm)->SysGate.memInfo.totalram  = memInfo.totalram	>> 10;
+	RO(Shm)->SysGate.memInfo.sharedram = memInfo.sharedram	>> 10;
+	RO(Shm)->SysGate.memInfo.freeram   = memInfo.freeram	>> 10;
+	RO(Shm)->SysGate.memInfo.bufferram = memInfo.bufferram	>> 10;
+	RO(Shm)->SysGate.memInfo.totalhigh = memInfo.totalhigh	>> 10;
+	RO(Shm)->SysGate.memInfo.freehigh  = memInfo.freehigh	>> 10;
+    }
 	RO(Shm)->SysGate.OS.IdleDriver.stateLimit =
 					RO(Proc)->OS.IdleDriver.stateLimit;
 }

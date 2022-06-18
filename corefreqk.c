@@ -11822,19 +11822,6 @@ void Sys_DumpTask(SYSGATE_RO *SysGate)
 }
 #endif /* KERNEL_VERSION(3, 10, 56) */
 
-void Sys_MemInfo(SYSGATE_RO *SysGate)
-{	/* Source: /include/uapi/linux/sysinfo.h */
-	struct sysinfo info;
-	si_meminfo(&info);
-
-	SysGate->memInfo.totalram  = info.totalram  << (PAGE_SHIFT - 10);
-	SysGate->memInfo.sharedram = info.sharedram << (PAGE_SHIFT - 10);
-	SysGate->memInfo.freeram   = info.freeram   << (PAGE_SHIFT - 10);
-	SysGate->memInfo.bufferram = info.bufferram << (PAGE_SHIFT - 10);
-	SysGate->memInfo.totalhigh = info.totalhigh << (PAGE_SHIFT - 10);
-	SysGate->memInfo.freehigh  = info.freehigh  << (PAGE_SHIFT - 10);
-}
-
 #define Sys_Tick(Pkg, ...)					\
 ({								\
 	if (PUBLIC(OF(Gate)) != NULL)				\
@@ -11843,7 +11830,6 @@ void Sys_MemInfo(SYSGATE_RO *SysGate)
 		if (!Pkg->tickStep) {				\
 			Pkg->tickStep = Pkg->tickReset ;	\
 			Sys_DumpTask( PUBLIC(OF(Gate)) );	\
-			Sys_MemInfo( PUBLIC(OF(Gate)) );	\
 			__VA_ARGS__				\
 		}						\
 	}							\

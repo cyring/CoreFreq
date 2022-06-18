@@ -2029,7 +2029,6 @@ typedef struct {
 
 #define SYSGATE_STRUCT_SIZE	( sizeof(OS_DRIVER)			\
 				+ sizeof(int)				\
-				+ sizeof(MEM_MCB)			\
 				+ sizeof(unsigned int)			\
 				+ 4 * MAX_UTS_LEN )
 

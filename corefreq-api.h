@@ -782,8 +782,6 @@ typedef struct {
 		int		taskCount;
 		TASK_MCB	taskList[TASK_LIMIT];
 
-		MEM_MCB 	memInfo;
-
 		unsigned int	kernelVersionNumber;
 
 		char		sysname[MAX_UTS_LEN],
