@@ -4709,11 +4709,10 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 void Kernel_RAM_Update(TGrid *grid, DATA_TYPE data[])
 {
-	char item[CPUFREQ_NAME_LEN+4+3];
+	char item[20+3+1];
 	size_t len;
 
-	StrLenFormat(len, item, CPUFREQ_NAME_LEN+4+3,
-			"%18lu KB", (*data[0].pulong));
+	StrLenFormat(len, item, 20+3+1, "%18lu KB", (*data[0].pulong));
 
 	memcpy(&grid->cell.item[grid->cell.length - len - 1], item, len);
 }
@@ -8789,7 +8788,7 @@ Window *CreateSelectCPU(unsigned long long id)
 	for (cpu = 0; cpu < RO(Shm)->Proc.CPU.Count; cpu++)
 	{
 		bix = BITVAL_CC(RO(Shm)->roomSched, cpu);
-		StrFormat(Buffer, 7+10+11+11+11+1,
+		StrFormat(Buffer, 17+10+11+11+11+1,
 				"  %03u  %4d%6d%6d    <%3s>    ",
 				cpu,
 				RO(Shm)->Cpu[cpu].Topology.PackageID,
@@ -9861,7 +9860,7 @@ Window *CreatePowerTimeWindow(unsigned long long id)
 		RSC(POWER_LABEL_DRAM).CODE(),
 		RSC(POWER_LABEL_PLATFORM).CODE()
 	};
-	char item[TW_CELL_WIDTH + 1];
+	char item[3*20+5+1];
 
 	unsigned long long us, ms, ss, bits, key;
 	unsigned char circle;
@@ -9878,11 +9877,11 @@ Window *CreatePowerTimeWindow(unsigned long long id)
 	ms = ms % 1000LLU;
 
        if (us) {
-	StrFormat(item, TW_CELL_WIDTH + 1, "  %7llu,%03llu%-3llu  ",ss, ms, us);
+	StrFormat(item, 3*20+5+1, "  %7llu,%03llu%-3llu  ",ss, ms, us);
        } else if (ms) {
-	StrFormat(item, TW_CELL_WIDTH + 1, "  %7llu,%-3llu     ", ss, ms);
+	StrFormat(item, 2*20+8+1, "  %7llu,%-3llu     ", ss, ms);
        } else {
-	StrFormat(item, TW_CELL_WIDTH + 1, "  %7llu         ", ss);
+	StrFormat(item, 20+11+1 , "  %7llu         ", ss);
        }
 	if (array[idx].TW == RO(Shm)->Proc.Power.Domain[pw].Feature[pl].TW) {
 		StoreTCell(wPTW, key, item, RSC(UI).ATTR()[UI_WHEEL_CURRENT]);
