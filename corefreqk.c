@@ -286,6 +286,10 @@ module_param_array(Ratio_Boost, int, &Ratio_Boost_Count,	\
 				S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Ratio_Boost, "Turbo Boost Frequency ratios");
 
+static signed int Ratio_PPC = -1;
+module_param(Ratio_PPC, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Ratio_PPC, "Target Performance ratio");
+
 static signed short HWP_Enable = -1;
 module_param(HWP_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(HWP_Enable, "Hardware-Controlled Performance States");
@@ -21704,6 +21708,9 @@ static int CoreFreqK_User_Ops_Level_Up(INIT_ARG *pArg)
       }
     }
 	Controller_Start(1);
+
+	RESET_ARRAY(Ratio_HWP, Ratio_HWP_Count, -1);
+	Ratio_HWP_Count = 0;
   }
   if (Ratio_Boost_Count > 0)
   {
@@ -21741,6 +21748,9 @@ static int CoreFreqK_User_Ops_Level_Up(INIT_ARG *pArg)
 	TurboBoost_Enable[0] = TurboBoost_Enable[1];
     }
 	Controller_Start(1);
+
+	RESET_ARRAY(Ratio_Boost, Ratio_Boost_Count, -1);
+	Ratio_Boost_Count = 0;
   }
   if (PUBLIC(RO(Proc))->ArchID != AMD_Family_0Fh)
   {
@@ -21764,7 +21774,7 @@ static int CoreFreqK_User_Ops_Level_Up(INIT_ARG *pArg)
 
 		Controller_Stop(1);
 		rc = Arch[PUBLIC(RO(Proc))->ArchID].ClockMod(&clockMod);
-		Controller_Start(0);
+		Controller_Start(1);
 
 	  if (rc < RC_SUCCESS) {
 		pr_warn("CoreFreq: "					\
@@ -21782,7 +21792,24 @@ static int CoreFreqK_User_Ops_Level_Up(INIT_ARG *pArg)
 	PState_FID = -1;
     }
   } /* else handled by function PerCore_AMD_Family_0Fh_PStates()	*/
+  if (Ratio_PPC >= 0)
+  {
+	long rc = RC_SUCCESS;
 
+    if (Arch[PUBLIC(RO(Proc))->ArchID].ClockMod) {
+	CLOCK_ARG clockMod={.Ratio = Ratio_PPC, .cpu = -1, .NC = CLOCK_MOD_TGT};
+
+	Controller_Stop(1);
+	rc = Arch[PUBLIC(RO(Proc))->ArchID].ClockMod(&clockMod);
+	Controller_Start(0);
+    } else {
+	rc = -RC_UNIMPLEMENTED;
+    }
+    if (rc < RC_SUCCESS) {
+	pr_warn("CoreFreq: 'Ratio_PPC' Execution failure code %ld\n", rc);
+    }
+	Ratio_PPC = -1;
+  }
 	return 0;
 }
 
