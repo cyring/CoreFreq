@@ -203,8 +203,10 @@ static signed short C1E_Enable = -1;
 module_param(C1E_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(C1E_Enable, "Enable SpeedStep C1E");
 
-static signed short TurboBoost_Enable = -1;
-module_param(TurboBoost_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+static unsigned int TurboBoost_Enable_Count = 1;
+static signed short TurboBoost_Enable[2] = {-1, -1};
+module_param_array(TurboBoost_Enable, short, &TurboBoost_Enable_Count,	\
+					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(TurboBoost_Enable, "Enable Turbo Boost");
 
 static signed short C3A_Enable = -1;
@@ -259,6 +261,31 @@ static signed int PState_VID = -1;
 module_param(PState_VID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PState_VID, "P-State Voltage Id");
 
+static enum RATIO_BOOST Ratio_Boost_Count = 0;
+static signed int Ratio_Boost[BOOST(SIZE) - BOOST(18C)] = {
+	/*	18C		*/	-1,
+	/*	17C		*/	-1,
+	/*	16C		*/	-1,
+	/*	15C		*/	-1,
+	/*	14C		*/	-1,
+	/*	13C		*/	-1,
+	/*	12C		*/	-1,
+	/*	11C		*/	-1,
+	/*	10C		*/	-1,
+	/*	 9C		*/	-1,
+	/*	 8C		*/	-1,
+	/*	 7C		*/	-1,
+	/*	 6C		*/	-1,
+	/*	 5C		*/	-1,
+	/*	 4C		*/	-1,
+	/*	 3C		*/	-1,
+	/*	 2C		*/	-1,
+	/*	 1C		*/	-1
+};
+module_param_array(Ratio_Boost, int, &Ratio_Boost_Count,	\
+				S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Ratio_Boost, "Turbo Boost Frequency ratios");
+
 static signed short HWP_Enable = -1;
 module_param(HWP_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(HWP_Enable, "Hardware-Controlled Performance States");
@@ -266,6 +293,16 @@ MODULE_PARM_DESC(HWP_Enable, "Hardware-Controlled Performance States");
 static signed short HWP_EPP = -1;
 module_param(HWP_EPP, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(HWP_EPP, "Energy Performance Preference");
+
+static enum RATIO_BOOST Ratio_HWP_Count = 0;
+static signed int Ratio_HWP[1 + (BOOST(HWP_TGT) - BOOST(HWP_MIN))] = {
+	/*	HWP_MIN 	*/	-1,
+	/*	HWP_MAX 	*/	-1,
+	/*	HWP_TGT 	*/	-1
+};
+module_param_array(Ratio_HWP, int, &Ratio_HWP_Count,	\
+				S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Ratio_HWP, "Hardware-Controlled Performance ratios");
 
 static signed short HDC_Enable = -1;
 module_param(HDC_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -7785,7 +7822,7 @@ void TurboBoost_Technology(CORE_RO *Core,	SET_TARGET SetTarget,
   if ( (MiscFeatures.Turbo_IDA == 0)
 	&& (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA) )
   {
-    switch (TurboBoost_Enable) {
+    switch (TurboBoost_Enable[0]) {
     case COREFREQ_TOGGLE_OFF:	/*	Restore the nominal P-state	*/
 	Core->PowerThermal.PerfControl.Turbo_IDA = 1;
 	SetTarget(Core, Core->Boost[BOOST(MAX)]);
@@ -7876,7 +7913,7 @@ void DynamicAcceleration(CORE_RO *Core) 			/* Unique */
 	MISC_PROC_FEATURES MiscFeatures = {.value = 0};
 	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 
-	switch (TurboBoost_Enable) {
+	switch (TurboBoost_Enable[0]) {
 	case COREFREQ_TOGGLE_OFF:
 		MiscFeatures.Turbo_IDA = 1;
 		ToggleFeature = 1;
@@ -7932,7 +7969,7 @@ void SoC_Turbo_Override(CORE_RO *Core)
 	PKG_TURBO_CONFIG TurboCfg = {.value = 0};
 	RDMSR(TurboCfg, MSR_PKG_TURBO_CFG);
 
-	switch (TurboBoost_Enable) {
+	switch (TurboBoost_Enable[0]) {
 	case COREFREQ_TOGGLE_OFF:
 		TurboCfg.TjMax_Turbo = 0x0;
 		ToggleFeature = 1;
@@ -8219,7 +8256,7 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SMM, Core->Bind);
 	}
 	/*		Enable or Disable the Core Performance Boost.	*/
-	switch (TurboBoost_Enable) {
+	switch (TurboBoost_Enable[0]) {
 	case COREFREQ_TOGGLE_OFF:
 		HwCfgRegister.Family_17h.CpbDis = 1;
 		ToggleFeature = 1;
@@ -18752,9 +18789,9 @@ static int CoreFreqK_SetBoost(int state)
 {
 #endif /* 5.8.0 */
 	Controller_Stop(1);
-	TurboBoost_Enable = (state != 0);
+	TurboBoost_Enable[0] = (state != 0);
 	Controller_Start(1);
-	TurboBoost_Enable = -1;
+	TurboBoost_Enable[0] = -1;
 	Policy_Aggregate_Turbo();
 	BITSET(BUS_LOCK, PUBLIC(RW(Proc))->OS.Signal, NTFY); /* Notify Daemon*/
 	return 0;
@@ -19929,9 +19966,9 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
 				Controller_Stop(1);
-				TurboBoost_Enable = prm.dl.lo;
+				TurboBoost_Enable[0] = prm.dl.lo;
 				Controller_Start(1);
-				TurboBoost_Enable = -1;
+				TurboBoost_Enable[0] = -1;
 			#ifdef CONFIG_CPU_FREQ
 				Policy_Aggregate_Turbo();
 			#endif /* CONFIG_CPU_FREQ */
@@ -21609,6 +21646,102 @@ static int CoreFreqK_User_Ops_Level_Up(INIT_ARG *pArg)
 {
 	UNUSED(pArg);
 
+  if (Ratio_HWP_Count > 0)
+  {
+	CLOCK_ARG clockMod;
+	enum RATIO_BOOST boost;
+
+	Controller_Stop(1);
+    for (boost = 0; boost < Ratio_HWP_Count; boost++)
+    {
+      if (Ratio_HWP[boost] >= 0)
+      {
+	long rc = RC_SUCCESS;
+
+	switch (boost) {
+	case BOOST(HWP_MIN) - BOOST(HWP_MIN):
+	    if (Arch[PUBLIC(RO(Proc))->ArchID].ClockMod) {
+		clockMod.Ratio = Ratio_HWP[boost];
+		clockMod.cpu = -1;
+		clockMod.NC = CLOCK_MOD_HWP_MIN;
+		rc = Arch[PUBLIC(RO(Proc))->ArchID].ClockMod(&clockMod);
+	    #ifdef CONFIG_CPU_FREQ
+		Policy_Aggregate_Turbo();
+	    #endif
+	    }
+		break;
+	case BOOST(HWP_MAX) - BOOST(HWP_MIN):
+	    if (Arch[PUBLIC(RO(Proc))->ArchID].ClockMod) {
+		clockMod.Ratio = Ratio_HWP[boost];
+		clockMod.cpu = -1;
+		clockMod.NC = CLOCK_MOD_HWP_MAX;
+		rc = Arch[PUBLIC(RO(Proc))->ArchID].ClockMod(&clockMod);
+	    #ifdef CONFIG_CPU_FREQ
+		Policy_Aggregate_Turbo();
+	    #endif
+	    }
+		break;
+	case BOOST(HWP_TGT) - BOOST(HWP_MIN):
+	    if (Arch[PUBLIC(RO(Proc))->ArchID].ClockMod) {
+		clockMod.Ratio = Ratio_HWP[boost];
+		clockMod.cpu = -1;
+		clockMod.NC = CLOCK_MOD_HWP_TGT;
+		rc = Arch[PUBLIC(RO(Proc))->ArchID].ClockMod(&clockMod);
+	    #ifdef CONFIG_CPU_FREQ
+		Policy_Aggregate_Turbo();
+	    #endif
+	    }
+		break;
+	default:
+		rc = -RC_UNIMPLEMENTED;
+		break;
+	};
+	if (rc < RC_SUCCESS) {
+		pr_warn("CoreFreq: "					\
+			"'Ratio_HWP' at #%d Execution failure code %ld\n",
+			boost, rc);
+	}
+      }
+    }
+	Controller_Start(1);
+  }
+  if (Ratio_Boost_Count > 0)
+  {
+	CLOCK_ARG clockMod;
+	enum RATIO_BOOST boost;
+
+	Controller_Stop(1);
+    for (boost = 0; boost < Ratio_Boost_Count; boost++)
+    {
+      if (Ratio_Boost[boost] >= 0)
+      {
+	long rc = RC_SUCCESS;
+
+	switch (boost) {
+	case BOOST(1C) - BOOST(1C) ... BOOST(1C) - BOOST(18C):
+	    if (Arch[PUBLIC(RO(Proc))->ArchID].TurboClock) {
+		clockMod.Ratio = Ratio_Boost[boost];
+		clockMod.cpu = -1;
+		clockMod.NC = BOOST(SIZE) - BOOST(18C) - boost;
+		rc = Arch[PUBLIC(RO(Proc))->ArchID].TurboClock(&clockMod);
+	    }
+		break;
+	default:
+		rc = -RC_UNIMPLEMENTED;
+		break;
+	};
+	if (rc < RC_SUCCESS) {
+		pr_warn("CoreFreq: "					\
+			"'Ratio_Boost' at #%d Execution failure code %ld\n",
+			boost, rc);
+	}
+      }
+    }
+    if (TurboBoost_Enable_Count == 2) {
+	TurboBoost_Enable[0] = TurboBoost_Enable[1];
+    }
+	Controller_Start(1);
+  }
   if (PUBLIC(RO(Proc))->ArchID != AMD_Family_0Fh)
   {
 	const unsigned int cpu = PUBLIC(RO(Proc))->Service.Core;
