@@ -20944,6 +20944,8 @@ char *SMBIOS_String(const struct dmi_header *dh, u8 id)
 	return pStr;
 }
 
+#define safe_strim(pStr)	(strim(pStr == NULL ? "" : pStr))
+
 void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
 {
 	size_t *count = (size_t*) priv;
@@ -20967,8 +20969,8 @@ void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
 	    if ((*count) < MC_MAX_DIMM)
 	    {
 		const char *locator[2] = {
-			strim(SMBIOS_String(dh, entry->device_locator_id)),
-			strim(SMBIOS_String(dh, entry->bank_locator_id))
+			safe_strim(SMBIOS_String(dh, entry->device_locator_id)),
+			safe_strim(SMBIOS_String(dh, entry->bank_locator_id))
 		};
 		size_t calc;
 		const size_t len[2] = {
@@ -20986,11 +20988,11 @@ void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
 			ratio[1], locator[1]);
 
 		StrCopy(PUBLIC(RO(Proc))->SMB.Memory.Manufacturer[(*count)],
-			strim(SMBIOS_String(dh, entry->manufacturer_id)),
+			safe_strim(SMBIOS_String(dh, entry->manufacturer_id)),
 			MAX_UTS_LEN);
 
 		StrCopy(PUBLIC(RO(Proc))->SMB.Memory.PartNumber[(*count)],
-			strim(SMBIOS_String(dh, entry->part_number_id)),
+			safe_strim(SMBIOS_String(dh, entry->part_number_id)),
 			MAX_UTS_LEN);
 	    }
 	  }
@@ -20999,6 +21001,7 @@ void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
 	break;
     }
 }
+#undef safe_strim
 #endif /* CONFIG_DMI */
 
 void SMBIOS_Decoder(void)
