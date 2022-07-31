@@ -5663,7 +5663,8 @@ static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev)
 }
 
 static void AMD_Zen_UMC(struct pci_dev *dev, unsigned int UMC_BAR,
-			unsigned short mc, unsigned short cha)
+			unsigned short mc, unsigned short cha,
+			unsigned short cnt)
 {
 	unsigned int CHIP_BAR[2][2] = {
 	[0] =	{
@@ -5683,11 +5684,11 @@ static void AMD_Zen_UMC(struct pci_dev *dev, unsigned int UMC_BAR,
 
 	Core_AMD_SMN_Read(
 	    PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.DAC,
-		SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x30 + (slot << 2), dev );
+		SMU_AMD_UMC_BASE_CHA_F17H(cnt) + 0x30 + (slot << 2), dev );
 
 	Core_AMD_SMN_Read(
 	    PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.CFG,
-		SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x80 + (slot << 2), dev );
+		SMU_AMD_UMC_BASE_CHA_F17H(cnt) + 0x80 + (slot << 2), dev );
 
 	for (sec = 0; sec < 2; sec++)
 	{
@@ -5774,7 +5775,8 @@ static void AMD_Zen_UMC(struct pci_dev *dev, unsigned int UMC_BAR,
 }
 
 static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
-					const unsigned short umc_max )
+					const unsigned short umc_max,
+					const unsigned short dev_fun[] )
 {
 	struct pci_dev *dev;
 	enum UNCORE_BOOST Mem_Clock = 0, Div_Clock = 0;
@@ -5785,33 +5787,34 @@ static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
   for (umc = 0; umc < umc_max; umc++)
   {
 	const unsigned int domain = pci_domain_nr(pdev->bus);
-	const unsigned int devfn = PCI_DEVFN(0x18 + umc, 0x0);
-	unsigned short cha;
+	const unsigned int devfn = PCI_DEVFN(dev_fun[umc], 0x0);
+	unsigned short cha = 0, cnt;
 
 	dev = pci_get_domain_bus_and_slot(domain, 0x0, devfn);
    if (dev != NULL)
    {
 		PUBLIC(RO(Proc))->Uncore.CtrlCount++;
-		PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount = 2;
 		PUBLIC(RO(Proc))->Uncore.MC[umc].SlotCount = 2;
 
-    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount; cha++)
+    for (cnt = 0; cnt < MC_MAX_CHA; cnt++)
     {
 	AMD_17_UMC_SDP_CTRL SDP_CTRL = {.value = 0};
 
 	Core_AMD_SMN_Read(
 		PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha].AMD17h.ECC._,
-		SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xdf0, dev );
+		SMU_AMD_UMC_BASE_CHA_F17H(cnt) + 0xdf0, dev );
 
 	Core_AMD_SMN_Read(
 		PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha].AMD17h.ECC.__,
-		SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xdf4, dev );
+		SMU_AMD_UMC_BASE_CHA_F17H(cnt) + 0xdf4, dev );
 
-	Core_AMD_SMN_Read(SDP_CTRL, SMU_AMD_UMC_BASE_CHA_F17H(cha)+0x104, dev);
+	Core_AMD_SMN_Read(SDP_CTRL, SMU_AMD_UMC_BASE_CHA_F17H(cnt)+0x104, dev);
 
      if ((SDP_CTRL.value != 0xffffffff) && (SDP_CTRL.SdpInit))
      {
-	AMD_Zen_UMC(dev, SMU_AMD_UMC_BASE_CHA_F17H(cha), umc, cha);
+	AMD_Zen_UMC(dev, SMU_AMD_UMC_BASE_CHA_F17H(cnt), umc, cha, cnt);
+
+	cha++;
      }
      if ((Got_Mem_Clock == false)
       && PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha].AMD17h.MISC.MEMCLK)
@@ -5825,7 +5828,7 @@ static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
      {
 	AMD_17_UMC_DEBUG_MISC DbgMisc = {.value = 0};
 
-	Core_AMD_SMN_Read(DbgMisc, SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xd6c, dev);
+	Core_AMD_SMN_Read(DbgMisc, SMU_AMD_UMC_BASE_CHA_F17H(cnt) + 0xd6c, dev);
 	if (DbgMisc.UMC_Ready == 1)
 	{
 		Div_Clock = !DbgMisc.UCLK_Divisor;
@@ -5833,6 +5836,7 @@ static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
 	}
      }
     }
+	PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount = cha;
 	pci_dev_put(dev);
    } else {
 	pr_err( "CoreFreq: AMD_17h_DataFabric()"	\
@@ -5854,58 +5858,58 @@ static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
 
 static PCI_CALLBACK AMD_DataFabric_Zeppelin(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1);
+	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
 }
 
 static PCI_CALLBACK AMD_DataFabric_Raven(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1);
+	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
 }
 
 static PCI_CALLBACK AMD_DataFabric_Matisse(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1);
+	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
 }
 
 static PCI_CALLBACK AMD_DataFabric_Starship(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1);
+	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
 }
 
 static PCI_CALLBACK AMD_DataFabric_Renoir(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1);
+	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
 }
 
 static PCI_CALLBACK AMD_DataFabric_Ariel(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1);
+	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
 }
 
 static PCI_CALLBACK AMD_DataFabric_Raven2(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1);
+	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
 }
 
 static PCI_CALLBACK AMD_DataFabric_Fireflight(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1);
+	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
 }
 
 static PCI_CALLBACK AMD_DataFabric_Arden(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1);
+	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
 }
 
 static PCI_CALLBACK AMD_DataFabric_Vermeer(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1);
+	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
 }
 
 static PCI_CALLBACK AMD_DataFabric_Cezanne(struct pci_dev *pdev)
 {
     if (PUBLIC(RO(Proc))->Registration.Experimental) {
-	return AMD_17h_DataFabric(pdev, 1);
+	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
     } else {
 	return (PCI_CALLBACK) -EAGAIN;
     }
