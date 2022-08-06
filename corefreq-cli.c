@@ -6766,6 +6766,9 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 
 	     if ((li = strlen(RO(Shm)->SMB.Memory.PartNumber[slot])) > 0)
 	     {
+		if (li >= (4 * MC_MATY)) {
+			li = (4 * MC_MATY) - 1;
+		}
 		StrFormat(str, CODENAME_LEN + 4 + 10,
 			"%%%d.*s", (MC_MATX - 11) * MC_MATY);
 

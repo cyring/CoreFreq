@@ -4702,14 +4702,6 @@ void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
 	/*		DIMM parameters					*/
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.value = readl(mchmap+0xd80c);
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.value = readl(mchmap+0xd810);
-	/*		Sum up any present DIMM per channel.		*/
-	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
-	  ((PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.Dimm_L_Size != 0)
-	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.Dimm_S_Size != 0))
-	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.Dimm_L_Size != 0)
-	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.Dimm_S_Size != 0));
-
-	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
 
     for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
     {
@@ -5540,13 +5532,32 @@ static PCI_CALLBACK ADL_IMC(struct pci_dev *dev)
 	PCI_CALLBACK rc = 0;
 	unsigned short mc;
 
-	PUBLIC(RO(Proc))->Uncore.CtrlCount = 2;
-	/* MCHBAR corresponds to bits 41 to 17 ; two MC x 64KB memory space */
-	for (mc = 0; mc < PUBLIC(RO(Proc))->Uncore.CtrlCount; mc++) {
-		rc = SKL_HOST(dev, Query_ADL_IMC, 0x10000, mc);
-	}
+	pci_read_config_dword(dev, 0xe4,
+				&PUBLIC(RO(Proc))->Uncore.Bus.ADL_Cap_A.value);
+
+	pci_read_config_dword(dev, 0xe8,
+				&PUBLIC(RO(Proc))->Uncore.Bus.ADL_Cap_B.value);
+
+	pci_read_config_dword(dev, 0xec,
+				&PUBLIC(RO(Proc))->Uncore.Bus.ADL_Cap_C.value);
+
 	pci_read_config_dword(dev, 0xf0,
 				&PUBLIC(RO(Proc))->Uncore.Bus.ADL_Cap_E.value);
+
+	/* MCHBAR corresponds to bits 41 to 17 ; two MC x 64KB memory space */
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 2;
+	for (mc = 0; mc < PUBLIC(RO(Proc))->Uncore.CtrlCount; mc++)
+	{
+		/*	2 DIMMs Per Channel Enable			*/
+	    if (PUBLIC(RO(Proc))->Uncore.Bus.ADL_Cap_A.DDPCD == 0) {
+		PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 2;
+	    } else {
+		PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 1;
+	    }
+		PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
+
+		rc = SKL_HOST(dev, Query_ADL_IMC, 0x10000, mc);
+	}
 	return rc;
 }
 
@@ -20968,7 +20979,7 @@ void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
     case DMI_ENTRY_MEM_DEVICE:
 	{
 		const struct SMBIOS17 *entry = (struct SMBIOS17*) dh;
-	  if ((entry->length >= 0x5c) && (entry->size > 0))
+	  if ((entry->length > 0x1a) && (entry->size > 0))
 	  {
 	    if ((*count) < MC_MAX_DIMM)
 	    {
@@ -20976,11 +20987,10 @@ void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
 			safe_strim(SMBIOS_String(dh, entry->device_locator_id)),
 			safe_strim(SMBIOS_String(dh, entry->bank_locator_id))
 		};
-		size_t calc;
 		const size_t len[2] = {
-			(calc = strlen(locator[0])) > 0 ? calc : 0,
-			(calc = strlen(locator[1])) > 0 ? calc : 0
-		}, prop = (calc = len[0] + len[1]) > 0 ? calc : 1;
+			strlen(locator[0]) > 0 ? strlen(locator[0]) : 0,
+			strlen(locator[1]) > 0 ? strlen(locator[1]) : 0
+		}, prop = (len[0] + len[1]) > 0 ? (len[0] + len[1]) : 1;
 
 		const int ratio[2] = {
 			DIV_ROUND_CLOSEST(len[0] * (MAX_UTS_LEN - (1+1)), prop),

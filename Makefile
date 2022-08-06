@@ -174,7 +174,7 @@ help:
 	"|  make [all] [clean] [info] [help] [install] [module-install]  |\n"\
 	"|                                                               |\n"\
 	"|  CC=<COMPILER>                                                |\n"\
-	"|    where <COMPILER> is cc, gcc       [clang partial support]  |\n"\
+	"|    where <COMPILER> is cc, gcc, clang                         |\n"\
 	"|                                                               |\n"\
 	"|  WARNING=<ARG>                                                |\n"\
 	"|    where default argument is -Wall                            |\n"\

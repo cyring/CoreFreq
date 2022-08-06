@@ -3471,6 +3471,7 @@ const unsigned long long SNB_MCLK(RO(PROC) *RO(Proc),
 	case 0b000:
 		return fallback;
 	}
+	return fallback;
 }
 
 void SNB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
