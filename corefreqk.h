@@ -2807,10 +2807,6 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 		PCI_VDEVICE(AMD, DID_AMD_17H_ARDEN_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
-	{
-		PCI_VDEVICE(AMD, DID_AMD_19H_CEZANNE_NB_IOMMU),
-		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
-	},
 	/* Source: HYGON: PCI list					*/
 	{
 		PCI_VDEVICE(HYGON, DID_AMD_17H_ZEN_PLUS_NB_IOMMU),
