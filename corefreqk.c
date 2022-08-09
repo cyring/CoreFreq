@@ -4687,7 +4687,7 @@ void Query_TGL_IMC(void __iomem *mchmap, unsigned short mc)
 
 void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
 {	/*Source: 12th Generation Intel® Core Processor Datasheet Vol 2 */
-	unsigned short cha;
+	unsigned short cha, channelCount;
 
 	/*		Intra channel configuration			*/
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADCH.value = readl(mchmap+0xd800);
@@ -4702,8 +4702,15 @@ void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
 	/*		DIMM parameters					*/
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.value = readl(mchmap+0xd80c);
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.value = readl(mchmap+0xd810);
+	/*	Guessing activated channel from the populated DIMM.	*/
+	channelCount = \
+	  ((PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.Dimm_L_Size != 0)
+	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.Dimm_S_Size != 0))
+	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.Dimm_L_Size != 0)
+	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.Dimm_S_Size != 0));
 
-    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
+    for (cha = 0 ; (cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount)
+		&& (cha < channelCount); cha++)
     {
 	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].ADL.Timing.value = \
 					readq(mchmap + 0xe000 + 0x800 * cha);
