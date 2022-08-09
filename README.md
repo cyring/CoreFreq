@@ -364,7 +364,7 @@ o---------------------------------------------------------------o
 |  make [all] [clean] [info] [help] [install] [module-install]  |
 |                                                               |
 |  CC=<COMPILER>                                                |
-|    where <COMPILER> is cc, gcc       [clang partial support]  |
+|    where <COMPILER> is cc, gcc, clang                         |
 |                                                               |
 |  WARNING=<ARG>                                                |
 |    where default argument is -Wall                            |
@@ -411,6 +411,15 @@ o---------------------------------------------------------------o
 |   | MSR_AMD_F17H_APERF        |  MSR_AMD_F17H_MPERF       |   |
 |    -------------------------------------------------------    |
 |                                                               |
+|  Architectural Counters:                                      |
+|    -------------------------------------------------------    |
+|   |           Intel           |            AMD            |   |
+|   |----------- REG -----------|----------- REG -----------|   |
+|   |       ARCH_PMC=PCU        |      ARCH_PMC=L3          |   |
+|   |                           |      ARCH_PMC=PERF        |   |
+|   |                           |      ARCH_PMC=UMC         |   |
+|    -------------------------------------------------------    |
+|                                                               |
 |  User Interface Layout:                                       |
 |    NO_HEADER=<F>  NO_FOOTER=<F>  NO_UPPER=<F>  NO_LOWER=<F>   |
 |      when <F> is 1: don't build and display this area part    |
@@ -418,7 +427,7 @@ o---------------------------------------------------------------o
 |      when <F> is 1: build with background transparency        |
 |                                                               |
 |  Example:                                                     |
-|    make CC=gcc OPTIM_LVL=3 FEAT_DBG=1                         |
+|    make CC=gcc OPTIM_LVL=3 FEAT_DBG=1 ARCH_PMC=PCU            |
 |         MSR_CORE_PERF_UCC=MSR_CORE_PERF_FIXED_CTR1            |
 |         MSR_CORE_PERF_URC=MSR_CORE_PERF_FIXED_CTR2            |
 |         HWM_CHIPSET=W83627 MAX_FREQ_HZ=5350000000             |
