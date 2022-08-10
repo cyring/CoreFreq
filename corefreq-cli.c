@@ -5458,9 +5458,11 @@ void Sensors(unsigned int iter)
 			Setting.fahrCels ? 'F' : 'C'  );
 
 	const int ldx = \
-	sprintf( row,	"\n" "%.*sPackage%.*sCores%.*sUncore%.*sMemory" \
+	sprintf( row,	"\n" "%.*sPackage[%c]%.*sCores%.*sUncore%.*sMemory" \
 			"%.*sPlatform" "\n" "Energy(J):",
-			13, hSpace, 7, hSpace, 9, hSpace, 8, hSpace, 8, hSpace);
+			13, hSpace,
+		'0'+RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Topology.PackageID,
+			4, hSpace, 9, hSpace, 8, hSpace, 8, hSpace);
 
     while (!BITVAL(Shutdown, SYNC) && (iter-- > 0) && (sdx > 0) && (ldx > 0))
     {
@@ -5601,8 +5603,9 @@ void Power(unsigned int iter)
 			"    Accumulator      Min  Energy(J) Max"	\
 			"    Min  Power(W)  Max\n" );
 	const int ldx = \
-	sprintf( row, "\nEnergy(J)  Package%.*sCores%.*sUncore%.*sMemory\n",
-			12, hSpace, 15, hSpace, 14, hSpace );
+	sprintf( row, "\nEnergy(J)  Package[%c]%.*sCores%.*sUncore%.*sMemory\n",
+		'0'+RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Topology.PackageID,
+			9, hSpace, 15, hSpace, 14, hSpace );
 
     while (!BITVAL(Shutdown, SYNC) && (iter-- > 0) && (sdx > 0) && (ldx > 0))
     {
@@ -15799,6 +15802,9 @@ CUINT Layout_Ruler_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 
 	oRow = hPwrSoC.origin.row;
   }
+	LayerAt(layer,code, 45, oRow) = '0'
+	+ RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Topology.PackageID;
+
 	LayerAt(layer,code, 14, oRow) = \
 	LayerAt(layer,code, 35, oRow) = \
 	LayerAt(layer,code, 57, oRow) = \
@@ -15902,6 +15908,9 @@ CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 
 	oRow = hPwrSoC.origin.row;
   }
+	LayerAt(layer,code, 45, oRow) = '0'
+	+ RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Topology.PackageID;
+
 	LayerAt(layer,code, 14, oRow) = \
 	LayerAt(layer,code, 35, oRow) = \
 	LayerAt(layer,code, 57, oRow) = \
@@ -18261,12 +18270,12 @@ CUINT Draw_AltMonitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 
 #define CUST_INTEL(unit) " RAM:%8.4f(" COREFREQ_STRINGIFY(unit) ") -"	\
 			"- SA:%8.4f(U)/%5.4f(V)"			\
-			" - Pkg:%8.4f(" COREFREQ_STRINGIFY(unit) ") - " \
+			" - Pkg[%c]:%8.4f(" COREFREQ_STRINGIFY(unit) ") - " \
 			"%5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f -"
 
 #define CUST_AMD(unit)	" RAM:%8.4f(" COREFREQ_STRINGIFY(unit) ") -"	\
 			" SoC:%8.4f(" COREFREQ_STRINGIFY(unit) ")/%5.4f(V)" \
-			" - Pkg:%8.4f(" COREFREQ_STRINGIFY(unit) ") - " \
+			" - Pkg[%c]:%8.4f(" COREFREQ_STRINGIFY(unit) ") - " \
 			"%5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f"
 
 size_t Draw_AltMonitor_Custom_Energy_Joule(void)
@@ -18282,6 +18291,8 @@ size_t Draw_AltMonitor_Custom_Energy_Joule(void)
 			RO(Shm)->Proc.State.Energy[PWR_DOMAIN(RAM)].Current,
 			RO(Shm)->Proc.State.Energy[PWR_DOMAIN(UNCORE)].Current,
 			PFlop->Voltage.SOC,
+
+		'0'+RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Topology.PackageID,
 			RO(Shm)->Proc.State.Energy[PWR_DOMAIN(PKG)].Current,
 
 			RO(Shm)->Proc.State.Voltage.Limit[SENSOR_LOWEST],
@@ -18316,6 +18327,8 @@ size_t Draw_AltMonitor_Custom_Power_Watt(void)
 			RO(Shm)->Proc.State.Power[PWR_DOMAIN(RAM)].Current,
 			RO(Shm)->Proc.State.Power[PWR_DOMAIN(UNCORE)].Current,
 			PFlop->Voltage.SOC,
+
+		'0'+RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Topology.PackageID,
 			RO(Shm)->Proc.State.Power[PWR_DOMAIN(PKG)].Current,
 
 			RO(Shm)->Proc.State.Voltage.Limit[SENSOR_LOWEST],
@@ -18362,7 +18375,7 @@ CUINT Draw_AltMonitor_Custom(Layer *layer, const unsigned int cpu, CUINT row)
 
 	size_t len = Draw_AltMonitor_Custom_Matrix[Setting.jouleWatt]();
 
-	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), &Buffer[ 0], len);
+	memcpy(&LayerAt(layer, code, 1, row), &Buffer[ 0], len);
 
 	row += 1;
 	return row;
