@@ -5819,11 +5819,11 @@ static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
 	AMD_17_UMC_SDP_CTRL SDP_CTRL = {.value = 0};
 
 	Core_AMD_SMN_Read(
-		PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha].AMD17h.ECC._,
+		PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cnt].AMD17h.ECC._,
 		SMU_AMD_UMC_BASE_CHA_F17H(cnt) + 0xdf0, dev );
 
 	Core_AMD_SMN_Read(
-		PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha].AMD17h.ECC.__,
+		PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cnt].AMD17h.ECC.__,
 		SMU_AMD_UMC_BASE_CHA_F17H(cnt) + 0xdf4, dev );
 
 	Core_AMD_SMN_Read(SDP_CTRL, SMU_AMD_UMC_BASE_CHA_F17H(cnt)+0x104, dev);
@@ -5835,11 +5835,9 @@ static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
 	cha++;
      }
      if ((Got_Mem_Clock == false)
-      && PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha].AMD17h.MISC.MEMCLK)
+      && PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cnt].AMD17h.MISC.MEMCLK)
      {
-	Mem_Clock = PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[
-								cha
-							].AMD17h.MISC.MEMCLK;
+     Mem_Clock=PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cnt].AMD17h.MISC.MEMCLK;
 	Got_Mem_Clock = true;
      }
      if (Got_Div_Clock == false)
