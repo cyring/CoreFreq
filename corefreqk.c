@@ -3663,7 +3663,16 @@ long AMD_F17h_CPPC(void)
 	return -ENODEV;
 }
 
-signed int Read_ACPI_CPPC_Registers(unsigned int cpu)
+inline signed int Enable_ACPI_CPPC(unsigned int cpu, void *arg)
+{
+#ifdef CONFIG_ACPI_CPPC_LIB
+	return cppc_set_enable((signed int) cpu, true);
+#else
+	return -ENODEV;
+#endif /* CONFIG_ACPI_CPPC_LIB */
+}
+
+signed int Read_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 {
 #ifdef CONFIG_ACPI_CPPC_LIB
 	struct cppc_perf_fb_ctrs CPPC_Perf;
@@ -3684,22 +3693,22 @@ signed int Read_ACPI_CPPC_Registers(unsigned int cpu)
 			#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0)
 			.Efficient	= CPPC_Caps.nominal_freq,
 			.Lowest 	= CPPC_Caps.lowest_freq,
+			.Minimum	= CPPC_Caps.lowest_freq,
 			#else
 			.Efficient	= CPPC_Caps.nominal_perf,
 			.Lowest 	= CPPC_Caps.lowest_perf,
+			.Minimum	= CPPC_Caps.lowest_perf,
 			#endif
-			.Minimum	= CPPC_Perf.reference_perf,
-			.Maximum	= CPPC_Perf.reference_perf,
+			.Maximum	= CPPC_Caps.highest_perf,
 			.Desired	= CPPC_Perf.reference_perf,
 			.Energy 	= 0
 		};
 		#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
 		rc = cppc_get_desired_perf(Core->Bind, &desired_perf);
-		#endif
 		if (rc == 0) {
-			Core->PowerThermal.ACPI_CPPC.Maximum = \
 			Core->PowerThermal.ACPI_CPPC.Desired = desired_perf;
 		}
+		#endif
 	}
 	return rc;
 #else
@@ -3707,7 +3716,7 @@ signed int Read_ACPI_CPPC_Registers(unsigned int cpu)
 #endif /* CONFIG_ACPI_CPPC_LIB */
 }
 
-void For_All_ACPI_CPPC_Read(void)
+void For_All_ACPI_CPPC(signed int(*CPPC_Func)(unsigned int, void*), void *arg)
 {
 	#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
 	signed int rc = acpi_cpc_valid() == false;
@@ -3718,7 +3727,7 @@ void For_All_ACPI_CPPC_Read(void)
 	unsigned int cpu;
 	for (cpu = 0; (cpu < PUBLIC(RO(Proc))->CPU.Count) && (rc == 0); cpu++)
 	{
-		rc = Read_ACPI_CPPC_Registers(cpu);
+		rc = CPPC_Func(cpu, arg);
 	}
 	PUBLIC(RO(Proc))->Features.ACPI_CPPC = (rc == 0);
 }
@@ -6965,6 +6974,108 @@ inline unsigned int CPPC_AMD_Zen_ScaleHint(	CORE_RO *Core,
 	return flag;
 }
 
+signed int Write_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
+{
+#ifdef CONFIG_ACPI_CPPC_LIB
+	CLOCK_ZEN_ARG *pClockZen = (CLOCK_ZEN_ARG *) arg;
+
+	struct cppc_perf_fb_ctrs CPPC_Perf;
+	struct cppc_perf_caps CPPC_Caps;
+
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+    if ((cppc_get_perf_ctrs(Core->Bind, &CPPC_Perf) == 0)
+     && (cppc_get_perf_caps(Core->Bind, &CPPC_Caps) == 0))
+    {
+	HWCR HwCfgRegister = {.value = 0};
+	unsigned short WrRdCPPC = 0;
+
+	struct cppc_perf_ctrls perf_ctrls = {
+		.max_perf = CPPC_Caps.highest_perf,
+	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0)
+		.min_perf = CPPC_AMD_Zen_ScaleHint(Core,
+					CPPC_Caps.lowest_freq / PRECISION,
+					!HwCfgRegister.Family_17h.CpbDis),
+	    #else
+		.min_perf = CPPC_Caps.lowest_perf,
+	    #endif
+		.desired_perf = CPPC_Perf.reference_perf
+	};
+	#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
+	unsigned long long desired_perf = 0;
+	if (cppc_get_desired_perf(Core->Bind, &desired_perf) == 0) {
+		perf_ctrls.desired_perf = desired_perf;
+	}
+	#endif
+
+	RDMSR(HwCfgRegister, MSR_K7_HWCR);
+
+	switch (pClockZen->pClockMod->NC) {
+	case CLOCK_MOD_HWP_MIN:
+		pClockZen->rc = -RC_UNIMPLEMENTED;
+		break;
+	case CLOCK_MOD_HWP_MAX:
+		pClockZen->rc = -RC_UNIMPLEMENTED;
+		break;
+	case CLOCK_MOD_HWP_TGT:
+	{
+		unsigned int hint;
+	    if (pClockZen->pClockMod->cpu == -1) {
+		hint = CPPC_AMD_Zen_ScaleHint(	Core,
+					pClockZen->pClockMod->Ratio,
+					!HwCfgRegister.Family_17h.CpbDis );
+
+		perf_ctrls.desired_perf = hint & 0xff;
+		WrRdCPPC = 1;
+	    } else if (pClockZen->pClockMod->cpu == cpu) {
+		hint = CPPC_AMD_Zen_ScaleHint(	Core,
+					Core->Boost[BOOST(HWP_TGT)]
+					+ pClockZen->pClockMod->Offset,
+					!HwCfgRegister.Family_17h.CpbDis );
+
+		perf_ctrls.desired_perf = hint & 0xff;
+		WrRdCPPC = 1;
+	    }
+	}
+		break;
+	default:
+		pClockZen->rc = -RC_UNIMPLEMENTED;
+		break;
+	}
+	if (WrRdCPPC == 1)
+	{
+		cppc_set_perf(cpu, &perf_ctrls);
+
+	    if (cppc_get_perf_caps(cpu, &CPPC_Caps) == 0)
+	    {
+		perf_ctrls.max_perf = CPPC_Caps.highest_perf;
+		#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0)
+		perf_ctrls.min_perf = CPPC_AMD_Zen_ScaleHint(Core,
+					CPPC_Caps.lowest_freq / PRECISION,
+					!HwCfgRegister.Family_17h.CpbDis);
+		#else
+		perf_ctrls.min_perf = CPPC_Caps.lowest_perf;
+		#endif
+
+		Core->PowerThermal.ACPI_CPPC.Minimum = CPPC_Caps.lowest_freq;
+		Core->PowerThermal.ACPI_CPPC.Maximum = CPPC_Caps.highest_perf;
+	    }
+	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
+	    if (cppc_get_desired_perf(cpu, &desired_perf) == 0) {
+		perf_ctrls.desired_perf = desired_perf;
+
+		Core->PowerThermal.ACPI_CPPC.Desired = desired_perf;
+	    }
+	    #endif
+		pClockZen->rc = RC_OK_COMPUTE;
+	}
+    }
+	return 0;
+#else
+	return -ENODEV;
+#endif /* CONFIG_ACPI_CPPC_LIB */
+}
+
 static void CPPC_AMD_Zen_PerCore(void *arg)
 {
 	CLOCK_ZEN_ARG *pClockZen = (CLOCK_ZEN_ARG *) arg;
@@ -7217,9 +7328,16 @@ static long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 		.pClockMod = pClockMod,
 		.rc = RC_SUCCESS
 	};
-	return PUBLIC(RO(Proc))->Features.HWP_Enable == 1 ?
-		For_All_AMD_Zen_Clock(&ClockZen, CPPC_AMD_Zen_PerCore)
-		: -RC_UNIMPLEMENTED;
+	if (PUBLIC(RO(Proc))->Features.HWP_Enable == 1) {
+		return For_All_AMD_Zen_Clock(&ClockZen, CPPC_AMD_Zen_PerCore);
+	}
+	else if (PUBLIC(RO(Proc))->Features.ACPI_CPPC == 1)
+	{
+		For_All_ACPI_CPPC(Write_ACPI_CPPC_Registers, &ClockZen);
+		return ClockZen.rc;
+	} else {
+		return -RC_UNIMPLEMENTED;
+	}
       }
     default:
 	return -RC_UNIMPLEMENTED;
@@ -7459,7 +7577,7 @@ static void Query_AMD_F17h_PerSocket(unsigned int cpu)
 	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
 		Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
 		if (AMD_F17h_CPPC() == -ENODEV) {
-			For_All_ACPI_CPPC_Read();
+			For_All_ACPI_CPPC(Read_ACPI_CPPC_Registers, NULL);
 		}
 	}
 }
@@ -7475,7 +7593,7 @@ static void Query_AMD_F17h_PerCluster(unsigned int cpu)
 	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
 		Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
 		if (AMD_F17h_CPPC() == -ENODEV) {
-			For_All_ACPI_CPPC_Read();
+			For_All_ACPI_CPPC(Read_ACPI_CPPC_Registers, NULL);
 		}
 	}
 }
@@ -11798,6 +11916,9 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 
 	Core->PowerThermal.HWP_Capabilities.Lowest = \
 			Core->PowerThermal.ACPI_CPPC.Lowest / PRECISION;
+
+	Core->PowerThermal.HWP_Request.Minimum_Perf = \
+			Core->PowerThermal.ACPI_CPPC.Minimum / PRECISION;
 	#else
 	Core->PowerThermal.HWP_Capabilities.Most_Efficient = \
 			CPPC_AMD_Zen_ScaleRatio( Core,
@@ -11809,12 +11930,12 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 				Core->PowerThermal.ACPI_CPPC.Lowest,
 				!HwCfgRegister.Family_17h.CpbDis
 			);
-	#endif
 	Core->PowerThermal.HWP_Request.Minimum_Perf = \
 			CPPC_AMD_Zen_ScaleRatio( Core,
 				Core->PowerThermal.ACPI_CPPC.Minimum,
 				!HwCfgRegister.Family_17h.CpbDis
 			);
+	#endif
 	Core->PowerThermal.HWP_Request.Maximum_Perf = \
 			CPPC_AMD_Zen_ScaleRatio( Core,
 				Core->PowerThermal.ACPI_CPPC.Maximum,
@@ -20136,7 +20257,11 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	    } else if ((PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
 		|| (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON))
 	    {
-		AMD_F17h_CPPC();
+		if (PUBLIC(RO(Proc))->Features.ACPI_CPPC) {
+			For_All_ACPI_CPPC(Enable_ACPI_CPPC, NULL);
+		} else {
+			AMD_F17h_CPPC();
+		}
 	    }
 		Controller_Start(1);
 		HWP_Enable = -1;

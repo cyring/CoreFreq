@@ -5,8 +5,8 @@
  */
 
 #define COREFREQ_MAJOR	1
-#define COREFREQ_MINOR	91
-#define COREFREQ_REV	6
+#define COREFREQ_MINOR	92
+#define COREFREQ_REV	0
 
 #if !defined(CORE_COUNT)
 	#define CORE_COUNT	256

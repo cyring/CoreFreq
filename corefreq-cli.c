@@ -3674,8 +3674,8 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
      {
       if (RO(Shm)->Proc.Features.ACPI_CPPC == 1)
       {
-	GridHover( PUT( SCANKEY_NULL, attrib[bix], width, 2,
-			"%s%.*s%s       [%3s]", RSC(PERF_MON_CPPC).CODE(),
+	GridHover( PUT( BOXKEY_HWP, attrib[bix], width, 2,
+			"%s%.*s%s       <%3s>", RSC(PERF_MON_CPPC).CODE(),
 			width - 19 - RSZ(PERF_MON_CPPC), hSpace,
 			RSC(PERF_LABEL_CPPC).CODE(), RSC(FMW).CODE() ),
 		(char *) RSC(PERF_MON_CPPC_COMM).CODE() );
@@ -9165,19 +9165,23 @@ void CPU_Target_Freq_Update(TGrid *grid, DATA_TYPE data[])
 void Pkg_Item_HWP_Target_Freq(ASCII *item)
 {
 	unsigned int top = Ruler.Top[BOOST(HWP_TGT)];
+	const unsigned int isEnable = (RO(Shm)->Proc.Features.HWP_Enable == 1)
+				|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1);
 
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_HWP_TGT).CODE(),
 			&RO(Shm)->Cpu[top].FlipFlop[
 				!RO(Shm)->Cpu[top].Toggle
 			].Clock,
 			RO(Shm)->Cpu[top].Boost[BOOST(HWP_TGT)],
-			RO(Shm)->Proc.Features.HWP_Enable );
+			isEnable );
 }
 
 void Pkg_HWP_Target_Freq_Update(TGrid *grid, DATA_TYPE data[])
 {
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];
 	unsigned int top = Ruler.Top[BOOST(HWP_TGT)];
+	const unsigned int isEnable = (RO(Shm)->Proc.Features.HWP_Enable == 1)
+				|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1);
 	UNUSED(data);
 
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_HWP_TGT).CODE(),
@@ -9185,7 +9189,7 @@ void Pkg_HWP_Target_Freq_Update(TGrid *grid, DATA_TYPE data[])
 				!RO(Shm)->Cpu[top].Toggle
 			].Clock,
 			RO(Shm)->Cpu[top].Boost[BOOST(HWP_TGT)],
-			RO(Shm)->Proc.Features.HWP_Enable );
+			isEnable );
 
 	memcpy(grid->cell.item, item, grid->cell.length);
 }
@@ -9194,11 +9198,13 @@ void CPU_Item_HWP_Target_Freq(unsigned int cpu, ASCII *item)
 {
 	struct FLIP_FLOP *CFlop;
 	CFlop = &RO(Shm)->Cpu[cpu].FlipFlop[ !RO(Shm)->Cpu[cpu].Toggle ];
+	const unsigned int isEnable = (RO(Shm)->Proc.Features.HWP_Enable == 1)
+				|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1);
 
     if (RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf == 0) {
 	CPU_Item_Auto_Freq(	cpu,
 			RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf,
-				RO(Shm)->Proc.Features.HWP_Enable, item );
+				isEnable, item );
     } else {
 	StrFormat(item,
 			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
@@ -9211,9 +9217,9 @@ void CPU_Item_HWP_Target_Freq(unsigned int cpu, ASCII *item)
 			RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf,
 			CFlop->Clock
 			),
-			RO(Shm)->Proc.Features.HWP_Enable ? '<' : '[',
+			isEnable ? '<' : '[',
 			RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf,
-			RO(Shm)->Proc.Features.HWP_Enable ? '>' : ']');
+			isEnable ? '>' : ']');
     }
 }
 
@@ -9260,19 +9266,23 @@ void CPU_HWP_Target_Freq_Update(TGrid *grid, DATA_TYPE data[])
 void Pkg_Item_HWP_Max_Freq(ASCII *item)
 {
 	unsigned int top = Ruler.Top[BOOST(HWP_MAX)];
+	const unsigned int isEnable = (RO(Shm)->Proc.Features.HWP_Enable == 1)
+				|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1);
 
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_HWP_MAX).CODE(),
 			&RO(Shm)->Cpu[top].FlipFlop[
 				!RO(Shm)->Cpu[top].Toggle
 			].Clock,
 			RO(Shm)->Cpu[top].Boost[BOOST(HWP_MAX)],
-			RO(Shm)->Proc.Features.HWP_Enable );
+			isEnable );
 }
 
 void Pkg_HWP_Max_Freq_Update(TGrid *grid, DATA_TYPE data[])
 {
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];
 	unsigned int top = Ruler.Top[BOOST(HWP_MAX)];
+	const unsigned int isEnable = (RO(Shm)->Proc.Features.HWP_Enable == 1)
+				|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1);
 	UNUSED(data);
 
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_HWP_MAX).CODE(),
@@ -9280,7 +9290,7 @@ void Pkg_HWP_Max_Freq_Update(TGrid *grid, DATA_TYPE data[])
 				!RO(Shm)->Cpu[top].Toggle
 			].Clock,
 			RO(Shm)->Cpu[top].Boost[BOOST(HWP_MAX)],
-			RO(Shm)->Proc.Features.HWP_Enable );
+			isEnable );
 
 	memcpy(grid->cell.item, item, grid->cell.length);
 }
@@ -9289,11 +9299,13 @@ void CPU_Item_HWP_Max_Freq(unsigned int cpu, ASCII *item)
 {
 	struct FLIP_FLOP *CFlop;
 	CFlop = &RO(Shm)->Cpu[cpu].FlipFlop[ !RO(Shm)->Cpu[cpu].Toggle ];
+	const unsigned int isEnable = (RO(Shm)->Proc.Features.HWP_Enable == 1)
+				|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1);
 
     if (RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Maximum_Perf == 0) {
 	CPU_Item_Auto_Freq(	cpu,
 			RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Maximum_Perf,
-				RO(Shm)->Proc.Features.HWP_Enable, item );
+				isEnable, item );
     } else {
 	StrFormat(item,
 			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
@@ -9306,9 +9318,9 @@ void CPU_Item_HWP_Max_Freq(unsigned int cpu, ASCII *item)
 			RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Maximum_Perf,
 			CFlop->Clock
 			),
-			RO(Shm)->Proc.Features.HWP_Enable ? '<' : '[',
+			isEnable ? '<' : '[',
 			RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Maximum_Perf,
-			RO(Shm)->Proc.Features.HWP_Enable ? '>' : ']');
+			isEnable ? '>' : ']');
     }
 }
 
@@ -9355,19 +9367,23 @@ void CPU_HWP_Max_Freq_Update(TGrid *grid, DATA_TYPE data[])
 void Pkg_Item_HWP_Min_Freq(ASCII *item)
 {
 	unsigned int top = Ruler.Top[BOOST(HWP_MIN)];
+	const unsigned int isEnable = (RO(Shm)->Proc.Features.HWP_Enable == 1)
+				|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1);
 
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_HWP_MIN).CODE(),
 			&RO(Shm)->Cpu[top].FlipFlop[
 				!RO(Shm)->Cpu[top].Toggle
 			].Clock,
 			RO(Shm)->Cpu[top].Boost[BOOST(HWP_MIN)],
-			RO(Shm)->Proc.Features.HWP_Enable );
+			isEnable );
 }
 
 void Pkg_HWP_Min_Freq_Update(TGrid *grid, DATA_TYPE data[])
 {
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];
 	unsigned int top = Ruler.Top[BOOST(HWP_MIN)];
+	const unsigned int isEnable = (RO(Shm)->Proc.Features.HWP_Enable == 1)
+				|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1);
 	UNUSED(data);
 
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_HWP_MIN).CODE(),
@@ -9375,7 +9391,7 @@ void Pkg_HWP_Min_Freq_Update(TGrid *grid, DATA_TYPE data[])
 				!RO(Shm)->Cpu[top].Toggle
 			].Clock,
 			RO(Shm)->Cpu[top].Boost[BOOST(HWP_MIN)],
-			RO(Shm)->Proc.Features.HWP_Enable );
+			isEnable );
 
 	memcpy(grid->cell.item, item, grid->cell.length);
 }
@@ -9384,11 +9400,13 @@ void CPU_Item_HWP_Min_Freq(unsigned int cpu, ASCII *item)
 {
 	struct FLIP_FLOP *CFlop;
 	CFlop = &RO(Shm)->Cpu[cpu].FlipFlop[ !RO(Shm)->Cpu[cpu].Toggle ];
+	const unsigned int isEnable = (RO(Shm)->Proc.Features.HWP_Enable == 1)
+				|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1);
 
     if (RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Minimum_Perf == 0) {
 	CPU_Item_Auto_Freq(	cpu,
 			RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Minimum_Perf,
-				RO(Shm)->Proc.Features.HWP_Enable, item );
+				isEnable, item );
     } else {
 	StrFormat(item,
 			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
@@ -9401,9 +9419,9 @@ void CPU_Item_HWP_Min_Freq(unsigned int cpu, ASCII *item)
 			RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Minimum_Perf,
 			CFlop->Clock
 			),
-			RO(Shm)->Proc.Features.HWP_Enable ? '<' : '[',
+			isEnable ? '<' : '[',
 			RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Minimum_Perf,
-			RO(Shm)->Proc.Features.HWP_Enable ? '>' : ']');
+			isEnable ? '>' : ']');
     }
 }
 
@@ -14805,7 +14823,8 @@ int Shortcut(SCANKEY *scan)
 	  break;
 
 	case BOXKEY_RATIO_CLOCK_HWP_TGT:
-	  if (RO(Shm)->Proc.Features.HWP_Enable == 1)
+	  if ((RO(Shm)->Proc.Features.HWP_Enable == 1)
+	   || (RO(Shm)->Proc.Features.ACPI_CPPC == 1))
 	  {
 		Window *win = SearchWinListById(scan->key, &winList);
 	    if (win == NULL)
@@ -14857,7 +14876,8 @@ int Shortcut(SCANKEY *scan)
 	  break;
 
 	case BOXKEY_RATIO_CLOCK_HWP_MAX:
-	  if (RO(Shm)->Proc.Features.HWP_Enable == 1)
+	  if ((RO(Shm)->Proc.Features.HWP_Enable == 1)
+	   || (RO(Shm)->Proc.Features.ACPI_CPPC == 1))
 	  {
 		Window *win = SearchWinListById(scan->key, &winList);
 	    if (win == NULL)
@@ -14909,7 +14929,8 @@ int Shortcut(SCANKEY *scan)
 	  break;
 
 	case BOXKEY_RATIO_CLOCK_HWP_MIN:
-	  if (RO(Shm)->Proc.Features.HWP_Enable == 1)
+	  if ((RO(Shm)->Proc.Features.HWP_Enable == 1)
+	   || (RO(Shm)->Proc.Features.ACPI_CPPC == 1))
 	  {
 		Window *win = SearchWinListById(scan->key, &winList);
 	    if (win == NULL)
