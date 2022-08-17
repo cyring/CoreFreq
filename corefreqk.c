@@ -3665,7 +3665,8 @@ long AMD_F17h_CPPC(void)
 
 inline signed int Enable_ACPI_CPPC(unsigned int cpu, void *arg)
 {
-#ifdef CONFIG_ACPI_CPPC_LIB
+#if defined(CONFIG_ACPI_CPPC_LIB) \
+ && LINUX_VERSION_CODE >= KERNEL_VERSION(5, 17, 0)
 	return cppc_set_enable((signed int) cpu, true);
 #else
 	return -ENODEV;
@@ -3685,8 +3686,9 @@ signed int Read_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 		rc = cppc_get_perf_caps(Core->Bind, &CPPC_Caps);
 	}
 	if (rc == 0) {
+	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
 		unsigned long long desired_perf = 0;
-
+	    #endif
 		Core->PowerThermal.ACPI_CPPC = (struct ACPI_CPPC_STRUCT) {
 			.Highest	= CPPC_Caps.highest_perf,
 			.Guaranteed	= CPPC_Caps.nominal_perf,
@@ -3703,12 +3705,12 @@ signed int Read_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 			.Desired	= CPPC_Perf.reference_perf,
 			.Energy 	= 0
 		};
-		#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
+	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
 		rc = cppc_get_desired_perf(Core->Bind, &desired_perf);
 		if (rc == 0) {
 			Core->PowerThermal.ACPI_CPPC.Desired = desired_perf;
 		}
-		#endif
+	    #endif
 	}
 	return rc;
 #else
@@ -6976,7 +6978,8 @@ inline unsigned int CPPC_AMD_Zen_ScaleHint(	CORE_RO *Core,
 
 signed int Write_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 {
-#ifdef CONFIG_ACPI_CPPC_LIB
+#if defined (CONFIG_ACPI_CPPC_LIB) \
+ && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
 	CLOCK_ZEN_ARG *pClockZen = (CLOCK_ZEN_ARG *) arg;
 
 	struct cppc_perf_fb_ctrs CPPC_Perf;
@@ -7001,12 +7004,12 @@ signed int Write_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 	    #endif
 		.desired_perf = CPPC_Perf.reference_perf
 	};
-	#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
+    #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
 	unsigned long long desired_perf = 0;
 	if (cppc_get_desired_perf(Core->Bind, &desired_perf) == 0) {
 		perf_ctrls.desired_perf = desired_perf;
 	}
-	#endif
+    #endif
 
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
 
