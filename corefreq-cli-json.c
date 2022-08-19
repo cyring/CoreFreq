@@ -1717,7 +1717,16 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 		}
 		json_key(&s, "Toggle");
 		json_literal(&s, "%u", RO(Shm)->Cpu[cpu].Toggle);
-		/* TODO: ... Query */
+
+		json_key(&s, "Boost");
+		{
+			json_start_arr(&s);
+			for (i = 0; i < RATIO_SIZE; i++)
+			{
+				json_literal(&s, "%u", RO(Shm)->Cpu[cpu].Boost[i]);
+			}
+			json_end_arr(&s);
+		}
 		json_key(&s, "Topology");
 		{
 			json_start_object(&s);
