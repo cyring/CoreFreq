@@ -3663,6 +3663,16 @@ long AMD_F17h_CPPC(void)
 	return -ENODEV;
 }
 
+inline signed int Disable_ACPI_CPPC(unsigned int cpu, void *arg)
+{
+#if defined(CONFIG_ACPI_CPPC_LIB) \
+ && LINUX_VERSION_CODE >= KERNEL_VERSION(5, 17, 0)
+	return cppc_set_enable((signed int) cpu, false);
+#else
+	return -ENODEV;
+#endif /* CONFIG_ACPI_CPPC_LIB */
+}
+
 inline signed int Enable_ACPI_CPPC(unsigned int cpu, void *arg)
 {
 #if defined(CONFIG_ACPI_CPPC_LIB) \
@@ -20281,23 +20291,43 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		break;
 
 	case TECHNOLOGY_HWP:
+	    switch (prm.dl.lo) {
+	    case COREFREQ_TOGGLE_ON:
 		Controller_Stop(1);
 		HWP_Enable = prm.dl.lo;
-	    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL) {
+	      if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL) {
 		Intel_Hardware_Performance();
-	    } else if ((PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
+	      } else if ((PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
 		|| (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON))
-	    {
+	      {
 		if (PUBLIC(RO(Proc))->Features.leaf80000008.EBX.CPPC) {
 			AMD_F17h_CPPC();
 		} else if (PUBLIC(RO(Proc))->Features.ACPI_CPPC) {
 			For_All_ACPI_CPPC(Enable_ACPI_CPPC, NULL);
 		}
-	    }
+	      }
 		Controller_Start(1);
 		HWP_Enable = -1;
 		rc = RC_SUCCESS;
 		break;
+	    case COREFREQ_TOGGLE_OFF:
+	      if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL) {
+		rc = -RC_UNIMPLEMENTED;
+	      } else if ((PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
+		|| (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON))
+	      {
+		if (PUBLIC(RO(Proc))->Features.leaf80000008.EBX.CPPC) {
+			rc = -RC_UNIMPLEMENTED;
+		} else if (PUBLIC(RO(Proc))->Features.ACPI_CPPC) {
+			Controller_Stop(1);
+			For_All_ACPI_CPPC(Disable_ACPI_CPPC, NULL);
+			Controller_Start(1);
+			rc = RC_SUCCESS;
+		}
+	      }
+		break;
+	    }
+	    break;
 
 	case TECHNOLOGY_HWP_EPP:
 		Controller_Stop(1);

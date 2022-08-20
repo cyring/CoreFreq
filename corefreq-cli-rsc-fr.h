@@ -1127,6 +1127,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_HWP_DESC_CODE_FR	" Contr""\xb4""le Mat""\xa9""riel" \
 					" de la Performance"
 
+#define RSC_BOX_FMW_DESC_CODE_FR	" Contr""\xb4""le Firmware"	\
+					" de la Performance"
+
 #define RSC_BOX_HDC_DESC_CODE_FR	" Contr""\xb4""le Mat""\xa9""riel" \
 					" Cycles de Service"
 

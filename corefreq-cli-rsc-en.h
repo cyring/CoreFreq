@@ -1677,6 +1677,7 @@
 #define RSC_BOX_CC6_DESC_CODE_EN	"           Core C6 State            "
 #define RSC_BOX_PC6_DESC_CODE_EN	"          Package C6 State          "
 #define RSC_BOX_HWP_DESC_CODE_EN	"   Hardware-Controlled Performance  "
+#define RSC_BOX_FMW_DESC_CODE_EN	"   Firmware Controlled Performance  "
 #define RSC_BOX_HDC_DESC_CODE_EN	"        Hardware Duty Cycling       "
 #define RSC_BOX_EEO_DESC_CODE_EN	"   Energy Efficiency Optimization   "
 #define RSC_BOX_R2H_DESC_CODE_EN	"      Race To Halt Optimization     "

@@ -3674,7 +3674,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
      {
       if (RO(Shm)->Proc.Features.ACPI_CPPC == 1)
       {
-	GridHover( PUT( BOXKEY_HWP, attrib[bix], width, 2,
+	GridHover( PUT( BOXKEY_FMW_CPPC, attrib[bix], width, 2,
 			"%s%.*s%s       <%3s>", RSC(PERF_MON_CPPC).CODE(),
 			width - 19 - RSZ(PERF_MON_CPPC), hSpace,
 			RSC(PERF_LABEL_CPPC).CODE(), RSC(FMW).CODE() ),
@@ -13278,6 +13278,43 @@ int Shortcut(SCANKEY *scan)
 		RING_WRITE(	RW(Shm)->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_HWP );
+	}
+    break;
+
+    case BOXKEY_FMW_CPPC:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	const Coordinate origin = {
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.row = TOP_HEADER_ROW + 14
+	}, select = {
+		.col = 0,
+		.row = 2
+	};
+	AppendWindow(
+		CreateBox(scan->key, origin, select,
+			(char*) RSC(BOX_CPPC_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			RSC(BOX_FMW_DESC).CODE()  , descAttr,	SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][0], stateAttr[0], BOXKEY_HWP_ON,
+			stateStr[0][0], stateAttr[0], BOXKEY_FMW_CPPC_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+		&winList);
+      } else {
+	SetHead(&winList, win);
+      }
+    }
+    break;
+
+    case BOXKEY_FMW_CPPC_OFF:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_HWP );
 	}
     break;
