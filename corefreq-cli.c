@@ -3735,7 +3735,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
     else if ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	   || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
     {
-	PUT(	BOXKEY_HWP, attrib[4], width, 2,
+	PUT(	SCANKEY_NULL, attrib[4], width, 2,
 		"%s%.*s%s       [%3s]", RSC(PERF_MON_CPPC).CODE(),
 		width - 19 - RSZ(PERF_MON_CPPC), hSpace,
 		RSC(PERF_LABEL_CPPC).CODE(), RSC(NOT_AVAILABLE).CODE() );
