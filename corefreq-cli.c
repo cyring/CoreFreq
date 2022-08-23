@@ -3389,7 +3389,8 @@ void Refresh_HWP_Cap_Freq(TGrid *grid, DATA_TYPE data[])
 		RSC(SYSINFO_PERFMON_HWP_CAP_COND0).ATTR(),
 		RSC(SYSINFO_PERFMON_HWP_CAP_COND1).ATTR()
 	};
-	const unsigned int bix = RO(Shm)->Proc.Features.HWP_Enable == 1;
+	const unsigned int bix	= (RO(Shm)->Proc.Features.HWP_Enable == 1)
+				| (RO(Shm)->Proc.Features.ACPI_CPPC == 1);
 
 	memcpy(grid->cell.attr, HWP_Cap_Attr[bix], grid->cell.length);
 
@@ -3672,7 +3673,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
      if  ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	|| (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
      {
-      if (RO(Shm)->Proc.Features.ACPI_CPPC == 1)
+      if ((bix |= RO(Shm)->Proc.Features.ACPI_CPPC) == 1)
       {
 	GridHover( PUT( BOXKEY_FMW_CPPC, attrib[bix], width, 2,
 			"%s%.*s%s       <%3s>", RSC(PERF_MON_CPPC).CODE(),
@@ -16078,9 +16079,15 @@ void Layout_Footer(Layer *layer, CUINT row)
 	hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[6] = \
 	hTech1.attr[7] = EN[RO(Shm)->Proc.Technology.EIST];
 
+      if (RO(Shm)->Proc.Features.Power.EAX.HWP_Reg == 1)
+      {
+	memcpy(&hTech1.code[9], RSC(PERF_LABEL_HWP).CODE(),RSZ(PERF_LABEL_HWP));
+	hTech1.attr[9] = hTech1.attr[10] = hTech1.attr[11] = \
+			EN[RO(Shm)->Proc.Features.HWP_Enable == 1 ? 1 : 2];
+      } else {
 	hTech1.attr[9] = hTech1.attr[10] = hTech1.attr[11] = \
 				EN[RO(Shm)->Proc.Features.Power.EAX.TurboIDA];
-
+      }
 	hTech1.attr[13] = hTech1.attr[14] = hTech1.attr[15] = \
 	hTech1.attr[16] = hTech1.attr[17] = EN[RO(Shm)->Proc.Technology.Turbo];
 
