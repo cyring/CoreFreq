@@ -18334,7 +18334,7 @@ CUINT Draw_AltMonitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 #endif /* ARCH_PMC */
 
 #define CUST_INTEL(unit) " RAM:%8.4f(" COREFREQ_STRINGIFY(unit) ") -"	\
-			"- SA:%8.4f(U)/%5.4f(V)"			\
+			"- SA:%8.4f(" COREFREQ_STRINGIFY(unit) ")/%5.4f(V)" \
 			" - Pkg[%c]:%8.4f(" COREFREQ_STRINGIFY(unit) ") - " \
 			"%5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f -"
 
