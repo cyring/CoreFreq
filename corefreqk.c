@@ -16743,6 +16743,7 @@ static void InitTimer_Alderlake(unsigned int cpu)
     case Hybrid_Core:
     case Hybrid_RSVD1:
     case Hybrid_RSVD2:
+    default:
 	smp_call_function_single(cpu, InitTimer, Cycle_Alderlake_Pcore, 1);
 	break;
     }
@@ -16773,6 +16774,7 @@ static void Start_Alderlake(void *arg)
     case Hybrid_Core:
     case Hybrid_RSVD1:
     case Hybrid_RSVD2:
+    default:
 	SMT_Counters_Alderlake_Pcore(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
