@@ -2174,6 +2174,26 @@ typedef union
 } N400_MC_ODTCTRL;
 
 typedef union
+{	/* Offset Channel0: 200h, 202h, 204h, 206 & Channel1: +400h	*/
+	unsigned short		value;
+	struct {
+		unsigned short
+		Boundary	: 10-0,
+		ReservedBits	: 16-10;
+	};
+} P35_MC_DRAM_RANK_BOUND;
+
+typedef union
+{	/* Offset Channel0: 208h, 20Ah & Channel1: 608h, 60Ah		*/
+	unsigned short		value;
+	struct {
+		unsigned short
+		Rank0		:  8-0,
+		Rank1		: 16-8;
+	};
+} P35_MC_DRAM_BANK_RANK;
+
+typedef union
 {	/* Offset Channel0: 250h & Channel1: 650h			*/
 	unsigned short		value;
 	struct {

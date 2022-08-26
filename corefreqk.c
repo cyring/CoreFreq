@@ -4144,26 +4144,40 @@ void Query_P35(void __iomem *mchmap, unsigned short mc)
 		PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount += \
 		PUBLIC(RO(Proc))->Uncore.MC[mc].P35.CKE1.SingleDimmPop ? 1 : 2;
 	}
-	for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
-	{
-		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRT0.value = \
+
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
+    {
+	unsigned short rank;
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRT0.value = \
 					readw(mchmap + 0x265 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRT1.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRT1.value = \
 					readw(mchmap + 0x250 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRT2.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRT2.value = \
 					readl(mchmap + 0x252 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRT3.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRT3.value = \
 					readw(mchmap + 0x256 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRT4.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRT4.value = \
 					readl(mchmap + 0x258 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRT5.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRT5.value = \
 					readw(mchmap + 0x25d + 0x400 * cha);
+
+	for (rank = 0; rank < 4; rank++)
+	{
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRB[rank].value = \
+			readw(mchmap + 0x200 + (2 * rank) + 0x400 * cha);
 	}
+	for (rank = 0; rank < 2; rank++)
+	{
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].P35.DRA[rank].value = \
+				readw(mchmap + 0x208 + (2 * rank) + 0x400 * cha);
+	}
+    }
 }
 
 kernel_ulong_t Query_NHM_Timing(struct pci_dev *pdev,

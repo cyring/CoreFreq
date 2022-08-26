@@ -474,6 +474,8 @@ typedef struct
 	/* 121Ch */		G965_MC_DRAM_TIMING_R3	DRT3;	/* 32 bits    */
 			} G965;
 			struct {
+	/* 200h */		P35_MC_DRAM_RANK_BOUND	DRB[4]; /* 4x16 bits  */
+	/* 208h */		P35_MC_DRAM_BANK_RANK	DRA[2]; /* 2x16 bits  */
 	/* 265h */		P35_MC_UNKNOWN_R0	DRT0;	/* 16 bits    */
 	/* 250h */		P35_MC_CYCTRK_PCHG	DRT1;	/* 16 bits    */
 	/* 252h */		P35_MC_CYCTRK_ACT	DRT2;	/* 32 bits    */

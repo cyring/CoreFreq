@@ -2282,8 +2282,8 @@ void P965_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 				* RO(Shm)->Uncore.Bus.Rate)
 				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;
-	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MTS;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MTS;
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
 	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 2;
@@ -2679,24 +2679,40 @@ void P35_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	P3S_MCH(RO(Shm), RO(Proc), mc, cha);
 
 	TIMING(mc, cha).tCL -= 9;
-/* TODO(Timings) */
+
       for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
       {
 	unsigned long long DIMM_Size;
-/* TODO(Geometry):Hardware missing! */
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 0;
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 0;
+	unsigned short rank;
 
-	DIMM_Size	= 8LLU
-			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+	for (rank = 0; rank < 4; rank++) {
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks += \
+		  RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRB[rank].Boundary;
+
+	    switch (rank) {
+	    case 0:
+	    case 2:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = \
+		  RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRA[rank >> 1].Rank0;
+		break;
+	    case 1:
+	    case 3:
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = \
+		  RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRA[rank >> 1].Rank1;
+		break;
+	    }
+	}
+	/*TODO(Geometry registers)*/
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 16384;
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1024;
+
+	DIMM_Size	= RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
 			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
 			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
 			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
 
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
-						(unsigned int)(DIMM_Size >> 20);
+							(unsigned int)DIMM_Size;
       }
 	TIMING(mc, cha).ECC = 0;
     }
