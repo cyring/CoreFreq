@@ -361,6 +361,9 @@
 	#define MSR_PKGC7_IRTL			0x0000060c
 #endif
 
+#define MSR_FLEX_RATIO				0x00000194
+#define MSR_IA32_OVERCLOCKING_STATUS		0x00000195
+
 typedef union
 {
 	unsigned long long value;
@@ -479,6 +482,31 @@ typedef union
 		ReservedBits	: 64-2;
 	};
 } TSX_CTRL;
+
+typedef union
+{	/* MSR_FLEX_RATIO(0x194): Core 2 Extreme, i9-9900K, 11th Gen, 12th Gen*/
+	unsigned long long value;
+	struct
+	{
+		unsigned long long
+		UnknownBits1	: 16-0,
+		OC_BINS 	: 24-16, /* OC Ratio = BCLK ratio + OC_BINS */
+		UnknownBits2	: 64-24;
+	};
+} FLEX_RATIO;
+
+typedef union
+{	/* MSR IA32_OVERCLOCKING_STATUS(0x195)				*/
+	unsigned long long value;
+	struct
+	{
+		unsigned long long
+		OC_Utilized	:  1-0,  /* 1:OC have been enabled	*/
+		Undervolt	:  2-1,  /* 1:Dynamic OC Undervolt Protection*/
+		OC_Unlock	:  3-2,  /* 1:OC unlocked by BIOS	*/
+		ReservedBits	: 64-3;
+	};
+} OVERCLOCKING_STATUS;
 
 typedef union
 {	/* MSR IA32_PERF_STATUS(0x198): 0F_03 [NetBurst]		*/
