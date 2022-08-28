@@ -2739,15 +2739,17 @@ static struct pci_device_id PCI_Alderlake_ids[] = {
 		.driver_data = (kernel_ulong_t) ADL_IMC
 	},
 	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_S_6P_0E_IMC),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
 		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_Z690_PCH),
 		.driver_data = (kernel_ulong_t) ADL_PCH
 	},
-/*TODO(Missing datasheet)
 	{
-		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_H_IMC),
-		.driver_data = (kernel_ulong_t) ADL_H_IMC
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_B660_PCH),
+		.driver_data = (kernel_ulong_t) ADL_PCH
 	},
-*/
 	{0, }
 };
 

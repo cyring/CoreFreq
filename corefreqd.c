@@ -5737,6 +5737,7 @@ static char *Chipset[CHIPSETS] = {
 	[IC_Z590]		= "Intel Z590",
 	[IC_W580]		= "Intel W580",
 	[IC_Z690]		= "Intel Z690",
+	[IC_B660]		= "Intel B660",
 	[IC_K8] 		= "K8/HyperTransport",
 	[IC_ZEN]		= "Zen UMC"
 };
@@ -6189,11 +6190,15 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 	case DID_INTEL_ALDERLAKE_S_8P_8E_IMC:
 	case DID_INTEL_ALDERLAKE_S_8P_4E_IMC:
 	case DID_INTEL_ALDERLAKE_S_6P_4E_IMC:
+	case DID_INTEL_ALDERLAKE_S_6P_0E_IMC:
 		ADL_CAP(RO(Shm), RO(Proc), RO(Core));
 		ADL_IMC(RO(Shm), RO(Proc));
 		break;
 	case DID_INTEL_ALDERLAKE_Z690_PCH:
 		SET_CHIPSET(IC_Z690);
+		break;
+	case DID_INTEL_ALDERLAKE_B660_PCH:
+		SET_CHIPSET(IC_B660);
 		break;
 	}
 }
