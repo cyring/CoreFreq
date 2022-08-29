@@ -202,6 +202,16 @@ CPU     IPS            IPC            CPI
 `yum install kernel-devel`  
 `yum group install "Development Tools"`  
 
+## openSUSE
+ * Packages
+1. [CoreFreq](https://software.opensuse.org/package/CoreFreq) official release
+2. [CoreFreq-kmp-default](https://software.opensuse.org/package/CoreFreq-kmp-default)  
+
+## Unraid
+ * Plugin
+1. `corefreq.plg` from [ich777/unraid-corefreq](https://github.com/ich777/unraid-corefreq)
+2. Based on latest developments, please contact [ich777](https://github.com/ich777)  
+
 ## Q&A
 * Q: How many CPUs are supported by _CoreFreq_ ?  
 
