@@ -1217,7 +1217,7 @@ void Compute_Interval(void)
 #define COMPUTE_LPJ(BCLK_Hz, COF)	( (BCLK_Hz * COF) / HZ )
 
 #if defined(DELAY_TSC) && (DELAY_TSC == 1)
-FEAT_MSG("udelay() built with TSC implementation")
+/*			udelay() built with TSC implementation		*/
 #define CLOCK_TSC( CYCLES, _TIMER, CTR )				\
 ({									\
 	__asm__ volatile						\
