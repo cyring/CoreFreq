@@ -3318,11 +3318,11 @@ void SNB_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
   {
 	unsigned short dimmSize[2][2] = {
 		{
-			RO(Proc)->Uncore.MC[mc].SNB.MAD0.Dimm_A_Size,
-			RO(Proc)->Uncore.MC[mc].SNB.MAD0.Dimm_B_Size
+			RO(Proc)->Uncore.MC[mc].SNB.MAD0.Dimm_B_Size,
+			RO(Proc)->Uncore.MC[mc].SNB.MAD0.Dimm_A_Size
 		}, {
-			RO(Proc)->Uncore.MC[mc].SNB.MAD1.Dimm_A_Size,
-			RO(Proc)->Uncore.MC[mc].SNB.MAD1.Dimm_B_Size
+			RO(Proc)->Uncore.MC[mc].SNB.MAD1.Dimm_B_Size,
+			RO(Proc)->Uncore.MC[mc].SNB.MAD1.Dimm_A_Size
 		}
 	};
 
@@ -3440,7 +3440,7 @@ void SNB_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
       {
 	unsigned int width = 1;
 
-	if (slot == 0) {
+	if (slot % 2 == 0) {
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
 					RO(Proc)->Uncore.MC[mc].SNB.MAD0.DANOR;
 
@@ -3810,11 +3810,11 @@ void HSW_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
   {
 	unsigned short dimmSize[2][2] = {
 		{
-			RO(Proc)->Uncore.MC[mc].SNB.MAD0.Dimm_A_Size,
-			RO(Proc)->Uncore.MC[mc].SNB.MAD0.Dimm_B_Size
+			RO(Proc)->Uncore.MC[mc].SNB.MAD0.Dimm_B_Size,
+			RO(Proc)->Uncore.MC[mc].SNB.MAD0.Dimm_A_Size
 		}, {
-			RO(Proc)->Uncore.MC[mc].SNB.MAD1.Dimm_A_Size,
-			RO(Proc)->Uncore.MC[mc].SNB.MAD1.Dimm_B_Size
+			RO(Proc)->Uncore.MC[mc].SNB.MAD1.Dimm_B_Size,
+			RO(Proc)->Uncore.MC[mc].SNB.MAD1.Dimm_A_Size
 		}
 	};
 
@@ -3911,7 +3911,7 @@ void HSW_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
       {
 	unsigned int width, DIMM_Banks;
 
-	if (slot == 0) {
+	if (slot % 2 == 0) {
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
 					RO(Proc)->Uncore.MC[mc].SNB.MAD0.DANOR;
 
