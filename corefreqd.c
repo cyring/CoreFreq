@@ -3440,7 +3440,7 @@ void SNB_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
       {
 	unsigned int width = 1;
 
-	if (slot % 2 == 0) {
+	if (slot % 2 == 1) {
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
 					RO(Proc)->Uncore.MC[mc].SNB.MAD0.DANOR;
 
@@ -3911,7 +3911,7 @@ void HSW_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
       {
 	unsigned int width, DIMM_Banks;
 
-	if (slot % 2 == 0) {
+	if (slot % 2 == 1) {
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
 					RO(Proc)->Uncore.MC[mc].SNB.MAD0.DANOR;
 
