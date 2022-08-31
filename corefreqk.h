@@ -1938,7 +1938,7 @@ static void Query_Hygon_F18h(unsigned int cpu);
 	[Zen3/Badami]		AF_30h		[BA]	 7 nm	SVR
 	[Zen3+ Rembrandt]	AF_44h Stepping 1	 6 nm	[RMB]
 	[Zen4/Genoa/Stones]	A10F00			 5 nm
-	[Zen4/Raphael]		A60F00		[RPL]	 5 nm
+	[Zen4/Raphael]		AF_61h Stepping 2	 5 nm	[RPL]
 	[Zen4/Phoenix]		A70F00		[PHX]			*/
 #define _AMD_Family_19h {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 #define _AMD_Zen3_VMR	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x2, .Model=0x1}
@@ -1950,6 +1950,7 @@ static void Query_Hygon_F18h(unsigned int cpu);
 			{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x3, .Model=0x0}
 #define _AMD_Zen3Plus_RMB	\
 			{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x4, .Model=0x4}
+#define _AMD_Zen4_RPL	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x6, .Model=0x1}
 
 typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
 
@@ -3170,6 +3171,9 @@ enum {
 enum {
 	CN_REMBRANDT
 };
+enum {
+	CN_RAPHAEL
+};
 
 enum {
 	CN_DHYANA,
@@ -3229,6 +3233,10 @@ static char *Arch_AMD_Zen3_Badami[]	=	ZLIST("Zen3/Milan-X");
 
 static char *Arch_AMD_Zen3Plus_RMB[] = ZLIST(
 		[CN_REMBRANDT]		=	"Zen3+ Rembrandt"
+);
+
+static char *Arch_AMD_Zen4_RPL[] = ZLIST(
+		[CN_RAPHAEL]		=	"Zen4/Raphael"
 );
 
 static char *Arch_AMD_Family_17h[] = ZLIST("AMD Zen");
@@ -6318,6 +6326,49 @@ static PROCESSOR_SPECIFIC AMD_Zen3_Chagall_Specific[] = {
 	},
 	{0}
 };
+static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
+	{
+	.Brand = ZLIST("AMD Ryzen 9 7950X"),
+	.Boost = {+12, +1},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_RAPHAEL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 9 7900X",
+			"AMD Ryzen 7 7700X"	),
+	.Boost = {+9, +1},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_RAPHAEL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 5 7600X"),
+	.Boost = {+6, +1},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_RAPHAEL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{0}
+};
 
 static PROCESSOR_SPECIFIC Misc_Specific_Processor[] = {
 	{0}
@@ -9316,5 +9367,29 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Specific = AMD_Zen3Plus_RMB_Specific,
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3Plus_RMB
+	},
+[AMD_Zen4_RPL] = {							/* 92*/
+	.Signature = _AMD_Zen4_RPL,
+	.Query = Query_AMD_F19h_PerCluster,
+	.Update = PerCore_AMD_Family_19h_Query,
+	.Start = Start_AMD_Family_19h,
+	.Stop = Stop_AMD_Family_19h,
+	.Exit = Exit_AMD_F19h,
+	.Timer = InitTimer_AMD_F19h_Zen3_SP,
+	.BaseClock = BaseClock_AMD_Family_19h,
+	.ClockMod = ClockMod_AMD_Zen,
+	.TurboClock = TurboClock_AMD_Zen,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN3,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_19h,
+	.powerFormula   = POWER_FORMULA_AMD_19h,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = Start_Uncore_AMD_Family_19h,
+		.Stop = Stop_Uncore_AMD_Family_19h,
+		.ClockMod = NULL
+		},
+	.Specific = AMD_Zen4_RPL_Specific,
+	.SystemDriver = AMD_Zen_Driver,
+	.Architecture = Arch_AMD_Zen4_RPL
 	}
 };

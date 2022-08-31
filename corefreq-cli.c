@@ -5897,6 +5897,7 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 	case AMD_Zen3_Chagall:
 	case AMD_Zen3_Badami:
 	case AMD_Zen3Plus_RMB:
+	case AMD_Zen4_RPL:
 		TopologyFunc = Topology_CCD;
 		pStrOFF = TopologyStrOFF[2];
 		TopologySubHeader[1] = TopologyAltSubHeader[2];
