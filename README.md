@@ -304,6 +304,15 @@ CPU     IPS            IPC            CPI
  3. load the _CoreFreq_ driver with its `Register_CPU_Freq` parameter:  
 `insmod corefreqk.ko Register_CPU_Freq=1`  
 
+* Q: Governor is missing in Kernel window even after a successful registration.  
+
+  A: When Registrations are done through the UI, they have  to be done in the following order:  
+
+ 1. Clock Source  
+ 2. Governor driver  
+ 3. CPU-FREQ driver  
+ 4. CPU-IDLE driver  
+ 5. CPU-IDLE route  
 
 * Q: The CPU freezes or the System crashes.  
 
