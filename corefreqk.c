@@ -9431,8 +9431,9 @@ void PowerThermal(CORE_RO *Core)
 		{_Meteorlake_M ,	1, 1, 1, 0},
 		{_Meteorlake_N ,	1, 1, 1, 0},
 		{_Meteorlake_S ,	1, 1, 1, 0},
-		{_Raptorlake_S ,	1, 1, 1, 0},
-		{_Raptorlake_P ,	1, 1, 1, 0}
+		{_Raptorlake,		1, 1, 1, 0},
+		{_Raptorlake_P ,	1, 1, 1, 0},
+		{_Raptorlake_S ,	1, 1, 1, 0}
 	};
 	unsigned int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
  for (id = 0; id < ids; id++)
