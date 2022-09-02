@@ -363,6 +363,7 @@
 
 #define MSR_FLEX_RATIO				0x00000194
 #define MSR_IA32_OVERCLOCKING_STATUS		0x00000195
+#define MSR_IA32_MISC_PACKAGE_CTLS		0x000000bc
 
 typedef union
 {
@@ -436,21 +437,37 @@ typedef union
 } FLUSH_CMD;
 
 typedef union
+{	/* R/W: IA32_MISC_PACKAGE_CTLS MSR(0xbc) introduced in 12th Gen. */
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		ENERGY_FILTERING_CTL	:  1-0, /* Power Filtering Control */
+		ReservedBits		: 64-1;
+	};
+} MISC_PACKAGE_CTLS;
+
+typedef union
 {	/* R/O && CPUID.(EAX=07H,ECX=0):EDX[29] == 1			*/
 	unsigned long long	value;
 	struct
 	{
 		unsigned long long
-		RDCL_NO 	:  1-0,
-		IBRS_ALL	:  2-1,
-		RSBA		:  3-2,
-		L1DFL_VMENTRY_NO:  4-3,
-		SSB_NO		:  5-4,
-		MDS_NO		:  6-5,
-		PSCHANGE_MC_NO	:  7-6,
-		TSX_CTRL	:  8-7,
-		TAA_NO		:  9-8,
-		ReservedBits	: 64-9;
+		RDCL_NO 		:  1-0,
+		IBRS_ALL		:  2-1,
+		RSBA			:  3-2,
+		L1DFL_VMENTRY_NO	:  4-3,
+		SSB_NO			:  5-4,
+		MDS_NO			:  6-5,
+		PSCHANGE_MC_NO		:  7-6,
+		TSX_CTRL		:  8-7,
+		TAA_NO			:  9-8,
+		ReservedBits1		: 10-9,
+		MISC_PACKAGE_CTLS_SUP	: 11-10, /* IA32_MISC_PACKAGE_CTLS */
+		ENERGY_FILTERING_CTL_SUP: 12-11, /* ENERGY_FILTERING_CTL */
+		ReservedBits2		: 23-12,
+		OVERCLOCKING_STATUS_SUP : 24-23, /* IA32_OVERLOCKING_STATUS */
+		ReservedBits3		: 64-24;
 	};
 } ARCH_CAPABILITIES;
 
@@ -464,10 +481,11 @@ typedef union
 		ReservedBits1	:  2-1,
 		FUSA_SUPPORTED	:  3-2,
 		RSM_IN_CPL0_ONLY:  4-3, /* RSM inst avail in all CPL if == 0 */
-		ReservedBits2	:  5-4,
+		UC_LOCK_DIS_SUP :  5-4, /* 1: supports UC load lock disable */
 		SPLA_EXCEPTION	:  6-5, /* split locked access MSR (0x33) */
 		SNOOP_FILTER_SUP:  7-6, /*Snoop Filter QoS Mask MSRs supported*/
-		ReservedBits3	: 64-7;
+		UC_STORE_THROT	:  8-7, /*1: UC Store throttle MSR_MEMORY_CTRL*/
+		ReservedBits2	: 64-8;
 	};
 } CORE_CAPABILITIES;
 
