@@ -4707,14 +4707,24 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD Athlon Gold PRO 3150GE",	\
-			"AMD Athlon Gold 3150GE"	),
+	.Brand = ZLIST("AMD Athlon Gold PRO 3150GE"),
 	.Boost = {+5, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PICASSO,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Athlon Gold 3150GE"),
+	.Boost = {+5, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PICASSO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
@@ -5567,6 +5577,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD Ryzen 3 3300X",	\
 			"AMD Ryzen 5 3500X",	\
+			"AMD Ryzen 5 3500",	\
 			"AMD Ryzen 7 3800X"	),
 	.Boost = {+5, +1},
 	.Param.Offset = {0, 0, 0},
@@ -5609,6 +5620,19 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 7 3700X",	\
 			"AMD Ryzen 9 3900X"	),
 	.Boost = {+7, +1},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_MATISSE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 9 3900"),
+	.Boost = {+12, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MATISSE,
 	.TgtRatioUnlocked = 1,
