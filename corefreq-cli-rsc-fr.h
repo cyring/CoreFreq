@@ -589,6 +589,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_TECHNOLOGIES_TITLE_CODE_FR	" Technologies "
 #define RSC_TECHNOLOGIES_DCU_CODE_FR  "Unit""\xa9"" de cache de donn""\xa9""es"
+#define RSC_TECHNOLOGIES_ICU_CODE_FR  "Unit""\xa9"" de cache d'instructions"
 #define RSC_TECH_L1_HW_PREFETCH_CODE_FR "Pr""\xa9""lecteur L1"
 #define RSC_TECH_L1_HW_IP_PREFETCH_CODE_FR "Pr""\xa9""lecteur L1 IP"
 #define RSC_TECH_L2_HW_PREFETCH_CODE_FR  "Pr""\xa9""lecteur L2"

@@ -95,6 +95,10 @@
 	#define MSR_AMD_PPIN			0xc00102f1
 #endif
 
+#ifndef MSR_AMD_IC_CFG
+	#define MSR_AMD_IC_CFG			0xc0011021
+#endif
+
 #ifndef MSR_AMD_DC_CFG
 	#define MSR_AMD_DC_CFG			0xc0011022
 #endif
@@ -790,12 +794,31 @@ typedef union
 
 typedef union
 {
+	unsigned long long value; /* Scope[Core]: MSR 0xc0011021	*/
+    struct
+    {
+	unsigned long long
+	ReservedBits1	:  1-0,
+	DisIcWayFilter	:  5-1,  /* F15h-C0: 1=Disable IC way access filter */
+	HW_IP_Prefetch	:  6-5,  /* F17h: 1=Disable Instruction Cache	*/
+	ReservedBits2	:  9-6,
+	DisSpecTlbRld 	: 10-9,  /* F16h: 1=Disable speculative ITLB reloads */
+	ReservedBits3	: 26-10,
+	WIDEREAD_PWRSAVE: 27-26, /* F16h: 1=Disable wide read power mgmt */
+	ReservedBits4	: 39-27,
+	DisLoopPredictor: 40-39, /* F15h-C0: 1=Disable loop predictor	*/
+	ReservedBits5	: 64-40;
+    };
+} AMD_IC_CFG;
+
+typedef union
+{
 	unsigned long long value; /* Scope[?]: MSR 0xc0011022		*/
     struct
     {
 	unsigned long long
 	ReservedBits1	:  4-0,
-	DisSpecTlbRld	:  5-4, /* 1=Disable speculative TLB reloads	*/
+	DisSpecTlbRld	:  5-4, /* 1=Disable speculative DTLB reloads	*/
 	ReservedBits2	: 13-5,
 	DisHwPf 	: 14-13,
 	ReservedBits3	: 15-14,

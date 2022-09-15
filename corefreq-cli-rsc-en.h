@@ -1110,6 +1110,7 @@
 
 #define RSC_TECHNOLOGIES_TITLE_CODE_EN	" Technologies "
 #define RSC_TECHNOLOGIES_DCU_CODE_EN	"Data Cache Unit"
+#define RSC_TECHNOLOGIES_ICU_CODE_EN	"Instruction Cache Unit"
 #define RSC_TECH_L1_HW_PREFETCH_CODE_EN "L1 Prefetcher"
 #define RSC_TECH_L1_HW_IP_PREFETCH_CODE_EN "L1 IP Prefetcher"
 #define RSC_TECH_L2_HW_PREFETCH_CODE_EN "L2 Prefetcher"
@@ -1979,10 +1980,10 @@
 #define RSC_SETTINGS_ROUTE_HALT_CODE	"   HALT"
 #define RSC_SETTINGS_ROUTE_MWAIT_CODE	"  MWAIT"
 
-#define RSC_BOX_DCU_L1_TITLE_CODE	" DCU L1 Prefetcher "
-#define RSC_BOX_DCU_L1_IP_TITLE_CODE	" DCU L1 IP Prefetcher "
-#define RSC_BOX_DCU_L2_TITLE_CODE	" DCU L2 Prefetcher "
-#define RSC_BOX_DCU_L2_CL_TITLE_CODE	" DCU L2 CL Prefetcher "
+#define RSC_BOX_CU_L1_TITLE_CODE	" Cache Unit L1 Prefetcher "
+#define RSC_BOX_CU_L1_IP_TITLE_CODE	" Cache Unit L1 IP Prefetcher "
+#define RSC_BOX_CU_L2_TITLE_CODE	" Cache Unit L2 Prefetcher "
+#define RSC_BOX_CU_L2_CL_TITLE_CODE	" Cache Unit L2 CL Prefetcher "
 
 #define RSC_BOX_EIST_TITLE_CODE 	" EIST "
 

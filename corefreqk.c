@@ -7742,10 +7742,11 @@ void Dump_CPUID(CORE_RO *Core)
 	}
 }
 
-void AMD_F17h_DCU_Technology(CORE_RO *Core)			/* Per SMT[?] */
+void AMD_F17h_DCU_Technology(CORE_RO *Core)			/* Per Core */
 {
 	AMD_DC_CFG DC_Cfg1 = {.value = 0};
 	AMD_CU_CFG3 CU_Cfg3 = {.value = 0};
+	AMD_IC_CFG IC_Cfg = {.value = 0};
 
 	RDMSR(DC_Cfg1, MSR_AMD_DC_CFG);
 	switch (L1_HW_PREFETCH_Disable) {
@@ -7767,6 +7768,17 @@ void AMD_F17h_DCU_Technology(CORE_RO *Core)			/* Per SMT[?] */
 		break;
 	}
 
+	RDMSR(IC_Cfg, MSR_AMD_IC_CFG);
+	switch (L1_HW_IP_PREFETCH_Disable) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		IC_Cfg.HW_IP_Prefetch = L1_HW_IP_PREFETCH_Disable;
+		WRMSR(IC_Cfg, MSR_AMD_IC_CFG);
+		RDMSR(IC_Cfg, MSR_AMD_IC_CFG);
+		break;
+	}
+
+
     if (DC_Cfg1.L1_HW_Prefetch)
     {
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_Prefetch, Core->Bind);
@@ -7778,6 +7790,11 @@ void AMD_F17h_DCU_Technology(CORE_RO *Core)			/* Per SMT[?] */
 	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_Prefetch, Core->Bind);
     } else {
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_Prefetch, Core->Bind);
+    }
+    if (IC_Cfg.HW_IP_Prefetch == 1) {
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch, Core->Bind);
+    } else {
+	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch, Core->Bind);
     }
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->DCU_Mask, Core->Bind);
 }

@@ -2994,6 +2994,26 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	} TECH[] = \
     {
 	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		0,
+		2, "%s%.*s",
+		RSC(TECHNOLOGIES_ICU).CODE(),
+		width - 3 - RSZ(TECHNOLOGIES_ICU),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Technology.L1_HW_IP_Prefetch,
+		3, "%s%.*sL1 HW IP   <%3s>",
+		RSC(TECH_L1_HW_IP_PREFETCH).CODE(),
+		width - (OutFunc ? 20 : 22) - RSZ(TECH_L1_HW_IP_PREFETCH),
+		NULL,
+		BOXKEY_L1_HW_IP_PREFETCH,
+		L1_HW_IP_Prefetch_Update
+	},
+	{
 		(unsigned int[]) { CRC_INTEL, CRC_AMD, CRC_HYGON, 0 },
 		0,
 		2, "%s%.*s",
@@ -11971,7 +11991,7 @@ int Shortcut(SCANKEY *scan)
 	};
 	AppendWindow(
 		CreateBox(scan->key, origin, select,
-				(char*) RSC(BOX_DCU_L1_TITLE).CODE(),
+				(char*) RSC(BOX_CU_L1_TITLE).CODE(),
 			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
 			stateStr[1][RO(Shm)->Proc.Technology.L1_HW_Prefetch],
 			stateAttr[RO(Shm)->Proc.Technology.L1_HW_Prefetch],
@@ -12019,7 +12039,7 @@ int Shortcut(SCANKEY *scan)
 	};
 	AppendWindow(
 		CreateBox(scan->key, origin, select,
-				(char*) RSC(BOX_DCU_L1_IP_TITLE).CODE(),
+				(char*) RSC(BOX_CU_L1_IP_TITLE).CODE(),
 			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
 			stateStr[1][RO(Shm)->Proc.Technology.L1_HW_IP_Prefetch],
 			stateAttr[RO(Shm)->Proc.Technology.L1_HW_IP_Prefetch],
@@ -12067,7 +12087,7 @@ int Shortcut(SCANKEY *scan)
 	};
 	AppendWindow(
 		CreateBox(scan->key, origin, select,
-				(char*) RSC(BOX_DCU_L2_TITLE).CODE(),
+				(char*) RSC(BOX_CU_L2_TITLE).CODE(),
 			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
 			stateStr[1][RO(Shm)->Proc.Technology.L2_HW_Prefetch],
 			stateAttr[RO(Shm)->Proc.Technology.L2_HW_Prefetch],
@@ -12115,7 +12135,7 @@ int Shortcut(SCANKEY *scan)
 	};
 	AppendWindow(
 		CreateBox(scan->key, origin, select,
-				(char*) RSC(BOX_DCU_L2_CL_TITLE).CODE(),
+				(char*) RSC(BOX_CU_L2_CL_TITLE).CODE(),
 			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
 			stateStr[1][RO(Shm)->Proc.Technology.L2_HW_CL_Prefetch],
 			stateAttr[RO(Shm)->Proc.Technology.L2_HW_CL_Prefetch],
