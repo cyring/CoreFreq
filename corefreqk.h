@@ -6215,7 +6215,8 @@ static PROCESSOR_SPECIFIC AMD_Zen3Plus_RMB_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 7 PRO 6850U",	\
-			"AMD Ryzen 7 6800U​"		),
+			"AMD Ryzen 7 6800U​",		\
+			"AMD Ryzen 7 PRO 6860Z"		),
 	.Boost = {+20, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_REMBRANDT,
