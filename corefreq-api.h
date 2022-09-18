@@ -520,6 +520,7 @@ typedef struct
 	/* 4C0Ch */		HSW_DDR_RANK_TIMING_B	Rank_B; /* 32 bits    */
 	/* 4C14h */		HSW_DDR_RANK_TIMING	Rank;	/* 32 bits    */
 	/* 4E98h */		HSW_TC_REFRESH_TIMING	Refresh; /*32 bits    */
+	/* 4CB0h */		HSW_PM_POWER_DOWN	PDWN;	/* 32 bits    */
 			} HSW;
 			struct {
 	/* 4000h */		SKL_IMC_CR_TC_PRE	Timing; /* 32 bits    */

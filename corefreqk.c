@@ -4489,6 +4489,9 @@ void Query_HSW_IMC(void __iomem *mchmap, unsigned short mc)
 
 	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].HSW.Refresh.value = \
 							readl(mchmap + 0x4e98);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].HSW.PDWN.value = \
+							readl(mchmap + 0x4cb0);
     }
 	/*		Is Dual DIMM Per Channel Disable ?		*/
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = \

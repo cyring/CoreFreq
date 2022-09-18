@@ -3332,6 +3332,29 @@ typedef union
 } HSW_DDR_RANK_TIMING;
 
 typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: 4CB0h		*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		PDWN_Idle_Ctr 	: 12-0,  /* Power-down entrance in DCLK	*/
+		PDWN_Mode	: 16-12, /* 1:APD,2:PPD,6:DLL-OFF,3-5,7-15:RSV*/
+		ReservedBits 	: 32-16;
+	};
+} HSW_PM_POWER_DOWN;
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: 4E94h		*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		OREF_RI 	:  8-0,  /* Rank idle perriod in DCLK	*/
+		Ref_HP_WM	: 12-8,  /* 8: Refresh priority to high	*/
+		Ref_Panic_WM	: 16-12, /* 9: Refresh priority to panic */
+		ReservedBits 	: 32-16;
+	};
+} HSW_TC_REFRESH_PARAM;
+
+typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 4E98h		*/
 	unsigned int		value;
 	struct {

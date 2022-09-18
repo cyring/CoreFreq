@@ -3834,9 +3834,6 @@ void HSW_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	TIMING(mc, cha).tFAW = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW._.tFAW;
-
-	TIMING(mc, cha).B2B = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW._.B2B;
 */
 	TIMING(mc, cha).tRP = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.REG4C00.tRP;
@@ -3906,6 +3903,21 @@ void HSW_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		TIMING(mc, cha).CMD_Rate = 0;
 		break;
 	}
+/*
+	TIMING(mc, cha).B2B = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW._.B2B;
+
+	TIMING(mc, cha).tXS = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW._.tXS;
+*/
+	TIMING(mc, cha).PDM_EN = \
+		0 != RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.PDWN.PDWN_Mode;
+
+	TIMING(mc, cha).PDM_MODE = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.PDWN.PDWN_Mode;
+
+	TIMING(mc, cha).PDM_AGGR = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.PDWN.PDWN_Mode;
 
       for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
       {
