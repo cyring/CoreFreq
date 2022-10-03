@@ -1307,7 +1307,7 @@
 #define RSC_DDR3_RTP_COMM_CODE_EN	" tRTPr ( Read CAS to Precharge ) "
 #define RSC_DDR3_WTP_COMM_CODE_EN	" tWTPr ( Write CAS to Precharge ) "
 #define RSC_DDR3_FAW_COMM_CODE_EN	" tFAW ( Four Activate Window ) "
-#define RSC_DDR3_B2B_COMM_CODE_EN	" B2B ( CAS commands spacing ) "
+#define RSC_DDR3_B2B_COMM_CODE_EN	" tCCD ( CAS commands spacing ) "
 #define RSC_DDR3_CWL_COMM_CODE_EN	" tCWL ( CAS Write Latency ) "
 #define RSC_DDR3_CMD_COMM_CODE_EN	" CMD ( Command Rate ) "
 #define RSC_DDR3_REFI_COMM_CODE_EN	" tREFI ( Refresh Interval ) "

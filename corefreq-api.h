@@ -725,8 +725,8 @@ typedef struct
 	union {
 		struct {
 			MCH_CLKCFG		ClkCfg;
-			SNB_CAPID		SNB_Cap;
-			IVB_CAPID		IVB_Cap;
+			SNB_CAPID_A		SNB_Cap;
+			IVB_CAPID_B		IVB_Cap;
 			HSW_BIOS_MEMCLOCK	HSW_BIOS;
 		};
 		struct {

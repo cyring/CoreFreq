@@ -2998,9 +2998,11 @@ typedef union
 	unsigned int		value;
 	struct {
 		unsigned int
-		ReservedBits1	: 12-0,
+		tXSDLL		: 12-0,  /* IVB: DDR SR exit to first RD/WR */
 		tXS		: 16-12,
-		ReservedBits2	: 32-16;
+		tZQOPER 	: 26-16, /* IVB: ZQCL after SR exit */
+		ReservedBits	: 28-26,
+		tMOD		: 32-28; /* IVB: MRS command time in DCLK */
 	};
 	/* Device 16,30 - Function: 0,1,4,5 - Offset 218h		*/
 	struct {
@@ -3058,8 +3060,21 @@ typedef union
 		ReservedBits2	: 23-15,
 		VT_d		: 24-23, /* VT-d: 0=Enable, 1=Disable	*/
 		ReservedBits3	: 32-24;
-	};
-} SNB_CAPID;	/* §2.5.33 CAPID0_A Capabilities A Register		*/
+	};	/* §2.5.33 CAPID0_A Capabilities A Register		*/
+	struct {
+		unsigned int
+		DDR3L_EN	:  1-0,  /* DDR3L (1.35V) operation allowed */
+		DDR_WRTVREF	:  2-1,  /* On-die DDR write Vref generation */
+		OC_ENABLED_DSKU :  3-2,  /* IA Overclocking Enabled by DSKU */
+		ReservedBits1	: 14-3,
+		DDPCD		: 15-14, /* 2 DIMMS per Channel Disable */
+		ReservedBits2	: 23-15,
+		VT_d		: 24-23, /* VTd Disable 		*/
+		ReservedBits3	: 25-24,
+		ECCDIS		: 26-25, /* 0=ECC capable, 1=Not ECC capable */
+		ReservedBits4	: 32-26;
+	} IVB;
+} SNB_CAPID_A;
 
 typedef union
 {	/* Device: 10 - Function: 3 - Offset: 84h			*/
@@ -3263,7 +3278,7 @@ typedef union
 		SMTCAP		: 29-28, /* SMT Capability		*/
 		ReservedBits5	: 32-29;
 	};
-} IVB_CAPID;	/* §2.5.39 CAPID0_B Capabilities B Register		*/
+} IVB_CAPID_B;	/* §2.5.39 CAPID0_B Capabilities B Register		*/
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 4C00h		*/

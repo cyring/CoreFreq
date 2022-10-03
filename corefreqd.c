@@ -3443,7 +3443,7 @@ void SNB_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		Dimm_A_Map = cha & 1	? RO(Proc)->Uncore.MC[mc].SNB.MAD1.DAS
 					: RO(Proc)->Uncore.MC[mc].SNB.MAD0.DAS;
 
-	if (slot % 2 == 0) {
+	if (slot == Dimm_A_Map) {
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
 			cha & 1 ? RO(Proc)->Uncore.MC[mc].SNB.MAD1.DANOR
 				: RO(Proc)->Uncore.MC[mc].SNB.MAD0.DANOR;
@@ -3473,8 +3473,8 @@ void SNB_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
   }
 }
 
-const unsigned long long SNB_MCLK(RO(PROC) *RO(Proc),
-				const unsigned long long fallback)
+const unsigned long long SNB_MCLK_FSB(	RO(PROC) *RO(Proc),
+					const unsigned long long fallback )
 {
 	switch (RO(Proc)->Uncore.Bus.ClkCfg.FSB_Select) {
 	case 0b111:
@@ -3497,6 +3497,30 @@ const unsigned long long SNB_MCLK(RO(PROC) *RO(Proc),
 	return fallback;
 }
 
+const unsigned long long SNB_MCLK_RAM(	RO(PROC) *RO(Proc),
+					const unsigned long long fallback )
+{
+	switch (RO(Proc)->Uncore.Bus.ClkCfg.RAM_Select) {
+	case 0b111:
+		return 1067;
+	case 0b110:
+		return 1333;
+	case 0b101:
+		return 1600;
+	case 0b100:
+		return 1867;
+	case 0b011:
+		return 2133;
+	case 0b010:
+		return 2400;
+	case 0b001:
+		return 2667;
+	case 0b000:
+		return SNB_MCLK_FSB(RO(Proc), fallback);
+	}
+	return fallback;
+}
+
 void SNB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	switch (RO(Proc)->Uncore.Bus.SNB_Cap.DMFC) {
@@ -3507,7 +3531,7 @@ void SNB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		RO(Shm)->Uncore.CtrlSpeed = 1333;
 		break;
 	case 0b101:
-		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK(RO(Proc), 1600);
+		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc), 1600);
 		break;
 	case 0b100:
 		RO(Shm)->Uncore.CtrlSpeed = 1867;
@@ -3759,7 +3783,7 @@ void IVB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		RO(Shm)->Uncore.CtrlSpeed = 1333;
 		break;
 	case 0b101:
-		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK(RO(Proc), 1600);
+		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc), 1600);
 		break;
 	case 0b100:
 		RO(Shm)->Uncore.CtrlSpeed = 1867;
