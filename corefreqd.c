@@ -3525,28 +3525,28 @@ void SNB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	switch (RO(Proc)->Uncore.Bus.SNB_Cap.DMFC) {
 	case 0b111:
-		RO(Shm)->Uncore.CtrlSpeed = 1067;
+		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc), 1067);
 		break;
 	case 0b110:
-		RO(Shm)->Uncore.CtrlSpeed = 1333;
+		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc), 1333);
 		break;
 	case 0b101:
 		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc), 1600);
 		break;
 	case 0b100:
-		RO(Shm)->Uncore.CtrlSpeed = 1867;
+		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc), 1867);
 		break;
 	case 0b011:
-		RO(Shm)->Uncore.CtrlSpeed = 2133;
+		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc), 2133);
 		break;
 	case 0b010:
-		RO(Shm)->Uncore.CtrlSpeed = 2400;
+		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc), 2400);
 		break;
 	case 0b001:
-		RO(Shm)->Uncore.CtrlSpeed = 2667;
+		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc), 2667);
 		break;
 	case 0b000:
-		RO(Shm)->Uncore.CtrlSpeed = 2933;
+		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc), 2933);
 		break;
 	}
 
@@ -3777,42 +3777,42 @@ void IVB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	switch (RO(Proc)->Uncore.Bus.IVB_Cap.DMFC) {
 	case 0b111:
-		RO(Shm)->Uncore.CtrlSpeed = 1067;
+		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc), 1067);
 		break;
 	case 0b110:
-		RO(Shm)->Uncore.CtrlSpeed = 1333;
+		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc), 1333);
 		break;
 	case 0b101:
 		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc), 1600);
 		break;
 	case 0b100:
-		RO(Shm)->Uncore.CtrlSpeed = 1867;
+		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc), 1867);
 		break;
 	case 0b011:
-		RO(Shm)->Uncore.CtrlSpeed = 2133;
+		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc), 2133);
 		break;
 	case 0b010:
-		RO(Shm)->Uncore.CtrlSpeed = 2400;
+		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc), 2400);
 		break;
 	case 0b001:
-		RO(Shm)->Uncore.CtrlSpeed = 2667;
+		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc), 2667);
 		break;
 	case 0b000:
 		switch (RO(Proc)->ArchID) {
 		case IvyBridge:
 		case Haswell_ULT:
-			RO(Shm)->Uncore.CtrlSpeed = 2933;
+			RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc),2933);
 			break;
 		case Haswell_DT:
 		case Haswell_EP:
 		case Haswell_ULX:
-			RO(Shm)->Uncore.CtrlSpeed = 2667;
+			RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc),2667);
 			break;
 		case Broadwell:
 		case Broadwell_D:
 		case Broadwell_H:
 		case Broadwell_EP:
-			RO(Shm)->Uncore.CtrlSpeed = 3200;
+			RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc),3200);
 			break;
 		}
 		break;
