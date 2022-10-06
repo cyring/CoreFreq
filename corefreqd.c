@@ -3521,8 +3521,20 @@ const unsigned long long SNB_MCLK_RAM(	RO(PROC) *RO(Proc),
 	return fallback;
 }
 
+const unsigned short BIOS_DDR(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
+				RO(CORE) *RO(Core) )
+{
+    if (RO(Proc)->Uncore.Bus.BIOS_DDR.MEMCLK != 0) {
+	RO(Shm)->Uncore.CtrlSpeed = RO(Proc)->Uncore.Bus.BIOS_DDR.MEMCLK;
+	RO(Shm)->Uncore.CtrlSpeed = 266 * RO(Shm)->Uncore.CtrlSpeed;
+	return RO(Shm)->Uncore.CtrlSpeed;
+    }
+	return 0;
+}
+
 void SNB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
+    if (BIOS_DDR(RO(Shm), RO(Proc), RO(Core)) == 0) {
 	switch (RO(Proc)->Uncore.Bus.SNB_Cap.DMFC) {
 	case 0b111:
 		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc), 1067);
@@ -3549,7 +3561,7 @@ void SNB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc), 2933);
 		break;
 	}
-
+    }
 	RO(Shm)->Uncore.Bus.Rate = RO(Shm)->Uncore.CtrlSpeed;
 	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
 				* RO(Shm)->Uncore.Bus.Rate)
@@ -3775,6 +3787,7 @@ void SNB_EP_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 
 void IVB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
+    if (BIOS_DDR(RO(Shm), RO(Proc), RO(Core)) == 0) {
 	switch (RO(Proc)->Uncore.Bus.IVB_Cap.DMFC) {
 	case 0b111:
 		RO(Shm)->Uncore.CtrlSpeed = SNB_MCLK_RAM(RO(Proc), 1067);
@@ -3817,7 +3830,7 @@ void IVB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		}
 		break;
 	}
-
+    }
 	RO(Shm)->Uncore.Bus.Rate = RO(Shm)->Uncore.CtrlSpeed;
 	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
 				* RO(Shm)->Uncore.Bus.Rate)
@@ -3999,19 +4012,7 @@ void HSW_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
   }
 }
 
-void HSW_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
-{
-	IVB_CAP(RO(Shm), RO(Proc), RO(Core));
-
-	switch (RO(Proc)->Uncore.Bus.HSW_BIOS.MEMCLK) {
-	case 0b0101:
-		RO(Shm)->Uncore.CtrlSpeed = 1333;
-		break;
-	case 0b0110:
-		RO(Shm)->Uncore.CtrlSpeed = 1600;
-		break;
-	}
-}
+#define HSW_CAP 	IVB_CAP
 
 #define HSW_EP_IMC	SNB_EP_IMC
 

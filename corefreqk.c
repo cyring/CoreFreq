@@ -4321,6 +4321,11 @@ kernel_ulong_t Query_Lynnfield_IMC(struct pci_dev *dev, unsigned short mc)
 	return rc;
 }
 
+inline void BIOS_DDR(void __iomem *mchmap)
+{
+	PUBLIC(RO(Proc))->Uncore.Bus.BIOS_DDR.value = readl(mchmap + 0x5e00);
+}
+
 void Query_SNB_IMC(void __iomem *mchmap, unsigned short mc)
 {	/* Sources:	2nd & 3rd Generation Intel® Core™ Processor Family
 			Intel® Xeon Processor E3-1200 Family		*/
@@ -4373,6 +4378,8 @@ void Query_SNB_IMC(void __iomem *mchmap, unsigned short mc)
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = \
 			(PUBLIC(RO(Proc))->Uncore.Bus.SNB_Cap.DDPCD == 1) ?
 			1 : PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount;
+
+	BIOS_DDR(mchmap);
 }
 
 void Query_Turbo_TDP_Config(void __iomem *mchmap)
@@ -4502,14 +4509,9 @@ void Query_HSW_IMC(void __iomem *mchmap, unsigned short mc)
     }
 }
 
-inline void HSW_BIOS(void __iomem *mchmap)
-{
-	PUBLIC(RO(Proc))->Uncore.Bus.HSW_BIOS.value = readl(mchmap + 0x5e00);
-}
-
 void Query_HSW_CLK(void __iomem *mchmap, unsigned short mc)
 {
-	HSW_BIOS(mchmap);
+	BIOS_DDR(mchmap);
 
 	Query_HSW_IMC(mchmap, mc);
 }

@@ -727,7 +727,7 @@ typedef struct
 			MCH_CLKCFG		ClkCfg;
 			SNB_CAPID_A		SNB_Cap;
 			IVB_CAPID_B		IVB_Cap;
-			HSW_BIOS_MEMCLOCK	HSW_BIOS;
+			BIOS_MEMCLOCK		BIOS_DDR;
 		};
 		struct {
 			SNB_EP_CAPID0		SNB_EP_Cap0;
