@@ -23,8 +23,8 @@
 #include <pthread.h>
 
 #include "bitasm.h"
-#include "amdmsr.h"
-#include "intelmsr.h"
+#include "amd_reg.h"
+#include "intel_reg.h"
 #include "coretypes.h"
 #include "corefreq.h"
 #include "corefreqm.h"
