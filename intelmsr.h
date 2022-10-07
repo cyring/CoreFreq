@@ -2813,7 +2813,9 @@ typedef union
 	struct {
 		unsigned int
 		MEMCLK		:  4-0,  /* 0101=1333, 0110=1600 MT/s	*/
-		ReservedBits 	: 32-4;
+		ReservedBits1	:  8-4,
+		PLL_REF100	:  9-8,  /* 0=133,33 MHz , 1=100,00 MHz */
+		ReservedBits2 	: 32-9;
 	};
 } BIOS_MEMCLOCK;
 

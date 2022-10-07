@@ -3524,9 +3524,16 @@ const unsigned long long SNB_MCLK_RAM(	RO(PROC) *RO(Proc),
 const unsigned short BIOS_DDR(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 				RO(CORE) *RO(Core) )
 {
-    if (RO(Proc)->Uncore.Bus.BIOS_DDR.MEMCLK != 0) {
+    if (RO(Proc)->Uncore.Bus.BIOS_DDR.MEMCLK != 0)
+    {
 	RO(Shm)->Uncore.CtrlSpeed = RO(Proc)->Uncore.Bus.BIOS_DDR.MEMCLK;
-	RO(Shm)->Uncore.CtrlSpeed = 266 * RO(Shm)->Uncore.CtrlSpeed;
+
+	if (RO(Proc)->Uncore.Bus.BIOS_DDR.PLL_REF100 == 1) {
+		RO(Shm)->Uncore.CtrlSpeed = 200 * RO(Shm)->Uncore.CtrlSpeed;
+	} else {
+		RO(Shm)->Uncore.CtrlSpeed = 800 * RO(Shm)->Uncore.CtrlSpeed;
+		RO(Shm)->Uncore.CtrlSpeed = RO(Shm)->Uncore.CtrlSpeed / 3;
+	}
 	return RO(Shm)->Uncore.CtrlSpeed;
     }
 	return 0;
@@ -3570,7 +3577,7 @@ void SNB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;
 	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
-	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MTS;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
 	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_UNSPEC;
 
@@ -3839,7 +3846,7 @@ void IVB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;
 	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
-	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MTS;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
 	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_UNSPEC;
 
