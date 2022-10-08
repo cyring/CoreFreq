@@ -1964,6 +1964,7 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Zen3_Chagall:
 	case AMD_Zen3_Badami:
 	case AMD_Zen3Plus_RMB:
+	case AMD_Zen4_Genoa:
 	case AMD_Zen4_RPL:
 	case AMD_Family_17h:
 	case Hygon_Family_18h:
@@ -2041,7 +2042,8 @@ static void Map_AMD_Topology(void *arg)
 			|| ((leaf80000008.ECX.NC == 0x17)
 			 && ((PUBLIC(RO(Proc))->ArchID == AMD_EPYC_Rome_CPK)
 			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Chagall)
-			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Badami)));
+			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Badami)
+			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Genoa)));
 	      }
 	      else
 	      { 	/*		SMT is disabled.		*/
@@ -2058,7 +2060,8 @@ static void Map_AMD_Topology(void *arg)
 			|| ((leaf80000008.ECX.NC == 0x0b)
 			 && ((PUBLIC(RO(Proc))->ArchID == AMD_EPYC_Rome_CPK)
 			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Chagall)
-			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Badami)));
+			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Badami)
+			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Genoa)));
 	      }
 		/* CCD has to remain within range values from 0 to 7	*/
 		factor = factor & (Core->T.CoreID < 32);
@@ -6770,6 +6773,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 				SMU_AMD_F17H_MATISSE_COF,
 				PRIVATE(OF(Zen)).Device.DF);
 		break;
+	case AMD_Zen4_Genoa:
 	case AMD_EPYC_Rome_CPK:
 		Core_AMD_SMN_Read(XtraCOF,
 				SMU_AMD_F17H_ZEN2_MCM_COF,

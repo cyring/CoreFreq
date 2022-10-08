@@ -1949,7 +1949,7 @@ static void Query_Hygon_F18h(unsigned int cpu);
 /*
 	[Zen3/Badami]		AF_30h			 7 nm	[BA]/SVR
 	[Zen3+ Rembrandt]	AF_44h Stepping 1	 6 nm	[RMB]
-	[Zen4/Genoa/Stones]	A10F00			 5 nm
+	[Zen4/Genoa]		AF_11h Stepping 1	 5 nm	SVR
 	[Zen4/Raphael]		AF_61h Stepping 2	 5 nm	[RPL]
 	[Zen4/Storm Peak]	AF_18h Stepping 1		TR5
 	[Zen4/Phoenix]		AF_74h				[PHX]
@@ -1964,6 +1964,8 @@ static void Query_Hygon_F18h(unsigned int cpu);
 			{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x3, .Model=0x0}
 #define _AMD_Zen3Plus_RMB	\
 			{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x4, .Model=0x4}
+
+#define _AMD_Zen4_Genoa {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x1, .Model=0x1}
 #define _AMD_Zen4_RPL	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x6, .Model=0x1}
 
 typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
@@ -3193,6 +3195,9 @@ enum {
 	CN_REMBRANDT
 };
 enum {
+	CN_GENOA
+};
+enum {
 	CN_RAPHAEL
 };
 
@@ -3261,7 +3266,9 @@ static char *Arch_AMD_Zen3_Badami[]	=	ZLIST("Zen3/Milan-X");
 static char *Arch_AMD_Zen3Plus_RMB[] = ZLIST(
 		[CN_REMBRANDT]		=	"Zen3+ Rembrandt"
 );
-
+static char *Arch_AMD_Zen4_Genoa[] = ZLIST(
+		[CN_GENOA]		=	"EPYC/Genoa"
+);
 static char *Arch_AMD_Zen4_RPL[] = ZLIST(
 		[CN_RAPHAEL]		=	"Zen4/Raphael"
 );
@@ -6446,6 +6453,33 @@ static PROCESSOR_SPECIFIC AMD_Zen3_Chagall_Specific[] = {
 	},
 	{0}
 };
+static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
+	{
+	.Brand = ZLIST( "AMD EPYC 9654P",
+			"AMD EPYC 9534",
+			"AMD EPYC 9454P",
+			"AMD EPYC 9454",
+			"AMD EPYC 9354P",
+			"AMD EPYC 9354",
+			"AMD EPYC 9334",
+			"AMD EPYC 9274F",
+			"AMD EPYC 9254",
+			"AMD EPYC 9224",
+			"AMD EPYC 9174F",
+			"AMD EPYC 9124" ),
+	.Boost = {+2, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GENOA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{0}
+};
 static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 9 7950X"),
@@ -9560,7 +9594,31 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3Plus_RMB
 	},
-[AMD_Zen4_RPL] = {							/*101*/
+[AMD_Zen4_Genoa] = {							/*101*/
+	.Signature = _AMD_Zen4_Genoa,
+	.Query = Query_AMD_F19h_PerCluster,
+	.Update = PerCore_AMD_Family_19h_Query,
+	.Start = Start_AMD_Family_19h,
+	.Stop = Stop_AMD_Family_19h,
+	.Exit = Exit_AMD_F19h,
+	.Timer = InitTimer_AMD_F19h_Zen3_MP,
+	.BaseClock = BaseClock_AMD_Family_19h,
+	.ClockMod = ClockMod_AMD_Zen,
+	.TurboClock = TurboClock_AMD_Zen,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN3,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_19h,
+	.powerFormula   = POWER_FORMULA_AMD_19h,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = Start_Uncore_AMD_Family_19h,
+		.Stop = Stop_Uncore_AMD_Family_19h,
+		.ClockMod = NULL
+		},
+	.Specific = AMD_Zen4_Genoa_Specific,
+	.SystemDriver = AMD_Zen_Driver,
+	.Architecture = Arch_AMD_Zen4_Genoa
+	},
+[AMD_Zen4_RPL] = {							/*102*/
 	.Signature = _AMD_Zen4_RPL,
 	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
