@@ -1732,7 +1732,7 @@ static void Query_Hygon_F18h(unsigned int cpu);
 
 /*	[Tremont/Jacobsville]	06_86h
 	[Tremont/Lakefield]	06_8Ah
-	[Sapphire Rapids]	06_8Fh
+	[Sapphire Rapids]	06_8Fh				SPR
 	[Tremont/Elkhart Lake]	06_96h
 	[Tremont/Jasper Lake]	06_9Ch
 	[Snow Ridge]							*/
@@ -1842,17 +1842,22 @@ static void Query_Hygon_F18h(unsigned int cpu);
 #define _Alderlake_N	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xB, .Model=0xE}
 
 /*	[MeteorLake/M]	06_AAh
-	[MeteorLake/N]	06_ABh
+	[MeteorLake/N]	06_B5h
 	[MeteorLake/S]	06_ACh
 	[RaptorLake]	06_B7h
 	[RaptorLake/P]	06_BAh
 	[RaptorLake/S]	06_BFh						*/
 #define _Meteorlake_M	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xA, .Model=0xA}
-#define _Meteorlake_N	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xA, .Model=0xB}
+#define _Meteorlake_N	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xB, .Model=0x5}
 #define _Meteorlake_S	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xA, .Model=0xC}
 #define _Raptorlake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xB, .Model=0x7}
 #define _Raptorlake_P	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xB, .Model=0xA}
 #define _Raptorlake_S	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xB, .Model=0xF}
+
+/*	[Emerald Rapids]				7 nm	EMR
+	[GraniteRapids/SP]	06_ADh				GNR
+	[GraniteRapids/??]	06_AEh
+	[SierraForest]		06_AFh				SRF	*/
 
 /*	[Family 0Fh]	0F_00h						*/
 #define _AMD_Family_0Fh {.ExtFamily=0x0, .Family=0xF, .ExtModel=0x0, .Model=0x0}
