@@ -1896,8 +1896,8 @@ static void Query_Hygon_F18h(unsigned int cpu);
 	[Zen2/Lucienne] 	8F_68h Stepping 1	 7 nm	APU
 	[Zen2/Matisse]		8F_71h Stepping 0	 7 nm
 	[Zen2/Xbox		8F_74h Stepping 0	 7 nm
-	[Zen2/VanGogh]		8F_90h			 7 nm	[VN]
-	[Zen2/Mendocino]	8F_A0h Stepping 0			*/
+	[Zen2/VanGogh]		8F_90h Stepping 1	 7 nm	Valve Jupiter
+	[Zen2/Mendocino]	8F_A0h Stepping 0	 6 nm	[MDN]	*/
 #define _AMD_Zen	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x1}
 #define _AMD_Zen_APU	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x1, .Model=0x1}
 #define _AMD_ZenPlus	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x8}
@@ -1910,6 +1910,11 @@ static void Query_Hygon_F18h(unsigned int cpu);
 #define _AMD_Zen2_LCN	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x6, .Model=0x8}
 #define _AMD_Zen2_MTS	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x7, .Model=0x1}
 #define _AMD_Zen2_Ariel {.ExtFamily=0x8, .Family=0xF, .ExtModel=0x7, .Model=0x4}
+
+#define _AMD_Zen2_Jupiter	\
+			{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x9, .Model=0x0}
+
+#define _AMD_Zen2_MDN	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0xA, .Model=0x0}
 
 #define _AMD_Family_17h {.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
@@ -1942,11 +1947,13 @@ static void Query_Hygon_F18h(unsigned int cpu);
 	[EPYC/Milan-X]		AF_01h Stepping 2	 7 nm
 	[Zen3/Chagall]		AF_08h Stepping 2	 7 nm	HEDT/TRX4 */
 /*
-	[Zen3/Badami]		AF_30h		[BA]	 7 nm	SVR
+	[Zen3/Badami]		AF_30h			 7 nm	[BA]/SVR
 	[Zen3+ Rembrandt]	AF_44h Stepping 1	 6 nm	[RMB]
 	[Zen4/Genoa/Stones]	A10F00			 5 nm
 	[Zen4/Raphael]		AF_61h Stepping 2	 5 nm	[RPL]
-	[Zen4/Phoenix]		A70F00		[PHX]			*/
+	[Zen4/Storm Peak]	AF_18h Stepping 1		TR5
+	[Zen4/Phoenix]		AF_74h				[PHX]
+	[Zen5/Granite Ridge]						*/
 #define _AMD_Family_19h {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 #define _AMD_Zen3_VMR	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x2, .Model=0x1}
 #define _AMD_Zen3_CZN	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x5, .Model=0x0}
@@ -3164,6 +3171,12 @@ enum {
 	CN_MATISSE
 };
 enum {
+	CN_VANGOGH
+};
+enum {
+	CN_MENDOCINO
+};
+enum {
 	CN_VERMEER
 };
 enum {
@@ -3224,6 +3237,12 @@ static char *Arch_AMD_Zen2_MTS[] = ZLIST(
 );
 static char *Arch_AMD_Zen2_Ariel[]	=	ZLIST("Zen2/Ariel");
 
+static char *Arch_AMD_Zen2_Jupiter[] = ZLIST(
+		[CN_VANGOGH]		=	"Zen2/VanGogh"
+);
+static char *Arch_AMD_Zen2_MDN[] = ZLIST(
+		[CN_MENDOCINO]		=	"Zen2/Mendocino"
+);
 static char *Arch_AMD_Zen3_VMR[] = ZLIST(
 		[CN_VERMEER]		=	"Zen3/Vermeer"
 );
@@ -5660,6 +5679,74 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	.HSMP_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
 		|LATCH_HSMP_CAPABLE
+	},
+	{0}
+};
+static PROCESSOR_SPECIFIC AMD_Zen2_Jupiter_Specific[] = {
+/*	[Zen2/VanGogh]		Valve Jupiter				*/
+	{
+	.Brand = ZLIST("AMD Custom APU 0405"),
+	.Boost = {+7, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_VANGOGH,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{0}
+};
+static PROCESSOR_SPECIFIC AMD_Zen2_MDN_Specific[] = {
+/*	[Zen2/Mendocino]						*/
+	{
+	.Brand = ZLIST("AMD Ryzen 5 7520U"),
+	.Boost = {+15, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_MENDOCINO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 3 7320U"),
+	.Boost = {+17, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_MENDOCINO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Athlon Gold 7220U"),
+	.Boost = {+13, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_MENDOCINO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Athlon Silver 7120U"),
+	.Boost = {+11, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_MENDOCINO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{0}
 };
@@ -9281,7 +9368,55 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen2_Ariel
 	},
-[AMD_Zen3_VMR] = {							/* 93*/
+[AMD_Zen2_Jupiter] = {							/* 93*/
+	.Signature = _AMD_Zen2_Jupiter,
+	.Query = Query_AMD_F17h_PerCluster,
+	.Update = PerCore_AMD_Family_17h_Query,
+	.Start = Start_AMD_Family_17h,
+	.Stop = Stop_AMD_Family_17h,
+	.Exit = Exit_AMD_F17h,
+	.Timer = InitTimer_AMD_F17h_Zen2_SP,
+	.BaseClock = BaseClock_AMD_Family_17h,
+	.ClockMod = ClockMod_AMD_Zen,
+	.TurboClock = TurboClock_AMD_Zen,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN2,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_17h,
+	.powerFormula   = POWER_FORMULA_AMD_17h,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = Start_Uncore_AMD_Family_17h,
+		.Stop = Stop_Uncore_AMD_Family_17h,
+		.ClockMod = NULL
+		},
+	.Specific = AMD_Zen2_Jupiter_Specific,
+	.SystemDriver = AMD_Zen_Driver,
+	.Architecture = Arch_AMD_Zen2_Jupiter
+	},
+[AMD_Zen2_MDN] = {							/* 94*/
+	.Signature = _AMD_Zen2_MDN,
+	.Query = Query_AMD_F17h_PerCluster,
+	.Update = PerCore_AMD_Family_17h_Query,
+	.Start = Start_AMD_Family_17h,
+	.Stop = Stop_AMD_Family_17h,
+	.Exit = Exit_AMD_F17h,
+	.Timer = InitTimer_AMD_F17h_Zen2_SP,
+	.BaseClock = BaseClock_AMD_Family_17h,
+	.ClockMod = ClockMod_AMD_Zen,
+	.TurboClock = TurboClock_AMD_Zen,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN2,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_17h,
+	.powerFormula   = POWER_FORMULA_AMD_17h,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = Start_Uncore_AMD_Family_17h,
+		.Stop = Stop_Uncore_AMD_Family_17h,
+		.ClockMod = NULL
+		},
+	.Specific = AMD_Zen2_MDN_Specific,
+	.SystemDriver = AMD_Zen_Driver,
+	.Architecture = Arch_AMD_Zen2_MDN
+	},
+[AMD_Zen3_VMR] = {							/* 95*/
 	.Signature = _AMD_Zen3_VMR,
 	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -9305,7 +9440,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3_VMR
 	},
-[AMD_Zen3_CZN] = {							/* 94*/
+[AMD_Zen3_CZN] = {							/* 96*/
 	.Signature = _AMD_Zen3_CZN,
 	.Query = Query_AMD_F19h_PerSocket,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -9329,7 +9464,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3_CZN
 	},
-[AMD_EPYC_Milan] = {							/* 95*/
+[AMD_EPYC_Milan] = {							/* 97*/
 	.Signature = _AMD_EPYC_Milan,
 	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -9353,7 +9488,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_EPYC_Milan
 	},
-[AMD_Zen3_Chagall] = {							/* 96*/
+[AMD_Zen3_Chagall] = {							/* 98*/
 	.Signature = _AMD_Zen3_Chagall,
 	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -9377,7 +9512,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3_Chagall
 	},
-[AMD_Zen3_Badami] = {							/* 97*/
+[AMD_Zen3_Badami] = {							/* 99*/
 	.Signature = _AMD_Zen3_Badami,
 	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -9401,7 +9536,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3_Badami
 	},
-[AMD_Zen3Plus_RMB] = {							/* 98*/
+[AMD_Zen3Plus_RMB] = {							/*100*/
 	.Signature = _AMD_Zen3Plus_RMB,
 	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -9425,7 +9560,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3Plus_RMB
 	},
-[AMD_Zen4_RPL] = {							/* 99*/
+[AMD_Zen4_RPL] = {							/*101*/
 	.Signature = _AMD_Zen4_RPL,
 	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,

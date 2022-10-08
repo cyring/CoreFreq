@@ -6478,6 +6478,8 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
     case AMD_Zen2_LCN:
     case AMD_Zen2_MTS:
     case AMD_Zen2_Ariel:
+    case AMD_Zen2_Jupiter:
+    case AMD_Zen2_MDN:
     case AMD_Zen3_VMR:
     case AMD_Zen3_CZN:
     case AMD_EPYC_Milan:
