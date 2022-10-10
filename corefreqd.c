@@ -4397,6 +4397,8 @@ void RKL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
   for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
   {
+	unsigned int width = 15;
+
      RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
      RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
 
@@ -4571,21 +4573,23 @@ void RKL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		!RO(Proc)->Uncore.MC[mc].RKL.MADC1.Dimm_L_Map
 	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].RKL.MADD1.DSNOR;
 
+	width += RO(Proc)->Uncore.MC[mc].RKL.MADCH.CH_WIDTH;
+
 	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		RO(Proc)->Uncore.MC[mc].RKL.MADC0.Dimm_L_Map
-	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].RKL.MADD0.DLW);
+	].Rows = \
 
 	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		!RO(Proc)->Uncore.MC[mc].RKL.MADC0.Dimm_L_Map
-	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].RKL.MADD0.DSW);
+	].Rows = \
 
 	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		RO(Proc)->Uncore.MC[mc].RKL.MADC1.Dimm_L_Map
-	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].RKL.MADD1.DLW);
+	].Rows = \
 
 	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		!RO(Proc)->Uncore.MC[mc].RKL.MADC1.Dimm_L_Map
-	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].RKL.MADD1.DSW);
+	].Rows = 1 << width;
   }
 }
 
@@ -4701,6 +4705,8 @@ void TGL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
   for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
   {
+	unsigned int width = 15;
+
      RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
      RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
 
@@ -4875,21 +4881,23 @@ void TGL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		!RO(Proc)->Uncore.MC[mc].TGL.MADC1.Dimm_L_Map
 	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].TGL.MADD1.DSNOR;
 
+	width += RO(Proc)->Uncore.MC[mc].TGL.MADCH.CH_WIDTH;
+
 	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		RO(Proc)->Uncore.MC[mc].TGL.MADC0.Dimm_L_Map
-	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].TGL.MADD0.DLW);
+	].Rows = \
 
 	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		!RO(Proc)->Uncore.MC[mc].TGL.MADC0.Dimm_L_Map
-	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].TGL.MADD0.DSW);
+	].Rows = \
 
 	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		RO(Proc)->Uncore.MC[mc].TGL.MADC1.Dimm_L_Map
-	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].TGL.MADD1.DLW);
+	].Rows = \
 
 	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		!RO(Proc)->Uncore.MC[mc].TGL.MADC1.Dimm_L_Map
-	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].TGL.MADD1.DSW);
+	].Rows = 1 << width;
   }
 }
 

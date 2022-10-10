@@ -4032,7 +4032,9 @@ typedef union
 		CH_L_MAP	:  5-4,  /* 0:Channel0 , 1:Channel1	*/
 		ReservedBits1	: 12-5,
 		CH_S_SIZE	: 20-12, /* Channel S size multiplies of 0.5GB*/
-		ReservedBits2	: 32-20;
+		ReservedBits2	: 27-20,
+		CH_WIDTH	: 29-27, /* 0=x16, 1=x32, 2=x64, 3=Rsvd */
+		ReservedBits3	: 32-29;
 	};
 } RKL_IMC_MAD_MAPPING;
 
