@@ -5973,6 +5973,11 @@ static PCI_CALLBACK AMD_DataFabric_Cezanne(struct pci_dev *pdev)
 	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
 }
 
+static PCI_CALLBACK AMD_DataFabric_Rembrandt(struct pci_dev *pdev)
+{
+	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
+}
+
 static void CoreFreqK_ResetChip(struct pci_dev *dev)
 {
 	UNUSED(dev);

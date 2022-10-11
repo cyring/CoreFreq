@@ -1365,6 +1365,8 @@ typedef struct
 #define DID_AMD_17H_ZEN2_APU_NB_IOMMU	0x1631	/*	Renoir/Cezanne	*/
 #define DID_AMD_17H_FIREFLIGHT_NB_IOMMU 0x15f9	/*	FireFlight	*/
 #define DID_AMD_17H_ARDEN_NB_IOMMU	0x1627	/*	Arden		*/
+/* Source: AMD Ryzen 5 6600H [ Zen3+ Rembrandt ]			*/
+#define DID_AMD_19H_ZEN3_RMB_NB_IOMMU	0x14b6	/*	Rembrandt	*/
 
 /* Source: /include/linux/pci_ids.h					*/
 #define DID_AMD_17H_ZEPPELIN_DF_UMC	0x1460	/*	Zeppelin	*/
@@ -1378,3 +1380,4 @@ typedef struct
 #define DID_AMD_17H_ARDEN_DF_UMC	0x160b	/*	Arden		*/
 #define DID_AMD_19H_VERMEER_DF_UMC	0x1650	/*	Vermeer 	*/
 #define DID_AMD_19H_CEZANNE_DF_UMC	0x166a	/*	Cezanne 	*/
+#define DID_AMD_19H_REMBRANDT_DF_UMC	0x1679	/*	Rembrandt 	*/

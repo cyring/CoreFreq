@@ -2035,6 +2035,7 @@ static PCI_CALLBACK AMD_DataFabric_Fireflight(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Arden(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Vermeer(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Cezanne(struct pci_dev *pdev) ;
+static PCI_CALLBACK AMD_DataFabric_Rembrandt(struct pci_dev *pdev) ;
 
 static struct pci_device_id PCI_Void_ids[] = {
 	{0, }
@@ -2797,7 +2798,7 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 		PCI_VDEVICE(AMD, DID_AMD_17H_RAVEN_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
-/* AMD Families 17h and 19h: IOMMU at 0x1481				*/
+/* AMD Families 17h and 19h: IOMMU					*/
 	{
 		PCI_VDEVICE(AMD, DID_AMD_17H_ZEN2_MTS_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
@@ -2824,6 +2825,10 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 	},
 	{
 		PCI_VDEVICE(AMD, DID_AMD_17H_ARDEN_NB_IOMMU),
+		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_19H_ZEN3_RMB_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
 	/* Source: HYGON: PCI list					*/
@@ -2877,6 +2882,10 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 	{
 		PCI_VDEVICE(AMD, DID_AMD_19H_CEZANNE_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_DataFabric_Cezanne
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_19H_REMBRANDT_DF_UMC),
+		.driver_data = (kernel_ulong_t) AMD_DataFabric_Rembrandt
 	},
 	{0, }
 };
@@ -9565,7 +9574,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen3Plus_RMB] = {							/*100*/
 	.Signature = _AMD_Zen3Plus_RMB,
-	.Query = Query_AMD_F19h_PerCluster,
+	.Query = Query_AMD_F19h_PerSocket,
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
@@ -9574,7 +9583,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.BaseClock = BaseClock_AMD_Family_19h,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
-	.thermalFormula = THERMAL_FORMULA_AMD_ZEN3,
+	.thermalFormula = THERMAL_FORMULA_AMD_19h,
 	.voltageFormula = VOLTAGE_FORMULA_AMD_19h,
 	.powerFormula   = POWER_FORMULA_AMD_19h,
 	.PCI_ids = PCI_AMD_19h_ids,
