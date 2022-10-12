@@ -3853,6 +3853,23 @@ void IVB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.SNB_Cap.VT_d;
 }
 
+unsigned int DimmWidthToRows(unsigned int width)
+{
+	unsigned int rows = 0;
+	switch (width) {
+	case 0b00:
+		rows = 8;
+		break;
+	case 0b01:
+		rows = 16;
+		break;
+	case 0b10:
+		rows = 32;
+		break;
+	}
+	return (8 * 1024 * rows);
+}
+
 void HSW_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short mc, cha, slot;
@@ -3970,43 +3987,48 @@ void HSW_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	TIMING(mc, cha).PDM_AGGR = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.PDWN.PDWN_Mode;
 
-      for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
+     for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
+     {
+	unsigned int DIMM_Banks;
+	const unsigned short
+		Dimm_A_Map = cha & 1	? RO(Proc)->Uncore.MC[mc].SNB.MAD1.DAS
+					: RO(Proc)->Uncore.MC[mc].SNB.MAD0.DAS;
+
+      if (slot == Dimm_A_Map)
       {
-	unsigned int width, DIMM_Banks;
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
+			cha & 1 ? RO(Proc)->Uncore.MC[mc].SNB.MAD1.DANOR
+				: RO(Proc)->Uncore.MC[mc].SNB.MAD0.DANOR;
 
-	if (slot % 2 == 0) {
-		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
-					RO(Proc)->Uncore.MC[mc].SNB.MAD0.DANOR;
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = \
+		DimmWidthToRows(cha & 1 ? RO(Proc)->Uncore.MC[mc].SNB.MAD1.DAW
+					: RO(Proc)->Uncore.MC[mc].SNB.MAD0.DAW);
+      }
+      else
+      {
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
+			cha & 1 ? RO(Proc)->Uncore.MC[mc].SNB.MAD1.DBNOR
+				: RO(Proc)->Uncore.MC[mc].SNB.MAD0.DBNOR;
 
-		width = RO(Proc)->Uncore.MC[mc].SNB.MAD0.DAW;
-	} else {
-		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
-					RO(Proc)->Uncore.MC[mc].SNB.MAD0.DBNOR;
-
-		width = RO(Proc)->Uncore.MC[mc].SNB.MAD0.DBW;
-	}
-		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks++;
-
-	if (width == 0) {
-		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 14;
-	} else {
-		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 15;
-	}
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = \
+		DimmWidthToRows(cha & 1 ? RO(Proc)->Uncore.MC[mc].SNB.MAD1.DBW
+					: RO(Proc)->Uncore.MC[mc].SNB.MAD0.DBW);
+      }
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks++;
 
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
 
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
-						dimmSize[cha][slot] * 256;
+					dimmSize[cha][slot ^ Dimm_A_Map] * 256;
 
-	DIMM_Banks = 8 * dimmSize[cha][slot] * 1024 * 1024;
-
+	DIMM_Banks = 8 * dimmSize[cha][slot ^ Dimm_A_Map] * 1024 * 1024;
 	DIMM_Banks = DIMM_Banks
 		/ (RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
 		*  RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
 		*  RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks);
 
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = DIMM_Banks;
-      }
+     }
 	TIMING(mc, cha).ECC = (cha == 0) ?
 					  RO(Proc)->Uncore.MC[mc].SNB.MAD0.ECC
 					: RO(Proc)->Uncore.MC[mc].SNB.MAD1.ECC;
@@ -4091,23 +4113,6 @@ void HSW_EP_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Proc.Technology.IOMMU = 0;
 	RO(Shm)->Proc.Technology.IOMMU_Ver_Major = 0;
 	RO(Shm)->Proc.Technology.IOMMU_Ver_Minor = 0;
-}
-
-unsigned int SKL_DimmWidthToRows(unsigned int width)
-{
-	unsigned int rows = 0;
-	switch (width) {
-	case 0b00:
-		rows = 8;
-		break;
-	case 0b01:
-		rows = 16;
-		break;
-	case 0b10:
-		rows = 32;
-		break;
-	}
-	return (8 * 1024 * rows);
 }
 
 void SKL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
@@ -4283,19 +4288,19 @@ void SKL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		RO(Proc)->Uncore.MC[mc].SKL.MADC0.Dimm_L_Map
-	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].SKL.MADD0.DLW);
+	].Rows = DimmWidthToRows(RO(Proc)->Uncore.MC[mc].SKL.MADD0.DLW);
 
 	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		!RO(Proc)->Uncore.MC[mc].SKL.MADC0.Dimm_L_Map
-	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].SKL.MADD0.DSW);
+	].Rows = DimmWidthToRows(RO(Proc)->Uncore.MC[mc].SKL.MADD0.DSW);
 
 	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		RO(Proc)->Uncore.MC[mc].SKL.MADC1.Dimm_L_Map
-	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].SKL.MADD1.DLW);
+	].Rows = DimmWidthToRows(RO(Proc)->Uncore.MC[mc].SKL.MADD1.DLW);
 
 	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		!RO(Proc)->Uncore.MC[mc].SKL.MADC1.Dimm_L_Map
-	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].SKL.MADD1.DSW);
+	].Rows = DimmWidthToRows(RO(Proc)->Uncore.MC[mc].SKL.MADD1.DSW);
 
     switch (RO(Proc)->Uncore.MC[mc].SKL.MADCH.DDR_TYPE) {
     case 0b00:
@@ -5068,19 +5073,19 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
     case 1 ... 4:
 	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
-	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD0.DLW);
+	].Rows = DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD0.DLW);
 
 	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
-	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD0.DSW);
+	].Rows = DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD0.DSW);
 
 	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
-	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD1.DLW);
+	].Rows = DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD1.DLW);
 
 	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
-	].Rows = SKL_DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD1.DSW);
+	].Rows = DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD1.DSW);
 	break;
     case 5:
     default:
@@ -5964,12 +5969,12 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		SET_CHIPSET(IC_LYNXPOINT_M);
 		break;
 	case DID_INTEL_HASWELL_UY_IMC_HA0:	/* HSW Mobile U/Y	*/
-		IVB_CAP(RO(Shm), RO(Proc), RO(Core));
+		HSW_CAP(RO(Shm), RO(Proc), RO(Core));
 		HSW_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_LYNXPOINT_M);
 		break;
 	case DID_INTEL_HASWELL_IMC_HA0: 		/* Haswell	*/
-		IVB_CAP(RO(Shm), RO(Proc), RO(Core));
+		HSW_CAP(RO(Shm), RO(Proc), RO(Core));
 		HSW_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_LYNXPOINT);
 		break;
@@ -5979,14 +5984,14 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		SET_CHIPSET(IC_WELLSBURG);
 		break;
 	case DID_INTEL_BROADWELL_IMC_HA0:	/* Broadwell/Y/U Core m */
-		IVB_CAP(RO(Shm), RO(Proc), RO(Core));
+		HSW_CAP(RO(Shm), RO(Proc), RO(Core));
 		HSW_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_WILDCATPOINT_M);
 		break;
 	case DID_INTEL_BROADWELL_D_IMC_HA0:	/*	BDW/Desktop	*/
 	case DID_INTEL_BROADWELL_H_IMC_HA0:	/*	Broadwell/H	*/
 	case DID_INTEL_BROADWELL_U_IMC_HA0:	/*	Broadwell/U	*/
-		IVB_CAP(RO(Shm), RO(Proc), RO(Core));
+		HSW_CAP(RO(Shm), RO(Proc), RO(Core));
 		HSW_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_WELLSBURG);
 		break;
