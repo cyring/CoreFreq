@@ -5913,6 +5913,7 @@ static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
 
     if (Got_Div_Clock) {
 	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] >>= Div_Clock;
+	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] /= 3;
     }
   }
 	return (PCI_CALLBACK) 0;
