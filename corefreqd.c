@@ -3989,7 +3989,7 @@ void HSW_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
      for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
      {
-	unsigned int DIMM_Banks;
+	unsigned long long DIMM_Banks;
 	const unsigned short
 		Dimm_A_Map = cha & 1	? RO(Proc)->Uncore.MC[mc].SNB.MAD1.DAS
 					: RO(Proc)->Uncore.MC[mc].SNB.MAD0.DAS;
@@ -4021,11 +4021,12 @@ void HSW_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
 					dimmSize[cha][slot ^ Dimm_A_Map] * 256;
 
-	DIMM_Banks = 8 * dimmSize[cha][slot ^ Dimm_A_Map] * 1024 * 1024;
+	DIMM_Banks = RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size;
+	DIMM_Banks = DIMM_Banks * 1024LLU * 1024LLU;
 	DIMM_Banks = DIMM_Banks
-		/ (RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
-		*  RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
-		*  RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks);
+		/ (8LLU * RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols);
 
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = DIMM_Banks;
      }
