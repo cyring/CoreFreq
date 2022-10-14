@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	92
-#define COREFREQ_REV	1
+#define COREFREQ_REV	2
 
 #if !defined(CORE_COUNT)
 	#define CORE_COUNT	256
@@ -954,6 +954,9 @@ enum CPUID_ENUM {
 /* AMD Family 19h */
 	CPUID_80000021_00000000_EXTENDED_FEATURE_2,
 	CPUID_80000022_00000000_EXT_PERF_MON_DEBUG,
+/* AMD64 Architecture Programmer’s Manual rev 4.05 */
+	CPUID_80000023_00000000_MULTIKEY_ENCRYPTED_MEM,
+	CPUID_80000026_00000000_EXTENDED_CPU_TOPOLOGY,
 /* x86 */
 	CPUID_40000000_00000000_HYPERVISOR_VENDOR,
 	CPUID_40000001_00000000_HYPERVISOR_INTERFACE,
@@ -1629,7 +1632,8 @@ typedef struct	/* Processor Capacity Leaf.				*/
 		SSBD_NotRequired: 27-26,
 		CPPC		: 28-27,
 		PSFD		: 29-28, /* 1: SPEC_CTRL_MSR is supported */
-		Reserved5	: 31-29,
+		BTC_NO		: 30-29, /* No Branch Type Confusion	*/
+		Reserved5	: 31-30,
 		BranchSample	: 32-31;
 	} EBX;
 	struct { /* AMD reserved					*/
