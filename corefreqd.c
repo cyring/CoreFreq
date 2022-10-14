@@ -737,6 +737,50 @@ static void (*ComputeVoltage_AMD_17h_Matrix[4])(struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_AMD_17h_PerPkg
 };
 
+static void ComputeVoltage_AMD_RMB( struct FLIP_FLOP *CFlip,
+						RO(SHM_STRUCT) *RO(Shm),
+						unsigned int cpu )
+{
+	COMPUTE_VOLTAGE(AMD_RMB,
+			CFlip->Voltage.Vcore,
+			CFlip->Voltage.VID);
+
+	Core_ComputeVoltageLimits(&RO(Shm)->Cpu[cpu], CFlip);
+}
+
+#define ComputeVoltage_AMD_RMB_PerSMT	ComputeVoltage_AMD_RMB
+
+static void ComputeVoltage_AMD_RMB_PerCore( struct FLIP_FLOP *CFlip,
+							RO(SHM_STRUCT) *RO(Shm),
+							unsigned int cpu )
+{
+	if ((RO(Shm)->Cpu[cpu].Topology.ThreadID == 0)
+	 || (RO(Shm)->Cpu[cpu].Topology.ThreadID == -1))
+	{
+		ComputeVoltage_AMD_RMB(CFlip, RO(Shm), cpu);
+	}
+}
+
+static void ComputeVoltage_AMD_RMB_PerPkg( struct FLIP_FLOP *CFlip,
+							RO(SHM_STRUCT) *RO(Shm),
+							unsigned int cpu )
+{
+	if (cpu == RO(Shm)->Proc.Service.Core)
+	{
+		ComputeVoltage_AMD_RMB(CFlip, RO(Shm), cpu);
+	}
+}
+
+static void (*ComputeVoltage_AMD_RMB_Matrix[4])(struct FLIP_FLOP*,
+						RO(SHM_STRUCT)*,
+						unsigned int) = \
+{
+	[FORMULA_SCOPE_NONE] = ComputeVoltage_None,
+	[FORMULA_SCOPE_SMT ] = ComputeVoltage_AMD_RMB_PerSMT,
+	[FORMULA_SCOPE_CORE] = ComputeVoltage_AMD_RMB_PerCore,
+	[FORMULA_SCOPE_PKG ] = ComputeVoltage_AMD_RMB_PerPkg
+};
+
 static void ComputeVoltage_Winbond_IO( struct FLIP_FLOP *CFlip,
 						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
@@ -1007,6 +1051,9 @@ static void *Core_Cycle(void *arg)
 		break;
 	case VOLTAGE_KIND_AMD_17h:
 		ComputeVoltageFormula = ComputeVoltage_AMD_17h_Matrix;
+		break;
+	case VOLTAGE_KIND_AMD_RMB:
+		ComputeVoltageFormula = ComputeVoltage_AMD_RMB_Matrix;
 		break;
 	case VOLTAGE_KIND_WINBOND_IO:
 		ComputeVoltageFormula = ComputeVoltage_Winbond_IO_Matrix;
