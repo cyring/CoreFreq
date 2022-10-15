@@ -1694,11 +1694,15 @@ void Mitigation_2nd_Stage(	RO(SHM_STRUCT) *RO(Shm),
 
 			SSBD = BITCMP_CC(	LOCKLESS,
 						RW(Proc)->SSBD,
+						RO(Proc)->SPEC_CTRL_Mask ),
+
+			AMD_LS_CFG_SSBD = BITCMP_CC(LOCKLESS,
+						RW(Proc)->AMD_LS_CFG_SSBD,
 						RO(Proc)->SPEC_CTRL_Mask );
 
 	RO(Shm)->Proc.Mechanisms.IBRS  += (2 * IBRS);
 	RO(Shm)->Proc.Mechanisms.STIBP += (2 * STIBP);
-	RO(Shm)->Proc.Mechanisms.SSBD  += (2 * SSBD);
+	RO(Shm)->Proc.Mechanisms.SSBD  += (2 * (SSBD | AMD_LS_CFG_SSBD));
 }
 
 void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),

@@ -1021,6 +1021,7 @@ typedef struct
 	BitCC			SPLA		__attribute__ ((aligned (16)));
 	BitCC			SNOOP_FILTER	__attribute__ ((aligned (16)));
 	BitCC			WDT		__attribute__ ((aligned (16)));
+	BitCC			AMD_LS_CFG_SSBD __attribute__ ((aligned (16)));
 
 	struct {
 		Bit64		Signal	__attribute__ ((aligned (8)));

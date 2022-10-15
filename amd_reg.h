@@ -95,6 +95,10 @@
 	#define MSR_AMD_PPIN			0xc00102f1
 #endif
 
+#ifndef MSR_AMD64_LS_CFG
+	#define MSR_AMD64_LS_CFG		0xc0011020
+#endif
+
 #ifndef MSR_AMD_IC_CFG
 	#define MSR_AMD_IC_CFG			0xc0011021
 #endif
@@ -791,6 +795,29 @@ typedef union
 	ReservedBits	: 64-2;
     };
 } AMD_PPIN_CTL; /* Family: 17h, UNK: 16h,15h,14h,12h,11h,10h. Not: 0Fh	*/
+
+typedef union
+{
+	unsigned long long value; /* Per SMT: MSR 0xc0011020		*/
+    struct
+    {
+	unsigned long long
+	ReservedBits1	: 10-0,
+	F17h_SSBD_EN	: 11-10, /* F17h: 1=Enable SSBD per SMT [low perf] */
+	ReservedBits2	: 15-11,
+	CVE_2013_6885	: 16-15, /* F16h erratum 793, CVE-2013-6885	*/
+	ReservedBits3	: 26-16,
+	HitCurPageOpt	: 27-26, /* Disable current table-walk page hit optim.*/
+	ReservedBits4	: 28-27,
+	StreamingStore	: 29-28, /* F10h...F15h: 1=Disable | Mainboard Enable */
+	F16h_SSBD	: 30-29,
+	ReservedBits5	: 33-30,
+	F16h_SSBD_EN	: 34-33, /* F16h: 1=Enable SSBD per SMT 	*/
+	ReservedBits6	: 54-34,
+	F15h_SSBD	: 55-54, /* F15h,F16h,some F17h: disable SpecLockMap */
+	ReservedBits7	: 64-55;
+    };
+} AMD_LS_CFG;
 
 typedef union
 {
