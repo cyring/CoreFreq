@@ -10463,10 +10463,6 @@ void AMD_Mitigation_Mechanisms(CORE_RO *Core)
 {
 	AMD_SPEC_CTRL Spec_Ctrl = {.value = 0};
 	AMD_PRED_CMD  Pred_Cmd  = {.value = 0};
-	AMD_LS_CFG	LS_CFG	= {.value = 0};
-	CPUID_0x8000001e leaf8000001e = {
-			.EAX = {0}, .EBX = {{0}}, .ECX = {0}, .EDX = {0}
-	};
 	unsigned short WrRdMSR = 0;
 
     if (PUBLIC(RO(Proc))->Features.leaf80000008.EBX.IBRS
@@ -10541,6 +10537,13 @@ void AMD_Mitigation_Mechanisms(CORE_RO *Core)
 		WRMSR(Pred_Cmd, MSR_AMD_PRED_CMD);
 	    }
 	}
+    if ((PUBLIC(RO(Proc))->Features.leaf80000008.EBX.SSBD_VirtSpecCtrl == 0)
+     && (BITVAL_CC(PUBLIC(RW(Proc))->SSBD, Core->Bind) == 0))
+    {
+	AMD_LS_CFG LS_CFG = {.value = 0};
+	CPUID_0x8000001e leaf8000001e = {
+			.EAX = {0}, .EBX = {{0}}, .ECX = {0}, .EDX = {0}
+	};
 	__asm__ volatile
 	(
 		"movq	$0x8000001e, %%rax	\n\t"
@@ -10559,8 +10562,8 @@ void AMD_Mitigation_Mechanisms(CORE_RO *Core)
 		:
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
-    if (leaf8000001e.EBX.ThreadsPerCore == 1)
-    {
+      if (leaf8000001e.EBX.ThreadsPerCore == 1)
+      {
 	RDMSR(LS_CFG, MSR_AMD64_LS_CFG);
 
 	if ((Mech_SSBD == COREFREQ_TOGGLE_OFF)
@@ -10575,6 +10578,9 @@ void AMD_Mitigation_Mechanisms(CORE_RO *Core)
 	} else {
 	    BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->AMD_LS_CFG_SSBD, Core->Bind);
 	}
+      } else {
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->AMD_LS_CFG_SSBD, Core->Bind);
+      }
     } else {
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->AMD_LS_CFG_SSBD, Core->Bind);
     }

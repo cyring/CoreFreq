@@ -1107,6 +1107,7 @@
 #define RSC_FEATURES_XSAVE_CODE_EN	"XSAVE/XSTOR States"
 #define RSC_FEATURES_XTPR_CODE_EN	"xTPR Update Control"
 #define RSC_FEAT_SECTION_MECH_CODE_EN	"Mitigation mechanisms"
+#define RSC_FEAT_SECTION_SEC_CODE_EN	"Security Features"
 
 #define RSC_TECHNOLOGIES_TITLE_CODE_EN	" Technologies "
 #define RSC_TECHNOLOGIES_DCU_CODE_EN	"Data Cache Unit"
@@ -1923,6 +1924,10 @@
 #define RSC_MECH_IBRS_SAME_MODE_CODE_EN "IBRS provides same speculation limits"
 #define RSC_MECH_SSBD_VIRTSPECCTRL_CODE_EN "SSBD use VIRT SPEC_CTRL register"
 #define RSC_MECH_SSBD_NOT_REQUIRED_CODE_EN "SSBD not needed on this processor"
+
+#define RSC_SECURITY_SKINIT_CODE_EN	"Secure Init and Jump with Attestation"
+#define RSC_SECURITY_SEV_CODE_EN	"Secure Encrypted Virtualization"
+#define RSC_SECURITY_GMET_CODE_EN	"Guest Mode Execute Trap"
 
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_EN	"  %3s       Processor     " \
 						"   %s     %c%4u %c "

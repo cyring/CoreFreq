@@ -586,6 +586,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_XSAVE_CODE_FR	"XSAVE/XSTOR States"
 #define RSC_FEATURES_XTPR_CODE_FR	"xTPR Update Control"
 #define RSC_FEAT_SECTION_MECH_CODE_FR	"M""\xa9""canismes d'att""\xa9""nuation"
+#define RSC_FEAT_SECTION_SEC_CODE_FR	"Fonctions de s""\xa9""curit""\xa9"
 
 #define RSC_TECHNOLOGIES_TITLE_CODE_FR	" Technologies "
 #define RSC_TECHNOLOGIES_DCU_CODE_FR  "Unit""\xa9"" de cache de donn""\xa9""es"
@@ -1397,6 +1398,10 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_MECH_IBRS_SAME_MODE_CODE_FR RSC_MECH_IBRS_SAME_MODE_CODE_EN
 #define RSC_MECH_SSBD_VIRTSPECCTRL_CODE_FR RSC_MECH_SSBD_VIRTSPECCTRL_CODE_EN
 #define RSC_MECH_SSBD_NOT_REQUIRED_CODE_FR RSC_MECH_SSBD_NOT_REQUIRED_CODE_EN
+
+#define RSC_SECURITY_SKINIT_CODE_FR	"Secure Init and Jump with Attestation"
+#define RSC_SECURITY_SEV_CODE_FR	"Secure Encrypted Virtualization"
+#define RSC_SECURITY_GMET_CODE_FR	"Guest Mode Execute Trap"
 
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_FR	"  %3s       Processeur    " \
 						"   %s     %c%4u %c "

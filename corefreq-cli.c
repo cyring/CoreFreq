@@ -2831,6 +2831,43 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		2, "%s%.*sPSFD   [%7s]", RSC(MECH_PSFD).CODE(),
 		width - 19 - RSZ(MECH_PSFD),
 		NULL
+	},
+/* Section Mark */
+	{
+		NULL,
+		0,
+		attr_Feat,
+		0, "%s", RSC(FEAT_SECTION_SEC).CODE(),
+		0,
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Features.ExtInfo.ECX.SKINIT,
+		attr_Feat,
+		2, "%s%.*sSKINIT   [%7s]", RSC(SECURITY_SKINIT).CODE(),
+		width - 21 - RSZ(SECURITY_SKINIT),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
+			CPUID_8000001F_00000000_SECURE_ENCRYPTION
+		].reg[0], 1),
+		attr_Feat,
+		2, "%s%.*sSEV   [%7s]", RSC(SECURITY_SEV).CODE(),
+		width - 18 - RSZ(SECURITY_SEV),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
+			CPUID_8000000A_00000000_SVM_REVISION
+		].reg[3], 17),
+		attr_Feat,
+		2, "%s%.*sGMET   [%7s]", RSC(SECURITY_GMET).CODE(),
+		width - 19 - RSZ(SECURITY_GMET),
+		NULL
 	}
     };
 	size_t idx;
