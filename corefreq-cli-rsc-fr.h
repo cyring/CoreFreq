@@ -1401,6 +1401,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_SECURITY_SKINIT_CODE_FR	"Secure Init and Jump with Attestation"
 #define RSC_SECURITY_SEV_CODE_FR	"Secure Encrypted Virtualization"
+#define RSC_SECURITY_SEV_ES_CODE_FR	"SEV - Encrypted State"
+#define RSC_SECURITY_SEV_SNP_CODE_FR	"SEV - Secure Nested Paging"
 #define RSC_SECURITY_GMET_CODE_FR	"Guest Mode Execute Trap"
 
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_FR	"  %3s       Processeur    " \

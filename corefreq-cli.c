@@ -2853,7 +2853,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_8000001F_00000000_SECURE_ENCRYPTION
-		].reg[0], 1),
+		].reg[0], CPUID_8000001F_00000000_EAX_SEV),
 		attr_Feat,
 		2, "%s%.*sSEV   [%7s]", RSC(SECURITY_SEV).CODE(),
 		width - 18 - RSZ(SECURITY_SEV),
@@ -2862,8 +2862,28 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
+			CPUID_8000001F_00000000_SECURE_ENCRYPTION
+		].reg[0], CPUID_8000001F_00000000_EAX_SEV_ES),
+		attr_Feat,
+		2, "%s%.*sSEV-ES   [%7s]", RSC(SECURITY_SEV_ES).CODE(),
+		width - 21 - RSZ(SECURITY_SEV_ES),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
+			CPUID_8000001F_00000000_SECURE_ENCRYPTION
+		].reg[0], CPUID_8000001F_00000000_EAX_SEV_SNP),
+		attr_Feat,
+		2, "%s%.*sSEV-SNP   [%7s]", RSC(SECURITY_SEV_SNP).CODE(),
+		width - 22 - RSZ(SECURITY_SEV_SNP),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_8000000A_00000000_SVM_REVISION
-		].reg[3], 17),
+		].reg[3], CPUID_8000000A_00000000_EDX_GMET),
 		attr_Feat,
 		2, "%s%.*sGMET   [%7s]", RSC(SECURITY_GMET).CODE(),
 		width - 19 - RSZ(SECURITY_GMET),
