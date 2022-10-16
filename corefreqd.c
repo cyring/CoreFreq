@@ -7454,6 +7454,17 @@ static void Pkg_ComputeVoltage_AMD_17h(struct PKG_FLIP_FLOP *PFlip)
 			PFlip->Voltage.VID.SOC);
 }
 
+static void Pkg_ComputeVoltage_AMD_RMB(struct PKG_FLIP_FLOP *PFlip)
+{
+	COMPUTE_VOLTAGE(AMD_RMB,
+			PFlip->Voltage.CPU,
+			PFlip->Voltage.VID.CPU);
+
+	COMPUTE_VOLTAGE(AMD_RMB,
+			PFlip->Voltage.SOC,
+			PFlip->Voltage.VID.SOC);
+}
+
 static void Pkg_ComputeVoltage_Winbond_IO(struct PKG_FLIP_FLOP *PFlip)
 {	/* Winbond W83627EHF/EF, W83627EHG,EG				*/
 	COMPUTE_VOLTAGE(WINBOND_IO,
@@ -7602,6 +7613,9 @@ REASON_CODE Core_Manager(REF *Ref)
 		break;
 	case VOLTAGE_KIND_AMD_17h:
 		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_AMD_17h;
+		break;
+	case VOLTAGE_KIND_AMD_RMB:
+		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_AMD_RMB;
 		break;
 	case VOLTAGE_KIND_WINBOND_IO:
 		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_Winbond_IO;

@@ -17689,6 +17689,24 @@ static void Call_SVI_APU(const unsigned int plane0, const unsigned int plane1,
 	SoC_RAPL(SVI, factor);
 }
 
+static void Call_SVI_RMB(const unsigned int plane0, const unsigned int plane1,
+			const unsigned long long factor)
+{
+	AMD_RMB_SVI SVI = {.value = 0};
+
+	Core_AMD_SMN_Read(	SVI,
+				SMU_AMD_RMB_SVI(plane0),
+				PRIVATE(OF(Zen)).Device.DF );
+
+	PUBLIC(RO(Proc))->PowerThermal.VID.CPU = SVI.SVI1;
+
+	Core_AMD_SMN_Read(	SVI,
+				SMU_AMD_RMB_SVI(plane1),
+				PRIVATE(OF(Zen)).Device.DF );
+
+	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.SVI1;
+}
+
 static void Call_DFLT(	const unsigned int plane0, const unsigned int plane1,
 			const unsigned long long factor )
 {
@@ -17741,6 +17759,10 @@ static enum hrtimer_restart Cycle_AMD_F17h_Zen2_APU(struct hrtimer *pTimer)
 {
 	return Entry_AMD_F17h(pTimer, Call_SVI_APU, 0, 1, 294300LLU);
 }
+static enum hrtimer_restart Cycle_AMD_Zen3Plus_RMB(struct hrtimer *pTimer)
+{
+	return Entry_AMD_F17h(pTimer, Call_SVI_RMB, 0, 1, 294300LLU);
+}
 static enum hrtimer_restart Cycle_AMD_F17h(struct hrtimer *pTimer)
 {
 	return Entry_AMD_F17h(pTimer, Call_DFLT, 0, 0, 0LLU);
@@ -17769,6 +17791,11 @@ static void InitTimer_AMD_F17h_Zen2_MP(unsigned int cpu)
 static void InitTimer_AMD_F17h_Zen2_APU(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h_Zen2_APU, 1);
+}
+
+static void InitTimer_AMD_Zen3Plus_RMB(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_AMD_Zen3Plus_RMB, 1);
 }
 
 static void Start_AMD_Family_17h(void *arg)

@@ -1661,6 +1661,7 @@ static void InitTimer_AMD_F17h_Zen(unsigned int cpu) ;
 static void InitTimer_AMD_F17h_Zen2_SP(unsigned int cpu) ;
 static void InitTimer_AMD_F17h_Zen2_MP(unsigned int cpu) ;
 static void InitTimer_AMD_F17h_Zen2_APU(unsigned int cpu) ;
+static void InitTimer_AMD_Zen3Plus_RMB(unsigned int cpu) ;
 static void Start_Uncore_AMD_Family_17h(void *arg) ;
 static void Stop_Uncore_AMD_Family_17h(void *arg) ;
 
@@ -9584,7 +9585,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
 	.Exit = Exit_AMD_F19h,
-	.Timer = InitTimer_AMD_F19h_Zen3_APU,
+	.Timer = InitTimer_AMD_Zen3Plus_RMB,
 	.BaseClock = BaseClock_AMD_Family_19h,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,

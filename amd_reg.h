@@ -1905,6 +1905,10 @@ typedef union
 	#define SMU_AMD_F17_60H_SVI(_plane)	(0x0006f038 + (_plane << 2))
 #endif
 
+#ifndef SMU_AMD_RMB_SVI
+	#define SMU_AMD_RMB_SVI(_plane) 	(0x0006f010 + (_plane << 2))
+#endif
+
 typedef union
 {/*		--- SMU SVI [ 0x5a00c ; 0x5a010 ; 0x5a014 ; 0x6f038] ---
  *				[ CPU addr]	[ SoC addr]
@@ -1925,6 +1929,21 @@ typedef union
 		ReservedBits2	: 32-24;
 	};
 } AMD_17_SVI;
+
+typedef union
+{/*				--- SMU SVI [ Rembrandt ] ---
+ *				[ CPU addr]	[ SoC addr]
+ * ZEN3(+) [AF_44]		[ 0x6f010 ]	[ 0x6f014 ]
+ */
+	unsigned int		value;
+	struct {
+		unsigned int
+		SVI0		:  8-0,
+		SVI1		: 16-8,
+		SVI2		: 24-16,
+		SVI3		: 32-24;
+	};
+} AMD_RMB_SVI;
 
 #ifndef SMU_AMD_F17H_CORE_VID
 	#define SMU_AMD_F17H_CORE_VID(_mod)	(0x0005a04c + (_mod << 2))
