@@ -5773,17 +5773,32 @@ void AMD_17h_CAP(RO(SHM_STRUCT) *RO(Shm),
 			/ (RO(Shm)->Proc.Features.Factory.Clock.Hz
 			* (1000LLU * PRECISION * PRECISION));
 
-	RO(Shm)->Uncore.CtrlSpeed = \
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;
+	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MTS;
+
+	switch(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.CONFIG.BurstLength) {
+	case 0x0:	/* BL2 */
+	case 0x1:	/* BL4 */
+	case 0x2:	/* BL8 */
+		RO(Shm)->Uncore.CtrlSpeed = \
 			(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.MEMCLK
 			* RO(Core)->Clock.Hz * 666666666LLU)
 			/ (RO(Shm)->Proc.Features.Factory.Clock.Hz
 			* (1000LLU * PRECISION * PRECISION));
 
-	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;
-	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;
-	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
-	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MTS;
-	RO(Shm)->Uncore.Unit.DDR_Ver  = 4;
+		RO(Shm)->Uncore.Unit.DDR_Ver  = 4;
+		break;
+	case 0x3:	/* BL16 */
+		RO(Shm)->Uncore.CtrlSpeed = \
+			(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.MEMCLK
+			* RO(Core)->Clock.Hz * PRECISION)
+			/ (RO(Shm)->Proc.Features.Factory.Clock.Hz * 2LLU);
+
+		RO(Shm)->Uncore.Unit.DDR_Ver  = 5;
+		break;
+	}
 	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_SDRAM;
 
        for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
@@ -6356,6 +6371,7 @@ void PCI_AMD(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 	case DID_AMD_17H_ZEN2_APU_NB_IOMMU:
 	case DID_AMD_17H_FIREFLIGHT_NB_IOMMU:
 	case DID_AMD_17H_ARDEN_NB_IOMMU:
+	case DID_AMD_19H_ZEN3_RMB_NB_IOMMU:
 		AMD_17h_IOMMU(RO(Shm), RO(Proc));
 		break;
 	case DID_AMD_17H_ZEPPELIN_DF_UMC:
@@ -6369,6 +6385,7 @@ void PCI_AMD(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 	case DID_AMD_17H_ARDEN_DF_UMC:
 	case DID_AMD_19H_VERMEER_DF_UMC:
 	case DID_AMD_19H_CEZANNE_DF_UMC:
+	case DID_AMD_19H_REMBRANDT_DF_UMC:
 		AMD_17h_UMC(RO(Shm), RO(Proc));
 		AMD_17h_CAP(RO(Shm), RO(Proc), RO(Core));
 		SET_CHIPSET(IC_ZEN);

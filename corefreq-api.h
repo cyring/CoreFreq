@@ -587,6 +587,7 @@ typedef struct
 			    }				Chip,	/* 32 bits   */
 							Mask;	/* 32 bits   */
 			  } CHIP[4][2];
+				AMD_17_UMC_CONFIG	CONFIG; /* 32 bits   */
 				AMD_17_UMC_SPAZ_CTRL	SPAZ;	/* 32 bits   */
 				AMD_17_UMC_CFG_MISC	MISC;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR1	DTR1;	/* 32 bits   */
