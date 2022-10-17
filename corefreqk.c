@@ -1103,7 +1103,9 @@ static void Query_Features(void *pArg)
 
     } else if ( (iArg->Features->Info.Vendor.CRC == CRC_AMD)
 	||	(iArg->Features->Info.Vendor.CRC == CRC_HYGON) )
-    {	/*	Specified as Core Performance 48 bits General Counters. */
+    {	/*	AMD PM version: Use Intel bits as AMD placeholder.	*/
+	iArg->Features->PerfMon.EAX.Version = 1;
+	/*	Specified as Core Performance 48 bits General Counters. */
 	iArg->Features->PerfMon.EAX.MonWidth = 48;
 
 	if (iArg->Features->ExtInfo.ECX.PerfCore) {
@@ -1179,6 +1181,32 @@ static void Query_Features(void *pArg)
 		iArg->SMT_Count = iArg->Features->Std.EBX.Max_SMT_ID;
 	} else {
 		iArg->SMT_Count = 1;
+	}
+	if (iArg->Features->Info.LargestExtFunc >= 0x80000022)
+	{
+		CPUID_0x80000022 leaf80000022 = {
+			.EAX = {0}, .EBX = {0}, .ECX = {0}, .EDX = {0}
+		};
+		__asm__ volatile
+		(
+			"movq	$0x80000022, %%rax	\n\t"
+			"xorq	%%rbx, %%rbx		\n\t"
+			"xorq	%%rcx, %%rcx		\n\t"
+			"xorq	%%rdx, %%rdx		\n\t"
+			"cpuid				\n\t"
+			"mov	%%eax, %0		\n\t"
+			"mov	%%ebx, %1		\n\t"
+			"mov	%%ecx, %2		\n\t"
+			"mov	%%edx, %3"
+			: "=r" (leaf80000022.EAX),
+			  "=r" (leaf80000022.EBX),
+			  "=r" (leaf80000022.ECX),
+			  "=r" (leaf80000022.EDX)
+			:
+			: "%rax", "%rbx", "%rcx", "%rdx"
+		);
+
+	    iArg->Features->PerfMon.EAX.Version += leaf80000022.EAX.PerfMonV2;
 	}
 	BrandFromCPUID(iArg->Brand);
 	BrandCleanup(iArg->Features->Info.Brand, iArg->Brand);

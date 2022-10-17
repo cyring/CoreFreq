@@ -1764,6 +1764,33 @@ enum	/*	AMD Encrypted Memory Capabilities.			*/
 	CPUID_8000001F_00000000_EAX_Reserved_31
 };
 
+typedef struct	/* AMD Extended Performance Monitoring and Debug.	*/
+{
+	struct {
+		unsigned int
+		PerfMonV2	:  1-0,
+		LbrStack	:  2-1,
+		LbrAndPmcFreeze :  3-2,
+		Reserved	: 32-3;
+	} EAX;
+	struct {
+		unsigned int
+		NumPerfCtrCore	:  4-0,
+		LbrStackSize	: 10-4,
+		NumPerfCtrNB	: 16-10,
+		Reserved	: 32-16;
+	} EBX;
+	struct {
+		unsigned int
+		Reserved	: 32-0;
+	} ECX;
+	struct
+	{
+		unsigned int
+		Reserved	: 32-0;
+	} EDX;
+} CPUID_0x80000022;
+
 typedef struct	/* BSP CPUID features.					*/
 {
 	CPUID_FUNCTION		Info;
