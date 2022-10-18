@@ -1971,32 +1971,25 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		{ RO(Shm)->Proc.Features.ExtInfo.EDX.SYSCALL },
 	},
 	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
-		RSC(ISA_RDPID_FMT1).CODE(), RSC(ISA_RDPID_COMM).CODE(),
-		{ 0, RO(Shm)->Proc.Features.ExtFeature.EBX.RDPID },
+		NULL,
+		RSC(ISA_RDPID_FMT).CODE(), RSC(ISA_RDPID_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.ExtFeature.ECX.RDPID },
 		(unsigned short[])
-		{ RO(Shm)->Proc.Features.ExtFeature.EBX.RDPID },
+		{ RO(Shm)->Proc.Features.ExtFeature.ECX.RDPID },
 	},
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		RSC(ISA_UMIP).CODE(), RSC(ISA_UMIP_COMM).CODE(),
-		{ 1, RO(Shm)->Proc.Features.ExtFeature.EBX.SGX_UMIP },
+		{ 1, RO(Shm)->Proc.Features.ExtFeature.ECX.UMIP },
 		(unsigned short[])
-		{ RO(Shm)->Proc.Features.ExtFeature.EBX.SGX_UMIP },
+		{ RO(Shm)->Proc.Features.ExtFeature.ECX.UMIP },
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		RSC(ISA_SGX).CODE(), RSC(ISA_SGX_COMM).CODE(),
-		{ 0, RO(Shm)->Proc.Features.ExtFeature.EBX.SGX_UMIP },
+		{ 1, RO(Shm)->Proc.Features.ExtFeature.EBX.SGX },
 		(unsigned short[])
-		{ RO(Shm)->Proc.Features.ExtFeature.EBX.SGX_UMIP },
-	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
-		RSC(ISA_RDPID_FMT2).CODE(), RSC(ISA_RDPID_COMM).CODE(),
-		{ 1, RO(Shm)->Proc.Features.ExtFeature.ECX.RDPID },
-		(unsigned short[])
-		{ RO(Shm)->Proc.Features.ExtFeature.ECX.RDPID },
+		{ RO(Shm)->Proc.Features.ExtFeature.EBX.SGX },
 	}
     };
 
@@ -2557,15 +2550,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		NULL
 	},
 	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
-		RO(Shm)->Proc.Features.ExtFeature.EBX.SGX_UMIP == 1,
-		attr_Feat,
-		2, "%s%.*sUMIP   [%7s]", RSC(FEATURES_UMIP).CODE(),
-		width - 19 - RSZ(FEATURES_UMIP),
-		NULL
-	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+		NULL,
 		RO(Shm)->Proc.Features.ExtFeature.ECX.UMIP == 1,
 		attr_Feat,
 		2, "%s%.*sUMIP   [%7s]", RSC(FEATURES_UMIP).CODE(),
@@ -2834,7 +2819,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	},
 /* Section Mark */
 	{
-		NULL,
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		0,
 		attr_Feat,
 		0, "%s", RSC(FEAT_SECTION_SEC).CODE(),

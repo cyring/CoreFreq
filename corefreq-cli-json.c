@@ -746,12 +746,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.FSGSBASE);
 					json_key(&s, "TSC_ADJUST");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.TSC_ADJUST);
-				    if ( (vendor == CRC_AMD) || (vendor == CRC_HYGON) ) {
-					json_key(&s, "UMIP");
-				    } else {
 					json_key(&s, "SGX");
-				    }
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.SGX_UMIP);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.SGX);
 					json_key(&s, "BMI1");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.BMI1);
 					json_key(&s, "HLE");
