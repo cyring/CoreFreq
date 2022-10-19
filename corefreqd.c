@@ -1740,6 +1740,26 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 
 			TAA_NO = BITCMP_CC(	LOCKLESS,
 						RW(Proc)->TAA_NO,
+						RO(Proc)->ARCH_CAP_Mask ),
+
+			DOITM_EN = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->DOITM_EN,
+						RO(Proc)->ARCH_CAP_Mask ),
+
+			XAPIC_DIS = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->XAPIC_DIS,
+						RO(Proc)->ARCH_CAP_Mask ),
+
+			RNGDS = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->RNGDS,
+						RO(Proc)->ARCH_CAP_Mask ),
+
+			RTM = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->RTM,
+						RO(Proc)->ARCH_CAP_Mask ),
+
+			VERW = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->VERW,
 						RO(Proc)->ARCH_CAP_Mask );
 
 	RO(Shm)->Proc.Mechanisms.IBRS = (
@@ -1780,7 +1800,7 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 	);
 	RO(Shm)->Proc.Mechanisms.PSCHANGE_MC_NO = (
 		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
-		+ (2*PSCHANGE_MC_NO)
+		+ (2 * PSCHANGE_MC_NO)
 	);
 	RO(Shm)->Proc.Mechanisms.TAA_NO = (
 		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
@@ -1789,17 +1809,72 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 	RO(Shm)->Proc.Mechanisms.STLB = BITCMP_CC(LOCKLESS,
 						RW(Proc)->STLB,
 						RO(Proc)->ARCH_CAP_Mask);
+
 	RO(Shm)->Proc.Mechanisms.FUSA = BITCMP_CC(LOCKLESS,
 						RW(Proc)->FUSA,
 						RO(Proc)->ARCH_CAP_Mask);
+
 	RO(Shm)->Proc.Mechanisms.RSM_CPL0 = BITCMP_CC(LOCKLESS,
 						RW(Proc)->RSM_CPL0,
 						RO(Proc)->ARCH_CAP_Mask);
+
 	RO(Shm)->Proc.Mechanisms.SPLA = BITCMP_CC(LOCKLESS,
 						RW(Proc)->SPLA,
 						RO(Proc)->ARCH_CAP_Mask);
+
 	RO(Shm)->Proc.Mechanisms.SNOOP_FILTER = BITCMP_CC(LOCKLESS,
 						RW(Proc)->SNOOP_FILTER,
+						RO(Proc)->ARCH_CAP_Mask);
+
+	RO(Shm)->Proc.Mechanisms.DOITM_EN = BITCMP_CC(LOCKLESS,
+						RW(Proc)->DOITM_MSR,
+						RO(Proc)->ARCH_CAP_Mask)
+					  + (2 * DOITM_EN);
+
+	RO(Shm)->Proc.Mechanisms.SBDR_SSDP_NO = BITCMP_CC(LOCKLESS,
+						RW(Proc)->SBDR_SSDP_NO,
+						RO(Proc)->ARCH_CAP_Mask);
+
+	RO(Shm)->Proc.Mechanisms.FBSDP_NO = BITCMP_CC(LOCKLESS,
+						RW(Proc)->FBSDP_NO,
+						RO(Proc)->ARCH_CAP_Mask);
+
+	RO(Shm)->Proc.Mechanisms.PSDP_NO = BITCMP_CC(LOCKLESS,
+						RW(Proc)->PSDP_NO,
+						RO(Proc)->ARCH_CAP_Mask);
+
+	RO(Shm)->Proc.Mechanisms.FB_CLEAR = BITCMP_CC(LOCKLESS,
+						RW(Proc)->FB_CLEAR,
+						RO(Proc)->ARCH_CAP_Mask);
+
+	RO(Shm)->Proc.Mechanisms.RRSBA = BITCMP_CC(LOCKLESS,
+						RW(Proc)->RRSBA,
+						RO(Proc)->ARCH_CAP_Mask);
+
+	RO(Shm)->Proc.Mechanisms.BHI_NO = BITCMP_CC(LOCKLESS,
+						RW(Proc)->BHI_NO,
+						RO(Proc)->ARCH_CAP_Mask);
+
+	RO(Shm)->Proc.Mechanisms.SRBDS = BITCMP_CC(LOCKLESS,
+						RW(Proc)->SRBDS_MSR,
+						RO(Proc)->ARCH_CAP_Mask);
+
+	RO(Shm)->Proc.Mechanisms.RNGDS	= RO(Shm)->Proc.Mechanisms.SRBDS
+					+ (2 * RNGDS);
+
+	RO(Shm)->Proc.Mechanisms.RTM	= RO(Shm)->Proc.Mechanisms.SRBDS
+					+ (2 * RTM);
+
+	RO(Shm)->Proc.Mechanisms.VERW	= RO(Shm)->Proc.Mechanisms.SRBDS
+					+ (2 * VERW);
+
+	RO(Shm)->Proc.Mechanisms.XAPIC_DIS = BITCMP_CC(LOCKLESS,
+						RW(Proc)->XAPIC_MSR,
+						RO(Proc)->ARCH_CAP_Mask)
+					   + (2 * XAPIC_DIS);
+
+	RO(Shm)->Proc.Mechanisms.PBRSB_NO = BITCMP_CC(LOCKLESS,
+						RW(Proc)->PBRSB_NO,
 						RO(Proc)->ARCH_CAP_Mask);
     }
     else if (	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)

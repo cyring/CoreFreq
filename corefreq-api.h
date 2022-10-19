@@ -1023,6 +1023,21 @@ typedef struct
 	BitCC			SNOOP_FILTER	__attribute__ ((aligned (16)));
 	BitCC			WDT		__attribute__ ((aligned (16)));
 	BitCC			AMD_LS_CFG_SSBD __attribute__ ((aligned (16)));
+	BitCC			DOITM_EN	__attribute__ ((aligned (16)));
+	BitCC			DOITM_MSR	__attribute__ ((aligned (16)));
+	BitCC			SBDR_SSDP_NO	__attribute__ ((aligned (16)));
+	BitCC			FBSDP_NO	__attribute__ ((aligned (16)));
+	BitCC			PSDP_NO 	__attribute__ ((aligned (16)));
+	BitCC			FB_CLEAR	__attribute__ ((aligned (16)));
+	BitCC			SRBDS_MSR	__attribute__ ((aligned (16)));
+	BitCC			RNGDS		__attribute__ ((aligned (16)));
+	BitCC			RTM		__attribute__ ((aligned (16)));
+	BitCC			VERW		__attribute__ ((aligned (16)));
+	BitCC			RRSBA		__attribute__ ((aligned (16)));
+	BitCC			BHI_NO		__attribute__ ((aligned (16)));
+	BitCC			XAPIC_MSR	__attribute__ ((aligned (16)));
+	BitCC			XAPIC_DIS	__attribute__ ((aligned (16)));
+	BitCC			PBRSB_NO	__attribute__ ((aligned (16)));
 
 	struct {
 		Bit64		Signal	__attribute__ ((aligned (8)));

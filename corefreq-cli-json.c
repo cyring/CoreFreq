@@ -1685,6 +1685,32 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.SNOOP_FILTER);
 			json_key(&s, "PSFD");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.PSFD);
+			json_key(&s, "DOITM_EN");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.DOITM_EN);
+			json_key(&s, "SBDR_SSDP_NO");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.SBDR_SSDP_NO);
+			json_key(&s, "FBSDP_NO");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.FBSDP_NO);
+			json_key(&s, "PSDP_NO");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.PSDP_NO);
+			json_key(&s, "FB_CLEAR");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.FB_CLEAR);
+			json_key(&s, "SRBDS");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.SRBDS);
+			json_key(&s, "RNGDS");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.RNGDS);
+			json_key(&s, "RTM");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.RTM);
+			json_key(&s, "VERW");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.VERW);
+			json_key(&s, "RRSBA");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.RRSBA);
+			json_key(&s, "BHI_NO");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.BHI_NO);
+			json_key(&s, "XAPIC_DIS");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.XAPIC_DIS);
+			json_key(&s, "PBRSB_NO");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.PBRSB_NO);
 
 			json_end_object(&s);
 		}

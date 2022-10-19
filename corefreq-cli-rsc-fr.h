@@ -1372,32 +1372,42 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_MECH_STIBP_CODE_FR	"Single Thread Indirect Branch Predictor"
 #define RSC_MECH_SSBD_CODE_FR	"Speculative Store Bypass Disable"
 #define RSC_MECH_L1D_FLUSH_CODE_FR "Writeback & invalidate the L1 data cache"
-#define RSC_MECH_MD_CLEAR_CODE_FR  "Architectural - Buffer Overwriting"
-#define RSC_MECH_RDCL_NO_CODE_FR   "Architectural - Rogue Data Cache Load"
-#define RSC_MECH_IBRS_ALL_CODE_FR  "Architectural - Enhanced IBRS"
-#define RSC_MECH_RSBA_CODE_FR	"Architectural - Return Stack Buffer Alternate"
+#define RSC_MECH_MD_CLEAR_CODE_FR	"Arch - Buffer Overwriting"
+#define RSC_MECH_RDCL_NO_CODE_FR	"Arch - Rogue Data Cache Load"
+#define RSC_MECH_IBRS_ALL_CODE_FR	"Arch - Enhanced IBRS"
+#define RSC_MECH_RSBA_CODE_FR		"Arch - Return Stack Buffer Alternate"
 
 #define RSC_MECH_L1DFL_VMENTRY_NO_CODE_FR \
 				"Hypervisor - No flush L1D on VM entry"
 
-#define RSC_MECH_SSB_NO_CODE_FR "Architectural - Speculative Store Bypass"
-
-#define RSC_MECH_MDS_NO_CODE_FR \
-			"Architectural - Microarchitectural Data Sampling"
-
-#define RSC_MECH_PSCHANGE_MC_NO_CODE_FR "Architectural - Page Size Change MCE"
-#define RSC_MECH_TAA_NO_CODE_FR "Architectural - TSX Asynchronous Abort"
+#define RSC_MECH_SSB_NO_CODE_FR "Arch - Speculative Store Bypass"
+#define RSC_MECH_MDS_NO_CODE_FR "Arch - Microarchitectural Data Sampling"
+#define RSC_MECH_PSCHANGE_MC_NO_CODE_FR "Arch - Page Size Change MCE"
+#define RSC_MECH_TAA_NO_CODE_FR 	"Arch - TSX Asynchronous Abort"
 #define RSC_MECH_STLB_CODE_FR		RSC_MECH_STLB_CODE_EN
 #define RSC_MECH_FUSA_CODE_FR		RSC_MECH_FUSA_CODE_EN
 #define RSC_MECH_RSM_CPL0_CODE_FR	RSC_MECH_RSM_CPL0_CODE_EN
-#define RSC_MECH_SPLA_CODE_FR	"Architectural - Split Locked Access Exception"
+#define RSC_MECH_SPLA_CODE_FR		"Arch - Split Locked Access Exception"
 #define RSC_MECH_SNOOP_FILTER_CODE_FR	RSC_MECH_SNOOP_FILTER_CODE_EN
-#define RSC_MECH_PSFD_CODE_FR	"Architectural - Predictive Store Forwarding"
+#define RSC_MECH_PSFD_CODE_FR		"Arch - Predictive Store Forwarding"
 #define RSC_MECH_IBRS_ALWAYS_ON_CODE_FR RSC_MECH_IBRS_ALWAYS_ON_CODE_EN
 #define RSC_MECH_IBRS_PREFERRED_CODE_FR RSC_MECH_IBRS_PREFERRED_CODE_EN
 #define RSC_MECH_IBRS_SAME_MODE_CODE_FR RSC_MECH_IBRS_SAME_MODE_CODE_EN
 #define RSC_MECH_SSBD_VIRTSPECCTRL_CODE_FR RSC_MECH_SSBD_VIRTSPECCTRL_CODE_EN
 #define RSC_MECH_SSBD_NOT_REQUIRED_CODE_FR RSC_MECH_SSBD_NOT_REQUIRED_CODE_EN
+#define RSC_MECH_DOITM_CODE_FR		RSC_MECH_DOITM_CODE_EN
+#define RSC_MECH_SBDR_SSDP_NO_CODE_FR	RSC_MECH_SBDR_SSDP_NO_CODE_EN
+#define RSC_MECH_FBSDP_NO_CODE_FR	RSC_MECH_FBSDP_NO_CODE_EN
+#define RSC_MECH_PSDP_NO_CODE_FR	RSC_MECH_PSDP_NO_CODE_EN
+#define RSC_MECH_FB_CLEAR_CODE_FR	RSC_MECH_FB_CLEAR_CODE_EN
+#define RSC_MECH_SRBDS_CODE_FR		RSC_MECH_SRBDS_CODE_EN
+#define RSC_MECH_RNGDS_CODE_FR		RSC_MECH_RNGDS_CODE_EN
+#define RSC_MECH_RTM_CODE_FR		RSC_MECH_RTM_CODE_EN
+#define RSC_MECH_VERW_CODE_FR		RSC_MECH_VERW_CODE_EN
+#define RSC_MECH_RRSBA_CODE_FR		RSC_MECH_RRSBA_CODE_EN
+#define RSC_MECH_BHI_NO_CODE_FR 	RSC_MECH_BHI_NO_CODE_EN
+#define RSC_MECH_XAPIC_DIS_CODE_FR	RSC_MECH_XAPIC_DIS_CODE_EN
+#define RSC_MECH_PBRSB_NO_CODE_FR	RSC_MECH_PBRSB_NO_CODE_EN
 
 #define RSC_SECURITY_SKINIT_CODE_FR	"Secure Init and Jump with Attestation"
 #define RSC_SECURITY_SEV_CODE_FR	"Secure Encrypted Virtualization"

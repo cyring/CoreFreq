@@ -36,6 +36,18 @@
 	#define MSR_IA32_ARCH_CAPABILITIES	0x0000010a
 #endif
 
+#ifndef MSR_IA32_XAPIC_DISABLE_STATUS
+	#define MSR_IA32_XAPIC_DISABLE_STATUS	0x000000bd
+#endif
+
+#ifndef MSR_IA32_UARCH_MISC_CTRL
+	#define MSR_IA32_UARCH_MISC_CTRL	0x00001b01
+#endif
+
+#ifndef MSR_IA32_MCU_OPT_CTRL
+	#define MSR_IA32_MCU_OPT_CTRL		0x00000123
+#endif
+
 #ifndef MSR_IA32_CORE_CAPABILITIES
 	#define MSR_IA32_CORE_CAPABILITIES	0x000000cf
 #endif
@@ -407,10 +419,17 @@ typedef union
 	struct
 	{
 		unsigned long long
-		IBRS		:  1-0, /* CPUID(EAX=07H,ECX=0):EDX[26] == 1 */
-		STIBP		:  2-1, /* CPUID(EAX=07H,ECX=0):EDX[27] == 1 */
-		SSBD		:  3-2, /* CPUID(EAX=07H,ECX=0):EDX[31] == 1 */
-		ReservedBits	: 64-3;
+		IBRS		:  1-0,  /* CPUID(EAX=07H,ECX=0):EDX[26] == 1 */
+		STIBP		:  2-1,  /* CPUID(EAX=07H,ECX=0):EDX[27] == 1 */
+		SSBD		:  3-2,  /* CPUID(EAX=07H,ECX=0):EDX[31] == 1 */
+		IPRED_DIS_U	:  4-3,  /* CPUID(EAX=07H,ECX=2):EDX[ 1] == 1 */
+		IPRED_DIS_S	:  5-4,  /* CPUID(EAX=07H,ECX=2):EDX[ 1] == 1 */
+		RRSBA_DIS_U	:  6-5,  /* CPUID(EAX=07H,ECX=2):EDX[ 2] == 1 */
+		RRSBA_DIS_S	:  7-6,  /* CPUID(EAX=07H,ECX=2):EDX[ 2] == 1 */
+		PSFD		:  8-7,  /* CPUID(EAX=07H,ECX=2):EDX[ 0] == 1 */
+		ReservedBits1	: 10-8,
+		BHI_DIS_S	: 11-10, /* CPUID(EAX=07H,ECX=2):EDX[ 4] == 1 */
+		ReservedBits	: 64-11;
 	};
 } SPEC_CTRL;
 
@@ -465,11 +484,58 @@ typedef union
 		ReservedBits1		: 10-9,
 		MISC_PACKAGE_CTLS_SUP	: 11-10, /* IA32_MISC_PACKAGE_CTLS */
 		ENERGY_FILTERING_CTL_SUP: 12-11, /* ENERGY_FILTERING_CTL */
-		ReservedBits2		: 23-12,
+		DOITM_UARCH_MISC_CTRL	: 13-12,
+		SBDR_SSDP_NO		: 14-13,
+		FBSDP_NO		: 15-14,
+		PSDP_NO 		: 16-15,
+		ReservedBits2		: 17-16,
+		FB_CLEAR		: 18-17,
+		FB_CLEAR_CTRL		: 19-18, /* IA32_MCU_OPT_CTRL[3] */
+		RRSBA			: 20-19,
+		BHI_NO			: 21-20,
+		XAPIC_DISABLE_STATUS_MSR: 22-21, /* xAPIC disable status */
+		ReservedBits3		: 23-22,
 		OVERCLOCKING_STATUS_SUP : 24-23, /* IA32_OVERLOCKING_STATUS */
-		ReservedBits3		: 64-24;
+		PBRSB_NO		: 25-24,
+		ReservedBits4		: 64-25;
 	};
 } ARCH_CAPABILITIES;
+
+typedef union
+{	/* ARCH_CAPABILITIES[XAPIC_DISABLE_STATUS] == 1			*/
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		LEGACY_XAPIC_DISABLED	:  1-0,
+		ReservedBits		: 64-1;
+	};
+} XAPIC_DISABLE_STATUS;
+
+typedef union
+{	/* ARCH_CAPABILITIES[DOITM_UARCH_MISC_CTRL] == 1		*/
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		DOITM			:  1-0,
+		ReservedBits		: 64-1;
+	};
+} UARCH_MISC_CTRL;
+
+typedef union
+{	/* ARCH_CAPABILITIES[FB_CLEAR_CTRL] == 1			*/
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		_RNGDS_MITG_DIS :  1-0, /*0: Mitigates RDRAND and RDSEED */
+		_RTM_ALLOW	:  2-1, /*1: XBEGIN=IA32_TSX_CTRL[RTM_DISABLE]*/
+		_RTM_LOCKED	:  3-2, /*1: RTM_ALLOW is locked at zero */
+		_FB_CLEAR_DIS	:  4-3, /* VERW instruction will not perform */
+		ReservedBits	: 64-4;
+	};
+} MCU_OPT_CTRL;	/* Microcode Update Option Control (R/W)		*/
 
 typedef union
 {	/* 06_86 [TREMONT], 06_8D, 06_8C [Tiger Lake]			*/

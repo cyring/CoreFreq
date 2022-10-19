@@ -887,6 +887,7 @@ enum CPUID_ENUM {
 	CPUID_00000006_00000000_POWER_AND_THERMAL_MGMT,
 	CPUID_00000007_00000000_EXTENDED_FEATURES,
 	CPUID_00000007_00000001_EXT_FEAT_SUB_LEAF_1,
+	CPUID_00000007_00000001_EXT_FEAT_SUB_LEAF_2,
 /* Intel */
 	CPUID_00000009_00000000_DIRECT_CACHE_ACCESS,
 	CPUID_0000000A_00000000_PERF_MONITORING,
@@ -1283,23 +1284,23 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 	{	/* Intel reserved.					*/
 		unsigned int
 		Reserved1	:  2-0,
-		AVX512_4VNNIW	:  3-2, /* Intel Xeon Phi		*/
-		AVX512_4FMAPS	:  4-3, /* Intel Xeon Phi		*/
-		FSRM		:  5-4, /* Fast Short REP MOVSB 	*/
+		AVX512_4VNNIW	:  3-2,  /* Intel Xeon Phi		*/
+		AVX512_4FMAPS	:  4-3,  /* Intel Xeon Phi		*/
+		FSRM		:  5-4,  /* Fast Short REP MOVSB 	*/
 		Reserved2	:  8-5,
-		AVX512_VP2INTER :  9-8, /* AVX512_VP2INTERSECT		*/
-		Reserved3	: 10-9,
+		AVX512_VP2INTER :  9-8,  /* AVX512_VP2INTERSECT		*/
+		SRBDS_CTRL	: 10-9,  /* IA32_MCU_OPT_CTRL		*/
 		MD_CLEAR_Cap	: 11-10,
-		Reserved4	: 13-11,
+		Reserved3	: 13-11,
 		TSX_FORCE_ABORT : 14-13, /* MSR TSX_FORCE_ABORT capable	*/
 		SERIALIZE	: 15-14, /* SERIALIZE instruction	*/
 		Hybrid		: 16-15, /* Hybrid part processor	*/
 		TSXLDTRK	: 17-16, /* TSX suspend load address tracking*/
-		Reserved5	: 18-17,
+		Reserved4	: 18-17,
 		PCONFIG 	: 19-18,
-		Reserved6	: 20-19,
+		Reserved5	: 20-19,
 		CET_IBT 	: 21-20, /* CET Indirect Branch Tracking */
-		Reserved7	: 26-21,
+		Reserved6	: 26-21,
 		IBRS_IBPB_Cap	: 27-26, /* IA32_SPEC_CTRL,IA32_PRED_CMD */
 		STIBP_Cap	: 28-27, /* IA32_SPEC_CTRL[1]		*/
 		L1D_FLUSH_Cap	: 29-28, /* IA32_FLUSH_CMD		*/
@@ -1344,7 +1345,13 @@ typedef struct	/* Extended Feature Flags Leaf equal or greater than 2	*/
 	{	/* Intel reserved.					*/
 		unsigned int
 		Reserved	: 32-0;
-	} EAX, EBX, ECX, EDX;
+	} EAX, EBX, ECX;
+	struct
+	{	/* Intel reserved.					*/
+		unsigned int
+		PSFD		:  1-0,
+		Reserved	: 32-1;
+	} EDX;
 } CPUID_0x00000007_2;
 
 typedef struct	/* Architectural Performance Monitoring Leaf.		*/

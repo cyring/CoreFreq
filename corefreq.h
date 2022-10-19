@@ -345,7 +345,20 @@ typedef struct
 				SPLA		: 26-25,
 				SNOOP_FILTER	: 27-26,
 				PSFD		: 28-27,
-				_UnusedMechBits : 64-28;
+				DOITM_EN	: 30-28,
+				SBDR_SSDP_NO	: 31-30,
+				FBSDP_NO	: 32-31,
+				PSDP_NO 	: 33-32,
+				FB_CLEAR	: 34-33,
+				SRBDS		: 35-34,
+				RNGDS		: 37-35,
+				RTM		: 39-37,
+				VERW		: 41-39,
+				RRSBA		: 42-41,
+				BHI_NO		: 43-42,
+				XAPIC_DIS	: 45-43,
+				PBRSB_NO	: 46-45,
+				_UnusedMechBits : 64-46;
 	} Mechanisms;
 
 	enum THERMAL_FORMULAS	thermalFormula;

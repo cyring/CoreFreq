@@ -2810,11 +2810,116 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		MECH
 	},
 	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		NULL,
 		RO(Shm)->Proc.Mechanisms.PSFD,
 		attr_Feat,
 		2, "%s%.*sPSFD   [%7s]", RSC(MECH_PSFD).CODE(),
 		width - 19 - RSZ(MECH_PSFD),
+		NULL
+	},
+/* Section Mark */
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.DOITM_EN,
+		attr_Feat,
+		2, "%s%.*sDOITM   [%7s]", RSC(MECH_DOITM).CODE(),
+		width - 20 - RSZ(MECH_DOITM),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.SBDR_SSDP_NO,
+		attr_Feat,
+		2, "%s%.*sSBDR_SSDP_NO   [%7s]", RSC(MECH_SBDR_SSDP_NO).CODE(),
+		width - 27 - RSZ(MECH_SBDR_SSDP_NO),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.FBSDP_NO,
+		attr_Feat,
+		2, "%s%.*sFBSDP_NO   [%7s]", RSC(MECH_FBSDP_NO).CODE(),
+		width - 23 - RSZ(MECH_FBSDP_NO),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.PSDP_NO,
+		attr_Feat,
+		2, "%s%.*sPSDP_NO   [%7s]", RSC(MECH_PSDP_NO).CODE(),
+		width - 22 - RSZ(MECH_PSDP_NO),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.FB_CLEAR,
+		attr_Feat,
+		2, "%s%.*sFB_CLEAR   [%7s]", RSC(MECH_FB_CLEAR).CODE(),
+		width - 23 - RSZ(MECH_FB_CLEAR),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.SRBDS,
+		attr_Feat,
+		2, "%s%.*sSRBDS   [%7s]", RSC(MECH_SRBDS).CODE(),
+		width - 20 - RSZ(MECH_SRBDS),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.RNGDS,
+		attr_Feat,
+		3, "%s%.*sRNGDS   [%7s]", RSC(MECH_RNGDS).CODE(),
+		width - (OutFunc == NULL ? 23:21) - RSZ(MECH_RNGDS),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.RTM,
+		attr_Feat,
+		3, "%s%.*sRTM   [%7s]", RSC(MECH_RTM).CODE(),
+		width - (OutFunc == NULL ? 21:19) - RSZ(MECH_RTM),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.VERW,
+		attr_Feat,
+		3, "%s%.*sVERW   [%7s]", RSC(MECH_VERW).CODE(),
+		width - (OutFunc == NULL ? 22:20) - RSZ(MECH_VERW),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.RRSBA,
+		attr_Feat,
+		2, "%s%.*sRRSBA   [%7s]", RSC(MECH_RRSBA).CODE(),
+		width - 20 - RSZ(MECH_RRSBA),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.BHI_NO,
+		attr_Feat,
+		2, "%s%.*sBHI_NO   [%7s]", RSC(MECH_BHI_NO).CODE(),
+		width - 21 - RSZ(MECH_BHI_NO),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.XAPIC_DIS,
+		attr_Feat,
+		2, "%s%.*sXAPIC_DIS   [%7s]", RSC(MECH_XAPIC_DIS).CODE(),
+		width - 24 - RSZ(MECH_XAPIC_DIS),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.PBRSB_NO,
+		attr_Feat,
+		2, "%s%.*sPBRSB_NO   [%7s]", RSC(MECH_PBRSB_NO).CODE(),
+		width - 23 - RSZ(MECH_PBRSB_NO),
 		NULL
 	},
 /* Section Mark */

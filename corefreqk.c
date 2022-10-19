@@ -10386,6 +10386,42 @@ void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 		Flush_Cmd.L1D_FLUSH_CMD = Mech_L1D_FLUSH;
 		WRMSR(Flush_Cmd, MSR_IA32_FLUSH_CMD);
 	}
+
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSFD, Core->Bind);
+
+    if (PUBLIC(RO(Proc))->Features.ExtFeature.EAX.MaxSubLeaf >= 2)
+    {
+	CPUID_0x00000007_2 ExtFeature_Leaf2 = {
+		.EAX = {0}, .EBX = {0}, .ECX = {0}, .EDX = {0}
+	};
+	__asm__ volatile
+	(
+		"movq	$0x7,  %%rax	\n\t"
+		"movq	$0x2,  %%rcx    \n\t"
+		"xorq	%%rbx, %%rbx    \n\t"
+		"xorq	%%rdx, %%rdx    \n\t"
+		"cpuid			\n\t"
+		"mov	%%eax, %0	\n\t"
+		"mov	%%ebx, %1	\n\t"
+		"mov	%%ecx, %2	\n\t"
+		"mov	%%edx, %3"
+		: "=r" (ExtFeature_Leaf2.EAX),
+		  "=r" (ExtFeature_Leaf2.EBX),
+		  "=r" (ExtFeature_Leaf2.ECX),
+		  "=r" (ExtFeature_Leaf2.EDX)
+		:
+		: "%rax", "%rbx", "%rcx", "%rdx"
+	);
+	if (ExtFeature_Leaf2.EDX.PSFD) {
+		RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
+
+	    if (Spec_Ctrl.PSFD) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->PSFD, Core->Bind);
+	    } else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSFD, Core->Bind);
+	    }
+	}
+    }
     if (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.IA32_ARCH_CAP)
     {
 		ARCH_CAPABILITIES Arch_Cap = {.value = 0};
@@ -10431,6 +10467,92 @@ void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TAA_NO, Core->Bind);
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TAA_NO, Core->Bind);
+	}
+	if (Arch_Cap.DOITM_UARCH_MISC_CTRL) {
+		UARCH_MISC_CTRL uARCH_Ctrl = {.value = 0};
+		RDMSR(uARCH_Ctrl, MSR_IA32_UARCH_MISC_CTRL);
+
+	    if (uARCH_Ctrl.DOITM) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->DOITM_EN, Core->Bind);
+	    } else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->DOITM_EN, Core->Bind);
+	    }
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->DOITM_MSR, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->DOITM_MSR, Core->Bind);
+	}
+	if (Arch_Cap.SBDR_SSDP_NO) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SBDR_SSDP_NO, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SBDR_SSDP_NO, Core->Bind);
+	}
+	if (Arch_Cap.FBSDP_NO) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->FBSDP_NO, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->FBSDP_NO, Core->Bind);
+	}
+	if (Arch_Cap.PSDP_NO) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->PSDP_NO, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSDP_NO, Core->Bind);
+	}
+	if (Arch_Cap.FB_CLEAR) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->FB_CLEAR, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->FB_CLEAR, Core->Bind);
+	}
+	if (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.SRBDS_CTRL) {
+	  if (Arch_Cap.FB_CLEAR_CTRL) {
+		MCU_OPT_CTRL MCU_Ctrl = {.value = 0};
+		RDMSR(MCU_Ctrl, MSR_IA32_MCU_OPT_CTRL);
+
+	    if (MCU_Ctrl._RNGDS_MITG_DIS) {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RNGDS, Core->Bind);
+	    } else {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->RNGDS, Core->Bind);
+	    }
+	    if (MCU_Ctrl._RTM_ALLOW && !MCU_Ctrl._RTM_LOCKED) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->RTM, Core->Bind);
+	    } else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RTM, Core->Bind);
+	    }
+	    if (MCU_Ctrl._FB_CLEAR_DIS) {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->VERW, Core->Bind);
+	    } else {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->VERW, Core->Bind);
+	    }
+	  }
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SRBDS_MSR, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SRBDS_MSR, Core->Bind);
+	}
+	if (Arch_Cap.RRSBA) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA, Core->Bind);
+	}
+	if (Arch_Cap.BHI_NO) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->BHI_NO, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BHI_NO, Core->Bind);
+	}
+	if (Arch_Cap.XAPIC_DISABLE_STATUS_MSR) {
+		XAPIC_DISABLE_STATUS xAPIC_Status = {.value = 0};
+		RDMSR(xAPIC_Status, MSR_IA32_XAPIC_DISABLE_STATUS);
+
+	    if (xAPIC_Status.LEGACY_XAPIC_DISABLED) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->XAPIC_DIS, Core->Bind);
+	    } else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->XAPIC_DIS, Core->Bind);
+	    }
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->XAPIC_MSR, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->XAPIC_MSR, Core->Bind);
+	}
+	if (Arch_Cap.PBRSB_NO) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->PBRSB_NO, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PBRSB_NO, Core->Bind);
 	}
     }
     if (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.IA32_CORE_CAP)
