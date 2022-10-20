@@ -1411,6 +1411,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_MECH_RRSBA_DIS_S_CODE_FR	RSC_MECH_RRSBA_DIS_S_CODE_EN
 #define RSC_MECH_BHI_DIS_S_CODE_FR	RSC_MECH_BHI_DIS_S_CODE_EN
 #define RSC_MECH_MCDT_NO_CODE_FR	RSC_MECH_MCDT_NO_CODE_EN
+#define RSC_MECH_BTC_NO_CODE_FR 	RSC_MECH_BTC_NO_CODE_EN
 
 #define RSC_SECURITY_SKINIT_CODE_FR	"Secure Init and Jump with Attestation"
 #define RSC_SECURITY_SEV_CODE_FR	"Secure Encrypted Virtualization"

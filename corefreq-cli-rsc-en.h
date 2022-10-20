@@ -1940,6 +1940,7 @@
 #define RSC_MECH_RRSBA_DIS_S_CODE_EN	"Arch - RRSBA disabled for CPL0/1/2"
 #define RSC_MECH_BHI_DIS_S_CODE_EN	"Arch - BHI disabled for CPL0/1/2"
 #define RSC_MECH_MCDT_NO_CODE_EN "No MXCSR Configuration Dependent Timing"
+#define RSC_MECH_BTC_NO_CODE_EN 	"No Branch Type Confusion"
 
 #define RSC_SECURITY_SKINIT_CODE_EN	"Secure Init and Jump with Attestation"
 #define RSC_SECURITY_SEV_CODE_EN	"Secure Encrypted Virtualization"

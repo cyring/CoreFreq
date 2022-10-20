@@ -1723,6 +1723,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.BHI_DIS_S);
 			json_key(&s, "MCDT_NO");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.MCDT_NO);
+			json_key(&s, "BTC_NO");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Features.leaf80000008.EBX.BTC_NO);
 
 			json_end_object(&s);
 		}
