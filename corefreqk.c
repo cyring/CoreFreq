@@ -954,10 +954,31 @@ static void Query_Features(void *pArg)
 			"mov	%%ebx, %1	\n\t"
 			"mov	%%ecx, %2	\n\t"
 			"mov	%%edx, %3"
-			: "=r" (iArg->Features->ExtFeature_Leaf1.EAX),
-			  "=r" (iArg->Features->ExtFeature_Leaf1.EBX),
-			  "=r" (iArg->Features->ExtFeature_Leaf1.ECX),
-			  "=r" (iArg->Features->ExtFeature_Leaf1.EDX)
+			: "=r" (iArg->Features->ExtFeature_Leaf1_EAX),
+			  "=r" (ebx),
+			  "=r" (ecx),
+			  "=r" (edx)
+			:
+			: "%rax", "%rbx", "%rcx", "%rdx"
+		);
+	}
+	if (iArg->Features->ExtFeature.EAX.MaxSubLeaf >= 2)
+	{
+		__asm__ volatile
+		(
+			"movq	$0x7,  %%rax	\n\t"
+			"movq	$0x2,  %%rcx    \n\t"
+			"xorq	%%rbx, %%rbx    \n\t"
+			"xorq	%%rdx, %%rdx    \n\t"
+			"cpuid			\n\t"
+			"mov	%%eax, %0	\n\t"
+			"mov	%%ebx, %1	\n\t"
+			"mov	%%ecx, %2	\n\t"
+			"mov	%%edx, %3"
+			: "=r" (eax),
+			  "=r" (ebx),
+			  "=r" (ecx),
+			  "=r" (iArg->Features->ExtFeature_Leaf2_EDX)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
@@ -10393,32 +10414,10 @@ void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA_DIS_U, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA_DIS_S, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BHI_DIS_S, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->MCDT_NO, Core->Bind);
 
     if (PUBLIC(RO(Proc))->Features.ExtFeature.EAX.MaxSubLeaf >= 2)
     {
-	CPUID_0x00000007_2 ExtFeature_Leaf2 = {
-		.EAX = {0}, .EBX = {0}, .ECX = {0}, .EDX = {0}
-	};
-	__asm__ volatile
-	(
-		"movq	$0x7,  %%rax	\n\t"
-		"movq	$0x2,  %%rcx    \n\t"
-		"xorq	%%rbx, %%rbx    \n\t"
-		"xorq	%%rdx, %%rdx    \n\t"
-		"cpuid			\n\t"
-		"mov	%%eax, %0	\n\t"
-		"mov	%%ebx, %1	\n\t"
-		"mov	%%ecx, %2	\n\t"
-		"mov	%%edx, %3"
-		: "=r" (ExtFeature_Leaf2.EAX),
-		  "=r" (ExtFeature_Leaf2.EBX),
-		  "=r" (ExtFeature_Leaf2.ECX),
-		  "=r" (ExtFeature_Leaf2.EDX)
-		:
-		: "%rax", "%rbx", "%rcx", "%rdx"
-	);
-	if (ExtFeature_Leaf2.EDX.PSFD_SPEC_CTRL) {
+	if (PUBLIC(RO(Proc))->Features.ExtFeature_Leaf2_EDX.PSFD_SPEC_CTRL) {
 		RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
 
 	    if (Spec_Ctrl.PSFD) {
@@ -10427,7 +10426,7 @@ void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSFD, Core->Bind);
 	    }
 	}
-	if (ExtFeature_Leaf2.EDX.IPRED_SPEC_CTRL) {
+	if (PUBLIC(RO(Proc))->Features.ExtFeature_Leaf2_EDX.IPRED_SPEC_CTRL) {
 		RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
 
 	    if (Spec_Ctrl.IPRED_DIS_U) {
@@ -10441,7 +10440,7 @@ void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IPRED_DIS_S, Core->Bind);
 	    }
 	}
-	if (ExtFeature_Leaf2.EDX.RRSBA_SPEC_CTRL) {
+	if (PUBLIC(RO(Proc))->Features.ExtFeature_Leaf2_EDX.RRSBA_SPEC_CTRL) {
 		RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
 
 	    if (Spec_Ctrl.RRSBA_DIS_U) {
@@ -10455,7 +10454,7 @@ void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA_DIS_S, Core->Bind);
 	    }
 	}
-	if (ExtFeature_Leaf2.EDX.BHI_SPEC_CTRL) {
+	if (PUBLIC(RO(Proc))->Features.ExtFeature_Leaf2_EDX.BHI_SPEC_CTRL) {
 		RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
 
 	    if (Spec_Ctrl.BHI_DIS_S) {
@@ -10463,9 +10462,6 @@ void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 	    } else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BHI_DIS_S, Core->Bind);
 	    }
-	}
-	if (ExtFeature_Leaf2.EDX.MCDT_NO) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->MCDT_NO, Core->Bind);
 	}
     }
     if (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.IA32_ARCH_CAP)
@@ -10888,6 +10884,28 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SMM	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->VM	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT	, Core->Bind);
+
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->AMD_LS_CFG_SSBD, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->DOITM_EN	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->DOITM_MSR	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SBDR_SSDP_NO, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->FBSDP_NO	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSDP_NO 	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->FB_CLEAR	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SRBDS_MSR	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RNGDS	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RTM	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->VERW	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BHI_NO	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->XAPIC_MSR	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->XAPIC_DIS	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PBRSB_NO	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IPRED_DIS_U, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IPRED_DIS_S, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA_DIS_U, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA_DIS_S, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BHI_DIS_S	, Core->Bind);
 
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.Mask);
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.Kind);

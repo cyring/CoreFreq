@@ -1689,16 +1689,16 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 	{
 		NULL,
 		RSC(ISA_AVX512_BF16).CODE(), NULL,
-		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1.EAX.AVX512_BF16 },
+		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX512_BF16 },
 		(unsigned short[])
-		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1.EAX.AVX512_BF16 },
+		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX512_BF16 },
 	},
 	{
 		NULL,
 		RSC(ISA_AVX_VEX).CODE(), NULL,
-		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1.EAX.AVX_VNNI_VEX },
+		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX_VNNI_VEX },
 		(unsigned short[])
-		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1.EAX.AVX_VNNI_VEX },
+		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX_VNNI_VEX },
 	},
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
@@ -2174,7 +2174,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
-		RO(Shm)->Proc.Features.ExtFeature_Leaf1.EAX.FSRC == 1,
+		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FSRC == 1,
 		attr_Feat,
 		2, "%s%.*sFSRC   [%7s]", RSC(FEATURES_FSRC).CODE(),
 		width - 19 - RSZ(FEATURES_FSRC),
@@ -2190,7 +2190,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
-		RO(Shm)->Proc.Features.ExtFeature_Leaf1.EAX.FSRS == 1,
+		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FSRS == 1,
 		attr_Feat,
 		2, "%s%.*sFSRS   [%7s]", RSC(FEATURES_FSRS).CODE(),
 		width - 19 - RSZ(FEATURES_FSRS),
@@ -2198,7 +2198,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
-		RO(Shm)->Proc.Features.ExtFeature_Leaf1.EAX.FZRM == 1,
+		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FZRM == 1,
 		attr_Feat,
 		2, "%s%.*sFZRM   [%7s]", RSC(FEATURES_FZRM).CODE(),
 		width - 19 - RSZ(FEATURES_FZRM),
@@ -2247,7 +2247,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
-		RO(Shm)->Proc.Features.ExtFeature_Leaf1.EAX.HRESET == 1,
+		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.HRESET == 1,
 		attr_Feat,
 		2, "%s%.*sHRESET   [%7s]", RSC(FEATURES_HRESET).CODE(),
 		width - 21 - RSZ(FEATURES_HRESET),
@@ -2823,7 +2823,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sPSFD   [%7s]", RSC(MECH_PSFD).CODE(),
 		width - 19 - RSZ(MECH_PSFD),
-		NULL
+		MECH
 	},
 /* Section Mark */
 	{
@@ -2904,7 +2904,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sRRSBA   [%7s]", RSC(MECH_RRSBA).CODE(),
 		width - 20 - RSZ(MECH_RRSBA),
-		NULL
+		MECH
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
@@ -2912,7 +2912,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sBHI_NO   [%7s]", RSC(MECH_BHI_NO).CODE(),
 		width - 21 - RSZ(MECH_BHI_NO),
-		NULL
+		MECH
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
@@ -2928,7 +2928,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sPBRSB_NO   [%7s]", RSC(MECH_PBRSB_NO).CODE(),
 		width - 23 - RSZ(MECH_PBRSB_NO),
-		NULL
+		MECH
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },

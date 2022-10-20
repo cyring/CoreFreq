@@ -1698,11 +1698,16 @@ void Mitigation_2nd_Stage(	RO(SHM_STRUCT) *RO(Shm),
 
 			AMD_LS_CFG_SSBD = BITCMP_CC(LOCKLESS,
 						RW(Proc)->AMD_LS_CFG_SSBD,
+						RO(Proc)->SPEC_CTRL_Mask ),
+
+			PSFD = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->PSFD,
 						RO(Proc)->SPEC_CTRL_Mask );
 
 	RO(Shm)->Proc.Mechanisms.IBRS  += (2 * IBRS);
 	RO(Shm)->Proc.Mechanisms.STIBP += (2 * STIBP);
 	RO(Shm)->Proc.Mechanisms.SSBD  += (2 * (SSBD | AMD_LS_CFG_SSBD));
+	RO(Shm)->Proc.Mechanisms.PSFD  += (2 * PSFD);
 }
 
 void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
@@ -1742,8 +1747,36 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 						RW(Proc)->TAA_NO,
 						RO(Proc)->ARCH_CAP_Mask ),
 
+			STLB = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->STLB,
+						RO(Proc)->ARCH_CAP_Mask ),
+
+			FUSA = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->FUSA,
+						RO(Proc)->ARCH_CAP_Mask ),
+
+			RSM_CPL0 = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->RSM_CPL0,
+						RO(Proc)->ARCH_CAP_Mask ),
+
+			SPLA = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->SPLA,
+						RO(Proc)->ARCH_CAP_Mask ),
+
+			SNOOP_FILTER =BITCMP_CC(LOCKLESS,
+						RW(Proc)->SNOOP_FILTER,
+						RO(Proc)->ARCH_CAP_Mask),
+
+			DOITM_MSR = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->DOITM_MSR,
+						RO(Proc)->ARCH_CAP_Mask ),
+
 			DOITM_EN = BITCMP_CC(	LOCKLESS,
 						RW(Proc)->DOITM_EN,
+						RO(Proc)->ARCH_CAP_Mask ),
+
+			XAPIC_MSR = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->XAPIC_MSR,
 						RO(Proc)->ARCH_CAP_Mask ),
 
 			XAPIC_DIS = BITCMP_CC(	LOCKLESS,
@@ -1760,6 +1793,18 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 
 			VERW = BITCMP_CC(	LOCKLESS,
 						RW(Proc)->VERW,
+						RO(Proc)->ARCH_CAP_Mask ),
+
+			RRSBA = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->RRSBA,
+						RO(Proc)->ARCH_CAP_Mask ),
+
+			BHI_NO = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->BHI_NO,
+						RO(Proc)->ARCH_CAP_Mask ),
+
+			PBRSB_NO = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->PBRSB_NO,
 						RO(Proc)->ARCH_CAP_Mask );
 
 	RO(Shm)->Proc.Mechanisms.IBRS = (
@@ -1770,6 +1815,10 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 	);
 	RO(Shm)->Proc.Mechanisms.SSBD = (
 		RO(Shm)->Proc.Features.ExtFeature.EDX.SSBD_Cap == 1
+	);
+	RO(Shm)->Proc.Mechanisms.PSFD = (
+	      (RO(Shm)->Proc.Features.ExtFeature.EAX.MaxSubLeaf >= 2)
+	   && (RO(Shm)->Proc.Features.ExtFeature_Leaf2_EDX.PSFD_SPEC_CTRL == 1)
 	);
 
 	Mitigation_2nd_Stage(RO(Shm), RO(Proc), RW(Proc));
@@ -1806,30 +1855,28 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
 		+ (2 * TAA_NO)
 	);
-	RO(Shm)->Proc.Mechanisms.STLB = BITCMP_CC(LOCKLESS,
-						RW(Proc)->STLB,
-						RO(Proc)->ARCH_CAP_Mask);
+	RO(Shm)->Proc.Mechanisms.STLB = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_CORE_CAP
+		+ (2 * STLB)
+	);
+	RO(Shm)->Proc.Mechanisms.FUSA = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_CORE_CAP
+		+ (2 * FUSA)
+	);
+	RO(Shm)->Proc.Mechanisms.RSM_CPL0 = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_CORE_CAP
+		+ (2 * RSM_CPL0)
+	);
+	RO(Shm)->Proc.Mechanisms.SPLA = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_CORE_CAP
+		+ (2 * SPLA)
+	);
+	RO(Shm)->Proc.Mechanisms.SNOOP_FILTER = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_CORE_CAP
+		+ (2 * SNOOP_FILTER)
+	);
 
-	RO(Shm)->Proc.Mechanisms.FUSA = BITCMP_CC(LOCKLESS,
-						RW(Proc)->FUSA,
-						RO(Proc)->ARCH_CAP_Mask);
-
-	RO(Shm)->Proc.Mechanisms.RSM_CPL0 = BITCMP_CC(LOCKLESS,
-						RW(Proc)->RSM_CPL0,
-						RO(Proc)->ARCH_CAP_Mask);
-
-	RO(Shm)->Proc.Mechanisms.SPLA = BITCMP_CC(LOCKLESS,
-						RW(Proc)->SPLA,
-						RO(Proc)->ARCH_CAP_Mask);
-
-	RO(Shm)->Proc.Mechanisms.SNOOP_FILTER = BITCMP_CC(LOCKLESS,
-						RW(Proc)->SNOOP_FILTER,
-						RO(Proc)->ARCH_CAP_Mask);
-
-	RO(Shm)->Proc.Mechanisms.DOITM_EN = BITCMP_CC(LOCKLESS,
-						RW(Proc)->DOITM_MSR,
-						RO(Proc)->ARCH_CAP_Mask)
-					  + (2 * DOITM_EN);
+	RO(Shm)->Proc.Mechanisms.DOITM_EN = DOITM_MSR + (2 * DOITM_EN);
 
 	RO(Shm)->Proc.Mechanisms.SBDR_SSDP_NO = BITCMP_CC(LOCKLESS,
 						RW(Proc)->SBDR_SSDP_NO,
@@ -1847,13 +1894,15 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 						RW(Proc)->FB_CLEAR,
 						RO(Proc)->ARCH_CAP_Mask);
 
-	RO(Shm)->Proc.Mechanisms.RRSBA = BITCMP_CC(LOCKLESS,
-						RW(Proc)->RRSBA,
-						RO(Proc)->ARCH_CAP_Mask);
+	RO(Shm)->Proc.Mechanisms.RRSBA = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
+		+ (2 * RRSBA)
+	);
 
-	RO(Shm)->Proc.Mechanisms.BHI_NO = BITCMP_CC(LOCKLESS,
-						RW(Proc)->BHI_NO,
-						RO(Proc)->ARCH_CAP_Mask);
+	RO(Shm)->Proc.Mechanisms.BHI_NO = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
+		+ (2 * BHI_NO)
+	);
 
 	RO(Shm)->Proc.Mechanisms.SRBDS = BITCMP_CC(LOCKLESS,
 						RW(Proc)->SRBDS_MSR,
@@ -1868,18 +1917,12 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 	RO(Shm)->Proc.Mechanisms.VERW	= RO(Shm)->Proc.Mechanisms.SRBDS
 					+ (2 * VERW);
 
-	RO(Shm)->Proc.Mechanisms.XAPIC_DIS = BITCMP_CC(LOCKLESS,
-						RW(Proc)->XAPIC_MSR,
-						RO(Proc)->ARCH_CAP_Mask)
-					   + (2 * XAPIC_DIS);
+	RO(Shm)->Proc.Mechanisms.XAPIC_DIS = XAPIC_MSR + (2 * XAPIC_DIS);
 
-	RO(Shm)->Proc.Mechanisms.PBRSB_NO = BITCMP_CC(LOCKLESS,
-						RW(Proc)->PBRSB_NO,
-						RO(Proc)->ARCH_CAP_Mask);
-
-	RO(Shm)->Proc.Mechanisms.PSFD = BITCMP_CC(LOCKLESS,
-						RW(Proc)->PSFD,
-						RO(Proc)->SPEC_CTRL_Mask);
+	RO(Shm)->Proc.Mechanisms.PBRSB_NO = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
+		+ (2 * PBRSB_NO)
+	);
 
 	RO(Shm)->Proc.Mechanisms.IPRED_DIS_U = BITCMP_CC(LOCKLESS,
 						RW(Proc)->IPRED_DIS_U,
@@ -1901,17 +1944,13 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 						RW(Proc)->BHI_DIS_S,
 						RO(Proc)->SPEC_CTRL_Mask);
 
-	RO(Shm)->Proc.Mechanisms.MCDT_NO = BITCMP_CC(LOCKLESS,
-						RW(Proc)->MCDT_NO,
-						RO(Proc)->SPEC_CTRL_Mask);
+	RO(Shm)->Proc.Mechanisms.MCDT_NO = (
+		RO(Shm)->Proc.Features.ExtFeature_Leaf2_EDX.MCDT_NO == 1
+	);
     }
     else if (	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	||	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
     {
-	unsigned short	PSFD = BITCMP_CC(	LOCKLESS,
-						RW(Proc)->PSFD,
-						RO(Proc)->SPEC_CTRL_Mask );
-
 	RO(Shm)->Proc.Mechanisms.IBRS = (
 		RO(Shm)->Proc.Features.leaf80000008.EBX.IBRS == 1
 	);
@@ -1921,12 +1960,11 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 	RO(Shm)->Proc.Mechanisms.SSBD = (
 		RO(Shm)->Proc.Features.leaf80000008.EBX.SSBD == 1
 	);
+	RO(Shm)->Proc.Mechanisms.PSFD = (
+		RO(Shm)->Proc.Features.leaf80000008.EBX.PSFD == 1
+	);
 
 	Mitigation_2nd_Stage(RO(Shm), RO(Proc), RW(Proc));
-
-	RO(Shm)->Proc.Mechanisms.PSFD = (
-		RO(Shm)->Proc.Features.leaf80000008.EBX.PSFD + (2 * PSFD)
-	);
     }
 }
 

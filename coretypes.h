@@ -1312,7 +1312,7 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 
 typedef struct	/* Extended Feature Flags Enumeration Leaf 1		*/
 {
-	struct
+	struct CPUID_0x00000007_1_EAX
 	{
 		unsigned int
 		Reserved1	:  4-0,
@@ -1346,7 +1346,7 @@ typedef struct	/* Extended Feature Flags Leaf equal or greater than 2	*/
 		unsigned int
 		Reserved	: 32-0;
 	} EAX, EBX, ECX;
-	struct
+	struct CPUID_0x00000007_2_EDX
 	{	/* Intel reserved.					*/
 		unsigned int
 		PSFD_SPEC_CTRL	:  1-0,
@@ -1811,7 +1811,8 @@ typedef struct	/* BSP CPUID features.					*/
 	CPUID_0x00000005	MWait;
 	CPUID_0x00000006	Power;
 	CPUID_0x00000007	ExtFeature;
-	CPUID_0x00000007_1	ExtFeature_Leaf1;
+ struct CPUID_0x00000007_1_EAX	ExtFeature_Leaf1_EAX;
+ struct CPUID_0x00000007_2_EDX	ExtFeature_Leaf2_EDX;
 	CPUID_0x0000000a	PerfMon;
 	CPUID_0x80000001	ExtInfo;
 	CPUID_0x80000007	AdvPower;
