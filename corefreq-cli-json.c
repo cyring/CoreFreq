@@ -804,18 +804,6 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.AVX512BW);
 					json_key(&s, "AVX512VL");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.AVX512VL);
-					json_key(&s, "AVX_VNNI_VEX");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX_VNNI_VEX);
-					json_key(&s, "AVX512_BF16");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX512_BF16);
-					json_key(&s, "Fast_Zero_length_REP_MOVSB");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FZRM);
-					json_key(&s, "Fast_Short_REP_STOSB");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FSRS);
-					json_key(&s, "Fast_Short_REP_CMPSB");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FSRC);
-					json_key(&s, "HRESET");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.HRESET);
 
 					json_end_object(&s);
 				}
@@ -836,6 +824,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.WAITPKG);
 					json_key(&s, "AVX512_VBMI2");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.AVX512_VBMI2);
+					json_key(&s, "CET_SS");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.CET_SS);
 					json_key(&s, "GFNI");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.GFNI);
 					json_key(&s, "VAES");
@@ -848,6 +838,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.AVX512_BITALG);
 					json_key(&s, "AVX512_VPOPCNTDQ");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.AVX512_VPOPCNTDQ);
+					json_key(&s, "LA57");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.LA57);
 					json_key(&s, "MAWAU");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.MAWAU);
 					json_key(&s, "RDPID");
@@ -900,6 +892,55 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_CORE_CAP);
 					json_key(&s, "SSBD");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.SSBD_Cap);
+
+					json_end_object(&s);
+				}
+
+				json_end_object(&s);
+			}
+			json_key(&s, "ExtFeature_Leaf1");
+			{
+				json_start_object(&s);
+
+				json_key(&s, "EAX");
+				{
+					json_start_object(&s);
+					json_key(&s, "RAO_INT");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.RAO_INT);
+					json_key(&s, "AVX_VNNI_VEX");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX_VNNI_VEX);
+					json_key(&s, "AVX512_BF16");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX512_BF16);
+					json_key(&s, "CMPCCXADD");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.CMPCCXADD);
+					json_key(&s, "Fast_Zero_length_REP_MOVSB");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FZRM);
+					json_key(&s, "Fast_Short_REP_STOSB");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FSRS);
+					json_key(&s, "Fast_Short_REP_CMPSB");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FSRC);
+					json_key(&s, "WRMSRNS");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.WRMSRNS);
+					json_key(&s, "AMX_FP16");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AMX_FP16);
+					json_key(&s, "HRESET");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.HRESET);
+					json_key(&s, "AVX_IFMA");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX_IFMA);
+					json_key(&s, "RDMSRLIST");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.RDMSRLIST);
+
+					json_end_object(&s);
+				}
+				json_key(&s, "EDX");
+				{
+					json_start_object(&s);
+					json_key(&s, "AVX_VNNI_INT8");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_VNNI_INT8);
+					json_key(&s, "AVX_NE_CONVERT");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_NE_CONVERT);
+					json_key(&s, "PREFETCHITI");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.PREFETCHITI);
 
 					json_end_object(&s);
 				}

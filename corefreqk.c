@@ -957,7 +957,7 @@ static void Query_Features(void *pArg)
 			: "=r" (iArg->Features->ExtFeature_Leaf1_EAX),
 			  "=r" (ebx),
 			  "=r" (ecx),
-			  "=r" (edx)
+			  "=r" (iArg->Features->ExtFeature_Leaf1_EDX)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);

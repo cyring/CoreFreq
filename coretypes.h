@@ -1288,19 +1288,20 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 		AVX512_4FMAPS	:  4-3,  /* Intel Xeon Phi		*/
 		FSRM		:  5-4,  /* Fast Short REP MOVSB 	*/
 		Reserved2	:  8-5,
-		AVX512_VP2INTER :  9-8,  /* AVX512_VP2INTERSECT		*/
+		AVX512_VP2INTER :  9-8,  /* TGL: AVX512_VP2INTERSECT	*/
 		SRBDS_CTRL	: 10-9,  /* IA32_MCU_OPT_CTRL		*/
 		MD_CLEAR_Cap	: 11-10,
-		Reserved3	: 13-11,
+		RTM_ALWAYS_ABORT: 12-11,
+		Reserved3	: 13-12,
 		TSX_FORCE_ABORT : 14-13, /* MSR TSX_FORCE_ABORT capable	*/
 		SERIALIZE	: 15-14, /* SERIALIZE instruction	*/
 		Hybrid		: 16-15, /* Hybrid part processor	*/
 		TSXLDTRK	: 17-16, /* TSX suspend load address tracking*/
 		Reserved4	: 18-17,
 		PCONFIG 	: 19-18,
-		Reserved5	: 20-19,
+		ArchitecturalLBRs:20-19,
 		CET_IBT 	: 21-20, /* CET Indirect Branch Tracking */
-		Reserved6	: 26-21,
+		Reserved5	: 26-21,
 		IBRS_IBPB_Cap	: 27-26, /* IA32_SPEC_CTRL,IA32_PRED_CMD */
 		STIBP_Cap	: 28-27, /* IA32_SPEC_CTRL[1]		*/
 		L1D_FLUSH_Cap	: 29-28, /* IA32_FLUSH_CMD		*/
@@ -1311,20 +1312,31 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 } CPUID_0x00000007;
 
 typedef struct	/* Extended Feature Flags Enumeration Leaf 1		*/
-{
+{		/* Intel reserved.					*/
 	struct CPUID_0x00000007_1_EAX
 	{
 		unsigned int
-		Reserved1	:  4-0,
-		AVX_VNNI_VEX	:  5-4, /* Vector Neural Network Instructions */
-		AVX512_BF16	:  6-5, /* BFLOAT16 support in AVX512	*/
-		Reserved2	: 10-6,
+		Reserved1	:  3-0,
+		RAO_INT 	:  4-3,  /* Grand Ridge			*/
+		AVX_VNNI_VEX	:  5-4,  /* Vector Neural Network Instructions*/
+		AVX512_BF16	:  6-5,  /* BFLOAT16 support in AVX512	*/
+		Reserved2	:  7-6,
+		CMPCCXADD	:  8-7,  /* Sierra Forest, Grand Ridge	*/
+		ArchPerfmonExt	:  9-8,
+		Reserved3	: 10-9,
 		FZRM		: 11-10, /* Fast Zero-length REP MOVSB	*/
 		FSRS		: 12-11, /* Fast Short REP STOSB:Store String */
 		FSRC		: 13-12, /* Fast Short REP CMPSB, REP SCASB */
-		Reserved3	: 22-13,
+		Reserved4	: 19-13,
+		WRMSRNS 	: 20-19, /* Sierra Forest, Grand Ridge	*/
+		Reserved5	: 21-20,
+		AMX_FP16	: 22-21, /* Granite Rapids		*/
 		HRESET		: 23-22, /* History Reset instruction	*/
-		Reserved4	: 32-23;
+		AVX_IFMA	: 24-23, /* Sierra Forest, Grand Ridge	*/
+		Reserved6	: 26-24,
+		LAM		: 27-26, /* Linear Address Masking	*/
+		RDMSRLIST	: 28-27, /* Sierra Forest, Grand Ridge	*/
+		Reserved7	: 32-28;
 	} EAX;
 	struct
 	{
@@ -1333,10 +1345,20 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf 1		*/
 		Reserved	: 32-1;
 	} EBX;
 	struct
-	{	/* Intel reserved.					*/
+	{
 		unsigned int
 		Reserved	: 32-0;
-	} ECX, EDX;
+	} ECX;
+	struct CPUID_0x00000007_1_EDX
+	{
+		unsigned int
+		Reserved1	:  4-0,
+		AVX_VNNI_INT8	:  5-4,  /* Sierra Forest, Grand Ridge	*/
+		AVX_NE_CONVERT	:  6-5,  /* Sierra Forest, Grand Ridge	*/
+		Reserved2	: 14-6,
+		PREFETCHITI	: 15-14, /* Granite Rapids		*/
+		Reserved3	: 32-15;
+	} EDX;
 } CPUID_0x00000007_1;
 
 typedef struct	/* Extended Feature Flags Leaf equal or greater than 2	*/
@@ -1812,6 +1834,7 @@ typedef struct	/* BSP CPUID features.					*/
 	CPUID_0x00000006	Power;
 	CPUID_0x00000007	ExtFeature;
  struct CPUID_0x00000007_1_EAX	ExtFeature_Leaf1_EAX;
+ struct CPUID_0x00000007_1_EDX	ExtFeature_Leaf1_EDX;
  struct CPUID_0x00000007_2_EDX	ExtFeature_Leaf2_EDX;
 	CPUID_0x0000000a	PerfMon;
 	CPUID_0x80000001	ExtInfo;
