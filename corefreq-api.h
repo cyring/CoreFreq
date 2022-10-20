@@ -1038,6 +1038,12 @@ typedef struct
 	BitCC			XAPIC_MSR	__attribute__ ((aligned (16)));
 	BitCC			XAPIC_DIS	__attribute__ ((aligned (16)));
 	BitCC			PBRSB_NO	__attribute__ ((aligned (16)));
+	BitCC			IPRED_DIS_U	__attribute__ ((aligned (16)));
+	BitCC			IPRED_DIS_S	__attribute__ ((aligned (16)));
+	BitCC			RRSBA_DIS_U	__attribute__ ((aligned (16)));
+	BitCC			RRSBA_DIS_S	__attribute__ ((aligned (16)));
+	BitCC			BHI_DIS_S	__attribute__ ((aligned (16)));
+	BitCC			MCDT_NO 	__attribute__ ((aligned (16)));
 
 	struct {
 		Bit64		Signal	__attribute__ ((aligned (8)));

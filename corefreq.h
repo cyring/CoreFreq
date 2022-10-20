@@ -358,7 +358,13 @@ typedef struct
 				BHI_NO		: 43-42,
 				XAPIC_DIS	: 45-43,
 				PBRSB_NO	: 46-45,
-				_UnusedMechBits : 64-46;
+				IPRED_DIS_U	: 47-46,
+				IPRED_DIS_S	: 48-47,
+				RRSBA_DIS_U	: 49-48,
+				RRSBA_DIS_S	: 50-49,
+				BHI_DIS_S	: 51-50,
+				MCDT_NO 	: 52-51,
+				_UnusedMechBits : 64-52;
 	} Mechanisms;
 
 	enum THERMAL_FORMULAS	thermalFormula;

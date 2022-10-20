@@ -1349,8 +1349,13 @@ typedef struct	/* Extended Feature Flags Leaf equal or greater than 2	*/
 	struct
 	{	/* Intel reserved.					*/
 		unsigned int
-		PSFD		:  1-0,
-		Reserved	: 32-1;
+		PSFD_SPEC_CTRL	:  1-0,
+		IPRED_SPEC_CTRL :  2-1,
+		RRSBA_SPEC_CTRL :  3-2,
+		Reserved1	:  4-3,
+		BHI_SPEC_CTRL	:  5-4,
+		MCDT_NO 	:  6-5,
+		Reserved2	: 32-6;
 	} EDX;
 } CPUID_0x00000007_2;
 

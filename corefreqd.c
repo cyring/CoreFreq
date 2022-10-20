@@ -1876,6 +1876,34 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 	RO(Shm)->Proc.Mechanisms.PBRSB_NO = BITCMP_CC(LOCKLESS,
 						RW(Proc)->PBRSB_NO,
 						RO(Proc)->ARCH_CAP_Mask);
+
+	RO(Shm)->Proc.Mechanisms.PSFD = BITCMP_CC(LOCKLESS,
+						RW(Proc)->PSFD,
+						RO(Proc)->SPEC_CTRL_Mask);
+
+	RO(Shm)->Proc.Mechanisms.IPRED_DIS_U = BITCMP_CC(LOCKLESS,
+						RW(Proc)->IPRED_DIS_U,
+						RO(Proc)->SPEC_CTRL_Mask);
+
+	RO(Shm)->Proc.Mechanisms.IPRED_DIS_S = BITCMP_CC(LOCKLESS,
+						RW(Proc)->IPRED_DIS_S,
+						RO(Proc)->SPEC_CTRL_Mask);
+
+	RO(Shm)->Proc.Mechanisms.RRSBA_DIS_U = BITCMP_CC(LOCKLESS,
+						RW(Proc)->RRSBA_DIS_U,
+						RO(Proc)->SPEC_CTRL_Mask);
+
+	RO(Shm)->Proc.Mechanisms.RRSBA_DIS_S = BITCMP_CC(LOCKLESS,
+						RW(Proc)->RRSBA_DIS_S,
+						RO(Proc)->SPEC_CTRL_Mask);
+
+	RO(Shm)->Proc.Mechanisms.BHI_DIS_S = BITCMP_CC(LOCKLESS,
+						RW(Proc)->BHI_DIS_S,
+						RO(Proc)->SPEC_CTRL_Mask);
+
+	RO(Shm)->Proc.Mechanisms.MCDT_NO = BITCMP_CC(LOCKLESS,
+						RW(Proc)->MCDT_NO,
+						RO(Proc)->SPEC_CTRL_Mask);
     }
     else if (	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	||	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )

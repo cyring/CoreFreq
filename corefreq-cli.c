@@ -2922,6 +2922,54 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 23 - RSZ(MECH_PBRSB_NO),
 		NULL
 	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.IPRED_DIS_U,
+		attr_Feat,
+		2, "%s%.*sIPRED_DIS_U   [%7s]", RSC(MECH_IPRED_DIS_U).CODE(),
+		width - 26 - RSZ(MECH_IPRED_DIS_U),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.IPRED_DIS_S,
+		attr_Feat,
+		2, "%s%.*sIPRED_DIS_S   [%7s]", RSC(MECH_IPRED_DIS_S).CODE(),
+		width - 26 - RSZ(MECH_IPRED_DIS_S),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.RRSBA_DIS_U,
+		attr_Feat,
+		2, "%s%.*sRRSBA_DIS_U   [%7s]", RSC(MECH_RRSBA_DIS_U).CODE(),
+		width - 26 - RSZ(MECH_RRSBA_DIS_U),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.RRSBA_DIS_S,
+		attr_Feat,
+		2, "%s%.*sRRSBA_DIS_S   [%7s]", RSC(MECH_RRSBA_DIS_S).CODE(),
+		width - 26 - RSZ(MECH_RRSBA_DIS_S),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.BHI_DIS_S,
+		attr_Feat,
+		2, "%s%.*sBHI_DIS_S   [%7s]", RSC(MECH_BHI_DIS_S).CODE(),
+		width - 24 - RSZ(MECH_BHI_DIS_S),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.MCDT_NO,
+		attr_Feat,
+		2, "%s%.*sMCDT_NO   [%7s]", RSC(MECH_MCDT_NO).CODE(),
+		width - 22 - RSZ(MECH_MCDT_NO),
+		NULL
+	},
 /* Section Mark */
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },

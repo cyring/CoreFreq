@@ -1711,6 +1711,18 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.XAPIC_DIS);
 			json_key(&s, "PBRSB_NO");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.PBRSB_NO);
+			json_key(&s, "IPRED_DIS_U");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.IPRED_DIS_U);
+			json_key(&s, "IPRED_DIS_S");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.IPRED_DIS_S);
+			json_key(&s, "RRSBA_DIS_U");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.RRSBA_DIS_U);
+			json_key(&s, "RRSBA_DIS_S");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.RRSBA_DIS_S);
+			json_key(&s, "BHI_DIS_S");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.BHI_DIS_S);
+			json_key(&s, "MCDT_NO");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.MCDT_NO);
 
 			json_end_object(&s);
 		}
