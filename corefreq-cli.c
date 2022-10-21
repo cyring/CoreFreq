@@ -2109,6 +2109,14 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		NULL
 	},
 	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Features.leaf80000008.EBX.CLZERO,
+		attr_Feat,
+		2, "%s%.*sCLZERO   [%7s]", RSC(FEATURES_CLZERO).CODE(),
+		width - 21 - RSZ(FEATURES_CLZERO),
+		NULL
+	},
+	{
 		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.ECX.MP_Mode == 1,
 		attr_Feat,
@@ -2575,6 +2583,14 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	},
 	{
 		NULL,
+		RO(Shm)->Proc.Features.leaf80000008.EBX.WBNOINVD,
+		attr_Feat,
+		2, "%s%.*sWBNOINVD   [%7s]", RSC(FEATURES_WBNOINVD).CODE(),
+		width - 23 - RSZ(FEATURES_WBNOINVD),
+		NULL
+	},
+	{
+		NULL,
 		RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Topology.MP.x2APIC,
 		attr_Feat,
 		2, "%s%.*sx2APIC   [%7s]", RSC(FEATURES_X2APIC).CODE(),
@@ -2628,7 +2644,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		3, "%s%.*s[%7s]", RSC(MECH_IBRS_ALWAYS_ON).CODE(),
 		width - (OutFunc == NULL ? 15:13) - RSZ(MECH_IBRS_ALWAYS_ON),
-		MECH
+		NULL
 	},
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
@@ -2636,7 +2652,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		3, "%s%.*s[%7s]", RSC(MECH_IBRS_PREFERRED).CODE(),
 		width - (OutFunc == NULL ? 15:13) - RSZ(MECH_IBRS_PREFERRED),
-		MECH
+		NULL
 	},
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
@@ -2644,7 +2660,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		3, "%s%.*s[%7s]", RSC(MECH_IBRS_SAME_MODE).CODE(),
 		width - (OutFunc == NULL ? 15:13) - RSZ(MECH_IBRS_SAME_MODE),
-		MECH
+		NULL
 	},
 	{
 		NULL,
@@ -2653,7 +2669,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sIBPB   [%7s]", RSC(MECH_IBPB).CODE(),
 		width - 19 - RSZ(MECH_IBPB),
-		MECH
+		NULL
 	},
 	{
 		NULL,
@@ -2677,7 +2693,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		3, "%s%.*s[%7s]", RSC(MECH_SSBD_VIRTSPECCTRL).CODE(),
 		width - (OutFunc == NULL ? 15:13) - RSZ(MECH_SSBD_VIRTSPECCTRL),
-		MECH
+		NULL
 	},
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
@@ -2685,7 +2701,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		3, "%s%.*s[%7s]", RSC(MECH_SSBD_NOT_REQUIRED).CODE(),
 		width - (OutFunc == NULL ? 15:13) - RSZ(MECH_SSBD_NOT_REQUIRED),
-		MECH
+		NULL
 	},
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
@@ -2701,7 +2717,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sL1D-FLUSH   [%7s]", RSC(MECH_L1D_FLUSH).CODE(),
 		width - 24 - RSZ(MECH_L1D_FLUSH),
-		MECH
+		NULL
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
@@ -2718,7 +2734,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sMD-CLEAR   [%7s]", RSC(MECH_MD_CLEAR).CODE(),
 		width - 23 - RSZ(MECH_MD_CLEAR),
-		MECH
+		NULL
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },

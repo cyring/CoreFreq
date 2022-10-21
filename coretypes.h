@@ -1651,7 +1651,7 @@ typedef struct	/* Processor Capacity Leaf.				*/
 		MBE		:  7-6,  /* Memory Bandwidth Enforcement */
 		Reserved2	:  8-7,
 		MCOMMIT 	:  9-8,  /* Memory Commit Instruction	*/
-		WBNOINVD	: 10-9,
+		WBNOINVD	: 10-9, /*Write Back & Do Not Invalidate Cache*/
 		LBREXTN 	: 11-10, /* LBR Extensions		*/
 		Reserved3	: 12-11,
 		IBPB		: 13-12, /* Indirect Branch Prediction Barrier*/

@@ -1039,6 +1039,7 @@
 #define RSC_FEATURES_ACPI_CODE_EN   "Advanced Configuration & Power Interface"
 #define RSC_FEATURES_APIC_CODE_EN   "Advanced Programmable Interrupt Controller"
 #define RSC_FEATURES_ARAT_CODE_EN	"APIC Timer Invariance"
+#define RSC_FEATURES_CLZERO_CODE_EN	"Clear Zero Instruction"
 #define RSC_FEATURES_CORE_MP_CODE_EN	"Core Multi-Processing"
 #define RSC_FEATURES_CNXT_ID_CODE_EN	"L1 Data Cache Context ID"
 #define RSC_FEATURES_CPPC_CODE_EN	\
@@ -1102,6 +1103,7 @@
 #define RSC_FEATURES_UMIP_CODE_EN	"User-Mode Instruction Prevention"
 #define RSC_FEATURES_VME_CODE_EN	"Virtual Mode Extension"
 #define RSC_FEATURES_VMX_CODE_EN	"Virtual Machine Extensions"
+#define RSC_FEATURES_WBNOINVD_CODE_EN	"Write Back & Do Not Invalidate Cache"
 #define RSC_FEATURES_X2APIC_CODE_EN	"Extended xAPIC Support"
 #define RSC_FEATURES_XD_BIT_CODE_EN	"Execution Disable Bit Support"
 #define RSC_FEATURES_XSAVE_CODE_EN	"XSAVE/XSTOR States"

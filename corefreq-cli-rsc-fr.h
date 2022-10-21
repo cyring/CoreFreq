@@ -518,6 +518,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_ACPI_CODE_FR   "Advanced Configuration & Power Interface"
 #define RSC_FEATURES_APIC_CODE_FR   "Advanced Programmable Interrupt Controller"
 #define RSC_FEATURES_ARAT_CODE_FR	"APIC Timer Invariance"
+#define RSC_FEATURES_CLZERO_CODE_FR	"Clear Zero Instruction"
 #define RSC_FEATURES_CORE_MP_CODE_FR	"Core Multi-Processing"
 #define RSC_FEATURES_CNXT_ID_CODE_FR	"L1 Data Cache Context ID"
 #define RSC_FEATURES_CPPC_CODE_FR	\
@@ -581,6 +582,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_UMIP_CODE_FR	"User-Mode Instruction Prevention"
 #define RSC_FEATURES_VME_CODE_FR	"Virtual Mode Extension"
 #define RSC_FEATURES_VMX_CODE_FR	"Virtual Machine Extensions"
+#define RSC_FEATURES_WBNOINVD_CODE_FR	"Write Back & Do Not Invalidate Cache"
 #define RSC_FEATURES_X2APIC_CODE_FR	"Extended xAPIC Support"
 #define RSC_FEATURES_XD_BIT_CODE_FR	"Execution Disable Bit Support"
 #define RSC_FEATURES_XSAVE_CODE_FR	"XSAVE/XSTOR States"
