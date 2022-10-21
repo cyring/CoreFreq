@@ -1775,6 +1775,22 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 						RW(Proc)->DOITM_EN,
 						RO(Proc)->ARCH_CAP_Mask ),
 
+			SBDR_SSDP_NO = BITCMP_CC(LOCKLESS,
+						RW(Proc)->SBDR_SSDP_NO,
+						RO(Proc)->ARCH_CAP_Mask),
+
+			FBSDP_NO = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->FBSDP_NO,
+						RO(Proc)->ARCH_CAP_Mask ),
+
+			PSDP_NO = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->PSDP_NO,
+						RO(Proc)->ARCH_CAP_Mask ),
+
+			FB_CLEAR = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->FB_CLEAR,
+						RO(Proc)->ARCH_CAP_Mask ),
+
 			XAPIC_MSR = BITCMP_CC(	LOCKLESS,
 						RW(Proc)->XAPIC_MSR,
 						RO(Proc)->ARCH_CAP_Mask ),
@@ -1805,7 +1821,27 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 
 			PBRSB_NO = BITCMP_CC(	LOCKLESS,
 						RW(Proc)->PBRSB_NO,
-						RO(Proc)->ARCH_CAP_Mask );
+						RO(Proc)->ARCH_CAP_Mask ),
+
+			IPRED_DIS_U = BITCMP_CC(LOCKLESS,
+						RW(Proc)->IPRED_DIS_U,
+						RO(Proc)->SPEC_CTRL_Mask),
+
+			IPRED_DIS_S = BITCMP_CC(LOCKLESS,
+						RW(Proc)->IPRED_DIS_S,
+						RO(Proc)->SPEC_CTRL_Mask),
+
+			RRSBA_DIS_U = BITCMP_CC(LOCKLESS,
+						RW(Proc)->RRSBA_DIS_U,
+						RO(Proc)->SPEC_CTRL_Mask),
+
+			RRSBA_DIS_S = BITCMP_CC(LOCKLESS,
+						RW(Proc)->RRSBA_DIS_S,
+						RO(Proc)->SPEC_CTRL_Mask),
+
+			BHI_DIS_S = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->BHI_DIS_S,
+						RO(Proc)->SPEC_CTRL_Mask );
 
 	RO(Shm)->Proc.Mechanisms.IBRS = (
 		RO(Shm)->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap == 1
@@ -1878,27 +1914,26 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 
 	RO(Shm)->Proc.Mechanisms.DOITM_EN = DOITM_MSR + (2 * DOITM_EN);
 
-	RO(Shm)->Proc.Mechanisms.SBDR_SSDP_NO = BITCMP_CC(LOCKLESS,
-						RW(Proc)->SBDR_SSDP_NO,
-						RO(Proc)->ARCH_CAP_Mask);
-
-	RO(Shm)->Proc.Mechanisms.FBSDP_NO = BITCMP_CC(LOCKLESS,
-						RW(Proc)->FBSDP_NO,
-						RO(Proc)->ARCH_CAP_Mask);
-
-	RO(Shm)->Proc.Mechanisms.PSDP_NO = BITCMP_CC(LOCKLESS,
-						RW(Proc)->PSDP_NO,
-						RO(Proc)->ARCH_CAP_Mask);
-
-	RO(Shm)->Proc.Mechanisms.FB_CLEAR = BITCMP_CC(LOCKLESS,
-						RW(Proc)->FB_CLEAR,
-						RO(Proc)->ARCH_CAP_Mask);
-
+	RO(Shm)->Proc.Mechanisms.SBDR_SSDP_NO = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
+		+ (2 * SBDR_SSDP_NO)
+	);
+	RO(Shm)->Proc.Mechanisms.FBSDP_NO = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
+		+ (2 * FBSDP_NO)
+	);
+	RO(Shm)->Proc.Mechanisms.PSDP_NO = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
+		+ (2 * PSDP_NO)
+	);
+	RO(Shm)->Proc.Mechanisms.FB_CLEAR = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
+		+ (2 * FB_CLEAR)
+	);
 	RO(Shm)->Proc.Mechanisms.RRSBA = (
 		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
 		+ (2 * RRSBA)
 	);
-
 	RO(Shm)->Proc.Mechanisms.BHI_NO = (
 		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
 		+ (2 * BHI_NO)
@@ -1924,25 +1959,35 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 		+ (2 * PBRSB_NO)
 	);
 
-	RO(Shm)->Proc.Mechanisms.IPRED_DIS_U = BITCMP_CC(LOCKLESS,
-						RW(Proc)->IPRED_DIS_U,
-						RO(Proc)->SPEC_CTRL_Mask);
+	RO(Shm)->Proc.Mechanisms.IPRED_DIS_U = (
+	      (RO(Shm)->Proc.Features.ExtFeature.EAX.MaxSubLeaf >= 2)
+	   && (RO(Shm)->Proc.Features.ExtFeature_Leaf2_EDX.IPRED_SPEC_CTRL == 1)
+	);
+	RO(Shm)->Proc.Mechanisms.IPRED_DIS_U += (2 * IPRED_DIS_U);
 
-	RO(Shm)->Proc.Mechanisms.IPRED_DIS_S = BITCMP_CC(LOCKLESS,
-						RW(Proc)->IPRED_DIS_S,
-						RO(Proc)->SPEC_CTRL_Mask);
+	RO(Shm)->Proc.Mechanisms.IPRED_DIS_S = (
+	      (RO(Shm)->Proc.Features.ExtFeature.EAX.MaxSubLeaf >= 2)
+	   && (RO(Shm)->Proc.Features.ExtFeature_Leaf2_EDX.IPRED_SPEC_CTRL == 1)
+	);
+	RO(Shm)->Proc.Mechanisms.IPRED_DIS_S += (2 * IPRED_DIS_S);
 
-	RO(Shm)->Proc.Mechanisms.RRSBA_DIS_U = BITCMP_CC(LOCKLESS,
-						RW(Proc)->RRSBA_DIS_U,
-						RO(Proc)->SPEC_CTRL_Mask);
+	RO(Shm)->Proc.Mechanisms.RRSBA_DIS_U = (
+	      (RO(Shm)->Proc.Features.ExtFeature.EAX.MaxSubLeaf >= 2)
+	   && (RO(Shm)->Proc.Features.ExtFeature_Leaf2_EDX.RRSBA_SPEC_CTRL == 1)
+	);
+	RO(Shm)->Proc.Mechanisms.RRSBA_DIS_U += (2 * RRSBA_DIS_U);
 
-	RO(Shm)->Proc.Mechanisms.RRSBA_DIS_S = BITCMP_CC(LOCKLESS,
-						RW(Proc)->RRSBA_DIS_S,
-						RO(Proc)->SPEC_CTRL_Mask);
+	RO(Shm)->Proc.Mechanisms.RRSBA_DIS_S = (
+	      (RO(Shm)->Proc.Features.ExtFeature.EAX.MaxSubLeaf >= 2)
+	   && (RO(Shm)->Proc.Features.ExtFeature_Leaf2_EDX.RRSBA_SPEC_CTRL == 1)
+	);
+	RO(Shm)->Proc.Mechanisms.RRSBA_DIS_S += (2 * RRSBA_DIS_S);
 
-	RO(Shm)->Proc.Mechanisms.BHI_DIS_S = BITCMP_CC(LOCKLESS,
-						RW(Proc)->BHI_DIS_S,
-						RO(Proc)->SPEC_CTRL_Mask);
+	RO(Shm)->Proc.Mechanisms.BHI_DIS_S = (
+	      (RO(Shm)->Proc.Features.ExtFeature.EAX.MaxSubLeaf >= 2)
+	   && (RO(Shm)->Proc.Features.ExtFeature_Leaf2_EDX.BHI_SPEC_CTRL == 1)
+	);
+	RO(Shm)->Proc.Mechanisms.BHI_DIS_S += (2 * BHI_DIS_S);
 
 	RO(Shm)->Proc.Mechanisms.MCDT_NO = (
 		RO(Shm)->Proc.Features.ExtFeature_Leaf2_EDX.MCDT_NO == 1

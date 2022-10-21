@@ -2840,7 +2840,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sSBDR_SSDP_NO   [%7s]", RSC(MECH_SBDR_SSDP_NO).CODE(),
 		width - 27 - RSZ(MECH_SBDR_SSDP_NO),
-		NULL
+		MECH
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
@@ -2848,7 +2848,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sFBSDP_NO   [%7s]", RSC(MECH_FBSDP_NO).CODE(),
 		width - 23 - RSZ(MECH_FBSDP_NO),
-		NULL
+		MECH
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
@@ -2856,7 +2856,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sPSDP_NO   [%7s]", RSC(MECH_PSDP_NO).CODE(),
 		width - 22 - RSZ(MECH_PSDP_NO),
-		NULL
+		MECH
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
@@ -2864,7 +2864,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sFB_CLEAR   [%7s]", RSC(MECH_FB_CLEAR).CODE(),
 		width - 23 - RSZ(MECH_FB_CLEAR),
-		NULL
+		MECH
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
@@ -2936,7 +2936,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sIPRED_DIS_U   [%7s]", RSC(MECH_IPRED_DIS_U).CODE(),
 		width - 26 - RSZ(MECH_IPRED_DIS_U),
-		NULL
+		MECH
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
@@ -2944,7 +2944,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sIPRED_DIS_S   [%7s]", RSC(MECH_IPRED_DIS_S).CODE(),
 		width - 26 - RSZ(MECH_IPRED_DIS_S),
-		NULL
+		MECH
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
@@ -2952,7 +2952,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sRRSBA_DIS_U   [%7s]", RSC(MECH_RRSBA_DIS_U).CODE(),
 		width - 26 - RSZ(MECH_RRSBA_DIS_U),
-		NULL
+		MECH
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
@@ -2960,7 +2960,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sRRSBA_DIS_S   [%7s]", RSC(MECH_RRSBA_DIS_S).CODE(),
 		width - 26 - RSZ(MECH_RRSBA_DIS_S),
-		NULL
+		MECH
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
@@ -2968,7 +2968,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sBHI_DIS_S   [%7s]", RSC(MECH_BHI_DIS_S).CODE(),
 		width - 24 - RSZ(MECH_BHI_DIS_S),
-		NULL
+		MECH
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
