@@ -692,11 +692,13 @@ typedef union
 	struct				/* R/W , Core scope , Disable=1 */
 	{
 		unsigned long long
-		L2_HW_Prefetch	:  1-0, /* Avoton, Goldmont, NHM, SNB	*/
-		L2_HW_CL_Prefetch: 2-1, /* NHM, SNB			*/
-		L1_HW_Prefetch	:  3-2, /* Avoton, Goldmont, NHM, SNB	*/
-		L1_HW_IP_Prefetch: 4-3, /* NHM, SNB			*/
-		ReservedBits	: 64-4;
+		L2_HW_Prefetch		:  1-0,  /* Avoton, Goldmont, NHM, SNB*/
+		L2_HW_CL_Prefetch	:  2-1,  /* NHM, SNB		*/
+		L1_HW_Prefetch		:  3-2,  /* Avoton, Goldmont, NHM, SNB*/
+		L1_HW_IP_Prefetch	:  4-3,  /* NHM, SNB		*/
+		ReservedBits1		: 11-4,
+		DISABLE_THREE_STRIKE_CNT: 12-11, /* Errata [ADL021]	*/
+		ReservedBits2		: 64-12;
 	};
 	struct
 	{
@@ -1089,9 +1091,13 @@ typedef union
 		unsigned long long
 		HW_Coord_EIST	:  1-0,  /* Pkg: 0=Enable; 1=Disable	*/
 		Perf_BIAS_Enable:  2-1,  /* SMT: 1=Enable; 0=Disable*	*/
-		ReservedBits1	: 22-2,
+		ReservedBits1	: 10-2,
+		ENABLE_SDC	: 11-10, /* Errata [ADL010]		*/
+		ReservedBits2	: 13-11,
+		LOCK		: 14-13, /* Errata [ADL010]		*/
+		ReservedBits3	: 22-14,
 		Therm_Intr_Coord: 23-22, /* Pkg: Goldmont 0=Disable; 1=Enable */
-		ReservedBits2	: 64-23;
+		ReservedBits4	: 64-23;
 	};
 } MISC_PWR_MGMT;
 /*
