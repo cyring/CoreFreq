@@ -10582,7 +10582,7 @@ void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 		XAPIC_DISABLE_STATUS xAPIC_Status = {.value = 0};
 		RDMSR(xAPIC_Status, MSR_IA32_XAPIC_DISABLE_STATUS);
 
-	    if (xAPIC_Status.LEGACY_XAPIC_DISABLED) {
+	    if (xAPIC_Status.LEGACY_XAPIC_DIS) {
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->XAPIC_DIS, Core->Bind);
 	    } else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->XAPIC_DIS, Core->Bind);

@@ -507,7 +507,7 @@ typedef union
 	struct
 	{
 		unsigned long long
-		LEGACY_XAPIC_DISABLED	:  1-0,
+		LEGACY_XAPIC_DIS	:  1-0, /* 1: LEGACY_XAPIC_DISABLED */
 		ReservedBits		: 64-1;
 	};
 } XAPIC_DISABLE_STATUS;
