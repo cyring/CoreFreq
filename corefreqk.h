@@ -5307,7 +5307,8 @@ static PROCESSOR_SPECIFIC AMD_Zen2_Renoir_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD Athlon Gold PRO 4150GE",	\
-			"AMD Ryzen 3 PRO 4350GE"	),
+			"AMD Ryzen 3 PRO 4350GE",
+			"AMD Ryzen 3 PRO 4355GE"	),
 	.Boost = {+5, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
@@ -5318,7 +5319,8 @@ static PROCESSOR_SPECIFIC AMD_Zen2_Renoir_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 3 PRO 4350G"),
+	.Brand = ZLIST( "AMD Ryzen 3 PRO 4350G",\
+			"AMD Ryzen 3 PRO 4355G" ),
 	.Boost = {+2, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
