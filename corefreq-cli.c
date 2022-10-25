@@ -2101,6 +2101,16 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		NULL
 	},
 	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
+			CPUID_8000000A_00000000_SVM_REVISION
+		].reg[3], CPUID_8000000A_00000000_EDX_AVIC),
+		attr_Feat,
+		2, "%s%.*sAVIC   [%7s]", RSC(FEATURES_AVIC).CODE(),
+		width - 19 - RSZ(FEATURES_AVIC),
+		NULL
+	},
+	{
 		NULL,
 		RO(Shm)->Proc.Features.Power.EAX.ARAT == 1,
 		attr_Feat,
@@ -2596,6 +2606,16 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		2, "%s%.*sx2APIC   [%7s]", RSC(FEATURES_X2APIC).CODE(),
 		width - 21 - RSZ(FEATURES_X2APIC),
 		x2APIC
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
+			CPUID_8000000A_00000000_SVM_REVISION
+		].reg[3], CPUID_8000000A_00000000_EDX_x2AVIC),
+		attr_Feat,
+		2, "%s%.*sx2AVIC   [%7s]", RSC(FEATURES_X2AVIC).CODE(),
+		width - 21 - RSZ(FEATURES_X2AVIC),
+		NULL
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0},
