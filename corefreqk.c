@@ -1228,6 +1228,13 @@ static void Query_Features(void *pArg)
 		);
 
 	    iArg->Features->PerfMon.EAX.Version += leaf80000022.EAX.PerfMonV2;
+
+	  if (leaf80000022.EBX.NumPerfCtrCore > 0) {
+	    iArg->Features->PerfMon.EAX.MonCtrs=leaf80000022.EBX.NumPerfCtrCore;
+	  }
+	  if (leaf80000022.EBX.NumPerfCtrNB > 0) {
+	    iArg->Features->Factory.PMC.NB = leaf80000022.EBX.NumPerfCtrNB;
+	  }
 	}
 	BrandFromCPUID(iArg->Brand);
 	BrandCleanup(iArg->Features->Info.Brand, iArg->Brand);
