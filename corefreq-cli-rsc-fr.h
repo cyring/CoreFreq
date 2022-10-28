@@ -662,7 +662,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_PERF_MON_NB_DF_CODE_FR	"Data Fabric Performance Counter"
 #define RSC_PERF_MON_CORE_CODE_FR	"Core Performance Counter"
 
-#define RSC_PERF_MON_PMC_COMM_CODE_FR " { Monitoring, Cache LLC, Northbridge } "
+#define RSC_PERF_MON_PMC_COMM_CODE_FR	\
+		" { Core performance monitoring, Cache LLC, Northbridge } "
+
 #define RSC_PERF_MON_CPPC_COMM_CODE_FR	" Micrologiciel "
 
 #define RSC_POWER_THERMAL_TITLE_CODE_FR " Puissance, courant et thermique "
