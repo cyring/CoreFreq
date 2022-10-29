@@ -1086,6 +1086,8 @@ typedef struct
 #define DID_INTEL_SALTWELL_HB		0x0bf1
 /* Source: SoC / Silvermont / Processor Transaction Router		*/
 #define DID_INTEL_SLM_PTR		0x0f00
+/* Source: [Atom/Airmont] Pentium(R) CPU N3700				*/
+#define DID_INTEL_AIRMONT_HB		0x2280
 /* Source: /include/linux/pci_ids.h					*/
 #define DID_INTEL_I7_MCR		0x2c18
 #define DID_INTEL_I7_MC_CH0_CTRL	0x2c20

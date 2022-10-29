@@ -2144,6 +2144,10 @@ static struct pci_device_id PCI_SoC_ids[] = {
 		PCI_VDEVICE(INTEL, DID_INTEL_SLM_PTR),
 		.driver_data = (kernel_ulong_t) SoC_SLM
 	},
+	{	/* Atom - Airmont					*/
+		PCI_VDEVICE(INTEL, DID_INTEL_AIRMONT_HB),
+		.driver_data = (kernel_ulong_t) SoC_SLM
+	},
 	{0, }
 };
 
@@ -7688,7 +7692,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SOC,
 	.powerFormula   = POWER_FORMULA_INTEL_ATOM,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_SoC_ids,
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL,
