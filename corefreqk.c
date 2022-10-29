@@ -340,6 +340,10 @@ module_param_array(PkgThermalPoint, short, &PkgThermalPoint_Count,	\
 					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PkgThermalPoint, "Package Thermal Point");
 
+static signed short ThermalOffset = 0;
+module_param(ThermalOffset, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(ThermalOffset, "Thermal Offset");
+
 static int ThermalScope = -1;
 module_param(ThermalScope, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ThermalScope, "[0:None; 1:SMT; 2:Core; 3:Package]");
@@ -3679,6 +3683,61 @@ void Intel_Pkg_CST_IRTL(const unsigned int MSR, PKGCST_IRTL *PCST)
 	RDMSR((*PCST), MSR);
 }
 
+long Intel_ThermalOffset(bool programmableTj)
+{
+	long rc = -EINVAL;
+    if (ThermalOffset != 0) {
+	if (programmableTj)
+	{
+		TJMAX TjMax = {.value = 0};
+		RDMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
+
+		switch (PUBLIC(RO(Proc))->ArchID) {
+		case Atom_Goldmont:
+		case Xeon_Phi:	/*	TODO(06_85h)	*/ {
+			const short offset = TjMax.Atom.Offset + ThermalOffset;
+			if  ((offset >= 0) && (offset <= 0b111111)) {
+				TjMax.Atom.Offset = offset;
+				WRMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
+				RDMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
+				rc = RC_OK_COMPUTE;
+			}
+		    }
+			break;
+		case IvyBridge_EP:
+		case Broadwell_EP:
+		case Broadwell_D:
+		case Skylake_X: {
+			const short offset = TjMax.EP.Offset + ThermalOffset;
+			if ((offset >= 0) && (offset <= 0b1111)) {
+				TjMax.EP.Offset = offset;
+				WRMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
+				RDMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
+				rc = RC_OK_COMPUTE;
+			}
+		    }
+			break;
+		default: {
+			const short offset = TjMax.Offset + ThermalOffset;
+			if ((offset >= 0) && (offset <= 0b1111)) {
+				TjMax.Offset = offset;
+				WRMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
+				RDMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
+				rc = RC_OK_COMPUTE;
+			}
+		    }
+			break;
+		case Core_Yonah ... Core_Dunnington:
+			rc = -RC_UNIMPLEMENTED;
+			break;
+		}
+	} else {
+		rc = -RC_UNIMPLEMENTED;
+	}
+    }
+	return rc;
+}
+
 void Intel_Processor_PIN(bool capable)
 {
 	if (capable) {
@@ -3822,6 +3881,8 @@ void Query_Same_Platform_Features(unsigned int cpu)
 	Default_Unlock_Reset();
 
 	Intel_Processor_PIN(PfInfo.PPIN_CAP);
+
+	Intel_ThermalOffset(PfInfo.ProgrammableTj);
 
 	PUBLIC(RO(Proc))->Features.SpecTurboRatio = 0;
 }
