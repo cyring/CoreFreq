@@ -4432,18 +4432,24 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	];
 	unsigned int bix;
 /* Section Mark */
-	GridCall( PUT(	SCANKEY_NULL, attrib[6], width, 2,
-			"%s%.*s%s [%3u:%3u %c]",
+	GridCall( PUT(	RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
+			BOXKEY_THM : SCANKEY_NULL,
+			attrib[6], width, 2,
+			"%s%.*s%s %c%3u:%3u %c%c",
 			RSC(POWER_THERMAL_TJMAX).CODE(),
 			width - 20 - RSZ(POWER_THERMAL_TJMAX), hSpace,
 			RSC(POWER_LABEL_TJ).CODE(),
+			RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
+			'<' : '[',
 			Setting.fahrCels ? Cels2Fahr(
 				SFlop->Thermal.Param.Offset[1]
 			) : SFlop->Thermal.Param.Offset[1],
 			Setting.fahrCels ? Cels2Fahr(
 				SFlop->Thermal.Param.Offset[0]
 			) : SFlop->Thermal.Param.Offset[0],
-			Setting.fahrCels ? 'F' : 'C' ),
+			Setting.fahrCels ? 'F' : 'C',
+			RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
+			'>' : ']' ),
 		TjMax_Update );
 /* Section Mark */
   if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
@@ -10048,6 +10054,62 @@ Window *CreateSelectIdle(unsigned long long id)
 	return wIdle;
 }
 
+Window *CreateThermalOffsetWindow(unsigned long long id)
+{
+	Window *wTHO = CreateWindow(	wLayer, id,
+					1, 32,
+					(MIN_WIDTH - 21) >> 1,
+					TOP_HEADER_ROW + 1,
+					WINFLAG_NO_STOCK|WINFLAG_NO_VSB );
+  if (wTHO != NULL)
+  {
+	char item[11+19+1];
+	unsigned long long bits, key;
+	signed short circle, loop;
+    for (loop = 0; loop < 2; loop++)
+      for (circle = -31; circle < +32; circle++)
+      {
+	const unsigned short word = circle;
+	bits = ((unsigned long long) word) << 20,
+	key = BOXKEY_THM_OP | bits;
+
+	if (Setting.fahrCels) {
+		int fahrenheit = Cels2Fahr(circle);
+		StrFormat(item, 11+19+1 , "        %c%3d F       ",
+			fahrenheit < 0 ? '-' : fahrenheit > 0 ? '+' : ' ',
+			abs(fahrenheit));
+	} else {
+		StrFormat(item, 11+19+1 , "        %c%2d C        ",
+			circle < 0 ? '-' : circle > 0 ? '+' : ' ',
+			abs(circle));
+	}
+	StoreTCell(wTHO, key, item,
+			circle == 0	? RSC(UI).ATTR()[UI_WHEEL_CURRENT]
+					: RSC(UI).ATTR()[UI_WHEEL_LIST]);
+      }
+	wTHO->matrix.select.row = wTHO->matrix.size.hth >> 1;
+	wTHO->matrix.scroll.vert = 15;
+
+	StoreWindow(wTHO,	.title,(char*)RSC(THERMAL_OFFSET_TITLE).CODE());
+
+	StoreWindow(wTHO,	.key.Enter,	MotionEnter_Cell);
+	StoreWindow(wTHO,	.key.Up,	MotionUp_Wheel);
+	StoreWindow(wTHO,	.key.Down,	MotionDown_Wheel);
+	StoreWindow(wTHO,	.key.PgUp,	MotionPgUp_Wheel);
+	StoreWindow(wTHO,	.key.PgDw,	MotionPgDw_Wheel);
+	StoreWindow(wTHO,	.key.Home,	MotionHome_Wheel);
+	StoreWindow(wTHO,	.key.End,	MotionEnd_Wheel);
+
+	StoreWindow(wTHO,	.key.WinLeft,	MotionOriginLeft_Win);
+	StoreWindow(wTHO,	.key.WinRight,	MotionOriginRight_Win);
+	StoreWindow(wTHO,	.key.WinDown,	MotionOriginDown_Win);
+	StoreWindow(wTHO,	.key.WinUp,	MotionOriginUp_Win);
+
+	StoreWindow(wTHO, .color[1].select, RSC(UI).ATTR()[UI_WHEEL_SELECT]);
+  }
+	return wTHO;
+}
+
 #define TW_START_Z	0b000
 #define TW_START_Y	0b00000
 #define TW_STOP_Z	0b011
@@ -14223,6 +14285,17 @@ int Shortcut(SCANKEY *scan)
 	}
     break;
 
+    case BOXKEY_THM:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL) {
+		AppendWindow(CreateThermalOffsetWindow(scan->key), &winList);
+	} else {
+		SetHead(&winList, win);
+	}
+    }
+    break;
+
     case BOXKEY_LIMIT_IDLE_STATE:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
@@ -14987,6 +15060,17 @@ int Shortcut(SCANKEY *scan)
 				TECHNOLOGY_TW_POWER,
 				pw,
 				pl );
+	}
+      }
+      else if ((scan->key & BOXKEY_THM_OP) == BOXKEY_THM_OP)
+      {
+	const unsigned short offset = (scan->key & BOXKEY_THM_OFFSET) >> 20;
+
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				offset,
+				TECHNOLOGY_THM_OFFSET );
 	}
       }
       else

@@ -20895,6 +20895,24 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	    }
 		break;
 
+	case TECHNOLOGY_THM_OFFSET:
+	    {
+		const signed short offset = (signed short) prm.dl.lo;
+		if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
+		{
+			PLATFORM_INFO PfInfo = {.value = 0};
+			RDMSR(PfInfo, MSR_PLATFORM_INFO);
+			Controller_Stop(1);
+			ThermalOffset = offset;
+			rc = Intel_ThermalOffset(PfInfo.ProgrammableTj);
+			Controller_Start(1);
+			ThermalOffset = 0;
+		} else {
+			rc = -RC_UNIMPLEMENTED;
+		}
+	    }
+		break;
+
 	case TECHNOLOGY_TW_POWER:
 	    {
 		const enum PWR_DOMAIN	pw = prm.dh.lo;

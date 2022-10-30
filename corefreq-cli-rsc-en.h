@@ -1225,6 +1225,8 @@
 #define RSC_THERMAL_POINT_HTC_LIMIT_CODE_EN	"HTC Temperature Limit"
 #define RSC_THERMAL_POINT_HTC_HYST_CODE_EN	"HTC Temperature Hysteresis"
 
+#define RSC_THERMAL_OFFSET_TITLE_CODE_EN	" Thermal Offset "
+
 #define RSC_KERNEL_TITLE_CODE_EN	" Kernel "
 #define RSC_KERNEL_TOTAL_RAM_CODE_EN	"Total RAM"
 #define RSC_KERNEL_SHARED_RAM_CODE_EN	"Shared RAM"

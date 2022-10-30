@@ -711,6 +711,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_THERMAL_POINT_HTC_HYST_CODE_FR	"Hyst""\xa9""r""\xa9""sis" \
 						" de temp""\xa9""rature HTC"
 
+#define RSC_THERMAL_OFFSET_TITLE_CODE_FR	" Offset thermique "
+
 #define RSC_KERNEL_TITLE_CODE_FR	" Noyau "
 #define RSC_KERNEL_TOTAL_RAM_CODE_FR	"RAM totale"
 #define RSC_KERNEL_SHARED_RAM_CODE_FR	"RAM partag""\xa9""e"
