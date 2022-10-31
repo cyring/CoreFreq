@@ -3700,7 +3700,8 @@ long Intel_ThermalOffset(bool programmableTj)
 				TjMax.Atom.Offset = offset;
 				WRMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
 				RDMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
-				rc = RC_OK_COMPUTE;
+				rc = TjMax.Atom.Offset == offset ? RC_OK_COMPUTE
+							: -RC_UNIMPLEMENTED;
 			}
 		    }
 			break;
@@ -3713,7 +3714,8 @@ long Intel_ThermalOffset(bool programmableTj)
 				TjMax.EP.Offset = offset;
 				WRMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
 				RDMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
-				rc = RC_OK_COMPUTE;
+				rc = TjMax.EP.Offset == offset ? RC_OK_COMPUTE
+							: -RC_UNIMPLEMENTED;
 			}
 		    }
 			break;
@@ -3723,7 +3725,8 @@ long Intel_ThermalOffset(bool programmableTj)
 				TjMax.Offset = offset;
 				WRMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
 				RDMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
-				rc = RC_OK_COMPUTE;
+				rc = TjMax.Offset == offset ? RC_OK_COMPUTE
+							: -RC_UNIMPLEMENTED;
 			}
 		    }
 			break;
@@ -3734,6 +3737,8 @@ long Intel_ThermalOffset(bool programmableTj)
 	} else {
 		rc = -RC_UNIMPLEMENTED;
 	}
+    } else {
+	rc = RC_SUCCESS;
     }
 	return rc;
 }
