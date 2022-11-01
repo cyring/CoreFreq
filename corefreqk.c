@@ -2502,6 +2502,7 @@ int Intel_MaxBusRatio(PLATFORM_ID *PfID)
 		_Atom_Saltwell, 	/* 06_36 */
 		_Silvermont_Bay_Trail,	/* 06_37 */
 		_Atom_Bonnell,		/* 06_1C */
+		_Atom_Airmont		/* 06_4C */
 	};
 	int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
 	for (id = 0; id < ids; id++) {
@@ -8874,8 +8875,9 @@ void ThermalMonitor2_Set(CORE_RO *Core, MISC_PROC_FEATURES MiscFeatures)
 		_Atom_Lincroft ,	/* 06_27 */
 		_Atom_Clover_Trail,	/* 06_35 */
 		_Atom_Saltwell	,	/* 06_36 */
+		_Atom_Airmont	,	/* 06_4C */
 		_Tigerlake_U	,	/* 06_8C */
-		_Alderlake_S	,	/* 06_97 */
+		_Alderlake_S		/* 06_97 */
 	};
 	int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
   for (id = 0; id < ids; id++)
@@ -9518,7 +9520,7 @@ void PowerThermal(CORE_RO *Core)
 		{_Silvermont_Bay_Trail, 0, 1, 0, 0},	/* 06_37 */
 
 		{_Atom_Avoton,		0, 1, 1, 0},	/* 06_4D */
-		{_Atom_Airmont ,	0, 0, 1, 0},	/* 06_4C */
+		{_Atom_Airmont ,	0, 1, 0, 0},	/* 06_4C */
 		{_Atom_Goldmont,	1, 0, 1, 0},	/* 06_5C */
 		{_Atom_Sofia,		0, 1, 1, 0},	/* 06_5D */
 		{_Atom_Merrifield,	0, 1, 1, 0},	/* 06_4A */
