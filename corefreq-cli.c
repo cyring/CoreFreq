@@ -4268,15 +4268,15 @@ void TjMax_Update(TGrid *grid, DATA_TYPE data[])
 	char item[11+1+11+2+1];
 	UNUSED(data);
 
-	if (Setting.fahrCels) {
-		StrFormat(item, 11+1+11+2+1, "%3d:%3d F",
-			Cels2Fahr(SFlop->Thermal.Param.Offset[1]),
-			Cels2Fahr(SFlop->Thermal.Param.Offset[0]));
-	} else {
-		StrFormat(item, 10+1+10+2+1, "%3hu:%3hu C",
-			SFlop->Thermal.Param.Offset[1],
-			SFlop->Thermal.Param.Offset[0]);
-	}
+    if (Setting.fahrCels) {
+	StrFormat(item, 11+1+11+2+1, "%3d:%3d F",
+		Cels2Fahr(SFlop->Thermal.Param.Offset[THERMAL_OFFSET_P1]),
+		Cels2Fahr(SFlop->Thermal.Param.Offset[THERMAL_TARGET]));
+    } else {
+	StrFormat(item, 10+1+10+2+1, "%3hu:%3hu C",
+		SFlop->Thermal.Param.Offset[THERMAL_OFFSET_P1],
+		SFlop->Thermal.Param.Offset[THERMAL_TARGET]);
+    }
 	memcpy(&grid->cell.item[pos], item, 9);
 }
 
@@ -4442,11 +4442,11 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 			RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
 			'<' : '[',
 			Setting.fahrCels ? Cels2Fahr(
-				SFlop->Thermal.Param.Offset[1]
-			) : SFlop->Thermal.Param.Offset[1],
+				SFlop->Thermal.Param.Offset[THERMAL_OFFSET_P1]
+			) : SFlop->Thermal.Param.Offset[THERMAL_OFFSET_P1],
 			Setting.fahrCels ? Cels2Fahr(
-				SFlop->Thermal.Param.Offset[0]
-			) : SFlop->Thermal.Param.Offset[0],
+				SFlop->Thermal.Param.Offset[THERMAL_TARGET]
+			) : SFlop->Thermal.Param.Offset[THERMAL_TARGET],
 			Setting.fahrCels ? 'F' : 'C',
 			RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
 			'>' : ']' ),
@@ -5617,7 +5617,7 @@ signed int Pkg_Celsius(char *out, struct PKG_FLIP_FLOP *PFlop)
 		100.f * RO(Shm)->Proc.Avg.C6,
 		100.f * RO(Shm)->Proc.Avg.C7,
 		5, hSpace,
-		SFlop->Thermal.Param.Offset[0],
+		SFlop->Thermal.Param.Offset[THERMAL_TARGET],
 		3, hSpace,
 		PFlop->Thermal.Temp);
 }
@@ -5648,7 +5648,7 @@ signed int Pkg_Fahrenheit(char *out, struct PKG_FLIP_FLOP *PFlop)
 		100.f * RO(Shm)->Proc.Avg.C6,
 		100.f * RO(Shm)->Proc.Avg.C7,
 		5, hSpace,
-		SFlop->Thermal.Param.Offset[0],
+		SFlop->Thermal.Param.Offset[THERMAL_TARGET],
 		3, hSpace,
 		Cels2Fahr(PFlop->Thermal.Temp));
 }
@@ -10057,7 +10057,7 @@ Window *CreateSelectIdle(unsigned long long id)
 Window *CreateThermalOffsetWindow(unsigned long long id)
 {
 	Window *wTHO = CreateWindow(	wLayer, id,
-					1, 32,
+					1, 31,
 					(MIN_WIDTH - 21) >> 1,
 					TOP_HEADER_ROW + 1,
 					WINFLAG_NO_STOCK|WINFLAG_NO_VSB );
@@ -10088,7 +10088,7 @@ Window *CreateThermalOffsetWindow(unsigned long long id)
 					: RSC(UI).ATTR()[UI_WHEEL_LIST]);
       }
 	wTHO->matrix.select.row = wTHO->matrix.size.hth >> 1;
-	wTHO->matrix.scroll.vert = 15;
+	wTHO->matrix.scroll.vert = 16;
 
 	StoreWindow(wTHO,	.title,(char*)RSC(THERMAL_OFFSET_TITLE).CODE());
 

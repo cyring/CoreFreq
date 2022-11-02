@@ -7544,7 +7544,7 @@ void Query_AMD_F17h_Power_Limits(PROC_RO *Pkg)
 				SMU_AMD_F17H_ZEN2_MCM_PWR,
 				PRIVATE(OF(Zen)).Device.DF );
 	/*		Junction Temperature				*/
-	Pkg->PowerThermal.Param.Offset[0] = \
+	Pkg->PowerThermal.Param.Offset[THERMAL_TARGET] = \
 				PUBLIC(RO(Proc))->PowerThermal.Zen.PWR.TjMax;
 	/*		Thermal Design Power				*/
 	Core_AMD_SMN_Read( Pkg->PowerThermal.Zen.TDP,
@@ -9217,8 +9217,8 @@ void ThermalMonitor_IA32(CORE_RO *Core)
 
 void ThermalMonitor_Atom_Bonnell(CORE_RO *Core)
 {
-	Core->PowerThermal.Param.Offset[0] = 100;
-	Core->PowerThermal.Param.Offset[1] = 0;
+	Core->PowerThermal.Param.Offset[THERMAL_TARGET] = 100;
+	Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 0;
 
 	ThermalMonitor_IA32(Core);
 }
@@ -9231,35 +9231,34 @@ void ThermalMonitor_Set(CORE_RO *Core)
 	/* Silvermont + Xeon[06_57] + Nehalem + Sandy Bridge & superior arch. */
 	RDMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
 
-	Core->PowerThermal.Param.Offset[0] = TjMax.Target;
-	if (Core->PowerThermal.Param.Offset[0] == 0)
-	{
-		Core->PowerThermal.Param.Offset[0] = 100;
-	}
+	Core->PowerThermal.Param.Offset[THERMAL_TARGET] = TjMax.Target;
+    if (Core->PowerThermal.Param.Offset[THERMAL_TARGET] == 0)
+    {
+	Core->PowerThermal.Param.Offset[THERMAL_TARGET] = 100;
+    }
 
 	RDMSR(PfInfo, MSR_PLATFORM_INFO);
 
-	if (PfInfo.ProgrammableTj)
-	{
-		switch (PUBLIC(RO(Proc))->ArchID) {
-		case Atom_Goldmont:
-		case Xeon_Phi:
-	/*TODO( case 06_85h: )	*/
-			Core->PowerThermal.Param.Offset[1] = TjMax.Atom.Offset;
-			break;
-		case IvyBridge_EP:
-		case Broadwell_EP:
-		case Broadwell_D:
-		case Skylake_X:
-			Core->PowerThermal.Param.Offset[1] = TjMax.EP.Offset;
-			break;
-		default:
-			Core->PowerThermal.Param.Offset[1] = TjMax.Offset;
-			break;
-		case Core_Yonah ... Core_Dunnington:
-			break;
-		}
-	}
+    if (PfInfo.ProgrammableTj)
+    {
+      switch (PUBLIC(RO(Proc))->ArchID) {
+      case Atom_Goldmont:
+      case Xeon_Phi:	/* case 06_85h: */
+	Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = TjMax.Atom.Offset;
+	break;
+      case IvyBridge_EP:
+      case Broadwell_EP:
+      case Broadwell_D:
+      case Skylake_X:
+	Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = TjMax.EP.Offset;
+	break;
+      default:
+	Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = TjMax.Offset;
+	break;
+      case Core_Yonah ... Core_Dunnington:
+	break;
+      }
+    }
 
 	ThermalMonitor_IA32(Core);
 }
@@ -14183,9 +14182,9 @@ static void CTL_AMD_Family_17h_Temp(CORE_RO *Core)
 		0 = Report on 0C to 225C scale range.
 		1 = Report on -49C to 206C scale range.
 	*/
-		Core->PowerThermal.Param.Offset[1] = 49;
+		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 49;
 	} else {
-		Core->PowerThermal.Param.Offset[1] = 0;
+		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 0;
 	}
 
 	Core_AMD_SMN_Read(	ThermTrip,
@@ -14214,9 +14213,9 @@ static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 
 	if (TccdSensor.CurTempRangeSel == 1)
 	{
-		Core->PowerThermal.Param.Offset[1] = 49;
+		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 49;
 	} else {
-		Core->PowerThermal.Param.Offset[1] = 0;
+		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 0;
 	}
 
 	Core_AMD_SMN_Read(	ThermTrip,

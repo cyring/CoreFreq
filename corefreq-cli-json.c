@@ -2009,9 +2009,9 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 				json_key(&s, "Target");
 				json_start_arr(&s);
 				{
-					json_literal(&s, "%u", RO(Shm)->Cpu[cpu].FlipFlop[i2].Thermal.Param.Offset[0]);
-					json_literal(&s, "%u", RO(Shm)->Cpu[cpu].FlipFlop[i2].Thermal.Param.Offset[1]);
-					json_literal(&s, "%u", RO(Shm)->Cpu[cpu].FlipFlop[i2].Thermal.Param.Offset[2]);
+					json_literal(&s, "%u", RO(Shm)->Cpu[cpu].FlipFlop[i2].Thermal.Param.Offset[THERMAL_TARGET]);
+					json_literal(&s, "%u", RO(Shm)->Cpu[cpu].FlipFlop[i2].Thermal.Param.Offset[THERMAL_OFFSET_P1]);
+					json_literal(&s, "%u", RO(Shm)->Cpu[cpu].FlipFlop[i2].Thermal.Param.Offset[THERMAL_OFFSET_P2]);
 				}
 				json_end_arr(&s);
 				json_end_object(&s);

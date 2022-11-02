@@ -444,10 +444,17 @@ enum SENSOR_LIMITS {
 	SENSOR_LIMITS_DIM
 };
 
+enum THERMAL_OFFSET {
+	THERMAL_TARGET,
+	THERMAL_OFFSET_P1,
+	THERMAL_OFFSET_P2,
+	THERMAL_OFFSET_DIM
+};
+
 typedef union
 {
 	unsigned long	Target;
-	unsigned short	Offset[3];
+	unsigned short	Offset[THERMAL_OFFSET_DIM];
 } THERMAL_PARAM;
 
 enum FORMULA_SCOPE {
@@ -597,10 +604,12 @@ POWER_FORMULA_AMD_17h	=(POWER_KIND_AMD_17h << 8)	| FORMULA_SCOPE_CORE
 })
 
 #define COMPUTE_THERMAL_INVERSE_INTEL(Sensor, Param, Temp)		\
-	(Sensor = Param.Offset[0] - Param.Offset[1] - Temp)
+	(Sensor = Param.Offset[THERMAL_TARGET]				\
+		- Param.Offset[THERMAL_OFFSET_P1] - Temp)
 
 #define COMPUTE_THERMAL_INTEL(Temp, Param, Sensor)			\
-	(Temp = Param.Offset[0] - Param.Offset[1] - Sensor)
+	(Temp	= Param.Offset[THERMAL_TARGET]				\
+		- Param.Offset[THERMAL_OFFSET_P1] - Sensor)
 
 #define COMPUTE_THERMAL_AMD(Temp, Param, Sensor)			\
 	UNUSED(Param);							\
@@ -615,7 +624,8 @@ POWER_FORMULA_AMD_17h	=(POWER_KIND_AMD_17h << 8)	| FORMULA_SCOPE_CORE
 	(Temp = Sensor * 5 / 40)
 
 #define COMPUTE_THERMAL_AMD_17h(Temp, Param, Sensor)			\
-	(Temp = ((Sensor * 5 / 40) - Param.Offset[1]) - Param.Offset[2])
+	(Temp	= ((Sensor * 5 / 40) - Param.Offset[THERMAL_OFFSET_P1]) \
+		- Param.Offset[THERMAL_OFFSET_P2])
 
 #define COMPUTE_THERMAL(_ARCH_, Temp, Param, Sensor)			\
 	COMPUTE_THERMAL_##_ARCH_(Temp, Param, Sensor)
