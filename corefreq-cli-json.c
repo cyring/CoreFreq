@@ -64,6 +64,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 			json_literal(&s, "%u", BITVAL(RO(Shm)->Registration.NMI, BIT_NMI_IO_CHECK));
 			json_end_object(&s);
 		}
+		json_key(&s, "IdleRoute");
+		json_literal(&s, "%d", RO(Shm)->Registration.Driver.Route);
 		json_key(&s, "CPUidle");
 		json_literal(&s, "%hu", RO(Shm)->Registration.Driver.CPUidle);
 		json_key(&s, "CPUfreq");
@@ -179,6 +181,10 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 		{
 			json_start_object(&s);
 
+		    if (strlen(RO(Shm)->CS.array) > 0) {
+			json_key(&s, "Clock_Source");
+			json_string(&s, RO(Shm)->CS.array);
+		    }
 		    if (strlen(RO(Shm)->SysGate.OS.FreqDriver.Name) > 0) {
 			json_key(&s, "CPU_Freq");
 			json_string(&s, RO(Shm)->SysGate.OS.FreqDriver.Name);
@@ -1389,18 +1395,28 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.ClkRatio_Unlock);
 			json_key(&s, "Uncore_Unlock");
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.Uncore_Unlock);
+			json_key(&s, "ACPI_CPPC");
+			json_literal(&s, "%u", RO(Shm)->Proc.Features.ACPI_CPPC);
 			json_key(&s, "HWP_Enable");
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.HWP_Enable);
 			json_key(&s, "HDC_Enable");
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.HDC_Enable);
-			json_key(&s, "SpecTurboRatio");
-			json_literal(&s, "%u", RO(Shm)->Proc.Features.SpecTurboRatio);
+			json_key(&s, "EEO_Capable");
+			json_literal(&s, "%u", RO(Shm)->Proc.Features.EEO_Capable);
 			json_key(&s, "EEO_Enable");
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.EEO_Enable);
+			json_key(&s, "R2H_Capable");
+			json_literal(&s, "%u", RO(Shm)->Proc.Features.R2H_Capable);
 			json_key(&s, "R2H_Enable");
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.R2H_Enable);
+			json_key(&s, "HSMP_Capable");
+			json_literal(&s, "%u", RO(Shm)->Proc.Features.HSMP_Capable);
 			json_key(&s, "HSMP_Enable");
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.HSMP_Enable);
+			json_key(&s, "SpecTurboRatio");
+			json_literal(&s, "%u", RO(Shm)->Proc.Features.SpecTurboRatio);
+			json_key(&s, "XtraCOF");
+			json_literal(&s, "%u", RO(Shm)->Proc.Features.XtraCOF);
 
 			json_end_object(&s);
 		}

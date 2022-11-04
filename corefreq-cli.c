@@ -2144,7 +2144,8 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	},
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
-		RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1,
+		(RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1)
+		|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1),
 		attr_Feat,
 		2, "%s%.*sCPPC   [%7s]", RSC(FEATURES_CPPC).CODE(),
 		width - 19 - RSZ(FEATURES_CPPC),
