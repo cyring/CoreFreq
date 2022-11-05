@@ -424,6 +424,7 @@ static struct {
 #ifdef CONFIG_PM_SLEEP
 	bool			ResumeFromSuspend;
 #endif /* CONFIG_PM_SLEEP */
+	unsigned int		SubCstate[SUB_CSTATE_COUNT];
 } CoreFreqK = {
 #ifdef CONFIG_CPU_IDLE
 	.IdleDriver = {
@@ -903,6 +904,16 @@ static void Query_Features(void *pArg)
 	iArg->Features->MWait.EDX.SubCstate_MWAIT0 = Override_SubCstate[0];
 	break;
       };
+
+	CoreFreqK.SubCstate[0] = iArg->Features->MWait.EDX.SubCstate_MWAIT0;
+	CoreFreqK.SubCstate[1] = iArg->Features->MWait.EDX.SubCstate_MWAIT1;
+/*C1E*/ CoreFreqK.SubCstate[2] = iArg->Features->MWait.EDX.SubCstate_MWAIT1;
+	CoreFreqK.SubCstate[3] = iArg->Features->MWait.EDX.SubCstate_MWAIT2;
+	CoreFreqK.SubCstate[4] = iArg->Features->MWait.EDX.SubCstate_MWAIT3;
+	CoreFreqK.SubCstate[5] = iArg->Features->MWait.EDX.SubCstate_MWAIT4;
+	CoreFreqK.SubCstate[6] = iArg->Features->MWait.EDX.SubCstate_MWAIT5;
+	CoreFreqK.SubCstate[7] = iArg->Features->MWait.EDX.SubCstate_MWAIT6;
+	CoreFreqK.SubCstate[8] = iArg->Features->MWait.EDX.SubCstate_MWAIT7;
     }
     if (iArg->Features->Info.LargestStdFunc >= 0x6)
     {
@@ -18243,11 +18254,11 @@ long Sys_OS_Driver_Query(void)
       }
       if(PUBLIC(RO(Proc))->Registration.Driver.CPUidle == REGISTRATION_ENABLE)
       {
-	for (idx = 0; idx < CoreFreqK.IdleDriver.state_count; idx++)
+	for (idx = SUB_CSTATE_COUNT - 1; idx >= 0 ; idx--)
 	{
-	    if (CoreFreqK.IdleDriver.states[idx].flags & CPUIDLE_FLAG_UNUSABLE)
+	    if (CoreFreqK.SubCstate[idx] > 0)
 	    {
-		PUBLIC(RO(Proc))->OS.IdleDriver.stateLimit = idx;
+		PUBLIC(RO(Proc))->OS.IdleDriver.stateLimit = 1 + idx;
 		break;
 	    }
 	}
@@ -18953,19 +18964,6 @@ static int CoreFreqK_IdleDriver_Init(void)
     {
 	struct cpuidle_device *device;
 	unsigned int cpu, enroll = 0;
-	unsigned int subState[] = {
-	PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT0,
-	PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT1,
-	PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT1, /* C1E */
-	PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT2,
-	PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT3,
-	PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT4,
-	PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT5,
-	PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT6,
-	PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT7
-	};
-	const unsigned int subStateCount = sizeof(subState)
-					 / sizeof(subState[0]);
 	/*		Kernel polling loop			*/
 	cpuidle_poll_state_init(&CoreFreqK.IdleDriver);
 
@@ -18973,13 +18971,13 @@ static int CoreFreqK_IdleDriver_Init(void)
 	/*		Idle States				*/
      while (pIdleState->Name != NULL)
      {
-	if (CoreFreqK.IdleDriver.state_count < subStateCount)
+	if (CoreFreqK.IdleDriver.state_count < SUB_CSTATE_COUNT)
 	{
 		CoreFreqK.IdleDriver.states[
 			CoreFreqK.IdleDriver.state_count
 		].flags = pIdleState->flags;
 
-	    if (subState[CoreFreqK.IdleDriver.state_count] == 0)
+	    if (CoreFreqK.SubCstate[CoreFreqK.IdleDriver.state_count] == 0)
 	    {
 		CoreFreqK.IdleDriver.states[
 			CoreFreqK.IdleDriver.state_count

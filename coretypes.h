@@ -2087,6 +2087,7 @@ enum RAM_STANDARD {
 	#define CPUIDLE_STATE_MAX	10
 	#define CPUIDLE_NAME_LEN	16
 #endif
+#define SUB_CSTATE_COUNT	(CPUIDLE_STATE_MAX - 1)
 /* Borrow the Kernel Idle State Flags					*/
 #ifndef CPUIDLE_FLAG_NONE
 	#define CPUIDLE_FLAG_NONE		(0x00)
