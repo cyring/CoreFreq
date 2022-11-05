@@ -19164,11 +19164,11 @@ static int CoreFreqK_IdleDriver_Init(void)
 		{
 			CoreFreqK.IdleDriver.states[
 				CoreFreqK.IdleDriver.state_count
-			].enter = CoreFreqK_IO_Handler;
+			].enter = CoreFreqK_Alt_IO_AMD_Handler;
 
 			CoreFreqK.IdleDriver.states[
 				CoreFreqK.IdleDriver.state_count
-			].enter_s2idle = CoreFreqK_S2_IO_Handler;
+			].enter_s2idle = CoreFreqK_Alt_S2_IO_AMD_Handler;
 
 			PUBLIC(RO(Proc))->Registration.Driver.Route = ROUTE_IO;
 		}
@@ -19176,11 +19176,11 @@ static int CoreFreqK_IdleDriver_Init(void)
 		{
 			CoreFreqK.IdleDriver.states[
 				CoreFreqK.IdleDriver.state_count
-			].enter = CoreFreqK_HALT_AMD_Handler;
+			].enter = CoreFreqK_Alt_HALT_AMD_Handler;
 
 			CoreFreqK.IdleDriver.states[
 				CoreFreqK.IdleDriver.state_count
-			].enter_s2idle = CoreFreqK_S2_HALT_AMD_Handler;
+			].enter_s2idle = CoreFreqK_Alt_S2_HALT_AMD_Handler;
 
 			PUBLIC(RO(Proc))->Registration.Driver.Route=ROUTE_HALT;
 		}
