@@ -1576,46 +1576,48 @@ static CLOCK BaseClock_Airmont(unsigned int ratio)
 	FSB_FREQ FSB = {.value = 0};
 
 	RDMSR(FSB, MSR_FSB_FREQ);
-	switch (FSB.Bus_Speed) {
-	case 0b000: {
+	switch (FSB.Airmont.Bus_Speed) {
+	case 0b0000: {
 		clock.Q = 83;
 		clock.R = 3333;
 		}
 		break;
-	case 0b001: {
+	case 0b0001: {
 		clock.Q = 100;
 		clock.R = 0000;
 		}
 		break;
-	case 0b010: {
+	case 0b0010: {
 		clock.Q = 133;
 		clock.R = 3333;
 		}
 		break;
-	case 0b011: {
+	case 0b0011: {
 		clock.Q = 116;
 		clock.R = 6666;
 		}
 		break;
-	case 0b100: {
+	case 0b0100: {
 		clock.Q = 80;
 		clock.R = 0000;
 		}
 		break;
-	case 0b101: {
+	case 0b0101: {
 		clock.Q = 93;
 		clock.R = 3333;
 		}
 		break;
-	case 0b110: {
+	case 0b0110: {
 		clock.Q = 90;
 		clock.R = 0000;
 		}
 		break;
-	case 0b111: {
+	case 0b0111: {
 		clock.Q = 88;
 		clock.R = 9000;
 		}
+		break;
+	case 0b1000:
 		break;
 	}
 	ClockToHz(&clock);

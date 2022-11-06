@@ -411,6 +411,12 @@ typedef union
 		Bus_Speed	:  3-0,
 		ReservedBits	: 64-3;
 	};
+	struct
+	{
+		unsigned long long
+		Bus_Speed	:  4-0,
+		ReservedBits	: 64-4;
+	} Airmont;
 } FSB_FREQ;
 
 typedef union
