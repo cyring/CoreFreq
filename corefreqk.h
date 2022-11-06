@@ -2938,7 +2938,19 @@ static char *Arch_Atom_Clover_Trail[]	=	ZLIST("Atom/Clovertrail");
 static char *Arch_Atom_Saltwell[]	=	ZLIST("Atom/Saltwell");
 static char *Arch_Silvermont_Bay_Trail[]=	ZLIST("Silvermont/SoC");
 static char *Arch_Atom_Avoton[] 	=	ZLIST("Atom/Avoton");
-static char *Arch_Atom_Airmont[]	=	ZLIST("Atom/Airmont");
+
+enum {
+	CN_AIRMONT,
+	CN_BRASWELL,
+	CN_CHERRYTRAIL
+};
+
+static char *Arch_Atom_Airmont[] = ZLIST(
+		[CN_AIRMONT]		=	"Atom/Airmont",
+		[CN_BRASWELL]		=	"Airmont/Braswell",
+		[CN_CHERRYTRAIL]	=	"Airmont/Cherry Trail"
+);
+
 static char *Arch_Atom_Goldmont[]	=	ZLIST("Atom/Goldmont");
 static char *Arch_Atom_Sofia[]		=	ZLIST("Atom/Sofia");
 static char *Arch_Atom_Merrifield[]	=	ZLIST("Atom/Merrifield");
@@ -3426,6 +3438,49 @@ static PROCESSOR_SPECIFIC Silvermont_Bay_Trail_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = 0,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b00,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_TGT_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{0}
+};
+
+static PROCESSOR_SPECIFIC Airmont_Specific[] = {
+	{
+	.Brand = ZLIST( "Intel(R) Pentium(R) CPU J3060",
+			"Intel(R) Pentium(R) CPU J3160",
+			"Intel(R) Pentium(R) CPU J3710",
+			"Intel(R) Pentium(R) CPU N3000",
+			"Intel(R) Pentium(R) CPU N3010",
+			"Intel(R) Pentium(R) CPU N3050",
+			"Intel(R) Pentium(R) CPU N3060",
+			"Intel(R) Pentium(R) CPU N3150",
+			"Intel(R) Pentium(R) CPU N3160",
+			"Intel(R) Pentium(R) CPU N3700",
+			"Intel(R) Pentium(R) CPU N3710",
+			"Intel(R) Atom(TM) x5-E8000"),
+	.Boost = {0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_BRASWELL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b00,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_TGT_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "Intel(R) Atom(TM) x5-Z8300",
+			"Intel(R) Atom(TM) x5-Z8330",
+			"Intel(R) Atom(TM) x5-Z8350",
+			"Intel(R) Atom(TM) x5-Z8500",
+			"Intel(R) Atom(TM) x5-Z8550",
+			"Intel(R) Atom(TM) x7-Z8700",
+			"Intel(R) Atom(TM) x7-Z8750"),
+	.Boost = {0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_CHERRYTRAIL,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
 	.TurboUnlocked = 1,
@@ -7698,7 +7753,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
-	.Specific = Void_Specific,
+	.Specific = Airmont_Specific,
 	.SystemDriver = CORE2_Driver,
 	.Architecture = Arch_Atom_Airmont
 	},

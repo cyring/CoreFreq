@@ -360,6 +360,23 @@
 	#define MSR_RING_PERF_LIMIT_REASONS	0x000006b1
 #endif
 
+/*	Source: Linux kernel /arch/x86/include/asm/msr-index.h		*/
+#ifndef MSR_ATOM_CORE_RATIOS
+	#define MSR_ATOM_CORE_RATIOS		0x0000066a
+#endif
+
+#ifndef MSR_ATOM_CORE_VIDS
+	#define MSR_ATOM_CORE_VIDS		0x0000066b
+#endif
+
+#ifndef MSR_ATOM_CORE_TURBO_RATIOS
+	#define MSR_ATOM_CORE_TURBO_RATIOS	0x0000066c
+#endif
+
+#ifndef MSR_ATOM_CORE_TURBO_VIDS
+	#define MSR_ATOM_CORE_TURBO_VIDS	0x0000066d
+#endif
+
 /*	Package C-State Interrupt Response Limit			*/
 #ifndef MSR_PKGC3_IRTL
 	#define MSR_PKGC3_IRTL			0x0000060a

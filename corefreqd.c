@@ -6039,7 +6039,7 @@ static char *Chipset[CHIPSETS] = {
 	[IC_PINEVIEW]		= "Pineview",
 	[IC_CEDARVIEW]		= "Cedarview",
 	[IC_BAYTRAIL]		= "Bay Trail",
-	[IC_BRASWELL]		= "Braswell",
+	[IC_AIRMONT]		= "Airmont",
 	[IC_TYLERSBURG] 	= "X58/Tylersburg",
 	[IC_IBEXPEAK]		= "P55/Ibex Peak",
 	[IC_IBEXPEAK_M] 	= "QM57/Ibex Peak-M",
@@ -6181,7 +6181,7 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		break;
 	case DID_INTEL_AIRMONT_HB:
 		SLM_PTR(RO(Shm), RO(Proc), RO(Core));
-		SET_CHIPSET(IC_BRASWELL);
+		SET_CHIPSET(IC_AIRMONT);
 		break;
 	case DID_INTEL_X58_HUB_CTRL:
 		QPI_CLK(RO(Shm), RO(Proc), RO(Core));

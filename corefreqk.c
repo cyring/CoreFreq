@@ -2711,6 +2711,8 @@ static void Intel_Turbo_Cfg8C_PerCore(void *arg)
 		if (Core->T.Cluster.Hybrid.CoreType == Hybrid_Atom) {
 			registerAddress = MSR_SECONDARY_TURBO_RATIO_LIMIT;
 		}
+	} else if (PUBLIC(RO(Proc))->ArchID == Atom_Airmont) {
+		registerAddress = MSR_ATOM_CORE_TURBO_RATIOS;
 	}
 	RDMSR(pClockCfg8C->Config.Cfg0, registerAddress);
 
@@ -11225,7 +11227,7 @@ void Compute_Intel_Silvermont_Burst(CORE_RO *Core)
 	}
       } while ( ++boost < BOOST(SIZE) );
 
-      if (initialize == true)
+      if ((initialize == true) && (PUBLIC(RO(Proc))->ArchID != Atom_Airmont))
       { /*	Re-program the register if at least one value was zero	*/
 	TURBO_RATIO_CONFIG0 Cfg0 = {
 	.MaxRatio_1C = PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(1C)],
