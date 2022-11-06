@@ -946,7 +946,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_SETTINGS_RING_WAIT_CODE_FR	" Ring Wait(ms)                  "
 #define RSC_SETTINGS_CHILD_WAIT_CODE_FR " Child Wait(ms)                 "
 #define RSC_SETTINGS_SLICE_WAIT_CODE_FR " Slice Wait(ms)                 "
-#define RSC_SETTINGS_RECORDER_CODE_FR	" Enregistreur(sec)       <    > "
+#define RSC_SETTINGS_RECORDER_CODE_FR  " Dur""\xa9""e(sec)              <    > "
 #define RSC_SETTINGS_AUTO_CLOCK_CODE_FR " Auto Clock               <   > "
 
 #define RSC_SETTINGS_EXPERIMENTAL_CODE_FR " Exp""\xa9""rimental"	\
@@ -1058,10 +1058,10 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 					" Terminal:                            "
 
 #define RSC_ADV_HELP_ITEM_PRT_SCR_CODE_FR \
-					" [Ctrl]+[p]                    Copier "
+					" [Ctrl]+[p]                Screenshot "
 
 #define RSC_ADV_HELP_ITEM_REC_SCR_CODE_FR \
-					" [Alt]+[p]                Enregistrer "
+					" [Alt]+[p]                 Screencast "
 
 #define RSC_ADV_HELP_ITEM_FAHR_CELS_CODE_FR \
 					" F              Fahrenheit ou Celsius "

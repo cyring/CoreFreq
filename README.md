@@ -374,6 +374,14 @@ CPU     IPS            IPC            CPI
 `corefreq-cli -OE 2 -t`  
   3. Or switch to that theme from `Menu > Theme`, shortcut [`E`]  
 
+* Q: How to screenshot the UI ?  
+
+  A: Press `[Ctrl]+[p]` to save the screen to a rich ascii file.  Use the `cat` or `less -R` command to view the file saved with an `asc` extension.  
+
+* Q: How to record the UI ?  
+
+  A: Press `[Alt]+[p]` to record the screen for the duration set in Settings. A compatible [asciinema](https://github.com/asciinema/asciinema) file is saved in the current directory with a `cast` extension.  
+
 * Q: What are the build options for _CoreFreq_ ?  
 
   A: Enter `make help` to display them:  

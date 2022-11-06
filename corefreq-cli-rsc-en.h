@@ -1562,7 +1562,7 @@
 #define RSC_SETTINGS_RING_WAIT_CODE_EN	    " Ring Wait(ms)                  "
 #define RSC_SETTINGS_CHILD_WAIT_CODE_EN     " Child Wait(ms)                 "
 #define RSC_SETTINGS_SLICE_WAIT_CODE_EN     " Slice Wait(ms)                 "
-#define RSC_SETTINGS_RECORDER_CODE_EN	    " Recorder(sec)           <    > "
+#define RSC_SETTINGS_RECORDER_CODE_EN	    " Duration(sec)           <    > "
 #define RSC_SETTINGS_AUTO_CLOCK_CODE_EN     " Auto Clock               <   > "
 #define RSC_SETTINGS_EXPERIMENTAL_CODE_EN   " Experimental             <   > "
 #define RSC_SETTINGS_CPU_HOTPLUG_CODE_EN    " CPU Hot-Plug             [   ] "
@@ -1639,10 +1639,10 @@
 					" Terminal:                            "
 
 #define RSC_ADV_HELP_ITEM_PRT_SCR_CODE_EN \
-					" [Ctrl]+[p]                      Copy "
+					" [Ctrl]+[p]                Screenshot "
 
 #define RSC_ADV_HELP_ITEM_REC_SCR_CODE_EN \
-					" [Alt]+[p]                     Record "
+					" [Alt]+[p]                 Screencast "
 
 #define RSC_ADV_HELP_ITEM_FAHR_CELS_CODE_EN \
 					" F              Fahrenheit or Celsius "
