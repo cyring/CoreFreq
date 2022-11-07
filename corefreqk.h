@@ -2936,7 +2936,7 @@ static char *Arch_Atom_Silvermont[]	=	ZLIST("Atom/Silvermont");
 static char *Arch_Atom_Lincroft[]	=	ZLIST("Atom/Lincroft");
 static char *Arch_Atom_Clover_Trail[]	=	ZLIST("Atom/Clovertrail");
 static char *Arch_Atom_Saltwell[]	=	ZLIST("Atom/Saltwell");
-static char *Arch_Silvermont_Bay_Trail[]=	ZLIST("Silvermont/SoC");
+static char *Arch_Silvermont_BYT[]	=	ZLIST("Silvermont/Bay Trail");
 static char *Arch_Atom_Avoton[] 	=	ZLIST("Atom/Avoton");
 
 enum {
@@ -3432,7 +3432,7 @@ static PROCESSOR_SPECIFIC Core_Penryn_Specific[] = {
 	{0}
 };
 
-static PROCESSOR_SPECIFIC Silvermont_Bay_Trail_Specific[] = {
+static PROCESSOR_SPECIFIC Silvermont_BYT_Specific[] = {
 	{
 	.Brand = ZLIST("Intel(R) Celeron(R) CPU N29"),
 	.Boost = {0, 0},
@@ -7704,9 +7704,9 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
-	.Specific = Silvermont_Bay_Trail_Specific,
+	.Specific = Silvermont_BYT_Specific,
 	.SystemDriver = SLM_Driver,
-	.Architecture = Arch_Silvermont_Bay_Trail
+	.Architecture = Arch_Silvermont_BYT
 	},
 [Atom_Avoton] = {							/* 23*/
 	.Signature = _Atom_Avoton,
