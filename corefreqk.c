@@ -1587,46 +1587,48 @@ static CLOCK BaseClock_Airmont(unsigned int ratio)
 	FSB_FREQ FSB = {.value = 0};
 
 	RDMSR(FSB, MSR_FSB_FREQ);
-	switch (FSB.Bus_Speed) {
-	case 0b000: {
+	switch (FSB.Airmont.Bus_Speed) {
+	case 0b0000: {
 		clock.Q = 83;
 		clock.R = 3333;
 		}
 		break;
-	case 0b001: {
+	case 0b0001: {
 		clock.Q = 100;
 		clock.R = 0000;
 		}
 		break;
-	case 0b010: {
+	case 0b0010: {
 		clock.Q = 133;
 		clock.R = 3333;
 		}
 		break;
-	case 0b011: {
+	case 0b0011: {
 		clock.Q = 116;
 		clock.R = 6666;
 		}
 		break;
-	case 0b100: {
+	case 0b0100: {
 		clock.Q = 80;
 		clock.R = 0000;
 		}
 		break;
-	case 0b101: {
+	case 0b0101: {
 		clock.Q = 93;
 		clock.R = 3333;
 		}
 		break;
-	case 0b110: {
+	case 0b0110: {
 		clock.Q = 90;
 		clock.R = 0000;
 		}
 		break;
-	case 0b111: {
+	case 0b0111: {
 		clock.Q = 88;
 		clock.R = 9000;
 		}
+		break;
+	case 0b1000:
 		break;
 	}
 	ClockToHz(&clock);
@@ -2513,6 +2515,7 @@ int Intel_MaxBusRatio(PLATFORM_ID *PfID)
 		_Atom_Saltwell, 	/* 06_36 */
 		_Silvermont_Bay_Trail,	/* 06_37 */
 		_Atom_Bonnell,		/* 06_1C */
+		_Atom_Airmont		/* 06_4C */
 	};
 	int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
 	for (id = 0; id < ids; id++) {
@@ -2719,6 +2722,8 @@ static void Intel_Turbo_Cfg8C_PerCore(void *arg)
 		if (Core->T.Cluster.Hybrid.CoreType == Hybrid_Atom) {
 			registerAddress = MSR_SECONDARY_TURBO_RATIO_LIMIT;
 		}
+	} else if (PUBLIC(RO(Proc))->ArchID == Atom_Airmont) {
+		registerAddress = MSR_ATOM_CORE_TURBO_RATIOS;
 	}
 	RDMSR(pClockCfg8C->Config.Cfg0, registerAddress);
 
@@ -8890,8 +8895,9 @@ void ThermalMonitor2_Set(CORE_RO *Core, MISC_PROC_FEATURES MiscFeatures)
 		_Atom_Lincroft ,	/* 06_27 */
 		_Atom_Clover_Trail,	/* 06_35 */
 		_Atom_Saltwell	,	/* 06_36 */
+		_Atom_Airmont	,	/* 06_4C */
 		_Tigerlake_U	,	/* 06_8C */
-		_Alderlake_S	,	/* 06_97 */
+		_Alderlake_S		/* 06_97 */
 	};
 	int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
   for (id = 0; id < ids; id++)
@@ -9533,7 +9539,7 @@ void PowerThermal(CORE_RO *Core)
 		{_Silvermont_Bay_Trail, 0, 1, 0, 0},	/* 06_37 */
 
 		{_Atom_Avoton,		0, 1, 1, 0},	/* 06_4D */
-		{_Atom_Airmont ,	0, 0, 1, 0},	/* 06_4C */
+		{_Atom_Airmont ,	0, 1, 0, 0},	/* 06_4C */
 		{_Atom_Goldmont,	1, 0, 1, 0},	/* 06_5C */
 		{_Atom_Sofia,		0, 1, 1, 0},	/* 06_5D */
 		{_Atom_Merrifield,	0, 1, 1, 0},	/* 06_4A */
@@ -11236,7 +11242,7 @@ void Compute_Intel_Silvermont_Burst(CORE_RO *Core)
 	}
       } while ( ++boost < BOOST(SIZE) );
 
-      if (initialize == true)
+      if ((initialize == true) && (PUBLIC(RO(Proc))->ArchID != Atom_Airmont))
       { /*	Re-program the register if at least one value was zero	*/
 	TURBO_RATIO_CONFIG0 Cfg0 = {
 	.MaxRatio_1C = PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(1C)],
