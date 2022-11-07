@@ -1744,12 +1744,11 @@ static void Query_Hygon_F18h(unsigned int cpu);
 /*	[Denverton]	06_5Fh Stepping 0={A0,A1} 1={B0,B1}		*/
 #define _Atom_Denverton {.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xF}
 
-/*	[Tremont/Jacobsville]	06_86h
+/*	[Tremont/Jacobsville]	06_86h			[Snow Ridge]
 	[Tremont/Lakefield]	06_8Ah
 	[Sapphire Rapids]	06_8Fh				SPR
 	[Tremont/Elkhart Lake]	06_96h
-	[Tremont/Jasper Lake]	06_9Ch
-	[Snow Ridge]							*/
+	[Tremont/Jasper Lake]	06_9Ch					*/
 #define _Tremont_Jacobsville \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x8, .Model=0x6}
 #define _Tremont_Lakefield \
@@ -1868,10 +1867,11 @@ static void Query_Hygon_F18h(unsigned int cpu);
 #define _Raptorlake_P	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xB, .Model=0xA}
 #define _Raptorlake_S	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xB, .Model=0xF}
 
-/*	[Emerald Rapids]				7 nm	EMR
-	[GraniteRapids/SP]	06_ADh				GNR
-	[GraniteRapids/??]	06_AEh
-	[SierraForest]		06_AFh				SRF	*/
+/*	[GraniteRapids/X]	06_ADh				GNR
+	[GraniteRapids/D]	06_AEh
+	[SierraForest/X]	06_AFh				SRF
+	[EmeraldRapids/X]	06_CFh			7 nm	EMR
+	[Grand Ridge]		06_B6h					*/
 
 /*	[Family 0Fh]	0F_00h						*/
 #define _AMD_Family_0Fh {.ExtFamily=0x0, .Family=0xF, .ExtModel=0x0, .Model=0x0}
@@ -6698,6 +6698,51 @@ static IDLE_STATE SLM_IdleState[] = {
 	.SetTarget	= Policy_Core2_SetTarget			\
 }
 
+static IDLE_STATE Airmont_IdleState[] = {
+	{
+	.Name		= "C1",
+	.Desc		= "AMT-C1",
+	.flags		= 0x00 << 24,
+	.Latency	= 1,
+	.Residency	= 1
+	},
+	{
+	.Name		= "C6N",
+	.Desc		= "AMT-C6N",
+	.flags		= (0x58 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
+	.Latency	= 80,
+	.Residency	= 275
+	},
+	{
+	.Name		= "C6S",
+	.Desc		= "AMT-C6S",
+	.flags		= (0x52 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
+	.Latency	= 200,
+	.Residency	= 560
+	},
+	{
+	.Name		= "C7",
+	.Desc		= "AMT-C7",
+	.flags		= (0x60 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
+	.Latency	= 1200,
+	.Residency	= 4000
+	},
+	{
+	.Name		= "C7S",
+	.Desc		= "AMT-C7S",
+	.flags		= (0x64 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
+	.Latency	= 10000,
+	.Residency	= 20000
+	},
+	{NULL}
+};
+
+#define Airmont_Driver {						\
+	.IdleState	= Airmont_IdleState,				\
+	.GetFreq	= Policy_GetFreq,				\
+	.SetTarget	= Policy_Core2_SetTarget			\
+}
+
 /* Source: /drivers/idle/intel_idle.c					*/
 static IDLE_STATE NHM_IdleState[] = {
 	{
@@ -7683,7 +7728,6 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = CORE2_Driver,
 	.Architecture = Arch_Atom_Saltwell
 	},
-
 [Silvermont_Bay_Trail] = {						/* 22*/
 	.Signature = _Silvermont_Bay_Trail,
 	.Query = Query_Silvermont,
@@ -7732,7 +7776,6 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = SLM_Driver,
 	.Architecture = Arch_Atom_Avoton
 	},
-
 [Atom_Airmont] = {							/* 24*/
 	.Signature = _Atom_Airmont,
 	.Query = Query_Airmont,
@@ -7754,7 +7797,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Airmont_Specific,
-	.SystemDriver = CORE2_Driver,
+	.SystemDriver = Airmont_Driver,
 	.Architecture = Arch_Atom_Airmont
 	},
 [Atom_Goldmont] = {							/* 25*/
