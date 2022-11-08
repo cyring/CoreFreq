@@ -1504,16 +1504,16 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 	} AVX = {
 	.FP128 = (RO(Shm)->Proc.Features.Info.LargestExtFunc >= 0x8000001a)
 		&& BITVAL(RO(Shm)->Cpu[
-					RO(Shm)->Proc.Service.Core
-				].CpuID[
-				CPUID_8000001A_00000000_PERF_OPTIMIZATION
-				].reg[0], 0),
+				RO(Shm)->Proc.Service.Core
+		].CpuID[
+			CPUID_8000001A_00000000_PERF_OPTIMIZATION
+		].reg[REG_CPUID_EAX], CPUID_8000001A_00000000_EAX_FP128),
 	.FP256 = (RO(Shm)->Proc.Features.Info.LargestExtFunc >= 0x8000001a)
 		&& BITVAL(RO(Shm)->Cpu[
 					RO(Shm)->Proc.Service.Core
-				].CpuID[
-				CPUID_8000001A_00000000_PERF_OPTIMIZATION
-				].reg[0], 2)
+		].CpuID[
+			CPUID_8000001A_00000000_PERF_OPTIMIZATION
+		].reg[REG_CPUID_EAX], CPUID_8000001A_00000000_EAX_FP256)
 	};
 	const struct ISA_ST {
 		unsigned int	*CRC;
@@ -2104,7 +2104,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_8000000A_00000000_SVM_REVISION
-		].reg[3], CPUID_8000000A_00000000_EDX_AVIC),
+		].reg[REG_CPUID_EDX], CPUID_8000000A_00000000_EDX_AVIC),
 		attr_Feat,
 		2, "%s%.*sAVIC   [%7s]", RSC(FEATURES_AVIC).CODE(),
 		width - 19 - RSZ(FEATURES_AVIC),
@@ -2612,7 +2612,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_8000000A_00000000_SVM_REVISION
-		].reg[3], CPUID_8000000A_00000000_EDX_x2AVIC),
+		].reg[REG_CPUID_EDX], CPUID_8000000A_00000000_EDX_x2AVIC),
 		attr_Feat,
 		2, "%s%.*sx2AVIC   [%7s]", RSC(FEATURES_X2AVIC).CODE(),
 		width - 21 - RSZ(FEATURES_X2AVIC),
@@ -3036,7 +3036,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_8000001F_00000000_SECURE_ENCRYPTION
-		].reg[0], CPUID_8000001F_00000000_EAX_SEV),
+		].reg[REG_CPUID_EAX], CPUID_8000001F_00000000_EAX_SEV),
 		attr_Feat,
 		2, "%s%.*sSEV   [%7s]", RSC(SECURITY_SEV).CODE(),
 		width - 18 - RSZ(SECURITY_SEV),
@@ -3046,7 +3046,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_8000001F_00000000_SECURE_ENCRYPTION
-		].reg[0], CPUID_8000001F_00000000_EAX_SEV_ES),
+		].reg[REG_CPUID_EAX], CPUID_8000001F_00000000_EAX_SEV_ES),
 		attr_Feat,
 		2, "%s%.*sSEV-ES   [%7s]", RSC(SECURITY_SEV_ES).CODE(),
 		width - 21 - RSZ(SECURITY_SEV_ES),
@@ -3056,7 +3056,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_8000001F_00000000_SECURE_ENCRYPTION
-		].reg[0], CPUID_8000001F_00000000_EAX_SEV_SNP),
+		].reg[REG_CPUID_EAX], CPUID_8000001F_00000000_EAX_SEV_SNP),
 		attr_Feat,
 		2, "%s%.*sSEV-SNP   [%7s]", RSC(SECURITY_SEV_SNP).CODE(),
 		width - 22 - RSZ(SECURITY_SEV_SNP),
@@ -3066,10 +3066,20 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_8000000A_00000000_SVM_REVISION
-		].reg[3], CPUID_8000000A_00000000_EDX_GMET),
+		].reg[REG_CPUID_EDX], CPUID_8000000A_00000000_EDX_GMET),
 		attr_Feat,
 		2, "%s%.*sGMET   [%7s]", RSC(SECURITY_GMET).CODE(),
 		width - 19 - RSZ(SECURITY_GMET),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
+			CPUID_8000000A_00000000_SVM_REVISION
+		].reg[REG_CPUID_EDX], CPUID_8000000A_00000000_EDX_SSS_Check),
+		attr_Feat,
+		2, "%s%.*sSSS   [%7s]", RSC(SECURITY_SSS).CODE(),
+		width - 18 - RSZ(SECURITY_SSS),
 		NULL
 	}
     };

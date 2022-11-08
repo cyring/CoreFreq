@@ -988,6 +988,13 @@ enum CPUID_ENUM {
 	CPUID_MAX_FUNC
 };
 
+enum {
+	REG_CPUID_EAX,
+	REG_CPUID_EBX,
+	REG_CPUID_ECX,
+	REG_CPUID_EDX
+};
+
 typedef struct
 {
 	unsigned int	func,
@@ -1773,6 +1780,13 @@ enum	/*	AMD SVM Revision and Feature Identification.		*/
 	CPUID_8000000A_00000000_EDX_Reserved_29,
 	CPUID_8000000A_00000000_EDX_Reserved_30,
 	CPUID_8000000A_00000000_EDX_Reserved_31
+};
+
+enum	/*	AMD Performance Optimization Identifiers.		*/
+{
+	CPUID_8000001A_00000000_EAX_FP128	= 0,
+	CPUID_8000001A_00000000_EAX_MOVU	= 1,
+	CPUID_8000001A_00000000_EAX_FP256	= 2
 };
 
 enum	/*	AMD Encrypted Memory Capabilities.			*/

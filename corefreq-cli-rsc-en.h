@@ -1955,6 +1955,7 @@
 #define RSC_SECURITY_SEV_ES_CODE_EN	"SEV - Encrypted State"
 #define RSC_SECURITY_SEV_SNP_CODE_EN	"SEV - Secure Nested Paging"
 #define RSC_SECURITY_GMET_CODE_EN	"Guest Mode Execute Trap"
+#define RSC_SECURITY_SSS_CODE_EN	"Supervisor Shadow Stack"
 
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_EN	"  %3s       Processor     " \
 						"   %s     %c%4u %c "
