@@ -3081,6 +3081,26 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		2, "%s%.*sSSS   [%7s]", RSC(SECURITY_SSS).CODE(),
 		width - 18 - RSZ(SECURITY_SSS),
 		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
+			CPUID_8000001F_00000000_SECURE_ENCRYPTION
+		].reg[REG_CPUID_EAX], CPUID_8000001F_00000000_EAX_VMPL),
+		attr_Feat,
+		2, "%s%.*sVMPL   [%7s]", RSC(SECURITY_VMPL).CODE(),
+		width - 19 - RSZ(SECURITY_VMPL),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
+			CPUID_8000001F_00000000_SECURE_ENCRYPTION
+		].reg[REG_CPUID_EAX], CPUID_8000001F_00000000_EAX_VMPL_SSS),
+		attr_Feat,
+		2, "%s%.*sVMPL-SSS   [%7s]", RSC(SECURITY_VMPL_SSS).CODE(),
+		width - 23 - RSZ(SECURITY_VMPL_SSS),
+		NULL
 	}
     };
 	size_t idx;
