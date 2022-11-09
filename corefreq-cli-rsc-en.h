@@ -1950,6 +1950,9 @@
 #define RSC_MECH_MCDT_NO_CODE_EN "No MXCSR Configuration Dependent Timing"
 #define RSC_MECH_BTC_NO_CODE_EN 	"No Branch Type Confusion"
 
+#define RSC_SECURITY_CPUID_KL_CODE_EN	"CPUID Key Locker"
+#define RSC_SECURITY_AESKLE_CODE_EN	"AES Key Locker instructions"
+#define RSC_SECURITY_WIDE_KL_CODE_EN	"AES Wide Key Locker instructions"
 #define RSC_SECURITY_SKINIT_CODE_EN	"Secure Init and Jump with Attestation"
 #define RSC_SECURITY_SEV_CODE_EN	"Secure Encrypted Virtualization"
 #define RSC_SECURITY_SEV_ES_CODE_EN	"SEV - Encrypted State"

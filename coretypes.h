@@ -1746,6 +1746,15 @@ typedef struct	/* AMD Extended ID Leaf.				*/
 	} EDX;
 } CPUID_0x8000001e;
 
+enum	/*	Intel AES Key Locker instructions.			*/
+{
+	CPUID_00000019_00000000_EBX_AESKLE,
+	CPUID_00000019_00000000_EBX_Reserved_01,
+	CPUID_00000019_00000000_EBX_WIDE_KL,
+	CPUID_00000019_00000000_EBX_Reserved_03,
+	CPUID_00000019_00000000_EBX_IWKeyBackup
+};
+
 enum	/*	AMD SVM Revision and Feature Identification.		*/
 {
 	CPUID_8000000A_00000000_EDX_NP,

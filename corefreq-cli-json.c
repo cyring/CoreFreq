@@ -850,6 +850,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.MAWAU);
 					json_key(&s, "RDPID");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.RDPID);
+					json_key(&s, "KL");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.KL);
 					json_key(&s, "CLDEMOTE");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.CLDEMOTE);
 					json_key(&s, "MOVDIRI");

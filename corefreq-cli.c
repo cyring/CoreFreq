@@ -3017,11 +3017,39 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	},
 /* Section Mark */
 	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		NULL,
 		0,
 		attr_Feat,
 		0, "%s", RSC(FEAT_SECTION_SEC).CODE(),
 		0,
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Features.ExtFeature.ECX.KL,
+		attr_Feat,
+		2, "%s%.*sKL   [%7s]", RSC(SECURITY_CPUID_KL).CODE(),
+		width - 17 - RSZ(SECURITY_CPUID_KL),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
+			CPUID_00000019_00000000_KEY_LOCKER
+		].reg[REG_CPUID_EBX], CPUID_00000019_00000000_EBX_AESKLE),
+		attr_Feat,
+		2, "%s%.*sAESKLE   [%7s]", RSC(SECURITY_AESKLE).CODE(),
+		width - 21 - RSZ(SECURITY_AESKLE),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
+			CPUID_00000019_00000000_KEY_LOCKER
+		].reg[REG_CPUID_EBX], CPUID_00000019_00000000_EBX_WIDE_KL),
+		attr_Feat,
+		2, "%s%.*sWIDE_KL   [%7s]", RSC(SECURITY_WIDE_KL).CODE(),
+		width - 22 - RSZ(SECURITY_WIDE_KL),
 		NULL
 	},
 	{
