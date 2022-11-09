@@ -3053,6 +3053,26 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		NULL
 	},
 	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
+			CPUID_00000012_00000000_SGX_CAPABILITY
+		].reg[REG_CPUID_EAX], CPUID_00000012_00000000_EAX_SGX1),
+		attr_Feat,
+		2, "%s%.*sSGX1   [%7s]", RSC(SECURITY_SGX1).CODE(),
+		width - 19 - RSZ(SECURITY_SGX1),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
+			CPUID_00000012_00000000_SGX_CAPABILITY
+		].reg[REG_CPUID_EAX], CPUID_00000012_00000000_EAX_SGX2),
+		attr_Feat,
+		2, "%s%.*sSGX2   [%7s]", RSC(SECURITY_SGX2).CODE(),
+		width - 19 - RSZ(SECURITY_SGX2),
+		NULL
+	},
+	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		RO(Shm)->Proc.Features.ExtInfo.ECX.SKINIT,
 		attr_Feat,
