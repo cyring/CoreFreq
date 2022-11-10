@@ -1023,6 +1023,10 @@
 #define RSC_ISA_SGX_COMM_CODE_EN	" Intel Software Guard eXtensions "
 #define RSC_ISA_MOVDIRI_COMM_CODE_EN	" Move Doubleword as Direct Store "
 #define RSC_ISA_MOVDIR64B_COMM_CODE_EN	" Move 64 Bytes as Direct Store "
+#define RSC_ISA_VAES_COMM_CODE_EN	" VAES 256-bit instructions "
+#define RSC_ISA_VPCLMULQDQ_COMM_CODE_EN " VPCLMULQDQ 256-bit instruction "
+#define RSC_ISA_PREFETCH_COMM_CODE_EN	" Prefetch/Write Data to Cache "
+#define RSC_ISA_LZCNT_COMM_CODE_EN    " Count the Number of Leading Zero Bits "
 
 #define RSC_FEATURES_TITLE_CODE_EN	" Features "
 #define RSC_ON_CODE_EN			" ON"
@@ -1963,6 +1967,7 @@
 #define RSC_SECURITY_SSS_CODE_EN	"Supervisor Shadow Stack"
 #define RSC_SECURITY_VMPL_CODE_EN	"VM Permission Levels"
 #define RSC_SECURITY_VMPL_SSS_CODE_EN	"VMPL Supervisor Shadow Stack"
+#define RSC_SECURITY_SME_MK_CODE_EN	"Secure Multi-Key Memory Encryption"
 
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_EN	"  %3s       Processor     " \
 						"   %s     %c%4u %c "
@@ -2537,3 +2542,7 @@
 #define RSC_ISA_SGX_CODE		"         SGX [%c] "
 #define RSC_ISA_MOVDIRI_CODE		"      MOVDIRI [%c]"
 #define RSC_ISA_MOVDIR64B_CODE		"   MOVDIR64B [%c] "
+#define RSC_ISA_VAES_CODE		" VAES         [%c]"
+#define RSC_ISA_VPCLMULQDQ_CODE 	"   VPCLMULQDQ [%c]"
+#define RSC_ISA_PREFETCH_CODE		"   PREFETCH/W [%c]"
+#define RSC_ISA_LZCNT_CODE		"       LZCNT [%c] "

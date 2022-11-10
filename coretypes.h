@@ -1845,6 +1845,11 @@ enum	/*	AMD Encrypted Memory Capabilities.			*/
 	CPUID_8000001F_00000000_EAX_Reserved_31
 };
 
+enum	/*	AMD Multi-Key Encrypted Memory Capabilities.		*/
+{
+	CPUID_80000023_00000000_EAX_MEM_HMK
+};
+
 typedef struct	/* AMD Extended Performance Monitoring and Debug.	*/
 {
 	struct {

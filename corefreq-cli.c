@@ -1990,6 +1990,35 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		{ 1, RO(Shm)->Proc.Features.ExtFeature.EBX.SGX },
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.ExtFeature.EBX.SGX },
+	},
+/* Row Mark */
+	{
+		NULL,
+		RSC(ISA_VAES).CODE(), RSC(ISA_VAES_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.ExtFeature.ECX.VAES },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature.ECX.VAES },
+	},
+	{
+		NULL,
+		RSC(ISA_VPCLMULQDQ).CODE(), RSC(ISA_VPCLMULQDQ_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.ExtFeature.ECX.VPCLMULQDQ },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature.ECX.VPCLMULQDQ },
+	},
+	{
+		NULL,
+		RSC(ISA_PREFETCH).CODE(), RSC(ISA_PREFETCH_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.ExtInfo.ECX.PREFETCHW },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtInfo.ECX.PREFETCHW },
+	},
+	{
+		NULL,
+		RSC(ISA_LZCNT).CODE(), RSC(ISA_LZCNT_COMM).CODE(),
+		{ 1, RO(Shm)->Proc.Features.ExtInfo.ECX.LZCNT },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtInfo.ECX.LZCNT },
 	}
     };
 
@@ -3148,6 +3177,16 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sVMPL-SSS   [%7s]", RSC(SECURITY_VMPL_SSS).CODE(),
 		width - 23 - RSZ(SECURITY_VMPL_SSS),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
+			CPUID_80000023_00000000_MULTIKEY_ENCRYPTED_MEM
+		].reg[REG_CPUID_EAX], CPUID_80000023_00000000_EAX_MEM_HMK),
+		attr_Feat,
+		2, "%s%.*sSME-MK   [%7s]", RSC(SECURITY_SME_MK).CODE(),
+		width - 21 - RSZ(SECURITY_SME_MK),
 		NULL
 	}
     };
@@ -8367,7 +8406,7 @@ Window *CreateTopology(unsigned long long id)
 
 Window *CreateISA(unsigned long long id)
 {
-	Window *wISA = CreateWindow(wLayer, id, 4, 14, 6, TOP_HEADER_ROW+2);
+	Window *wISA = CreateWindow(wLayer, id, 4, 15, 6, TOP_HEADER_ROW+2);
 
 	if (wISA != NULL)
 	{
