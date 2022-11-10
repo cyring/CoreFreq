@@ -1386,12 +1386,12 @@ static void Compute_TSC(void *arg)
 		ComputeWithUnSerializedTSC(pCompute);
 	}
 	/*		Select the best clock.				*/
-	memset(D, 0, 2 * OCCURRENCES);
-	for (loop = 0; loop < OCCURRENCES; loop++)
+	for (loop = 0; loop < OCCURRENCES; loop++) {
 		for (what = 0; what < 2; what++) {
 			D[what][loop]	= pCompute->TSC[what][loop].V[1]
 					- pCompute->TSC[what][loop].V[0];
 		}
+	}
 	for (loop = 0; loop < OCCURRENCES; loop++) {
 		unsigned int inner = 0, count[2] = {0, 0};
 		for (inner = loop; inner < OCCURRENCES; inner++) {
