@@ -487,7 +487,7 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 		} *header;
 		struct SR_BIT {
 			enum AUTOMAT	automat;
-			unsigned int	*CRC;
+			unsigned int	capable;
 			enum SYS_REG	pos;
 			unsigned int	len;
 		} *flag;
@@ -515,24 +515,24 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 		{NULL, NULL}
 	},
 	.flag = (struct SR_BIT[]) {
-	[ 0] =	{DO_CPU , NULL	, UNDEF_CR	, 0	},
-	[ 1] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-	[ 2] =	{DO_FLAG, NULL	, RFLAG_TF	, 1	},
-	[ 3] =	{DO_FLAG, NULL	, RFLAG_IF	, 1	},
-	[ 4] =	{DO_FLAG, NULL	, RFLAG_IOPL	, 2	},
-	[ 5] =	{DO_FLAG, NULL	, RFLAG_NT	, 1	},
-	[ 6] =	{DO_FLAG, NULL	, RFLAG_RF	, 1	},
-	[ 7] =	{DO_FLAG, NULL	, RFLAG_VM	, 1	},
-	[ 8] =	{DO_FLAG, NULL	, RFLAG_AC	, 1	},
-	[ 9] =	{DO_FLAG, NULL	, RFLAG_VIF	, 1	},
-	[10] =	{DO_FLAG, NULL	, RFLAG_VIP	, 1	},
-	[11] =	{DO_FLAG, NULL	, RFLAG_ID	, 1	},
-	[12] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-	[13] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-	[14] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-	[15] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-	[16] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-		{DO_END , NULL	, UNDEF_CR	, 0	}
+	[ 0] =	{DO_CPU , 1	, UNDEF_CR	, 0	},
+	[ 1] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[ 2] =	{DO_FLAG, 1	, RFLAG_TF	, 1	},
+	[ 3] =	{DO_FLAG, 1	, RFLAG_IF	, 1	},
+	[ 4] =	{DO_FLAG, 1	, RFLAG_IOPL	, 2	},
+	[ 5] =	{DO_FLAG, 1	, RFLAG_NT	, 1	},
+	[ 6] =	{DO_FLAG, 1	, RFLAG_RF	, 1	},
+	[ 7] =	{DO_FLAG, 1	, RFLAG_VM	, 1	},
+	[ 8] =	{DO_FLAG, 1	, RFLAG_AC	, 1	},
+	[ 9] =	{DO_FLAG, 1	, RFLAG_VIF	, 1	},
+	[10] =	{DO_FLAG, 1	, RFLAG_VIP	, 1	},
+	[11] =	{DO_FLAG, 1	, RFLAG_ID	, 1	},
+	[12] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[13] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[14] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[15] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[16] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+		{DO_END , 1	, UNDEF_CR	, 0	}
 	}
       },
       {
@@ -557,24 +557,24 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 		{NULL, NULL}
 	},
 	.flag = (struct SR_BIT[]) {
-	[ 0] =	{DO_CPU , NULL	, UNDEF_CR	, 0	},
-	[ 1] =  {DO_CR0 , NULL	, CR0_PE	, 1	},
-	[ 2] =	{DO_CR0 , NULL	, CR0_MP	, 1	},
-	[ 3] =	{DO_CR0 , NULL	, CR0_EM	, 1	},
-	[ 4] =	{DO_CR0 , NULL	, CR0_TS	, 1	},
-	[ 5] =	{DO_CR0 , NULL	, CR0_ET	, 1	},
-	[ 6] =	{DO_CR0 , NULL	, CR0_NE	, 1	},
-	[ 7] =	{DO_CR0 , NULL	, CR0_WP	, 1	},
-	[ 8] =	{DO_CR0 , NULL	, CR0_AM	, 1	},
-	[ 9] =	{DO_CR0 , NULL	, CR0_NW	, 1	},
-	[10] =	{DO_CR0 , NULL	, CR0_CD	, 1	},
-	[11] =	{DO_CR0 , NULL	, CR0_PG	, 1	},
-	[12] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-	[13] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-	[14] =	{DO_SPC , NULL	, UNDEF_CR	, 4	},
-	[15] =	{DO_CR3 , NULL	, CR3_PWT	, 1	},
-	[16] =	{DO_CR3 , NULL	, CR3_PCD	, 1	},
-		{DO_END , NULL	, UNDEF_CR	, 0	}
+	[ 0] =	{DO_CPU , 1	, UNDEF_CR	, 0	},
+	[ 1] =  {DO_CR0 , 1	, CR0_PE	, 1	},
+	[ 2] =	{DO_CR0 , 1	, CR0_MP	, 1	},
+	[ 3] =	{DO_CR0 , 1	, CR0_EM	, 1	},
+	[ 4] =	{DO_CR0 , 1	, CR0_TS	, 1	},
+	[ 5] =	{DO_CR0 , 1	, CR0_ET	, 1	},
+	[ 6] =	{DO_CR0 , 1	, CR0_NE	, 1	},
+	[ 7] =	{DO_CR0 , 1	, CR0_WP	, 1	},
+	[ 8] =	{DO_CR0 , 1	, CR0_AM	, 1	},
+	[ 9] =	{DO_CR0 , 1	, CR0_NW	, 1	},
+	[10] =	{DO_CR0 , 1	, CR0_CD	, 1	},
+	[11] =	{DO_CR0 , 1	, CR0_PG	, 1	},
+	[12] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[13] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[14] =	{DO_SPC , 1	, UNDEF_CR	, 4	},
+	[15] =	{DO_CR3 , 1	, CR3_PWT	, 1	},
+	[16] =	{DO_CR3 , 1	, CR3_PCD	, 1	},
+		{DO_END , 1	, UNDEF_CR	, 0	}
 	}
       },
       {
@@ -599,24 +599,24 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 		{NULL, NULL}
 	},
 	.flag = (struct SR_BIT[]) {
-	[ 0] =	{DO_CPU , NULL	, UNDEF_CR	, 0	},
-	[ 1] =	{DO_CR4 , NULL	, CR4_VME	, 1	},
-	[ 2] =	{DO_CR4 , NULL	, CR4_PVI	, 1	},
-	[ 3] =	{DO_CR4 , NULL	, CR4_TSD	, 1	},
-	[ 4] =	{DO_CR4 , NULL	, CR4_DE	, 1	},
-	[ 5] =	{DO_CR4 , NULL	, CR4_PSE	, 1	},
-	[ 6] =	{DO_CR4 , NULL	, CR4_PAE	, 1	},
-	[ 7] =	{DO_CR4 , NULL	, CR4_MCE	, 1	},
-	[ 8] =	{DO_CR4 , NULL	, CR4_PGE	, 1	},
-	[ 9] =	{DO_CR4 , NULL	, CR4_PCE	, 1	},
-	[10] =	{DO_CR4 , NULL	, CR4_OSFXSR	, 1	},
-	[11] =	{DO_CR4 , NULL	, CR4_OSXMMEXCPT, 1	},
-	[12] =	{DO_CR4 , NULL	, CR4_UMIP	, 1	},
-	[13] =	{DO_CR4 , NULL	, CR4_LA57	, 1	},
-	[14] =	{DO_CR4 , NULL	, CR4_VMXE	, 1	},
-	[15] =	{DO_CR4 , NULL	, CR4_SMXE	, 1	},
-	[16] =	{DO_CR4 , NULL	, CR4_FSGSBASE	, 1	},
-		{DO_END , NULL	, UNDEF_CR	, 0	}
+	[ 0] =	{DO_CPU , 1	, UNDEF_CR	, 0	},
+	[ 1] =	{DO_CR4 , 1	, CR4_VME	, 1	},
+	[ 2] =	{DO_CR4 , 1	, CR4_PVI	, 1	},
+	[ 3] =	{DO_CR4 , 1	, CR4_TSD	, 1	},
+	[ 4] =	{DO_CR4 , 1	, CR4_DE	, 1	},
+	[ 5] =	{DO_CR4 , 1	, CR4_PSE	, 1	},
+	[ 6] =	{DO_CR4 , 1	, CR4_PAE	, 1	},
+	[ 7] =	{DO_CR4 , 1	, CR4_MCE	, 1	},
+	[ 8] =	{DO_CR4 , 1	, CR4_PGE	, 1	},
+	[ 9] =	{DO_CR4 , 1	, CR4_PCE	, 1	},
+	[10] =	{DO_CR4 , 1	, CR4_OSFXSR	, 1	},
+	[11] =	{DO_CR4 , 1	, CR4_OSXMMEXCPT, 1	},
+	[12] =	{DO_CR4 , 1	, CR4_UMIP	, 1	},
+	[13] =	{DO_CR4 , 1	, CR4_LA57	, 1	},
+	[14] =	{DO_CR4 , 1	, CR4_VMXE	, 1	},
+	[15] =	{DO_CR4 , 1	, CR4_SMXE	, 1	},
+	[16] =	{DO_CR4 , 1	, CR4_FSGSBASE	, 1	},
+		{DO_END , 1	, UNDEF_CR	, 0	}
 	}
       },
       {
@@ -641,24 +641,24 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 		{NULL, NULL}
 	},
 	.flag = (struct SR_BIT[]) {
-	[ 0] =	{DO_CPU , NULL	, UNDEF_CR	, 0	},
-	[ 1] =	{DO_CR4 , NULL	, CR4_PCIDE	, 1	},
-	[ 2] =	{DO_CR4 , NULL	, CR4_OSXSAVE	, 1	},
-	[ 3] =	{DO_CR4 , NULL	, CR4_KL	, 1	},
-	[ 4] =	{DO_CR4 , NULL	, CR4_SMEP	, 1	},
-	[ 5] =	{DO_CR4 , NULL	, CR4_SMAP	, 1	},
-	[ 6] =	{DO_CR4 , NULL	, CR4_PKE	, 1	},
-	[ 7] =	{DO_CR4 , NULL	, CR4_CET	, 1	},
-	[ 8] =	{DO_CR4 , NULL	, CR4_PKS	, 1	},
-	[ 9] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-	[10] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-	[11] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-	[12] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-	[13] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-	[14] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-	[15] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-	[16] =	{DO_CR8 , NULL	, CR8_TPL	, 4	},
-		{DO_END , NULL	, UNDEF_CR	, 0	}
+	[ 0] =	{DO_CPU , 1	, UNDEF_CR	, 0	},
+	[ 1] =	{DO_CR4 , 1	, CR4_PCIDE	, 1	},
+	[ 2] =	{DO_CR4 , 1	, CR4_OSXSAVE	, 1	},
+	[ 3] =	{DO_CR4 , 1	, CR4_KL	, 1	},
+	[ 4] =	{DO_CR4 , 1	, CR4_SMEP	, 1	},
+	[ 5] =	{DO_CR4 , 1	, CR4_SMAP	, 1	},
+	[ 6] =	{DO_CR4 , 1	, CR4_PKE	, 1	},
+	[ 7] =	{DO_CR4 , 1	, CR4_CET	, 1	},
+	[ 8] =	{DO_CR4 , 1	, CR4_PKS	, 1	},
+	[ 9] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[10] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[11] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[12] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[13] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[14] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[15] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[16] =	{DO_CR8 , 1	, CR8_TPL	, 4	},
+		{DO_END , 1	, UNDEF_CR	, 0	}
 	}
       },
       {
@@ -683,24 +683,40 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 		{NULL, NULL}
 	},
 	.flag = (struct SR_BIT[]) {
-	[ 0] =	{DO_CPU , NULL	, UNDEF_CR		, 0		},
-	[ 1] =	{DO_SPC , NULL	, UNDEF_CR		, 0		},
-	[ 2] =	{DO_EFCR,(unsigned int[]) {CRC_INTEL, 0}, EXFCR_LOCK,	1},
-	[ 3] =	{DO_EFCR,(unsigned int[]) {CRC_INTEL, 0}, EXFCR_VMX_IN_SMX, 1},
-	[ 4] =	{DO_EFCR,(unsigned int[]) {CRC_INTEL, 0}, EXFCR_VMXOUT_SMX, 1},
-	[ 5] =	{DO_EFCR,(unsigned int[]) {CRC_INTEL, 0}, EXFCR_SENTER_LEN, 6},
-	[ 6] =	{DO_EFCR,(unsigned int[]) {CRC_INTEL, 0}, EXFCR_SENTER_GEN, 1},
-	[ 7] =	{DO_EFCR,(unsigned int[]) {CRC_INTEL, 0}, EXFCR_SGX_LCE, 1},
-	[ 8] =	{DO_EFCR,(unsigned int[]) {CRC_INTEL, 0}, EXFCR_SGX_GEN, 1},
-	[ 9] =	{DO_EFCR,(unsigned int[]) {CRC_INTEL, 0}, EXFCR_LMCE,	1},
-	[10] =	{DO_SPC , NULL	, UNDEF_CR		, 0		},
-	[11] =	{DO_SPC , NULL	, UNDEF_CR		, 0		},
-	[12] =	{DO_SPC , NULL	, UNDEF_CR		, 0		},
-	[13] =	{DO_SPC , NULL	, UNDEF_CR		, 0		},
-	[14] =	{DO_SPC , NULL	, UNDEF_CR		, 0		},
-	[15] =	{DO_SPC , NULL	, UNDEF_CR		, 0		},
-	[16] =	{DO_SPC , NULL	, UNDEF_CR		, 0		},
-		{DO_END , NULL	, UNDEF_CR		, 0		}
+	[ 0] =	{DO_CPU , 1	, UNDEF_CR		, 0		},
+	[ 1] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
+	[ 2] =	{DO_EFCR, RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL,
+							EXFCR_LOCK,	1},
+
+	[ 3] =	{DO_EFCR, RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL,
+							EXFCR_VMX_IN_SMX, 1},
+
+	[ 4] =	{DO_EFCR, RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL,
+							EXFCR_VMXOUT_SMX, 1},
+
+	[ 5] =	{DO_EFCR, RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL,
+							EXFCR_SENTER_LEN, 6},
+
+	[ 6] =	{DO_EFCR, RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL,
+							EXFCR_SENTER_GEN, 1},
+
+	[ 7] =	{DO_EFCR, RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL,
+							EXFCR_SGX_LCE, 1},
+
+	[ 8] =	{DO_EFCR, RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL,
+							EXFCR_SGX_GEN, 1},
+
+	[ 9] =	{DO_EFCR, RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL,
+							EXFCR_LMCE,	1},
+
+	[10] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
+	[11] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
+	[12] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
+	[13] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
+	[14] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
+	[15] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
+	[16] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
+		{DO_END , 1	, UNDEF_CR		, 0		}
 	}
       },
       {
@@ -725,24 +741,24 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 		{NULL, NULL}
 	},
 	.flag = (struct SR_BIT[]) {
-	[ 0] =	{DO_CPU , NULL	, UNDEF_CR		, 0		},
-	[ 1] =	{DO_SPC , NULL	, UNDEF_CR		, 0		},
-	[ 2] =	{DO_EFER, NULL	, EXFER_SCE		, 1		},
-	[ 3] =	{DO_EFER, NULL	, EXFER_LME		, 1		},
-	[ 4] =	{DO_EFER, NULL	, EXFER_LMA		, 1		},
-	[ 5] =	{DO_EFER, NULL	, EXFER_NXE		, 1		},
-	[ 6] =	{DO_EFER, NULL	, EXFER_SVME		, 1		},
-	[ 7] =	{DO_EFER, NULL	, EXFER_LMSLE		, 1		},
-	[ 8] =	{DO_EFER, NULL	, EXFER_FFXSE		, 1		},
-	[ 9] =	{DO_EFER, NULL	, EXFER_TCE		, 1		},
-	[10] =	{DO_EFER, NULL	, EXFER_MCOMMIT 	, 1		},
-	[11] =	{DO_EFER, NULL	, EXFER_INT_WBINVD	, 1		},
-	[12] =	{DO_SPC , NULL	, UNDEF_CR		, 0		},
-	[13] =	{DO_SPC , NULL	, UNDEF_CR		, 0		},
-	[14] =	{DO_SPC , NULL	, UNDEF_CR		, 0		},
-	[15] =	{DO_SPC , NULL	, UNDEF_CR		, 0		},
-	[16] =	{DO_SPC , NULL	, UNDEF_CR		, 0		},
-		{DO_END , NULL	, UNDEF_CR		, 0		}
+	[ 0] =	{DO_CPU , 1	, UNDEF_CR		, 0		},
+	[ 1] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
+	[ 2] =	{DO_EFER, 1	, EXFER_SCE		, 1		},
+	[ 3] =	{DO_EFER, 1	, EXFER_LME		, 1		},
+	[ 4] =	{DO_EFER, 1	, EXFER_LMA		, 1		},
+	[ 5] =	{DO_EFER, 1	, EXFER_NXE		, 1		},
+	[ 6] =	{DO_EFER, 1	, EXFER_SVME		, 1		},
+	[ 7] =	{DO_EFER, 1	, EXFER_LMSLE		, 1		},
+	[ 8] =	{DO_EFER, 1	, EXFER_FFXSE		, 1		},
+	[ 9] =	{DO_EFER, 1	, EXFER_TCE		, 1		},
+	[10] =	{DO_EFER, 1	, EXFER_MCOMMIT 	, 1		},
+	[11] =	{DO_EFER, 1	, EXFER_INT_WBINVD	, 1		},
+	[12] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
+	[13] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
+	[14] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
+	[15] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
+	[16] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
+		{DO_END , 1	, UNDEF_CR		, 0		}
 	}
       },
       {
@@ -767,24 +783,24 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 		{NULL, NULL}
 	},
 	.flag = (struct SR_BIT[]) {
-	[ 0] =	{DO_CPU , NULL	, UNDEF_CR	, 0	},
-	[ 1] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-	[ 2] =  {DO_XCR0, NULL	, XCR0_FPU	, 1	},
-	[ 3] =	{DO_XCR0, NULL	, XCR0_SSE	, 1	},
-	[ 4] =	{DO_XCR0, NULL	, XCR0_AVX	, 1	},
-	[ 5] =	{DO_XCR0, NULL	, XCR0_MPX	, 1	},
-	[ 6] =	{DO_XCR0, NULL	, XCR0_AVX512	, 3	},
-	[ 7] =	{DO_XCR0, NULL	, XCR0_PKRU	, 1	},
-	[ 8] =	{DO_XCR0, NULL	, XCR0_CET_U	, 1	},
-	[ 9] =	{DO_XCR0, NULL	, XCR0_CET_S	, 1	},
-	[10] =	{DO_XCR0, NULL	, XCR0_LWP	, 1	},
-	[11] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-	[12] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-	[13] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-	[14] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-	[15] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-	[16] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
-		{DO_END , NULL	, UNDEF_CR	, 0	}
+	[ 0] =	{DO_CPU , 1	, UNDEF_CR	, 0	},
+	[ 1] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[ 2] =  {DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_FPU, 1},
+	[ 3] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_SSE, 1},
+	[ 4] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_AVX, 1},
+	[ 5] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_MPX, 1},
+	[ 6] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_AVX512, 3},
+	[ 7] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_PKRU, 1},
+	[ 8] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_CET_U, 1},
+	[ 9] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_CET_S, 1},
+	[10] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_LWP, 1},
+	[11] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[12] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[13] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[14] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[15] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[16] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+		{DO_END , 1	, UNDEF_CR	, 0	}
 	}
       }
     };
@@ -817,23 +833,7 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 		break;
 	default:
 	    {
-		unsigned short capable = 0;
-		if (pFlag->CRC == NULL) {
-			capable = 1;
-		}
-		else
-		{
-			unsigned int *CRC;
-		    for (CRC = pFlag->CRC;
-			(*CRC) != 0 && capable == 0; CRC++)
-		    {
-			if((*CRC) == RO(Shm)->Proc.Features.Info.Vendor.CRC)
-			{
-				capable = 1;
-			}
-		    }
-		}
-		if ((capable) && !BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
+		if (pFlag->capable && !BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
 		{
 		    switch (pFlag->automat) {
 		    case DO_FLAG:
