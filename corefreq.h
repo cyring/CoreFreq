@@ -268,7 +268,8 @@ typedef struct
 					CR4	__attribute__ ((aligned (8))),
 					CR8	__attribute__ ((aligned (8))),
 					EFCR	__attribute__ ((aligned (8))),
-					EFER	__attribute__ ((aligned (8)));
+					EFER	__attribute__ ((aligned (8))),
+					XCR0	__attribute__ ((aligned (8)));
 	} SystemRegister;
 
 	CPUID_STRUCT			CpuID[CPUID_MAX_FUNC];

@@ -419,6 +419,7 @@ typedef struct
 			VM_CR		VMCR;
 
 		};
+		Bit64			XCR0	__attribute__ ((aligned (8)));
 	} SystemRegister;
 
 	unsigned int			Bind;

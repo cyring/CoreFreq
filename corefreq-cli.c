@@ -478,7 +478,7 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	enum AUTOMAT {
 		DO_END, DO_SPC, DO_CPU, DO_FLAG,
 		DO_CR0, DO_CR3, DO_CR4, DO_CR8,
-		DO_EFCR, DO_EFER
+		DO_EFCR, DO_EFER, DO_XCR0
 	};
 	const struct SR_ST {
 		struct SR_HDR {
@@ -744,6 +744,48 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	[16] =	{DO_SPC , NULL	, UNDEF_CR		, 0		},
 		{DO_END , NULL	, UNDEF_CR		, 0		}
 	}
+      },
+      {
+	.header = (struct SR_HDR[]) {
+	[ 0] = {RSC(SYS_REG_HDR_XCR0).CODE(),	RSC(SYS_REGS_XCR0).CODE()},
+	[ 1] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[ 2] = {RSC(SYS_REG_HDR_XCR0_FPU).CODE(), RSC(SYS_REG_XCR0_FPU).CODE()},
+	[ 3] = {RSC(SYS_REG_HDR_XCR0_SSE).CODE(), RSC(SYS_REG_XCR0_SSE).CODE()},
+	[ 4] = {RSC(SYS_REG_HDR_XCR0_AVX).CODE(), RSC(SYS_REG_XCR0_AVX).CODE()},
+	[ 5] = {RSC(SYS_REG_HDR_XCR0_MPX).CODE(), RSC(SYS_REG_XCR0_MPX).CODE()},
+	[ 6] = {RSC(SYS_REG_HDR_XCR0_512).CODE(), RSC(SYS_REG_XCR0_512).CODE()},
+	[ 7] = {RSC(SYS_REG_HDR_XCR0_MPK).CODE(), RSC(SYS_REG_XCR0_MPK).CODE()},
+	[ 8] = {RSC(SYS_REG_HDR_XCR0_CEU).CODE(), RSC(SYS_REG_XCR0_CEU).CODE()},
+	[ 9] = {RSC(SYS_REG_HDR_XCR0_CES).CODE(), RSC(SYS_REG_XCR0_CES).CODE()},
+	[10] = {RSC(SYS_REG_HDR_XCR0_LWP).CODE(), RSC(SYS_REG_XCR0_LWP).CODE()},
+	[11] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[12] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[13] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[14] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[15] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[16] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+		{NULL, NULL}
+	},
+	.flag = (struct SR_BIT[]) {
+	[ 0] =	{DO_CPU , NULL	, UNDEF_CR	, 0	},
+	[ 1] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+	[ 2] =  {DO_XCR0, NULL	, XCR0_FPU	, 1	},
+	[ 3] =	{DO_XCR0, NULL	, XCR0_SSE	, 1	},
+	[ 4] =	{DO_XCR0, NULL	, XCR0_AVX	, 1	},
+	[ 5] =	{DO_XCR0, NULL	, XCR0_MPX	, 1	},
+	[ 6] =	{DO_XCR0, NULL	, XCR0_AVX512	, 3	},
+	[ 7] =	{DO_XCR0, NULL	, XCR0_PKRU	, 1	},
+	[ 8] =	{DO_XCR0, NULL	, XCR0_CET_U	, 1	},
+	[ 9] =	{DO_XCR0, NULL	, XCR0_CET_S	, 1	},
+	[10] =	{DO_XCR0, NULL	, XCR0_LWP	, 1	},
+	[11] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+	[12] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+	[13] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+	[14] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+	[15] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+	[16] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+		{DO_END , NULL	, UNDEF_CR	, 0	}
+	}
       }
     };
 
@@ -827,6 +869,11 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 		    case DO_EFER:
 			PRT(REG, attrib[2], "%3llx ",
 			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.EFER,
+					pFlag->pos, pFlag->len));
+			break;
+		    case DO_XCR0:
+			PRT(REG, attrib[2], "%3llx ",
+			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.XCR0,
 					pFlag->pos, pFlag->len));
 			break;
 		    default:

@@ -6873,6 +6873,9 @@ void SystemRegisters(	RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core),
 
 	RO(Shm)->Cpu[cpu].SystemRegister.EFCR = \
 				RO(Core, AT(cpu))->SystemRegister.EFCR;
+
+	RO(Shm)->Cpu[cpu].SystemRegister.XCR0 = \
+				RO(Core, AT(cpu))->SystemRegister.XCR0;
 }
 
 void SysGate_OS_Driver(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))

@@ -10423,6 +10423,21 @@ void SystemRegisters(CORE_RO *Core)
 		}
 	}
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask, Core->Bind);
+
+	if (PUBLIC(RO(Proc))->Features.Std.ECX.XSAVE
+	 && BITVAL(Core->SystemRegister.CR4, CR4_OSXSAVE)) {
+		__asm__ volatile
+		(
+			"xorq	%%rcx, %%rcx"	"\n\t"
+			"xgetbv"		"\n\t"
+			"shlq	$32, %%rdx"	"\n\t"
+			"orq	%%rdx, %%rax"	"\n\t"
+			"movq	%%rax, %0"
+			: "=r" (Core->SystemRegister.XCR0)
+			:
+			: "%rax", "%rcx", "%rdx"
+		);
+	}
 }
 
 void Intel_Mitigation_Mechanisms(CORE_RO *Core)
