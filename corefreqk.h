@@ -6253,7 +6253,8 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Milan_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7643"),
+	.Brand = ZLIST( "AMD EPYC 7773X",	\
+			"AMD EPYC 7643" 	),
 	.Boost = {+13, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MILAN,
@@ -6532,19 +6533,108 @@ static PROCESSOR_SPECIFIC AMD_Zen3_Chagall_Specific[] = {
 };
 static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 	{
-	.Brand = ZLIST( "AMD EPYC 9654P",
-			"AMD EPYC 9534",
-			"AMD EPYC 9454P",
-			"AMD EPYC 9454",
-			"AMD EPYC 9354P",
-			"AMD EPYC 9354",
-			"AMD EPYC 9334",
-			"AMD EPYC 9274F",
-			"AMD EPYC 9254",
-			"AMD EPYC 9224",
-			"AMD EPYC 9174F",
-			"AMD EPYC 9124" ),
-	.Boost = {+2, 0},
+	.Brand = ZLIST( "AMD EPYC 9654P",	\
+			"AMD EPYC 9534",	\
+			"AMD EPYC 9254" 	),
+	.Boost = {+13, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GENOA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 9634"),
+	.Boost = {+15, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GENOA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC 9554P",	\
+			"AMD EPYC 9554",	\
+			"AMD EPYC 9124" 	),
+	.Boost = {+7, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GENOA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC 9474F",	\
+			"AMD EPYC 9374F"	),
+	.Boost = {+5, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GENOA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC 9454P",	\
+			"AMD EPYC 9454" 	),
+	.Boost = {+11, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GENOA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC 9354P",	\
+			"AMD EPYC 9354" 	),
+	.Boost = {+6, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GENOA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC 9334",	\
+			"AMD EPYC 9224" 	),
+	.Boost = {+12, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GENOA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC 9274F",	\
+			"AMD EPYC 9174F"	),
+	.Boost = {+3, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_GENOA,
 	.TgtRatioUnlocked = 1,
@@ -6572,7 +6662,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD Ryzen 9 7900X",
+	.Brand = ZLIST( "AMD Ryzen 9 7900X",	\
 			"AMD Ryzen 7 7700X"	),
 	.Boost = {+9, +1},
 	.Param.Offset = {0, 0, 0},
