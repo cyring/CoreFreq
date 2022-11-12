@@ -7165,11 +7165,15 @@ signed int Write_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 					Core->PowerThermal.ACPI_CPPC.Highest,
 					CPPC_Caps.lowest_freq / PRECISION,
 					!HwCfgRegister.Family_17h.CpbDis);
-	    #else
-		perf_ctrls.min_perf = CPPC_Caps.lowest_perf;
-	    #endif
 
 		Core->PowerThermal.ACPI_CPPC.Minimum = CPPC_Caps.lowest_freq;
+	    #else
+		perf_ctrls.min_perf = CPPC_Caps.lowest_perf;
+
+		Core->PowerThermal.ACPI_CPPC.Minimum = CPPC_AMD_Zen_ScaleRatio(
+			Core, 255U, CPPC_Caps.lowest_perf);
+	    #endif
+
 		Core->PowerThermal.ACPI_CPPC.Maximum = CPPC_Caps.highest_perf;
 	    }
 	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
