@@ -7171,7 +7171,10 @@ signed int Write_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 		perf_ctrls.min_perf = CPPC_Caps.lowest_perf;
 
 		Core->PowerThermal.ACPI_CPPC.Minimum = CPPC_AMD_Zen_ScaleRatio(
-			Core, 255U, CPPC_Caps.lowest_perf);
+					Core,
+					255U,
+					CPPC_Caps.lowest_perf,
+					!HwCfgRegister.Family_17h.CpbDis);
 	    #endif
 
 		Core->PowerThermal.ACPI_CPPC.Maximum = CPPC_Caps.highest_perf;
