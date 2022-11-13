@@ -11817,8 +11817,9 @@ static void PerCore_Skylake_X_Query(void *arg)
 	CorePerfLimitReasons(Core);
 /*TODO(Unsolved)
 	GraphicsPerfLimitReasons(Core);
-	RingPerfLimitReasons(Core);
 */
+	RingPerfLimitReasons(Core);
+
 	Intel_Turbo_Activation_Ratio(Core);
 	Intel_Turbo_TDP_Config(Core);
 
@@ -16725,8 +16726,9 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 		Monitor_CorePerfLimitReasons(PUBLIC(RO(Proc)));
 /*TODO(Unsolved)
 		Monitor_GraphicsPerfLimitReasons(PUBLIC(RO(Proc)));
-		Monitor_RingPerfLimitReasons(PUBLIC(RO(Proc)));
 */
+		Monitor_RingPerfLimitReasons(PUBLIC(RO(Proc)));
+
 	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
 	    {
 	    case FORMULA_SCOPE_PKG:
