@@ -11919,7 +11919,9 @@ static void PerCore_Skylake_X_Query(void *arg)
 
 	ThermalMonitor_Set(Core);
 	CorePerfLimitReasons(Core);
+/*TODO(Unsolved)
 	GraphicsPerfLimitReasons(Core);
+*/
 	RingPerfLimitReasons(Core);
 
 	Intel_Turbo_Activation_Ratio(Core);
@@ -16826,7 +16828,9 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
 		Monitor_CorePerfLimitReasons(PUBLIC(RO(Proc)));
+/*TODO(Unsolved)
 		Monitor_GraphicsPerfLimitReasons(PUBLIC(RO(Proc)));
+*/
 		Monitor_RingPerfLimitReasons(PUBLIC(RO(Proc)));
 
 	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
@@ -17017,7 +17021,7 @@ static void Stop_Skylake_X(void *arg)
 static void Start_Uncore_Skylake_X(void *arg)
 {
 	UNUSED(arg);
-/*TODO(Hardware needed)
+/*TODO(Unsolved)
 	Uncore_Counters_Set(SKL_X);
 */
 	Pkg_Intel_PMC_Set(ARCH_PMC, 0x5838);
@@ -17026,7 +17030,7 @@ static void Start_Uncore_Skylake_X(void *arg)
 static void Stop_Uncore_Skylake_X(void *arg)
 {
 	UNUSED(arg);
-/*TODO(Hardware needed)
+/*TODO(Unsolved)
 	Uncore_Counters_Clear(SKL_X);
 */
 	Pkg_Intel_PMC_Clear(ARCH_PMC);
