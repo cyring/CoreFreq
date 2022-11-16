@@ -1383,7 +1383,7 @@ Remark: if BGS_Alt[ON][AUTO] is set then BGS[OFF]
 
 typedef union
 {	/* SMU addresses:
-		DIMM[0] = 0x{0,1,2,3,4,5,6,7}50030
+		DIMM[0] = 0x{0,1,2,3,4,5,6,7}50030 ; 0x50040 [RMB]
 		DIMM[1] = 0x{0,1,2,3,4,5,6,7}50034
 	*/
 	unsigned int		value;
@@ -1404,7 +1404,7 @@ typedef union
 
 typedef union
 {	/* SMU addresses
-		DIMM[0] = 0x{0,1,2,3,4,5,6,7}50080
+		DIMM[0] = 0x{0,1,2,3,4,5,6,7}50080 ; 50090 [RMB]
 		DIMM[1] = 0x{0,1,2,3,4,5,6,7}50084
 	*/
 	unsigned int		value;
@@ -1432,7 +1432,8 @@ typedef union
 	struct
 	{
 		unsigned int
-		ReservedBits1	:  8-0,
+		DdrType 	:  3-0, /* F19h Model:11h_B1:	1=DDR5	*/
+		ReservedBits1	:  8-3,
 		BurstLength	: 10-8,
 		BurstCtrl	: 12-10,
 		ECC_Support	: 13-12,
@@ -1451,9 +1452,11 @@ typedef union
 		SdpParityEn	:  2-1,
 		ReservedBits1	:  3-2,
 		SdpCancelEn	:  4-3,
-		ReservedBits2	: 16-4,
+		ReservedBits2	:  9-4,
+		DramScrubCrdt	: 10-9,
+		ReservedBits3	: 16-10,
 		CmdBufferCount	: 23-16,
-		ReservedBits3	: 24-23,
+		ReservedBits4	: 24-23,
 		DatBufferCount	: 31-24,
 		SdpInit 	: 32-31;
 	};
@@ -1488,11 +1491,19 @@ typedef union
 	struct
 	{
 		unsigned int
-		ReservedBits1	:  7-0,
+		WrEccEn 	:  1-0,
+		ReservedBits1	:  4-1,
+		BadDramSymEn	:  5-4,
+		HardwareHistory :  6-5,
+		BitInterleaving :  7-6,
 		X8_Syndromes	:  8-7, /* X4 iff not X8 and not X16	*/
-		ReservedBits2	:  9-8,
+		UCFatalEn	:  9-8,
 		X16_Syndromes	: 10-9,
-		ReservedBits3	: 32-10;
+		RdEccEn 	: 11-10,
+		ReservedBits2	: 14-11,
+		PinReducedEcc	: 15-14,
+		AddrXorEn	: 16-15,
+		ReservedBits3	: 32-16;
 	};
 } AMD_17_UMC_ECC_CTRL;
 

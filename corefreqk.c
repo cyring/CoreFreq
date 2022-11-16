@@ -5864,18 +5864,22 @@ static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev)
 	return (PCI_CALLBACK) 0;
 }
 
-static void AMD_Zen_UMC(struct pci_dev *dev, unsigned int UMC_BAR,
+static void AMD_Zen_UMC(struct pci_dev *dev,
+			const unsigned int UMC_BAR,
+			const unsigned int CS_MASK[2][2],
+			const unsigned int UMC_DAC,
+			const unsigned int UMC_DIMM_CFG,
 			unsigned short mc, unsigned short cha,
 			unsigned short cnt)
 {
 	unsigned int CHIP_BAR[2][2] = {
 	[0] =	{
-		[0] = UMC_BAR + 0x0,
-		[1] = UMC_BAR + 0x20
+		[0] = UMC_BAR + CS_MASK[0][0],
+		[1] = UMC_BAR + CS_MASK[0][1]
 		},
 	[1] =	{
-		[0] = UMC_BAR + 0x10,
-		[1] = UMC_BAR + 0x28
+		[0] = UMC_BAR + CS_MASK[1][0],
+		[1] = UMC_BAR + CS_MASK[1][1]
 		}
 	};
 	unsigned short chip;
@@ -5886,12 +5890,12 @@ static void AMD_Zen_UMC(struct pci_dev *dev, unsigned int UMC_BAR,
 
 	Core_AMD_SMN_Read(
 	    PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.DAC,
-		SMU_AMD_UMC_BASE_CHA_F17H(cnt) + 0x30 + (slot << 2), dev );
-
+	    SMU_AMD_UMC_BASE_CHA_F17H(cnt) + UMC_DAC + (slot << 2), dev
+	);
 	Core_AMD_SMN_Read(
 	    PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.CFG,
-		SMU_AMD_UMC_BASE_CHA_F17H(cnt) + 0x80 + (slot << 2), dev );
-
+	    SMU_AMD_UMC_BASE_CHA_F17H(cnt) + UMC_DIMM_CFG + (slot << 2), dev
+	);
 	for (sec = 0; sec < 2; sec++)
 	{
 		unsigned int addr[2];
@@ -5980,6 +5984,9 @@ static void AMD_Zen_UMC(struct pci_dev *dev, unsigned int UMC_BAR,
 }
 
 static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
+					const unsigned int CS_MASK[2][2],
+					const unsigned int UMC_DAC,
+					const unsigned int UMC_DIMM_CFG,
 					const unsigned short umc_max,
 					const unsigned short dev_fun[] )
 {
@@ -6017,7 +6024,11 @@ static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
 
      if ((SDP_CTRL.value != 0xffffffff) && (SDP_CTRL.SdpInit))
      {
-	AMD_Zen_UMC(dev, SMU_AMD_UMC_BASE_CHA_F17H(cnt), umc, cha, cnt);
+	AMD_Zen_UMC(	dev,
+			SMU_AMD_UMC_BASE_CHA_F17H(cnt),
+			CS_MASK,
+			UMC_DAC, UMC_DIMM_CFG,
+			umc, cha, cnt );
 
 	cha++;
      }
@@ -6062,62 +6073,134 @@ static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
 
 static PCI_CALLBACK AMD_DataFabric_Zeppelin(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
+	return AMD_17h_DataFabric(	pdev,
+					(const unsigned int[2][2]) {
+						{ 0x0, 0x20},
+						{0x10, 0x28}
+					},
+					0x30, 0x80,
+					1, (const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Raven(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
+	return AMD_17h_DataFabric(	pdev,
+					(const unsigned int[2][2]) {
+						{ 0x0, 0x20},
+						{0x10, 0x28}
+					},
+					0x30, 0x80,
+					1, (const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Matisse(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
+	return AMD_17h_DataFabric(	pdev,
+					(const unsigned int[2][2]) {
+						{ 0x0, 0x20},
+						{0x10, 0x28}
+					},
+					0x30, 0x80,
+					1, (const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Starship(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
+	return AMD_17h_DataFabric(	pdev,
+					(const unsigned int[2][2]) {
+						{ 0x0, 0x20},
+						{0x10, 0x28}
+					},
+					0x30, 0x80,
+					1, (const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Renoir(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
+	return AMD_17h_DataFabric(	pdev,
+					(const unsigned int[2][2]) {
+						{ 0x0, 0x20},
+						{0x10, 0x28}
+					},
+					0x30, 0x80,
+					1, (const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Ariel(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
+	return AMD_17h_DataFabric(	pdev,
+					(const unsigned int[2][2]) {
+						{ 0x0, 0x20},
+						{0x10, 0x28}
+					},
+					0x30, 0x80,
+					1, (const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Raven2(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
+	return AMD_17h_DataFabric(	pdev,
+					(const unsigned int[2][2]) {
+						{ 0x0, 0x20},
+						{0x10, 0x28}
+					},
+					0x30, 0x80,
+					1, (const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Fireflight(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
+	return AMD_17h_DataFabric(	pdev,
+					(const unsigned int[2][2]) {
+						{ 0x0, 0x20},
+						{0x10, 0x28}
+					},
+					0x30, 0x80,
+					1, (const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Arden(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
+	return AMD_17h_DataFabric(	pdev,
+					(const unsigned int[2][2]) {
+						{ 0x0, 0x20},
+						{0x10, 0x28}
+					},
+					0x30, 0x80,
+					1, (const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Vermeer(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
+	return AMD_17h_DataFabric(	pdev,
+					(const unsigned int[2][2]) {
+						{ 0x0, 0x20},
+						{0x10, 0x28}
+					},
+					0x30, 0x80,
+					1, (const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Cezanne(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
+	return AMD_17h_DataFabric(	pdev,
+					(const unsigned int[2][2]) {
+						{ 0x0, 0x20},
+						{0x10, 0x28}
+					},
+					0x30, 0x80,
+					1, (const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Rembrandt(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(pdev, 1, (const unsigned short[]){0x18});
+	return AMD_17h_DataFabric(	pdev,
+					(const unsigned int[2][2]) {
+						{ 0x0, 0x20},
+						{0x10, 0x30}
+					},
+					0x40, 0x90,
+					1, (const unsigned short[]) {0x18} );
 }
 
 static void CoreFreqK_ResetChip(struct pci_dev *dev)
