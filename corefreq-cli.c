@@ -1306,10 +1306,10 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
       }
     }
 
-      for(boost = BOOST(1C), activeCores = 1;
+    for(boost = BOOST(1C), activeCores = 1;
       boost > BOOST(1C)-(enum RATIO_BOOST)RO(Shm)->Proc.Features.SpecTurboRatio;
 		boost--, activeCores++)
-      {
+    {
 	CLOCK_ARG clockMod={.NC=BOXKEY_TURBO_CLOCK_NC | activeCores,.Offset=0};
 	char pfx[10+1+1];
 	StrFormat(pfx, 10+1+1, "%2uC", activeCores);
@@ -1327,7 +1327,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				1, clockMod.ullong,
 				width, OutFunc, attrib[3] ),
 		RefreshTopFreq, boost );
-      }
+    }
     if (RO(Shm)->Proc.Features.ExtFeature.EDX.Hybrid == 1)
     {
 	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.Turbo_Unlock],
@@ -1377,7 +1377,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		uncoreLabel[1] = RSC(MAX).CODE();
 	}
 
-      if (RO(Shm)->Proc.Features.Uncore_Unlock) {
+    if (RO(Shm)->Proc.Features.Uncore_Unlock) {
 	CLOCK_ARG uncoreClock = {.NC = 0, .Offset = 0};
 
 	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | CLOCK_MOD_MIN;
@@ -1395,7 +1395,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				1, uncoreClock.ullong,
 				width, OutFunc, attrib[3]),
 		RefreshRatioFreq, &RO(Shm)->Uncore.Boost[UNCORE_BOOST(MAX)] );
-      } else {
+    } else {
 	GridCall( PrintRatioFreq(win, CFlop,
 				0, (char*) uncoreLabel[0],
 				&RO(Shm)->Uncore.Boost[UNCORE_BOOST(MIN)],
@@ -1409,15 +1409,16 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
 		RefreshRatioFreq, &RO(Shm)->Uncore.Boost[UNCORE_BOOST(MAX)] );
-      }
-
-    if (RO(Shm)->Proc.Features.TDP_Cfg_Lock) {
+    }
+    if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+    {
+      if (RO(Shm)->Proc.Features.TDP_Cfg_Lock) {
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s%.*s""%s"" [%3d:%-3d]", RSC(TDP).CODE(),
 		width - 16 - RSZ(LEVEL), hSpace, RSC(LEVEL).CODE(),
 		RO(Shm)->Proc.Features.TDP_Cfg_Level,
 		RO(Shm)->Proc.Features.TDP_Levels );
-    } else {
+      } else {
 	GridCall( PUT(	BOXKEY_CFG_TDP_LVL, attrib[0], width, 2,
 			"%s%.*s""%s"" <%3d:%-3d>", RSC(TDP).CODE(),
 			width - 16 - RSZ(LEVEL),
@@ -1425,13 +1426,13 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			RO(Shm)->Proc.Features.TDP_Cfg_Level,
 			RO(Shm)->Proc.Features.TDP_Levels ),
 		RefreshConfigTDP );
-    }
+      }
 	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.TDP_Unlock == 1],
 		width, 3, "%s%.*s[%7.*s]", RSC(PROGRAMMABLE).CODE(),
 		width - (OutFunc == NULL ? 15:13) - RSZ(PROGRAMMABLE), hSpace,
 			6, RO(Shm)->Proc.Features.TDP_Unlock == 1 ?
 				RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
-
+    }
     if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	const size_t len = (size_t) RSZ(LEVEL) + 1 + 1;
