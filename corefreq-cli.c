@@ -7439,6 +7439,20 @@ void ForEachCellPrint_Menu(Window *win, void *plist)
     }
 }
 
+void TOD_Refresh(TGrid *grid, DATA_TYPE data[])
+{
+	size_t timeLength;
+	char timeString[8];
+	struct tm *brokTime, localTime;
+	time_t currTime = time(NULL);
+	brokTime = localtime_r(&currTime, &localTime);
+	timeLength = strftime(timeString, MIN_WIDTH, "%k:%M", brokTime);
+	if ((timeLength > 0) && (timeLength <= 5)) {
+		memcpy(&grid->cell.item[grid->cell.length - timeLength],
+			timeString, timeLength);
+	}
+}
+
 Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 {
 	Window *wMenu = CreateWindow(	wLayer, id,
@@ -7455,8 +7469,10 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 	StoreTCell(wMenu, SCANKEY_NULL, RSC(MENU_ITEM_VIEW).CODE(),
 					RSC(MENU_ITEM_VIEW).ATTR());
 
+      GridCall(
 	StoreTCell(wMenu, SCANKEY_NULL, RSC(MENU_ITEM_WINDOW).CODE(),
-					RSC(MENU_ITEM_WINDOW).ATTR());
+					RSC(MENU_ITEM_WINDOW).ATTR()),
+		TOD_Refresh);
 /* Row  1 */
 	StoreTCell(wMenu, SCANKEY_F1,	RSC(MENU_ITEM_KEYS).CODE(),
 					RSC(CREATE_MENU_FN_KEY).ATTR());
