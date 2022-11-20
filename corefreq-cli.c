@@ -8778,8 +8778,12 @@ Window *CreateTracking(unsigned long long id)
 			(TRACK_TASK | (unsigned long long) trackList[ti].pid),
 			Buffer,
 			(trackList[ti].pid == trackList[ti].tgid) ?
-			  RSC(UI).ATTR()[UI_WIN_TRACKING_PARENT_PROCESS]
-			: RSC(UI).ATTR()[UI_WIN_TRACKING_CHILD_PROCESS]);
+			    (trackList[ti].pid == RO(Shm)->SysGate.trackTask) ?
+			      RSC(UI).ATTR()[UI_WIN_TRACKING_THIS_PARENT]
+			    : RSC(UI).ATTR()[UI_WIN_TRACKING_PARENT_PROCESS]
+			  : (trackList[ti].pid == RO(Shm)->SysGate.trackTask) ?
+			      RSC(UI).ATTR()[UI_WIN_TRACKING_THIS_CHILD]
+			    : RSC(UI).ATTR()[UI_WIN_TRACKING_CHILD_PROCESS]);
 
 		StrFormat(Buffer, MAX_WIDTH-1, "%.*s", width, hSpace);
 

@@ -294,6 +294,12 @@
 	[UI_WIN_TRACKING_CHILD_PROCESS] = {				\
 		.fg = WHITE, .un = 0, .bg = BLACK, .bf = 0		\
 	},								\
+	[UI_WIN_TRACKING_THIS_PARENT] = {				\
+		.fg = MAGENTA, .un = 0, .bg = BLACK, .bf = 1		\
+	},								\
+	[UI_WIN_TRACKING_THIS_CHILD] = {				\
+		.fg = MAGENTA, .un = 0, .bg = BLACK, .bf = 0		\
+	},								\
 	[UI_WIN_TRACKING_COUNTERS] = {					\
 		.fg = WHITE, .un = 0, .bg = BLACK, .bf = 0		\
 	},								\
