@@ -3877,8 +3877,10 @@ void For_All_ACPI_CPPC(signed int(*CPPC_Func)(unsigned int, void*), void *arg)
 	#else
 	signed int rc = acpi_disabled;
 	#endif
-
 	unsigned int cpu;
+
+	PUBLIC(RO(Proc))->Features.OSPM_CPC = !rc;
+
 	for (cpu = 0; (cpu < PUBLIC(RO(Proc))->CPU.Count) && (rc == 0); cpu++)
 	{
 		rc = CPPC_Func(cpu, arg);
