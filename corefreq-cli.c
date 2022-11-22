@@ -4084,7 +4084,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	|| (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
     {
 	PUT(SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.OSPM_CPC], width, 2,
-		"%s%.*s%s       <%3s>", RSC(PERF_MON_CPC).CODE(),
+		"%s%.*s%s       [%3s]", RSC(PERF_MON_CPC).CODE(),
 		width - 19 - RSZ(PERF_MON_CPC), hSpace,
 		RSC(PERF_LABEL_CPC).CODE(),
 		ENABLED(RO(Shm)->Proc.Features.OSPM_CPC));
