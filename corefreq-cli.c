@@ -4107,9 +4107,10 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
      if  ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	|| (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
      {
-      if ((bix |= RO(Shm)->Proc.Features.ACPI_CPPC) == 1)
+      if (RO(Shm)->Proc.Features.ACPI_CPPC == 1)
       {
-	GridHover( PUT( BOXKEY_FMW_CPPC, attrib[bix], width, 2,
+	GridHover( PUT( BOXKEY_FMW_CPPC,
+			attrib[RO(Shm)->Proc.Features.ACPI_CPPC], width, 2,
 			"%s%.*s%s       <%3s>", RSC(PERF_MON_CPPC).CODE(),
 			width - 19 - RSZ(PERF_MON_CPPC), hSpace,
 			RSC(PERF_LABEL_CPPC).CODE(), RSC(FMW).CODE() ),
