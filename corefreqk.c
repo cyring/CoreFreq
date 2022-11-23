@@ -3835,7 +3835,10 @@ signed int Read_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 
 	signed int rc = 0;
 	if ((rc = cppc_get_perf_ctrs(Core->Bind, &CPPC_Perf)) == 0) {
-		rc = cppc_get_perf_caps(Core->Bind, &CPPC_Caps);
+	    if ((rc = cppc_get_perf_caps(Core->Bind, &CPPC_Caps)) != 0)
+		pr_err("CoreFreq: cppc_get_perf_caps() error %d\n", rc);
+	} else {
+		pr_err("CoreFreq: cppc_get_perf_ctrs() error %d\n", rc);
 	}
 	if (rc == 0) {
 	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
@@ -3858,10 +3861,17 @@ signed int Read_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 			.Energy 	= 0
 		};
 	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
+		#if defined(CONFIG_SCHED_BORE)
 		rc = cppc_get_desired_perf(Core->Bind, &desired_perf);
-		if (rc == 0) {
-			Core->PowerThermal.ACPI_CPPC.Desired = desired_perf;
-		}
+		rc = rc == -EINVAL ? 0 : rc;
+		#else
+		rc = cppc_get_desired_perf(Core->Bind, &desired_perf);
+		#endif
+	    if (rc == 0) {
+		Core->PowerThermal.ACPI_CPPC.Desired = desired_perf;
+	    } else {
+		 pr_err("CoreFreq: cppc_get_desired_perf() error %d\n", rc);
+	    }
 	    #endif
 	}
 	return rc;
