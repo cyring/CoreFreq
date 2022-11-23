@@ -7452,15 +7452,19 @@ void ForEachCellPrint_Menu(Window *win, void *plist)
 void TOD_Refresh(TGrid *grid, DATA_TYPE data[])
 {
 	size_t timeLength;
-	char timeString[8];
+	char timeString[RSZ(MENU_ITEM_MENU) + 1];
 	struct tm *brokTime, localTime;
+
 	time_t currTime = time(NULL);
 	brokTime = localtime_r(&currTime, &localTime);
-	timeLength = strftime(timeString, MIN_WIDTH, "%k:%M", brokTime);
-	if ((timeLength > 0) && (timeLength <= 5)) {
-		memcpy(&grid->cell.item[grid->cell.length - timeLength],
-			timeString, timeLength);
-	}
+
+	timeLength = strftime(	timeString, RSZ(MENU_ITEM_MENU) + 1,
+			(char*) RSC(MENU_ITEM_DATE_TIME).CODE(), brokTime );
+
+    if ((timeLength > 0) && (timeLength <= RSZ(MENU_ITEM_MENU))) {
+	memcpy(grid->cell.item, timeString, timeLength);
+	memcpy(grid->cell.attr, RSC(MENU_ITEM_DATE_TIME).ATTR(), timeLength);
+    }
 }
 
 Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
@@ -7473,16 +7477,16 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
     if (wMenu != NULL)
     {
 /* Top Menu */
+      GridCall(
 	StoreTCell(wMenu, SCANKEY_NULL, RSC(MENU_ITEM_MENU).CODE(),
-					RSC(MENU_ITEM_MENU).ATTR());
+					RSC(MENU_ITEM_MENU).ATTR()),
+		TOD_Refresh);
 
 	StoreTCell(wMenu, SCANKEY_NULL, RSC(MENU_ITEM_VIEW).CODE(),
 					RSC(MENU_ITEM_VIEW).ATTR());
 
-      GridCall(
 	StoreTCell(wMenu, SCANKEY_NULL, RSC(MENU_ITEM_WINDOW).CODE(),
-					RSC(MENU_ITEM_WINDOW).ATTR()),
-		TOD_Refresh);
+					RSC(MENU_ITEM_WINDOW).ATTR());
 /* Row  1 */
 	StoreTCell(wMenu, SCANKEY_F1,	RSC(MENU_ITEM_KEYS).CODE(),
 					RSC(CREATE_MENU_FN_KEY).ATTR());

@@ -1533,6 +1533,7 @@
 #define RSC_MENU_ITEM_MENU_CODE_EN		"     [F2] Menu          "
 #define RSC_MENU_ITEM_VIEW_CODE_EN		"     [F3] View          "
 #define RSC_MENU_ITEM_WINDOW_CODE_EN		"    [F4] Window         "
+#define RSC_MENU_ITEM_DATE_TIME_CODE_EN		"[F2] %x %k:%M:%S"
 #define RSC_MENU_ITEM_SETTINGS_CODE_EN		" Settings           [s] "
 #define RSC_MENU_ITEM_SMBIOS_CODE_EN		" SMBIOS data        [B] "
 #define RSC_MENU_ITEM_KERNEL_CODE_EN		" Kernel data        [k] "
