@@ -7488,7 +7488,11 @@ void TOD_Refresh(TGrid *grid, DATA_TYPE data[])
 
 	pos = pos - (int) timeLength + MENU_RIGHT_MARGIN;
 	if (pos >= 0) {
+	    if (pos != data[0].sint[0]) {
+		data[0].sint[0] = pos;
+		/*	Clear garbage left by resizing		*/
 		memcpy(grid->cell.item, hSpace, grid->cell.length);
+	    }
 		memcpy(&grid->cell.item[pos], timeString, timeLength);
 	}
 }
@@ -7698,7 +7702,7 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
       GridCall(
 	StoreTCell(wMenu, SCANKEY_VOID, hSpace,
 				RSC(UI).ATTR()[UI_WIN_MENU_TITLE_UNFOCUS]),
-	TOD_Refresh);
+	TOD_Refresh, 0);
 /* Bottom Menu */
 	StoreWindow(wMenu, .color[0].select,
 				RSC(UI).ATTR()[UI_WIN_MENU_UNSELECT]);
