@@ -911,6 +911,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_MENU_ITEM_MENU_CODE_FR        "     [F2] Menu          "
 #define RSC_MENU_ITEM_VIEW_CODE_FR        "     [F3] Vue           "
 #define RSC_MENU_ITEM_WINDOW_CODE_FR      "    [F4] Fen""\xaa""tre        "
+#define RSC_MENU_ITEM_SPACER_CODE_FR      RSC_MENU_ITEM_SPACER_CODE_EN
 #define RSC_MENU_ITEM_DATE_TIME_CODE_FR   RSC_MENU_ITEM_DATE_TIME_CODE_EN
 #define RSC_MENU_ITEM_FULL_TIME_CODE_FR   RSC_MENU_ITEM_FULL_TIME_CODE_EN
 #define RSC_MENU_ITEM_TINY_TIME_CODE_FR   RSC_MENU_ITEM_TINY_TIME_CODE_EN

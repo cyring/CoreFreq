@@ -1397,7 +1397,7 @@ void MotionExpand_Win(Window *win)
 
 void MotionUp_Wheel(Window *win)
 {
-	const size_t dim = win->dim >> 1;
+	const ssize_t dim = win->dim >> 1;
 	if (win->matrix.scroll.vert > 0) {
 		win->matrix.scroll.vert--;
 	} else {
@@ -1407,7 +1407,7 @@ void MotionUp_Wheel(Window *win)
 
 void MotionDown_Wheel(Window *win)
 {
-	const size_t dim = win->dim >> 1;
+	const ssize_t dim = win->dim >> 1;
 	if (win->matrix.scroll.vert < dim) {
 		win->matrix.scroll.vert++;
 	} else {
@@ -1417,7 +1417,7 @@ void MotionDown_Wheel(Window *win)
 
 void MotionPgUp_Wheel(Window *win)
 {
-	const size_t dim = win->dim >> 1;
+	const ssize_t dim = win->dim >> 1;
 	if (win->matrix.scroll.vert > win->matrix.select.row) {
 		win->matrix.scroll.vert -= win->matrix.select.row;
 	} else {
@@ -1427,7 +1427,7 @@ void MotionPgUp_Wheel(Window *win)
 
 void MotionPgDw_Wheel(Window *win)
 {
-	const size_t dim = win->dim >> 1;
+	const ssize_t dim = win->dim >> 1;
 	if (win->matrix.scroll.vert + win->matrix.select.row < dim) {
 		win->matrix.scroll.vert += win->matrix.select.row;
 	} else {
@@ -1437,13 +1437,13 @@ void MotionPgDw_Wheel(Window *win)
 
 void MotionHome_Wheel(Window *win)
 {
-	const size_t dim = win->dim >> 1;
+	const ssize_t dim = win->dim >> 1;
 	win->matrix.scroll.vert = dim - win->matrix.select.row;
 }
 
 void MotionEnd_Wheel(Window *win)
 {
-	const size_t dim = win->dim >> 1;
+	const ssize_t dim = win->dim >> 1;
 	win->matrix.scroll.vert = dim - win->matrix.select.row - 1;
 }
 

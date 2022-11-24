@@ -4,4 +4,4 @@
  * Licenses: GPL2
  */
 
-extern void JsonSysInfo(RO(SHM_STRUCT)*, RW(SHM_STRUCT)*, CELL_FUNC) ;
+extern void JsonSysInfo(RO(SHM_STRUCT)*) ;

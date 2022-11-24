@@ -3807,6 +3807,7 @@ long AMD_F17h_CPPC(void)
 
 inline signed int Disable_ACPI_CPPC(unsigned int cpu, void *arg)
 {
+	UNUSED(arg);
 #if defined(CONFIG_ACPI_CPPC_LIB) \
  && LINUX_VERSION_CODE >= KERNEL_VERSION(5, 17, 0)
 	return cppc_set_enable((signed int) cpu, false);
@@ -3817,6 +3818,7 @@ inline signed int Disable_ACPI_CPPC(unsigned int cpu, void *arg)
 
 inline signed int Enable_ACPI_CPPC(unsigned int cpu, void *arg)
 {
+	UNUSED(arg);
 #if defined(CONFIG_ACPI_CPPC_LIB) \
  && LINUX_VERSION_CODE >= KERNEL_VERSION(5, 17, 0)
 	return cppc_set_enable((signed int) cpu, true);
@@ -3834,6 +3836,8 @@ signed int Read_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
 	signed int rc = 0;
+	UNUSED(arg);
+
 	if ((rc = cppc_get_perf_ctrs(Core->Bind, &CPPC_Perf)) == 0) {
 	    if ((rc = cppc_get_perf_caps(Core->Bind, &CPPC_Caps)) != 0)
 		pr_err("CoreFreq: cppc_get_perf_caps() error %d\n", rc);
@@ -7298,6 +7302,8 @@ signed int Write_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 	unsigned long long desired_perf = 0;
 	if (cppc_get_desired_perf(Core->Bind, &desired_perf) == 0) {
 		perf_ctrls.desired_perf = desired_perf;
+	} else {
+		pr_err("CoreFreq: cppc_get_desired_perf() error\n");
 	}
     #endif
 
@@ -7362,16 +7368,22 @@ signed int Write_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 	    #endif
 
 		Core->PowerThermal.ACPI_CPPC.Maximum = CPPC_Caps.highest_perf;
+	    } else {
+		pr_err("CoreFreq: cppc_get_perf_caps() error\n");
 	    }
 	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
 	    if (cppc_get_desired_perf(cpu, &desired_perf) == 0) {
 		perf_ctrls.desired_perf = desired_perf;
 
 		Core->PowerThermal.ACPI_CPPC.Desired = desired_perf;
+	    } else {
+		pr_err("CoreFreq: cppc_get_desired_perf() error\n");
 	    }
 	    #endif
 		pClockZen->rc = RC_OK_COMPUTE;
 	}
+    } else {
+	pr_err("CoreFreq: cppc_get_perf_*() error\n");
     }
 	return 0;
 #else
@@ -12745,6 +12757,8 @@ void Controller_Exit(void)
 
 void Intel_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 {
+	UNUSED(Core);
+
     if (PUBLIC(RO(Proc))->Features.PerfMon.EAX.Version >= 2) {
 	CORE_GLOBAL_PERF_CONTROL	Core_GlobalPerfControl = {.value = 0};
 	CORE_FIXED_PERF_CONTROL 	Core_FixedPerfControl = {.value = 0};
@@ -12933,6 +12947,8 @@ void Intel_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 
 void Intel_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 {
+	UNUSED(Core);
+
     if (PUBLIC(RO(Proc))->Features.PerfMon.EAX.Version >= 2)
     {
 	WRMSR(Save->Core_FixedPerfControl, MSR_CORE_PERF_FIXED_CTR_CTRL);
@@ -12943,6 +12959,8 @@ void Intel_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 
 void AMD_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 {
+	UNUSED(Core);
+
 	if (PUBLIC(RO(Proc))->Features.PerfMon.EBX.InstrRetired == 0)
 	{
 		WRMSR(Save->Core_HardwareConfiguration, MSR_K7_HWCR);
@@ -18120,6 +18138,7 @@ static void Call_SVI_RMB(const unsigned int plane0, const unsigned int plane1,
 			const unsigned long long factor)
 {
 	AMD_RMB_SVI SVI = {.value = 0};
+	UNUSED(factor);
 
 	Core_AMD_SMN_Read(	SVI,
 				SMU_AMD_RMB_SVI(plane0),
@@ -18234,8 +18253,8 @@ static void Start_AMD_Family_17h(void *arg)
 
 #ifdef CONFIG_PM_SLEEP
 	if (CoreFreqK.ResumeFromSuspend == true) {
-		WRCOUNTER(0x0, MSR_IA32_MPERF);
-		WRCOUNTER(0x0, MSR_IA32_APERF);
+		WRCOUNTER(0x0LLU, MSR_IA32_MPERF);
+		WRCOUNTER(0x0LLU, MSR_IA32_APERF);
 	}
 #endif /* CONFIG_PM_SLEEP */
 

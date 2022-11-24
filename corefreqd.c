@@ -3728,8 +3728,8 @@ void SNB_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
   }
 }
 
-const unsigned long long SNB_MCLK_FSB(	RO(PROC) *RO(Proc),
-					const unsigned long long fallback )
+unsigned long long SNB_MCLK_FSB(RO(PROC) *RO(Proc),
+				const unsigned long long fallback)
 {
 	switch (RO(Proc)->Uncore.Bus.ClkCfg.FSB_Select) {
 	case 0b111:
@@ -3752,8 +3752,8 @@ const unsigned long long SNB_MCLK_FSB(	RO(PROC) *RO(Proc),
 	return fallback;
 }
 
-const unsigned long long SNB_MCLK_RAM(	RO(PROC) *RO(Proc),
-					const unsigned long long fallback )
+unsigned long long SNB_MCLK_RAM(RO(PROC) *RO(Proc),
+				const unsigned long long fallback)
 {
 	switch (RO(Proc)->Uncore.Bus.ClkCfg.RAM_Select) {
 	case 0b111:
@@ -3776,9 +3776,10 @@ const unsigned long long SNB_MCLK_RAM(	RO(PROC) *RO(Proc),
 	return fallback;
 }
 
-const unsigned short BIOS_DDR(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
-				RO(CORE) *RO(Core) )
+unsigned short BIOS_DDR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
+			RO(CORE) *RO(Core))
 {
+	UNUSED(RO(Core));
     if (RO(Proc)->Uncore.Bus.BIOS_DDR.MEMCLK != 0)
     {
 	RO(Shm)->Uncore.CtrlSpeed = RO(Proc)->Uncore.Bus.BIOS_DDR.MEMCLK;
@@ -6811,6 +6812,8 @@ void CStates(RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core), unsigned int cpu)
 void PowerThermal(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 			RO(CORE) **RO(Core), unsigned int cpu )
 {
+	UNUSED(RO(Proc));
+
 	RO(Shm)->Cpu[cpu].PowerThermal.DutyCycle.Extended = \
 		RO(Core, AT(cpu))->PowerThermal.ClockModulation.ECMD;
 

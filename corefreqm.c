@@ -142,6 +142,7 @@ void Slice_NOP( RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 void Slice_Atomic(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 		unsigned int cpu, unsigned long arg)
 {
+	UNUSED(RW(Shm));
 	__asm__ volatile
 	(
 		"movq %[_atom], %%r14"	"\n\t"
@@ -209,6 +210,7 @@ void Slice_CRC32(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 {
 	unsigned char *data = (unsigned char *) CRC32_SRC;
 	unsigned int len = 16;
+	UNUSED(RW(Shm));
 	UNUSED(arg);
 
 	if (CRC32vASM(data, len) != CRC32_EXP)
@@ -243,6 +245,8 @@ void Slice_Conic(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 	double X, Y, Z, Q, k;
 
 	const double step = (double) RO(Shm)->Proc.CPU.Count;
+
+	UNUSED(RW(Shm));
 
 	for (Y = -interval; Y <= interval; Y += step)
 	    for (X = -interval; X <= interval; X += step) {

@@ -26,8 +26,7 @@ double timespecFloat(struct timespec time)
 	return (double) time.tv_sec + (time.tv_nsec / 1000000000.0);
 }
 
-void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
-		CELL_FUNC OutFunc)
+void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 {
 	char hexStr[32];
 	signed int i = 0, i2 = 0, i3 = 0;
@@ -35,8 +34,6 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 	enum CRC_MANUFACTURER vendor = RO(Shm)->Proc.Features.Info.Vendor.CRC;
 	struct json_state s = { .depth = 0, .nested_state = {0},
 				.write = json_writer_stdout };
-	UNUSED(OutFunc);
-
 	json_start_object(&s);
 	json_key(&s, "Registration");
 	{
