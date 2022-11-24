@@ -7411,76 +7411,86 @@ int ByteReDim(unsigned long ival, int constraint, unsigned long *oval)
 void ForEachCellPrint_Menu(Window *win, void *plist)
 {
 	WinList *list = (WinList *) plist;
+	TGrid *spacer;
 	CUINT col, row;
-	int len;
 
     if (win->lazyComp.rowLen == 0) {
 	for (col = 0; col < win->matrix.size.wth; col++) {
 		win->lazyComp.rowLen += TCellAt(win, col, 0).length;
 	}
     }
-    if (win->matrix.origin.col > 0) {
-	LayerFillAt(	win->layer,
-			0,
-			win->matrix.origin.row,
-			win->matrix.origin.col, hSpace,
-			win->hook.color[0].title);
-    }
     for (col = 0; col < win->matrix.size.wth; col++) {
 	PrintContent(win, list, col, 0);
     }
-    for (row = 1; row < win->matrix.size.hth; row++) {
+    for (row = 1; row < win->matrix.size.hth - 1; row++) {
 	if (TCellAt(win,
 		(win->matrix.scroll.horz + win->matrix.select.col),
 		(win->matrix.scroll.vert + row)).quick.key != SCANKEY_VOID) {
 			PrintContent(win, list, win->matrix.select.col, row);
 		}
     }
-	len = Draw.Size.width
-	- (int) win->lazyComp.rowLen
-	- (int) win->matrix.origin.col;
-    if (len > 0)
+    if ((spacer = &win->grid[col * row]) != NULL)
     {
+	const int len = Draw.Size.width
+			- (int) win->lazyComp.rowLen
+			- (int) win->matrix.origin.col;
+
+	LayerFillAt(	win->layer,
+			0, win->matrix.origin.row,
+			spacer->cell.length, spacer->cell.item,
+			win->hook.color[0].title );
+	spacer++;
+	spacer++;
+
+      if (len > 0) {
 	LayerFillAt(	win->layer,
 			(win->matrix.origin.col + win->lazyComp.rowLen),
 			win->matrix.origin.row,
-			len, hSpace,
+			len, spacer->cell.item,
 			win->hook.color[0].title);
+      }
     }
 }
 
 void TOD_Refresh(TGrid *grid, DATA_TYPE data[])
 {
 	size_t timeLength;
-	char timeString[RSZ(MENU_ITEM_MENU) + 1];
+	char timeString[RSZ(MENU_ITEM_MENU) + 1], *timeFormat;
 	struct tm *brokTime, localTime;
+	int pos = Draw.Size.width > MIN_WIDTH ? Draw.Size.width - MIN_WIDTH : 0;
 
 	time_t currTime = time(NULL);
 	brokTime = localtime_r(&currTime, &localTime);
 
+	if (pos > 18) {
+		timeFormat = (char*) RSC(MENU_ITEM_DATE_TIME).CODE();
+	} else if (pos > 8) {
+		timeFormat = (char*) RSC(MENU_ITEM_FULL_TIME).CODE();
+	} else {
+		timeFormat = (char*) RSC(MENU_ITEM_TINY_TIME).CODE();
+	}
 	timeLength = strftime(	timeString, RSZ(MENU_ITEM_MENU) + 1,
-			(char*) RSC(MENU_ITEM_DATE_TIME).CODE(), brokTime );
+				timeFormat, brokTime );
 
-    if ((timeLength > 0) && (timeLength <= RSZ(MENU_ITEM_MENU))) {
-	memcpy(grid->cell.item, timeString, timeLength);
-	memcpy(grid->cell.attr, RSC(MENU_ITEM_DATE_TIME).ATTR(), timeLength);
-    }
+	if ((timeLength > 0) && (timeLength <= RSZ(MENU_ITEM_MENU))) {
+		pos = pos - (int) timeLength + 5;
+		memcpy(grid->cell.item, hSpace, grid->cell.length);
+		memcpy(&grid->cell.item[pos], timeString, timeLength);
+	}
 }
 
 Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 {
 	Window *wMenu = CreateWindow(	wLayer, id,
-					3, 14, 3, 0,
+					3, 15, 3, 0,
 					  WINFLAG_NO_STOCK
 					| WINFLAG_NO_SCALE
 					| WINFLAG_NO_BORDER );
     if (wMenu != NULL)
     {
 /* Top Menu */
-      GridCall(
 	StoreTCell(wMenu, SCANKEY_NULL, RSC(MENU_ITEM_MENU).CODE(),
-					RSC(MENU_ITEM_MENU).ATTR()),
-		TOD_Refresh);
+					RSC(MENU_ITEM_MENU).ATTR());
 
 	StoreTCell(wMenu, SCANKEY_NULL, RSC(MENU_ITEM_VIEW).CODE(),
 					RSC(MENU_ITEM_VIEW).ATTR());
@@ -7659,6 +7669,16 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 #endif
 
 	StoreTCell(wMenu, SCANKEY_VOID, "", RSC(VOID).ATTR());
+/* Menu Spacers */
+	StoreTCell(wMenu, SCANKEY_VOID, "\x020\x020\x020",
+				RSC(UI).ATTR()[UI_WIN_MENU_TITLE_UNFOCUS]);
+
+	StoreTCell(wMenu, SCANKEY_VOID, "", RSC(VOID).ATTR());
+
+      GridCall(
+	StoreTCell(wMenu, SCANKEY_VOID, hSpace,
+				RSC(UI).ATTR()[UI_WIN_MENU_TITLE_UNFOCUS]),
+	TOD_Refresh);
 /* Bottom Menu */
 	StoreWindow(wMenu, .color[0].select,
 				RSC(UI).ATTR()[UI_WIN_MENU_UNSELECT]);
