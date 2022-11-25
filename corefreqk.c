@@ -3850,7 +3850,13 @@ signed int Read_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 	    #endif
 		Core->PowerThermal.ACPI_CPPC = (struct ACPI_CPPC_STRUCT) {
 			.Highest	= CPPC_Caps.highest_perf,
+			#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)
+			.Guaranteed	= CPPC_Caps.guaranteed_perf == 0 ?
+						CPPC_Caps.nominal_perf
+					:	CPPC_Caps.guaranteed_perf,
+			#else
 			.Guaranteed	= CPPC_Caps.nominal_perf,
+			#endif
 			#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0)
 			.Efficient	= CPPC_Caps.nominal_freq,
 			.Lowest 	= CPPC_Caps.lowest_freq,
