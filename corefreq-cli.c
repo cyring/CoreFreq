@@ -549,11 +549,11 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	[ 9] =	{RSC(SYS_REG_HDR_CR0_NW).CODE(), RSC(SYS_REG_CR0_NW).CODE()},
 	[10] =	{RSC(SYS_REG_HDR_CR0_CD).CODE(), RSC(SYS_REG_CR0_CD).CODE()},
 	[11] =	{RSC(SYS_REG_HDR_CR0_PG).CODE(), RSC(SYS_REG_CR0_PG).CODE()},
-	[12] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
-	[13] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
-	[14] =	{RSC(SYS_REG_HDR_CR3).CODE(), RSC(SYS_REGS_CR3).CODE()},
-	[15] =	{RSC(SYS_REG_HDR_CR3_PWT).CODE(), RSC(SYS_REG_CR3_PWT).CODE()},
-	[16] =	{RSC(SYS_REG_HDR_CR3_PCD).CODE(), RSC(SYS_REG_CR3_PCD).CODE()},
+	[12] =	{RSC(SYS_REG_HDR_CR3).CODE(), RSC(SYS_REGS_CR3).CODE()},
+	[13] =	{RSC(SYS_REG_HDR_CR3_PWT).CODE(), RSC(SYS_REG_CR3_PWT).CODE()},
+	[14] =	{RSC(SYS_REG_HDR_CR3_PCD).CODE(), RSC(SYS_REG_CR3_PCD).CODE()},
+	[15] =	{RSC(SYS_REG_HDR_CR3_U57).CODE(), RSC(SYS_REG_CR3_U57).CODE()},
+	[16] =	{RSC(SYS_REG_HDR_CR3_U48).CODE(), RSC(SYS_REG_CR3_U48).CODE()},
 		{NULL, NULL}
 	},
 	.flag = (struct SR_BIT[]) {
@@ -569,11 +569,11 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	[ 9] =	{DO_CR0 , 1	, CR0_NW	, 1	},
 	[10] =	{DO_CR0 , 1	, CR0_CD	, 1	},
 	[11] =	{DO_CR0 , 1	, CR0_PG	, 1	},
-	[12] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
-	[13] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
-	[14] =	{DO_SPC , 1	, UNDEF_CR	, 4	},
-	[15] =	{DO_CR3 , 1	, CR3_PWT	, 1	},
-	[16] =	{DO_CR3 , 1	, CR3_PCD	, 1	},
+	[12] =	{DO_SPC , 1	, UNDEF_CR	, 4	},
+	[13] =	{DO_CR3 , 1	, CR3_PWT	, 1	},
+	[14] =	{DO_CR3 , 1	, CR3_PCD	, 1	},
+	[15] =	{DO_CR3 , 1	, CR3_LAM_U57	, 1	},
+	[16] =	{DO_CR3 , 1	, CR3_LAM_U48	, 1	},
 		{DO_END , 1	, UNDEF_CR	, 0	}
 	}
       },
@@ -630,7 +630,7 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	[ 6] =	{RSC(SYS_REG_HDR_CR4_PKE).CODE(),RSC(SYS_REG_CR4_PKE).CODE()},
 	[ 7] =	{RSC(SYS_REG_HDR_CR4_CET).CODE(),RSC(SYS_REG_CR4_CET).CODE()},
 	[ 8] =	{RSC(SYS_REG_HDR_CR4_PKS).CODE(),RSC(SYS_REG_CR4_PKS).CODE()},
-	[ 9] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[ 9] =	{RSC(SYS_REG_HDR_CR4_LAM).CODE(),RSC(SYS_REG_CR4_LAM).CODE()},
 	[10] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
 	[11] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
 	[12] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
@@ -650,7 +650,7 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	[ 6] =	{DO_CR4 , 1	, CR4_PKE	, 1	},
 	[ 7] =	{DO_CR4 , 1	, CR4_CET	, 1	},
 	[ 8] =	{DO_CR4 , 1	, CR4_PKS	, 1	},
-	[ 9] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[ 9] =	{DO_CR4 , 1	, CR4_LAM_SUP	, 1	},
 	[10] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
 	[11] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
 	[12] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
@@ -2390,6 +2390,14 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sIA64 | LM   [%7s]", RSC(FEATURES_LM).CODE(),
 		width - 24 - RSZ(FEATURES_LM),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.LAM == 1,
+		attr_Feat,
+		2, "%s%.*sLAM   [%7s]", RSC(FEATURES_LAM).CODE(),
+		width - 18 - RSZ(FEATURES_LAM),
 		NULL
 	},
 	{

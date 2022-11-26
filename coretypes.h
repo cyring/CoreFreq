@@ -180,6 +180,8 @@ enum SYS_REG {
 
 	CR3_PWT 	= 3,
 	CR3_PCD 	= 4,
+	CR3_LAM_U57	= 61,
+	CR3_LAM_U48	= 62,
 
 	CR4_VME 	= 0,
 	CR4_PVI 	= 1,
@@ -205,6 +207,7 @@ enum SYS_REG {
 	CR4_PKE 	= 22,
 	CR4_CET 	= 23,
 	CR4_PKS 	= 24,
+	CR4_LAM_SUP	= 28,
 
 	CR8_TPL 	= 0,	/* [3:0]				*/
 

@@ -911,6 +911,8 @@
 #define RSC_SYS_REGS_CR3_CODE_EN	" Control Register 3 "
 #define RSC_SYS_REG_CR3_PWT_CODE_EN	" Page-level Write-Through "
 #define RSC_SYS_REG_CR3_PCD_CODE_EN	" Page-level Cache Disable "
+#define RSC_SYS_REG_CR3_U57_CODE_EN	" LAM_U57 for User pointers "
+#define RSC_SYS_REG_CR3_U48_CODE_EN	" LAM_U48 for User pointers "
 #define RSC_SYS_REGS_CR4_CODE_EN	" Control Register 4 "
 #define RSC_SYS_REG_CR4_VME_CODE_EN	" Virtual-8086 Mode Extensions "
 #define RSC_SYS_REG_CR4_PVI_CODE_EN	" Protected-mode Virtual Interrupts "
@@ -938,6 +940,8 @@
 
 #define RSC_SYS_REG_CR4_PKS_CODE_EN	\
 				" Protection Keys for Supervisor-mode pages "
+
+#define RSC_SYS_REG_CR4_LAM_CODE_EN	" LAM_SUP for Supervisor pointers "
 
 #define RSC_SYS_REGS_CR8_CODE_EN	" Control Register 8 "
 #define RSC_SYS_REG_CR8_TPL_CODE_EN	" Task Priority Level "
@@ -1086,6 +1090,7 @@
 #define RSC_FEATURES_INVLPGB_CODE_EN	"Instruction INVLPGB"
 #define RSC_FEATURES_INVPCID_CODE_EN	"Instruction INVPCID"
 #define RSC_FEATURES_LM_CODE_EN 	"Long Mode 64 bits"
+#define RSC_FEATURES_LAM_CODE_EN	"Linear Address Masking"
 #define RSC_FEATURES_LWP_CODE_EN	"LightWeight Profiling"
 #define RSC_FEATURES_MBE_CODE_EN	"Memory Bandwidth Enforcement"
 #define RSC_FEATURES_MCA_CODE_EN	"Machine-Check Architecture"
@@ -2455,6 +2460,8 @@
 #define RSC_SYS_REG_HDR_CR3_CODE	"CR3:"
 #define RSC_SYS_REG_HDR_CR3_PWT_CODE	" PWT"
 #define RSC_SYS_REG_HDR_CR3_PCD_CODE	" PCD"
+#define RSC_SYS_REG_HDR_CR3_U57_CODE	" U57"
+#define RSC_SYS_REG_HDR_CR3_U48_CODE	" U48"
 #define RSC_SYS_REG_HDR_CR4_CODE	"CR4:"
 #define RSC_SYS_REG_HDR_CR4_VME_CODE	" VME"
 #define RSC_SYS_REG_HDR_CR4_PVI_CODE	" PVI"
@@ -2480,6 +2487,7 @@
 #define RSC_SYS_REG_HDR_CR4_PKE_CODE	" PKE"
 #define RSC_SYS_REG_HDR_CR4_CET_CODE	" CET"
 #define RSC_SYS_REG_HDR_CR4_PKS_CODE	" PKS"
+#define RSC_SYS_REG_HDR_CR4_LAM_CODE	" LAM"
 #define RSC_SYS_REG_HDR_CR8_CODE	"CR8:"
 #define RSC_SYS_REG_HDR_CR8_TPL_CODE	" TPL"
 #define RSC_SYS_REG_HDR_EFCR_CODE	"EFCR"

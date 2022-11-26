@@ -932,6 +932,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.HRESET);
 					json_key(&s, "AVX_IFMA");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX_IFMA);
+					json_key(&s, "LAM");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.LAM);
 					json_key(&s, "RDMSRLIST");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.RDMSRLIST);
 
