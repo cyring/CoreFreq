@@ -302,6 +302,28 @@ typedef struct
 	} ACPI_CPPC;
 } POWER_THERMAL;
 
+/*				ACPI/OSPM
+
+	Highest Performance ... .------,
+				|######|
+				|######|
+	Nominal Performance ... |------|  ..
+				|//////|    \
+				|//////|    :
+				|//////|    :
+				|//////|    :
+				|//////|    --- Guaranteed Performance
+Lowest Nonlinear Performance .. --------    :	Allowed Range
+				|OOOOOO|    :
+				|OOOOOO|    :
+				|OOOOOO|    :
+	Lowest Performance .... --------  ../
+				|++++++|
+				|++++++|
+				|++++++|
+			0 ..... `------'
+*/
+
 typedef struct
 {
 	Bit64				OffLine __attribute__ ((aligned (8)));
@@ -871,9 +893,10 @@ typedef struct
 	BitCC	/* SNB */	C1U_Mask __attribute__ ((aligned (16)));
 	BitCC	/* AMD */	CC6_Mask __attribute__ ((aligned (16)));
 	BitCC	/* AMD */	PC6_Mask __attribute__ ((aligned (16)));
-	BitCC			SPEC_CTRL_Mask __attribute__ ((aligned (16)));
-	BitCC			ARCH_CAP_Mask  __attribute__ ((aligned (16)));
-	BitCC			WDT_Mask __attribute__ ((aligned (16)));
+	BitCC			SPEC_CTRL_Mask	__attribute__ ((aligned (16)));
+	BitCC			ARCH_CAP_Mask	__attribute__ ((aligned (16)));
+	BitCC	/* AMD */	BTC_NOBR_Mask	__attribute__ ((aligned (16)));
+	BitCC			WDT_Mask	__attribute__ ((aligned (16)));
 
 	enum THERMAL_FORMULAS	thermalFormula;
 	enum VOLTAGE_FORMULAS	voltageFormula;
@@ -1044,6 +1067,7 @@ typedef struct
 	BitCC			RRSBA_DIS_U	__attribute__ ((aligned (16)));
 	BitCC			RRSBA_DIS_S	__attribute__ ((aligned (16)));
 	BitCC			BHI_DIS_S	__attribute__ ((aligned (16)));
+	BitCC	/* AMD */	BTC_NOBR	__attribute__ ((aligned (16)));
 
 	struct {
 		Bit64		Signal	__attribute__ ((aligned (8)));

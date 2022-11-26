@@ -400,6 +400,10 @@ static signed short Mech_PSFD = -1;
 module_param(Mech_PSFD, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Mech_PSFD, "Mitigation Mechanism PSFD");
 
+static signed short Mech_BTC_NOBR = -1;
+module_param(Mech_BTC_NOBR, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Mech_BTC_NOBR, "Mitigation Mechanism BTC-NOBR");
+
 static signed short WDT_Enable = -1;
 module_param(WDT_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(WDT_Enable, "Watchdog Hardware Timer");
@@ -11005,6 +11009,38 @@ void AMD_Mitigation_Mechanisms(CORE_RO *Core)
     }
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask, Core->Bind);
+
+    switch (PUBLIC(RO(Proc))->ArchID) {
+    case AMD_Zen2_Renoir:
+    case AMD_Zen2_LCN:
+    case AMD_Zen2_MTS:
+    case AMD_Zen2_Ariel:
+    case AMD_Zen2_Jupiter:
+    case AMD_Zen2_MDN:
+      {
+	AMD_DE_CFG2 DE_CFG = {.value = 0};
+	RDMSR(DE_CFG, MSR_AMD_DE_CFG2);
+
+	if (((Mech_BTC_NOBR == COREFREQ_TOGGLE_OFF)
+	  || (Mech_BTC_NOBR == COREFREQ_TOGGLE_ON))
+	  && (PUBLIC(RO(Proc))->Features.leaf80000008.EBX.STIBP == 1))
+	{
+		DE_CFG.SuppressBPOnNonBr = Mech_BTC_NOBR;
+		WRMSR(DE_CFG, MSR_AMD_DE_CFG2);
+		RDMSR(DE_CFG, MSR_AMD_DE_CFG2);
+	}
+	if (DE_CFG.SuppressBPOnNonBr) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->BTC_NOBR, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BTC_NOBR, Core->Bind);
+	}
+      }
+	break;
+    default:
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BTC_NOBR, Core->Bind);
+	break;
+    }
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask, Core->Bind);
 }
 
 void Intel_VirtualMachine(CORE_RO *Core)
@@ -11064,6 +11100,7 @@ void PerCore_Reset(CORE_RO *Core)
 
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask	, Core->Bind);
@@ -11130,6 +11167,7 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA_DIS_U, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA_DIS_S, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BHI_DIS_S	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BTC_NOBR	, Core->Bind);
 
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.Mask);
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.Kind);
@@ -11182,6 +11220,7 @@ static void PerCore_VirtualMachine(void *arg)
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
@@ -11216,6 +11255,7 @@ static void PerCore_Intel_Query(void *arg)
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
@@ -11255,6 +11295,7 @@ static void PerCore_AuthenticAMD_Query(void *arg)
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 }
 
@@ -11288,6 +11329,7 @@ static void PerCore_Core2_Query(void *arg)
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
@@ -11327,6 +11369,7 @@ static void PerCore_Atom_Bonnell_Query(void *arg)
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
@@ -11423,8 +11466,10 @@ static void PerCore_Silvermont_Query(void *arg)
 
 	Intel_CStatesConfiguration(CSTATES_SOC_SLM, Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
 
 	PowerThermal(Core);				/* Shared | Unique */
 
@@ -11495,6 +11540,8 @@ static void PerCore_Goldmont_Query(void *arg)
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+
 	PowerThermal(Core);
 
 	ThermalMonitor_Set(Core);
@@ -11563,6 +11610,8 @@ static void PerCore_Nehalem_Same_Query(void *arg)
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
+
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
 	PowerThermal(Core);
 
@@ -11654,6 +11703,8 @@ static void PerCore_SandyBridge_Query(void *arg)
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
+
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
 	PowerThermal(Core);
 
@@ -11790,6 +11841,8 @@ static void PerCore_Haswell_EP_Query(void *arg)
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+
 	PowerThermal(Core);
 
 	ThermalMonitor_Set(Core);
@@ -11863,6 +11916,8 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
+
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
 	PowerThermal(Core);
 
@@ -11949,6 +12004,8 @@ static void PerCore_Skylake_Query(void *arg)
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+
 	PowerThermal(Core);
 
 	ThermalMonitor_Set(Core);
@@ -12027,6 +12084,8 @@ static void PerCore_Skylake_X_Query(void *arg)
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
+
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
 	PowerThermal(Core);
 
@@ -12107,6 +12166,7 @@ static void PerCore_AMD_Family_0Fh_Query(void *arg)
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 }
 
@@ -12142,6 +12202,7 @@ void PerCore_AMD_Family_Same_Query(void *arg)
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 }
 

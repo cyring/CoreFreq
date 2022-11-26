@@ -366,7 +366,8 @@ typedef struct
 				RRSBA_DIS_U	:  2-0,
 				RRSBA_DIS_S	:  4-2,
 				BHI_DIS_S	:  6-4,
-				_UnusedMechBits : 64-6;
+				BTC_NOBR	:  8-6,
+				_UnusedMechBits : 64-8;
 	} Mechanisms;
 
 	enum THERMAL_FORMULAS	thermalFormula;

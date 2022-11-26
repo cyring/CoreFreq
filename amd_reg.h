@@ -111,6 +111,11 @@
 	#define MSR_AMD_CU_CFG3 		0xc001102b
 #endif
 
+/* Sources: TECHNICAL GUIDANCE FOR MITIGATING BRANCH TYPE CONFUSION	*/
+#ifndef MSR_AMD_DE_CFG2
+	#define MSR_AMD_DE_CFG2 		0xc00110e3
+#endif
+
 /* Sources: 56569-A1 Rev 3.03 - PPR for AMD Family 19h Model 51h A1	*/
 #ifndef MSR_AMD_CPPC_CAP1
 	#define MSR_AMD_CPPC_CAP1		0xc00102b0
@@ -880,6 +885,18 @@ typedef union
 	ReservedBits6	: 64-53;
     };
 } AMD_CU_CFG3; /* Family: 15h(BKDG), 17h(BIOS), Other(TODO)		*/
+
+typedef union
+{
+	unsigned long long value; /* Scope[SMT]: MSR 0xc00110e3 	*/
+    struct
+    {
+	unsigned long long
+	UnspecifiedBit	:  1-0, /* Dumped as one			*/
+	SuppressBPOnNonBr: 2-1, /* 1: BTC-NOBR mitigation enabled	*/
+	ReservedBits	: 64-2;
+    };
+} AMD_DE_CFG2; /* Zen2 Family: 17h Models: 30h-4Fh, 60h-7Fh, A0h-AFh	*/
 
 typedef struct
 {

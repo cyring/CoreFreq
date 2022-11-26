@@ -2810,6 +2810,14 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		NULL
 	},
 	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Mechanisms.BTC_NOBR,
+		attr_Feat,
+		2, "%s%.*sBTC-NOBR   [%7s]", RSC(MECH_BTC_NOBR).CODE(),
+		width - 23 - RSZ(MECH_BTC_NOBR),
+		MECH
+	},
+	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		RO(Shm)->Proc.Features.ExtFeature.EDX.L1D_FLUSH_Cap == 1,
 		attr_Feat,

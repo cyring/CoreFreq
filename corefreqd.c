@@ -1996,6 +1996,9 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
     else if (	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	||	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
     {
+	unsigned short	BTC_NOBR = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->BTC_NOBR,
+						RO(Proc)->BTC_NOBR_Mask );
 	RO(Shm)->Proc.Mechanisms.IBRS = (
 		RO(Shm)->Proc.Features.leaf80000008.EBX.IBRS == 1
 	);
@@ -2010,6 +2013,11 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 	);
 
 	Mitigation_2nd_Stage(RO(Shm), RO(Proc), RW(Proc));
+
+	RO(Shm)->Proc.Mechanisms.BTC_NOBR = (
+		RO(Shm)->Proc.Features.leaf80000008.EBX.STIBP == 1
+	);
+	RO(Shm)->Proc.Mechanisms.BTC_NOBR += (2 * BTC_NOBR);
     }
 }
 
