@@ -227,6 +227,8 @@ enum SYS_REG {
 	EXFER_TCE	= 15,	/* AMD F17h				*/
 	EXFER_MCOMMIT	= 17,	/* AMD F17h				*/
 	EXFER_INT_WBINVD= 18,	/* AMD F17h				*/
+	EXFER_UAIE	= 20,	/* AMD F17h				*/
+	EXFER_AIBRSE	= 21,	/* AMD F17h				*/
 
 	XCR0_FPU	= 0,
 	XCR0_SSE	= 1,
