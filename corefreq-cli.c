@@ -2115,6 +2115,9 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	const ASCII *powered[] = {
 		RSC(MISSING).CODE(),
 		RSC(PRESENT).CODE()
+	}, *capability[] = {
+		RSC(UNABLE).CODE(),
+		RSC(PRESENT).CODE()
 	};
 	const ASCII *code_TSC[] = {
 		RSC(MISSING).CODE(),
@@ -2127,7 +2130,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RSC(X2APIC).CODE()
 	};
 	const ASCII *MECH[] = {
-		RSC(MISSING).CODE(),
+		RSC(UNABLE).CODE(),
 		RSC(PRESENT).CODE(),
 		RSC(DISABLE).CODE(),
 		RSC(ENABLE).CODE()
@@ -2742,7 +2745,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		3, "%s%.*s[%7s]", RSC(MECH_IBRS_ALWAYS_ON).CODE(),
 		width - (OutFunc == NULL ? 15:13) - RSZ(MECH_IBRS_ALWAYS_ON),
-		NULL
+		capability
 	},
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
@@ -2750,7 +2753,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		3, "%s%.*s[%7s]", RSC(MECH_IBRS_PREFERRED).CODE(),
 		width - (OutFunc == NULL ? 15:13) - RSZ(MECH_IBRS_PREFERRED),
-		NULL
+		capability
 	},
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
@@ -2758,7 +2761,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		3, "%s%.*s[%7s]", RSC(MECH_IBRS_SAME_MODE).CODE(),
 		width - (OutFunc == NULL ? 15:13) - RSZ(MECH_IBRS_SAME_MODE),
-		NULL
+		capability
 	},
 	{
 		NULL,
@@ -2767,7 +2770,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sIBPB   [%7s]", RSC(MECH_IBPB).CODE(),
 		width - 19 - RSZ(MECH_IBPB),
-		NULL
+		capability
 	},
 	{
 		NULL,
@@ -2791,7 +2794,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		3, "%s%.*s[%7s]", RSC(MECH_SSBD_VIRTSPECCTRL).CODE(),
 		width - (OutFunc == NULL ? 15:13) - RSZ(MECH_SSBD_VIRTSPECCTRL),
-		NULL
+		capability
 	},
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
@@ -2799,7 +2802,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		3, "%s%.*s[%7s]", RSC(MECH_SSBD_NOT_REQUIRED).CODE(),
 		width - (OutFunc == NULL ? 15:13) - RSZ(MECH_SSBD_NOT_REQUIRED),
-		NULL
+		capability
 	},
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
@@ -2807,7 +2810,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sBTC_NO   [%7s]", RSC(MECH_BTC_NO).CODE(),
 		width - 21 - RSZ(MECH_BTC_NO),
-		NULL
+		capability
 	},
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
@@ -2823,7 +2826,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sL1D-FLUSH   [%7s]", RSC(MECH_L1D_FLUSH).CODE(),
 		width - 24 - RSZ(MECH_L1D_FLUSH),
-		NULL
+		capability
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
@@ -2840,7 +2843,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sMD-CLEAR   [%7s]", RSC(MECH_MD_CLEAR).CODE(),
 		width - 23 - RSZ(MECH_MD_CLEAR),
-		NULL
+		capability
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
@@ -2994,7 +2997,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sSRBDS   [%7s]", RSC(MECH_SRBDS).CODE(),
 		width - 20 - RSZ(MECH_SRBDS),
-		NULL
+		MECH
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
@@ -3098,7 +3101,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		attr_Feat,
 		2, "%s%.*sMCDT_NO   [%7s]", RSC(MECH_MCDT_NO).CODE(),
 		width - 22 - RSZ(MECH_MCDT_NO),
-		NULL
+		MECH
 	},
 /* Section Mark */
 	{

@@ -523,6 +523,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FMW_CODE_FR 		"FMW"
 #define RSC_NOT_AVAILABLE_CODE_FR	"N/A"
 #define RSC_AUTOMATIC_CODE_FR		"AUTO"
+#define RSC_UNABLE_CODE_FR		"Indispo"
 #define RSC_MISSING_CODE_FR		"Absent"
 #define RSC_PRESENT_CODE_FR		"Capable"
 #define RSC_VARIANT_CODE_FR		"Variant"

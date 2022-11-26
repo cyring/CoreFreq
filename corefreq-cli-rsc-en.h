@@ -1044,6 +1044,7 @@
 #define RSC_FMW_CODE_EN 		"FMW"
 #define RSC_NOT_AVAILABLE_CODE_EN	"N/A"
 #define RSC_AUTOMATIC_CODE_EN		"AUTO"
+#define RSC_UNABLE_CODE_EN		"Unable"
 #define RSC_MISSING_CODE_EN		"Missing"
 #define RSC_PRESENT_CODE_EN		"Capable"
 #define RSC_VARIANT_CODE_EN		"Variant"
