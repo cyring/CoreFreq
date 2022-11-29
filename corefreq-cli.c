@@ -3829,6 +3829,7 @@ void HWP_Update(TGrid *grid, DATA_TYPE data[])
 
 void Refresh_HWP_Cap_Freq(TGrid *grid, DATA_TYPE data[])
 {
+	char *item;
 	ATTRIBUTE *HWP_Cap_Attr[2] = {
 		RSC(SYSINFO_PERFMON_HWP_CAP_COND0).ATTR(),
 		RSC(SYSINFO_PERFMON_HWP_CAP_COND1).ATTR()
@@ -3838,7 +3839,46 @@ void Refresh_HWP_Cap_Freq(TGrid *grid, DATA_TYPE data[])
 
 	memcpy(grid->cell.attr, HWP_Cap_Attr[bix], grid->cell.length);
 
-	RefreshRatioFreq(grid, data);
+    if ((item = malloc(grid->cell.length + 1)) != NULL)
+    {
+	const unsigned int cpu = data[0].uint[0];
+	CPU_STRUCT *SProc = &RO(Shm)->Cpu[cpu];
+	struct FLIP_FLOP *CFlop = &SProc->FlipFlop[!RO(Shm)->Cpu[cpu].Toggle];
+
+	double	Lowest_MHz = ABS_FREQ_MHz(double,
+				SProc->PowerThermal.HWP.Capabilities.Lowest,
+				CFlop->Clock
+		),
+		Efficient_MHz = ABS_FREQ_MHz(double,
+			SProc->PowerThermal.HWP.Capabilities.Most_Efficient,
+			CFlop->Clock
+		),
+		Guaranteed_MHz = ABS_FREQ_MHz(double,
+				SProc->PowerThermal.HWP.Capabilities.Guaranteed,
+				CFlop->Clock
+		),
+		Highest_MHz = ABS_FREQ_MHz(double,
+				SProc->PowerThermal.HWP.Capabilities.Highest,
+				CFlop->Clock
+		);
+
+	size_t length;
+	if (StrLenFormat(length, item, grid->cell.length + 1,
+		"CPU #%-3u  %7.2f (%3u)  %7.2f (%3u)  %7.2f (%3u)  %7.2f (%3u)",
+			cpu,
+			Lowest_MHz,
+			SProc->PowerThermal.HWP.Capabilities.Lowest,
+			Efficient_MHz,
+			SProc->PowerThermal.HWP.Capabilities.Most_Efficient,
+			Guaranteed_MHz,
+			SProc->PowerThermal.HWP.Capabilities.Guaranteed,
+			Highest_MHz,
+			SProc->PowerThermal.HWP.Capabilities.Highest) > 0)
+	{
+		memcpy(&grid->cell.item[3], item, length);
+	}
+	free(item);
+    }
 }
 
 void HDC_Update(TGrid *grid, DATA_TYPE data[])
@@ -4099,111 +4139,6 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 26 - RSZ(PERF_MON_HWCF), hSpace,
 		RSC(PERF_LABEL_HWCF).CODE(), ENABLED(bix) );
 /* Section Mark */
-    if   ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-	|| (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
-    {
-	PUT(SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.OSPM_CPC], width, 2,
-		"%s%.*s%s       [%3s]", RSC(PERF_MON_CPC).CODE(),
-		width - 19 - RSZ(PERF_MON_CPC), hSpace,
-		RSC(PERF_LABEL_CPC).CODE(),
-		ENABLED(RO(Shm)->Proc.Features.OSPM_CPC));
-    }
-	bix = (RO(Shm)->Proc.Features.Power.EAX.HWP_Reg == 1)	/* Intel:HWP */
-	|| (RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1)	/* AMD:CPPC  */
-	|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1);		/* ACPI:CPPC */
-    if (bix)
-    {
-	CPU_STRUCT *SProc = &RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core];
-	struct FLIP_FLOP *CFlop = &SProc->FlipFlop[
-				!RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Toggle
-	];
-	ATTRIBUTE *HWP_Cap_Attr[2] = {
-		RSC(SYSINFO_PERFMON_HWP_CAP_COND0).ATTR(),
-		RSC(SYSINFO_PERFMON_HWP_CAP_COND1).ATTR()
-	};
-	bix = RO(Shm)->Proc.Features.HWP_Enable == 1;
-
-     if  ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-	|| (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
-     {
-      if (RO(Shm)->Proc.Features.ACPI_CPPC == 1)
-      {
-	GridHover( PUT( BOXKEY_FMW_CPPC,
-			attrib[RO(Shm)->Proc.Features.ACPI_CPPC], width, 2,
-			"%s%.*s%s       <%3s>", RSC(PERF_MON_CPPC).CODE(),
-			width - 19 - RSZ(PERF_MON_CPPC), hSpace,
-			RSC(PERF_LABEL_CPPC).CODE(), RSC(FMW).CODE() ),
-		(char *) RSC(PERF_MON_CPPC_COMM).CODE() );
-      }
-      else
-      {
-	GridCall( PUT(	BOXKEY_HWP, attrib[bix], width, 2,
-			"%s%.*s%s       <%3s>", RSC(PERF_MON_CPPC).CODE(),
-			width - 19 - RSZ(PERF_MON_CPPC), hSpace,
-			RSC(PERF_LABEL_CPPC).CODE(), ENABLED(bix) ),
-		HWP_Update);
-      }
-     } else {
-	GridCall( PUT(	BOXKEY_HWP, attrib[bix], width, 2,
-			"%s%.*s%s       <%3s>", RSC(PERF_MON_HWP).CODE(),
-			width - 18 - RSZ(PERF_MON_HWP), hSpace,
-			RSC(PERF_LABEL_HWP).CODE(), ENABLED(bix) ),
-		HWP_Update);
-     }
-	PUT(	SCANKEY_NULL, RSC(SYSINFO_PERFMON_HWP_CAP_COND1).ATTR(),
-		width, 3, "%s""%.*s""%s""%.*s""%s", RSC(CAPABILITIES).CODE(),
-		21 - 3 * (OutFunc == NULL) - RSZ(CAPABILITIES), hSpace,
-		RSC(PERF_MON_UNIT_HWP).CODE(), 22, hSpace, RSC(RATIO).CODE() );
-
-	GridCall(PrintRatioFreq(win, CFlop,
-			1, (char*) RSC(LOWEST).CODE(),
-			&SProc->PowerThermal.HWP.Capabilities.Lowest,
-			0, SCANKEY_NULL, width, OutFunc,
-			HWP_Cap_Attr[bix]),
-		Refresh_HWP_Cap_Freq,
-		&SProc->PowerThermal.HWP.Capabilities.Lowest);
-
-	GridCall(PrintRatioFreq(win, CFlop,
-			1, (char*) RSC(EFFICIENT).CODE(),
-			&SProc->PowerThermal.HWP.Capabilities.Most_Efficient,
-			0, SCANKEY_NULL, width, OutFunc,
-			HWP_Cap_Attr[bix]),
-		Refresh_HWP_Cap_Freq,
-		&SProc->PowerThermal.HWP.Capabilities.Most_Efficient);
-
-	GridCall(PrintRatioFreq(win, CFlop,
-			1, (char*) RSC(GUARANTEED).CODE(),
-			&SProc->PowerThermal.HWP.Capabilities.Guaranteed,
-			0, SCANKEY_NULL, width, OutFunc,
-			HWP_Cap_Attr[bix]),
-		Refresh_HWP_Cap_Freq,
-		&SProc->PowerThermal.HWP.Capabilities.Guaranteed);
-
-	GridCall(PrintRatioFreq(win, CFlop,
-			1, (char*) RSC(HIGHEST).CODE(),
-			&SProc->PowerThermal.HWP.Capabilities.Highest,
-			0, SCANKEY_NULL, width, OutFunc,
-			HWP_Cap_Attr[bix]),
-		Refresh_HWP_Cap_Freq,
-		&SProc->PowerThermal.HWP.Capabilities.Highest);
-    }
-    else if ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-	   || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
-    {
-	PUT(	SCANKEY_NULL, attrib[4], width, 2,
-		"%s%.*s%s       [%3s]", RSC(PERF_MON_CPPC).CODE(),
-		width - 19 - RSZ(PERF_MON_CPPC), hSpace,
-		RSC(PERF_LABEL_CPPC).CODE(), RSC(NOT_AVAILABLE).CODE() );
-    } else {
-	const unsigned int cix	= ((RO(Shm)->Proc.Features.HWP_Enable == 1)
-				|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1));
-
-	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*s%s       [%3s]", RSC(PERF_MON_HWP).CODE(),
-		width - 18 - RSZ(PERF_MON_HWP), hSpace,
-		RSC(PERF_LABEL_HWP).CODE(), ENABLED(cix) );
-    }
-/* Section Mark */
     if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	bix = RO(Shm)->Proc.Features.HDC_Enable == 1;
@@ -4391,6 +4326,116 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_CORE).CODE(),
 		width - 12 - RSZ(PERF_MON_CORE), hSpace, POWERED(bix) );
+    }
+/* Section Mark */
+    if   ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	|| (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
+    {
+	PUT(SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.OSPM_CPC], width, 2,
+		"%s%.*s%s       [%3s]", RSC(PERF_MON_CPC).CODE(),
+		width - 19 - RSZ(PERF_MON_CPC), hSpace,
+		RSC(PERF_LABEL_CPC).CODE(),
+		ENABLED(RO(Shm)->Proc.Features.OSPM_CPC));
+    }
+	bix = (RO(Shm)->Proc.Features.Power.EAX.HWP_Reg == 1)	/* Intel:HWP */
+	|| (RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1)	/* AMD:CPPC  */
+	|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1);		/* ACPI:CPPC */
+    if (bix)
+    {
+	ATTRIBUTE *HWP_Cap_Attr[2] = {
+		RSC(SYSINFO_PERFMON_HWP_CAP_COND0).ATTR(),
+		RSC(SYSINFO_PERFMON_HWP_CAP_COND1).ATTR()
+	};
+	unsigned int cpu;
+
+	bix = RO(Shm)->Proc.Features.HWP_Enable == 1;
+
+     if  ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	|| (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
+     {
+      if (RO(Shm)->Proc.Features.ACPI_CPPC == 1)
+      {
+	GridHover( PUT( BOXKEY_FMW_CPPC,
+			attrib[RO(Shm)->Proc.Features.ACPI_CPPC], width, 2,
+			"%s%.*s%s       <%3s>", RSC(PERF_MON_CPPC).CODE(),
+			width - 19 - RSZ(PERF_MON_CPPC), hSpace,
+			RSC(PERF_LABEL_CPPC).CODE(), RSC(FMW).CODE() ),
+		(char *) RSC(PERF_MON_CPPC_COMM).CODE() );
+      }
+      else
+      {
+	GridCall( PUT(	BOXKEY_HWP, attrib[bix], width, 2,
+			"%s%.*s%s       <%3s>", RSC(PERF_MON_CPPC).CODE(),
+			width - 19 - RSZ(PERF_MON_CPPC), hSpace,
+			RSC(PERF_LABEL_CPPC).CODE(), ENABLED(bix) ),
+		HWP_Update);
+      }
+     } else {
+	GridCall( PUT(	BOXKEY_HWP, attrib[bix], width, 2,
+			"%s%.*s%s       <%3s>", RSC(PERF_MON_HWP).CODE(),
+			width - 18 - RSZ(PERF_MON_HWP), hSpace,
+			RSC(PERF_LABEL_HWP).CODE(), ENABLED(bix) ),
+		HWP_Update);
+     }
+
+	PUT(	SCANKEY_NULL, RSC(SYSINFO_PERFMON_HWP_CAP_COND1).ATTR(),
+		width, 3, "%s     %s      %s     %s        %s",
+		RSC(CAPABILITIES).CODE(),
+		RSC(LOWEST).CODE(), RSC(EFFICIENT).CODE(),
+		RSC(GUARANTEED).CODE(), RSC(HIGHEST).CODE());
+
+      for (cpu = 0; cpu < RO(Shm)->Proc.CPU.Count; cpu++)
+      {
+	CPU_STRUCT *SProc = &RO(Shm)->Cpu[cpu];
+	struct FLIP_FLOP *CFlop = &SProc->FlipFlop[!RO(Shm)->Cpu[cpu].Toggle];
+
+	double	Lowest_MHz = ABS_FREQ_MHz(double,
+				SProc->PowerThermal.HWP.Capabilities.Lowest,
+				CFlop->Clock
+		),
+		Efficient_MHz = ABS_FREQ_MHz(double,
+			SProc->PowerThermal.HWP.Capabilities.Most_Efficient,
+			CFlop->Clock
+		),
+		Guaranteed_MHz = ABS_FREQ_MHz(double,
+				SProc->PowerThermal.HWP.Capabilities.Guaranteed,
+				CFlop->Clock
+		),
+		Highest_MHz = ABS_FREQ_MHz(double,
+				SProc->PowerThermal.HWP.Capabilities.Highest,
+				CFlop->Clock
+		);
+
+	GridCall(
+	    PUT(SCANKEY_NULL, HWP_Cap_Attr[bix], width, 3,
+		"CPU #%-3u  %7.2f (%3u)  %7.2f (%3u)  %7.2f (%3u)  %7.2f (%3u)",
+			cpu,
+			Lowest_MHz,
+			SProc->PowerThermal.HWP.Capabilities.Lowest,
+			Efficient_MHz,
+			SProc->PowerThermal.HWP.Capabilities.Most_Efficient,
+			Guaranteed_MHz,
+			SProc->PowerThermal.HWP.Capabilities.Guaranteed,
+			Highest_MHz,
+			SProc->PowerThermal.HWP.Capabilities.Highest),
+		Refresh_HWP_Cap_Freq, cpu);
+      }
+    }
+    else if ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	   || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
+    {
+	PUT(	SCANKEY_NULL, attrib[4], width, 2,
+		"%s%.*s%s       [%3s]", RSC(PERF_MON_CPPC).CODE(),
+		width - 19 - RSZ(PERF_MON_CPPC), hSpace,
+		RSC(PERF_LABEL_CPPC).CODE(), RSC(NOT_AVAILABLE).CODE() );
+    } else {
+	const unsigned int cix	= ((RO(Shm)->Proc.Features.HWP_Enable == 1)
+				|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1));
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*s%s       [%3s]", RSC(PERF_MON_HWP).CODE(),
+		width - 18 - RSZ(PERF_MON_HWP), hSpace,
+		RSC(PERF_LABEL_HWP).CODE(), ENABLED(cix) );
     }
 	return reason;
 }

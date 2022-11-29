@@ -642,7 +642,6 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_GENERAL_CTRS_CODE_FR	"G""\xa9""n""\xa9""raux"
 #define RSC_FIXED_CTRS_CODE_FR		"Fixes"
 #define RSC_PERF_MON_UNIT_BIT_CODE_FR	"bits"
-#define RSC_PERF_MON_UNIT_HWP_CODE_FR	"(MHz)"
 #define RSC_PERF_MON_C1E_CODE_FR	"Enhanced Halt State"
 #define RSC_PERF_MON_C1A_CODE_FR	"C1 Auto Demotion"
 #define RSC_PERF_MON_C3A_CODE_FR	"C3 Auto Demotion"
