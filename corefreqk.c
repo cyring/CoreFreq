@@ -3831,7 +3831,7 @@ inline signed int Enable_ACPI_CPPC(unsigned int cpu, void *arg)
 #endif /* CONFIG_ACPI_CPPC_LIB */
 }
 
-signed int Read_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
+signed int Get_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 {
 #ifdef CONFIG_ACPI_CPPC_LIB
 	struct cppc_perf_fb_ctrs CPPC_Perf;
@@ -3894,6 +3894,33 @@ signed int Read_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 #endif /* CONFIG_ACPI_CPPC_LIB */
 }
 
+void Compute_ACPI_CPPC_Bounds(unsigned int cpu)
+{
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+	if (Core->PowerThermal.ACPI_CPPC.Highest > \
+		PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Maximum)
+	{
+		PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Maximum = \
+			Core->PowerThermal.ACPI_CPPC.Highest;
+	}
+	if (Core->PowerThermal.ACPI_CPPC.Highest < \
+		PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Minimum)
+	{
+		PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Minimum = \
+			Core->PowerThermal.ACPI_CPPC.Highest;
+	}
+}
+
+signed int Read_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
+{
+	signed int rc = Get_ACPI_CPPC_Registers(cpu, arg);
+
+	Compute_ACPI_CPPC_Bounds(cpu);
+
+	return rc;
+}
+
 void For_All_ACPI_CPPC(signed int(*CPPC_Func)(unsigned int, void*), void *arg)
 {
 	#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
@@ -3904,6 +3931,8 @@ void For_All_ACPI_CPPC(signed int(*CPPC_Func)(unsigned int, void*), void *arg)
 	unsigned int cpu;
 
 	PUBLIC(RO(Proc))->Features.OSPM_CPC = !rc;
+	PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Minimum = 255U;
+	PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Maximum = 1U;
 
 	for (cpu = 0; (cpu < PUBLIC(RO(Proc))->CPU.Count) && (rc == 0); cpu++)
 	{
@@ -7279,7 +7308,7 @@ inline unsigned int CPPC_AMD_Zen_ScaleHint(	CORE_RO *Core,
 	return flag;
 }
 
-signed int Write_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
+signed int Put_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 {
 #if defined (CONFIG_ACPI_CPPC_LIB) \
  && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
@@ -7399,6 +7428,15 @@ signed int Write_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 #else
 	return -ENODEV;
 #endif /* CONFIG_ACPI_CPPC_LIB */
+}
+
+signed int Write_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
+{
+	signed int rc = Put_ACPI_CPPC_Registers(cpu, arg);
+
+	Compute_ACPI_CPPC_Bounds(cpu);
+
+	return rc;
 }
 
 static void CPPC_AMD_Zen_PerCore(void *arg)
@@ -12536,17 +12574,17 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
 
 	Core->PowerThermal.HWP_Capabilities.Highest = \
-			CPPC_AMD_Zen_ScaleRatio( Core,
-				Core->PowerThermal.ACPI_CPPC.Highest,
-				Core->PowerThermal.ACPI_CPPC.Highest,
-				!HwCfgRegister.Family_17h.CpbDis
-			);
+		CPPC_AMD_Zen_ScaleRatio(Core,
+			PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Maximum,
+			Core->PowerThermal.ACPI_CPPC.Highest,
+			!HwCfgRegister.Family_17h.CpbDis
+		);
 	Core->PowerThermal.HWP_Capabilities.Guaranteed = \
-			CPPC_AMD_Zen_ScaleRatio( Core,
-				Core->PowerThermal.ACPI_CPPC.Highest,
-				Core->PowerThermal.ACPI_CPPC.Guaranteed,
-				!HwCfgRegister.Family_17h.CpbDis
-			);
+		CPPC_AMD_Zen_ScaleRatio(Core,
+			PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Maximum,
+			Core->PowerThermal.ACPI_CPPC.Guaranteed,
+			!HwCfgRegister.Family_17h.CpbDis
+		);
 	#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0)
 	Core->PowerThermal.HWP_Capabilities.Most_Efficient = \
 			Core->PowerThermal.ACPI_CPPC.Efficient / PRECISION;
@@ -12558,32 +12596,32 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 			Core->PowerThermal.ACPI_CPPC.Minimum / PRECISION;
 	#else
 	Core->PowerThermal.HWP_Capabilities.Most_Efficient = \
-			CPPC_AMD_Zen_ScaleRatio( Core,
-				Core->PowerThermal.ACPI_CPPC.Highest,
-				Core->PowerThermal.ACPI_CPPC.Efficient,
-				!HwCfgRegister.Family_17h.CpbDis
-			);
+		CPPC_AMD_Zen_ScaleRatio(Core,
+			PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Maximum,
+			Core->PowerThermal.ACPI_CPPC.Efficient,
+			!HwCfgRegister.Family_17h.CpbDis
+		);
 	Core->PowerThermal.HWP_Capabilities.Lowest = \
-			CPPC_AMD_Zen_ScaleRatio( Core,
-				Core->PowerThermal.ACPI_CPPC.Highest,
-				Core->PowerThermal.ACPI_CPPC.Lowest,
-				!HwCfgRegister.Family_17h.CpbDis
-			);
+		CPPC_AMD_Zen_ScaleRatio(Core,
+			PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Maximum,
+			Core->PowerThermal.ACPI_CPPC.Lowest,
+			!HwCfgRegister.Family_17h.CpbDis
+		);
 	Core->PowerThermal.HWP_Request.Minimum_Perf = \
-			CPPC_AMD_Zen_ScaleRatio( Core,
+			CPPC_AMD_Zen_ScaleRatio(Core,
 				Core->PowerThermal.ACPI_CPPC.Highest,
 				Core->PowerThermal.ACPI_CPPC.Minimum,
 				!HwCfgRegister.Family_17h.CpbDis
 			);
 	#endif
 	Core->PowerThermal.HWP_Request.Maximum_Perf = \
-			CPPC_AMD_Zen_ScaleRatio( Core,
+			CPPC_AMD_Zen_ScaleRatio(Core,
 				Core->PowerThermal.ACPI_CPPC.Highest,
 				Core->PowerThermal.ACPI_CPPC.Maximum,
 				!HwCfgRegister.Family_17h.CpbDis
 			);
 	Core->PowerThermal.HWP_Request.Desired_Perf = \
-			CPPC_AMD_Zen_ScaleRatio( Core,
+			CPPC_AMD_Zen_ScaleRatio(Core,
 				Core->PowerThermal.ACPI_CPPC.Highest,
 				Core->PowerThermal.ACPI_CPPC.Desired,
 				!HwCfgRegister.Family_17h.CpbDis

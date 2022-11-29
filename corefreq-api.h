@@ -969,6 +969,11 @@ typedef struct
 /*32-bits*/	unsigned int		_pad32;
 	    } Zen;
 	  };
+
+	    struct {
+		unsigned short		Minimum,
+					Maximum;
+	    } ACPI_CPPC;
 	} PowerThermal;
 
 	THERMAL_POINT		ThermalPoint;
