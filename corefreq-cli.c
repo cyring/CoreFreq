@@ -3834,6 +3834,10 @@ void Refresh_HWP_Cap_Freq(TGrid *grid, DATA_TYPE data[])
 		RSC(SYSINFO_PERFMON_HWP_CAP_COND0).ATTR(),
 		RSC(SYSINFO_PERFMON_HWP_CAP_COND1).ATTR()
 	};
+	size_t length;
+	const unsigned int cpu = data[0].uint[0];
+  if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
+  {
 	const unsigned int bix	= (RO(Shm)->Proc.Features.HWP_Enable == 1)
 				| (RO(Shm)->Proc.Features.ACPI_CPPC == 1);
 
@@ -3841,7 +3845,6 @@ void Refresh_HWP_Cap_Freq(TGrid *grid, DATA_TYPE data[])
 
     if ((item = malloc(grid->cell.length + 1)) != NULL)
     {
-	const unsigned int cpu = data[0].uint[0];
 	CPU_STRUCT *SProc = &RO(Shm)->Cpu[cpu];
 	struct FLIP_FLOP *CFlop = &SProc->FlipFlop[!RO(Shm)->Cpu[cpu].Toggle];
 
@@ -3862,7 +3865,6 @@ void Refresh_HWP_Cap_Freq(TGrid *grid, DATA_TYPE data[])
 				CFlop->Clock
 		);
 
-	size_t length;
 	if (StrLenFormat(length, item, grid->cell.length + 1,
 		"CPU #%-3u  %7.2f (%3u)  %7.2f (%3u)  %7.2f (%3u)  %7.2f (%3u)",
 			cpu,
@@ -3879,6 +3881,20 @@ void Refresh_HWP_Cap_Freq(TGrid *grid, DATA_TYPE data[])
 	}
 	free(item);
     }
+  } else {
+	memcpy(grid->cell.attr, HWP_Cap_Attr[0], grid->cell.length);
+
+    if ((item = malloc(grid->cell.length + 1)) != NULL)
+    {
+	if (StrLenFormat(length, item, grid->cell.length + 1,
+			"CPU #%-3u%.*s-%.*s-%.*s-%.*s- ", cpu,
+			13, hSpace, 14, hSpace, 14, hSpace, 14, hSpace) > 0)
+	{
+		memcpy(&grid->cell.item[3], item, length);
+	}
+	free(item);
+    }
+  }
 }
 
 void HDC_Update(TGrid *grid, DATA_TYPE data[])
@@ -4384,7 +4400,8 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RSC(LOWEST).CODE(), RSC(EFFICIENT).CODE(),
 		RSC(GUARANTEED).CODE(), RSC(HIGHEST).CODE());
 
-      for (cpu = 0; cpu < RO(Shm)->Proc.CPU.Count; cpu++)
+     for (cpu = 0; cpu < RO(Shm)->Proc.CPU.Count; cpu++)
+      if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
       {
 	CPU_STRUCT *SProc = &RO(Shm)->Cpu[cpu];
 	struct FLIP_FLOP *CFlop = &SProc->FlipFlop[!RO(Shm)->Cpu[cpu].Toggle];
@@ -4418,6 +4435,12 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			SProc->PowerThermal.HWP.Capabilities.Guaranteed,
 			Highest_MHz,
 			SProc->PowerThermal.HWP.Capabilities.Highest),
+		Refresh_HWP_Cap_Freq, cpu);
+      } else {
+	GridCall(
+	    PUT(SCANKEY_NULL, HWP_Cap_Attr[0], width, 3,
+		"CPU #%-3u%.*s-%.*s-%.*s-%.*s-", cpu,
+		13, hSpace, 14, hSpace, 14, hSpace, 14, hSpace),
 		Refresh_HWP_Cap_Freq, cpu);
       }
     }

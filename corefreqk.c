@@ -3936,7 +3936,9 @@ void For_All_ACPI_CPPC(signed int(*CPPC_Func)(unsigned int, void*), void *arg)
 
 	for (cpu = 0; (cpu < PUBLIC(RO(Proc))->CPU.Count) && (rc == 0); cpu++)
 	{
-		rc = CPPC_Func(cpu, arg);
+		if (!BITVAL(PUBLIC(RO(Core, AT(cpu)))->OffLine, OS)) {
+			rc = CPPC_Func(cpu, arg);
+		}
 	}
 	PUBLIC(RO(Proc))->Features.ACPI_CPPC = (rc == 0);
 }
@@ -21657,6 +21659,10 @@ static int CoreFreqK_HotPlug_CPU_Online(unsigned int cpu)
 	BITCLR(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine, OS);
 
 	MatchPeerForUpService(&PUBLIC(RO(Proc))->Service, cpu);
+
+   if (PUBLIC(RO(Proc))->Features.ACPI_CPPC == 1) {
+	Read_ACPI_CPPC_Registers(cpu, NULL);
+   }
 
 	/* Start the collect timer dedicated to this CPU iff not STR resuming */
    if (CoreFreqK.ResumeFromSuspend == false)
