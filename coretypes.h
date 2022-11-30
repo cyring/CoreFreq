@@ -1962,14 +1962,14 @@ typedef struct	/* BSP CPUID features.					*/
 
 /* Memory Controller' structures dimensions.				*/
 #define MC_MAX_CTRL	8
-#define MC_MAX_CHA	8
+#define MC_MAX_CHA	12
 #define MC_MAX_DIMM	4
 
 #define MC_3D_VECTOR_TO_SCALAR(_mc, _cha, _slot)			\
-	((_mc << 3 /*MC_MAX_CTRL*/) + (_cha << 3 /*MC_MAX_CHA*/) + _slot)
+	((_mc * MC_MAX_CTRL) + (_cha * MC_MAX_CHA) + _slot)
 
 #define MC_2D_VECTOR_TO_SCALAR(_mc, _cha)				\
-	((_mc << 3 /*MC_MAX_CTRL*/) + _cha)
+	((_mc * MC_MAX_CTRL) + _cha)
 
 #define MC_VECTOR_DISPATCH(_1, _2, _3, MC_VECTOR_CURSOR, ...)		\
 	MC_VECTOR_CURSOR
