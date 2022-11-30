@@ -3809,26 +3809,60 @@ long AMD_F17h_CPPC(void)
 	return -ENODEV;
 }
 
+void Compute_ACPI_CPPC_Bounds(unsigned int cpu)
+{
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+	if (Core->PowerThermal.ACPI_CPPC.Highest > \
+		PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Maximum)
+	{
+		PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Maximum = \
+			Core->PowerThermal.ACPI_CPPC.Highest;
+	}
+	if (Core->PowerThermal.ACPI_CPPC.Highest < \
+		PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Minimum)
+	{
+		PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Minimum = \
+			Core->PowerThermal.ACPI_CPPC.Highest;
+	}
+}
+
 inline signed int Disable_ACPI_CPPC(unsigned int cpu, void *arg)
 {
-	UNUSED(arg);
 #if defined(CONFIG_ACPI_CPPC_LIB) \
  && LINUX_VERSION_CODE >= KERNEL_VERSION(5, 17, 0)
-	return cppc_set_enable((signed int) cpu, false);
+	signed int rc = cppc_set_enable((signed int) cpu, false);
 #else
-	return -ENODEV;
+	signed int rc = -ENODEV;
 #endif /* CONFIG_ACPI_CPPC_LIB */
+	UNUSED(arg);
+
+	if (rc != 0) {
+		pr_debug("CoreFreq: cppc_set_enable(cpu=%u, false) error %d\n",
+			cpu, rc);
+	}
+	Compute_ACPI_CPPC_Bounds(cpu);
+
+	return rc;
 }
 
 inline signed int Enable_ACPI_CPPC(unsigned int cpu, void *arg)
 {
-	UNUSED(arg);
 #if defined(CONFIG_ACPI_CPPC_LIB) \
  && LINUX_VERSION_CODE >= KERNEL_VERSION(5, 17, 0)
-	return cppc_set_enable((signed int) cpu, true);
+	signed int rc = cppc_set_enable((signed int) cpu, true);
 #else
-	return -ENODEV;
+	signed int rc = -ENODEV;
 #endif /* CONFIG_ACPI_CPPC_LIB */
+	UNUSED(arg);
+
+	if (rc != 0) {
+		pr_debug("CoreFreq: cppc_set_enable(cpu=%u, true) error %d\n",
+			cpu, rc);
+	}
+	Compute_ACPI_CPPC_Bounds(cpu);
+
+	return rc;
 }
 
 signed int Get_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
@@ -3844,9 +3878,11 @@ signed int Get_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 
 	if ((rc = cppc_get_perf_ctrs(Core->Bind, &CPPC_Perf)) == 0) {
 	    if ((rc = cppc_get_perf_caps(Core->Bind, &CPPC_Caps)) != 0)
-		pr_err("CoreFreq: cppc_get_perf_caps() error %d\n", rc);
+		pr_debug("CoreFreq: cppc_get_perf_caps(cpu=%u) error %d\n",
+			Core->Bind, rc);
 	} else {
-		pr_err("CoreFreq: cppc_get_perf_ctrs() error %d\n", rc);
+		pr_debug("CoreFreq: cppc_get_perf_ctrs(cpu=%u) error %d\n",
+			Core->Bind, rc);
 	}
 	if (rc == 0) {
 	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
@@ -3884,7 +3920,8 @@ signed int Get_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 	    if (rc == 0) {
 		Core->PowerThermal.ACPI_CPPC.Desired = desired_perf;
 	    } else {
-		 pr_err("CoreFreq: cppc_get_desired_perf() error %d\n", rc);
+		 pr_debug("CoreFreq: cppc_get_desired_perf(cpu=%u) error %d\n",
+			Core->Bind, rc);
 	    }
 	    #endif
 	}
@@ -3892,24 +3929,6 @@ signed int Get_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 #else
 	return -ENODEV;
 #endif /* CONFIG_ACPI_CPPC_LIB */
-}
-
-void Compute_ACPI_CPPC_Bounds(unsigned int cpu)
-{
-	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
-
-	if (Core->PowerThermal.ACPI_CPPC.Highest > \
-		PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Maximum)
-	{
-		PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Maximum = \
-			Core->PowerThermal.ACPI_CPPC.Highest;
-	}
-	if (Core->PowerThermal.ACPI_CPPC.Highest < \
-		PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Minimum)
-	{
-		PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Minimum = \
-			Core->PowerThermal.ACPI_CPPC.Highest;
-	}
 }
 
 signed int Read_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
@@ -7344,7 +7363,8 @@ signed int Put_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 	if (cppc_get_desired_perf(Core->Bind, &desired_perf) == 0) {
 		perf_ctrls.desired_perf = desired_perf;
 	} else {
-		pr_err("CoreFreq: cppc_get_desired_perf() error\n");
+		pr_debug("CoreFreq: cppc_get_desired_perf(cpu=%u) error\n",
+			Core->Bind);
 	}
     #endif
 
@@ -7410,7 +7430,7 @@ signed int Put_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 
 		Core->PowerThermal.ACPI_CPPC.Maximum = CPPC_Caps.highest_perf;
 	    } else {
-		pr_err("CoreFreq: cppc_get_perf_caps() error\n");
+		pr_debug("CoreFreq: cppc_get_perf_caps(cpu=%u) error\n", cpu);
 	    }
 	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
 	    if (cppc_get_desired_perf(cpu, &desired_perf) == 0) {
@@ -7418,13 +7438,13 @@ signed int Put_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 
 		Core->PowerThermal.ACPI_CPPC.Desired = desired_perf;
 	    } else {
-		pr_err("CoreFreq: cppc_get_desired_perf() error\n");
+		pr_debug("CoreFreq: cppc_get_desired_perf(cpu=%u) error\n",cpu);
 	    }
 	    #endif
 		pClockZen->rc = RC_OK_COMPUTE;
 	}
     } else {
-	pr_err("CoreFreq: cppc_get_perf_*() error\n");
+	pr_debug("CoreFreq: cppc_get_perf_*(cpu=%u) error\n", Core->Bind);
     }
 	return 0;
 #else
