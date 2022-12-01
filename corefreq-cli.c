@@ -4394,8 +4394,8 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		HWP_Update);
      }
 
-	PUT(	SCANKEY_NULL, RSC(SYSINFO_PERFMON_HWP_CAP_COND1).ATTR(),
-		width, 3, "%s     %s      %s     %s        %s",
+	PUT(	SCANKEY_NULL, attrib[0], width, 3,
+		"%s     %s      %s     %s        %s",
 		RSC(CAPABILITIES).CODE(),
 		RSC(LOWEST).CODE(), RSC(EFFICIENT).CODE(),
 		RSC(GUARANTEED).CODE(), RSC(HIGHEST).CODE());
