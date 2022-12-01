@@ -1693,6 +1693,7 @@ static void Query_Hygon_F18h(unsigned int cpu);
 #define     InitTimer_AMD_F19h_Zen3_SP InitTimer_AMD_F17h_Zen2_SP
 #define     InitTimer_AMD_F19h_Zen3_MP InitTimer_AMD_F17h_Zen2_MP
 #define     InitTimer_AMD_F19h_Zen3_APU InitTimer_AMD_F17h_Zen2_APU
+#define     InitTimer_AMD_Zen4_RPL InitTimer_AMD_Zen3Plus_RMB
 #define     Start_Uncore_AMD_Family_19h Start_Uncore_AMD_Family_17h
 #define     Stop_Uncore_AMD_Family_19h Stop_Uncore_AMD_Family_17h
 
@@ -2050,6 +2051,7 @@ static PCI_CALLBACK AMD_DataFabric_Arden(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Vermeer(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Cezanne(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Rembrandt(struct pci_dev *pdev) ;
+#define AMD_DataFabric_Raphael AMD_DataFabric_Rembrandt
 
 static struct pci_device_id PCI_Void_ids[] = {
 	{0, }
@@ -2849,6 +2851,10 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 		PCI_VDEVICE(AMD, DID_AMD_19H_ZEN3_RMB_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_19H_ZEN4_RPL_NB_IOMMU),
+		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
+	},
 	/* Source: HYGON: PCI list					*/
 	{
 		PCI_VDEVICE(HYGON, DID_AMD_17H_ZEN_PLUS_NB_IOMMU),
@@ -2904,6 +2910,10 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 	{
 		PCI_VDEVICE(AMD, DID_AMD_19H_REMBRANDT_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_DataFabric_Rembrandt
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_19H_RAPHAEL_DF_UMC),
+		.driver_data = (kernel_ulong_t) AMD_DataFabric_Raphael
 	},
 	{0, }
 };
@@ -9835,14 +9845,14 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
 	.Exit = Exit_AMD_F19h,
-	.Timer = InitTimer_AMD_F19h_Zen3_SP,
+	.Timer = InitTimer_AMD_Zen4_RPL,
 	.BaseClock = BaseClock_AMD_Family_19h,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
 	.thermalFormula = THERMAL_FORMULA_AMD_ZEN3,
 	.voltageFormula = VOLTAGE_FORMULA_AMD_19h,
 	.powerFormula   = POWER_FORMULA_AMD_19h,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_AMD_19h_ids,
 	.Uncore = {
 		.Start = Start_Uncore_AMD_Family_19h,
 		.Stop = Stop_Uncore_AMD_Family_19h,
