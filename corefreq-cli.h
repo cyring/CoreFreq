@@ -899,7 +899,8 @@ typedef CUINT (*VIEW_FUNC)(Layer*, const unsigned int, CUINT);
 #define CELL_ARGS	Window *win,					\
 			unsigned long long key, 			\
 			ATTRIBUTE *attrib,				\
-			ASCII *item
+			ASCII *item,					\
+			unsigned int *cellPadding
 
 typedef TGrid* (*CELL_FUNC)(CELL_ARGS);
 typedef void (*CPU_ITEM_CALLBACK)(unsigned int, ASCII*);

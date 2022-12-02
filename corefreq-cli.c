@@ -279,6 +279,7 @@ const char *Indent[2][4] = {
 TGrid *Print_v1(CELL_FUNC OutFunc,
 		Window *win,
 		unsigned long long key,
+		unsigned int *cellPadding,
 		ATTRIBUTE *attrib,
 		CUINT width,
 		int tab,
@@ -302,7 +303,7 @@ TGrid *Print_v1(CELL_FUNC OutFunc,
 	if (0 < StrFormat(item, width + 1, "%s%s%.*s", Indent[1][tab], line,
 		(int)(width - strlen(line) - strlen(Indent[1][tab])), hSpace))
 	{
-		pGrid = OutFunc(win, key, attrib, item);
+		pGrid = OutFunc(win, key, attrib, item, cellPadding);
 	}
 	free(item);
       }
@@ -317,6 +318,7 @@ EXIT_v1:
 TGrid *Print_v2(CELL_FUNC OutFunc,
 		Window *win,
 		CUINT *nl,
+		unsigned int *cellPadding,
 		ATTRIBUTE *attrib, ...)
 {
 	TGrid *pGrid = NULL;
@@ -328,19 +330,19 @@ TGrid *Print_v2(CELL_FUNC OutFunc,
 	va_start(ap, attrib);
 	if ((fmt = va_arg(ap, char*)) != NULL)
 	{
-		if (vsnprintf((char*) item, MIN_WIDTH, fmt, ap) < 0) {
-			goto EXIT_v2;
-		}
-		if (OutFunc == NULL) {
-			(*nl)--;
-			if ((*nl) == 0) {
-				(*nl) = win->matrix.size.wth;
-				printf("%s\n", item);
-			} else
-				printf("%s", item);
-		} else {
-			pGrid = OutFunc(win, SCANKEY_NULL, attrib, item);
-		}
+	    if (vsnprintf((char*) item, MIN_WIDTH, fmt, ap) < 0) {
+		goto EXIT_v2;
+	    }
+	    if (OutFunc == NULL) {
+		(*nl)--;
+		if ((*nl) == 0) {
+			(*nl) = win->matrix.size.wth;
+			printf("%s\n", item);
+		} else
+			printf("%s", item);
+	    } else {
+		pGrid = OutFunc(win, SCANKEY_NULL, attrib, item, cellPadding);
+	    }
 	}
 EXIT_v2:
 	va_end(ap);
@@ -352,6 +354,7 @@ EXIT_v2:
 TGrid *Print_v3(CELL_FUNC OutFunc,
 		Window *win,
 		CUINT *nl,
+		unsigned int *cellPadding,
 		ATTRIBUTE *attrib, ...)
 {
 	TGrid *pGrid = NULL;
@@ -363,22 +366,22 @@ TGrid *Print_v3(CELL_FUNC OutFunc,
 	va_start(ap, attrib);
 	if ((fmt = va_arg(ap, char*)) != NULL)
 	{
-		if (!(vsnprintf((char*) item, MIN_WIDTH, fmt, ap) < 0))
-		{
-		    if (OutFunc == NULL) {
-			(*nl)--;
-			if ((*nl) == (win->matrix.size.wth - 1)) {
-				printf("|-%s", item);
-			} else if ((*nl) == 0) {
-				(*nl) = win->matrix.size.wth;
-				printf("%s\n", item);
-			} else {
-				printf("%s", item);
-			}
-		    } else {
-			pGrid = OutFunc(win, SCANKEY_NULL, attrib, item);
-		    }
+	    if (!(vsnprintf((char*) item, MIN_WIDTH, fmt, ap) < 0))
+	    {
+	      if (OutFunc == NULL) {
+		(*nl)--;
+		if ((*nl) == (win->matrix.size.wth - 1)) {
+			printf("|-%s", item);
+		} else if ((*nl) == 0) {
+			(*nl) = win->matrix.size.wth;
+			printf("%s\n", item);
+		} else {
+			printf("%s", item);
 		}
+	      } else {
+		pGrid = OutFunc(win, SCANKEY_NULL, attrib, item, cellPadding);
+	      }
+	    }
 	}
 	va_end(ap);
 	free(item);
@@ -386,18 +389,21 @@ TGrid *Print_v3(CELL_FUNC OutFunc,
 	return pGrid;
 }
 
-#define PUT(key, attrib, width, tab, fmt, ...)				\
-	Print_v1(OutFunc, win, key, attrib, width, tab, fmt, __VA_ARGS__)
+#define PUT(key, attrib, width, tab, fmt, ...) \
+  Print_v1(OutFunc, win, key, cellPadding, attrib, width, tab, fmt, __VA_ARGS__)
 
 #define Print_REG	Print_v2
 #define Print_MAP	Print_v2
 #define Print_IMC	Print_v2
 #define Print_ISA	Print_v3
 
-#define PRT(FUN, attrib, ...)						\
-	Print_##FUN(OutFunc, win, nl, attrib, __VA_ARGS__)
+#define PRT(FUN, attrib, ...) \
+	Print_##FUN(OutFunc, win, nl, cellPadding, attrib, __VA_ARGS__)
 
-REASON_CODE SysInfoCPUID(Window *win, CUINT width, CELL_FUNC OutFunc)
+REASON_CODE SysInfoCPUID(Window *win,
+			CUINT width,
+			CELL_FUNC OutFunc,
+			unsigned int *cellPadding)
 {
 	REASON_INIT(reason);
 	ATTRIBUTE *attrib[4] = {
@@ -465,7 +471,9 @@ REASON_CODE SysInfoCPUID(Window *win, CUINT width, CELL_FUNC OutFunc)
 	return reason;
 }
 
-REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
+REASON_CODE SystemRegisters(	Window *win,
+				CELL_FUNC OutFunc,
+				unsigned int *cellPadding )
 {
 	REASON_INIT(reason);
 	ATTRIBUTE *attrib[5] = {
@@ -894,10 +902,17 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 
 char SymbUnlock[2][2] = {{'[', ']'}, {'<', '>'}};
 
-TGrid *PrintRatioFreq(	Window *win, struct FLIP_FLOP *CFlop,
-			unsigned int zerobase, char *pfx, unsigned int *pRatio,
-			int syc, unsigned long long _key,
-			CUINT width, CELL_FUNC OutFunc, ATTRIBUTE attrib[])
+TGrid *PrintRatioFreq(	Window *win,
+			struct FLIP_FLOP *CFlop,
+			unsigned int zerobase,
+			char *pfx,
+			unsigned int *pRatio,
+			int syc,
+			unsigned long long _key,
+			CUINT width,
+			CELL_FUNC OutFunc,
+			unsigned int *cellPadding,
+			ATTRIBUTE attrib[] )
 {
 	TGrid *pGrid = NULL;
 
@@ -1032,7 +1047,10 @@ void RefreshConfigTDP(TGrid *grid, DATA_TYPE data[])
 	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
 }
 
-REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
+REASON_CODE SysInfoProc(Window *win,
+			CUINT width,
+			CELL_FUNC OutFunc,
+			unsigned int *cellPadding)
 {
 	REASON_INIT(reason);
 	ATTRIBUTE *attrib[4] = {
@@ -1140,7 +1158,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 					Ruler.Top[ BOOST(MIN) ]
 				].Boost[ BOOST(MIN) ],
 				1, coreClock.ullong,
-				width, OutFunc, attrib[3] ),
+				width, OutFunc, cellPadding, attrib[3] ),
 		RefreshTopFreq, BOOST(MIN) );
 
 	coreClock = (CLOCK_ARG) {.NC = 0, .Offset = 0};
@@ -1159,7 +1177,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 					Ruler.Top[ BOOST(MAX) ]
 				].Boost[ BOOST(MAX) ],
 				1, coreClock.ullong,
-				width, OutFunc, attrib[3] ),
+				width, OutFunc, cellPadding, attrib[3] ),
 		RefreshTopFreq, BOOST(MAX) );
 
 	GridCall( PUT(	SCANKEY_NULL, attrib[0], width, 2,
@@ -1194,7 +1212,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 					Ruler.Top[ BOOST(TGT) ]
 				].Boost[ BOOST(TGT) ],
 				1, coreClock.ullong,
-				width, OutFunc, attrib[3] ),
+				width, OutFunc, cellPadding, attrib[3] ),
 		RefreshTopFreq, BOOST(TGT) );
 
     if ((RO(Shm)->Proc.Features.HWP_Enable == 1)
@@ -1224,7 +1242,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 					Ruler.Top[ BOOST(HWP_MIN) ]
 				].Boost[ BOOST(HWP_MIN) ],
 				1, coreClock.ullong,
-				width, OutFunc, attrib[3] ),
+				width, OutFunc, cellPadding, attrib[3] ),
 		RefreshTopFreq, BOOST(HWP_MIN) );
 
 	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_HWP_MAX;
@@ -1241,7 +1259,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 					Ruler.Top[ BOOST(HWP_MAX) ]
 				].Boost[ BOOST(HWP_MAX) ],
 				1, coreClock.ullong,
-				width, OutFunc, attrib[3] ),
+				width, OutFunc, cellPadding, attrib[3] ),
 		RefreshTopFreq, BOOST(HWP_MAX) );
 
 	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_HWP_TGT;
@@ -1258,7 +1276,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 					Ruler.Top[ BOOST(HWP_TGT) ]
 				].Boost[ BOOST(HWP_TGT) ],
 				1, coreClock.ullong,
-				width, OutFunc, attrib[3] ),
+				width, OutFunc, cellPadding, attrib[3] ),
 		RefreshTopFreq, BOOST(HWP_TGT) );
     }
 	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.Turbo_Unlock],
@@ -1284,7 +1302,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 					Ruler.Top[ BOOST(XFR) ]
 				].Boost[ BOOST(XFR) ],
 				0, SCANKEY_NULL,
-				width, OutFunc, attrib[3] ),
+				width, OutFunc, cellPadding, attrib[3] ),
 		RefreshTopFreq, BOOST(XFR) );
       }
       if (RO(Shm)->Proc.Features.XtraCOF >= 1)
@@ -1301,7 +1319,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 					Ruler.Top[ BOOST(CPB) ]
 				].Boost[BOOST(CPB)],
 				0, SCANKEY_NULL,
-				width, OutFunc, attrib[3] ),
+				width, OutFunc, cellPadding, attrib[3] ),
 		RefreshTopFreq, BOOST(CPB) );
       }
     }
@@ -1325,7 +1343,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 						Ruler.Top[boost]
 					].Boost[boost],
 				1, clockMod.ullong,
-				width, OutFunc, attrib[3] ),
+				width, OutFunc, cellPadding, attrib[3] ),
 		RefreshTopFreq, boost );
     }
     if (RO(Shm)->Proc.Features.ExtFeature.EDX.Hybrid == 1)
@@ -1355,7 +1373,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 						RO(Shm)->Proc.Service.Hybrid
 					].Boost[boost],
 				1, clockMod.ullong,
-				width, OutFunc, attrib[3] ),
+				width, OutFunc, cellPadding, attrib[3] ),
 		RefreshHybridFreq, boost );
       }
     }
@@ -1385,7 +1403,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				0, (char*) uncoreLabel[0],
 				&RO(Shm)->Uncore.Boost[UNCORE_BOOST(MIN)],
 				1, uncoreClock.ullong,
-				width, OutFunc, attrib[3] ),
+				width, OutFunc, cellPadding, attrib[3] ),
 		RefreshRatioFreq, &RO(Shm)->Uncore.Boost[UNCORE_BOOST(MIN)] );
 
 	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | CLOCK_MOD_MAX;
@@ -1393,21 +1411,21 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				0, (char*) uncoreLabel[1],
 				&RO(Shm)->Uncore.Boost[UNCORE_BOOST(MAX)],
 				1, uncoreClock.ullong,
-				width, OutFunc, attrib[3]),
+				width, OutFunc, cellPadding, attrib[3]),
 		RefreshRatioFreq, &RO(Shm)->Uncore.Boost[UNCORE_BOOST(MAX)] );
     } else {
 	GridCall( PrintRatioFreq(win, CFlop,
 				0, (char*) uncoreLabel[0],
 				&RO(Shm)->Uncore.Boost[UNCORE_BOOST(MIN)],
 				0, SCANKEY_NULL,
-				width, OutFunc, attrib[3]),
+				width, OutFunc, cellPadding, attrib[3]),
 		RefreshRatioFreq, &RO(Shm)->Uncore.Boost[UNCORE_BOOST(MIN)] );
 
 	GridCall( PrintRatioFreq(win, CFlop,
 				0, (char*) uncoreLabel[1],
 				&RO(Shm)->Uncore.Boost[UNCORE_BOOST(MAX)],
 				0, SCANKEY_NULL,
-				width, OutFunc, attrib[3]),
+				width, OutFunc, cellPadding, attrib[3]),
 		RefreshRatioFreq, &RO(Shm)->Uncore.Boost[UNCORE_BOOST(MAX)] );
     }
     if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
@@ -1465,7 +1483,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 					Ruler.Top[ BOOST(TDP) ]
 				].Boost[ BOOST(TDP) ],
 				0, SCANKEY_NULL,
-				width, OutFunc, attrib[3] ),
+				width, OutFunc, cellPadding, attrib[3] ),
 		RefreshTopFreq, BOOST(TDP) );
 
 	StrFormat(pfx, len, "%s" "1", RSC(LEVEL).CODE());
@@ -1481,7 +1499,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 						Ruler.Top[ BOOST(TDP1) ]
 					].Boost[ BOOST(TDP1) ],
 				0, SCANKEY_NULL,
-				width, OutFunc, attrib[3] ),
+				width, OutFunc, cellPadding, attrib[3] ),
 		RefreshTopFreq, BOOST(TDP1) );
 
 	StrFormat(pfx, len, "%s" "2", RSC(LEVEL).CODE());
@@ -1497,7 +1515,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 						Ruler.Top[ BOOST(TDP2) ]
 					].Boost[ BOOST(TDP2) ],
 				0, SCANKEY_NULL,
-				width, OutFunc, attrib[3] ),
+				width, OutFunc, cellPadding, attrib[3] ),
 		RefreshTopFreq, BOOST(TDP2) );
 
 	CFlop = &RO(Shm)->Cpu[
@@ -1516,7 +1534,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				(RO(Shm)->Proc.Features.TurboActiv_Lock == 0),
 				(RO(Shm)->Proc.Features.TurboActiv_Lock == 0) ?
 					coreClock.ullong : SCANKEY_NULL,
-				width, OutFunc, attrib[3] ),
+				width, OutFunc, cellPadding, attrib[3] ),
 		RefreshTopFreq, BOOST(ACT) );
 
 	free(pfx);
@@ -1527,7 +1545,9 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	return reason;
 }
 
-REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
+REASON_CODE SysInfoISA( Window *win,
+			CELL_FUNC OutFunc,
+			unsigned int *cellPadding )
 {
 	REASON_INIT(reason);
 	ATTRIBUTE *attrib[2][5] = {
@@ -2098,7 +2118,10 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 	return reason;
 }
 
-REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
+REASON_CODE SysInfoFeatures(	Window *win,
+				CUINT width,
+				CELL_FUNC OutFunc,
+				unsigned int *cellPadding )
 {
 	REASON_INIT(reason);
 	ATTRIBUTE *attr_Feat[4] = {
@@ -3387,7 +3410,10 @@ void WDT_Update(TGrid *grid, DATA_TYPE data[])
 	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
+REASON_CODE SysInfoTech(Window *win,
+			CUINT width,
+			CELL_FUNC OutFunc,
+			unsigned int *cellPadding)
 {
 	REASON_INIT(reason);
 	char IOMMU_Version_String[10+1+10+1+1];
@@ -3970,7 +3996,10 @@ void CStateRange_Update(TGrid *grid, DATA_TYPE data[])
 		].Query.CStateInclude], 3);
 }
 
-REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
+REASON_CODE SysInfoPerfMon(	Window *win,
+				CUINT width,
+				CELL_FUNC OutFunc,
+				unsigned int *cellPadding )
 {
 	REASON_INIT(reason);
 	const ASCII *CST_Encoding[] = {
@@ -4669,7 +4698,10 @@ void TDC_Update(TGrid *grid, DATA_TYPE data[])
 		RO(Shm)->Proc.Power.Feature.TDC ? 3 : 5 : 0);
 }
 
-REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
+REASON_CODE SysInfoPwrThermal(  Window *win,
+				CUINT width,
+				CELL_FUNC OutFunc,
+				unsigned int *cellPadding )
 {
 	REASON_INIT(reason);
 	ATTRIBUTE *attrib[7] = {
@@ -5360,7 +5392,10 @@ void Kernel_IdleLimit_Update(TGrid *grid, DATA_TYPE data[])
 			BOXKEY_LIMIT_IDLE_STATE : SCANKEY_NULL;
 }
 
-REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
+REASON_CODE SysInfoKernel(Window *win,
+			CUINT width,
+			CELL_FUNC OutFunc,
+			unsigned int *cellPadding)
 {
 	REASON_INIT(reason);
 	char	*item[5], str[CPUFREQ_NAME_LEN+4+1];
@@ -5742,7 +5777,10 @@ const char *SMB_Comment[SMB_STRING_COUNT] = {
 	" "	COREFREQ_STRINGIFY(SMB_MEM_3_PARTNUMBER)	" "
 };
 
-REASON_CODE SysInfoSMBIOS(Window *win, CUINT width, CELL_FUNC OutFunc)
+REASON_CODE SysInfoSMBIOS(Window *win,
+			CUINT width,
+			CELL_FUNC OutFunc,
+			unsigned int *cellPadding)
 {
 	enum SMB_STRING idx;
 
@@ -6346,7 +6384,7 @@ const char *TopologyFmtOFF[] = {
 	"\x20\x20\x20\x20\x20\x20\x20-\x20\x20-\x20\x20"
 };
 
-void Topology(Window *win, CELL_FUNC OutFunc)
+void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 {
 	ASCII *TopologyHeader[TOPO_MATY] = {
 		RSC(TOPOLOGY_HDR_PKG).CODE(),
@@ -6505,9 +6543,17 @@ void iSplit(unsigned int sInt, char hInt[]) {
 	memcpy((hInt + 8), (fInt + 5), 5); *(hInt + 8 + 5) = '\0';
 }
 
-typedef void (*TIMING_FUNC)(Window*, CELL_FUNC, CUINT*, unsigned short);
+typedef void (*TIMING_FUNC)(	Window*,	\
+				CELL_FUNC,	\
+				CUINT*, 	\
+				unsigned int*,	\
+				unsigned short	);
 
-void Timing_DDR3(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
+void Timing_DDR3(Window *win,
+		CELL_FUNC OutFunc,
+		CUINT *nl,
+		unsigned int *cellPadding,
+		unsigned short mc)
 {
 	const ASCII *Header_DDR3[2][MC_MATX] = {
 		{
@@ -6639,7 +6685,11 @@ void Timing_DDR3(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 	}
 }
 
-void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
+void Timing_DDR4(Window *win,
+		CELL_FUNC OutFunc,
+		CUINT *nl,
+		unsigned int *cellPadding,
+		unsigned short mc)
 {
 	const ASCII *Header_DDR4[3][MC_MATX] = {
 		{
@@ -6829,7 +6879,11 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 	}
 }
 
-void Timing_DDR4_Zen(Window *win,CELL_FUNC OutFunc,CUINT *nl, unsigned short mc)
+void Timing_DDR4_Zen(	Window *win,
+			CELL_FUNC OutFunc,
+			CUINT *nl,
+			unsigned int *cellPadding,
+			unsigned short mc )
 {
 	const ASCII *Header_DDR4_Zen[4][MC_MATX] = {
 		{
@@ -7089,7 +7143,10 @@ void Timing_DDR4_Zen(Window *win,CELL_FUNC OutFunc,CUINT *nl, unsigned short mc)
 
 #undef TIMING
 
-void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
+void MemoryController(	Window *win,
+			CELL_FUNC OutFunc,
+			unsigned int *cellPadding,
+			TIMING_FUNC TimingFunc )
 {
 	ATTRIBUTE *attrib[2] = {
 		RSC(MEMORY_CONTROLLER_COND0).ATTR(),
@@ -7243,7 +7300,7 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
 	}
 
-	TimingFunc(win, OutFunc, nl, mc);
+	TimingFunc(win, OutFunc, nl, cellPadding, mc);
 
 	for (nc = 0; nc < MC_MATX; nc++) {
 		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
@@ -8401,19 +8458,15 @@ Window *CreateAbout(unsigned long long id)
 	return wAbout;
 }
 
-/* >>> GLOBALS >>> */
-int SysInfoCellPadding;
-/* <<< GLOBALS <<< */
-
 TGrid *AddSysInfoCell(CELL_ARGS)
 {
-	SysInfoCellPadding++;
+	(*cellPadding)++;
 	return StoreTCell(win, key, item, attrib);
 }
 
 Window *CreateSysInfo(unsigned long long id)
 {
-	REASON_CODE (*SysInfoFunc)(Window*, CUINT, CELL_FUNC OutFunc) = NULL;
+	REASON_CODE (*SysInfoFunc)(Window*,CUINT,CELL_FUNC,unsigned int*)=NULL;
 	ASCII *title = NULL;
 	CoordSize matrixSize = {
 		.wth = 1,
@@ -8421,6 +8474,7 @@ Window *CreateSysInfo(unsigned long long id)
 	};
 	Coordinate winOrigin = {.col = 3, .row = TOP_HEADER_ROW + 2};
 	CUINT winWidth = 74;
+	unsigned int cellPadding = 0;
 
 	switch (id) {
 	case SCANKEY_p:
@@ -8502,19 +8556,20 @@ Window *CreateSysInfo(unsigned long long id)
 		break;
 	}
 
-	SysInfoCellPadding = 0;
-
 	Window *wSysInfo = CreateWindow(wLayer, id,
 					matrixSize.wth, matrixSize.hth,
 					winOrigin.col, winOrigin.row);
 	if (wSysInfo != NULL)
 	{
 		if (SysInfoFunc != NULL) {
-			SysInfoFunc(wSysInfo, winWidth, AddSysInfoCell);
+			SysInfoFunc(	wSysInfo,
+					winWidth,
+					AddSysInfoCell,
+					&cellPadding );
 		}
 		/* Pad with blank rows.					*/
-		while (SysInfoCellPadding < matrixSize.hth) {
-			SysInfoCellPadding++;
+		while (cellPadding < matrixSize.hth) {
+			cellPadding++;
 			StoreTCell(wSysInfo,
 				SCANKEY_NULL,
 				&hSpace[MAX_WIDTH - winWidth],
@@ -8586,9 +8641,11 @@ Window *CreateTopology(unsigned long long id)
 
 	if (wTopology != NULL)
 	{
+		unsigned int cellPadding = 0;
+
 		wTopology->matrix.select.row = 2;
 
-		Topology(wTopology, AddCell);
+		Topology(wTopology, AddCell, &cellPadding);
 
 		StoreWindow(wTopology,.title,(char*)RSC(TOPOLOGY_TITLE).CODE());
 
@@ -8618,7 +8675,9 @@ Window *CreateISA(unsigned long long id)
 
 	if (wISA != NULL)
 	{
-		SysInfoISA(wISA, AddCell);
+		unsigned int cellPadding = 0;
+
+		SysInfoISA(wISA, AddCell, &cellPadding);
 
 		StoreWindow(wISA,	.title, (char*) RSC(ISA_TITLE).CODE());
 
@@ -8644,7 +8703,9 @@ Window *CreateSysRegs(unsigned long long id)
 					6, TOP_HEADER_ROW + 2 );
 	if (wSR != NULL)
 	{
-		SystemRegisters(wSR, AddCell);
+		unsigned int cellPadding = 0;
+
+		SystemRegisters(wSR, AddCell, &cellPadding);
 
 		StoreWindow(wSR, .title, (char*) RSC(SYS_REGS_TITLE).CODE());
 
@@ -8709,7 +8770,9 @@ Window *CreateMemCtrl(unsigned long long id)
 	wIMC = CreateWindow(wLayer, id, MC_MATX, rows, 4, TOP_HEADER_ROW + 2);
     if (wIMC != NULL)
     {
-	MemoryController(wIMC, AddCell, pTimingFunc);
+	unsigned int cellPadding = 0;
+
+	MemoryController(wIMC, AddCell, &cellPadding, pTimingFunc);
 
 	wIMC->matrix.select.col = 2;
 	wIMC->matrix.select.row = 1;
@@ -20541,51 +20604,51 @@ int main(int argc, char *argv[])
 		}
 		break;
 	    case 'B':
-		reason = SysInfoSMBIOS(NULL, 80, NULL);
+		reason = SysInfoSMBIOS(NULL, 80, NULL, NULL);
 		break;
 	    case 'k':
 		if (BITWISEAND(LOCKLESS, RO(Shm)->SysGate.Operation, 0x1)) {
-			reason = SysInfoKernel(NULL, 80, NULL);
+			reason = SysInfoKernel(NULL, 80, NULL, NULL);
 		}
 		break;
 	    case 'u':
-		reason = SysInfoCPUID(NULL, 80, NULL);
+		reason = SysInfoCPUID(NULL, 80, NULL, NULL);
 		break;
 	    case 's':
 		{
 		Window tty = {.matrix.size.wth = 4};
 
-		reason = SysInfoProc(NULL, 80, NULL);
+		reason = SysInfoProc(NULL, 80, NULL, NULL);
 		if (IS_REASON_SUCCESSFUL(reason) == 0) { break; }
 
-		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, 80, 0, "");
-		Print_v1(NULL, NULL, SCANKEY_VOID, NULL,
+		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, NULL, 80, 0, "");
+		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, NULL,
 			80, 0, (char *) &(RSC(ISA_TITLE).CODE()[1]));
-		reason = SysInfoISA(&tty, NULL);
+		reason = SysInfoISA(&tty, NULL, NULL);
 		if (IS_REASON_SUCCESSFUL(reason) == 0) { break; }
 
-		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, 80, 0, "");
-		Print_v1(NULL, NULL, SCANKEY_VOID, NULL,
+		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, NULL, 80, 0, "");
+		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, NULL,
 			80, 0, (char *) &(RSC(FEATURES_TITLE).CODE()[1]));
-		reason = SysInfoFeatures(NULL, 80, NULL);
+		reason = SysInfoFeatures(NULL, 80, NULL, NULL);
 		if (IS_REASON_SUCCESSFUL(reason) == 0) { break; }
 
-		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, 80, 0, "");
-		Print_v1(NULL, NULL, SCANKEY_VOID, NULL,
+		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, NULL, 80, 0, "");
+		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, NULL,
 			80, 0, (char *) &(RSC(TECHNOLOGIES_TITLE).CODE()[1]));
-		reason = SysInfoTech(NULL, 80, NULL);
+		reason = SysInfoTech(NULL, 80, NULL, NULL);
 		if (IS_REASON_SUCCESSFUL(reason) == 0) { break; }
 
-		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, 80, 0, "");
-		Print_v1(NULL, NULL, SCANKEY_VOID, NULL,
+		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, NULL, 80, 0, "");
+		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, NULL,
 			80, 0, (char *) &(RSC(PERF_MON_TITLE).CODE()[1]));
-		reason = SysInfoPerfMon(NULL, 80, NULL);
+		reason = SysInfoPerfMon(NULL, 80, NULL, NULL);
 		if (IS_REASON_SUCCESSFUL(reason) == 0) { break; }
 
-		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, 80, 0, "");
-		Print_v1(NULL, NULL, SCANKEY_VOID, NULL,
+		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, NULL, 80, 0, "");
+		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, NULL,
 			80, 0, (char *) &(RSC(POWER_THERMAL_TITLE).CODE()[1]));
-		reason = SysInfoPwrThermal(NULL, 80, NULL);
+		reason = SysInfoPwrThermal(NULL, 80, NULL, NULL);
 		if (IS_REASON_SUCCESSFUL(reason) == 0) { break; }
 		}
 		break;
@@ -20595,7 +20658,7 @@ int main(int argc, char *argv[])
 	    case 'm':
 		{
 		Window tty = {.matrix.size.wth = 6};
-		Topology(&tty, NULL);
+		Topology(&tty, NULL, NULL);
 		}
 		break;
 	    case 'M':
@@ -20606,18 +20669,18 @@ int main(int argc, char *argv[])
 		case 5:
 		case 4:
 		    if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {
-			MemoryController(&tty, NULL, Timing_DDR4);
+			MemoryController(&tty, NULL, NULL, Timing_DDR4);
 		    }
 		 else if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 		       || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
 		    {
-			MemoryController(&tty, NULL, Timing_DDR4_Zen);
+			MemoryController(&tty, NULL, NULL, Timing_DDR4_Zen);
 		    }
 			break;
 		case 3:
 		case 2:
 		default:
-			MemoryController(&tty, NULL, Timing_DDR3);
+			MemoryController(&tty, NULL, NULL, Timing_DDR3);
 			break;
 		}
 	      }
@@ -20625,7 +20688,7 @@ int main(int argc, char *argv[])
 	    case 'R':
 		{
 		Window tty = {.matrix.size.wth = 17};
-		SystemRegisters(&tty, NULL);
+		SystemRegisters(&tty, NULL, NULL);
 		}
 		break;
 	    case 'i':
