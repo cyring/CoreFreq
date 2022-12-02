@@ -1474,6 +1474,9 @@ void MotionReScale(Window *win)
 	}
 	if (row > 0 && win->matrix.origin.row != row) {
 		win->matrix.origin.row = (CUINT) row;
+	} else if (row == 0 && win->matrix.origin.row != row) {
+		win->matrix.origin.row = 1;
+		height = win->matrix.size.hth - 1;
 	}
 	if (height > 0 && win->matrix.size.hth != height) {
 		win->matrix.size.hth = (CUINT) height;
