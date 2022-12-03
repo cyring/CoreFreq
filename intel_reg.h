@@ -2493,6 +2493,24 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x0			*/
 		ENLPDDR3	: 24-23,
 		ReservedBits5	: 32-24;
 	};
+	struct {
+		unsigned int
+		RKEN0		:  1-0,
+		RKEN1		:  2-1,
+		Rsvd_0		:  4-2,
+		DIMMDWID0	:  6-4,
+		DIMMDDEN0	:  9-6,
+		Rsvd_1		: 12-9,
+		SRPP		: 13-12, /* Single Rank Per Package	*/
+		BLMODE		: 14-13, /* DDR3 Burst Length Mode {8,4}*/
+		RSIEN		: 15-14,
+		BAHEN		: 16-15, /* Bank Address Hashing Select */
+		SRRVD		: 20-16, /* Static Read Return Valid Delay */
+		DIMM0MIRR	: 21-20,
+		ECCEN		: 22-21, /* ECC 0:Disabled - 1: Enable	*/
+		DRAMTYPE	: 24-22,
+		Rsvd_4		: 32-24;
+	} Z8000;
 } SOC_MC_DRP;
 
 typedef union	/*	MCR: Port=0x01 & Offset=0x1			*/
@@ -2518,6 +2536,20 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x1			*/
 		ReservedBits7	: 28-26,
 		CKEDLY		: 32-28; /*  Multiple of 256 DRAM clocks */
 	};
+	struct {	/*	Offset=0x1(DTR0A) ; 0x11(DTR0B) 	*/
+		unsigned int
+		Rsvd_5		:  3-0,
+		tRP		:  8-3,
+		tRCD		: 13-8,
+		tCL		: 17-13,
+		tXS		: 19-17,
+		Rsvd_9		: 20-19,
+		tZQCS		: 21-20,
+		Rsvd_11 	: 22-21,
+		tZQoper 	: 24-22,
+		PMEDLY		: 26-24,
+		CKEDLY		: 32-26;
+	} Z8000;
 } SOC_MC_DTR0;
 
 typedef union	/*	MCR: Port=0x01 & Offset=0x2			*/
@@ -2539,6 +2571,20 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x2			*/
 		tRTP		: 31-28, /* 0b00=4; 0b01=5; 0b10=6; 0b11=7*/
 		ReservedBits5	: 32-24;
 	};
+	struct {	/*	Offset=0x2(DTR1A) ; 0x12(DTR1B) 	*/
+		unsigned int
+		tWCL		:  3-0,
+		Rsvd_14 	:  4-3,
+		tCMD		:  6-4,
+		Rsvd_15 	:  8-6,
+		tWTP		: 12-8,
+		tCCD		: 14-12,
+		Rsvd_16 	: 16-14,
+		tFAW		: 21-16,
+		tRAS		: 26-21,
+		tRRD		: 29-26,
+		tRTP		: 32-29;
+	} Z8000;
 } SOC_MC_DTR1;
 
 typedef union	/*	MCR: Port=0x01 & Offset=0x3			*/
@@ -2559,6 +2605,17 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x3			*/
 		tRWDD		: 25-21, /* {RES; 6; 7 ... 17; 18; RES} */
 		ReservedBits6	: 32-25;
 	};
+	struct {	/*	Offset=0x3(DTR2A) ; 0x13(DTR2B) 	*/
+		unsigned int
+		ODTEN		:  1-0,  /* ODT Enable			*/
+		tRRDR		:  4-1,
+		Rsvd0_DTR2	:  8-4,
+		tWWDR		: 11-8,
+		Rsvd2_DTR2	: 15-11,
+		tRWDR		: 20-15,
+		DFREQ		: 23-20, /* DDR3{800,1066,1333,1600,1867,2133}*/
+		nREFI		: 32-23; /* = (DRAM_Clock) / 32		*/
+	} Z8000;
 } SOC_MC_DTR2;
 
 typedef union	/*	MCR: Port=0x01 & Offset=0x4			*/
@@ -2581,7 +2638,77 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x4			*/
 		DERATESTAT	: 31-30,
 		ReservedBits5	: 32-31;
 	};
+	struct {	/*	Offset=0x4(DTR3A) ; 0x14(DTR3B) 	*/
+		unsigned int
+		tWRDR		:  4-0,
+		Rsvd0_DTR3	:  7-4,
+		tRWSR		: 12-7,
+		Rsvd2_DTR3	: 13-12,
+		tWRSR		: 17-13,
+		Rsvd3_DTR3	: 20-17,
+		tXP		: 24-20,
+		PWDDLY		: 28-24,
+		Rsvd4_DTR3	: 32-28;
+	} Z8000;
 } SOC_MC_DTR3;
+
+typedef union	/*	MCR: Port=0x01					*/
+{
+	unsigned int		value;
+	struct {	/*	 Offset=0x5(DTR4A) ; 0x15(DTR4B)	*/
+		unsigned int
+		WRODTSTRT	:  2-0,  /* WR command to ODT assert delay */
+		Rsvd_22 	:  4-2,
+		WRODTSTOP	:  7-4,  /* WR command to ODT de-assert delay */
+		Rsvd_23 	:  8-7,
+		RDODTSTRT	: 11-8,  /* Read command to ODT assert delay */
+		Rsvd_24 	: 12-11,
+		RDODTSTOP	: 15-12, /*Read command to ODT de-assert delay*/
+		Rsvd_25 	: 16-15,
+		TRGSTRDIS	: 17-16, /* Write target rank is not stretched*/
+		RDODTDIS	: 18-17, /* Disable Read ODT		*/
+		WRBODTDIS	: 19-18, /*Disable Write ODT non-targeted DIMM*/
+		Rsvd_27 	: 23-19,
+		nRFCab		: 32-23; /*Define tRFC(DDR3), tRFCab(LPDDR2/3)*/
+	} Z8000;
+} SOC_MC_DTR4;
+
+typedef union	/*	MCR: Port=0x01 & Offset=0x6			*/
+{
+	unsigned int		value;
+	struct {
+		unsigned int
+		SREDLY		:  8-0,  /* Self-Refresh Entry delay	*/
+		DYNSREN 	:  9-8,  /* Dynamic Self-Refresh Enable */
+		Rsvd_28 	: 11-9,
+		DYNPMOP 	: 16-11,
+		SUSPMOP 	: 21-16,
+		SELFREQB	: 22-21, /* Select Frequency Parameter Set B */
+		WFZQEN		: 23-22, /* Enable ZQ Calibration in WAKEF */
+		CSTRIST 	: 24-23, /*Tristate Chip-Select:SRE to SRX+tXS*/
+		PASR		: 32-24; /* Refresh SUSPEND Partial MR17 */
+	} Z8000;
+} SOC_MC_DPMC0;
+
+typedef union	/*	MCR: Port=0x01 & Offset=0x7			*/
+{
+	unsigned int		value;
+	struct {
+		unsigned int
+		DISPWRDN	:  1-0,  /* Disable Power Down		*/
+		DPMC1_Rsvd	:  2-1,
+		PCLSWKOK	:  3-2, /*Wake Allowed for Page Close Timeout*/
+		PREAPWDEN	:  4-3, /* Rank Precharge All before PD-Enter*/
+		PCLSTO		:  7-4,  /* Page Close Timeout		*/
+		CKTRIST 	:  8-7,  /* Tristate CK	{0:Never;1:PDE} */
+		Rsvd_31 	: 24-8,
+		CMDTRIST	: 26-24,
+		Rsvd_dzhu	: 27-26,
+		CLKGTDIS	: 28-27, /* Clock Gating Disabled	*/
+		REUTCLKGTDIS	: 29-28, /* REUT Clock Gate Disabled	*/
+		tWTW		: 32-29;
+	} Z8000;
+} SOC_MC_DPMC1;
 
 typedef union	/*	MCR: Port=0x01 & Offset=0x8			*/
 {
@@ -2601,6 +2728,19 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x8			*/
 		CUREFRATE	: 27-24, /* Current Refresh Rate	*/
 		ReservedBits4	: 32-27;
 	};
+	struct {
+		unsigned int
+		REFWMLO 	:  4-0,
+		REFWMHI 	:  8-4,
+		REFWMPNC	: 12-8,
+		tREFI		: 15-12,
+		Rsvd_34 	: 16-15,
+		REFCNTMAX	: 18-16,
+		Rsvd_35 	: 20-18,
+		REFSKWDIS	: 21-20,
+		REFDBTCLR	: 22-21,
+		Rsvd_DRFC_0	: 32-22;
+	} Z8000;
 } SOC_MC_DRFC;
 
 typedef union	/*	MCR: Port=0x04 & Offset=0x6			*/
