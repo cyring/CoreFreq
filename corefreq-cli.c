@@ -6291,7 +6291,7 @@ void Instructions(unsigned int iter)
 					CFlop->State.IPC,
 					CFlop->State.CPI);
 		} else {
-			rdx = sprintf(&out[idx], "%03u\n", cpu);
+			rdx = sprintf(&out[idx], "%03u        OFF\n", cpu);
 		}
 		if (rdx > 0) {
 			idx += rdx;
@@ -6366,101 +6366,147 @@ ASCII* Topology_Hybrid(char *pStr, unsigned int cpu)
 
 void Topology_Std_Update(TGrid *grid, DATA_TYPE data[])
 {
-	const unsigned int cpu = data[0].uint[0];
+	const unsigned int cpu = data[0].ullong & CPU_MASK;
 	char item[1+(3*11)+1];
 
-    if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
-    {
+    if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS)) {
+      if ((data[0].ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+      {
 	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND3).ATTR(), grid->cell.length);
 
 	Topology_Std(item, cpu);
 	memcpy(grid->cell.item, item, grid->cell.length);
+
+	grid->data[0].ullong = (unsigned long long) (CPU_ONLINE | cpu);
+      }
     } else {
+      if ((data[0].ullong & CPU_STATE_MASK) == CPU_ONLINE)
+      {
 	size_t length;
 
 	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND4).ATTR(), grid->cell.length);
 
 	StrLenFormat(length, item, (3*11)+1, RSC(TOPOLOGY_FMT0).CODE(), cpu);
 	memcpy(grid->cell.item, item, length);
+
+	grid->data[0].ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+      }
     }
 }
 
 void Topology_SMT_Update(TGrid *grid, DATA_TYPE data[])
 {
-	const unsigned int cpu = data[0].uint[0];
+	const unsigned int cpu = data[0].ullong & CPU_MASK;
 	char item[1+1+1+(2*11)+1];
 
-    if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
-    {
+    if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS)) {
+      if ((data[0].ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+      {
 	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND0).ATTR(), grid->cell.length);
 
 	Topology_SMT(item, cpu);
 	memcpy(grid->cell.item, item, grid->cell.length);
+
+	grid->data[0].ullong = (unsigned long long) (CPU_ONLINE | cpu);
+      }
     } else {
+      if ((data[0].ullong & CPU_STATE_MASK) == CPU_ONLINE)
+      {
 	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND1).ATTR(), grid->cell.length);
 	memcpy(grid->cell.item, RSC(TOPOLOGY_OFF_0).CODE(), grid->cell.length);
+
+	grid->data[0].ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+      }
     }
 }
 
 void Topology_CMP_Update(TGrid *grid, DATA_TYPE data[])
 {
-	const unsigned int cpu = data[0].uint[0];
+	const unsigned int cpu = data[0].ullong & CPU_MASK;
 	char item[(3*11)+1];
 
-    if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
-    {
+    if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS)) {
+      if ((data[0].ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+      {
 	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND0).ATTR(), grid->cell.length);
 
 	Topology_CMP(item, cpu);
 	memcpy(grid->cell.item, item, grid->cell.length);
+
+	grid->data[0].ullong = (unsigned long long) (CPU_ONLINE | cpu);
+      }
     } else {
+      if ((data[0].ullong & CPU_STATE_MASK) == CPU_ONLINE)
+      {
 	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND1).ATTR(), grid->cell.length);
 	memcpy(grid->cell.item, RSC(TOPOLOGY_OFF_1).CODE(), grid->cell.length);
+
+	grid->data[0].ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+      }
     }
 }
 
 void Topology_CCD_Update(TGrid *grid, DATA_TYPE data[])
 {
-	const unsigned int cpu = data[0].uint[0];
+	const unsigned int cpu = data[0].ullong & CPU_MASK;
 	char item[(4*11)+1];
 
-    if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
-    {
+    if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS)) {
+      if ((data[0].ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+      {
 	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND0).ATTR(), grid->cell.length);
 
 	Topology_CCD(item, cpu);
 	memcpy(grid->cell.item, item, grid->cell.length);
+
+	grid->data[0].ullong = (unsigned long long) (CPU_ONLINE | cpu);
+      }
     } else {
+      if ((data[0].ullong & CPU_STATE_MASK) == CPU_ONLINE)
+      {
 	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND1).ATTR(), grid->cell.length);
 	memcpy(grid->cell.item, RSC(TOPOLOGY_OFF_2).CODE(), grid->cell.length);
+
+	grid->data[0].ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+      }
     }
 }
 
 void Topology_Hybrid_Update(TGrid *grid, DATA_TYPE data[])
 {
-	const unsigned int cpu = data[0].uint[0];
+	const unsigned int cpu = data[0].ullong & CPU_MASK;
 	char item[3+(3*11)+1];
 
-    if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
-    {
+    if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS)) {
+      if ((data[0].ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+      {
 	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND0).ATTR(), grid->cell.length);
 
 	Topology_Hybrid(item, cpu);
 	memcpy(grid->cell.item, item, grid->cell.length);
+
+	grid->data[0].ullong = (unsigned long long) (CPU_ONLINE | cpu);
+      }
     } else {
+      if ((data[0].ullong & CPU_STATE_MASK) == CPU_ONLINE)
+      {
 	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND1).ATTR(), grid->cell.length);
 	memcpy(grid->cell.item, RSC(TOPOLOGY_OFF_3).CODE(), grid->cell.length);
+
+	grid->data[0].ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+      }
     }
 }
 
 void TopologyCache_Update(TGrid *grid, DATA_TYPE data[])
 {
-	const unsigned int	cpu	= data[0].uint[0],
+	const unsigned int	cpu	= data[0].ullong & CPU_MASK,
 				level	= data[1].uint[0];
 	char item[(2*11)+1+1+1];
 
-    if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
-    {
+    if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS)) {
+      if ((data[0].ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+      {
 	size_t length;
 
 	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND0).ATTR(), grid->cell.length);
@@ -6474,9 +6520,17 @@ void TopologyCache_Update(TGrid *grid, DATA_TYPE data[])
 			'i' : 0x20);
 
 	memcpy(grid->cell.item, item, length);
+
+	grid->data[0].ullong = (unsigned long long) (CPU_ONLINE | cpu);
+      }
     } else {
+      if ((data[0].ullong & CPU_STATE_MASK) == CPU_ONLINE)
+      {
 	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND1).ATTR(), grid->cell.length);
 	memcpy(grid->cell.item, RSC(TOPOLOGY_FMT1).CODE(), RSZ(TOPOLOGY_FMT1));
+
+	grid->data[0].ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+      }
     }
 }
 
@@ -6513,7 +6567,7 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 	};
 	char *strID = malloc(2 * ((4*11) + 1));
 	ASCII *OffLineItem = RSC(TOPOLOGY_OFF_0).CODE();
-	unsigned int cpu = 0, level = 0;
+	unsigned int cpu, level;
 	CUINT cells_per_line = win->matrix.size.wth, *nl = &cells_per_line;
 
   if (strID != NULL)
@@ -6606,12 +6660,12 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 	ASCII *comment = Topology_Std(strID, cpu);
 
 	GridCall(GridHover(PRT(MAP, TopologyAttr[3], strID), (char*) comment),
-		Topology_Std_Update, cpu);
+		Topology_Std_Update, (unsigned long long) (CPU_ONLINE | cpu));
 
 	TopologyFunc(&strID[TOPO_MATX+1], cpu);
 
 	GridCall(PRT(MAP, TopologyAttr[0], &strID[TOPO_MATX+1]),
-		TopologyUpdate, cpu);
+		TopologyUpdate, (unsigned long long) (CPU_ONLINE | cpu));
 
        for (level = 0; level < CACHE_MAX_LEVEL; level++)
        {
@@ -6623,17 +6677,20 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 			'w' : 0x20,
 		RO(Shm)->Cpu[cpu].Topology.Cache[level].Feature.Inclusive ?
 			'i' : 0x20),
-	    TopologyCache_Update, cpu, level);
+	    TopologyCache_Update,
+	    (unsigned long long) (CPU_ONLINE | cpu), level);
        }
       } else {
 	GridCall(PRT(MAP, TopologyAttr[4], RSC(TOPOLOGY_FMT0).CODE(), cpu),
-		Topology_Std_Update, cpu);
+		Topology_Std_Update, (unsigned long long) (CPU_OFFLINE | cpu));
 
-	GridCall(PRT(MAP, TopologyAttr[1], OffLineItem), TopologyUpdate, cpu);
+	GridCall(PRT(MAP, TopologyAttr[1], OffLineItem),
+		TopologyUpdate, (unsigned long long) (CPU_OFFLINE | cpu));
 
 	for (level = 0; level < CACHE_MAX_LEVEL; level++) {
 		GridCall(PRT(MAP, TopologyAttr[1], RSC(TOPOLOGY_FMT1).CODE()),
-			TopologyCache_Update, cpu, level);
+			TopologyCache_Update,
+			(unsigned long long) (CPU_OFFLINE | cpu), level);
 	}
       }
     }
