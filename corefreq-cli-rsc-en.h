@@ -2210,6 +2210,12 @@
 #define RSC_FIRMWARE_CODE		"Firmware"
 #define RSC_HYBRID_CODE 		"Hybrid"
 
+#define RSC_TOPOLOGY_FMT0_CODE	"%03u:\x20\x20-\x20\x20\x20\x20-\x20"
+#define RSC_TOPOLOGY_FMT1_CODE	"\x20\x20\x20\x20\x20\x20\x20-\x20\x20-\x20\x20"
+#define RSC_TOPOLOGY_OFF_0_CODE "\x20\x20\x20\x20-\x20\x20\x20\x20\x20\x20-\x20"
+#define RSC_TOPOLOGY_OFF_1_CODE "\x20\x20-\x20\x20\x20-\x20\x20\x20\x20\x20-"
+#define RSC_TOPOLOGY_OFF_2_CODE "\x20\x20-\x20\x20-\x20\x20\x20-\x20\x20-"
+#define RSC_TOPOLOGY_OFF_3_CODE "\x20-\x20\x20\x20-\x20\x20\x20-\x20\x20-"
 #define RSC_TOPOLOGY_HDR_PKG_CODE	"CPU Pkg  Apic"
 #define RSC_TOPOLOGY_HDR_SMT_CODE	"  Core/Thread"
 #define RSC_TOPOLOGY_HDR_CACHE_CODE	"  Caches     "

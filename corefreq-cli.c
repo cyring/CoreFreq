@@ -6327,62 +6327,158 @@ ASCII* Topology_Std(char *pStr, unsigned int cpu)
 
 ASCII* Topology_SMT(char *pStr, unsigned int cpu)
 {
-	ASCII *comment = Topology_Std(pStr, cpu);
-
-	StrFormat(&pStr[TOPO_MATX+1], 1+(2*11)+1, "%5d\x20\x20%5d\x20",
+	StrFormat(pStr, 1+1+1+(2*11)+1, "%5d\x20\x20%5d\x20",
 			RO(Shm)->Cpu[cpu].Topology.CoreID,
 			RO(Shm)->Cpu[cpu].Topology.ThreadID);
-	return comment;
+	return NULL;
 }
 
 ASCII* Topology_CMP(char *pStr, unsigned int cpu)
 {
-	ASCII *comment = Topology_Std(pStr, cpu);
-
-	StrFormat(&pStr[TOPO_MATX+1], (3*11)+1, "%3u%4d%6d",
+	StrFormat(pStr, (3*11)+1, "%3u%4d%6d",
 			RO(Shm)->Cpu[cpu].Topology.Cluster.CMP,
 			RO(Shm)->Cpu[cpu].Topology.CoreID,
 			RO(Shm)->Cpu[cpu].Topology.ThreadID);
-	return comment;
+	return NULL;
 }
 
 ASCII* Topology_CCD(char *pStr, unsigned int cpu)
 {
-	ASCII *comment = Topology_Std(pStr, cpu);
-
-	StrFormat(&pStr[TOPO_MATX+1], (4*11)+1, "%3u%3u%4d%3d",
+	StrFormat(pStr, (4*11)+1, "%3u%3u%4d%3d",
 			RO(Shm)->Cpu[cpu].Topology.Cluster.CCD,
 			RO(Shm)->Cpu[cpu].Topology.Cluster.CCX,
 			RO(Shm)->Cpu[cpu].Topology.CoreID,
 			RO(Shm)->Cpu[cpu].Topology.ThreadID);
-	return comment;
+	return NULL;
 }
 
 ASCII* Topology_Hybrid(char *pStr, unsigned int cpu)
 {
-	ASCII *comment = Topology_Std(pStr, cpu);
-
-	StrFormat(&pStr[TOPO_MATX+1], 3+(3*11)+1, "\x20%c%4u%4d%3d",
+	StrFormat(pStr, 3+(3*11)+1, "\x20%c%4u%4d%3d",
 			RO(Shm)->Cpu[cpu].Topology.MP.Ecore ?
 			'E' : RO(Shm)->Cpu[cpu].Topology.MP.Pcore ?
 			'P' : '?',
 			RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID,
 			RO(Shm)->Cpu[cpu].Topology.CoreID,
 			RO(Shm)->Cpu[cpu].Topology.ThreadID);
-	return comment;
+	return NULL;
 }
 
-const char *TopologyStrOFF[] = {
-	"\x20\x20\x20\x20-\x20\x20\x20\x20\x20\x20-\x20",
-	"\x20\x20-\x20\x20\x20-\x20\x20\x20\x20\x20-",
-	"\x20\x20-\x20\x20-\x20\x20\x20-\x20\x20-",
-	"\x20-\x20\x20\x20-\x20\x20\x20-\x20\x20-"
-};
+void Topology_Std_Update(TGrid *grid, DATA_TYPE data[])
+{
+	const unsigned int cpu = data[0].uint[0];
+	char item[1+(3*11)+1];
 
-const char *TopologyFmtOFF[] = {
-	"%03u:\x20\x20-\x20\x20\x20\x20-\x20",
-	"\x20\x20\x20\x20\x20\x20\x20-\x20\x20-\x20\x20"
-};
+    if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
+    {
+	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND3).ATTR(), grid->cell.length);
+
+	Topology_Std(item, cpu);
+	memcpy(grid->cell.item, item, grid->cell.length);
+    } else {
+	size_t length;
+
+	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND4).ATTR(), grid->cell.length);
+
+	StrLenFormat(length, item, (3*11)+1, RSC(TOPOLOGY_FMT0).CODE(), cpu);
+	memcpy(grid->cell.item, item, length);
+    }
+}
+
+void Topology_SMT_Update(TGrid *grid, DATA_TYPE data[])
+{
+	const unsigned int cpu = data[0].uint[0];
+	char item[1+1+1+(2*11)+1];
+
+    if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
+    {
+	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND0).ATTR(), grid->cell.length);
+
+	Topology_SMT(item, cpu);
+	memcpy(grid->cell.item, item, grid->cell.length);
+    } else {
+	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND1).ATTR(), grid->cell.length);
+	memcpy(grid->cell.item, RSC(TOPOLOGY_OFF_0).CODE(), grid->cell.length);
+    }
+}
+
+void Topology_CMP_Update(TGrid *grid, DATA_TYPE data[])
+{
+	const unsigned int cpu = data[0].uint[0];
+	char item[(3*11)+1];
+
+    if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
+    {
+	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND0).ATTR(), grid->cell.length);
+
+	Topology_CMP(item, cpu);
+	memcpy(grid->cell.item, item, grid->cell.length);
+    } else {
+	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND1).ATTR(), grid->cell.length);
+	memcpy(grid->cell.item, RSC(TOPOLOGY_OFF_1).CODE(), grid->cell.length);
+    }
+}
+
+void Topology_CCD_Update(TGrid *grid, DATA_TYPE data[])
+{
+	const unsigned int cpu = data[0].uint[0];
+	char item[(4*11)+1];
+
+    if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
+    {
+	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND0).ATTR(), grid->cell.length);
+
+	Topology_CCD(item, cpu);
+	memcpy(grid->cell.item, item, grid->cell.length);
+    } else {
+	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND1).ATTR(), grid->cell.length);
+	memcpy(grid->cell.item, RSC(TOPOLOGY_OFF_2).CODE(), grid->cell.length);
+    }
+}
+
+void Topology_Hybrid_Update(TGrid *grid, DATA_TYPE data[])
+{
+	const unsigned int cpu = data[0].uint[0];
+	char item[3+(3*11)+1];
+
+    if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
+    {
+	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND0).ATTR(), grid->cell.length);
+
+	Topology_Hybrid(item, cpu);
+	memcpy(grid->cell.item, item, grid->cell.length);
+    } else {
+	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND1).ATTR(), grid->cell.length);
+	memcpy(grid->cell.item, RSC(TOPOLOGY_OFF_3).CODE(), grid->cell.length);
+    }
+}
+
+void TopologyCache_Update(TGrid *grid, DATA_TYPE data[])
+{
+	const unsigned int	cpu	= data[0].uint[0],
+				level	= data[1].uint[0];
+	char item[(2*11)+1+1+1];
+
+    if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
+    {
+	size_t length;
+
+	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND0).ATTR(), grid->cell.length);
+
+	StrLenFormat(length, item, (2*11)+1+1+1, "%8u%3u%c%c",
+		RO(Shm)->Cpu[cpu].Topology.Cache[level].Size,
+		RO(Shm)->Cpu[cpu].Topology.Cache[level].Way,
+		RO(Shm)->Cpu[cpu].Topology.Cache[level].Feature.WriteBack ?
+			'w' : 0x20,
+		RO(Shm)->Cpu[cpu].Topology.Cache[level].Feature.Inclusive ?
+			'i' : 0x20);
+
+	memcpy(grid->cell.item, item, length);
+    } else {
+	memcpy(grid->cell.attr, RSC(TOPOLOGY_COND1).ATTR(), grid->cell.length);
+	memcpy(grid->cell.item, RSC(TOPOLOGY_FMT1).CODE(), RSZ(TOPOLOGY_FMT1));
+    }
+}
 
 void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 {
@@ -6408,7 +6504,7 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 		RSC(TOPOLOGY_ALT_ITEM3).CODE(),
 		RSC(TOPOLOGY_ALT_ITEM4).CODE()
 	};
-	ATTRIBUTE *attrib[5] = {
+	ATTRIBUTE *TopologyAttr[5] = {
 		RSC(TOPOLOGY_COND0).ATTR(),
 		RSC(TOPOLOGY_COND1).ATTR(),
 		RSC(TOPOLOGY_COND2).ATTR(),
@@ -6416,22 +6512,25 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 		RSC(TOPOLOGY_COND4).ATTR()
 	};
 	char *strID = malloc(2 * ((4*11) + 1));
-	char const *pStrOFF = TopologyStrOFF[0];
+	ASCII *OffLineItem = RSC(TOPOLOGY_OFF_0).CODE();
 	unsigned int cpu = 0, level = 0;
 	CUINT cells_per_line = win->matrix.size.wth, *nl = &cells_per_line;
 
   if (strID != NULL)
   {
 	ASCII* (*TopologyFunc)(char*, unsigned int) = Topology_SMT;
+
+	void (*TopologyUpdate)(struct _Grid *grid, DATA_TYPE data[]) = \
+		Topology_SMT_Update;
 /* Row Mark */
-	PRT(MAP, attrib[2], TopologyHeader[0]);
-	PRT(MAP, attrib[2], TopologyHeader[1]);
-	PRT(MAP, attrib[2], TopologyHeader[2]);
-	PRT(MAP, attrib[2], TopologyHeader[3]);
-	PRT(MAP, attrib[2], TopologyHeader[4]);
-	PRT(MAP, attrib[2], TopologyHeader[5]);
+	PRT(MAP, TopologyAttr[2], TopologyHeader[0]);
+	PRT(MAP, TopologyAttr[2], TopologyHeader[1]);
+	PRT(MAP, TopologyAttr[2], TopologyHeader[2]);
+	PRT(MAP, TopologyAttr[2], TopologyHeader[3]);
+	PRT(MAP, TopologyAttr[2], TopologyHeader[4]);
+	PRT(MAP, TopologyAttr[2], TopologyHeader[5]);
 /* Row Mark */
-	PRT(MAP, attrib[2], TopologySubHeader[0]);
+	PRT(MAP, TopologyAttr[2], TopologySubHeader[0]);
     if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
      || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
@@ -6443,8 +6542,9 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 	case AMD_Family_16h:
 	TOPOLOGY_CMP:
 		TopologyFunc = Topology_CMP;
-		pStrOFF = TopologyStrOFF[1];
+		OffLineItem = RSC(TOPOLOGY_OFF_1).CODE();
 		TopologySubHeader[1] = TopologyAltSubHeader[1];
+		TopologyUpdate = Topology_CMP_Update;
 		break;
 	case AMD_Family_17h:
 	case Hygon_Family_18h:
@@ -6470,8 +6570,9 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 	case AMD_Zen4_Genoa:
 	case AMD_Zen4_RPL:
 		TopologyFunc = Topology_CCD;
-		pStrOFF = TopologyStrOFF[2];
+		OffLineItem = RSC(TOPOLOGY_OFF_2).CODE();
 		TopologySubHeader[1] = TopologyAltSubHeader[2];
+		TopologyUpdate = Topology_CCD_Update;
 		break;
 	default:
 		if ( RO(Shm)->Proc.Features.Std.ECX.Hyperv )
@@ -6485,43 +6586,54 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
     } else {
 	if (RO(Shm)->Proc.Features.ExtFeature.EDX.Hybrid) {
 		TopologyFunc = Topology_Hybrid;
-		pStrOFF = TopologyStrOFF[3];
+		OffLineItem = RSC(TOPOLOGY_OFF_3).CODE();
 		TopologySubHeader[1] = TopologyAltSubHeader[3];
+		TopologyUpdate = Topology_Hybrid_Update;
 	} else {
 		TopologySubHeader[1] = TopologyAltSubHeader[0];
 	}
     }
-	PRT(MAP, attrib[2], TopologySubHeader[1]);
-	PRT(MAP, attrib[2], TopologySubHeader[2]);
-	PRT(MAP, attrib[2], TopologySubHeader[3]);
-	PRT(MAP, attrib[2], TopologySubHeader[4]);
-	PRT(MAP, attrib[2], TopologySubHeader[5]);
+	PRT(MAP, TopologyAttr[2], TopologySubHeader[1]);
+	PRT(MAP, TopologyAttr[2], TopologySubHeader[2]);
+	PRT(MAP, TopologyAttr[2], TopologySubHeader[3]);
+	PRT(MAP, TopologyAttr[2], TopologySubHeader[4]);
+	PRT(MAP, TopologyAttr[2], TopologySubHeader[5]);
 /* Row Mark */
     for (cpu = 0; cpu < RO(Shm)->Proc.CPU.Count; cpu++)
     {
       if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, OS))
       {
-	ASCII *comment = TopologyFunc(strID, cpu);
+	ASCII *comment = Topology_Std(strID, cpu);
 
-	GridHover(PRT(MAP, attrib[3], &strID[ 0]), (char*) comment);
-	PRT(MAP, attrib[0], &strID[14]);
+	GridCall(GridHover(PRT(MAP, TopologyAttr[3], strID), (char*) comment),
+		Topology_Std_Update, cpu);
+
+	TopologyFunc(&strID[TOPO_MATX+1], cpu);
+
+	GridCall(PRT(MAP, TopologyAttr[0], &strID[TOPO_MATX+1]),
+		TopologyUpdate, cpu);
 
        for (level = 0; level < CACHE_MAX_LEVEL; level++)
        {
-	PRT(MAP, attrib[0], "%8u%3u%c%c",
+	GridCall(
+	    PRT(MAP, TopologyAttr[0], "%8u%3u%c%c",
 		RO(Shm)->Cpu[cpu].Topology.Cache[level].Size,
 		RO(Shm)->Cpu[cpu].Topology.Cache[level].Way,
 		RO(Shm)->Cpu[cpu].Topology.Cache[level].Feature.WriteBack ?
 			'w' : 0x20,
 		RO(Shm)->Cpu[cpu].Topology.Cache[level].Feature.Inclusive ?
-			'i' : 0x20);
+			'i' : 0x20),
+	    TopologyCache_Update, cpu, level);
        }
       } else {
-	PRT(MAP, attrib[4], TopologyFmtOFF[0], cpu);
-	PRT(MAP, attrib[1], pStrOFF);
+	GridCall(PRT(MAP, TopologyAttr[4], RSC(TOPOLOGY_FMT0).CODE(), cpu),
+		Topology_Std_Update, cpu);
+
+	GridCall(PRT(MAP, TopologyAttr[1], OffLineItem), TopologyUpdate, cpu);
 
 	for (level = 0; level < CACHE_MAX_LEVEL; level++) {
-		PRT(MAP,attrib[1], TopologyFmtOFF[1]);
+		GridCall(PRT(MAP, TopologyAttr[1], RSC(TOPOLOGY_FMT1).CODE()),
+			TopologyCache_Update, cpu, level);
 	}
       }
     }
@@ -8630,6 +8742,8 @@ Window *CreateSysInfo(unsigned long long id)
 
 TGrid *AddCell(CELL_ARGS)
 {
+	UNUSED(cellPadding);
+
 	return StoreTCell(win, key, item, attrib);
 }
 
