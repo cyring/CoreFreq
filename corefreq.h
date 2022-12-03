@@ -402,8 +402,10 @@ typedef struct
 					PC09,
 					PC10;
 		    };
+		    #if defined(ARCH_PMC)
 			unsigned long long
 			CTR[MC_VECTOR_TO_SCALAR(MC_MAX_CTRL, MC_MAX_CHA)];
+		    #endif
 		  };
 		unsigned long long	MC6,
 					ACCU[PWR_DOMAIN(SIZE)];

@@ -835,7 +835,10 @@ typedef struct
 				PC09, /* Haswell			*/
 				PC10; /* Goldmont, Haswell		*/
 	    };
-	    unsigned long long	CTR[8]; /*	Up to eight CCDs	*/
+	    #if defined(ARCH_PMC)
+		unsigned long long
+			CTR[MC_VECTOR_TO_SCALAR(MC_MAX_CTRL, MC_MAX_CHA)];
+	    #endif
 	  };
 	  union {
 	    unsigned long long	MC6;  /* Atom, Silervmont: per Module	*/
@@ -864,8 +867,10 @@ typedef struct
 				PC09,
 				PC10;
 	    };
+	    #if defined(ARCH_PMC)
 		unsigned long long
 			CTR[MC_VECTOR_TO_SCALAR(MC_MAX_CTRL, MC_MAX_CHA)];
+	    #endif
 	  };
 	  union {
 	    unsigned long long	MC6;
