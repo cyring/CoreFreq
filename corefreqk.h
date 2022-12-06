@@ -1693,7 +1693,7 @@ static void Query_Hygon_F18h(unsigned int cpu);
 #define     InitTimer_AMD_F19h_Zen3_SP InitTimer_AMD_F17h_Zen2_SP
 #define     InitTimer_AMD_F19h_Zen3_MP InitTimer_AMD_F17h_Zen2_MP
 #define     InitTimer_AMD_F19h_Zen3_APU InitTimer_AMD_F17h_Zen2_APU
-#define     InitTimer_AMD_Zen4_RPL InitTimer_AMD_Zen3Plus_RMB
+#define     InitTimer_AMD_Zen4_RPL InitTimer_AMD_F19h_Zen3_SP
 #define     Start_Uncore_AMD_Family_19h Start_Uncore_AMD_Family_17h
 #define     Stop_Uncore_AMD_Family_19h Stop_Uncore_AMD_Family_17h
 
