@@ -1693,9 +1693,12 @@ static void Query_Hygon_F18h(unsigned int cpu);
 #define     InitTimer_AMD_F19h_Zen3_SP InitTimer_AMD_F17h_Zen2_SP
 #define     InitTimer_AMD_F19h_Zen3_MP InitTimer_AMD_F17h_Zen2_MP
 #define     InitTimer_AMD_F19h_Zen3_APU InitTimer_AMD_F17h_Zen2_APU
-#define     InitTimer_AMD_Zen4_RPL InitTimer_AMD_F19h_Zen3_SP
 #define     Start_Uncore_AMD_Family_19h Start_Uncore_AMD_Family_17h
 #define     Stop_Uncore_AMD_Family_19h Stop_Uncore_AMD_Family_17h
+
+static void CCD_AMD_Family_19h_Zen4_Temp(CORE_RO *Core) ;
+static void Query_AMD_F19h_61h_PerCluster(unsigned int cpu) ;
+#define     InitTimer_AMD_Zen4_RPL InitTimer_AMD_F19h_Zen3_SP
 
 /*	[Void]								*/
 #define _Void_Signature {.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
@@ -9840,7 +9843,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen4_RPL] = {							/*102*/
 	.Signature = _AMD_Zen4_RPL,
-	.Query = Query_AMD_F19h_PerCluster,
+	.Query = Query_AMD_F19h_61h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,

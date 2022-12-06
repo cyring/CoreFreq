@@ -7989,6 +7989,22 @@ static void Query_AMD_F17h_PerCluster(unsigned int cpu)
 	}
 }
 
+static void Query_AMD_F19h_61h_PerCluster(unsigned int cpu)
+{
+	Core_AMD_Family_17h_Temp = CCD_AMD_Family_19h_Zen4_Temp;
+
+	Probe_AMD_DataFabric();
+
+	Query_AMD_Family_17h(cpu);
+
+	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
+		Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
+		if (AMD_F17h_CPPC() == -ENODEV) {
+			For_All_ACPI_CPPC(Read_ACPI_CPPC_Registers, NULL);
+		}
+	}
+}
+
 static void Query_Hygon_F18h(unsigned int cpu)
 {
 	switch (PUBLIC(RO(Proc))->Features.Std.EAX.Model) {
@@ -14517,6 +14533,37 @@ static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 									\
 	Pkg->PowerThermal.Sensor = Core->PowerThermal.Sensor;		\
 })
+
+static void CCD_AMD_Family_19h_Zen4_Temp(CORE_RO *Core)
+{
+	TCCD_REGISTER TccdSensor = {.value = 0};
+	TCTL_THERM_TRIP ThermTrip = {.value = 0};
+
+	Core_AMD_SMN_Read(	TccdSensor,
+				(SMU_AMD_THM_TCTL_CCD_REGISTER_F19H_61H
+				+ (Core->T.Cluster.CCD << 2)),
+				PRIVATE(OF(Zen)).Device.DF );
+
+	Core->PowerThermal.Sensor = TccdSensor.CurTmp;
+
+	if (TccdSensor.CurTempRangeSel == 1)
+	{
+		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 49;
+	} else {
+		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 0;
+	}
+
+	Core_AMD_SMN_Read(	ThermTrip,
+				SMU_AMD_THM_TCTL_REGISTER_F17H + 0x8,
+				PRIVATE(OF(Zen)).Device.DF );
+
+	if (ThermTrip.THERM_TP_EN) {
+		Core->PowerThermal.Events[eSTS] = \
+				(Bit64)ThermTrip.THERM_TP << LSHIFT_THERMAL_STS;
+	}
+	Core->PowerThermal.Events[eSTS] = \
+			(Bit64)ThermTrip.CTF_THRESHOLD << LSHIFT_CRITIC_TMP;
+}
 
 
 static enum hrtimer_restart Cycle_VirtualMachine(struct hrtimer *pTimer)
