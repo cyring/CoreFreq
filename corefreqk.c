@@ -1,7 +1,10 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2022 CYRIL INGENIERIE
+ * Copyright (C) 2015-2022 CYRIL COURTIAT
  * Licenses: GPL2
+ *
+ * CYRIL INGENIERIE[11.30.2022]
+ * Company closed down
  *
  * Time Capsule[02.02.2022]
  * Cyril to Marcel Courtiat
@@ -53,7 +56,7 @@
 #include "corefreq-api.h"
 #include "corefreqk.h"
 
-MODULE_AUTHOR ("CYRIL INGENIERIE <labs[at]cyring[dot]fr>");
+MODULE_AUTHOR ("CYRIL COURTIAT <labs[at]cyring[dot]fr>");
 MODULE_DESCRIPTION ("CoreFreq Processor Driver");
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 12, 0)
 MODULE_SUPPORTED_DEVICE ("Intel,AMD,HYGON");
