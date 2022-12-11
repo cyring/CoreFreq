@@ -301,6 +301,12 @@ CPU     IPS            IPC            CPI
  2. blacklist any P-state driver; such as:  
 `modprobe.blacklist=acpi_cpufreq,pcc_cpufreq intel_pstate=disable`  
 
+  * hardware CPPC (MSR registers)  
+`initcall_blacklist=amd_pstate_init`
+
+  * firmware CPPC (ACPI registers)  
+`amd_pstate.shared_mem=0` and/or `initcall_blacklist=acpi_cpufreq_init`
+
  3. load the _CoreFreq_ driver with its `Register_CPU_Freq` parameter:  
 `insmod corefreqk.ko Register_CPU_Freq=1`  
 
