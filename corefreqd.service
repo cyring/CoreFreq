@@ -11,6 +11,7 @@ ExecStart=corefreqd -q
 ExecStop=/bin/kill -QUIT $MAINPID
 RemainAfterExit=no
 SuccessExitStatus=SIGQUIT SIGUSR1 SIGTERM
+Slice=-.slice
 
 [Install]
 WantedBy=multi-user.target
