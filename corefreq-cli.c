@@ -15778,6 +15778,7 @@ int Shortcut(SCANKEY *scan)
 		Window *win = SearchWinListById(scan->key, &winList);
 	    if (win == NULL)
 	    {
+		struct FLIP_FLOP *CFlop;
 		CLOCK_ARG clockMod = {.ullong = scan->key};
 		struct HWP_STRUCT *pHWP;
 		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
@@ -15792,15 +15793,20 @@ int Shortcut(SCANKEY *scan)
 				Ruler.Top[BOOST(HWP_TGT)]
 			].PowerThermal.HWP;
 		COF = pHWP->Request.Desired_Perf;
+
+		CFlop = &RO(Shm)->Cpu[Ruler.Top[ BOOST(MAX)] ].FlipFlop[
+					!RO(Shm)->Cpu[Ruler.Top[BOOST(MAX)]
+					].Toggle];
 	      } else {
 		pHWP = &RO(Shm)->Cpu[cpu].PowerThermal.HWP;
 		COF = pHWP->Request.Desired_Perf;
+		CFlop = &RO(Shm)->Cpu[cpu].FlipFlop[!RO(Shm)->Cpu[cpu].Toggle];
 	      }
-		ComputeRatioShifts(	COF,
-					0,
-					pHWP->Capabilities.Highest,
-					&lowestShift,
-					&highestShift );
+		ComputeRatioShifts(COF,
+				0,
+				MAXCLOCK_TO_RATIO(unsigned int,CFlop->Clock.Hz),
+				&lowestShift,
+				&highestShift);
 
 		AppendWindow(
 			CreateRatioClock(scan->key,
@@ -15810,10 +15816,11 @@ int Shortcut(SCANKEY *scan)
 					lowestShift,
 					highestShift,
 
-				(int)	((pHWP->Capabilities.Most_Efficient
+				(int)	((pHWP->Capabilities.Lowest
 					+ pHWP->Capabilities.Guaranteed) >> 1),
 
-				(int)	pHWP->Capabilities.Guaranteed,
+				(int)	pHWP->Capabilities.Highest,
+
 					BOXKEY_RATIO_CLOCK,
 					TitleForRatioClock,
 					38),
@@ -15831,6 +15838,7 @@ int Shortcut(SCANKEY *scan)
 		Window *win = SearchWinListById(scan->key, &winList);
 	    if (win == NULL)
 	    {
+		struct FLIP_FLOP *CFlop;
 		CLOCK_ARG clockMod = {.ullong = scan->key};
 		struct HWP_STRUCT *pHWP;
 		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
@@ -15845,15 +15853,20 @@ int Shortcut(SCANKEY *scan)
 				Ruler.Top[BOOST(HWP_MAX)]
 			].PowerThermal.HWP;
 		COF = pHWP->Request.Maximum_Perf;
+
+		CFlop = &RO(Shm)->Cpu[Ruler.Top[ BOOST(MAX)] ].FlipFlop[
+					!RO(Shm)->Cpu[Ruler.Top[BOOST(MAX)]
+					].Toggle];
 	      } else {
 		pHWP = &RO(Shm)->Cpu[cpu].PowerThermal.HWP;
 		COF = pHWP->Request.Maximum_Perf;
+		CFlop = &RO(Shm)->Cpu[cpu].FlipFlop[!RO(Shm)->Cpu[cpu].Toggle];
 	      }
-		ComputeRatioShifts(	COF,
-					0,
-					pHWP->Capabilities.Highest,
-					&lowestShift,
-					&highestShift );
+		ComputeRatioShifts(COF,
+				0,
+				MAXCLOCK_TO_RATIO(unsigned int,CFlop->Clock.Hz),
+				&lowestShift,
+				&highestShift);
 
 		AppendWindow(
 			CreateRatioClock(scan->key,
@@ -15863,10 +15876,11 @@ int Shortcut(SCANKEY *scan)
 					lowestShift,
 					highestShift,
 
-				(int)	((pHWP->Capabilities.Most_Efficient
+				(int)	((pHWP->Capabilities.Lowest
 					+ pHWP->Capabilities.Guaranteed) >> 1),
 
-				(int)	pHWP->Capabilities.Guaranteed,
+				(int)	pHWP->Capabilities.Highest,
+
 					BOXKEY_RATIO_CLOCK,
 					TitleForRatioClock,
 					39),
@@ -15884,6 +15898,7 @@ int Shortcut(SCANKEY *scan)
 		Window *win = SearchWinListById(scan->key, &winList);
 	    if (win == NULL)
 	    {
+		struct FLIP_FLOP *CFlop;
 		CLOCK_ARG clockMod = {.ullong = scan->key};
 		struct HWP_STRUCT *pHWP;
 		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
@@ -15898,15 +15913,20 @@ int Shortcut(SCANKEY *scan)
 				Ruler.Top[BOOST(HWP_MIN)]
 			].PowerThermal.HWP;
 		COF = pHWP->Request.Minimum_Perf;
+
+		CFlop = &RO(Shm)->Cpu[Ruler.Top[ BOOST(MAX)] ].FlipFlop[
+					!RO(Shm)->Cpu[Ruler.Top[BOOST(MAX)]
+					].Toggle];
 	      } else {
 		pHWP = &RO(Shm)->Cpu[cpu].PowerThermal.HWP;
 		COF = pHWP->Request.Minimum_Perf;
+		CFlop = &RO(Shm)->Cpu[cpu].FlipFlop[!RO(Shm)->Cpu[cpu].Toggle];
 	      }
-		ComputeRatioShifts(	COF,
-					0,
-					pHWP->Capabilities.Highest,
-					&lowestShift,
-					&highestShift );
+		ComputeRatioShifts(COF,
+				0,
+				MAXCLOCK_TO_RATIO(unsigned int,CFlop->Clock.Hz),
+				&lowestShift,
+				&highestShift);
 
 		AppendWindow(
 			CreateRatioClock(scan->key,
@@ -15916,10 +15936,11 @@ int Shortcut(SCANKEY *scan)
 					lowestShift,
 					highestShift,
 
-				(int)	((pHWP->Capabilities.Most_Efficient
+				(int)	((pHWP->Capabilities.Lowest
 					+ pHWP->Capabilities.Guaranteed) >> 1),
 
-				(int)	pHWP->Capabilities.Guaranteed,
+				(int)	pHWP->Capabilities.Highest,
+
 					BOXKEY_RATIO_CLOCK,
 					TitleForRatioClock,
 					40),
