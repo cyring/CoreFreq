@@ -1958,7 +1958,8 @@ typedef struct	/* BSP CPUID features.					*/
 			XtraCOF 	: 40-38, /* 1:CPB ; 2:{CPB and XFR} */
 			ACPI_CPPC	: 41-40,
 			OSPM_CPC	: 42-41,
-			_pad64		: 64-42;
+			OSPM_EPP	: 43-42,
+			_pad64		: 64-43;
 	};
 } FEATURES;
 

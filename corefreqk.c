@@ -3914,7 +3914,7 @@ signed int Get_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 			.Energy 	= 0
 		};
 	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
-		#if defined(CONFIG_SCHED_BORE)
+		#if defined(CONFIG_SCHED_BORE) || defined(CONFIG_CACHY)
 		rc = cppc_get_desired_perf(Core->Bind, &desired_perf);
 		rc = rc == -EINVAL ? 0 : rc;
 		#else
@@ -3934,11 +3934,64 @@ signed int Get_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 #endif /* CONFIG_ACPI_CPPC_LIB */
 }
 
+signed int Get_EPP_ACPI_CPPC(unsigned int cpu)
+{
+	signed int rc = -ENODEV;
+#if defined(CONFIG_SCHED_BORE) || defined(CONFIG_CACHY)
+	struct cppc_perf_caps CPPC_Caps;
+
+	if ((rc = cppc_get_epp_caps(cpu, &CPPC_Caps)) == 0)
+	{
+		CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+		Core->PowerThermal.ACPI_CPPC.Energy = CPPC_Caps.energy_perf;
+	} else {
+	    pr_debug("CoreFreq: cppc_get_epp_caps(cpu=%u) error %d\n", cpu, rc);
+	}
+#endif
+	return rc;
+}
+
+signed int Put_EPP_ACPI_CPPC(unsigned int cpu, signed short epp)
+{
+	signed int rc = -ENODEV;
+#if defined(CONFIG_SCHED_BORE) || defined(CONFIG_CACHY)
+	struct cppc_perf_ctrls perf_ctrls = {
+		.max_perf = 0,
+		.min_perf = 0,
+		.desired_perf = 0,
+		.energy_perf = epp
+	};
+	if ((rc = cppc_set_epp_perf(cpu, &perf_ctrls, true)) < 0) {
+	    pr_debug("CoreFreq: cppc_set_epp_perf(cpu=%u) error %d\n", cpu, rc);
+	}
+#endif
+	return rc;
+}
+
+signed int Set_EPP_ACPI_CPPC(unsigned int cpu, void *arg)
+{
+	signed int rc = 0;
+	UNUSED(arg);
+
+	if ((HWP_EPP >= 0) && (HWP_EPP <= 0xff)) {
+		if ((rc = Put_EPP_ACPI_CPPC(cpu, HWP_EPP)) == 0) {
+			rc = Get_EPP_ACPI_CPPC(cpu);
+		}
+	}
+	return rc;
+}
+
 signed int Read_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 {
 	signed int rc = Get_ACPI_CPPC_Registers(cpu, arg);
 
 	Compute_ACPI_CPPC_Bounds(cpu);
+
+	if (Get_EPP_ACPI_CPPC(cpu) == 0) {
+		PUBLIC(RO(Proc))->Features.OSPM_EPP = 1;
+	}
+	Set_EPP_ACPI_CPPC(cpu, arg);
 
 	return rc;
 }
@@ -21068,6 +21121,10 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	case TECHNOLOGY_HWP_EPP:
 		Controller_Stop(1);
 		HWP_EPP = prm.dl.lo;
+		if (PUBLIC(RO(Proc))->Features.OSPM_EPP == 1)
+		{
+			For_All_ACPI_CPPC(Set_EPP_ACPI_CPPC, NULL);
+		}
 		Controller_Start(1);
 		HWP_EPP = -1;
 		rc = RC_SUCCESS;

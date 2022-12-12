@@ -4834,11 +4834,12 @@ REASON_CODE SysInfoPwrThermal(  Window *win,
 	 || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
   {
 /* Row Mark */
-	bix = RO(Shm)->Proc.Features.HWP_Enable == 1;
+	bix = (RO(Shm)->Proc.Features.HWP_Enable == 1)
+	   || (RO(Shm)->Proc.Features.OSPM_EPP == 1);
     if (bix) {
 	GridCall( PUT(	BOXKEY_HWP_EPP, attrib[0], width, 2,
 			"%s%.*s%s   <%7u>", RSC(POWER_THERMAL_CPPC).CODE(),
-			width - 19 - RSZ(POWER_THERMAL_CPPC), hSpace,
+			width - 18 - RSZ(POWER_THERMAL_CPPC), hSpace,
 			RSC(POWER_LABEL_CPPC).CODE(),
 			RO(Shm)->Cpu[
 				RO(Shm)->Proc.Service.Core
@@ -4852,7 +4853,7 @@ REASON_CODE SysInfoPwrThermal(  Window *win,
 
 	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_CPPC).CODE(),
-		width - 19 - RSZ(POWER_THERMAL_CPPC), hSpace,
+		width - 18 - RSZ(POWER_THERMAL_CPPC), hSpace,
 		RSC(POWER_LABEL_CPPC).CODE(), POWERED(bix) );
     }
   }
