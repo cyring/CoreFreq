@@ -15330,7 +15330,9 @@ int Shortcut(SCANKEY *scan)
 			RSC(BOX_TOOLS_ROUND_ROBIN_CPU).CODE(), stateAttr[0],
 				BOXKEY_TOOLS_TURBO_RR,
 			RSC(BOX_TOOLS_USER_CPU).CODE(), stateAttr[0],
-				BOXKEY_TOOLS_TURBO_CPU);
+				BOXKEY_TOOLS_TURBO_CPU,
+			RSC(BOX_TOOLS_MONTE_CARLO).CODE(), stateAttr[0],
+				BOXKEY_TOOLS_MONTE_CARLO);
 
 	if (wBox != NULL) {
 		AppendWindow(wBox, &winList);
@@ -15473,6 +15475,15 @@ int Shortcut(SCANKEY *scan)
 		AppendWindow(CreateSelectCPU(scan->key), &winList);
 	else
 		SetHead(&winList, win);
+    }
+    break;
+
+    case BOXKEY_TOOLS_MONTE_CARLO:
+      if (!RING_FULL(RW(Shm)->Ring[1])) {
+	RING_WRITE(	RW(Shm)->Ring[1],
+			COREFREQ_ORDER_MONTE_CARLO,
+			RO(Shm)->Proc.Service.Core,
+			COREFREQ_TOGGLE_ON);
     }
     break;
 

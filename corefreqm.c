@@ -6,6 +6,7 @@
 
 #include <sys/ioctl.h>
 #include <pthread.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <math.h>
 
@@ -268,6 +269,44 @@ void Slice_Turbo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 	Slice_Atomic(RO(Shm), RW(Shm), cpu, TURBO_LOOP);
 }
 
+void Slice_Monte_Carlo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
+			unsigned int cpu, unsigned long arg)
+{
+    if (RO(Shm)->Cpu[cpu].Slice.Monte_Carlo.trials < PI_TRIALS)
+    {
+	double X, Y, Z;
+	UNUSED(arg);
+
+	if (!random_r(	&RO(Shm)->Cpu[cpu].Slice.Random.data,
+			&RO(Shm)->Cpu[cpu].Slice.Random.value[0] )
+	 && !random_r(	&RO(Shm)->Cpu[cpu].Slice.Random.data,
+			&RO(Shm)->Cpu[cpu].Slice.Random.value[1] ))
+	{
+		X = (double) RO(Shm)->Cpu[cpu].Slice.Random.value[0] / RAND_MAX;
+		Y = (double) RO(Shm)->Cpu[cpu].Slice.Random.value[1] / RAND_MAX;
+
+		Z = pow(X, 2.0) + pow(Y, 2.0);
+
+		if (Z <= 1.0) {
+			RO(Shm)->Cpu[cpu].Slice.Monte_Carlo.inside++;
+		}
+	}
+	RO(Shm)->Cpu[cpu].Slice.Monte_Carlo.trials++ ;
+    } else {
+	const double fi = (double) RO(Shm)->Cpu[cpu].Slice.Monte_Carlo.inside,
+		ft = RO(Shm)->Cpu[cpu].Slice.Monte_Carlo.trials ?
+		(double) RO(Shm)->Cpu[cpu].Slice.Monte_Carlo.trials : 1.0;
+
+	const double PI = (fi / ft) * 4.0;
+
+	RO(Shm)->Cpu[cpu].Slice.Error += (fabs(PI - PI_CONST) > PI_ERROR) ?
+		+1LLU : RO(Shm)->Cpu[cpu].Slice.Error > 0LLU ? -1LLU : 0LLU;
+
+	RO(Shm)->Cpu[cpu].Slice.Monte_Carlo.inside = 0LLU;
+	RO(Shm)->Cpu[cpu].Slice.Monte_Carlo.trials = 0LLU;
+    }
+}
+
 RING_SLICE order_list[] = {
     {
 	.ctrl = {
@@ -346,6 +385,13 @@ RING_SLICE order_list[] = {
 	.dh = {.lo = 0x0, .hi = 0x0}
 	},
 	.func = Slice_Turbo, .pattern = USR_CPU
+    },{
+	.ctrl = {
+	.cmd = COREFREQ_ORDER_MONTE_CARLO, .sub = 0x0U,
+	.dl = {.lo = 0x0, .hi = 0x0},
+	.dh = {.lo = 0x0, .hi = 0x0}
+	},
+	.func = Slice_Monte_Carlo, .pattern = ALL_SMT
     },{
 	.ctrl = {
 	.cmd = 0x0U, .sub = 0x0U,

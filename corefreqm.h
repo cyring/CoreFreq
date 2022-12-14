@@ -22,6 +22,9 @@ void Slice_Conic(RO(SHM_STRUCT)*, RW(SHM_STRUCT)*,
 void Slice_Turbo(RO(SHM_STRUCT)*, RW(SHM_STRUCT)*,
 		unsigned int, unsigned long);
 
+void Slice_Monte_Carlo(RO(SHM_STRUCT)*, RW(SHM_STRUCT)*,
+			unsigned int, unsigned long);
+
 typedef struct {
 		RING_CTRL	ctrl;
 		SLICE_FUNC	func;
@@ -82,3 +85,7 @@ void CallWith_RDTSC_No_RDPMC(	RO(SHM_STRUCT)*,
 #define CRC32_EXP	0x44f9d7bc
 
 #define CONIC_ERROR	1e-07
+
+#define PI_TRIALS	100000000LLU
+#define PI_ERROR	1.0e-04
+#define PI_CONST	3.141592653589793

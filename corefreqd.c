@@ -1270,8 +1270,12 @@ void SliceScheduling(	RO(SHM_STRUCT) *RO(Shm),
 		break;
 	case RAND_SMT:
 		do {
-			seek = (unsigned int) rand();
-			seek = seek % RO(Shm)->Proc.CPU.Count;
+		    if (random_r(&RO(Shm)->Cpu[cpu].Slice.Random.data,
+				&RO(Shm)->Cpu[cpu].Slice.Random.value[0]) == 0)
+		    {
+			seek = RO(Shm)->Cpu[cpu].Slice.Random.value[0]
+				% RO(Shm)->Proc.CPU.Count;
+		    }
 		} while (BITVAL(RO(Shm)->Cpu[seek].OffLine, OS));
 		BITCLR_CC(LOCKLESS, RO(Shm)->roomSched, cpu);
 		BITSET_CC(LOCKLESS, RO(Shm)->roomSched, seek);
@@ -8245,6 +8249,20 @@ REASON_CODE Child_Manager(REF *Ref)
 			Arg[cpu].TID = 0;
 		}
 	} else {
+		unsigned int seed32;
+		__asm__ volatile
+		(
+			"rdtsc" 		"\n\t"
+			"movl	%%eax,	%0"
+			: "=m" (seed32)
+			:
+			: "%rax", "%rcx", "%rdx", "cc", "memory"
+		);
+		initstate_r(	seed32,
+				RO(Shm)->Cpu[cpu].Slice.Random.state,
+				sizeof(RO(Shm)->Cpu[cpu].Slice.Random.state),
+				&RO(Shm)->Cpu[cpu].Slice.Random.data );
+
 		if (!Arg[cpu].TID) {
 			/*	Add this child thread.			*/
 			Arg[cpu].Ref  = Ref;

@@ -1815,6 +1815,7 @@
 #define RSC_BOX_TOOLS_RANDOM_CPU_CODE_EN	"      Turbo Random CPU     "
 #define RSC_BOX_TOOLS_ROUND_ROBIN_CPU_CODE_EN	"      Turbo Round Robin    "
 #define RSC_BOX_TOOLS_USER_CPU_CODE_EN		"    Turbo < Select CPU >   "
+#define RSC_BOX_TOOLS_MONTE_CARLO_CODE_EN	" Estimate PI / Monte Carlo "
 
 #define RSC_BOX_CONIC_TITLE_CODE_EN		" Conic variations "
 #define RSC_BOX_CONIC_ITEM_1_CODE_EN		"         Ellipsoid         "

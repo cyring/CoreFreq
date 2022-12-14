@@ -1282,6 +1282,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_TOOLS_ROUND_ROBIN_CPU_CODE_FR \
 					    "    Turbo CPU circulaire   "
 #define RSC_BOX_TOOLS_USER_CPU_CODE_FR	    "    Turbo < Choisir CPU >  "
+#define RSC_BOX_TOOLS_MONTE_CARLO_CODE_FR   "   Calcul PI / Monte Carlo "
 
 #define RSC_BOX_CONIC_TITLE_CODE_FR	" Variations Coniques "
 #define RSC_BOX_CONIC_ITEM_1_CODE_FR	"         Ellipso""\xaf""de         "

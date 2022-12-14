@@ -287,6 +287,17 @@ typedef struct
 		} Counter[3];
 
 		unsigned long long	Error;
+
+		struct {
+		     struct random_data data;
+			char		state[128];
+			int		value[2];
+		} Random;
+
+		struct {
+		unsigned long long	inside,
+					trials;
+		} Monte_Carlo;
 	} Slice __attribute__ ((aligned (8)));
 } CPU_STRUCT;
 
