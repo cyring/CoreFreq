@@ -6120,6 +6120,7 @@ static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
 					const unsigned int UMC_DAC,
 					const unsigned int UMC_DIMM_CFG,
 					const unsigned short umc_max,
+					const unsigned short cha_max,
 					const unsigned short dev_fun[] )
 {
 	struct pci_dev *dev;
@@ -6140,7 +6141,7 @@ static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
 		PUBLIC(RO(Proc))->Uncore.CtrlCount++;
 		PUBLIC(RO(Proc))->Uncore.MC[umc].SlotCount = 2;
 
-    for (cnt = 0; cnt < MC_MAX_CHA; cnt++)
+    for (cnt = 0; cnt < cha_max; cnt++)
     {
 	AMD_17_UMC_SDP_CTRL SDP_CTRL = {.value = 0};
 
@@ -6211,7 +6212,8 @@ static PCI_CALLBACK AMD_DataFabric_Zeppelin(struct pci_dev *pdev)
 						{0x10, 0x28}
 					},
 					0x30, 0x80,
-					1, (const unsigned short[]) {0x18} );
+					1, MC_MAX_CHA,
+					(const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Raven(struct pci_dev *pdev)
@@ -6222,7 +6224,8 @@ static PCI_CALLBACK AMD_DataFabric_Raven(struct pci_dev *pdev)
 						{0x10, 0x28}
 					},
 					0x30, 0x80,
-					1, (const unsigned short[]) {0x18} );
+					1, MC_MAX_CHA,
+					(const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Matisse(struct pci_dev *pdev)
@@ -6233,7 +6236,8 @@ static PCI_CALLBACK AMD_DataFabric_Matisse(struct pci_dev *pdev)
 						{0x10, 0x28}
 					},
 					0x30, 0x80,
-					1, (const unsigned short[]) {0x18} );
+					1, MC_MAX_CHA,
+					(const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Starship(struct pci_dev *pdev)
@@ -6244,7 +6248,8 @@ static PCI_CALLBACK AMD_DataFabric_Starship(struct pci_dev *pdev)
 						{0x10, 0x28}
 					},
 					0x30, 0x80,
-					1, (const unsigned short[]) {0x18} );
+					1, MC_MAX_CHA,
+					(const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Renoir(struct pci_dev *pdev)
@@ -6255,7 +6260,8 @@ static PCI_CALLBACK AMD_DataFabric_Renoir(struct pci_dev *pdev)
 						{0x10, 0x28}
 					},
 					0x30, 0x80,
-					1, (const unsigned short[]) {0x18} );
+					1, MC_MAX_CHA,
+					(const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Ariel(struct pci_dev *pdev)
@@ -6266,7 +6272,8 @@ static PCI_CALLBACK AMD_DataFabric_Ariel(struct pci_dev *pdev)
 						{0x10, 0x28}
 					},
 					0x30, 0x80,
-					1, (const unsigned short[]) {0x18} );
+					1, MC_MAX_CHA,
+					(const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Raven2(struct pci_dev *pdev)
@@ -6277,7 +6284,8 @@ static PCI_CALLBACK AMD_DataFabric_Raven2(struct pci_dev *pdev)
 						{0x10, 0x28}
 					},
 					0x30, 0x80,
-					1, (const unsigned short[]) {0x18} );
+					1, MC_MAX_CHA,
+					(const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Fireflight(struct pci_dev *pdev)
@@ -6288,7 +6296,8 @@ static PCI_CALLBACK AMD_DataFabric_Fireflight(struct pci_dev *pdev)
 						{0x10, 0x28}
 					},
 					0x30, 0x80,
-					1, (const unsigned short[]) {0x18} );
+					1, MC_MAX_CHA,
+					(const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Arden(struct pci_dev *pdev)
@@ -6299,7 +6308,8 @@ static PCI_CALLBACK AMD_DataFabric_Arden(struct pci_dev *pdev)
 						{0x10, 0x28}
 					},
 					0x30, 0x80,
-					1, (const unsigned short[]) {0x18} );
+					1, MC_MAX_CHA,
+					(const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Vermeer(struct pci_dev *pdev)
@@ -6310,7 +6320,8 @@ static PCI_CALLBACK AMD_DataFabric_Vermeer(struct pci_dev *pdev)
 						{0x10, 0x28}
 					},
 					0x30, 0x80,
-					1, (const unsigned short[]) {0x18} );
+					1, MC_MAX_CHA,
+					(const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Cezanne(struct pci_dev *pdev)
@@ -6321,7 +6332,8 @@ static PCI_CALLBACK AMD_DataFabric_Cezanne(struct pci_dev *pdev)
 						{0x10, 0x28}
 					},
 					0x30, 0x80,
-					1, (const unsigned short[]) {0x18} );
+					1, MC_MAX_CHA,
+					(const unsigned short[]) {0x18} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Rembrandt(struct pci_dev *pdev)
@@ -6332,7 +6344,8 @@ static PCI_CALLBACK AMD_DataFabric_Rembrandt(struct pci_dev *pdev)
 						{0x10, 0x30}
 					},
 					0x40, 0x90,
-					1, (const unsigned short[]) {0x18} );
+					1, MC_MAX_CHA,
+					(const unsigned short[]) {0x18} );
 }
 
 static void CoreFreqK_ResetChip(struct pci_dev *dev)
