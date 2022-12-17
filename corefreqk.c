@@ -6173,20 +6173,34 @@ static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
      }
      if (Got_Div_Clock == false)
      {
-	AMD_17_UMC_DEBUG_MISC DbgMisc = {.value = 0};
+	Core_AMD_SMN_Read(
+		PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cnt].AMD17h.DbgMisc,
+		SMU_AMD_UMC_BASE_CHA_F17H(cnt) + 0xd6c, dev );
 
-	Core_AMD_SMN_Read(DbgMisc, SMU_AMD_UMC_BASE_CHA_F17H(cnt) + 0xd6c, dev);
-	if (DbgMisc.UMC_Ready == 1)
-	{
-		Div_Clock = !DbgMisc.UCLK_Divisor;
-		Got_Div_Clock = true;
+      if(PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cnt].AMD17h.DbgMisc.UMC_Ready)
+      {
+	Div_Clock = PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cnt].AMD17h\
+			.DbgMisc.UCLK_Divisor == 0 ? 2 : 1;
+
+	switch(	PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cnt]\
+		.AMD17h.CONFIG.BurstLength ) {
+	case 0x0:	/* BL2 */
+	case 0x1:	/* BL4 */
+	case 0x2:	/* BL8 */
+		Div_Clock = Div_Clock * 3;
+		break;
+	case 0x3:	/* BL16 */
+		Div_Clock = Div_Clock * 2;
+		break;
 	}
+	Got_Div_Clock = true;
+      }
      }
     }
 	PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount = cha;
 	pci_dev_put(dev);
    } else {
-	pr_err( "CoreFreq: AMD_17h_DataFabric()"	\
+	pr_err( "CoreFreq: AMD_17h_DataFabric()"		\
 		" Break UMC(%hu) probing @ PCI(0x%x:0x0:0x%x)\n",
 		umc, domain, devfn);
 	break;
@@ -6197,8 +6211,11 @@ static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
 	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] = Mem_Clock;
 
     if (Got_Div_Clock) {
-	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] >>= Div_Clock;
-	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] /= 3;
+	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] = \
+		DIV_ROUND_CLOSEST(
+			PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)],
+			Div_Clock
+		);
     }
   }
 	return (PCI_CALLBACK) 0;
@@ -14245,27 +14262,36 @@ static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T)
 	/*			Closure statement		*/	\
 	__VA_ARGS__;							\
 	/*		Update memory clock frequency (Hz)	*/	\
-      if (Got_Mem_Clock == false)					\
-      { 								\
-	AMD_17_UMC_DEBUG_MISC DbgMisc;					\
-									\
+     if (Got_Mem_Clock == false)					\
+     {									\
 	Core_AMD_SMN_Read(Pkg->Uncore.MC[umc].Channel[cha].AMD17h.MISC, \
 			SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x200, 	\
 			PRIVATE(OF(Zen)).Device.DF );			\
 	/*		Apply the memory clock divisor		*/	\
-	Core_AMD_SMN_Read(DbgMisc, SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xd6c,\
+	Core_AMD_SMN_Read(Pkg->Uncore.MC[umc].Channel[cha].AMD17h.DbgMisc,\
+			SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xd6c ,	\
 			PRIVATE(OF(Zen)).Device.DF );			\
 									\
 	Pkg->Counter[_T].PCLK = Core->Clock.Hz				\
 		* Pkg->Uncore.MC[umc].Channel[cha].AMD17h.MISC.MEMCLK;	\
 									\
+      switch(Pkg->Uncore.MC[umc].Channel[cha].AMD17h.CONFIG.BurstLength) {\
+      case 0x0:	/* BL2 */						\
+      case 0x1:	/* BL4 */						\
+      case 0x2:	/* BL8 */						\
 	Pkg->Counter[_T].PCLK = DIV_ROUND_CLOSEST(Pkg->Counter[_T].PCLK, 3);\
-	Pkg->Counter[_T].PCLK = Pkg->Counter[_T].PCLK >> !DbgMisc.UCLK_Divisor;\
+	break;								\
+      case 0x3:	/* BL16 */						\
+	Pkg->Counter[_T].PCLK = DIV_ROUND_CLOSEST(Pkg->Counter[_T].PCLK, 2);\
+	break;								\
+      }									\
+	Pkg->Counter[_T].PCLK >>= 					\
+	  !Pkg->Uncore.MC[umc].Channel[cha].AMD17h.DbgMisc.UCLK_Divisor;\
 									\
 	Pkg->Delta.PCLK = Pkg->Counter[_T].PCLK;			\
 									\
 	Got_Mem_Clock = true;						\
-      } 								\
+     }									\
     }									\
   }									\
 	/*			Data Fabric Counter		*/	\

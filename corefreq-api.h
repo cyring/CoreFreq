@@ -600,6 +600,7 @@ typedef struct
 			} AMD0Fh;
 			struct
 			{
+				AMD_17_UMC_DEBUG_MISC	DbgMisc;/* 32 bits   */
 			  struct {
 				AMD_17_UMC_ECC_CAP_LO	_;	/* 32 bits   */
 				AMD_17_UMC_ECC_CAP_HI	__;	/* 32 bits   */

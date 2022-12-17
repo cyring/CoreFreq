@@ -5963,14 +5963,9 @@ void AMD_17h_CAP(RO(SHM_STRUCT) *RO(Shm),
 	unsigned short slot;
 
 	RO(Shm)->Uncore.Bus.Rate = \
-			(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.MEMCLK
-			*  RO(Shm)->Proc.Features.Factory.Clock.Q) / 3;
-
 	RO(Shm)->Uncore.Bus.Speed = \
-			(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.MEMCLK
-			* RO(Core)->Clock.Hz * 333333333LLU)
-			/ (RO(Shm)->Proc.Features.Factory.Clock.Hz
-			* (1000LLU * PRECISION * PRECISION));
+	RO(Shm)->Uncore.CtrlSpeed = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.MEMCLK;
 
 	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;
 	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;
@@ -5981,21 +5976,47 @@ void AMD_17h_CAP(RO(SHM_STRUCT) *RO(Shm),
 	case 0x0:	/* BL2 */
 	case 0x1:	/* BL4 */
 	case 0x2:	/* BL8 */
-		RO(Shm)->Uncore.CtrlSpeed = \
-			(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.MEMCLK
-			* RO(Core)->Clock.Hz * 666666666LLU)
-			/ (RO(Shm)->Proc.Features.Factory.Clock.Hz
-			* (1000LLU * PRECISION * PRECISION));
+		RO(Shm)->Uncore.Bus.Rate = \
+			( RO(Shm)->Uncore.Bus.Rate
+			* RO(Shm)->Proc.Features.Factory.Clock.Q ) / 3;
 
-		RO(Shm)->Uncore.Unit.DDR_Ver  = 4;
+		RO(Shm)->Uncore.Bus.Speed = \
+			( RO(Shm)->Uncore.Bus.Speed
+			* RO(Core)->Clock.Hz * 333333333LLU )
+			/ ( RO(Shm)->Proc.Features.Factory.Clock.Hz
+			  * ( 1000LLU * PRECISION * PRECISION ) );
+
+		RO(Shm)->Uncore.CtrlSpeed = \
+			( RO(Shm)->Uncore.CtrlSpeed
+			* RO(Core)->Clock.Hz * 666666666LLU )
+			/ ( RO(Shm)->Proc.Features.Factory.Clock.Hz
+			  * ( 1000LLU * PRECISION * PRECISION ) );
+
+		RO(Shm)->Uncore.Unit.DDR_Ver = 4;
 		break;
 	case 0x3:	/* BL16 */
-		RO(Shm)->Uncore.CtrlSpeed = \
-			(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.MEMCLK
-			* RO(Core)->Clock.Hz * PRECISION)
-			/ (RO(Shm)->Proc.Features.Factory.Clock.Hz * 2LLU);
+		RO(Shm)->Uncore.Bus.Rate = \
+			( RO(Shm)->Uncore.Bus.Rate
+			* RO(Shm)->Proc.Features.Factory.Clock.Q ) / 2;
 
-		RO(Shm)->Uncore.Unit.DDR_Ver  = 5;
+		RO(Shm)->Uncore.Bus.Speed = \
+			( RO(Shm)->Uncore.Bus.Speed
+			* RO(Core)->Clock.Hz * 50LLU )
+			/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
+
+	    if(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DbgMisc.UCLK_Divisor)
+	    {
+		RO(Shm)->Uncore.CtrlSpeed = \
+			RO(Shm)->Uncore.CtrlSpeed * RO(Core)->Clock.Hz * 100LLU;
+	    } else {
+		RO(Shm)->Uncore.CtrlSpeed = \
+			RO(Shm)->Uncore.CtrlSpeed * RO(Core)->Clock.Hz * 150LLU;
+	    }
+		RO(Shm)->Uncore.CtrlSpeed = \
+			RO(Shm)->Uncore.CtrlSpeed
+			/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
+
+		RO(Shm)->Uncore.Unit.DDR_Ver = 5;
 		break;
 	}
 	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_SDRAM;

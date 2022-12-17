@@ -1576,7 +1576,8 @@ typedef union
 	struct
 	{
 		unsigned int
-		MEMCLK		:  7-0,  /* UMC=((Value * 100) / 3) MHz */
+		MEMCLK		:  6-0,  /* UMC=((Value * 100) / 3) MHz */
+		Rembrandt	:  7-6,
 		ReservedBits1	:  8-7,
 		BankGroup	:  9-8,  /* 1: BankGroup is Enable	*/
 		CMD_Rate	: 11-9,  /* 0b10 = 2T ; 0b00 = 1T	*/
