@@ -18795,15 +18795,8 @@ static int CoreFreqK_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 
 static int CoreFreqK_MWAIT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
-{/* Avoid kernel idle loop to be stuck if the MWAIT opcode has been disabled */
-	HWCR HwCfgRegister;
-	RDMSR(HwCfgRegister, MSR_K7_HWCR);
-    if (BITVAL(HwCfgRegister.value, 9) == 0)
-    {
+{
 	return CoreFreqK_MWAIT_Handler(pIdleDevice, pIdleDriver, index);
-    } else {
-	return index;
-    }
 }
 
 #if ((LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)) && (RHEL_MAJOR == 0)) \
@@ -18845,25 +18838,13 @@ static int CoreFreqK_S2_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 static void CoreFreqK_S2_MWAIT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-	HWCR HwCfgRegister;
-	RDMSR(HwCfgRegister, MSR_K7_HWCR);
-    if (BITVAL(HwCfgRegister.value, 9) == 0)
-    {
 	CoreFreqK_S2_MWAIT_Handler(pIdleDevice, pIdleDriver, index);
-    }
 }
 #else
 static int CoreFreqK_S2_MWAIT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-	HWCR HwCfgRegister;
-	RDMSR(HwCfgRegister, MSR_K7_HWCR);
-    if (BITVAL(HwCfgRegister.value, 9) == 0)
-    {
 	return CoreFreqK_S2_MWAIT_Handler(pIdleDevice, pIdleDriver, index);
-    } else {
-	return index;
-    }
 }
 #endif /* 5.9.0 */
 	/*			HALT Idle methods			*/
@@ -18887,14 +18868,7 @@ static int CoreFreqK_HALT_Handler(struct cpuidle_device *pIdleDevice,
 static int CoreFreqK_HALT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-	HWCR HwCfgRegister;
-	RDMSR(HwCfgRegister, MSR_K7_HWCR);
-    if (BITVAL(HwCfgRegister.value, 9) == 0)
-    {
 	return CoreFreqK_HALT_Handler(pIdleDevice, pIdleDriver, index);
-    } else {
-	return index;
-    }
 }
 
 #if ((LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)) && (RHEL_MAJOR == 0)) \
@@ -18922,31 +18896,18 @@ static int CoreFreqK_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
 #endif /* 5.9.0 */
 }
 
-
 #if ((LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)) && (RHEL_MAJOR == 0)) \
  || ((RHEL_MAJOR == 8) && (RHEL_MINOR < 4))
 static void CoreFreqK_S2_HALT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-	HWCR HwCfgRegister;
-	RDMSR(HwCfgRegister, MSR_K7_HWCR);
-    if (BITVAL(HwCfgRegister.value, 9) == 0)
-    {
 	CoreFreqK_S2_HALT_Handler(pIdleDevice, pIdleDriver, index);
-    }
 }
 #else
 static int CoreFreqK_S2_HALT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-	HWCR HwCfgRegister;
-	RDMSR(HwCfgRegister, MSR_K7_HWCR);
-    if (BITVAL(HwCfgRegister.value, 9) == 0)
-    {
 	return CoreFreqK_S2_HALT_Handler(pIdleDevice, pIdleDriver, index);
-    } else {
-	return index;
-    }
 }
 #endif /* 5.9.0 */
 	/*			I/O Idle methods			*/
@@ -18974,14 +18935,7 @@ static int CoreFreqK_IO_Handler(struct cpuidle_device *pIdleDevice,
 static int CoreFreqK_IO_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-	HWCR HwCfgRegister;
-	RDMSR(HwCfgRegister, MSR_K7_HWCR);
-    if (BITVAL(HwCfgRegister.value, 9) == 0)
-    {
 	return CoreFreqK_IO_Handler(pIdleDevice, pIdleDriver, index);
-    } else {
-	return index;
-    }
 }
 
 #if ((LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)) && (RHEL_MAJOR == 0)) \
@@ -19018,25 +18972,13 @@ static int CoreFreqK_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
 static void CoreFreqK_S2_IO_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-	HWCR HwCfgRegister;
-	RDMSR(HwCfgRegister, MSR_K7_HWCR);
-    if (BITVAL(HwCfgRegister.value, 9) == 0)
-    {
 	CoreFreqK_S2_IO_Handler(pIdleDevice, pIdleDriver, index);
-    }
 }
 #else
 static int CoreFreqK_S2_IO_AMD_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-	HWCR HwCfgRegister;
-	RDMSR(HwCfgRegister, MSR_K7_HWCR);
-    if (BITVAL(HwCfgRegister.value, 9) == 0)
-    {
 	return CoreFreqK_S2_IO_Handler(pIdleDevice, pIdleDriver, index);
-    } else {
-	return index;
-    }
 }
 #endif /* 5.9.0 */
 	/*		Idle Cycles callback functions			*/
@@ -19429,6 +19371,10 @@ static int CoreFreqK_IdleDriver_Init(void)
 	    else if ((PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
 		|| (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON))
 	    {
+		HWCR HwCfgRegister;
+		RDMSR(HwCfgRegister, MSR_K7_HWCR);
+	      if (BITVAL(HwCfgRegister.value, 9) == 0)
+	      {
 		CoreFreqK.IdleDriver.states[
 			CoreFreqK.IdleDriver.state_count
 		].enter = CoreFreqK_Alt_MWAIT_AMD_Handler;
@@ -19436,6 +19382,9 @@ static int CoreFreqK_IdleDriver_Init(void)
 		CoreFreqK.IdleDriver.states[
 			CoreFreqK.IdleDriver.state_count
 		].enter_s2idle = CoreFreqK_Alt_S2_MWAIT_AMD_Handler;
+	      } else {
+		goto IDLE_WARNING;
+	      }
 	    }
 	    else {
 		goto IDLE_DEFAULT;
@@ -19469,6 +19418,10 @@ static int CoreFreqK_IdleDriver_Init(void)
 	    else if ((PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
 		|| (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON))
 	    {
+		HWCR HwCfgRegister;
+		RDMSR(HwCfgRegister, MSR_K7_HWCR);
+	      if (BITVAL(HwCfgRegister.value, 9) == 0)
+	      {
 		CoreFreqK.IdleDriver.states[
 			CoreFreqK.IdleDriver.state_count
 		].enter = CoreFreqK_Alt_HALT_AMD_Handler;
@@ -19476,6 +19429,9 @@ static int CoreFreqK_IdleDriver_Init(void)
 		CoreFreqK.IdleDriver.states[
 			CoreFreqK.IdleDriver.state_count
 		].enter_s2idle = CoreFreqK_Alt_S2_HALT_AMD_Handler;
+	      } else {
+		goto IDLE_WARNING;
+	      }
 	    }
 	    else {
 		goto IDLE_DEFAULT;
@@ -19517,6 +19473,10 @@ static int CoreFreqK_IdleDriver_Init(void)
 	    else if ((PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
 		|| (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON))
 	    {
+		HWCR HwCfgRegister;
+		RDMSR(HwCfgRegister, MSR_K7_HWCR);
+	      if (BITVAL(HwCfgRegister.value, 9) == 0)
+	      {
 		CSTATE_BASE_ADDR CStateBaseAddr = {.value = 0};
 		RDMSR(CStateBaseAddr, MSR_AMD_CSTATE_BAR);
 		if (CStateBaseAddr.IOaddr != 0x0)
@@ -19531,6 +19491,9 @@ static int CoreFreqK_IdleDriver_Init(void)
 		} else {
 			goto IDLE_DEFAULT;
 		}
+	      } else {
+		goto IDLE_WARNING;
+	      }
 	    }
 	    else {
 		goto IDLE_DEFAULT;
@@ -19570,7 +19533,11 @@ static int CoreFreqK_IdleDriver_Init(void)
 	    }
 	    else if ((PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
 		|| (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON))
-	    {
+	    {	/* Avoid kernel crash if the MWAIT opcode has been disabled */
+		HWCR HwCfgRegister;
+		RDMSR(HwCfgRegister, MSR_K7_HWCR);
+	      if (BITVAL(HwCfgRegister.value, 9) == 0)
+	      {
 		CSTATE_BASE_ADDR CStateBaseAddr = {.value = 0};
 		RDMSR(CStateBaseAddr, MSR_AMD_CSTATE_BAR);
 		if (CStateBaseAddr.IOaddr != 0x0)
@@ -19597,9 +19564,12 @@ static int CoreFreqK_IdleDriver_Init(void)
 
 			PUBLIC(RO(Proc))->Registration.Driver.Route=ROUTE_HALT;
 		}
+	      } else {
+		goto IDLE_WARNING;
+	      }
 	    }
 	    else {
-		pr_warn("CoreFreq: "					\
+IDLE_WARNING:	pr_warn("CoreFreq: "					\
 			"No Idle implementation for Vendor CRC 0x%x\n",
 			PUBLIC(RO(Proc))->Features.Info.Vendor.CRC);
 	    }
