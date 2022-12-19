@@ -6105,6 +6105,14 @@ static void AMD_Zen_UMC(struct pci_dev *dev,
     Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTRFC,
 			UMC_BAR + 0x260, dev );
 
+    switch (	PUBLIC(RO(Proc))->Uncore.MC[mc]\
+		.Channel[cnt].AMD17h.CONFIG.BurstLength ) {
+    case 0x3:	/* BL16 */
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.TRFC4,
+			UMC_BAR + 0x2c0, dev );
+	break;
+    }
+
     Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR35,
 			UMC_BAR + 0x28c, dev );
 
@@ -6124,7 +6132,7 @@ static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
 					const unsigned short dev_fun[] )
 {
 	struct pci_dev *dev;
-	enum UNCORE_BOOST Mem_Clock = 0, Div_Clock = 0;
+	enum UNCORE_BOOST Mem_Clock = 0, Div_Clock = 1;
 	unsigned short umc;
 	bool Got_Mem_Clock = false, Got_Div_Clock = false;
 
@@ -6165,11 +6173,32 @@ static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
 
 	cha++;
      }
-     if ((Got_Mem_Clock == false)
-      && PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cnt].AMD17h.MISC.MEMCLK)
+     if (Got_Mem_Clock == false)
      {
-     Mem_Clock=PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cnt].AMD17h.MISC.MEMCLK;
+      switch (	PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cnt].AMD17h\
+		.CONFIG.BurstLength ) {
+      case 0x0:	/* BL2 */
+      case 0x1:	/* BL4 */
+      case 0x2:	/* BL8 */
+       if(PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cnt].AMD17h.MISC.DDR4.MEMCLK)
+       {
+	Mem_Clock = PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cnt].AMD17h\
+			.MISC.DDR4.MEMCLK;
+
 	Got_Mem_Clock = true;
+       }
+	break;
+      case 0x3:	/* BL16 */
+       if(PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cnt].AMD17h.MISC.DDR5.MEMCLK)
+       {
+	Mem_Clock = \
+	  PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cnt].AMD17h.MISC.DDR5.MEMCLK;
+	Mem_Clock = DIV_ROUND_CLOSEST(Mem_Clock, 100U);
+
+	Got_Mem_Clock = true;
+       }
+	break;
+      }
      }
      if (Got_Div_Clock == false)
      {
@@ -6179,21 +6208,24 @@ static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
 
       if(PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cnt].AMD17h.DbgMisc.UMC_Ready)
       {
-	Div_Clock = PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cnt].AMD17h\
-			.DbgMisc.UCLK_Divisor == 0 ? 2 : 1;
-
-	switch(	PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cnt]\
-		.AMD17h.CONFIG.BurstLength ) {
+	switch(	PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cnt].AMD17h\
+		.CONFIG.BurstLength ) {
 	case 0x0:	/* BL2 */
 	case 0x1:	/* BL4 */
 	case 0x2:	/* BL8 */
+		Div_Clock = PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cnt]\
+				.AMD17h.DbgMisc.UCLK_Divisor == 0 ? 2 : 1;
+
 		Div_Clock = Div_Clock * 3;
+
+		Got_Div_Clock = true;
 		break;
 	case 0x3:	/* BL16 */
-		Div_Clock = Div_Clock * 2;
+		Div_Clock = 3;
+
+		Got_Div_Clock = true;
 		break;
 	}
-	Got_Div_Clock = true;
       }
      }
     }
@@ -14272,22 +14304,24 @@ static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T)
 			SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xd6c ,	\
 			PRIVATE(OF(Zen)).Device.DF );			\
 									\
-	Pkg->Counter[_T].PCLK = Core->Clock.Hz				\
-		* Pkg->Uncore.MC[umc].Channel[cha].AMD17h.MISC.MEMCLK;	\
-									\
       switch(Pkg->Uncore.MC[umc].Channel[cha].AMD17h.CONFIG.BurstLength) {\
       case 0x0:	/* BL2 */						\
       case 0x1:	/* BL4 */						\
       case 0x2:	/* BL8 */						\
+	Pkg->Counter[_T].PCLK = Core->Clock.Hz				\
+		* Pkg->Uncore.MC[umc].Channel[cha].AMD17h.MISC.DDR4.MEMCLK;\
+									\
 	Pkg->Counter[_T].PCLK = DIV_ROUND_CLOSEST(Pkg->Counter[_T].PCLK, 3);\
-	break;								\
-      case 0x3:	/* BL16 */						\
-	Pkg->Counter[_T].PCLK = DIV_ROUND_CLOSEST(Pkg->Counter[_T].PCLK, 2);\
-	break;								\
-      }									\
+									\
 	Pkg->Counter[_T].PCLK >>= 					\
 	  !Pkg->Uncore.MC[umc].Channel[cha].AMD17h.DbgMisc.UCLK_Divisor;\
 									\
+	break;								\
+      case 0x3:	/* BL16 */						\
+	Pkg->Counter[_T].PCLK = Core->Clock.Hz * 10LLU			\
+		* Pkg->Uncore.MC[umc].Channel[cha].AMD17h.MISC.DDR5.MEMCLK;\
+	break;								\
+      }									\
 	Pkg->Delta.PCLK = Pkg->Counter[_T].PCLK;			\
 									\
 	Got_Mem_Clock = true;						\

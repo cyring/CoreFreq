@@ -1577,15 +1577,23 @@ typedef union
 	{
 		unsigned int
 		MEMCLK		:  6-0,  /* UMC=((Value * 100) / 3) MHz */
-		Rembrandt	:  7-6,
-		ReservedBits1	:  8-7,
+		ReservedBits1	:  7-6,
+		ReservedBits2	:  8-7,
 		BankGroup	:  9-8,  /* 1: BankGroup is Enable	*/
 		CMD_Rate	: 11-9,  /* 0b10 = 2T ; 0b00 = 1T	*/
 		GearDownMode	: 12-11, /* BIOS match is OK		*/
 		Preamble2T	: 13-12, /* 1: 2T DQS preambles enabled */
-		ReservedBits2	: 32-13;
-	};
-} AMD_17_UMC_CFG_MISC;
+		ReservedBits3	: 32-13;
+	} DDR4;
+	struct
+	{
+		unsigned int
+		MEMCLK		: 16-0,  /* DRAM = (Value * 2) MT/s	*/
+		CMD_Rate	: 18-16,
+		GearDownMode	: 19-18,
+		ReservedBits1	: 32-19;
+	} DDR5;
+} AMD_ZEN_UMC_CFG_MISC;
 
 typedef union
 {	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{204,304,404,504}	*/
@@ -1865,8 +1873,23 @@ typedef union
 		tRFC1		: 11-0,
 		tRFC2		: 22-11,
 		tRFC4		: 32-22;
-	};
-} AMD_17_UMC_TIMING_DTRFC;
+	} DDR4;
+	struct {
+		unsigned int
+		tRFC1		: 16-0,
+		tRFC2		: 32-16;
+	} DDR5;
+} AMD_ZEN_UMC_TIMING_DTRFC;
+
+typedef union
+{
+	unsigned int		value;	/*	0x502c0: 0x00480138	*/
+	struct {
+		unsigned int
+		tRFC4		: 16-0,
+		UnknownBits	: 32-16;
+	} DDR5;
+} AMD_ZEN_UMC_TIMING_TRFC4;
 
 typedef union
 {	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{28c,38c,48c,58c}	*/

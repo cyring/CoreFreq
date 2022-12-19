@@ -613,7 +613,7 @@ typedef struct
 			  } CHIP[4][2];
 				AMD_17_UMC_CONFIG	CONFIG; /* 32 bits   */
 				AMD_17_UMC_SPAZ_CTRL	SPAZ;	/* 32 bits   */
-				AMD_17_UMC_CFG_MISC	MISC;	/* 32 bits   */
+				AMD_ZEN_UMC_CFG_MISC	MISC;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR1	DTR1;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR2	DTR2;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR3	DTR3;	/* 32 bits   */
@@ -630,7 +630,8 @@ typedef struct
 				AMD_17_UMC_TIMING_DTR20 DTR20;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR21 DTR21;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR22 DTR22;	/* 32 bits   */
-				AMD_17_UMC_TIMING_DTRFC DTRFC;	/* 32 bits   */
+				AMD_ZEN_UMC_TIMING_DTRFC DTRFC; /* 32 bits   */
+				AMD_ZEN_UMC_TIMING_TRFC4 TRFC4; /* 32 bits   */
 				AMD_17_UMC_TIMING_DTR35 DTR35;	/* 32 bits   */
 			    struct {
 				unsigned int value;		/* 32 bits   */
