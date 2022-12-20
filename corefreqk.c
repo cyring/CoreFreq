@@ -3996,6 +3996,116 @@ signed int Read_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 	return rc;
 }
 
+signed int Read_ACPI_PCT_Registers(unsigned int cpu)
+{
+	signed int rc = 0;
+
+	struct acpi_processor *pr = per_cpu(processors, cpu);
+    if (pr == NULL) {
+	PUBLIC(RO(Proc))->Features.ACPI_PCT_CAP = 0;
+	PUBLIC(RO(Proc))->Features.ACPI_PCT = 0;
+	rc = -ENODEV;
+    } else {
+	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
+
+	acpi_status status=acpi_evaluate_object(pr->handle,"_PCT",NULL,&buffer);
+	if (ACPI_FAILURE(status)) {
+		PUBLIC(RO(Proc))->Features.ACPI_PCT_CAP = 0;
+		PUBLIC(RO(Proc))->Features.ACPI_PCT = 0;
+		rc = -ENODEV;
+	} else {
+		union acpi_object *pct = (union acpi_object *) buffer.pointer;
+	    if ((pct == NULL) || (pct->type != ACPI_TYPE_PACKAGE)
+	     || (pct->package.count < 2))
+	    {
+		PUBLIC(RO(Proc))->Features.ACPI_PCT_CAP = 0;
+		PUBLIC(RO(Proc))->Features.ACPI_PCT = 0;
+		rc = -EFAULT;
+	    } else {
+		PUBLIC(RO(Proc))->Features.ACPI_PCT_CAP = 1;
+		PUBLIC(RO(Proc))->Features.ACPI_PCT = 1;
+	    }
+	}
+	kfree(buffer.pointer);
+    }
+	return rc;
+}
+
+signed int Read_ACPI_PSS_Registers(unsigned int cpu)
+{
+	signed int rc = 0;
+
+	struct acpi_processor *pr = per_cpu(processors, cpu);
+    if (pr == NULL) {
+	PUBLIC(RO(Proc))->Features.ACPI_PSS_CAP = 0;
+	PUBLIC(RO(Proc))->Features.ACPI_PSS = 0;
+	rc = -ENODEV;
+    } else {
+	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
+
+	acpi_status status=acpi_evaluate_object(pr->handle,"_PSS",NULL,&buffer);
+	if (ACPI_FAILURE(status)) {
+		PUBLIC(RO(Proc))->Features.ACPI_PSS_CAP = 0;
+		PUBLIC(RO(Proc))->Features.ACPI_PSS = 0;
+		rc = -ENODEV;
+	} else {
+		union acpi_object *pss = (union acpi_object *) buffer.pointer;
+	    if ((pss == NULL) || (pss->type != ACPI_TYPE_PACKAGE)
+	     || (pss->package.count == 0))
+	    {
+		PUBLIC(RO(Proc))->Features.ACPI_PSS_CAP = 0;
+		PUBLIC(RO(Proc))->Features.ACPI_PSS = 0;
+		rc = -EFAULT;
+	    } else {
+		PUBLIC(RO(Proc))->Features.ACPI_PSS_CAP = 1;
+		PUBLIC(RO(Proc))->Features.ACPI_PSS = pss->package.count & 0xf;
+	    }
+	}
+	kfree(buffer.pointer);
+    }
+	return rc;
+}
+
+signed int Read_ACPI_PPC_Registers(unsigned int cpu)
+{
+	signed int rc = 0;
+
+	struct acpi_processor *pr = per_cpu(processors, cpu);
+    if (pr == NULL) {
+	PUBLIC(RO(Proc))->Features.ACPI_PPC_CAP = 0;
+	PUBLIC(RO(Proc))->Features.ACPI_PPC = 0;
+	rc = -ENODEV;
+    } else {
+	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
+
+	acpi_status status=acpi_evaluate_object(pr->handle,"_PPC",NULL,&buffer);
+	if (ACPI_FAILURE(status)) {
+		PUBLIC(RO(Proc))->Features.ACPI_PPC_CAP = 0;
+		PUBLIC(RO(Proc))->Features.ACPI_PPC = 0;
+		rc = -ENODEV;
+	} else {
+		union acpi_object *ppc = (union acpi_object *) buffer.pointer;
+	    if ((ppc == NULL) || (ppc->type != ACPI_TYPE_INTEGER))
+	    {
+		PUBLIC(RO(Proc))->Features.ACPI_PPC_CAP = 0;
+		PUBLIC(RO(Proc))->Features.ACPI_PPC = 0;
+		rc = -EFAULT;
+	    } else {
+		union acpi_object *obj = buffer.pointer;
+	      if ((obj != NULL) && (obj->type == ACPI_TYPE_INTEGER)) {
+		PUBLIC(RO(Proc))->Features.ACPI_PPC_CAP = 1;
+		PUBLIC(RO(Proc))->Features.ACPI_PPC = obj->integer.value & 0xf;
+	      } else {
+		PUBLIC(RO(Proc))->Features.ACPI_PPC_CAP = 0;
+		PUBLIC(RO(Proc))->Features.ACPI_PPC = 0;
+	      }
+	    }
+	}
+	kfree(buffer.pointer);
+    }
+	return rc;
+}
+
 void For_All_ACPI_CPPC(signed int(*CPPC_Func)(unsigned int, void*), void *arg)
 {
 	#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
@@ -8088,6 +8198,9 @@ static void Query_AMD_F17h_PerSocket(unsigned int cpu)
 		if (AMD_F17h_CPPC() == -ENODEV) {
 			For_All_ACPI_CPPC(Read_ACPI_CPPC_Registers, NULL);
 		}
+		Read_ACPI_PCT_Registers(cpu);
+		Read_ACPI_PSS_Registers(cpu);
+		Read_ACPI_PPC_Registers(cpu);
 	}
 }
 
@@ -8104,6 +8217,9 @@ static void Query_AMD_F17h_PerCluster(unsigned int cpu)
 		if (AMD_F17h_CPPC() == -ENODEV) {
 			For_All_ACPI_CPPC(Read_ACPI_CPPC_Registers, NULL);
 		}
+		Read_ACPI_PCT_Registers(cpu);
+		Read_ACPI_PSS_Registers(cpu);
+		Read_ACPI_PPC_Registers(cpu);
 	}
 }
 
@@ -8120,6 +8236,9 @@ static void Query_AMD_F19h_61h_PerCluster(unsigned int cpu)
 		if (AMD_F17h_CPPC() == -ENODEV) {
 			For_All_ACPI_CPPC(Read_ACPI_CPPC_Registers, NULL);
 		}
+		Read_ACPI_PCT_Registers(cpu);
+		Read_ACPI_PSS_Registers(cpu);
+		Read_ACPI_PPC_Registers(cpu);
 	}
 }
 

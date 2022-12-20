@@ -4256,7 +4256,7 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 	PUT(	SCANKEY_NULL,
 		attrib[ !RO(Shm)->Cpu[
 				RO(Shm)->Proc.Service.Core
-			].Query.CStateBaseAddr ? 0 : 2 ],
+			].Query.CStateBaseAddr ? 0 : 3 ],
 		width, 3,
 		"%s%.*s%s   [ 0x%-4X]", RSC(PERF_MON_CSTATE_BAR).CODE(),
 		width - (OutFunc == NULL ? 21 : 19)
@@ -4376,11 +4376,48 @@ REASON_CODE SysInfoPerfMon(	Window *win,
     if   ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	|| (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
     {
-	PUT(SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.OSPM_CPC], width, 2,
-		"%s%.*s%s       [%3s]", RSC(PERF_MON_CPC).CODE(),
+	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.ACPI_PCT_CAP ? 3:0],
+		width, 2,
+		"%s%.*s%s   [%7s]", RSC(PERF_MON_PCT).CODE(),
+		width - 19 - RSZ(PERF_MON_PCT), hSpace,
+		RSC(PERF_LABEL_PCT).CODE(),
+		RO(Shm)->Proc.Features.ACPI_PCT_CAP ?
+		RO(Shm)->Proc.Features.ACPI_PCT ? RSC(ENABLE).CODE()
+						: RSC(DISABLE).CODE()
+						: RSC(MISSING).CODE() );
+
+      if (RO(Shm)->Proc.Features.ACPI_PSS_CAP) {
+	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.ACPI_PSS ? 3 : 0],
+		width, 2,
+		"%s%.*s%s   [%7u]", RSC(PERF_MON_PSS).CODE(),
+		width - 19 - RSZ(PERF_MON_PSS), hSpace,
+		RSC(PERF_LABEL_PSS).CODE(),
+		RO(Shm)->Proc.Features.ACPI_PSS );
+      } else {
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
+		"%s%.*s%s   [%7s]", RSC(PERF_MON_PSS).CODE(),
+		width - 19 - RSZ(PERF_MON_PSS), hSpace,
+		RSC(PERF_LABEL_PSS).CODE(), RSC(MISSING).CODE() );
+      }
+      if (RO(Shm)->Proc.Features.ACPI_PPC_CAP) {
+	PUT(	SCANKEY_NULL, attrib[3], width, 2,
+		"%s%.*s%s   [%7u]", RSC(PERF_MON_PPC).CODE(),
+		width - 19 - RSZ(PERF_MON_PPC), hSpace,
+		RSC(PERF_LABEL_PPC).CODE(),
+		RO(Shm)->Proc.Features.ACPI_PPC );
+      } else {
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
+		"%s%.*s%s   [%7s]", RSC(PERF_MON_PPC).CODE(),
+		width - 19 - RSZ(PERF_MON_PPC), hSpace,
+		RSC(PERF_LABEL_PPC).CODE(), RSC(MISSING).CODE() );
+      }
+	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.OSPM_CPC ? 3 : 0],
+		width, 2,
+		"%s%.*s%s   [%7s]", RSC(PERF_MON_CPC).CODE(),
 		width - 19 - RSZ(PERF_MON_CPC), hSpace,
 		RSC(PERF_LABEL_CPC).CODE(),
-		ENABLED(RO(Shm)->Proc.Features.OSPM_CPC));
+		RO(Shm)->Proc.Features.OSPM_CPC ? RSC(ENABLE).CODE()
+						: RSC(MISSING).CODE() );
     }
 	bix = (RO(Shm)->Proc.Features.Power.EAX.HWP_Reg == 1)	/* Intel:HWP */
 	|| (RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1)	/* AMD:CPPC  */

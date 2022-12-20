@@ -1487,6 +1487,12 @@ void PowerInterface(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	} else {
 		BITCLR(LOCKLESS, RO(Shm)->Proc.PowerNow, 1);
 	}
+	if((RO(Shm)->Proc.Features.ACPI_PCT_CAP && RO(Proc)->Features.ACPI_PCT)
+	|| (RO(Shm)->Proc.Features.ACPI_PSS_CAP && RO(Proc)->Features.ACPI_PSS))
+	{
+		BITSET(LOCKLESS, RO(Shm)->Proc.PowerNow, 0);
+		BITSET(LOCKLESS, RO(Shm)->Proc.PowerNow, 1);
+	}
 	RO(Shm)->Proc.Power.PPT = RO(Proc)->PowerThermal.Zen.PWR.PPT;
 	RO(Shm)->Proc.Power.TDP = RO(Proc)->PowerThermal.Zen.TDP.TDP;
 	RO(Shm)->Proc.Power.Min = RO(Proc)->PowerThermal.Zen.TDP.TDP2;

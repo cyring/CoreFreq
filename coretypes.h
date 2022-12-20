@@ -1956,10 +1956,16 @@ typedef struct	/* BSP CPUID features.					*/
 			HSMP_Capable	: 37-36,
 			HSMP_Enable	: 38-37,
 			XtraCOF 	: 40-38, /* 1:CPB ; 2:{CPB and XFR} */
-			ACPI_CPPC	: 41-40,
-			OSPM_CPC	: 42-41,
-			OSPM_EPP	: 43-42,
-			_pad64		: 64-43;
+			ACPI_PCT_CAP	: 41-40,
+			ACPI_PCT	: 42-41,
+			ACPI_PSS_CAP	: 43-42,
+			ACPI_PSS	: 47-43, /* 15 Pstate sub-packages */
+			ACPI_PPC_CAP	: 48-47,
+			ACPI_PPC	: 52-48, /* Range of states supported */
+			ACPI_CPPC	: 53-52,
+			OSPM_CPC	: 54-53,
+			OSPM_EPP	: 55-54,
+			_pad64		: 64-55;
 	};
 } FEATURES;
 
