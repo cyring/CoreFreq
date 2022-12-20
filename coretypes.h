@@ -1965,7 +1965,9 @@ typedef struct	/* BSP CPUID features.					*/
 			ACPI_CPPC	: 53-52,
 			OSPM_CPC	: 54-53,
 			OSPM_EPP	: 55-54,
-			_pad64		: 64-55;
+			ACPI_CST_CAP	: 56-55,
+			ACPI_CST	: 60-56, /* 15 CState sub-packages */
+			_pad64		: 64-60;
 	};
 } FEATURES;
 

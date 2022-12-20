@@ -4264,6 +4264,20 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 		RSC(PERF_LABEL_CST_BAR).CODE(),
 		RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Query.CStateBaseAddr );
 /* Section Mark */
+      if (RO(Shm)->Proc.Features.ACPI_CST_CAP) {
+	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.ACPI_CST ? 3 : 0],
+		width, 2,
+		"%s%.*s%s   [%7u]", RSC(PERF_MON_CST).CODE(),
+		width - 19 - RSZ(PERF_MON_CST), hSpace,
+		RSC(PERF_LABEL_CST).CODE(),
+		RO(Shm)->Proc.Features.ACPI_CST );
+      } else {
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
+		"%s%.*s%s   [%7s]", RSC(PERF_MON_CST).CODE(),
+		width - 19 - RSZ(PERF_MON_CST), hSpace,
+		RSC(PERF_LABEL_CST).CODE(), RSC(MISSING).CODE() );
+      }
+/* Section Mark */
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s", RSC(PERF_MON_MONITOR_MWAIT).CODE() );
 

@@ -660,6 +660,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_PERF_MON_PSS_CODE_FR	RSC_PERF_MON_PSS_CODE_EN
 #define RSC_PERF_MON_PPC_CODE_FR	RSC_PERF_MON_PPC_CODE_EN
 #define RSC_PERF_MON_CPC_CODE_FR	RSC_PERF_MON_CPC_CODE_EN
+#define RSC_PERF_MON_CST_CODE_FR	RSC_PERF_MON_CST_CODE_EN
 #define RSC_PERF_MON_HWP_CODE_FR	"Hardware-Controlled Performance States"
 #define RSC_PERF_MON_HDC_CODE_FR	"Hardware Duty Cycling"
 #define RSC_PERF_MON_PKG_CSTATE_CODE_FR "Package C-States"
