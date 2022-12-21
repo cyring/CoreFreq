@@ -6740,6 +6740,13 @@ static void Query_SandyBridge(unsigned int cpu)
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio(cpu);
 	Intel_PowerInterface();
+
+	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
+		Read_ACPI_PCT_Registers(cpu);
+		Read_ACPI_PSS_Registers(cpu);
+		Read_ACPI_PPC_Registers(cpu);
+		Read_ACPI_CST_Registers(cpu);
+	}
 }
 
 static void Query_SandyBridge_EP(unsigned int cpu)
@@ -6753,6 +6760,13 @@ static void Query_IvyBridge(unsigned int cpu)
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio(cpu);
 	Intel_PowerInterface();
+
+	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
+		Read_ACPI_PCT_Registers(cpu);
+		Read_ACPI_PSS_Registers(cpu);
+		Read_ACPI_PPC_Registers(cpu);
+		Read_ACPI_CST_Registers(cpu);
+	}
 }
 
 static void Query_IvyBridge_EP(unsigned int cpu)
@@ -6761,6 +6775,13 @@ static void Query_IvyBridge_EP(unsigned int cpu)
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio(cpu);
 	Intel_PowerInterface();
+
+	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
+		Read_ACPI_PCT_Registers(cpu);
+		Read_ACPI_PSS_Registers(cpu);
+		Read_ACPI_PPC_Registers(cpu);
+		Read_ACPI_CST_Registers(cpu);
+	}
 }
 
 static void Query_Haswell(unsigned int cpu)
@@ -6773,6 +6794,13 @@ static void Query_Haswell(unsigned int cpu)
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio(cpu);
 	Intel_PowerInterface();
+
+	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
+		Read_ACPI_PCT_Registers(cpu);
+		Read_ACPI_PSS_Registers(cpu);
+		Read_ACPI_PPC_Registers(cpu);
+		Read_ACPI_CST_Registers(cpu);
+	}
 }
 
 static void Query_Haswell_EP(unsigned int cpu)
@@ -6785,6 +6813,13 @@ static void Query_Haswell_EP(unsigned int cpu)
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio(NULL);
 	Intel_PowerInterface();
+
+	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
+		Read_ACPI_PCT_Registers(cpu);
+		Read_ACPI_PSS_Registers(cpu);
+		Read_ACPI_PPC_Registers(cpu);
+		Read_ACPI_CST_Registers(cpu);
+	}
 }
 
 static void Query_Haswell_ULT(unsigned int cpu)
@@ -6808,6 +6843,13 @@ static void Query_Broadwell(unsigned int cpu)
 	Haswell_Uncore_Ratio(NULL);
 	Intel_PowerInterface();
 	Intel_Hardware_Performance();
+
+	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
+		Read_ACPI_PCT_Registers(cpu);
+		Read_ACPI_PSS_Registers(cpu);
+		Read_ACPI_PPC_Registers(cpu);
+		Read_ACPI_CST_Registers(cpu);
+	}
 }
 
 static void Query_Broadwell_EP(unsigned int cpu)
@@ -6823,13 +6865,6 @@ static void Query_Skylake(unsigned int cpu)
 	PUBLIC(RO(Proc))->Features.EEO_Capable = 1;
 	PUBLIC(RO(Proc))->Features.R2H_Capable = 1;
 	Skylake_PowerControl();
-
-	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
-		Read_ACPI_PCT_Registers(cpu);
-		Read_ACPI_PSS_Registers(cpu);
-		Read_ACPI_PPC_Registers(cpu);
-		Read_ACPI_CST_Registers(cpu);
-	}
 }
 
 static void Query_Kaby_Lake(unsigned int cpu)
