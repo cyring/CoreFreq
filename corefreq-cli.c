@@ -4387,9 +4387,6 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 		width - 12 - RSZ(PERF_MON_CORE), hSpace, POWERED(bix) );
     }
 /* Section Mark */
-    if   ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-	|| (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
-    {
 	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.ACPI_PCT_CAP ? 3:0],
 		width, 2,
 		"%s%.*s%s   [%7s]", RSC(PERF_MON_PCT).CODE(),
@@ -4425,6 +4422,9 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 		width - 19 - RSZ(PERF_MON_PPC), hSpace,
 		RSC(PERF_LABEL_PPC).CODE(), RSC(MISSING).CODE() );
       }
+    if   ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	|| (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
+    {
 	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.OSPM_CPC ? 3 : 0],
 		width, 2,
 		"%s%.*s%s   [%7s]", RSC(PERF_MON_CPC).CODE(),

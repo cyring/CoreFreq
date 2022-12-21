@@ -6711,6 +6711,13 @@ static void Query_Nehalem(unsigned int cpu)	/*	Table 2-15	*/
 {
 	Nehalem_Platform_Info(cpu);
 	HyperThreading_Technology();
+
+	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
+		Read_ACPI_PCT_Registers(cpu);
+		Read_ACPI_PSS_Registers(cpu);
+		Read_ACPI_PPC_Registers(cpu);
+		Read_ACPI_CST_Registers(cpu);
+	}
 }
 
 static void Query_Nehalem_EX(unsigned int cpu) /* Tables 2-15, 2-17	*/
@@ -6816,6 +6823,13 @@ static void Query_Skylake(unsigned int cpu)
 	PUBLIC(RO(Proc))->Features.EEO_Capable = 1;
 	PUBLIC(RO(Proc))->Features.R2H_Capable = 1;
 	Skylake_PowerControl();
+
+	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
+		Read_ACPI_PCT_Registers(cpu);
+		Read_ACPI_PSS_Registers(cpu);
+		Read_ACPI_PPC_Registers(cpu);
+		Read_ACPI_CST_Registers(cpu);
+	}
 }
 
 static void Query_Kaby_Lake(unsigned int cpu)
