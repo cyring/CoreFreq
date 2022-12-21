@@ -444,7 +444,7 @@ enum KEY_ENUM {
 	BOXKEY_UNCORE_CLOCK_MIN =((BOXKEY_UNCORE_CLOCK_OR|CLOCK_MOD_MIN) << 32)
 };
 
-#if defined(FEAT_DBG) && (FEAT_DBG >= 9)
+#if defined(FEAT_DBG) && (FEAT_DBG >= 9) && (FEAT_DBG < 100)
 #define CHECK_DUPLICATE_KEY(_val)		\
 int CheckDuplicateKey(void)			\
 {	enum KEY_ENUM _key = _val;		\

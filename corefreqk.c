@@ -3938,6 +3938,7 @@ signed int Get_EPP_ACPI_CPPC(unsigned int cpu)
 {
 	signed int rc = -ENODEV;
 #if defined(CONFIG_SCHED_BORE) || defined(CONFIG_CACHY)
+#if defined(FEAT_DBG) && (FEAT_DBG >= 100) && (FEAT_DBG < 1000)
 	struct cppc_perf_caps CPPC_Caps;
 
 	if ((rc = cppc_get_epp_caps(cpu, &CPPC_Caps)) == 0)
@@ -3948,6 +3949,7 @@ signed int Get_EPP_ACPI_CPPC(unsigned int cpu)
 	} else {
 	    pr_debug("CoreFreq: cppc_get_epp_caps(cpu=%u) error %d\n", cpu, rc);
 	}
+#endif
 #endif
 	return rc;
 }

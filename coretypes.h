@@ -2485,7 +2485,7 @@ typedef struct {
 	( (Ring.head - Ring.tail) == RING_SIZE );			\
 })
 
-#if defined(FEAT_DBG) && (FEAT_DBG > 2)
+#if defined(FEAT_DBG) && (FEAT_DBG > 2) && (FEAT_DBG < 100)
 FEAT_MSG("Macroing:RING_MOVE(XMM)")
 #define RING_MOVE(_dst, _src)						\
 ({									\
