@@ -19686,8 +19686,13 @@ static int CoreFreqK_IdleDriver_Init(void)
 	    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
 	    {
 		CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
+		CSTATE_CONFIG CStateConfig = {.value = 0};
+
 		RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-		if (CState_IO_MWAIT.LVL2_BaseAddr != 0x0)
+		RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+
+		if ((CState_IO_MWAIT.LVL2_BaseAddr != 0x0)
+		 && (CStateConfig.IO_MWAIT_Redir == 1))
 		{
 			CoreFreqK.IdleDriver.states[
 				CoreFreqK.IdleDriver.state_count

@@ -6868,7 +6868,9 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 void CStates(RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core), unsigned int cpu)
 {	/*	Copy the C-State Configuration Control			*/
 	RO(Shm)->Cpu[cpu].Query.CfgLock = RO(Core, AT(cpu))->Query.CfgLock;
-	RO(Shm)->Cpu[cpu].Query.CStateLimit = RO(Core, AT(cpu))->Query.CStateLimit;
+
+	RO(Shm)->Cpu[cpu].Query.CStateLimit = \
+					RO(Core, AT(cpu))->Query.CStateLimit;
 	/*	Copy Intel Max C-State Inclusion			*/
 	RO(Shm)->Cpu[cpu].Query.IORedir = RO(Core, AT(cpu))->Query.IORedir;
 
