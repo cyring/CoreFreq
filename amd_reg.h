@@ -1882,8 +1882,8 @@ typedef union
 } AMD_ZEN_UMC_TIMING_DTRFC;
 
 typedef union
-{
-	unsigned int		value;	/*	0x502c0: 0x00480138	*/
+{	/* SMU addresses = 0x50{2c0,2c4,2c8,2cc}			*/
+	unsigned int		value;	/* Rembrandt = 0x00480138	*/
 	struct {
 		unsigned int
 		tRFC4		: 16-0,
