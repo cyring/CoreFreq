@@ -602,8 +602,8 @@ typedef struct
 			{
 				AMD_17_UMC_DEBUG_MISC	DbgMisc;/* 32 bits   */
 			  struct {
-				AMD_17_UMC_ECC_CAP_LO	_;	/* 32 bits   */
-				AMD_17_UMC_ECC_CAP_HI	__;	/* 32 bits   */
+				AMD_17_UMC_ECC_CAP_LO	Lo;	/* 32 bits   */
+				AMD_17_UMC_ECC_CAP_HI	Hi;	/* 32 bits   */
 			  } ECC;
 			  struct {
 			    struct {
@@ -611,7 +611,7 @@ typedef struct
 			    }				Chip,	/* 32 bits   */
 							Mask;	/* 32 bits   */
 			  } CHIP[4][2];
-				AMD_17_UMC_CONFIG	CONFIG; /* 32 bits   */
+				AMD_ZEN_UMC_CONFIG	CONFIG; /* 32 bits   */
 				AMD_17_UMC_SPAZ_CTRL	SPAZ;	/* 32 bits   */
 				AMD_ZEN_UMC_CFG_MISC	MISC;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR1	DTR1;	/* 32 bits   */
@@ -645,7 +645,7 @@ typedef struct
 	/* 80h */	SNB_EP_DIMM_MTR 		MTR;	/* 32 bits    */
 	/* 40h */	AMD_0F_DRAM_CS_BASE_ADDR	MBA;	/* 32 bits    */
 		    struct {
-	/* 5003{0,4}h*/ AMD_17_UMC_DRAM_ADDR_CFG	DAC;	/* 32 bits    */
+	/* 5003{0,4}h*/ AMD_ZEN_UMC_DRAM_ADDR_CFG	DAC;	/* 32 bits    */
 	/* 5008{0,4}h*/ AMD_17_UMC_DIMM_CFG		CFG;	/* 32 bits    */
 		    } AMD17h;
 		} DIMM[MC_MAX_DIMM];

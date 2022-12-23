@@ -1403,7 +1403,7 @@ Remark: if BGS_Alt[ON][AUTO] is set then BGS[OFF]
 
 typedef union
 {	/* SMU addresses:
-		DIMM[0] = 0x{0,1,2,3,4,5,6,7}50030 ; 0x50040 [RMB]
+		DIMM[0] = 0x{0,1,2,3,4,5,6,7}50030
 		DIMM[1] = 0x{0,1,2,3,4,5,6,7}50034
 	*/
 	unsigned int		value;
@@ -1420,12 +1420,26 @@ typedef union
 		NumBanks	: 22-20, /* 0=8x; 1=16x; 2=32x Banks	*/
 		ReservedBits3	: 32-22;
 	};
-} AMD_17_UMC_DRAM_ADDR_CFG;
+	struct
+	{	/* SMU addresses: 0x500{40,44,48,4c} [RMB]		*/
+		unsigned int
+		ReservedBits1	:  2-0,
+		NumBankGroups	:  4-2,  /* 0=None; 1=2x; 2=4x; 3=8x BGs */
+		NumRM		:  7-4,  /* 0=None; 1=2x; 2=4x; 3=8x RM */
+		ReservedBits2	:  8-7,
+		NumRow		: 12-8,  /* [0-8] = 10 + NumRowLo	*/
+		ReservedBits3	: 16-12,
+		NumCol		: 20-16, /* [0-0xb] = 5 + NumCol	*/
+		NumBanks	: 22-20, /* 0=8x; 1=16x; 2=32x Banks	*/
+		ReservedBits4	: 30-22,
+		CSXor		: 32-30;
+	} Zen4;
+} AMD_ZEN_UMC_DRAM_ADDR_CFG;
 
 typedef union
 {	/* SMU addresses
 		DIMM[0] = 0x{0,1,2,3,4,5,6,7}50080 ; 50090 [RMB]
-		DIMM[1] = 0x{0,1,2,3,4,5,6,7}50084
+		DIMM[1] = 0x{0,1,2,3,4,5,6,7}50084 ; 50094 [RMB]
 	*/
 	unsigned int		value;
 	struct
@@ -1460,7 +1474,7 @@ typedef union
 		ReservedBits2	: 31-13,
 		DramReady	: 32-31;
 	};
-} AMD_17_UMC_CONFIG;
+} AMD_ZEN_UMC_CONFIG;
 
 typedef union
 {	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50104			*/
@@ -1476,7 +1490,7 @@ typedef union
 		DramScrubCrdt	: 10-9,
 		ReservedBits3	: 16-10,
 		CmdBufferCount	: 23-16,
-		ReservedBits4	: 24-23,
+		ReservedBits4	: 24-23, /* Not for F19h Model:11h_B1	*/
 		DatBufferCount	: 31-24,
 		SdpInit 	: 32-31;
 	};

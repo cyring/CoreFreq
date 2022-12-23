@@ -5933,7 +5933,7 @@ void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
     }
 
 	TIMING(mc, cha).ECC = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.ECC.__.Enable;
+		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.ECC.Hi.Enable;
 
 	TIMING(mc, cha).BGS = \
 		!((RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.BGS.value
