@@ -2054,7 +2054,7 @@ static PCI_CALLBACK AMD_DataFabric_Arden(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Vermeer(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Cezanne(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Rembrandt(struct pci_dev *pdev) ;
-#define AMD_DataFabric_Raphael AMD_DataFabric_Rembrandt
+static PCI_CALLBACK AMD_DataFabric_Raphael(struct pci_dev *pdev) ;
 
 static struct pci_device_id PCI_Void_ids[] = {
 	{0, }
