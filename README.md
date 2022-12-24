@@ -207,6 +207,20 @@ CPU     IPS            IPC            CPI
 1. [CoreFreq](https://software.opensuse.org/package/CoreFreq) official release
 2. [CoreFreq-kmp-default](https://software.opensuse.org/package/CoreFreq-kmp-default)  
 
+## ProxMox
+```
+apt-get install build-essential dkms git libpthread-stubs0-dev
+
+apt install pve-headers-`uname -r`
+
+git clone https://github.com/cyring/CoreFreq.git
+cd CoreFreq/ && make
+make install
+depmod
+modprobe corefreqk
+systemctl start corefreqd
+```
+
 ## Unraid
  * Plugin
 1. `corefreq.plg` from [ich777/unraid-corefreq](https://github.com/ich777/unraid-corefreq)
