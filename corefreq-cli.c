@@ -2576,6 +2576,16 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		NULL
 	},
 	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
+			CPUID_00000014_00000000_PROCESSOR_TRACE
+		].reg[REG_CPUID_EBX], CPUID_00000014_00000000_EBX_PTWEn),
+		attr_Feat,
+		2, "%s%.*sPTWRITE   [%7s]", RSC(FEATURES_PTWRITE).CODE(),
+		width - 22 - RSZ(FEATURES_PTWRITE),
+		NULL
+	},
+	{
 		NULL,
 		RO(Shm)->Proc.Features.ExtFeature.EBX.PQE == 1,
 		attr_Feat,

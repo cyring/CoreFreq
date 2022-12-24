@@ -1110,6 +1110,7 @@
 #define RSC_FEATURES_PSE_CODE_EN	"Page Size Extension"
 #define RSC_FEATURES_PSE36_CODE_EN	"36-bit Page Size Extension"
 #define RSC_FEATURES_PSN_CODE_EN	"Processor Serial Number"
+#define RSC_FEATURES_PTWRITE_CODE_EN	"Write Data to a Processor Trace Packet"
 #define RSC_FEATURES_RDT_PQE_CODE_EN	"Resource Director Technology/PQE"
 #define RSC_FEATURES_RDT_PQM_CODE_EN	"Resource Director Technology/PQM"
 #define RSC_FEATURES_RDPRU_CODE_EN	"Read Processor Register at User level"
