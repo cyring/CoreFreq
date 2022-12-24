@@ -205,7 +205,27 @@ CPU     IPS            IPC            CPI
 ## openSUSE
  * Packages
 1. [CoreFreq](https://software.opensuse.org/package/CoreFreq) official release
-2. [CoreFreq-kmp-default](https://software.opensuse.org/package/CoreFreq-kmp-default)  
+2. [CoreFreq-kmp-default](https://software.opensuse.org/package/CoreFreq-kmp-default) 
+
+## ProxMox
+
+Install Tools
+`apt-get install build-essential dkms git libpthread-stubs0-dev`
+
+Install headers related to your kernel
+```
+apt install pve-headers-`uname -r`
+
+git clone https://github.com/cyring/CoreFreq.git
+cd CoreFreq/ && make
+```
+Install the module in the system, refresh it and start it
+```
+make install
+depmod
+modprobe corefreqk
+systemctl start corefreqd
+```
 
 ## Unraid
  * Plugin
