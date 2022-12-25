@@ -6594,7 +6594,7 @@ static PCI_CALLBACK AMD_DataFabric_Raphael(struct pci_dev *pdev)
 						{ 0x0, 0x20},
 						{0x10, 0x30}
 					},
-					0x48, 0x90,
+					0x44, 0x90,
 					1, MC_MAX_CHA,
 		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
 }
