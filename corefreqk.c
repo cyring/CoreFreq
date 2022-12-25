@@ -22095,7 +22095,9 @@ static int CoreFreqK_HotPlug_CPU_Online(unsigned int cpu)
    }
 
 	/* Start the collect timer dedicated to this CPU iff not STR resuming */
+#ifdef CONFIG_PM_SLEEP
    if (CoreFreqK.ResumeFromSuspend == false)
+#endif /* CONFIG_PM_SLEEP */
    {
     if (Arch[PUBLIC(RO(Proc))->ArchID].Timer != NULL) {
 	Arch[PUBLIC(RO(Proc))->ArchID].Timer(cpu);
@@ -22143,7 +22145,10 @@ static int CoreFreqK_HotPlug_CPU_Offline(unsigned int cpu)
 	BITSET(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine, OS);
 
 	/*		Seek for an alternate Service Processor.	*/
-   if (CoreFreqK.ResumeFromSuspend == false) {
+#ifdef CONFIG_PM_SLEEP
+   if (CoreFreqK.ResumeFromSuspend == false)
+#endif /* CONFIG_PM_SLEEP */
+   {
     if ((cpu == PUBLIC(RO(Proc))->Service.Core)
      || (cpu == PUBLIC(RO(Proc))->Service.Thread))
     {
