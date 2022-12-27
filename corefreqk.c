@@ -6577,14 +6577,22 @@ static PCI_CALLBACK AMD_DataFabric_Cezanne(struct pci_dev *pdev)
 
 static PCI_CALLBACK AMD_DataFabric_Rembrandt(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(	pdev,
+	PCI_CALLBACK ret = AMD_17h_DataFabric(	pdev,
 					(const unsigned int[2][2]) {
 						{ 0x0, 0x20},
 						{0x10, 0x30}
 					},
 					0x40, 0x90,
-					1, 2,
+					1, MC_MAX_CHA,
 		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
+
+	if ((PCI_CALLBACK) 0 == ret) {
+		unsigned short umc;
+		for (umc = 0; umc < PUBLIC(RO(Proc))->Uncore.CtrlCount; umc++) {
+			PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount /= 2;
+		}
+	}
+	return ret;
 }
 
 static PCI_CALLBACK AMD_DataFabric_Raphael(struct pci_dev *pdev)
