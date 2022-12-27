@@ -6583,7 +6583,7 @@ static PCI_CALLBACK AMD_DataFabric_Rembrandt(struct pci_dev *pdev)
 						{0x10, 0x30}
 					},
 					0x40, 0x90,
-					1, MC_MAX_CHA,
+					1, 2,
 		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
 }
 
