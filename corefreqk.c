@@ -22336,7 +22336,11 @@ void SMBIOS_Decoder(void)
 #endif /* CONFIG_DMI */
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 2, 0)
+static char *CoreFreqK_DevNode(const struct device *dev, umode_t *mode)
+#else
 static char *CoreFreqK_DevNode(struct device *dev, umode_t *mode)
+#endif
 {
 	UNUSED(dev);
 
