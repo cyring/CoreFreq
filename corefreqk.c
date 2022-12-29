@@ -6588,9 +6588,11 @@ static PCI_CALLBACK AMD_DataFabric_Rembrandt(struct pci_dev *pdev)
 
 	if ((PCI_CALLBACK) 0 == ret) {
 		unsigned short umc;
-		for (umc = 0; umc < PUBLIC(RO(Proc))->Uncore.CtrlCount; umc++) {
-			PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount /= 2;
+	    for (umc = 0; umc < PUBLIC(RO(Proc))->Uncore.CtrlCount; umc++) {
+		if (PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount >= 2) {
+			PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount >>= 1;
 		}
+	    }
 	}
 	return ret;
 }
@@ -18716,7 +18718,7 @@ static void Call_SVI_RMB(const unsigned int plane0, const unsigned int plane1,
 				SMU_AMD_RMB_SVI(plane1),
 				PRIVATE(OF(Zen)).Device.DF );
 
-	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.SVI1;
+	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.SVI0;
 }
 
 static void Call_DFLT(	const unsigned int plane0, const unsigned int plane1,
@@ -18773,7 +18775,7 @@ static enum hrtimer_restart Cycle_AMD_F17h_Zen2_APU(struct hrtimer *pTimer)
 }
 static enum hrtimer_restart Cycle_AMD_Zen3Plus_RMB(struct hrtimer *pTimer)
 {
-	return Entry_AMD_F17h(pTimer, Call_SVI_RMB, 0, 1, 294300LLU);
+	return Entry_AMD_F17h(pTimer, Call_SVI_RMB, 0, 2, 0LLU);
 }
 static enum hrtimer_restart Cycle_AMD_F17h(struct hrtimer *pTimer)
 {
