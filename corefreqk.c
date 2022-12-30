@@ -6224,7 +6224,8 @@ void AMD_Zen_UMC_Aggregate(	unsigned short mc, unsigned short cha,
 	(*Got_Div_Clock) = true;
 	break;
       case 0x3:	/* BL16 */
-	Div_Clock = 3;
+	Div_Clock = PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h\
+			.DbgMisc.UCLK_Divisor == 0 ? 1 : 2;
 
 	(*Got_Div_Clock) = true;
 	break;
