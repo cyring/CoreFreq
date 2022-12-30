@@ -1514,6 +1514,8 @@ static void InitTimer_Goldmont(unsigned int cpu) ;
 static void Query_Airmont(unsigned int cpu) ;
 static void PerCore_Airmont_Query(void *arg) ;
 
+static void PerCore_Geminilake_Query(void *arg) ;
+
 static void Query_Nehalem(unsigned int cpu) ;
 static void PerCore_Nehalem_Query(void *arg) ;
 static void PerCore_Nehalem_EX_Query(void *arg) ;
@@ -8731,7 +8733,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [Geminilake] = {							/* 56*/
 	.Signature = _Geminilake,
 	.Query = Query_Goldmont,
-	.Update = PerCore_Goldmont_Query,
+	.Update = PerCore_Geminilake_Query,
 	.Start = Start_Goldmont,
 	.Stop = Stop_Goldmont,
 	.Exit = NULL,

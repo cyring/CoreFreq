@@ -11965,7 +11965,7 @@ static void PerCore_Airmont_Query(void *arg)
 	}
 }
 
-static void PerCore_Goldmont_Query(void *arg)
+static void PerCore_Atom_Goldmont_Query(void *arg)
 {
 	CORE_RO *Core = (CORE_RO *) arg;
 
@@ -12014,8 +12014,6 @@ static void PerCore_Goldmont_Query(void *arg)
 
 	ThermalMonitor_Set(Core);
 
-	Intel_Turbo_Activation_Ratio(Core);
-
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,	/* Table 2-12 */
 					PKG_POWER_LIMIT_LOCK_MASK,
@@ -12037,6 +12035,19 @@ static void PerCore_Goldmont_Query(void *arg)
 	    }
 		Intel_Watchdog(Core);
 	}
+}
+
+static void PerCore_Goldmont_Query(void *arg)
+{
+	CORE_RO *Core = (CORE_RO *) arg;
+
+	PerCore_Atom_Goldmont_Query(arg);
+	Intel_Turbo_Activation_Ratio(Core);
+}
+
+static void PerCore_Geminilake_Query(void *arg)
+{
+	PerCore_Atom_Goldmont_Query(arg);
 }
 
 static void PerCore_Nehalem_Same_Query(void *arg)
