@@ -2796,6 +2796,14 @@ static struct pci_device_id PCI_Alderlake_ids[] = {
 	{0, }
 };
 
+static struct pci_device_id PCI_Geminilake_ids[] = {
+	{	/* Goldmont Plus					*/
+		PCI_VDEVICE(INTEL, DID_INTEL_GEMINILAKE_HB),
+		.driver_data = (kernel_ulong_t) SoC_SLM
+	},
+	{0, }
+};
+
 /* AMD Family 0Fh							*/
 static struct pci_device_id PCI_AMD_0Fh_ids[] = {
 	{
@@ -3143,7 +3151,7 @@ static char *Arch_Kabylake_UY[] = ZLIST(
 
 static char *Arch_Cannonlake_U[]	=	ZLIST("Cannon Lake/U");
 static char *Arch_Cannonlake_H[]	=	ZLIST("Cannon Lake/H");
-static char *Arch_Geminilake[]		=	ZLIST("Atom/Gemini Lake");
+static char *Arch_Geminilake[]		=	ZLIST("Gemini Lake");
 static char *Arch_Icelake[]		=	ZLIST("Ice Lake");
 static char *Arch_Icelake_UY[]		=	ZLIST("Ice Lake/UY");
 static char *Arch_Icelake_X[]		=	ZLIST("Ice Lake/X");
@@ -8742,9 +8750,9 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_SandyBridge_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-	.voltageFormula = VOLTAGE_FORMULA_INTEL_SOC,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL_ATOM,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_Geminilake_ids,
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL,

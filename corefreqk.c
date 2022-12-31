@@ -6743,6 +6743,13 @@ static void Query_Goldmont(unsigned int cpu) /* Tables 2-6, 2-12	*/
 
 	HyperThreading_Technology();
 	Intel_PowerInterface();
+
+	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
+		Read_ACPI_PCT_Registers(cpu);
+		Read_ACPI_PSS_Registers(cpu);
+		Read_ACPI_PPC_Registers(cpu);
+		Read_ACPI_CST_Registers(cpu);
+	}
 }
 
 static void Query_Airmont(unsigned int cpu) /* Tables 2-6, 2-7, 2-8, 2-11 */

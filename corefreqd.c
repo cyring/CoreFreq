@@ -6109,6 +6109,7 @@ static char *Chipset[CHIPSETS] = {
 	[IC_CEDARVIEW]		= "Cedarview",
 	[IC_BAYTRAIL]		= "Bay Trail",
 	[IC_AIRMONT]		= "Airmont",
+	[IC_GOLDMONT_PLUS]	= "Goldmont Plus",
 	[IC_TYLERSBURG] 	= "X58/Tylersburg",
 	[IC_IBEXPEAK]		= "P55/Ibex Peak",
 	[IC_IBEXPEAK_M] 	= "QM57/Ibex Peak-M",
@@ -6608,6 +6609,10 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		break;
 	case DID_INTEL_ALDERLAKE_B660_PCH:
 		SET_CHIPSET(IC_B660);
+		break;
+	case DID_INTEL_GEMINILAKE_HB:
+		SLM_PTR(RO(Shm), RO(Proc), RO(Core));
+		SET_CHIPSET(IC_GOLDMONT_PLUS);
 		break;
 	}
 }
