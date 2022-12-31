@@ -872,6 +872,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.AVX512_4FMAPS);
 					json_key(&s, "Fast_Short_REP_MOVSB");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.FSRM);
+					json_key(&s, "UINTR");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.UINTR);
 					json_key(&s, "AVX512_VP2INTERSECT");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.AVX512_VP2INTER);
 					json_key(&s, "MD_CLEAR");

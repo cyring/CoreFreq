@@ -941,6 +941,7 @@
 #define RSC_SYS_REG_CR4_PKS_CODE_EN	\
 				" Protection Keys for Supervisor-mode pages "
 
+#define RSC_SYS_REG_CR4_UINTR_CODE_EN	" User Interrupts Enable "
 #define RSC_SYS_REG_CR4_LAM_CODE_EN	" LAM_SUP for Supervisor pointers "
 
 #define RSC_SYS_REGS_CR8_CODE_EN	" Control Register 8 "
@@ -2510,6 +2511,7 @@
 #define RSC_SYS_REG_HDR_CR4_PKE_CODE	" PKE"
 #define RSC_SYS_REG_HDR_CR4_CET_CODE	" CET"
 #define RSC_SYS_REG_HDR_CR4_PKS_CODE	" PKS"
+#define RSC_SYS_REG_HDR_CR4_UINTR_CODE	" U-I"
 #define RSC_SYS_REG_HDR_CR4_LAM_CODE	" LAM"
 #define RSC_SYS_REG_HDR_CR8_CODE	"CR8:"
 #define RSC_SYS_REG_HDR_CR8_TPL_CODE	" TPL"

@@ -207,6 +207,7 @@ enum SYS_REG {
 	CR4_PKE 	= 22,
 	CR4_CET 	= 23,
 	CR4_PKS 	= 24,
+	CR4_UINTR	= 25,
 	CR4_LAM_SUP	= 28,
 
 	CR8_TPL 	= 0,	/* [3:0]				*/
@@ -1324,7 +1325,8 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 		AVX512_4VNNIW	:  3-2,  /* Intel Xeon Phi		*/
 		AVX512_4FMAPS	:  4-3,  /* Intel Xeon Phi		*/
 		FSRM		:  5-4,  /* Fast Short REP MOVSB 	*/
-		Reserved2	:  8-5,
+		UINTR		:  6-5,  /* CLUI,SENDUIPI,STUI,TESTUI,UIRET */
+		Reserved2	:  8-6,
 		AVX512_VP2INTER :  9-8,  /* TGL: AVX512_VP2INTERSECT	*/
 		SRBDS_CTRL	: 10-9,  /* IA32_MCU_OPT_CTRL		*/
 		MD_CLEAR_Cap	: 11-10,
@@ -1393,7 +1395,7 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf 1		*/
 		AVX_VNNI_INT8	:  5-4,  /* Sierra Forest, Grand Ridge	*/
 		AVX_NE_CONVERT	:  6-5,  /* Sierra Forest, Grand Ridge	*/
 		Reserved2	: 14-6,
-		PREFETCHITI	: 15-14, /* Granite Rapids		*/
+		PREFETCHITI	: 15-14, /* Granite Rapids: IA32_UINTR	*/
 		Reserved3	: 32-15;
 	} EDX;
 } CPUID_0x00000007_1;
