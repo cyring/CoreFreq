@@ -1891,6 +1891,35 @@ REASON_CODE SysInfoISA( Window *win,
 	},
 /* Row Mark */
 	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_ENQCMD).CODE(), RSC(ISA_ENQCMD_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.ExtFeature.ECX.ENQCMD },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature.ECX.ENQCMD },
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_GFNI).CODE(), RSC(ISA_GFNI_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.ExtFeature.ECX.GFNI },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature.ECX.GFNI },
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_OSPKE).CODE(), RSC(ISA_OSPKE_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.ExtFeature.ECX.OSPKE },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature.ECX.OSPKE },
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_WAITPKG).CODE(), RSC(ISA_WAITPKG_COMM).CODE(),
+		{ 1, RO(Shm)->Proc.Features.ExtFeature.ECX.WAITPKG },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature.ECX.WAITPKG },
+	},
+/* Row Mark */
+	{
 		NULL,
 		RSC(ISA_MMX).CODE(), RSC(ISA_MMX_COMM).CODE(),
 		{ 0, 2 * ( RO(Shm)->Proc.Features.Std.EDX.MMX
@@ -8925,6 +8954,9 @@ Window *CreateISA(unsigned long long id)
 		StoreWindow(wISA,	.key.WinRight,	MotionOriginRight_Win);
 		StoreWindow(wISA,	.key.WinDown,	MotionOriginDown_Win);
 		StoreWindow(wISA,	.key.WinUp,	MotionOriginUp_Win);
+
+		StoreWindow(wISA,	.key.Shrink,	MotionShrink_Win);
+		StoreWindow(wISA,	.key.Expand,	MotionExpand_Win);
 	}
 	return wISA;
 }

@@ -1043,6 +1043,14 @@
 #define RSC_ISA_VPCLMULQDQ_COMM_CODE_EN " VPCLMULQDQ 256-bit instruction "
 #define RSC_ISA_PREFETCH_COMM_CODE_EN	" Prefetch/Write Data to Cache "
 #define RSC_ISA_LZCNT_COMM_CODE_EN    " Count the Number of Leading Zero Bits "
+#define RSC_ISA_ENQCMD_COMM_CODE_EN	\
+				" ENQCMD/ENQCMDS Enqueue Command/Supervisor "
+
+#define RSC_ISA_GFNI_COMM_CODE_EN	\
+			" Galois Field Affine Transformation instructions "
+
+#define RSC_ISA_OSPKE_COMM_CODE_EN	" RDPKRU/WRPKRU instructions "
+#define RSC_ISA_WAITPKG_COMM_CODE_EN	" TPAUSE/UMONITOR/UMWAIT instructions "
 
 #define RSC_FEATURES_TITLE_CODE_EN	" Features "
 #define RSC_ON_CODE_EN			" ON"
@@ -2601,3 +2609,7 @@
 #define RSC_ISA_VPCLMULQDQ_CODE 	"   VPCLMULQDQ [%c]"
 #define RSC_ISA_PREFETCH_CODE		"   PREFETCH/W [%c]"
 #define RSC_ISA_LZCNT_CODE		"       LZCNT [%c] "
+#define RSC_ISA_ENQCMD_CODE		" ENQCMD       [%c]"
+#define RSC_ISA_GFNI_CODE		"         GFNI [%c]"
+#define RSC_ISA_OSPKE_CODE		"        OSPKE [%c]"
+#define RSC_ISA_WAITPKG_CODE		"     WAITPKG [%c] "
