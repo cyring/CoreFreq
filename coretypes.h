@@ -2108,8 +2108,11 @@ typedef struct
 	unsigned int	tRFC;
 	unsigned int	tRFC1;
 	};
+	union {
+	unsigned int	tRFC4;
+	unsigned int	tRFCsb;
+	};
 	unsigned int	tRFC2,
-			tRFC4,
 			tMRD,
 			tMOD,
 			tMRD_PDA,

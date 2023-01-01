@@ -5239,6 +5239,21 @@ void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
     }
 }
 
+void Query_GLK_IMC(void __iomem *mchmap, unsigned short mc)
+{ /* Source: Intel® Pentium® Silver and Intel® Celeron® Processors Vol 2 */
+	unsigned short cha;
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 0;
+
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
+    {
+    }
+    if (mc == 0) {
+	Query_Turbo_TDP_Config(mchmap);
+    }
+}
+
 static PCI_CALLBACK P945(struct pci_dev *dev)
 {
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
@@ -6056,6 +6071,21 @@ static PCI_CALLBACK ADL_IMC(struct pci_dev *dev)
 	return rc;
 }
 
+static PCI_CALLBACK GLK_IMC(struct pci_dev *dev)
+{
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+
+	pci_read_config_dword(dev, 0xe4,
+				&PUBLIC(RO(Proc))->Uncore.Bus.RKL_Cap_A.value);
+
+	pci_read_config_dword(dev, 0xe8,
+				&PUBLIC(RO(Proc))->Uncore.Bus.RKL_Cap_B.value);
+
+	SoC_SKL_VTD();
+
+	return Router(dev, 0x48, 64, 0x8000, Query_GLK_IMC, 0);
+}
+
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev)
 {	/* Source: BKDG for AMD NPT Family 0Fh Processors.		*/
 	unsigned short cha, slot, chip;
@@ -6358,10 +6388,10 @@ static void AMD_Zen_UMC(struct pci_dev *dev,
 	for (offset = 0x2c0; offset < 0x2d0; offset = offset + 0x4)
 	{
 	    Core_AMD_SMN_Read(
-		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.TRFC4,
+		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.RFCSB,
 		UMC_BAR + offset, dev );
 
-	    if (PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.TRFC4.value)
+	    if (PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.RFCSB.value)
 	    {
 		break;
 	    }

@@ -1544,6 +1544,9 @@
 #define RSC_DDR4_ZEN_PHYRDL_COMM_CODE_EN \
 			" tPHYRDL ( dfi_rddata_en to dfi_rddata_vld delay ) "
 
+#define RSC_DDR5_ZEN_RFC_SB_COMM_CODE_EN \
+				" tRFCsb ( Refresh Recovery, Same Bank ) "
+
 #define RSC_TASKS_SORTBY_STATE_CODE_EN		" State    "
 #define RSC_TASKS_SORTBY_RTIME_CODE_EN		" RunTime  "
 #define RSC_TASKS_SORTBY_UTIME_CODE_EN		" UserTime "
@@ -2454,6 +2457,10 @@
 #define RSC_DDR4_ZEN_PHYWRD_CODE	"A WRD"
 #define RSC_DDR4_ZEN_PHYWRL_CODE	"  WRL"
 #define RSC_DDR4_ZEN_PHYRDL_CODE	"  RDL"
+#define RSC_DDR5_ZEN_RFC_SB_CODE	" RFCs"
+#define RSC_DDR5_ZEN_RCPB_CODE		"b RCP"
+#define RSC_DDR5_ZEN_RPPB_CODE		"B RPP"
+#define RSC_DDR5_ZEN_BGS_CODE		"B BGS"
 
 #define RSC_SYS_REGS_SPACE_CODE 	"    "
 #define RSC_SYS_REGS_NA_CODE		"  - "

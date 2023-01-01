@@ -7139,7 +7139,7 @@ void Timing_DDR4(Window *win,
 	}
 }
 
-void Timing_DDR4_Zen(	Window *win,
+void Timing_DRAM_Zen(	Window *win,
 			CELL_FUNC OutFunc,
 			CUINT *nl,
 			unsigned int *cellPadding,
@@ -7185,10 +7185,18 @@ void Timing_DDR4_Zen(	Window *win,
 			RSC(DDR4_ZEN_REFI).CODE(),
 			RSC(DDR4_ZEN_RFC1).CODE(),
 			RSC(DDR4_ZEN_RFC2).CODE(),
-			RSC(DDR4_ZEN_RFC4).CODE(),
-			RSC(DDR4_ZEN_RCPB).CODE(),
-			RSC(DDR4_ZEN_RPPB).CODE(),
-			RSC(DDR4_ZEN_BGS).CODE(),
+			RO(Shm)->Uncore.Unit.DDR_Ver < 5 ?
+				RSC(DDR4_ZEN_RFC4).CODE()
+			:	RSC(DDR5_ZEN_RFC_SB).CODE(),
+			RO(Shm)->Uncore.Unit.DDR_Ver < 5 ?
+				RSC(DDR4_ZEN_RCPB).CODE()
+			:	RSC(DDR5_ZEN_RCPB).CODE(),
+			RO(Shm)->Uncore.Unit.DDR_Ver < 5 ?
+				RSC(DDR4_ZEN_RPPB).CODE()
+			:	RSC(DDR5_ZEN_RPPB).CODE(),
+			RO(Shm)->Uncore.Unit.DDR_Ver < 5 ?
+				RSC(DDR4_ZEN_BGS).CODE()
+			:	RSC(DDR5_ZEN_BGS).CODE(),
 			RSC(DDR4_ZEN_BGS_ALT).CODE(),
 			RSC(DDR4_ZEN_BAN).CODE(),
 			RSC(DDR4_ZEN_RCPAGE).CODE(),
@@ -7255,7 +7263,9 @@ void Timing_DDR4_Zen(	Window *win,
 			RSC(DDR3_REFI_COMM).CODE(),
 			RSC(DDR4_ZEN_RFC1_COMM).CODE(),
 			RSC(DDR4_ZEN_RFC2_COMM).CODE(),
-			RSC(DDR4_ZEN_RFC4_COMM).CODE(),
+			RO(Shm)->Uncore.Unit.DDR_Ver < 5 ?
+				RSC(DDR4_ZEN_RFC4_COMM).CODE()
+			:	RSC(DDR5_ZEN_RFC_SB_COMM).CODE(),
 			RSC(DDR4_ZEN_RCPB_COMM).CODE(),
 			RSC(DDR4_ZEN_RPPB_COMM).CODE(),
 			RSC(DDR4_ZEN_BGS_COMM).CODE(),
@@ -7356,7 +7366,8 @@ void Timing_DDR4_Zen(	Window *win,
 		PRT(IMC, attrib[1], "%5u",	TIMING(mc, cha).tREFI);
 		PRT(IMC, attrib[1], "%5u",	TIMING(mc, cha).tRFC1);
 		PRT(IMC, attrib[1], "%5u",	TIMING(mc, cha).tRFC2);
-		PRT(IMC, attrib[1], "%5u",	TIMING(mc, cha).tRFC4);
+		PRT(IMC, attrib[1], "%5u", RO(Shm)->Uncore.Unit.DDR_Ver < 5 ?
+			TIMING(mc, cha).tRFC4 : TIMING(mc, cha).tRFCsb);
 
 		PRT(IMC, attrib[1], "%4u ",	TIMING(mc, cha).tRCPB);
 		PRT(IMC, attrib[1], "%4u ",	TIMING(mc, cha).tRPPB);
@@ -9015,7 +9026,7 @@ Window *CreateMemCtrl(unsigned long long id)
 	    {
 		ctrlHeaders = 8;
 		channelHeaders = 6;
-		pTimingFunc = Timing_DDR4_Zen;
+		pTimingFunc = Timing_DRAM_Zen;
 	    }
 		break;
 	case 3:
@@ -20971,7 +20982,7 @@ int main(int argc, char *argv[])
 		 else if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 		       || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
 		    {
-			MemoryController(&tty, NULL, NULL, Timing_DDR4_Zen);
+			MemoryController(&tty, NULL, NULL, Timing_DRAM_Zen);
 		    }
 			break;
 		case 3:

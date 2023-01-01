@@ -1900,10 +1900,10 @@ typedef union
 	unsigned int		value;	/* Rembrandt = 0x00480138	*/
 	struct {
 		unsigned int
-		tRFC4		: 16-0,
+		tRFCsb		: 16-0,
 		UnknownBits	: 32-16;
 	} DDR5;
-} AMD_ZEN_UMC_TIMING_TRFC4;
+} AMD_ZEN_UMC_TIMING_RFCSB;
 
 typedef union
 {	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{28c,38c,48c,58c}	*/

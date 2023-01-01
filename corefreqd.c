@@ -5505,6 +5505,41 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 					RO(Proc)->Uncore.Bus.IOMMU_Ver.Minor;
 }
 
+void GLK_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
+{
+	RO(Shm)->Uncore.Bus.Rate = 0;
+	RO(Shm)->Uncore.Bus.Speed = 0;
+	RO(Shm)->Uncore.CtrlSpeed = 0;
+	RO(Shm)->Uncore.Unit.DDR_Ver = 4;
+	RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_SDRAM;
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_NIL;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_NIL;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_NIL;
+
+	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.RKL_Cap_A.VT_d;
+
+	RO(Shm)->Proc.Technology.IOMMU_Ver_Major = \
+					RO(Proc)->Uncore.Bus.IOMMU_Ver.Major;
+
+	RO(Shm)->Proc.Technology.IOMMU_Ver_Minor = \
+					RO(Proc)->Uncore.Bus.IOMMU_Ver.Minor;
+}
+
+void GLK_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
+{
+	unsigned short mc, cha;
+
+  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
+  {
+     RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
+     RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
+
+    for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
+    {
+    }
+  }
+}
+
 void AMD_0Fh_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
     struct {
@@ -5910,8 +5945,8 @@ void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	TIMING(mc, cha).tRFC2 = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTRFC.DDR5.tRFC2;
 
-	TIMING(mc, cha).tRFC4 = \
-		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.TRFC4.DDR5.tRFC4;
+	TIMING(mc, cha).tRFCsb = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.RFCSB.DDR5.tRFCsb;
 
 	switch(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.DDR5.CMD_Rate) {
 	case 0b01:
@@ -6611,7 +6646,8 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		SET_CHIPSET(IC_B660);
 		break;
 	case DID_INTEL_GEMINILAKE_HB:
-		SLM_PTR(RO(Shm), RO(Proc), RO(Core));
+		GLK_CAP(RO(Shm), RO(Proc), RO(Core));
+		GLK_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_GOLDMONT_PLUS);
 		break;
 	}
