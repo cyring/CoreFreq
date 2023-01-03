@@ -5241,17 +5241,8 @@ void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
 
 void Query_GLK_IMC(void __iomem *mchmap, unsigned short mc)
 { /* Source: Intel® Pentium® Silver and Intel® Celeron® Processors Vol 2 */
-	unsigned short cha;
-
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 0;
-
-    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
-    {
-    }
-    if (mc == 0) {
-	Query_Turbo_TDP_Config(mchmap);
-    }
 }
 
 static PCI_CALLBACK P945(struct pci_dev *dev)
@@ -6076,10 +6067,10 @@ static PCI_CALLBACK GLK_IMC(struct pci_dev *dev)
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
 
 	pci_read_config_dword(dev, 0xe4,
-				&PUBLIC(RO(Proc))->Uncore.Bus.RKL_Cap_A.value);
+				&PUBLIC(RO(Proc))->Uncore.Bus.GKL_Cap_A.value);
 
 	pci_read_config_dword(dev, 0xe8,
-				&PUBLIC(RO(Proc))->Uncore.Bus.RKL_Cap_B.value);
+				&PUBLIC(RO(Proc))->Uncore.Bus.GKL_Cap_B.value);
 
 	SoC_SKL_VTD();
 

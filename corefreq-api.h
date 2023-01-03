@@ -789,6 +789,10 @@ typedef struct
 			ADL_SA_PERF_STATUS	ADL_SA_Pll;
 		};
 		struct {
+			GKL_CAPID_A		GKL_Cap_A;
+			GKL_CAPID_B		GKL_Cap_B;
+		};
+		struct {
 			AMD_0F_HTT_NODE_ID	NodeID;
 			AMD_0F_HTT_UNIT_ID	UnitID;
 			AMD_0F_HTT_FREQUENCY	LDTi_Freq[3];

@@ -4546,6 +4546,8 @@ typedef union
 	};
 } ADL_CAPID_A;
 
+#define GKL_CAPID_A	SKL_CAPID_A
+
 typedef union
 {	/* Device: 0 - Function: 0 - Offset E8h 			*/
 	unsigned int		value;
@@ -4637,6 +4639,8 @@ typedef union
 		IMGU_DIS	: 32-31;
 	};
 } ADL_CAPID_B;
+
+#define GKL_CAPID_B	SKL_CAPID_B
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset ECh 			*/
