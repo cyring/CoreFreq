@@ -6608,14 +6608,28 @@ static PCI_CALLBACK AMD_DataFabric_Rembrandt(struct pci_dev *pdev)
 					1, MC_MAX_CHA,
 		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
 
-	if ((PCI_CALLBACK) 0 == ret) {
-		unsigned short umc;
-	    for (umc = 0; umc < PUBLIC(RO(Proc))->Uncore.CtrlCount; umc++) {
-		if (PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount >= 2) {
-			PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount >>= 1;
-		}
+  if ((PCI_CALLBACK) 0 == ret) {
+	unsigned short umc;
+    for (umc = 0; umc < PUBLIC(RO(Proc))->Uncore.CtrlCount; umc++)
+    { /* If UMC is quad channels (in 2 x 32-bits) then unpopulate odd channels*/
+      if (PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount >= 4) {
+		unsigned short cha;
+	for (cha=0; cha < PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount; cha++)
+	{
+	  if (cha & 1) {
+		unsigned short slot;
+	    for(slot=0;slot < PUBLIC(RO(Proc))->Uncore.MC[umc].SlotCount;slot++)
+	    {
+		const unsigned short chipselect_pair = slot << 1;
+
+		BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha]\
+				.AMD17h.CHIP[chipselect_pair][0].Chip.value, 0);
 	    }
+	  }
 	}
+      }
+    }
+  }
 	return ret;
 }
 
