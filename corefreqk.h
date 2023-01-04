@@ -1700,7 +1700,7 @@ static void Query_Hygon_F18h(unsigned int cpu);
 
 static void CCD_AMD_Family_19h_Zen4_Temp(CORE_RO *Core) ;
 static void Query_AMD_F19h_61h_PerCluster(unsigned int cpu) ;
-#define     InitTimer_AMD_Zen4_RPL InitTimer_AMD_F19h_Zen3_SP
+static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 
 /*	[Void]								*/
 #define _Void_Signature {.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}

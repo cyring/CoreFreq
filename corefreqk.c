@@ -18831,6 +18831,10 @@ static enum hrtimer_restart Cycle_AMD_Zen3Plus_RMB(struct hrtimer *pTimer)
 {
 	return Entry_AMD_F17h(pTimer, Call_SVI_RMB, 0, 2, 0LLU);
 }
+static enum hrtimer_restart Cycle_AMD_Zen4_RPL(struct hrtimer *pTimer)
+{
+	return Entry_AMD_F17h(pTimer, Call_DFLT, 0, 0, 0LLU);
+}
 static enum hrtimer_restart Cycle_AMD_F17h(struct hrtimer *pTimer)
 {
 	return Entry_AMD_F17h(pTimer, Call_DFLT, 0, 0, 0LLU);
@@ -18864,6 +18868,11 @@ static void InitTimer_AMD_F17h_Zen2_APU(unsigned int cpu)
 static void InitTimer_AMD_Zen3Plus_RMB(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_AMD_Zen3Plus_RMB, 1);
+}
+
+static void InitTimer_AMD_Zen4_RPL(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_AMD_Zen4_RPL, 1);
 }
 
 static void Start_AMD_Family_17h(void *arg)
