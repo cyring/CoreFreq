@@ -4472,6 +4472,23 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 		RO(Shm)->Proc.Features.OSPM_CPC ? RSC(ENABLE).CODE()
 						: RSC(MISSING).CODE() );
     }
+	return reason;
+}
+
+REASON_CODE SysInfoPerfCaps(	Window *win,
+				CUINT width,
+				CELL_FUNC OutFunc,
+				unsigned int *cellPadding )
+{
+	REASON_INIT(reason);
+	ATTRIBUTE *attrib[5] = {
+		RSC(SYSINFO_PERFMON_COND0).ATTR(),
+		RSC(SYSINFO_PERFMON_COND1).ATTR(),
+		RSC(SYSINFO_PERFMON_COND2).ATTR(),
+		RSC(SYSINFO_PERFMON_COND3).ATTR(),
+		RSC(SYSINFO_PERFMON_COND4).ATTR()
+	};
+	unsigned int bix;
 	bix = (RO(Shm)->Proc.Features.Power.EAX.HWP_Reg == 1)	/* Intel:HWP */
 	|| (RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1)	/* AMD:CPPC  */
 	|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1);		/* ACPI:CPPC */
@@ -8024,7 +8041,7 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					RSC(CREATE_MENU_DISABLE).ATTR());
 #endif
 
-	StoreTCell(wMenu, SCANKEY_w,	RSC(MENU_ITEM_POW_THERM).CODE(),
+	StoreTCell(wMenu, SCANKEY_z,	RSC(MENU_ITEM_PERF_CAPS).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
 /* Row  8 */
 	StoreTCell(wMenu, SCANKEY_SHIFT_e, RSC(MENU_ITEM_THEME).CODE(),
@@ -8038,7 +8055,7 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					RSC(CREATE_MENU_DISABLE).ATTR());
 #endif
 
-	StoreTCell(wMenu, SCANKEY_u,	RSC(MENU_ITEM_CPUID).CODE(),
+	StoreTCell(wMenu, SCANKEY_w,	RSC(MENU_ITEM_POW_THERM).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
 /* Row  9 */
 	StoreTCell(wMenu, SCANKEY_a,	RSC(MENU_ITEM_ABOUT).CODE(),
@@ -8052,8 +8069,8 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					RSC(CREATE_MENU_DISABLE).ATTR());
 #endif
 
-	StoreTCell(wMenu, SCANKEY_SHIFT_r, RSC(MENU_ITEM_SYS_REGS).CODE(),
-					   RSC(CREATE_MENU_SHORTKEY).ATTR());
+	StoreTCell(wMenu, SCANKEY_u,	RSC(MENU_ITEM_CPUID).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
 /* Row 10 */
 	StoreTCell(wMenu, SCANKEY_h,	RSC(MENU_ITEM_HELP).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
@@ -8066,10 +8083,8 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					RSC(CREATE_MENU_DISABLE).ATTR());
 #endif
 
-	StoreTCell(wMenu, SCANKEY_SHIFT_m, RSC(MENU_ITEM_MEM_CTRL).CODE(),
-				RO(Shm)->Uncore.CtrlCount > 0 ?
-					RSC(CREATE_MENU_SHORTKEY).ATTR()
-					: RSC(CREATE_MENU_DISABLE).ATTR());
+	StoreTCell(wMenu, SCANKEY_SHIFT_r, RSC(MENU_ITEM_SYS_REGS).CODE(),
+					   RSC(CREATE_MENU_SHORTKEY).ATTR());
 /* Row 11 */
 	StoreTCell(wMenu, SCANKEY_CTRL_x, RSC(MENU_ITEM_QUIT).CODE(),
 					  RSC(CREATE_MENU_CTRL_KEY).ATTR());
@@ -8082,8 +8097,10 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					RSC(CREATE_MENU_DISABLE).ATTR());
 #endif
 
-	StoreTCell(wMenu, SCANKEY_SHIFT_h, RSC(MENU_ITEM_EVENTS).CODE(),
-					RSC(CREATE_MENU_SHORTKEY).ATTR());
+	StoreTCell(wMenu, SCANKEY_SHIFT_m, RSC(MENU_ITEM_MEM_CTRL).CODE(),
+				RO(Shm)->Uncore.CtrlCount > 0 ?
+					RSC(CREATE_MENU_SHORTKEY).ATTR()
+					: RSC(CREATE_MENU_DISABLE).ATTR());
 /* Row 12 */
 	StoreTCell(wMenu, SCANKEY_VOID, "", RSC(VOID).ATTR());
 
@@ -8095,7 +8112,8 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					RSC(CREATE_MENU_DISABLE).ATTR());
 #endif
 
-	StoreTCell(wMenu, SCANKEY_VOID, "", RSC(VOID).ATTR());
+	StoreTCell(wMenu, SCANKEY_SHIFT_h, RSC(MENU_ITEM_EVENTS).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
 /* Row 13 */
 	StoreTCell(wMenu, SCANKEY_VOID, "", RSC(VOID).ATTR());
 
@@ -8825,6 +8843,14 @@ Window *CreateSysInfo(unsigned long long id)
 		title = RSC(SMBIOS_TITLE).CODE();
 		}
 		break;
+	case SCANKEY_z:
+		{
+		matrixSize.hth = CUMIN(18, 2 + RO(Shm)->Proc.CPU.Count);
+		winOrigin.row = TOP_HEADER_ROW + 1;
+		SysInfoFunc = SysInfoPerfCaps;
+		title = RSC(PERF_CAPS_TITLE).CODE();
+		}
+		break;
 	}
 
 	Window *wSysInfo = CreateWindow(wLayer, id,
@@ -8853,6 +8879,7 @@ Window *CreateSysInfo(unsigned long long id)
 		case SCANKEY_o:
 		case SCANKEY_w:
 		case SCANKEY_k:
+		case SCANKEY_z:
 			StoreWindow(wSysInfo,	.key.Enter, Enter_StickyCell);
 			break;
 		case SCANKEY_u:
@@ -15599,6 +15626,7 @@ int Shortcut(SCANKEY *scan)
     case SCANKEY_u:
     case SCANKEY_w:
     case SCANKEY_SHIFT_b:
+    case SCANKEY_z:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL) {
@@ -20959,6 +20987,9 @@ int main(int argc, char *argv[])
 		reason = SysInfoPwrThermal(NULL, 80, NULL, NULL);
 		if (IS_REASON_SUCCESSFUL(reason) == 0) { break; }
 		}
+		break;
+	    case 'z':
+		reason = SysInfoPerfCaps(NULL, 80, NULL, NULL);
 		break;
 	    case 'j':
 		JsonSysInfo(RO(Shm));

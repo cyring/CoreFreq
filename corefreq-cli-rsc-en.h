@@ -1169,6 +1169,7 @@
 #define RSC_TECHNOLOGIES_WDT_CODE_EN	"Watchdog Timer"
 
 #define RSC_PERF_MON_TITLE_CODE_EN	" Performance Monitoring "
+#define RSC_PERF_CAPS_TITLE_CODE_EN	" Performance Capabilities "
 #define RSC_VERSION_CODE_EN		"Version"
 #define RSC_COUNTERS_CODE_EN		"Counters"
 #define RSC_GENERAL_CTRS_CODE_EN	"General"
@@ -1591,6 +1592,7 @@
 #define RSC_MENU_ITEM_ISA_EXT_CODE_EN		" ISA Extensions     [I] "
 #define RSC_MENU_ITEM_TECH_CODE_EN		" Technologies       [t] "
 #define RSC_MENU_ITEM_PERF_MON_CODE_EN		" Perf. Monitoring   [o] "
+#define RSC_MENU_ITEM_PERF_CAPS_CODE_EN 	" Perf. Capabilities [z] "
 #define RSC_MENU_ITEM_POW_THERM_CODE_EN 	" Power & Thermal    [w] "
 #define RSC_MENU_ITEM_CPUID_CODE_EN		" CPUID Hexa Dump    [u] "
 #define RSC_MENU_ITEM_SYS_REGS_CODE_EN		" System Registers   [R] "
@@ -1902,6 +1904,7 @@
 		"\t-i <#>\tMonitor Instructions\n"			\
 		"\t-s\tPrint System Information\n"			\
 		"\t-j\tPrint System Information (json-encoded)\n"	\
+		"\t-z\tPrint Performance Capabilities\n"		\
 		"\t-M\tPrint Memory Controller\n"			\
 		"\t-R\tPrint System Registers\n"			\
 		"\t-m\tPrint Topology\n"				\

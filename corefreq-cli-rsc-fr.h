@@ -368,7 +368,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_LOCK_CODE_FR		"BLOQU""\x89"
 #define RSC_ENABLE_CODE_FR		"  Actif"
 #define RSC_DISABLE_CODE_FR		"Inactif"
-#define RSC_CAPABILITIES_CODE_FR	"Capacites"
+#define RSC_CAPABILITIES_CODE_FR	"Capacit""\xa9""s"
 #define RSC_LOWEST_CODE_FR		"Faible"
 #define RSC_EFFICIENT_CODE_FR		"Efficace"
 #define RSC_GUARANTEED_CODE_FR		"Guarantie"
@@ -548,7 +548,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_CORE_MP_CODE_FR	"Core Multi-Processing"
 #define RSC_FEATURES_CNXT_ID_CODE_FR	"L1 Data Cache Context ID"
 #define RSC_FEATURES_CPPC_CODE_FR	\
-				"Collaborative Processor Performance Control"
+			"Contr""\xb4""le collaboratif des performances CPU"
 
 #define RSC_FEATURES_DCA_CODE_FR	"Direct Cache Access"
 #define RSC_FEATURES_DE_CODE_FR 	"Debugging Extension"
@@ -643,6 +643,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_TECHNOLOGIES_WDT_CODE_FR	"Compteur Watchdog"
 
 #define RSC_PERF_MON_TITLE_CODE_FR	" Gestion de la performance "
+#define RSC_PERF_CAPS_TITLE_CODE_FR	" Capacit""\xa9""s de performances "
 #define RSC_VERSION_CODE_FR		"Version"
 #define RSC_COUNTERS_CODE_FR		"Compteurs"
 #define RSC_GENERAL_CTRS_CODE_FR	"G""\xa9""n""\xa9""raux"
@@ -661,7 +662,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_PERF_MON_FID_CODE_FR	"Legacy Frequency ID control"
 #define RSC_PERF_MON_VID_CODE_FR	"Legacy Voltage ID control"
 #define RSC_PERF_MON_HWCF_CODE_FR	"P-State Hardware Coordination Feedback"
-#define RSC_PERF_MON_CPPC_CODE_FR  "Collaborative Processor Performance Control"
+#define RSC_PERF_MON_CPPC_CODE_FR	\
+		"Contr""\xb4""le collaboratif des performances du processeur"
+
 #define RSC_PERF_MON_PCT_CODE_FR	RSC_PERF_MON_PCT_CODE_EN
 #define RSC_PERF_MON_PSS_CODE_FR	RSC_PERF_MON_PSS_CODE_EN
 #define RSC_PERF_MON_PPC_CODE_FR	RSC_PERF_MON_PPC_CODE_EN
@@ -962,6 +965,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_MENU_ITEM_ISA_EXT_CODE_FR     " Jeu Instructions   [I] "
 #define RSC_MENU_ITEM_TECH_CODE_FR        " Technologies       [t] "
 #define RSC_MENU_ITEM_PERF_MON_CODE_FR    " Gestion de Perf.   [o] "
+#define RSC_MENU_ITEM_PERF_CAPS_CODE_FR   " Capacit""\xa9""s de Perf. [z] "
 #define RSC_MENU_ITEM_POW_THERM_CODE_FR   " Puissance-Therm.   [w] "
 #define RSC_MENU_ITEM_CPUID_CODE_FR       " Extraction CPUID   [u] "
 #define RSC_MENU_ITEM_SYS_REGS_CODE_FR    " Registres Syst""\xa8""me  [R] "
@@ -1365,6 +1369,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 		"\t-i <#>\tMoniteur des Instructions\n" 		\
 		"\t-s\tImprimer les Informations du système\n"		\
 		"\t-j\tImprimer les Informations (format json)\n"	\
+		"\t-z\tImprimer les Capacités de performances\n"	\
 		"\t-M\tImprimer le Controlleur mémoire\n"		\
 		"\t-R\tImprimer les Registres du système\n"		\
 		"\t-m\tImprimer la Topologie\n" 			\
