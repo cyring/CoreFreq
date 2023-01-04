@@ -8845,8 +8845,14 @@ Window *CreateSysInfo(unsigned long long id)
 		break;
 	case SCANKEY_z:
 		{
-		matrixSize.hth = CUMIN(18, 2 + RO(Shm)->Proc.CPU.Count);
-		winOrigin.row = TOP_HEADER_ROW + 1;
+		winOrigin.col = 5;
+		matrixSize.hth = CUMIN( Draw.Size.height - 5,
+					2 + RO(Shm)->Proc.CPU.Count );
+	    #if defined(NO_UPPER) || defined(NO_LOWER)
+		winOrigin.row = 2;
+	    #else
+		winOrigin.row = Draw.Area.MaxRows + TOP_HEADER_ROW;
+	    #endif
 		SysInfoFunc = SysInfoPerfCaps;
 		title = RSC(PERF_CAPS_TITLE).CODE();
 		}
