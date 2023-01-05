@@ -1168,6 +1168,16 @@
 #define RSC_TECHNOLOGIES_HYPERV_CODE_EN "Hypervisor"
 #define RSC_TECHNOLOGIES_WDT_CODE_EN	"Watchdog Timer"
 
+#define RSC_TECH_AMD_CPB_COMM_CODE_EN	" Hardware Configuration::CpbDis "
+#define RSC_TECH_INTEL_SMM_COMM_CODE_EN " Basic VMX Capabilities::SMM_DualMon "
+#define RSC_TECH_AMD_SMM_COMM_CODE_EN	" Hardware Configuration::SmmLock "
+#define RSC_TECH_INTEL_WDT_COMM_CODE_EN " Intel ICH Family Watchdog Timer "
+#define RSC_TECH_AMD_WDT_COMM_CODE_EN	" AMD APM Watchdog Timer "
+#define RSC_TECH_AMD_SVM_COMM_CODE_EN	" AMD Secure Virtual Machine "
+#define RSC_TECH_INTEL_VMX_COMM_CODE_EN " Intel Virtual Machine Extensions "
+#define RSC_TECH_INTEL_VTD_COMM_CODE_EN " I/O MMU virtualization (Intel VT-d) "
+#define RSC_TECH_AMD_V_COMM_CODE_EN	" I/O MMU virtualization (AMD-Vi) "
+
 #define RSC_PERF_MON_TITLE_CODE_EN	" Performance Monitoring "
 #define RSC_PERF_CAPS_TITLE_CODE_EN	" Performance Capabilities "
 #define RSC_VERSION_CODE_EN		"Version"
