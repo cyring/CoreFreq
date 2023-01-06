@@ -45,6 +45,10 @@
 #ifdef CONFIG_AMD_NB
 #include <asm/amd_nb.h>
 #endif
+#ifdef CONFIG_ACPI
+#include <linux/acpi.h>
+#include <acpi/processor.h>
+#endif
 #ifdef CONFIG_ACPI_CPPC_LIB
 #include <acpi/cppc_acpi.h>
 #endif
