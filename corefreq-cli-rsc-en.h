@@ -1169,6 +1169,8 @@
 #define RSC_TECHNOLOGIES_WDT_CODE_EN	"Watchdog Timer"
 
 #define RSC_TECH_AMD_CPB_COMM_CODE_EN	" Hardware Configuration::CpbDis "
+#define RSC_TECH_INTEL_EEO_COMM_CODE_EN " Skylake::Power Control::EEO_Disable "
+#define RSC_TECH_INTEL_R2H_COMM_CODE_EN " Skylake::Power Control::R2H_Disable "
 #define RSC_TECH_INTEL_SMM_COMM_CODE_EN " Basic VMX Capabilities::SMM_DualMon "
 #define RSC_TECH_AMD_SMM_COMM_CODE_EN	" Hardware Configuration::SmmLock "
 #define RSC_TECH_INTEL_WDT_COMM_CODE_EN " Intel ICH Family Watchdog Timer "
