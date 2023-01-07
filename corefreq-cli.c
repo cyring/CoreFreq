@@ -8765,7 +8765,11 @@ Window *CreateSysInfo(unsigned long long id)
 	};
 	Coordinate winOrigin = {.col = 3, .row = TOP_HEADER_ROW + 2};
 	CUINT winWidth = 74;
-	unsigned int cellPadding = 0;
+	unsigned int cellPadding = 0, hwp_cppc = \
+			(RO(Shm)->Proc.Features.Power.EAX.HWP_Reg == 1)
+		||	(RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1)
+		||	(RO(Shm)->Proc.Features.ACPI_CPPC == 1)
+		||	(RO(Shm)->Proc.Features.HWP_Enable == 1);
 
 	switch (id) {
 	case SCANKEY_p:
@@ -8848,10 +8852,10 @@ Window *CreateSysInfo(unsigned long long id)
 	case SCANKEY_z:
 		{
 		winOrigin.col = 5;
-		matrixSize.hth = CUMIN( Draw.Size.height - 5,
-					2 + RO(Shm)->Proc.CPU.Count );
+		matrixSize.hth = hwp_cppc == 0 ?
+		1 : CUMIN(Draw.Size.height - 5, 2 + RO(Shm)->Proc.CPU.Count);
 	    #if defined(NO_UPPER) || defined(NO_LOWER)
-		winOrigin.row = 2;
+		winOrigin.row = hwp_cppc == 0 ? 2 + TOP_HEADER_ROW : 2;
 	    #else
 		winOrigin.row = Draw.Area.MaxRows + TOP_HEADER_ROW;
 	    #endif
