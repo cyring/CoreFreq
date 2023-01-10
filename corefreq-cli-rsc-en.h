@@ -2023,6 +2023,7 @@
 #define RSC_SECURITY_SSS_CODE_EN	"Supervisor Shadow Stack"
 #define RSC_SECURITY_VMPL_CODE_EN	"VM Permission Levels"
 #define RSC_SECURITY_VMPL_SSS_CODE_EN	"VMPL Supervisor Shadow Stack"
+#define RSC_SECURITY_SME_CODE_EN	"Secure Memory Encryption"
 #define RSC_SECURITY_SME_MK_CODE_EN	"Secure Multi-Key Memory Encryption"
 
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_EN	"  %3s       Processor     " \

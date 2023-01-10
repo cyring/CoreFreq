@@ -3311,6 +3311,16 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
+			CPUID_8000001F_00000000_SECURE_ENCRYPTION
+		].reg[REG_CPUID_EAX], CPUID_8000001F_00000000_EAX_SME),
+		attr_Feat,
+		2, "%s%.*sSME   [%7s]", RSC(SECURITY_SME).CODE(),
+		width - 18 - RSZ(SECURITY_SME),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_80000023_00000000_MULTIKEY_ENCRYPTED_MEM
 		].reg[REG_CPUID_EAX], CPUID_80000023_00000000_EAX_MEM_HMK),
 		attr_Feat,
