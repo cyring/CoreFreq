@@ -2025,6 +2025,7 @@
 #define RSC_SECURITY_VMPL_SSS_CODE_EN	"VMPL Supervisor Shadow Stack"
 #define RSC_SECURITY_SME_CODE_EN	"Secure Memory Encryption"
 #define RSC_SECURITY_SME_MK_CODE_EN	"Secure Multi-Key Memory Encryption"
+#define RSC_DRAM_SCRAMBLE_CODE_EN	"DRAM Data Scrambling"
 
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_EN	"  %3s       Processor     " \
 						"   %s     %c%4u %c "

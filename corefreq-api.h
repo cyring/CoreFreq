@@ -613,6 +613,7 @@ typedef struct
 			  } CHIP[4][2];
 				AMD_ZEN_UMC_CONFIG	CONFIG; /* 32 bits   */
 				AMD_17_UMC_SPAZ_CTRL	SPAZ;	/* 32 bits   */
+				AMD_17_UMC_DATA_CTRL	ENCR;	/* 32 bits   */
 				AMD_ZEN_UMC_CFG_MISC	MISC;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR1	DTR1;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR2	DTR2;	/* 32 bits   */

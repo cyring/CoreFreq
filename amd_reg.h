@@ -1520,6 +1520,74 @@ typedef union
 } AMD_17_UMC_SPAZ_CTRL;
 
 typedef union
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50144 (1) 		*/
+	unsigned int		value;
+	struct
+	{
+		unsigned int
+		DataScrambleEn	:  1-0,  /* 0=Disable, 1=Enable 	*/
+		ReservedBits1	:  8-1,
+		DataEncrEn	:  9-8,  /* 1=Enable data encryption	*/
+		ReservedBits2	: 11-9,
+		ForceEncrEn	: 12-11, /* region 0 encrypt. for all requests*/
+		Vmguard2Mode	: 13-12, /* 0=511 Keys. 1=255 VmGuard2 Keys */
+		ReservedBits3	: 16-13,
+		DisAddrTweak	: 20-16, /* Disable address tweaking by region*/
+		ReservedBits4	: 32-20;
+	};
+} AMD_17_UMC_DATA_CTRL;
+
+/* (1)
+BIOS UMC Scramble[ENABLE][AUTO]
+---
+Channel 0
+[0x00050144] READ(smu) = 0x00001101 (4353)
+   60   56   52   48   44   40   36   32   28   24   20   16   12   08   04   00
+ 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0001 0001 0000 0001
+
+Channel 1
+[0x00150144] READ(smu) = 0x00001101 (4353)
+   60   56   52   48   44   40   36   32   28   24   20   16   12   08   04   00
+ 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0001 0001 0000 0001
+
+Channel 2...7
+[0x00750144] READ(smu) = 0xffffffff (4294967295)
+   60   56   52   48   44   40   36   32   28   24   20   16   12   08   04   00
+ 0000 0000 0000 0000 0000 0000 0000 0000 1111 1111 1111 1111 1111 1111 1111 1111
+
+BIOS UMC Scramble[DISABLE]
+---
+Channel 0
+[0x00050144] READ(smu) = 0x00001100 (4352)
+   60   56   52   48   44   40   36   32   28   24   20   16   12   08   04   00
+ 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0001 0001 0000 0000
+
+Channel 1
+[0x00150144] READ(smu) = 0x00001100 (4352)
+   60   56   52   48   44   40   36   32   28   24   20   16   12   08   04   00
+ 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0001 0001 0000 0000
+
+Channel 2...7
+[0x00750144] READ(smu) = 0xffffffff (4294967295)
+   60   56   52   48   44   40   36   32   28   24   20   16   12   08   04   00
+ 0000 0000 0000 0000 0000 0000 0000 0000 1111 1111 1111 1111 1111 1111 1111 1111
+
+(2)
+UMC::CH::DataScrambleKey
+[ENABLE]
+---
+[0x00050148] READ(smu) = 0xda7a5c11 (3665452049)
+   60   56   52   48   44   40   36   32   28   24   20   16   12   08   04   00
+ 0000 0000 0000 0000 0000 0000 0000 0000 1101 1010 0111 1010 0101 1100 0001 0001
+
+[DISABLE]
+---
+[0x00050148] READ(smu) = 0xda7a5c11 (3665452049)
+   60   56   52   48   44   40   36   32   28   24   20   16   12   08   04   00
+ 0000 0000 0000 0000 0000 0000 0000 0000 1101 1010 0111 1010 0101 1100 0001 0001
+*/
+
+typedef union
 {	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}5014c			*/
 	unsigned int		value;
 	struct

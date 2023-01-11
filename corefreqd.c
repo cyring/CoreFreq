@@ -5750,6 +5750,7 @@ void AMD_0Fh_HTT(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short mc;
+	RO(Shm)->Proc.Mechanisms.DRAM_Scrambler = 0b00;
  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
  {
     RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
@@ -6019,6 +6020,16 @@ void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	TIMING(mc, cha).tWRMPR = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR35.tWR_MPR;
+
+    if (RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.ENCR.value != 0xffffffff)
+    {
+	TIMING(mc, cha).Scramble = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.ENCR.DataScrambleEn;
+
+	RO(Shm)->Proc.Mechanisms.DRAM_Scrambler = \
+				RO(Shm)->Proc.Mechanisms.DRAM_Scrambler
+				| (0b10 | TIMING(mc, cha).Scramble);
+    }
   }
  }
 }

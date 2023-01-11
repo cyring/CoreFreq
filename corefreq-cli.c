@@ -3327,6 +3327,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		2, "%s%.*sSME-MK   [%7s]", RSC(SECURITY_SME_MK).CODE(),
 		width - 21 - RSZ(SECURITY_SME_MK),
 		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Mechanisms.DRAM_Scrambler,
+		attr_Feat,
+		2, "%s%.*sScrambler   [%7s]", RSC(DRAM_SCRAMBLE).CODE(),
+		width - 24 - RSZ(DRAM_SCRAMBLE),
+		MECH
 	}
     };
 	size_t idx;

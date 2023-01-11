@@ -1788,6 +1788,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%llu", RO(Shm)->Proc.Features.leaf80000008.EBX.BTC_NO);
 			json_key(&s, "BTC_NOBR");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.BTC_NOBR);
+			json_key(&s, "DRAM_Scrambler");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.DRAM_Scrambler);
 
 			json_end_object(&s);
 		}
