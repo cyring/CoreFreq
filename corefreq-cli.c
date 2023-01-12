@@ -3320,6 +3320,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Mechanisms.TSME,
+		attr_Feat,
+		2, "%s%.*sTSME   [%7s]", RSC(SECURITY_TSME).CODE(),
+		width - 19 - RSZ(SECURITY_TSME),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_80000023_00000000_MULTIKEY_ENCRYPTED_MEM
 		].reg[REG_CPUID_EAX], CPUID_80000023_00000000_EAX_MEM_HMK),
@@ -3332,8 +3340,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		RO(Shm)->Proc.Mechanisms.DRAM_Scrambler,
 		attr_Feat,
-		2, "%s%.*sScrambler   [%7s]", RSC(DRAM_SCRAMBLE).CODE(),
-		width - 24 - RSZ(DRAM_SCRAMBLE),
+		2, "%s%.*sScrambler   [%7s]", RSC(SECURITY_SCRAMBLER).CODE(),
+		width - 24 - RSZ(SECURITY_SCRAMBLER),
 		MECH
 	}
     };

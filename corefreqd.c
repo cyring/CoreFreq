@@ -5750,7 +5750,10 @@ void AMD_0Fh_HTT(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short mc;
-	RO(Shm)->Proc.Mechanisms.DRAM_Scrambler = 0b00;
+
+	RO(Shm)->Proc.Mechanisms.DRAM_Scrambler = 0b11;
+	RO(Shm)->Proc.Mechanisms.TSME = 0b11;
+
  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
  {
     RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
@@ -6028,7 +6031,15 @@ void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	RO(Shm)->Proc.Mechanisms.DRAM_Scrambler = \
 				RO(Shm)->Proc.Mechanisms.DRAM_Scrambler
-				| (0b10 | TIMING(mc, cha).Scramble);
+				& (0b10 | TIMING(mc, cha).Scramble);
+
+	TIMING(mc, cha).TSME = \
+	  ((RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.ENCR.DataEncrEn == 1)
+	|| (RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.ENCR.ForceEncrEn == 1))
+	&& (RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.ENCR.DisAddrTweak == 0);
+
+	RO(Shm)->Proc.Mechanisms.TSME	= RO(Shm)->Proc.Mechanisms.TSME
+					& (0b10 | TIMING(mc, cha).TSME);
     }
   }
  }

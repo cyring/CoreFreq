@@ -2137,7 +2137,8 @@ typedef struct
 			PDM_MODE:  5-4,
 			PDM_AGGR:  9-5,
 			Scramble: 10-9,
-			Unused	: 32-10;
+			TSME	: 11-10,
+			Unused	: 32-11;
 	};
 	unsigned int	ECC;
 } RAM_TIMING;

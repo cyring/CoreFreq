@@ -1790,6 +1790,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.BTC_NOBR);
 			json_key(&s, "DRAM_Scrambler");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.DRAM_Scrambler);
+			json_key(&s, "TSME");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.TSME);
 
 			json_end_object(&s);
 		}
