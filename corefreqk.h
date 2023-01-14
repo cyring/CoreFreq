@@ -1965,14 +1965,15 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 	[Zen3/Cezanne]		AF_50h Stepping 0	 7 nm
 	[EPYC/Milan]		AF_01h Stepping 1	 7 nm	[Genesis][GN]
 	[EPYC/Milan-X]		AF_01h Stepping 2	 7 nm
-	[Zen3/Chagall]		AF_08h Stepping 2	 7 nm	HEDT/TRX4 */
-/*
+	[Zen3/Chagall]		AF_08h Stepping 2	 7 nm	HEDT/TRX4
 	[Zen3/Badami]		AF_30h			 7 nm	[BA]/SVR
 	[Zen3+ Rembrandt]	AF_44h Stepping 1	 6 nm	[RMB]
 	[Zen4/Genoa]		AF_11h Stepping 1	 5 nm	SVR
-	[Zen4/Raphael]		AF_61h Stepping 2	 5 nm	[RPL]
+	[Zen4/Raphael]		AF_61h Stepping 2	 5 nm	[RPL]	*/
+/*
 	[Zen4/Storm Peak]	AF_18h Stepping 1		TR5
 	[Zen4/Phoenix]		AF_74h				[PHX]
+	[Zen4/Dragon Range]					FL1
 	[Zen5/Granite Ridge]						*/
 #define _AMD_Family_19h {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 #define _AMD_Zen3_VMR	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x2, .Model=0x1}
@@ -6623,6 +6624,7 @@ static PROCESSOR_SPECIFIC AMD_Zen3_Chagall_Specific[] = {
 static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD EPYC 9654P",	\
+			"AMD EPYC 9654",	\
 			"AMD EPYC 9534",	\
 			"AMD EPYC 9254" 	),
 	.Boost = {+13, 0},
