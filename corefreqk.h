@@ -3474,15 +3474,15 @@ static PROCESSOR_SPECIFIC Silvermont_BYT_Specific[] = {
 
 static PROCESSOR_SPECIFIC Airmont_Specific[] = {
 	{
-	.Brand = ZLIST( "Intel(R) Pentium(R) CPU J3060",
-			"Intel(R) Pentium(R) CPU J3160",
+	.Brand = ZLIST( "Intel(R) Celeron(R) CPU J3060",
+			"Intel(R) Celeron(R) CPU J3160",
 			"Intel(R) Pentium(R) CPU J3710",
-			"Intel(R) Pentium(R) CPU N3000",
-			"Intel(R) Pentium(R) CPU N3010",
-			"Intel(R) Pentium(R) CPU N3050",
-			"Intel(R) Pentium(R) CPU N3060",
-			"Intel(R) Pentium(R) CPU N3150",
-			"Intel(R) Pentium(R) CPU N3160",
+			"Intel(R) Celeron(R) CPU N3000",
+			"Intel(R) Celeron(R) CPU N3010",
+			"Intel(R) Celeron(R) CPU N3050",
+			"Intel(R) Celeron(R) CPU N3060",
+			"Intel(R) Celeron(R) CPU N3150",
+			"Intel(R) Celeron(R) CPU N3160",
 			"Intel(R) Pentium(R) CPU N3700",
 			"Intel(R) Pentium(R) CPU N3710",
 			"Intel(R) Atom(TM) x5-E8000"),
