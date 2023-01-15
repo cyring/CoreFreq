@@ -244,6 +244,16 @@ enum SYS_REG {
 	XCR0_CET_S	= 12,	/* AMD64				*/
 	XCR0_LWP	= 62,	/* AMD64				*/
 
+	SYSCFG_MFD	= 18,	/* AMD64: System Configuration Register */
+	SYSCFG_MFDM	= 19,
+	SYSCFG_MVDM	= 20,
+	SYSCFG_TOM2	= 21,
+	SYSCFG_FWB	= 22,
+	SYSCFG_MEM	= 23,
+	SYSCFG_SNP	= 24,
+	SYSCFG_VMPL	= 25,
+	SYSCFG_HMK	= 26,
+
 	UNDEF_CR	= 64
 };
 

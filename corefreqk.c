@@ -11062,6 +11062,21 @@ void SystemRegisters(CORE_RO *Core)
 		{
 			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);
 		}
+		/*		System Configuration Register.		*/
+		__asm__ volatile
+		(
+			"# SYSCFG"		"\n\t"
+			"xorq	%%rax, %%rax"	"\n\t"
+			"xorq	%%rdx, %%rdx"	"\n\t"
+			"movq	%1,%%rcx"	"\n\t"
+			"rdmsr"			"\n\t"
+			"shlq	$32, %%rdx"	"\n\t"
+			"orq	%%rdx, %%rax"	"\n\t"
+			"movq	%%rax, %0"
+			: "=r" (Core->SystemRegister.SYSCFG)
+			: "i" (MSR_AMD64_SYSCFG)
+			: "%rax", "%rcx", "%rdx"
+		);
 	}
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask, Core->Bind);
 

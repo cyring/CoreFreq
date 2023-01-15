@@ -486,8 +486,12 @@ REASON_CODE SystemRegisters(	Window *win,
 	enum AUTOMAT {
 		DO_END, DO_SPC, DO_CPU, DO_FLAG,
 		DO_CR0, DO_CR3, DO_CR4, DO_CR8,
-		DO_EFCR, DO_EFER, DO_XCR0
+		DO_EFCR, DO_EFER, DO_XCR0, DO_CFG
 	};
+	const unsigned int
+		fIntel = RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL,
+		fAMD =  (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+		     || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON);
 	const struct SR_ST {
 		struct SR_HDR {
 			const ASCII	*flag,
@@ -691,40 +695,24 @@ REASON_CODE SystemRegisters(	Window *win,
 		{NULL, NULL}
 	},
 	.flag = (struct SR_BIT[]) {
-	[ 0] =	{DO_CPU , 1	, UNDEF_CR		, 0		},
-	[ 1] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
-	[ 2] =	{DO_EFCR, RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL,
-							EXFCR_LOCK,	1},
-
-	[ 3] =	{DO_EFCR, RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL,
-							EXFCR_VMX_IN_SMX, 1},
-
-	[ 4] =	{DO_EFCR, RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL,
-							EXFCR_VMXOUT_SMX, 1},
-
-	[ 5] =	{DO_EFCR, RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL,
-							EXFCR_SENTER_LEN, 6},
-
-	[ 6] =	{DO_EFCR, RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL,
-							EXFCR_SENTER_GEN, 1},
-
-	[ 7] =	{DO_EFCR, RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL,
-							EXFCR_SGX_LCE, 1},
-
-	[ 8] =	{DO_EFCR, RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL,
-							EXFCR_SGX_GEN, 1},
-
-	[ 9] =	{DO_EFCR, RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL,
-							EXFCR_LMCE,	1},
-
-	[10] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
-	[11] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
-	[12] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
-	[13] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
-	[14] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
-	[15] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
-	[16] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
-		{DO_END , 1	, UNDEF_CR		, 0		}
+	[ 0] =	{DO_CPU , 1	, UNDEF_CR		, 0	},
+	[ 1] =	{DO_SPC , 1	, UNDEF_CR		, 0	},
+	[ 2] =	{DO_EFCR, fIntel, EXFCR_LOCK		, 1	},
+	[ 3] =	{DO_EFCR, fIntel, EXFCR_VMX_IN_SMX	, 1	},
+	[ 4] =	{DO_EFCR, fIntel, EXFCR_VMXOUT_SMX	, 1	},
+	[ 5] =	{DO_EFCR, fIntel, EXFCR_SENTER_LEN	, 6	},
+	[ 6] =	{DO_EFCR, fIntel, EXFCR_SENTER_GEN	, 1	},
+	[ 7] =	{DO_EFCR, fIntel, EXFCR_SGX_LCE 	, 1	},
+	[ 8] =	{DO_EFCR, fIntel, EXFCR_SGX_GEN 	, 1	},
+	[ 9] =	{DO_EFCR, fIntel, EXFCR_LMCE		, 1	},
+	[10] =	{DO_SPC , 1	, UNDEF_CR		, 0	},
+	[11] =	{DO_SPC , 1	, UNDEF_CR		, 0	},
+	[12] =	{DO_SPC , 1	, UNDEF_CR		, 0	},
+	[13] =	{DO_SPC , 1	, UNDEF_CR		, 0	},
+	[14] =	{DO_SPC , 1	, UNDEF_CR		, 0	},
+	[15] =	{DO_SPC , 1	, UNDEF_CR		, 0	},
+	[16] =	{DO_SPC , 1	, UNDEF_CR		, 0	},
+		{DO_END , 1	, UNDEF_CR		, 0	}
 	}
       },
       {
@@ -749,24 +737,24 @@ REASON_CODE SystemRegisters(	Window *win,
 		{NULL, NULL}
 	},
 	.flag = (struct SR_BIT[]) {
-	[ 0] =	{DO_CPU , 1	, UNDEF_CR		, 0		},
-	[ 1] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
-	[ 2] =	{DO_EFER, 1	, EXFER_SCE		, 1		},
-	[ 3] =	{DO_EFER, 1	, EXFER_LME		, 1		},
-	[ 4] =	{DO_EFER, 1	, EXFER_LMA		, 1		},
-	[ 5] =	{DO_EFER, 1	, EXFER_NXE		, 1		},
-	[ 6] =	{DO_EFER, 1	, EXFER_SVME		, 1		},
-	[ 7] =	{DO_EFER, 1	, EXFER_LMSLE		, 1		},
-	[ 8] =	{DO_EFER, 1	, EXFER_FFXSE		, 1		},
-	[ 9] =	{DO_EFER, 1	, EXFER_TCE		, 1		},
-	[10] =	{DO_EFER, 1	, EXFER_MCOMMIT 	, 1		},
-	[11] =	{DO_EFER, 1	, EXFER_INT_WBINVD	, 1		},
-	[12] =	{DO_EFER, 1	, EXFER_UAIE		, 1		},
-	[13] =	{DO_EFER, 1	, EXFER_AIBRSE		, 1		},
-	[14] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
-	[15] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
-	[16] =	{DO_SPC , 1	, UNDEF_CR		, 0		},
-		{DO_END , 1	, UNDEF_CR		, 0		}
+	[ 0] =	{DO_CPU , 1	, UNDEF_CR		, 0	},
+	[ 1] =	{DO_SPC , 1	, UNDEF_CR		, 0	},
+	[ 2] =	{DO_EFER, 1	, EXFER_SCE		, 1	},
+	[ 3] =	{DO_EFER, 1	, EXFER_LME		, 1	},
+	[ 4] =	{DO_EFER, 1	, EXFER_LMA		, 1	},
+	[ 5] =	{DO_EFER, 1	, EXFER_NXE		, 1	},
+	[ 6] =	{DO_EFER, fAMD	, EXFER_SVME		, 1	},
+	[ 7] =	{DO_EFER, fAMD	, EXFER_LMSLE		, 1	},
+	[ 8] =	{DO_EFER, fAMD	, EXFER_FFXSE		, 1	},
+	[ 9] =	{DO_EFER, fAMD	, EXFER_TCE		, 1	},
+	[10] =	{DO_EFER, fAMD	, EXFER_MCOMMIT 	, 1	},
+	[11] =	{DO_EFER, fAMD	, EXFER_INT_WBINVD	, 1	},
+	[12] =	{DO_EFER, fAMD	, EXFER_UAIE		, 1	},
+	[13] =	{DO_EFER, fAMD	, EXFER_AIBRSE		, 1	},
+	[14] =	{DO_SPC , 1	, UNDEF_CR		, 0	},
+	[15] =	{DO_SPC , 1	, UNDEF_CR		, 0	},
+	[16] =	{DO_SPC , 1	, UNDEF_CR		, 0	},
+		{DO_END , 1	, UNDEF_CR		, 0	}
 	}
       },
       {
@@ -802,6 +790,48 @@ REASON_CODE SystemRegisters(	Window *win,
 	[ 8] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_CET_U, 1},
 	[ 9] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_CET_S, 1},
 	[10] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_LWP, 1},
+	[11] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[12] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[13] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[14] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[15] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[16] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+		{DO_END , 1	, UNDEF_CR	, 0	}
+	}
+      },
+      {
+	.header = (struct SR_HDR[]) {
+	[ 0] = {RSC(SYS_REG_HDR_CFG).CODE(),	RSC(SYS_REGS_CFG).CODE()},
+	[ 1] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[ 2] = {RSC(SYS_REG_HDR_CFG_MFD).CODE() , RSC(SYS_REG_CFG_MFD).CODE()},
+	[ 3] = {RSC(SYS_REG_HDR_CFG_MFDM).CODE(), RSC(SYS_REG_CFG_MFDM).CODE()},
+	[ 4] = {RSC(SYS_REG_HDR_CFG_MVDM).CODE(), RSC(SYS_REG_CFG_MVDM).CODE()},
+	[ 5] = {RSC(SYS_REG_HDR_CFG_TOM2).CODE(), RSC(SYS_REG_CFG_TOM2).CODE()},
+	[ 6] = {RSC(SYS_REG_HDR_CFG_FWB).CODE() , RSC(SYS_REG_CFG_FWB).CODE()},
+	[ 7] = {RSC(SYS_REG_HDR_CFG_MEM).CODE() , RSC(SYS_REG_CFG_MEM).CODE()},
+	[ 8] = {RSC(SYS_REG_HDR_CFG_SNP).CODE() , RSC(SYS_REG_CFG_SNP).CODE()},
+	[ 9] = {RSC(SYS_REG_HDR_CFG_VMPL).CODE(), RSC(SYS_REG_CFG_VMPL).CODE()},
+	[10] = {RSC(SYS_REG_HDR_CFG_HMK).CODE() , RSC(SYS_REG_CFG_HMK).CODE()},
+	[11] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[12] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[13] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[14] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[15] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[16] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+		{NULL, NULL}
+	},
+	.flag = (struct SR_BIT[]) {
+	[ 0] =	{DO_CPU , 1	, UNDEF_CR	, 0	},
+	[ 1] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[ 2] =	{DO_CFG , fAMD	, SYSCFG_MFD	, 1	},
+	[ 3] =	{DO_CFG , fAMD	, SYSCFG_MFDM	, 1	},
+	[ 4] =	{DO_CFG , fAMD	, SYSCFG_MVDM	, 1	},
+	[ 5] =	{DO_CFG , fAMD	, SYSCFG_TOM2	, 1	},
+	[ 6] =	{DO_CFG , fAMD	, SYSCFG_FWB	, 1	},
+	[ 7] =	{DO_CFG , fAMD	, SYSCFG_MEM	, 1	},
+	[ 8] =	{DO_CFG , fAMD	, SYSCFG_SNP	, 1	},
+	[ 9] =	{DO_CFG , fAMD	, SYSCFG_VMPL	, 1	},
+	[10] =	{DO_CFG , fAMD	, SYSCFG_HMK	, 1	},
 	[11] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
 	[12] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
 	[13] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
@@ -882,6 +912,11 @@ REASON_CODE SystemRegisters(	Window *win,
 		    case DO_XCR0:
 			PRT(REG, attrib[2], "%3llx ",
 			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.XCR0,
+					pFlag->pos, pFlag->len));
+			break;
+		    case DO_CFG:
+			PRT(REG, attrib[2], "%3llx ",
+			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.SYSCFG,
 					pFlag->pos, pFlag->len));
 			break;
 		    default:
