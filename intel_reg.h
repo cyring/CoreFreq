@@ -3676,13 +3676,13 @@ typedef union
 	unsigned int		value;
 	struct {
 		unsigned int
-		tRP		:  6-0,  /* Holds parameter tRP (and tRCD) ! */
-		tRPab_ext	:  8-6,
-		tRAS		: 15-8,
+		tRP		:  6-0,  /* Holds tRP (and tRCD) Range: 8-63 */
+		tRPab_ext	:  8-6,  /* Range:  0-3 		*/
+		tRAS		: 15-8,  /* Range: 28-64		*/
 		ReservedBits1	: 16-15,
-		tRDPRE		: 20-16,
+		tRDPRE		: 20-16, /* Range:  6-15		*/
 		ReservedBits2	: 24-20,
-		tWRPRE		: 31-24,
+		tWRPRE		: 31-24, /* Range: 23-95		*/
 		ReservedBits3	: 32-31;
 	};
 } SKL_IMC_CR_TC_PRE;	/* Timing constraints to PRE commands		*/
@@ -4132,8 +4132,8 @@ typedef union
 		ReservedBits3	: 12-11,
 		Write_Delay	: 15-12,
 		Write_Early	: 16-15,
-		tCL		: 21-16,
-		tCWL		: 26-21,
+		tCL		: 21-16, /* Range:  5-31		*/
+		tCWL		: 26-21, /* Range:  4-20		*/
 		tAONPD		: 31-26,
 		Always_Rank0	: 32-31;
 	};
