@@ -22375,7 +22375,7 @@ void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
 		const struct SMBIOS16 *entry = (struct SMBIOS16*) dh;
 
 		StrFormat(PUBLIC(RO(Proc))->SMB.Phys.Memory.Array, MAX_UTS_LEN,
-			"Number Of Devices:%d\\Maximum Capacity:%lld bytes",
+			"Number Of Devices:%d\\Maximum Capacity:%lld kilobytes",
 			entry->number_devices,
 			entry->maximum_capacity >= 0x80000000 ?
 			entry->extended_capacity : entry->maximum_capacity);
