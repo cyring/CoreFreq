@@ -2123,6 +2123,9 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.XCR0);
 			json_key(&s, "XCR0");
 			json_string(&s, hexStr);
+			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.SYSCFG);
+			json_key(&s, "SYSCFG");
+			json_string(&s, hexStr);
 			json_end_object(&s);
 		}
 		json_key(&s, "CpuID");
