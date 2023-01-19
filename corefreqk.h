@@ -2059,6 +2059,7 @@ static PCI_CALLBACK AMD_DataFabric_Vermeer(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Cezanne(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Rembrandt(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Raphael(struct pci_dev *pdev) ;
+#define RPL_IMC ADL_IMC
 
 static struct pci_device_id PCI_Void_ids[] = {
 	{0, }
@@ -2802,6 +2803,91 @@ static struct pci_device_id PCI_Geminilake_ids[] = {
 	{	/* Goldmont Plus					*/
 		PCI_VDEVICE(INTEL, DID_INTEL_GEMINILAKE_HB),
 		.driver_data = (kernel_ulong_t) GLK_IMC
+	},
+	{0, }
+};
+
+/* 13th Generation							*/
+static struct pci_device_id PCI_Raptorlake_ids[] = {
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_S_8P_16E_HB),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_S_8P_8E_HB),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_S_6P_8E_HB1),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_S_6P_4E_HB),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_S_6P_8E_HB2),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_S_4P_0E_HB),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_HX_8P_16E_HB),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_HX_8P_12E_HB),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_HX_8P_8E_HB1),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_HX_6P_8E_HB1),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_HX_6P_4E_HB1),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_HX_8P_8E_HB2),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_HX_6P_8E_HB2),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_HX_6P_4E_HB2),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_H_6P_8E_HB),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_H_4P_8E_HB),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_H_4P_4E_HB),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_U_2P_8E_HB),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_U_2P_4E_HB),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_U_1P_4E_HB),
+		.driver_data = (kernel_ulong_t) RPL_IMC
 	},
 	{0, }
 };
@@ -9478,7 +9564,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_Raptorlake_ids,
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL,
@@ -9502,7 +9588,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_Raptorlake_ids,
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL,
@@ -9526,7 +9612,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_Raptorlake_ids,
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL,
