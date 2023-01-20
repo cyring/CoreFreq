@@ -15463,12 +15463,14 @@ int Shortcut(SCANKEY *scan)
       Window *win = SearchWinListById(scan->key, &winList);
       if (win == NULL) {
 	CLOCK_ARG clockMod  = {.ullong = scan->key};
-	const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+	const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK,
+		highestOperating = KMAX(RO(Shm)->Proc.Features.Factory.Ratio,
+					RO(Shm)->Uncore.Boost[BOOST(MAX)]);
 
 	signed int lowestShift, highestShift;
 	ComputeRatioShifts(	RO(Shm)->Uncore.Boost[BOOST(MIN)],
 				1,
-				RO(Shm)->Proc.Features.Factory.Ratio,
+				highestOperating,
 				&lowestShift,
 				&highestShift );
 	AppendWindow(
@@ -15479,9 +15481,7 @@ int Shortcut(SCANKEY *scan)
 				lowestShift,
 				highestShift,
 
-			(int)	((RO(Shm)->Uncore.Boost[BOOST(MIN)]
-				+ RO(Shm)->Proc.Features.Factory.Ratio ) >> 1),
-
+			(int)	(RO(Shm)->Proc.Features.Factory.Ratio >> 1),
 			(int)	(RO(Shm)->Proc.Features.Factory.Ratio - 1),
 
 				BOXKEY_UNCORE_CLOCK,
