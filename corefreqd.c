@@ -5330,19 +5330,23 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
-	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_L_Size;
+	].Size = (RO(Proc)->Uncore.MC[mc].ADL.MADD0.DDR5_DL_8GB ? 1024 : 512)
+		* RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_L_Size;
 
 	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
-	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_S_Size;
+	].Size = (RO(Proc)->Uncore.MC[mc].ADL.MADD0.DDR5_DS_8GB ? 1024 : 512)
+		* RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_S_Size;
 
 	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
-	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_L_Size;
+	].Size = (RO(Proc)->Uncore.MC[mc].ADL.MADD1.DDR5_DL_8GB ? 1024 : 512)
+		* RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_L_Size;
 
 	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
-	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_S_Size;
+	].Size = (RO(Proc)->Uncore.MC[mc].ADL.MADD1.DDR5_DS_8GB ? 1024 : 512)
+		* RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_S_Size;
 
     switch (RO(Shm)->Uncore.Unit.DDR_Ver) {
     case 1 ... 4:
@@ -6202,9 +6206,17 @@ static char *Chipset[CHIPSETS] = {
 	[IC_Q570]		= "Intel Q570",
 	[IC_Z590]		= "Intel Z590",
 	[IC_W580]		= "Intel W580",
-	[IC_Z690]		= "Intel Z690",
+	[IC_H610]		= "Intel H610",
 	[IC_B660]		= "Intel B660",
-	[IC_S700]		= "Intel 700 Series",
+	[IC_H670]		= "Intel H670",
+	[IC_Z690]		= "Intel Z690",
+	[IC_Q670]		= "Intel Q670",
+	[IC_W680]		= "Intel W680",
+	[IC_WM690]		= "Intel WM690",
+	[IC_HM670]		= "Intel HM670",
+	[IC_Z790]		= "Intel Z790",
+	[IC_H770]		= "Intel H770",
+	[IC_B760]		= "Intel B760",
 	[IC_K8] 		= "K8/HyperTransport",
 	[IC_ZEN]		= "Zen UMC"
 };
@@ -6658,18 +6670,42 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 	case DID_INTEL_ROCKETLAKE_W580_PCH:
 		SET_CHIPSET(IC_W580);
 		break;
-	case DID_INTEL_ALDERLAKE_S_8P_8E_IMC:
-	case DID_INTEL_ALDERLAKE_S_8P_4E_IMC:
-	case DID_INTEL_ALDERLAKE_S_6P_4E_IMC:
-	case DID_INTEL_ALDERLAKE_S_6P_0E_IMC:
+	case DID_INTEL_ALDERLAKE_S_8P_8E_HB:
+	case DID_INTEL_ALDERLAKE_S_8P_4E_HB:
+	case DID_INTEL_ALDERLAKE_S_6P_4E_HB:
+	case DID_INTEL_ALDERLAKE_S_6P_0E_HB:
+	case DID_INTEL_ALDERLAKE_S_4P_0E_HB:
+	case DID_INTEL_ALDERLAKE_S_2P_0E_HB:
+	case DID_INTEL_ALDERLAKE_H_6P_8E_HB:
+	case DID_INTEL_ALDERLAKE_H_6P_4E_HB:
+	case DID_INTEL_ALDERLAKE_H_4P_8E_HB:
+	case DID_INTEL_ALDERLAKE_H_4P_4E_HB:
 		ADL_CAP(RO(Shm), RO(Proc), RO(Core));
 		ADL_IMC(RO(Shm), RO(Proc));
+		break;
+	case DID_INTEL_ALDERLAKE_H610_PCH:
+		SET_CHIPSET(IC_H610);
+		break;
+	case DID_INTEL_ALDERLAKE_B660_PCH:
+		SET_CHIPSET(IC_B660);
+		break;
+	case DID_INTEL_ALDERLAKE_H670_PCH:
+		SET_CHIPSET(IC_H670);
 		break;
 	case DID_INTEL_ALDERLAKE_Z690_PCH:
 		SET_CHIPSET(IC_Z690);
 		break;
-	case DID_INTEL_ALDERLAKE_B660_PCH:
-		SET_CHIPSET(IC_B660);
+	case DID_INTEL_ALDERLAKE_Q670_PCH:
+		SET_CHIPSET(IC_Q670);
+		break;
+	case DID_INTEL_ALDERLAKE_W680_PCH:
+		SET_CHIPSET(IC_W680);
+		break;
+	case DID_INTEL_ALDERLAKE_WM690_PCH:
+		SET_CHIPSET(IC_WM690);
+		break;
+	case DID_INTEL_ALDERLAKE_HM670_PCH:
+		SET_CHIPSET(IC_HM670);
 		break;
 	case DID_INTEL_GEMINILAKE_HB:
 		GLK_CAP(RO(Shm), RO(Proc), RO(Core));
@@ -6698,7 +6734,15 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 	case DID_INTEL_RAPTORLAKE_U_1P_4E_HB:
 		RPL_CAP(RO(Shm), RO(Proc), RO(Core));
 		RPL_IMC(RO(Shm), RO(Proc));
-		SET_CHIPSET(IC_S700);
+		break;
+	case DID_INTEL_RAPTORLAKE_Z790_PCH:
+		SET_CHIPSET(IC_Z790);
+		break;
+	case DID_INTEL_RAPTORLAKE_H770_PCH:
+		SET_CHIPSET(IC_H770);
+		break;
+	case DID_INTEL_RAPTORLAKE_B760_PCH:
+		SET_CHIPSET(IC_B760);
 		break;
 	}
 }

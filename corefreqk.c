@@ -6081,6 +6081,35 @@ static PCI_CALLBACK GLK_IMC(struct pci_dev *dev)
 	return Router(dev, 0x48, 64, 0x8000, Query_GLK_IMC, 0);
 }
 
+static PCI_CALLBACK RPL_IMC(struct pci_dev *dev)
+{
+	PCI_CALLBACK rc = ADL_IMC(dev);
+
+  if ((PCI_CALLBACK) 0 == rc)
+  {
+	unsigned short mc,  cha;
+   for (mc = 0; mc < PUBLIC(RO(Proc))->Uncore.CtrlCount; mc++)
+   {	/* Detects DDR5 quad channels IMC and disable odd controllers	*/
+    if (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADCH.value) {
+     switch (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADCH.DDR_TYPE) {
+     case 0b01:	/*	DDR5	*/
+     case 0b10:	/*	LPDDR5	*/
+      if (mc & 1) {
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 0;
+      } else {
+       for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
+       {
+	 PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].ADL.Sched.ReservedBits1=0;
+       }
+      }
+	break;
+     }
+    }
+   }
+  }
+	return rc;
+}
+
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev)
 {	/* Source: BKDG for AMD NPT Family 0Fh Processors.		*/
 	unsigned short cha, slot, chip;

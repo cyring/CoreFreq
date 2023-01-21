@@ -2043,6 +2043,8 @@ static PCI_CALLBACK TGL_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK ADL_IMC(struct pci_dev *dev) ;
 #define ADL_PCH CML_PCH
 static PCI_CALLBACK GLK_IMC(struct pci_dev *dev) ;
+static PCI_CALLBACK RPL_IMC(struct pci_dev *dev) ;
+#define RPL_PCH CML_PCH
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev) ;
@@ -2059,7 +2061,6 @@ static PCI_CALLBACK AMD_DataFabric_Vermeer(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Cezanne(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Rembrandt(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Raphael(struct pci_dev *pdev) ;
-#define RPL_IMC ADL_IMC
 
 static struct pci_device_id PCI_Void_ids[] = {
 	{0, }
@@ -2771,44 +2772,80 @@ static struct pci_device_id PCI_Kabylake_ids[] = {
 };
 
 /* 12th Generation							*/
-static struct pci_device_id PCI_Alderlake_ids[] = {
+static struct pci_device_id PCI_ADL_RPL_ids[] = {
 	{
-		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_S_8P_8E_IMC),
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_S_8P_8E_HB),
 		.driver_data = (kernel_ulong_t) ADL_IMC
 	},
 	{
-		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_S_8P_4E_IMC),
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_S_8P_4E_HB),
 		.driver_data = (kernel_ulong_t) ADL_IMC
 	},
 	{
-		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_S_6P_4E_IMC),
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_S_6P_4E_HB),
 		.driver_data = (kernel_ulong_t) ADL_IMC
 	},
 	{
-		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_S_6P_0E_IMC),
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_S_6P_0E_HB),
 		.driver_data = (kernel_ulong_t) ADL_IMC
 	},
 	{
-		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_Z690_PCH),
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_S_4P_0E_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_S_2P_0E_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_H_6P_8E_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_H_6P_4E_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_H_4P_8E_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_H_4P_4E_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_H610_PCH),
 		.driver_data = (kernel_ulong_t) ADL_PCH
 	},
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_B660_PCH),
 		.driver_data = (kernel_ulong_t) ADL_PCH
 	},
-	{0, }
-};
-
-static struct pci_device_id PCI_Geminilake_ids[] = {
-	{	/* Goldmont Plus					*/
-		PCI_VDEVICE(INTEL, DID_INTEL_GEMINILAKE_HB),
-		.driver_data = (kernel_ulong_t) GLK_IMC
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_H670_PCH),
+		.driver_data = (kernel_ulong_t) ADL_PCH
 	},
-	{0, }
-};
-
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_Z690_PCH),
+		.driver_data = (kernel_ulong_t) ADL_PCH
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_Q670_PCH),
+		.driver_data = (kernel_ulong_t) ADL_PCH
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_W680_PCH),
+		.driver_data = (kernel_ulong_t) ADL_PCH
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_WM690_PCH),
+		.driver_data = (kernel_ulong_t) ADL_PCH
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_HM670_PCH),
+		.driver_data = (kernel_ulong_t) ADL_PCH
+	},
 /* 13th Generation							*/
-static struct pci_device_id PCI_Raptorlake_ids[] = {
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_S_8P_16E_HB),
 		.driver_data = (kernel_ulong_t) RPL_IMC
@@ -2888,6 +2925,26 @@ static struct pci_device_id PCI_Raptorlake_ids[] = {
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_U_1P_4E_HB),
 		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_Z790_PCH),
+		.driver_data = (kernel_ulong_t) RPL_PCH
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_H770_PCH),
+		.driver_data = (kernel_ulong_t) RPL_PCH
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_B760_PCH),
+		.driver_data = (kernel_ulong_t) RPL_PCH
+	},
+	{0, }
+};
+
+static struct pci_device_id PCI_Geminilake_ids[] = {
+	{	/* Goldmont Plus					*/
+		PCI_VDEVICE(INTEL, DID_INTEL_GEMINILAKE_HB),
+		.driver_data = (kernel_ulong_t) GLK_IMC
 	},
 	{0, }
 };
@@ -9419,7 +9476,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SAV,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Alderlake_ids,
+	.PCI_ids = PCI_ADL_RPL_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Alderlake,
 		.Stop = Stop_Uncore_Alderlake,
@@ -9443,7 +9500,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SAV,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Alderlake_ids,
+	.PCI_ids = PCI_ADL_RPL_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Alderlake,
 		.Stop = Stop_Uncore_Alderlake,
@@ -9467,7 +9524,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SAV,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Alderlake_ids,
+	.PCI_ids = PCI_ADL_RPL_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Alderlake,
 		.Stop = Stop_Uncore_Alderlake,
@@ -9564,7 +9621,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Raptorlake_ids,
+	.PCI_ids = PCI_ADL_RPL_ids,
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL,
@@ -9588,7 +9645,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Raptorlake_ids,
+	.PCI_ids = PCI_ADL_RPL_ids,
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL,
@@ -9612,7 +9669,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Raptorlake_ids,
+	.PCI_ids = PCI_ADL_RPL_ids,
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL,
