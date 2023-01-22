@@ -314,11 +314,7 @@ systemctl start corefreqd
   This allow the User to select a _capped_ frequency from the UI, either per Core, either for the whole Processor.  
 
   A2: With `cpufreq` built into Kernel, allow _CoreFreq_ to register as a cpufreq driver.  
-  In the Kernel boot command line, two ways:  
- 1. disable `cpufreq` with the Kernel [parameter](https://github.com/torvalds/linux/blob/master/Documentation/admin-guide/kernel-parameters.txt)  
-`cpufreq.off=1`  
-
- 2. blacklist any P-state driver; such as:  
+  In the Kernel boot command line, blacklist any P-state driver; such as:  
 `modprobe.blacklist=acpi_cpufreq,pcc_cpufreq intel_pstate=disable`  
 
   * hardware CPPC (MSR registers)  

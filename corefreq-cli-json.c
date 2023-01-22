@@ -267,8 +267,10 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 							json_start_object(&s);
 							json_key(&s, "tCL");
 							json_literal(&s, "%u", RO(Shm)->Uncore.MC[i].Channel[i2].Timing.tCL);
-							json_key(&s, "tRCD");
-							json_literal(&s, "%u", RO(Shm)->Uncore.MC[i].Channel[i2].Timing.tRCD);
+							json_key(&s, "tRCD_R");
+							json_literal(&s, "%u", RO(Shm)->Uncore.MC[i].Channel[i2].Timing.tRCD_RD);
+							json_key(&s, "tRCD_W");
+							json_literal(&s, "%u", RO(Shm)->Uncore.MC[i].Channel[i2].Timing.tRCD_WR);
 							json_key(&s, "tRP");
 							json_literal(&s, "%u", RO(Shm)->Uncore.MC[i].Channel[i2].Timing.tRP);
 							json_key(&s, "tRAS");
