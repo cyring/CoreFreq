@@ -5328,26 +5328,6 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	RO(Shm)->Uncore.MC[mc].Channel[1].Timing.ECC = \
 				RO(Proc)->Uncore.MC[mc].ADL.MADC1.ECC;
 
-	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
-		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
-	].Size = (RO(Proc)->Uncore.MC[mc].ADL.MADD0.DDR5_DL_8GB ? 1024 : 512)
-		* RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_L_Size;
-
-	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
-		!RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
-	].Size = (RO(Proc)->Uncore.MC[mc].ADL.MADD0.DDR5_DS_8GB ? 1024 : 512)
-		* RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_S_Size;
-
-	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
-		RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
-	].Size = (RO(Proc)->Uncore.MC[mc].ADL.MADD1.DDR5_DL_8GB ? 1024 : 512)
-		* RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_L_Size;
-
-	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
-		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
-	].Size = (RO(Proc)->Uncore.MC[mc].ADL.MADD1.DDR5_DS_8GB ? 1024 : 512)
-		* RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_S_Size;
-
     switch (RO(Shm)->Uncore.Unit.DDR_Ver) {
     case 1 ... 4:
 	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
@@ -5365,6 +5345,22 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
 	].Rows = DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD1.DSW);
+
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
+		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
+	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_L_Size;
+
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
+		!RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
+	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_S_Size;
+
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
+		RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
+	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_L_Size;
+
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
+		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
+	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_S_Size;
 	break;
     case 5:
     default:
@@ -5383,6 +5379,22 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
 	].Rows = 1 << 17;
+
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
+		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
+	].Size = 1024 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_L_Size;
+
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
+		!RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
+	].Size = 1024 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_S_Size;
+
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
+		RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
+	].Size = 1024 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_L_Size;
+
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
+		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
+	].Size = 1024 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_S_Size;
 	break;
     }
 	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[

@@ -2043,7 +2043,7 @@ static PCI_CALLBACK TGL_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK ADL_IMC(struct pci_dev *dev) ;
 #define ADL_PCH CML_PCH
 static PCI_CALLBACK GLK_IMC(struct pci_dev *dev) ;
-static PCI_CALLBACK RPL_IMC(struct pci_dev *dev) ;
+#define RPL_IMC ADL_IMC
 #define RPL_PCH CML_PCH
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev) ;

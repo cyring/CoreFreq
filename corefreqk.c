@@ -6035,7 +6035,7 @@ static PCI_CALLBACK TGL_IMC(struct pci_dev *dev)
 static PCI_CALLBACK ADL_IMC(struct pci_dev *dev)
 {	/* Source: 12th Generation Intel Core Processors datasheet, vol 2 */
 	PCI_CALLBACK rc = 0;
-	unsigned short mc;
+	unsigned short mc, cha;
 
 	pci_read_config_dword(dev, 0xe4,
 				&PUBLIC(RO(Proc))->Uncore.Bus.ADL_Cap_A.value);
@@ -6051,45 +6051,18 @@ static PCI_CALLBACK ADL_IMC(struct pci_dev *dev)
 
 	/* MCHBAR corresponds to bits 41 to 17 ; two MC x 64KB memory space */
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 2;
-	for (mc = 0; mc < PUBLIC(RO(Proc))->Uncore.CtrlCount; mc++)
-	{
-		/*	2 DIMMs Per Channel Enable			*/
-	    if (PUBLIC(RO(Proc))->Uncore.Bus.ADL_Cap_A.DDPCD == 0) {
-		PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 2;
-	    } else {
-		PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 1;
-	    }
-		PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
+  for (mc = 0; mc < PUBLIC(RO(Proc))->Uncore.CtrlCount; mc++)
+  {	/*	2 DIMMs Per Channel Enable			*/
+   if (PUBLIC(RO(Proc))->Uncore.Bus.ADL_Cap_A.DDPCD == 0) {
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 2;
+   } else {
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 1;
+   }
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
 
-		rc = SKL_HOST(dev, Query_ADL_IMC, 0x10000, mc);
-	}
-	return rc;
-}
+	rc = SKL_HOST(dev, Query_ADL_IMC, 0x10000, mc);
 
-static PCI_CALLBACK GLK_IMC(struct pci_dev *dev)
-{
-	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
-
-	pci_read_config_dword(dev, 0xe4,
-				&PUBLIC(RO(Proc))->Uncore.Bus.GKL_Cap_A.value);
-
-	pci_read_config_dword(dev, 0xe8,
-				&PUBLIC(RO(Proc))->Uncore.Bus.GKL_Cap_B.value);
-
-	SoC_SKL_VTD();
-
-	return Router(dev, 0x48, 64, 0x8000, Query_GLK_IMC, 0);
-}
-
-static PCI_CALLBACK RPL_IMC(struct pci_dev *dev)
-{
-	PCI_CALLBACK rc = ADL_IMC(dev);
-
-  if ((PCI_CALLBACK) 0 == rc)
-  {
-	unsigned short mc,  cha;
-   for (mc = 0; mc < PUBLIC(RO(Proc))->Uncore.CtrlCount; mc++)
-   {	/* Detects DDR5 quad channels IMC and disable odd controllers	*/
+   if ((PCI_CALLBACK) 0 == rc) {
     if (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADCH.value) {
      switch (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADCH.DDR_TYPE) {
      case 0b01:	/*	DDR5	*/
@@ -6108,6 +6081,21 @@ static PCI_CALLBACK RPL_IMC(struct pci_dev *dev)
    }
   }
 	return rc;
+}
+
+static PCI_CALLBACK GLK_IMC(struct pci_dev *dev)
+{
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+
+	pci_read_config_dword(dev, 0xe4,
+				&PUBLIC(RO(Proc))->Uncore.Bus.GKL_Cap_A.value);
+
+	pci_read_config_dword(dev, 0xe8,
+				&PUBLIC(RO(Proc))->Uncore.Bus.GKL_Cap_B.value);
+
+	SoC_SKL_VTD();
+
+	return Router(dev, 0x48, 64, 0x8000, Query_GLK_IMC, 0);
 }
 
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev)
