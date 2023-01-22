@@ -3727,12 +3727,12 @@ typedef union
 		tRPab_ext	: 13-8,  /* Range:  0-6 		*/
 		tRDPRE		: 20-13, /* Range:  4-32		*/
 		tPPD		: 24-20, /* Range:  4-7; Not for DDR5	*/
-		ReservedBits1	: 32-24,
+		tRCDW		: 32-24, /* Range:  8-59; LPDDR5x [RPL] */
 		tWRPRE		: 42-32, /* Range: 18-200		*/
 		tRAS		: 51-42, /* Range: 28-136		*/
 		tRCD		: 59-51, /* Range:  8-59		*/
 		DERATING_EXT	: 63-59, /* Range:  0-4 		*/
-		ReservedBits2	: 64-63;
+		ReservedBits	: 64-63;
 	};
 } ADL_IMC_CR_TC_PRE;
 

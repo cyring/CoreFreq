@@ -5200,6 +5200,9 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	TIMING(mc, cha).tRCD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tRCD;
 
+	TIMING(mc, cha).tRCD_WR = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tRCDW;
+
 	TIMING(mc, cha).tRP = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tRP;
 
