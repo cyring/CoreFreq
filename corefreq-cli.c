@@ -7200,6 +7200,8 @@ void Timing_DDR4(Window *win,
 	}
 	for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
 	{
+		char str[16];
+
 		PRT(IMC, attrib[0], "\x20\x20#%-2u", cha);
 
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tWRWR_SG);
@@ -7207,10 +7209,14 @@ void Timing_DDR4(Window *win,
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tWRWR_DR);
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tWRWR_DD);
 
-		for (nc = 0; nc < (MC_MATX - 11); nc++) {
+		for (nc = 0; nc < (MC_MATX - 12); nc++) {
 			PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
 		}
-		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tREFI);
+
+		iSplit(TIMING(mc, cha).tREFI, str);
+		PRT(IMC, attrib[1], "%5s", &str[0]);
+		PRT(IMC, attrib[1], "%5s", &str[8]);
+
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRFC);
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tXS);
 		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tXP);
