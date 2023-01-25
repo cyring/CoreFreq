@@ -3386,7 +3386,8 @@ enum {
 };
 enum {
 	CN_CEZANNE,
-	CN_BARCELO
+	CN_BARCELO,
+	CN_BARCELO_R
 };
 enum {
 	CN_MILAN
@@ -3395,7 +3396,8 @@ enum {
 	CN_CHAGALL
 };
 enum {
-	CN_REMBRANDT
+	CN_REMBRANDT,
+	CN_REMBRANDT_R
 };
 enum {
 	CN_GENOA
@@ -3456,7 +3458,8 @@ static char *Arch_AMD_Zen3_VMR[] = ZLIST(
 );
 static char *Arch_AMD_Zen3_CZN[] = ZLIST(
 		[CN_CEZANNE]		=	"Zen3/Cezanne",
-		[CN_BARCELO]		=	"Zen3/Barcelo"
+		[CN_BARCELO]		=	"Zen3/Barcelo",
+		[CN_BARCELO_R]		=	"Zen3/Barcelo-R"
 );
 static char *Arch_AMD_EPYC_Milan[] = ZLIST(
 		[CN_MILAN]		=	"EPYC/Milan"
@@ -3467,7 +3470,8 @@ static char *Arch_AMD_Zen3_Chagall[] = ZLIST(
 static char *Arch_AMD_Zen3_Badami[]	=	ZLIST("Zen3/Milan-X");
 
 static char *Arch_AMD_Zen3Plus_RMB[] = ZLIST(
-		[CN_REMBRANDT]		=	"Zen3+ Rembrandt"
+		[CN_REMBRANDT]		=	"Zen3+ Rembrandt",
+		[CN_REMBRANDT_R]	=	"Zen3+ Rembrandt-R"
 );
 static char *Arch_AMD_Zen4_Genoa[] = ZLIST(
 		[CN_GENOA]		=	"EPYC/Genoa"
@@ -6328,11 +6332,7 @@ static PROCESSOR_SPECIFIC AMD_Zen3_CZN_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 7 5825U",	\
-			"AMD Ryzen 7 PRO 5875U",\
-			"AMD Ryzen 7 7730U",	\
-			"AMD Ryzen 7 PRO 7730U",\
-			"AMD Ryzen 5 7530U",	\
-			"AMD Ryzen 5 PRO 7530U" ),
+			"AMD Ryzen 7 PRO 5875U" ),
 	.Boost = {+25, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_BARCELO,
@@ -6376,11 +6376,25 @@ static PROCESSOR_SPECIFIC AMD_Zen3_CZN_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
+	.Brand = ZLIST( "AMD Ryzen 7 7730U",	\
+			"AMD Ryzen 7 PRO 7730U",\
+			"AMD Ryzen 5 7530U",	\
+			"AMD Ryzen 5 PRO 7530U" ),
+	.Boost = {+25, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_BARCELO_R,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
 	.Brand = ZLIST( "AMD Ryzen 3 7330U",	\
 			"AMD Ryzen 3 PRO 7330U" ),
 	.Boost = {+20, 0},
 	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_BARCELO,
+	.CodeNameIdx = CN_BARCELO_R,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
@@ -6643,10 +6657,11 @@ static PROCESSOR_SPECIFIC AMD_Zen3Plus_RMB_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 3 7335U",	\
-			"AMD Ryzen 5 7535HS"	),
+			"AMD Ryzen 5 7535HS",	\
+			"AMD Ryzen 5 7535H"	),
 	.Boost = {+13, 0},
 	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_REMBRANDT,
+	.CodeNameIdx = CN_REMBRANDT_R,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
@@ -6658,7 +6673,7 @@ static PROCESSOR_SPECIFIC AMD_Zen3Plus_RMB_Specific[] = {
 	.Brand = ZLIST("AMD Ryzen 5 7535U"),
 	.Boost = {+17, 0},
 	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_REMBRANDT,
+	.CodeNameIdx = CN_REMBRANDT_R,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
@@ -6667,10 +6682,11 @@ static PROCESSOR_SPECIFIC AMD_Zen3Plus_RMB_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 7 7735HS"),
+	.Brand = ZLIST( "AMD Ryzen 7 7735HS",	\
+			"AMD Ryzen 7 7735H"	),
 	.Boost = {+16, 0},
 	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_REMBRANDT,
+	.CodeNameIdx = CN_REMBRANDT_R,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
@@ -6682,7 +6698,19 @@ static PROCESSOR_SPECIFIC AMD_Zen3Plus_RMB_Specific[] = {
 	.Brand = ZLIST("AMD Ryzen 7 7735U"),
 	.Boost = {+21, 0},
 	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_REMBRANDT,
+	.CodeNameIdx = CN_REMBRANDT_R,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 7 7736U"),
+	.Boost = {+20, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_REMBRANDT_R,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
