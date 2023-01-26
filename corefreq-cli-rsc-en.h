@@ -1421,6 +1421,8 @@
 #define RSC_DDR3_CKE_COMM_CODE_EN	" tCKE ( ClocK Enable ) "
 #define RSC_DDR3_ECC_COMM_CODE_EN	" ECC ( Error Correcting Code ) "
 
+#define RSC_DDR4_RCD_R_COMM_CODE_EN	" tRCD_R ( Activate to Read CAS ) "
+#define RSC_DDR4_RCD_W_COMM_CODE_EN	" tRCD_W ( Activate to Write CAS ) "
 #define RSC_DDR4_RDRD_SCL_COMM_CODE_EN	" tRDRD ( Read to Read, Same Bank ) "
 #define RSC_DDR4_RDRD_SC_COMM_CODE_EN " tRDRD ( Read to Read, Different Bank ) "
 #define RSC_DDR4_RDRD_SD_COMM_CODE_EN " tRDRD ( Read to Read, Different Rank ) "
@@ -1467,8 +1469,6 @@
 #define RSC_DDR4_CPDED_COMM_CODE_EN " tCPDED ( Command Pass Disable Delay ) "
 #define RSC_DDR4_GEAR_COMM_CODE_EN	" GEAR ( Clock Gear Mode ) "
 
-#define RSC_DDR4_ZEN_RCD_R_COMM_CODE_EN " tRCD_R ( Activate to Read CAS ) "
-#define RSC_DDR4_ZEN_RCD_W_COMM_CODE_EN " tRCD_W ( Activate to Write CAS ) "
 #define RSC_DDR4_ZEN_RC_COMM_CODE_EN	" tRC ( Activate to Activate ) "
 
 #define RSC_DDR4_ZEN_WTR_S_COMM_CODE_EN \
@@ -2399,7 +2399,8 @@
 #define RSC_DDR3_ECC_CODE		"  ECC"
 
 #define RSC_DDR4_CL_CODE		"   CL"
-#define RSC_DDR4_RCD_CODE		"  RCD"
+#define RSC_DDR4_RCD_R_CODE		" RCDr"
+#define RSC_DDR4_RCD_W_CODE		" RCDw"
 #define RSC_DDR4_RP_CODE		"   RP"
 #define RSC_DDR4_RAS_CODE		"  RAS"
 #define RSC_DDR4_RRD_CODE		"  RRD"
@@ -2410,7 +2411,7 @@
 #define RSC_DDR4_FAW_CODE		"  FAW"
 #define RSC_DDR4_GEAR_CODE		" GEAR"
 #define RSC_DDR4_CWL_CODE		"  CWL"
-#define RSC_DDR4_CMD_CODE		" CMD "
+#define RSC_DDR4_CMD_CODE		"  CMD"
 #define RSC_DDR4_REFI_CODE		" REFI"
 #define RSC_DDR4_RDRD_SCL_CODE		" sgRR"
 #define RSC_DDR4_RDRD_SC_CODE		" dgRR"
@@ -2430,13 +2431,11 @@
 #define RSC_DDR4_WRWR_DD_CODE		" ddWW"
 #define RSC_DDR4_RRD_S_CODE		" RRDs"
 #define RSC_DDR4_RRD_L_CODE		" RRDl"
-#define RSC_DDR4_CKE_CODE		" CKE "
+#define RSC_DDR4_CKE_CODE		"  CKE"
 #define RSC_DDR4_CPDED_CODE		"CPDED"
 #define RSC_DDR4_ECC_CODE		"  ECC"
 
 #define RSC_DDR4_ZEN_CL_CODE		"  CL "
-#define RSC_DDR4_ZEN_RCD_R_CODE 	" RCDr"
-#define RSC_DDR4_ZEN_RCD_W_CODE 	" RCDw"
 #define RSC_DDR4_ZEN_RP_CODE		"  RP "
 #define RSC_DDR4_ZEN_RAS_CODE		" RAS "
 #define RSC_DDR4_ZEN_RC_CODE		"  RC "
@@ -2470,8 +2469,6 @@
 #define RSC_DDR4_ZEN_BGS_ALT_CODE	":Alt "
 #define RSC_DDR4_ZEN_BAN_CODE		" Ban "
 #define RSC_DDR4_ZEN_RCPAGE_CODE	" Page"
-#define RSC_DDR4_ZEN_CKE_CODE		"  CKE"
-#define RSC_DDR4_ZEN_CMD_CODE		"  CMD"
 #define RSC_DDR4_ZEN_GDM_CODE		"  GDM"
 #define RSC_DDR4_ZEN_ECC_CODE		"  ECC"
 #define RSC_DDR4_ZEN_MRD_CODE		" MRD:"
