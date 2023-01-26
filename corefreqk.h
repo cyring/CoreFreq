@@ -9651,8 +9651,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_ADL_RPL_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_Alderlake,
+		.Stop = Stop_Uncore_Alderlake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
@@ -9675,8 +9675,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_ADL_RPL_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_Alderlake,
+		.Stop = Stop_Uncore_Alderlake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
@@ -9699,8 +9699,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_ADL_RPL_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_Alderlake,
+		.Stop = Stop_Uncore_Alderlake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
