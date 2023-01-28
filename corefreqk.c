@@ -23043,7 +23043,7 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 		CoreFreqK_Register_NMI();
 	}
 
-	pr_info(KERN_INFO "CoreFreq(%u:%d:%d):"	\
+	pr_info("CoreFreq(%u:%d:%d):"		\
 		" Processor [%2X%1X_%1X%1X]"	\
 		" Architecture [%s] %3s [%u/%u]\n",
 		PUBLIC(RO(Proc))->Service.Core,
