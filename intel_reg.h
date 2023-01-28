@@ -341,8 +341,17 @@
 	#define MSR_IA32_HWP_REQUEST		MSR_HWP_REQUEST
 #endif
 
+/*	MSR registers related to Hardware Duty Cycling (HDC)		*/
 #ifndef MSR_IA32_PKG_HDC_CTL
 	#define MSR_IA32_PKG_HDC_CTL		0x00000db0
+#endif
+
+#ifndef MSR_IA32_PM_CTL1
+	#define MSR_IA32_PM_CTL1		0x00000db1
+#endif
+
+#ifndef MSR_IA32_THREAD_STALL
+	#define MSR_IA32_THREAD_STALL		0x00000db2
 #endif
 
 /*	Source: Intel Atom Processor E3800 Product Family Datasheet	*/
@@ -390,6 +399,20 @@
 	#define MSR_PKGC7_IRTL			0x0000060c
 #endif
 
+/*	Additional MSRs supported by 6th up to 13th Gen	and Xeon scalable */
+#ifndef MSR_PPERF
+	#define MSR_PPERF			0x0000064e
+#endif
+
+#ifndef MSR_ANY_CORE_C0
+    #ifdef MSR_PKG_ANY_CORE_C0_RES
+	#define MSR_ANY_CORE_C0 		MSR_PKG_ANY_CORE_C0_RES
+    #else
+	#define MSR_ANY_CORE_C0 		0x00000659
+    #endif
+#endif
+
+/*	Partially documented registers					*/
 #define MSR_FLEX_RATIO				0x00000194
 #define MSR_IA32_OVERCLOCKING_STATUS		0x00000195
 #define MSR_IA32_MISC_PACKAGE_CTLS		0x000000bc
