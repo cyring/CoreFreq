@@ -4401,11 +4401,20 @@ void SKL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
     for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
     {
-	TIMING(mc, cha).tCL   = \
+	TIMING(mc, cha).tCL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.ODT.tCL;
 
-	TIMING(mc, cha).tRCD  = \
+	TIMING(mc, cha).tRCD_RD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Timing.tRP;
+
+	TIMING(mc, cha).tRCD_WR = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.ACT.tRCD_WR;
+
+    if (TIMING(mc, cha).tRCD_WR == 0) {
+	/* ACT to CAS (RD or WR) same bank minimum delay in DCLK cycles */
+	TIMING(mc, cha).tRCD_WR = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Timing.tRP;
+    }
 
 	TIMING(mc, cha).tRP   = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Timing.tRP;
@@ -4687,8 +4696,16 @@ void RKL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	TIMING(mc, cha).tCL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.ODT.tCL;
 
-	TIMING(mc, cha).tRCD = \
+	TIMING(mc, cha).tRCD_RD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Timing.tRP;
+
+	TIMING(mc, cha).tRCD_WR = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.ACT.tRCD_WR;
+
+    if (TIMING(mc, cha).tRCD_WR == 0) {
+	TIMING(mc, cha).tRCD_WR = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Timing.tRP;
+    }
 
 	TIMING(mc, cha).tRP = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].RKL.Timing.tRP;
@@ -4995,8 +5012,10 @@ void TGL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	TIMING(mc, cha).tCL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.ODT.tCL;
 
-	TIMING(mc, cha).tRCD = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Timing.tRP;
+	/*	ACT to CAS (RD or WR) same bank minimum delay in tCK	*/
+	TIMING(mc, cha).tRCD_RD = \
+	TIMING(mc, cha).tRCD_WR = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Timing.tRCD;
 
 	TIMING(mc, cha).tRP = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Timing.tRP;
@@ -5197,11 +5216,16 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	TIMING(mc, cha).tCL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ODT.tCL;
 
-	TIMING(mc, cha).tRCD = \
+	TIMING(mc, cha).tRCD_RD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tRCD;
 
 	TIMING(mc, cha).tRCD_WR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tRCDW;
+
+      if (TIMING(mc, cha).tRCD_WR == 0) {
+		TIMING(mc, cha).tRCD_WR = \
+			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tRCD;
+      }
 
 	TIMING(mc, cha).tRP = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tRP;
