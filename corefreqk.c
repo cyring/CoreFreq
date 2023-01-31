@@ -8191,7 +8191,7 @@ void Query_AMD_F17h_Power_Limits(PROC_RO *Pkg)
 				PRIVATE(OF(Zen)).Device.DF );
 	/*		Junction Temperature				*/
 	Pkg->PowerThermal.Param.Offset[THERMAL_TARGET] = \
-				PUBLIC(RO(Proc))->PowerThermal.Zen.PWR.TjMax;
+				Pkg->PowerThermal.Zen.PWR.TjMax;
 	/*		Thermal Design Power				*/
 	Core_AMD_SMN_Read( Pkg->PowerThermal.Zen.TDP,
 				SMU_AMD_F17H_ZEN2_MCM_TDP,
@@ -13034,9 +13034,10 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
-
+	/*	Per SMT, initialize with the saved thermal parameters	*/
+    if (Core->PowerThermal.Sensor == 0) {
 	Core->PowerThermal.Param = PUBLIC(RO(Proc))->PowerThermal.Param;
-
+    }
 	/*	Collaborative Processor Performance Control	*/
     if (PUBLIC(RO(Proc))->Features.HWP_Enable)
     {
