@@ -3190,7 +3190,7 @@ void SLM_PTR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	    } else {
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
 					RO(Proc)->Uncore.MC[mc].SLM.DRP.RKEN2
-				+	RO(Proc)->Uncore.MC[mc].SLM.DRP.RKNE3;
+				+	RO(Proc)->Uncore.MC[mc].SLM.DRP.RKEN3;
 
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = \
 			DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.DIMMDDEN1].Banks;

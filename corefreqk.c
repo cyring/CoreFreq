@@ -5416,7 +5416,7 @@ static PCI_CALLBACK SoC_SLM(struct pci_dev *dev)
 		|	PUBLIC(RO(Proc))->Uncore.MC[0].SLM.DRP.RKEN1
 	) + (
 			PUBLIC(RO(Proc))->Uncore.MC[0].SLM.DRP.RKEN2
-		|	PUBLIC(RO(Proc))->Uncore.MC[0].SLM.DRP.RKNE3
+		|	PUBLIC(RO(Proc))->Uncore.MC[0].SLM.DRP.RKEN3
 	);
 	return (PCI_CALLBACK) 0;
 }

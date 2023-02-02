@@ -2497,7 +2497,7 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x0			*/
 		RKEN0		:  1-0,  /* DIMM 0, Rank 0 Enabled	*/
 		RKEN1		:  2-1,  /* DIMM 0, Rank 1 Enabled	*/
 		RKEN2		:  3-2,  /* DIMM 1, Rank 0 Enabled	*/
-		RKNE3		:  4-3,  /* DIMM 1, Rank 1 Enabled	*/
+		RKEN3		:  4-3,  /* DIMM 1, Rank 1 Enabled	*/
 		DIMMDWID0	:  6-4,  /* 0b00:x8 0b01:x16 0b10:x32 0b11:RSV*/
 		DIMMDDEN0	:  8-6,  /* Density {1; 2; 4; 8} Gbit	*/
 		ReservedBits1	:  9-8,
