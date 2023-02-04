@@ -10255,6 +10255,7 @@ void PowerThermal(CORE_RO *Core)
 		{_Tremont_Elkhartlake,	1, 1, 1, 0},
 		{_Tremont_Jasperlake,	1, 1, 1, 0},
 		{_Sapphire_Rapids,	1, 1, 1, 0},
+		{_Emerald_Rapids,	1, 1, 1, 0},
 		{_Rocketlake,		1, 1, 1, 0},
 		{_Rocketlake_U ,	1, 1, 1, 0},
 		{_Alderlake_S,		1, 1, 0, 0},	/* 06_97 */
