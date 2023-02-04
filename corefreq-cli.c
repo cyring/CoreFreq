@@ -169,15 +169,21 @@ void AggregateRatio(void)
 	const unsigned int highestFactory = MAXCLOCK_TO_RATIO(
 		unsigned int, RO(Shm)->Proc.Features.Factory.Clock.Hz
 	);
-	enum RATIO_BOOST lt, rt;
+	enum RATIO_BOOST lt, rt, min_boost = BOOST(MIN);
+    if ((RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(HWP_MIN)] > 0)
+     && (RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(HWP_MIN)]
+	< RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(MIN)]))
+    {
+	min_boost = BOOST(HWP_MIN);
+    }
 	unsigned int cpu,
 	lowest = RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(MAX)],
-	highest = RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(MIN)];
+	highest = RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[min_boost];
 
 	Ruler.Count = 0;
-	SetTopOfRuler(RO(Shm)->Proc.Service.Core, BOOST(MIN));
+	SetTopOfRuler(RO(Shm)->Proc.Service.Core, min_boost);
 
-	lt = BOOST(MIN);
+	lt = min_boost;
     while (lt < BOOST(SIZE))
     {
 	Ruler.Top[lt] = RO(Shm)->Proc.Service.Core;
@@ -193,7 +199,7 @@ void AggregateRatio(void)
 	    {
 		SetTopOftheTop(cpu, lt, &lowest, & highest);
 
-		for (rt = BOOST(MIN); rt < Ruler.Count; rt++)
+		for (rt = min_boost; rt < Ruler.Count; rt++)
 		{
 			if (Ruler.Uniq[rt] == RO(Shm)->Cpu[cpu].Boost[lt])
 			{
@@ -208,7 +214,7 @@ void AggregateRatio(void)
 	}
 	lt = lt + 1;
     }
-	InsertionSortRuler(Ruler.Uniq, Ruler.Count, BOOST(MIN));
+	InsertionSortRuler(Ruler.Uniq, Ruler.Count, min_boost);
 
 	Ruler.Minimum = (double) lowest;
 	Ruler.Maximum = (double) highest;
