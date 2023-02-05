@@ -3043,20 +3043,15 @@ void SLM_PTR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
     for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
     {
 /* Standard Timings */
-	TIMING(mc, cha).tCL  = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR0.tCL + 5;
+	TIMING(mc, cha).tCL  = RO(Proc)->Uncore.MC[mc].SLM.DTR0.tCL + 5;
 
-	TIMING(mc, cha).tRCD = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR0.tRCD + 5;
+	TIMING(mc, cha).tRCD = RO(Proc)->Uncore.MC[mc].SLM.DTR0.tRCD + 5;
 
-	TIMING(mc, cha).tRP  = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR0.tRP + 5;
+	TIMING(mc, cha).tRP  = RO(Proc)->Uncore.MC[mc].SLM.DTR0.tRP + 5;
 
-	TIMING(mc, cha).tRAS = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR1.tRAS;
+	TIMING(mc, cha).tRAS = RO(Proc)->Uncore.MC[mc].SLM.DTR1.tRAS;
 
-	TIMING(mc, cha).tRRD = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR1.tRRD + 4;
+	TIMING(mc, cha).tRRD = RO(Proc)->Uncore.MC[mc].SLM.DTR1.tRRD + 4;
 
 	TIMING(mc, cha).tRFC = \
 			RO(Proc)->Uncore.MC[mc].SLM.DTR0.tXS == 0 ? 256 : 384;
@@ -3075,18 +3070,13 @@ void SLM_PTR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	TIMING(mc, cha).tREFI *= RO(Shm)->Uncore.CtrlSpeed;
 	TIMING(mc, cha).tREFI /= 20;
 
-/*TODO( Advanced Timings )
-	TIMING(mc, cha).tCKE = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].SLM
-*/
-	TIMING(mc, cha).tRTPr = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR1.tRTP + 4;
+	TIMING(mc, cha).tCKE  = RO(Proc)->Uncore.MC[mc].SLM.DRMC.CKEVAL;
 
-	TIMING(mc, cha).tWTPr = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR1.tWTP + 14;
+	TIMING(mc, cha).tRTPr = RO(Proc)->Uncore.MC[mc].SLM.DTR1.tRTP + 4;
 
-	TIMING(mc, cha).B2B   = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR1.tCCD;
+	TIMING(mc, cha).tWTPr = RO(Proc)->Uncore.MC[mc].SLM.DTR1.tWTP + 14;
+
+	TIMING(mc, cha).B2B   = RO(Proc)->Uncore.MC[mc].SLM.DTR1.tCCD;
 
 	switch (RO(Proc)->Uncore.MC[mc].SLM.DTR1.tFAW) {
 	case 0 ... 1:
@@ -3098,64 +3088,50 @@ void SLM_PTR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		break;
 	}
 
-	TIMING(mc, cha).tCWL = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR1.tWCL + 3;
-/* Same Rank */
-/*TODO( Read to Read )
-	TIMING(mc, cha).tsrRdTRd = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR?.;
-*/
-	TIMING(mc, cha).tsrRdTWr = 6
-			+ RO(Proc)->Uncore.MC[mc].SLM.DTR3.tRWSR;
+	TIMING(mc, cha).tCWL = RO(Proc)->Uncore.MC[mc].SLM.DTR1.tWCL + 3;
 
-	TIMING(mc, cha).tsrWrTRd = 11
-			+ RO(Proc)->Uncore.MC[mc].SLM.DTR3.tWRSR;
-/*TODO( Write to Write )
-	TIMING(mc, cha).tsrWrTWr = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].SLM.DTR?.;
+/*TODO( Read to Read. Same Rank )
+	TIMING(mc, cha).tsrRdTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR?.;
+*/
+	TIMING(mc, cha).tsrRdTWr = 6 + RO(Proc)->Uncore.MC[mc].SLM.DTR3.tRWSR;
+
+	TIMING(mc, cha).tsrWrTRd = 11 + RO(Proc)->Uncore.MC[mc].SLM.DTR3.tWRSR;
+/*TODO( Write to Write. Same Rank )
+	TIMING(mc, cha).tsrWrTWr = RO(Proc)->Uncore.MC[mc].SLM.DTR?.;
 */
 /* Different Rank */
-	TIMING(mc, cha).tdrRdTRd = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR2.tRRDR;
+	TIMING(mc, cha).tdrRdTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR2.tRRDR;
 	if (TIMING(mc, cha).tdrRdTRd > 0) {
 		TIMING(mc, cha).tdrRdTRd += 5;
 	}
 
-	TIMING(mc, cha).tdrRdTWr = \
-			+ RO(Proc)->Uncore.MC[mc].SLM.DTR2.tRWDR;
+	TIMING(mc, cha).tdrRdTWr = RO(Proc)->Uncore.MC[mc].SLM.DTR2.tRWDR;
 	if (TIMING(mc, cha).tdrRdTWr > 0) {
 		TIMING(mc, cha).tdrRdTWr += 5;
 	}
 
-	TIMING(mc, cha).tdrWrTRd = \
-			+ RO(Proc)->Uncore.MC[mc].SLM.DTR3.tWRDR;
+	TIMING(mc, cha).tdrWrTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR3.tWRDR;
 	if (TIMING(mc, cha).tdrWrTRd > 0) {
 		TIMING(mc, cha).tdrWrTRd += 3;
 	}
 
-	TIMING(mc, cha).tdrWrTWr = 4
-			+ RO(Proc)->Uncore.MC[mc].SLM.DTR2.tWWDR;
+	TIMING(mc, cha).tdrWrTWr = 4 + RO(Proc)->Uncore.MC[mc].SLM.DTR2.tWWDR;
 /* Different DIMM */
-	TIMING(mc, cha).tddRdTRd = \
-			+ RO(Proc)->Uncore.MC[mc].SLM.DTR2.tRRDD;
+	TIMING(mc, cha).tddRdTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR2.tRRDD;
 	if (TIMING(mc, cha).tddRdTRd > 0) {
 		TIMING(mc, cha).tddRdTRd += 5;
 	}
 
-	TIMING(mc, cha).tddRdTWr = \
-			+ RO(Proc)->Uncore.MC[mc].SLM.DTR2.tRWDD;
+	TIMING(mc, cha).tddRdTWr = RO(Proc)->Uncore.MC[mc].SLM.DTR2.tRWDD;
 	if (TIMING(mc, cha).tddRdTWr > 0) {
 		TIMING(mc, cha).tddRdTWr += 5;
 	}
 
-	TIMING(mc, cha).tddWrTRd = 4
-			+ RO(Proc)->Uncore.MC[mc].SLM.DTR3.tWRDD;
+	TIMING(mc, cha).tddWrTRd = 4 + RO(Proc)->Uncore.MC[mc].SLM.DTR3.tWRDD;
 
-	TIMING(mc, cha).tddWrTWr = 4
-			+ RO(Proc)->Uncore.MC[mc].SLM.DTR2.tWWDD;
+	TIMING(mc, cha).tddWrTWr = 4 + RO(Proc)->Uncore.MC[mc].SLM.DTR2.tWWDD;
 /* Command Rate */
-	TIMING(mc, cha).CMD_Rate = 1
-			+ RO(Proc)->Uncore.MC[mc].SLM.DTR1.tCMD;
+	TIMING(mc, cha).CMD_Rate = 1 + RO(Proc)->Uncore.MC[mc].SLM.DTR1.tCMD;
 
 	TIMING(mc, cha).tXS = RO(Proc)->Uncore.MC[mc].SLM.DTR0.tXS;
 
@@ -3256,20 +3232,15 @@ void AMT_MCR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
     for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
     {
 /* Standard Timings */
-	TIMING(mc, cha).tCL  = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR0.Z8000.tCL + 5;
+	TIMING(mc, cha).tCL  = RO(Proc)->Uncore.MC[mc].SLM.DTR0.Z8000.tCL + 5;
 
-	TIMING(mc, cha).tRCD = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR0.Z8000.tRCD + 5;
+	TIMING(mc, cha).tRCD = RO(Proc)->Uncore.MC[mc].SLM.DTR0.Z8000.tRCD + 5;
 
-	TIMING(mc, cha).tRP  = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR0.Z8000.tRP + 5;
+	TIMING(mc, cha).tRP  = RO(Proc)->Uncore.MC[mc].SLM.DTR0.Z8000.tRP + 5;
 
-	TIMING(mc, cha).tRAS = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tRAS;
+	TIMING(mc, cha).tRAS = RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tRAS + 14;
 
-	TIMING(mc, cha).tRRD = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tRRD + 4;
+	TIMING(mc, cha).tRRD = RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tRRD + 4;
 
 	TIMING(mc, cha).tRFC = \
 		RO(Proc)->Uncore.MC[mc].SLM.DTR0.Z8000.tXS == 0 ? 256 : 384;
@@ -3288,88 +3259,84 @@ void AMT_MCR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	TIMING(mc, cha).tREFI *= RO(Shm)->Uncore.CtrlSpeed;
 	TIMING(mc, cha).tREFI /= 20;
 
-/*TODO( Advanced Timings )
-	TIMING(mc, cha).tCKE = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].SLM
-*/
-	TIMING(mc, cha).tRTPr = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tRTP + 4;
+	TIMING(mc, cha).tCKE = RO(Proc)->Uncore.MC[mc].SLM.DRMC.Z8000.CKEVAL;
 
-	TIMING(mc, cha).tWTPr = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tWTP + 14;
+	TIMING(mc, cha).tRTPr= RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tRTP + 4;
 
-	TIMING(mc, cha).B2B   = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tCCD;
+	TIMING(mc, cha).tWTPr= RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tWTP + 15;
 
-	switch (RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tFAW) {
-	case 0 ... 1:
-		TIMING(mc, cha).tFAW = 0;
-		break;
-	default:
-		TIMING(mc, cha).tFAW = \
-		10 + ((unsigned int)RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tFAW << 1);
-		break;
-	}
+      switch (RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tCCD) {
+      case 0:
+	TIMING(mc, cha).B2B = 4;
+	break;
+      case 1:
+	TIMING(mc, cha).B2B = 12;
+	break;
+      case 2:
+	TIMING(mc, cha).B2B = 18;
+	break;
+      case 3:
+      default:
+	TIMING(mc, cha).B2B = 0;
+	break;
+      }
 
-	TIMING(mc, cha).tCWL = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tWCL + 3;
-/* Same Rank */
-/*TODO( Read to Read )
-	TIMING(mc, cha).tsrRdTRd = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR?.;
+      switch (RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tFAW) {
+      case 0 ... 1:
+      case 0xd ... 0xf:
+	TIMING(mc, cha).tFAW = 0;
+	break;
+      default:
+	TIMING(mc, cha).tFAW = \
+	10 + ((unsigned int)RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tFAW << 1);
+	break;
+      }
+
+	TIMING(mc, cha).tCWL = RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tWCL + 3;
+
+/*TODO( Read to Read. Same Rank )
+	TIMING(mc, cha).tsrRdTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR?.;
 */
 	TIMING(mc, cha).tsrRdTWr = 6
-			+ RO(Proc)->Uncore.MC[mc].SLM.DTR3.Z8000.tRWSR;
+				 + RO(Proc)->Uncore.MC[mc].SLM.DTR3.Z8000.tRWSR;
 
 	TIMING(mc, cha).tsrWrTRd = 11
-			+ RO(Proc)->Uncore.MC[mc].SLM.DTR3.Z8000.tWRSR;
-/*TODO( Write to Write )
-	TIMING(mc, cha).tsrWrTWr = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].SLM.DTR?.;
+				 + RO(Proc)->Uncore.MC[mc].SLM.DTR3.Z8000.tWRSR;
+/*TODO( Write to Write. Same Rank )
+	TIMING(mc, cha).tsrWrTWr = RO(Proc)->Uncore.MC[mc].SLM.DTR?.;
 */
 /* Different Rank */
-	TIMING(mc, cha).tdrRdTRd = \
-			RO(Proc)->Uncore.MC[mc].SLM.DTR2.Z8000.tRRDR;
+	TIMING(mc, cha).tdrRdTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR2.Z8000.tRRDR;
 	if (TIMING(mc, cha).tdrRdTRd > 0) {
 		TIMING(mc, cha).tdrRdTRd += 5;
 	}
 
-	TIMING(mc, cha).tdrRdTWr = \
-			+ RO(Proc)->Uncore.MC[mc].SLM.DTR2.Z8000.tRWDR;
+	TIMING(mc, cha).tdrRdTWr = RO(Proc)->Uncore.MC[mc].SLM.DTR2.Z8000.tRWDR;
 	if (TIMING(mc, cha).tdrRdTWr > 0) {
 		TIMING(mc, cha).tdrRdTWr += 5;
 	}
 
-	TIMING(mc, cha).tdrWrTRd = \
-			+ RO(Proc)->Uncore.MC[mc].SLM.DTR3.Z8000.tWRDR;
+	TIMING(mc, cha).tdrWrTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR3.Z8000.tWRDR;
 	if (TIMING(mc, cha).tdrWrTRd > 0) {
 		TIMING(mc, cha).tdrWrTRd += 3;
 	}
 
-	TIMING(mc, cha).tdrWrTWr = 4
-			+ RO(Proc)->Uncore.MC[mc].SLM.DTR2.Z8000.tWWDR;
+	TIMING(mc, cha).tdrWrTWr = RO(Proc)->Uncore.MC[mc].SLM.DTR2.Z8000.tWWDR;
+	if (TIMING(mc, cha).tdrWrTWr > 1) {
+		TIMING(mc, cha).tdrWrTWr += 4;
+	}
 /*TODO( Different DIMM )
-	TIMING(mc, cha).tddRdTRd = \
-			+ RO(Proc)->Uncore.MC[mc].SLM.DTR2.Z8000.tRRDD;
-	if (TIMING(mc, cha).tddRdTRd > 0) {
-		TIMING(mc, cha).tddRdTRd += 5;
-	}
+	TIMING(mc, cha).tddRdTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR2.Z8000.tRRDD;
 
-	TIMING(mc, cha).tddRdTWr = \
-			+ RO(Proc)->Uncore.MC[mc].SLM.DTR2.Z8000.tRWDD;
-	if (TIMING(mc, cha).tddRdTWr > 0) {
-		TIMING(mc, cha).tddRdTWr += 5;
-	}
+	TIMING(mc, cha).tddRdTWr = RO(Proc)->Uncore.MC[mc].SLM.DTR2.Z8000.tRWDD;
 
-	TIMING(mc, cha).tddWrTRd = 4
-			+ RO(Proc)->Uncore.MC[mc].SLM.DTR3.Z8000.tWRDD;
+	TIMING(mc, cha).tddWrTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR3.Z8000.tWRDD;
 
-	TIMING(mc, cha).tddWrTWr = 4
-			+ RO(Proc)->Uncore.MC[mc].SLM.DTR2.Z8000.tWWDD;
+	TIMING(mc, cha).tddWrTWr = RO(Proc)->Uncore.MC[mc].SLM.DTR2.Z8000.tWWDD;
 */
 /* Command Rate */
 	TIMING(mc, cha).CMD_Rate = 1
-			+ RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tCMD;
+				 + RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tCMD;
 
 	TIMING(mc, cha).tXS = RO(Proc)->Uncore.MC[mc].SLM.DTR0.Z8000.tXS;
 

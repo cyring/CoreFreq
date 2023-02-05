@@ -5396,6 +5396,13 @@ static PCI_CALLBACK SoC_SLM(struct pci_dev *dev)
 
 	pci_read_config_dword(dev, 0xd4,
 		&PUBLIC(RO(Proc))->Uncore.MC[0].SLM.DRFC.value);
+/* DRMC */
+	MsgCtrlReg.Offset = 0xb;
+
+	pci_write_config_dword(dev, 0xd0, MsgCtrlReg.value);
+
+	pci_read_config_dword(dev, 0xd4,
+		&PUBLIC(RO(Proc))->Uncore.MC[0].SLM.DRMC.value);
 /* BIOS_CFG */
 	MsgCtrlReg.Port = 0x4;
 	MsgCtrlReg.Offset = 0x6;

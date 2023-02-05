@@ -679,6 +679,7 @@ typedef struct
 	/* 0F00h */	SOC_MC_DTR2		DTR2;		/* 32 bits    */
 	/* 0F00h */	SOC_MC_DTR3		DTR3;		/* 32 bits    */
 	/* 0F00h */	SOC_MC_DRFC		DRFC;		/* 32 bits    */
+			SOC_MC_DRMC		DRMC;		/* 32 bits    */
 	/* 0F00h */	SOC_MC_BIOS_CFG 	BIOS_CFG;	/* 32 bits    */
 		} SLM;
 		struct {

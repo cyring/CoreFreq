@@ -2675,9 +2675,24 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x4			*/
 	} Z8000;
 } SOC_MC_DTR3;
 
-typedef union	/*	MCR: Port=0x01					*/
+typedef union	/*	MCR: Port=0x01 & Offset=0x5			*/
 {
 	unsigned int		value;
+	struct {
+		unsigned int
+		WRODTSTRT	:  2-0,
+		Rsvd_32 	:  4-2,
+		WRODTSTOP	:  7-4,
+		Rsvd_7		:  8-7,
+		RDODTSTRT	: 11-8,
+		Rsvd_24 	: 12-11,
+		RDODTSTOP	: 15-12,
+		Rsvd_15 	: 16-15,
+		TRGSTRDIS	: 17-16,
+		RDODTDIS	: 18-17,
+		WRBODTDIS	: 19-18,
+		Rsvd_31 	: 32-19;
+	};
 	struct {	/*	 Offset=0x5(DTR4A) ; 0x15(DTR4B)	*/
 		unsigned int
 		WRODTSTRT	:  2-0,  /* WR command to ODT assert delay */
@@ -2702,6 +2717,26 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x6			*/
 	struct {
 		unsigned int
 		SREDLY		:  8-0,  /* Self-Refresh Entry delay	*/
+		PMOP		: 13-8,  /* SPID Power Mode Opcode	*/
+		Rsvd_15 	: 16-13,
+		PCLSTO		: 19-16, /* 2:30;3:60;4:120;5:240;6:480;7:1000*/
+		Rsvd_19 	: 20-19,
+		PCLSWKOK	: 21-20, /* Wake Allowed for Page Close */
+		PREAPWDEN	: 22-21, /* Precharge All Command	*/
+		Rsvd_22 	: 23-22,
+		DYNSREN 	: 24-23, /* Dynamic Self-Refresh Enable */
+		CLKGTDIS	: 25-24, /* Clock Gating Disabled	*/
+		DISPWRDN	: 26-25, /* Disable Power Down		*/
+		BLMODE		: 27-26, /* Burst Length Mode		*/
+		Rsvd_27 	: 28-27,
+		REUTCLKGTDIS	: 29-28, /* REUT Clock Gate Disable	*/
+		ENPHYCLKGATE	: 30-29, /* Enable PHY Clock Gate During SR */
+		ENCKTRI		: 31-30, /* CK/CKB TriState During PowerDown */
+		ENCORECLKGATE	: 32-31;  /* Enable Core Clock Gate During SR */
+	};
+	struct {
+		unsigned int
+		SREDLY		:  8-0,  /* Self-Refresh Entry delay	*/
 		DYNSREN 	:  9-8,  /* Dynamic Self-Refresh Enable */
 		Rsvd_28 	: 11-9,
 		DYNPMOP 	: 16-11,
@@ -2716,6 +2751,13 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x6			*/
 typedef union	/*	MCR: Port=0x01 & Offset=0x7			*/
 {
 	unsigned int		value;
+	struct {
+		unsigned int
+		CSTRIST 	:  1-0,  /* Tristate Chip-Select. 0:Never */
+		Rsvd_3		:  4-1,
+		CMDTRIST	:  6-4,  /* Tristate Command if tCMD = 0 */
+		Rsvd_31 	: 32-6;
+	};
 	struct {
 		unsigned int
 		DISPWRDN	:  1-0,  /* Disable Power Down		*/
@@ -2765,6 +2807,36 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x8			*/
 		Rsvd_DRFC_0	: 32-22;
 	} Z8000;
 } SOC_MC_DRFC;
+
+typedef union	/*	MCR: Port=0x01 & Offset=0xB			*/
+{
+	unsigned int		value;
+	struct {
+		unsigned int
+		CKEVAL		:  4-0,
+		CKEMODE		:  5-4,  /* CKE Control Mode		*/
+		Rsvd_5		:  8-5,
+		ODTVAL		: 12-8,
+		ODTMODE 	: 13-12, /* ODT Control Mode		*/
+		Rsvd_13 	: 16-13,
+		COLDWAKE	: 17-16, /* S3 WAKE command		*/
+		Rsvd_17 	: 32-17;
+	};
+	struct {
+		unsigned int
+		CKEVAL		:  2-0,
+		Rsvd_2		:  4-2,
+		CKEMODE 	:  5-4,
+		Rsvd_5		:  8-5,
+		ODTVAL		: 10-8,
+		Rsvd_10 	: 12-10,
+		ODTMODE 	: 13-12,
+		Rsvd_13 	: 16-13,
+		COLDWAKE	: 17-16,
+		DBPTRCLR	: 18-17,
+		Rsvd_18 	: 32-18;
+	} Z8000;
+} SOC_MC_DRMC;
 
 typedef union	/*	MCR: Port=0x04 & Offset=0x6			*/
 {
