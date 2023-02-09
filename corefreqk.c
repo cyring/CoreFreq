@@ -5351,7 +5351,7 @@ static PCI_CALLBACK TCOBASE(struct pci_dev *dev)
 
 #undef WDT_Technology
 
-static PCI_CALLBACK SoC_SLM(struct pci_dev *dev)
+static PCI_CALLBACK SoC_MCR(struct pci_dev *dev)
 {/* DRP */
 	PCI_MCR MsgCtrlReg = {
 	.MBZ = 0, .Bytes = 0, .Offset = 0x0, .Port = 0x1, .OpCode = 0x10
@@ -5412,6 +5412,14 @@ static PCI_CALLBACK SoC_SLM(struct pci_dev *dev)
 	pci_read_config_dword(dev, 0xd4,
 		&PUBLIC(RO(Proc))->Uncore.MC[0].SLM.BIOS_CFG.value);
 
+	return (PCI_CALLBACK) 0;
+}
+
+static PCI_CALLBACK SoC_SLM(struct pci_dev *dev)
+{
+	PCI_CALLBACK rc = SoC_MCR(dev);
+    if ((PCI_CALLBACK) 0 == rc)
+    {
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
 
 	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = 1
@@ -5425,7 +5433,24 @@ static PCI_CALLBACK SoC_SLM(struct pci_dev *dev)
 			PUBLIC(RO(Proc))->Uncore.MC[0].SLM.DRP.RKEN2
 		|	PUBLIC(RO(Proc))->Uncore.MC[0].SLM.DRP.RKEN3
 	);
-	return (PCI_CALLBACK) 0;
+    }
+	return rc;
+}
+
+static PCI_CALLBACK SoC_AMT(struct pci_dev *dev)
+{
+	PCI_CALLBACK rc = SoC_MCR(dev);
+    if ((PCI_CALLBACK) 0 == rc)
+    {
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+
+	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = 1
+		+ ( PUBLIC(RO(Proc))->Uncore.MC[0].SLM.BIOS_CFG.EFF_DUAL_CH_EN
+		| !PUBLIC(RO(Proc))->Uncore.MC[0].SLM.BIOS_CFG.DUAL_CH_DIS );
+
+	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = 1;
+    }
+	return rc;
 }
 
 static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev)

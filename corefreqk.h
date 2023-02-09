@@ -1999,6 +1999,7 @@ static PCI_CALLBACK P965(struct pci_dev *dev) ;
 static PCI_CALLBACK G965(struct pci_dev *dev) ;
 static PCI_CALLBACK P35(struct pci_dev *dev) ;
 static PCI_CALLBACK SoC_SLM(struct pci_dev *dev) ;
+static PCI_CALLBACK SoC_AMT(struct pci_dev *dev) ;
 static PCI_CALLBACK Nehalem_IMC(struct pci_dev *dev) ;
 #define Bloomfield_IMC Nehalem_IMC
 static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev) ;
@@ -2159,7 +2160,7 @@ static struct pci_device_id PCI_SoC_ids[] = {
 	},
 	{	/* Atom - Airmont					*/
 		PCI_VDEVICE(INTEL, DID_INTEL_AIRMONT_HB),
-		.driver_data = (kernel_ulong_t) SoC_SLM
+		.driver_data = (kernel_ulong_t) SoC_AMT
 	},
 	{0, }
 };

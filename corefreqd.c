@@ -3210,11 +3210,36 @@ void AMT_MCR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	unsigned short mc, cha, slot;
 /* BUS & DRAM frequency */
-	RO(Shm)->Uncore.CtrlSpeed = 800LLU + (
-			((2134LLU * RO(Proc)->Uncore.MC[0].SLM.DTR0.DFREQ) >> 3)
-	);
-	RO(Shm)->Uncore.Bus.Rate = 5000;
-
+	switch (RO(Proc)->Uncore.MC[0].SLM.DTR2.Z8000.DFREQ) {
+	case 0b000:
+		RO(Shm)->Uncore.CtrlSpeed = 800LLU;
+		RO(Shm)->Uncore.Bus.Rate = 1600;
+		break;
+	case 0b001:
+		RO(Shm)->Uncore.CtrlSpeed = 1066LLU;
+		RO(Shm)->Uncore.Bus.Rate = 2133;
+		break;
+	case 0b010:
+		RO(Shm)->Uncore.CtrlSpeed = 1333LLU;
+		RO(Shm)->Uncore.Bus.Rate = 2666;
+		break;
+	case 0b011:
+		RO(Shm)->Uncore.CtrlSpeed = 1600LLU;
+		RO(Shm)->Uncore.Bus.Rate = 3200;
+		break;
+	case 0b100:
+		RO(Shm)->Uncore.CtrlSpeed = 1867LLU;
+		RO(Shm)->Uncore.Bus.Rate = 3733;
+		break;
+	case 0b101:
+		RO(Shm)->Uncore.CtrlSpeed = 2133LLU;
+		RO(Shm)->Uncore.Bus.Rate = 4266;
+		break;
+	default:
+		RO(Shm)->Uncore.CtrlSpeed = 2133LLU;
+		RO(Shm)->Uncore.Bus.Rate = 4266;
+		break;
+	}
 	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
 				* RO(Shm)->Uncore.Bus.Rate)
 				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
@@ -3355,33 +3380,20 @@ void AMT_MCR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 			{ .Banks = 8,	.Rows = 1<<16,	.Cols = 1<<10	},
 			{ .Banks = 8,	.Rows = 1<<14,	.Cols = 1<<10	}
 		};
-	    if  (cha == 0) {
+
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
-					RO(Proc)->Uncore.MC[mc].SLM.DRP.RKEN0
-				+	RO(Proc)->Uncore.MC[mc].SLM.DRP.RKEN1;
+				RO(Proc)->Uncore.MC[mc].SLM.DRP.Z8000.RKEN0
+			+	RO(Proc)->Uncore.MC[mc].SLM.DRP.Z8000.RKEN1;
 
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = \
-			DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.DIMMDDEN0].Banks;
+		DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.Z8000.DIMMDDEN0].Banks;
 
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = \
-			DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.DIMMDDEN0].Rows;
+		DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.Z8000.DIMMDDEN0].Rows;
 
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = \
-			DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.DIMMDDEN0].Cols;
-	    } else {
-		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
-					RO(Proc)->Uncore.MC[mc].SLM.DRP.RKEN2
-				+	RO(Proc)->Uncore.MC[mc].SLM.DRP.RKEN3;
+		DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.Z8000.DIMMDDEN0].Cols;
 
-		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = \
-			DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.DIMMDDEN1].Banks;
-
-		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = \
-			DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.DIMMDDEN1].Rows;
-
-		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = \
-			DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.DIMMDDEN1].Cols;
-	    }
 		DIMM_Size = 8LLU
 			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
 			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
@@ -3392,21 +3404,14 @@ void AMT_MCR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 						(unsigned int)(DIMM_Size >> 20);
 	}
 /* Error Correcting Code */
-	TIMING(mc, cha).ECC = \
-			  RO(Proc)->Uncore.MC[mc].SLM.BIOS_CFG.EFF_ECC_EN
-			| RO(Proc)->Uncore.MC[mc].SLM.BIOS_CFG.ECC_EN;
+	TIMING(mc, cha).ECC = RO(Proc)->Uncore.MC[mc].SLM.BIOS_CFG.ECC_EN;
     }
-    if (RO(Proc)->Uncore.MC[mc].SLM.DRP.DRAMTYPE) {
+    if (RO(Proc)->Uncore.MC[mc].SLM.DRP.Z8000.DRAMTYPE) {
 	RO(Shm)->Uncore.Unit.DDR_Ver = 2;
 	RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_LPDDR;
     } else {
 	RO(Shm)->Uncore.Unit.DDR_Ver = 3;
-
-	if (RO(Proc)->Uncore.MC[mc].SLM.DRP.ENLPDDR3) {
-		RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_LPDDR;
-	} else {
-		RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_SDRAM;
-	}
+	RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_SDRAM;
     }
   }
 }
