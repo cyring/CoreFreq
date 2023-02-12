@@ -83,6 +83,7 @@ enum {	GenuineArch = 0,
 	Kabylake_UY,
 	Cannonlake_U,
 	Cannonlake_H,
+	Spreadtrum,
 	Geminilake,
 	Icelake,
 	Icelake_UY,
@@ -133,7 +134,6 @@ enum {	GenuineArch = 0,
 	AMD_Zen4_RPL,
 	ARCHITECTURES
 };
-
 
 enum HYBRID_ARCH {
 	Hybrid_RSVD1	= 0x10,

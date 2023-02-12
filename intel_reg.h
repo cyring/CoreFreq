@@ -2533,7 +2533,7 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x0			*/
 		ECCEN		: 22-21, /* ECC 0:Disabled - 1: Enable	*/
 		DRAMTYPE	: 24-22,
 		Rsvd_4		: 32-24;
-	} Z8000;
+	} AMT;
 } SOC_MC_DRP;
 
 typedef union	/*	MCR: Port=0x01 & Offset=0x1			*/
@@ -2572,7 +2572,7 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x1			*/
 		tZQoper 	: 24-22,
 		PMEDLY		: 26-24,
 		CKEDLY		: 32-26;
-	} Z8000;
+	} AMT;
 } SOC_MC_DTR0;
 
 typedef union	/*	MCR: Port=0x01 & Offset=0x2			*/
@@ -2607,7 +2607,7 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x2			*/
 		tRAS		: 26-21,
 		tRRD		: 29-26,
 		tRTP		: 32-29;
-	} Z8000;
+	} AMT;
 } SOC_MC_DTR1;
 
 typedef union	/*	MCR: Port=0x01 & Offset=0x3			*/
@@ -2638,7 +2638,7 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x3			*/
 		tRWDR		: 20-15,
 		DFREQ		: 23-20, /* DDR3{800,1066,1333,1600,1867,2133}*/
 		nREFI		: 32-23; /* = (DRAM_Clock) / 32		*/
-	} Z8000;
+	} AMT;
 } SOC_MC_DTR2;
 
 typedef union	/*	MCR: Port=0x01 & Offset=0x4			*/
@@ -2672,7 +2672,7 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x4			*/
 		tXP		: 24-20,
 		PWDDLY		: 28-24,
 		Rsvd4_DTR3	: 32-28;
-	} Z8000;
+	} AMT;
 } SOC_MC_DTR3;
 
 typedef union	/*	MCR: Port=0x01 & Offset=0x5			*/
@@ -2708,7 +2708,7 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x5			*/
 		WRBODTDIS	: 19-18, /*Disable Write ODT non-targeted DIMM*/
 		Rsvd_27 	: 23-19,
 		nRFCab		: 32-23; /*Define tRFC(DDR3), tRFCab(LPDDR2/3)*/
-	} Z8000;
+	} AMT;
 } SOC_MC_DTR4;
 
 typedef union	/*	MCR: Port=0x01 & Offset=0x6			*/
@@ -2745,7 +2745,7 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x6			*/
 		WFZQEN		: 23-22, /* Enable ZQ Calibration in WAKEF */
 		CSTRIST 	: 24-23, /*Tristate Chip-Select:SRE to SRX+tXS*/
 		PASR		: 32-24; /* Refresh SUSPEND Partial MR17 */
-	} Z8000;
+	} AMT;
 } SOC_MC_DPMC0;
 
 typedef union	/*	MCR: Port=0x01 & Offset=0x7			*/
@@ -2772,7 +2772,7 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x7			*/
 		CLKGTDIS	: 28-27, /* Clock Gating Disabled	*/
 		REUTCLKGTDIS	: 29-28, /* REUT Clock Gate Disabled	*/
 		tWTW		: 32-29;
-	} Z8000;
+	} AMT;
 } SOC_MC_DPMC1;
 
 typedef union	/*	MCR: Port=0x01 & Offset=0x8			*/
@@ -2805,7 +2805,7 @@ typedef union	/*	MCR: Port=0x01 & Offset=0x8			*/
 		REFSKWDIS	: 21-20,
 		REFDBTCLR	: 22-21,
 		Rsvd_DRFC_0	: 32-22;
-	} Z8000;
+	} AMT;
 } SOC_MC_DRFC;
 
 typedef union	/*	MCR: Port=0x01 & Offset=0xB			*/
@@ -2835,7 +2835,7 @@ typedef union	/*	MCR: Port=0x01 & Offset=0xB			*/
 		COLDWAKE	: 17-16,
 		DBPTRCLR	: 18-17,
 		Rsvd_18 	: 32-18;
-	} Z8000;
+	} AMT;
 } SOC_MC_DRMC;
 
 typedef union	/*	MCR: Port=0x04 & Offset=0x6			*/

@@ -3210,7 +3210,7 @@ void AMT_MCR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	unsigned short mc, cha, slot;
 /* BUS & DRAM frequency */
-	switch (RO(Proc)->Uncore.MC[0].SLM.DTR2.Z8000.DFREQ) {
+	switch (RO(Proc)->Uncore.MC[0].SLM.DTR2.AMT.DFREQ) {
 	case 0b000:
 		RO(Shm)->Uncore.CtrlSpeed = 800LLU;
 		RO(Shm)->Uncore.Bus.Rate = 1600;
@@ -3257,20 +3257,20 @@ void AMT_MCR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
     for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
     {
 /* Standard Timings */
-	TIMING(mc, cha).tCL  = RO(Proc)->Uncore.MC[mc].SLM.DTR0.Z8000.tCL + 5;
+	TIMING(mc, cha).tCL  = RO(Proc)->Uncore.MC[mc].SLM.DTR0.AMT.tCL + 5;
 
-	TIMING(mc, cha).tRCD = RO(Proc)->Uncore.MC[mc].SLM.DTR0.Z8000.tRCD + 5;
+	TIMING(mc, cha).tRCD = RO(Proc)->Uncore.MC[mc].SLM.DTR0.AMT.tRCD + 5;
 
-	TIMING(mc, cha).tRP  = RO(Proc)->Uncore.MC[mc].SLM.DTR0.Z8000.tRP + 5;
+	TIMING(mc, cha).tRP  = RO(Proc)->Uncore.MC[mc].SLM.DTR0.AMT.tRP + 5;
 
-	TIMING(mc, cha).tRAS = RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tRAS + 14;
+	TIMING(mc, cha).tRAS = RO(Proc)->Uncore.MC[mc].SLM.DTR1.AMT.tRAS + 14;
 
-	TIMING(mc, cha).tRRD = RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tRRD + 4;
+	TIMING(mc, cha).tRRD = RO(Proc)->Uncore.MC[mc].SLM.DTR1.AMT.tRRD + 4;
 
 	TIMING(mc, cha).tRFC = \
-		RO(Proc)->Uncore.MC[mc].SLM.DTR0.Z8000.tXS == 0 ? 256 : 384;
+		RO(Proc)->Uncore.MC[mc].SLM.DTR0.AMT.tXS == 0 ? 256 : 384;
 
-	switch (RO(Proc)->Uncore.MC[mc].SLM.DRFC.Z8000.tREFI) {
+	switch (RO(Proc)->Uncore.MC[mc].SLM.DRFC.AMT.tREFI) {
 	case 0 ... 1:
 		TIMING(mc, cha).tREFI = 0;
 		break;
@@ -3284,88 +3284,88 @@ void AMT_MCR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	TIMING(mc, cha).tREFI *= RO(Shm)->Uncore.CtrlSpeed;
 	TIMING(mc, cha).tREFI /= 20;
 
-	TIMING(mc, cha).tCKE = RO(Proc)->Uncore.MC[mc].SLM.DRMC.Z8000.CKEVAL;
+	TIMING(mc, cha).tCKE = RO(Proc)->Uncore.MC[mc].SLM.DRMC.AMT.CKEVAL;
 
-	TIMING(mc, cha).tRTPr= RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tRTP + 4;
+	TIMING(mc, cha).tRTPr= RO(Proc)->Uncore.MC[mc].SLM.DTR1.AMT.tRTP + 4;
 
-	TIMING(mc, cha).tWTPr= RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tWTP + 15;
+	TIMING(mc, cha).tWTPr= RO(Proc)->Uncore.MC[mc].SLM.DTR1.AMT.tWTP + 15;
 
-      switch (RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tCCD) {
-      case 0:
-	TIMING(mc, cha).B2B = 4;
-	break;
-      case 1:
-	TIMING(mc, cha).B2B = 12;
-	break;
-      case 2:
-	TIMING(mc, cha).B2B = 18;
-	break;
-      case 3:
-      default:
-	TIMING(mc, cha).B2B = 0;
-	break;
-      }
+	switch (RO(Proc)->Uncore.MC[mc].SLM.DTR1.AMT.tCCD) {
+	case 0:
+		TIMING(mc, cha).B2B = 4;
+		break;
+	case 1:
+		TIMING(mc, cha).B2B = 12;
+		break;
+	case 2:
+		TIMING(mc, cha).B2B = 18;
+		break;
+	case 3:
+	default:
+		TIMING(mc, cha).B2B = 0;
+		break;
+	}
 
-      switch (RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tFAW) {
-      case 0 ... 1:
-      case 0xd ... 0xf:
-	TIMING(mc, cha).tFAW = 0;
-	break;
-      default:
-	TIMING(mc, cha).tFAW = \
-	10 + ((unsigned int)RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tFAW << 1);
-	break;
-      }
+	switch (RO(Proc)->Uncore.MC[mc].SLM.DTR1.AMT.tFAW) {
+	case 0 ... 1:
+	case 0xd ... 0xf:
+		TIMING(mc, cha).tFAW = 0;
+		break;
+	default:
+		TIMING(mc, cha).tFAW = \
+		10 + ((unsigned int)RO(Proc)->Uncore.MC[mc].SLM.DTR1.AMT.tFAW << 1);
+		break;
+	}
 
-	TIMING(mc, cha).tCWL = RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tWCL + 3;
+	TIMING(mc, cha).tCWL = RO(Proc)->Uncore.MC[mc].SLM.DTR1.AMT.tWCL + 3;
 
 /*TODO( Read to Read. Same Rank )
 	TIMING(mc, cha).tsrRdTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR?.;
 */
 	TIMING(mc, cha).tsrRdTWr = 6
-				 + RO(Proc)->Uncore.MC[mc].SLM.DTR3.Z8000.tRWSR;
+				 + RO(Proc)->Uncore.MC[mc].SLM.DTR3.AMT.tRWSR;
 
 	TIMING(mc, cha).tsrWrTRd = 11
-				 + RO(Proc)->Uncore.MC[mc].SLM.DTR3.Z8000.tWRSR;
+				 + RO(Proc)->Uncore.MC[mc].SLM.DTR3.AMT.tWRSR;
 /*TODO( Write to Write. Same Rank )
 	TIMING(mc, cha).tsrWrTWr = RO(Proc)->Uncore.MC[mc].SLM.DTR?.;
 */
 /* Different Rank */
-	TIMING(mc, cha).tdrRdTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR2.Z8000.tRRDR;
+	TIMING(mc, cha).tdrRdTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR2.AMT.tRRDR;
 	if (TIMING(mc, cha).tdrRdTRd > 0) {
 		TIMING(mc, cha).tdrRdTRd += 5;
 	}
 
-	TIMING(mc, cha).tdrRdTWr = RO(Proc)->Uncore.MC[mc].SLM.DTR2.Z8000.tRWDR;
+	TIMING(mc, cha).tdrRdTWr = RO(Proc)->Uncore.MC[mc].SLM.DTR2.AMT.tRWDR;
 	if (TIMING(mc, cha).tdrRdTWr > 0) {
 		TIMING(mc, cha).tdrRdTWr += 5;
 	}
 
-	TIMING(mc, cha).tdrWrTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR3.Z8000.tWRDR;
+	TIMING(mc, cha).tdrWrTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR3.AMT.tWRDR;
 	if (TIMING(mc, cha).tdrWrTRd > 0) {
 		TIMING(mc, cha).tdrWrTRd += 3;
 	}
 
-	TIMING(mc, cha).tdrWrTWr = RO(Proc)->Uncore.MC[mc].SLM.DTR2.Z8000.tWWDR;
+	TIMING(mc, cha).tdrWrTWr = RO(Proc)->Uncore.MC[mc].SLM.DTR2.AMT.tWWDR;
 	if (TIMING(mc, cha).tdrWrTWr > 1) {
 		TIMING(mc, cha).tdrWrTWr += 4;
 	}
 /*TODO( Different DIMM )
-	TIMING(mc, cha).tddRdTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR2.Z8000.tRRDD;
+	TIMING(mc, cha).tddRdTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR2.AMT.tRRDD;
 
-	TIMING(mc, cha).tddRdTWr = RO(Proc)->Uncore.MC[mc].SLM.DTR2.Z8000.tRWDD;
+	TIMING(mc, cha).tddRdTWr = RO(Proc)->Uncore.MC[mc].SLM.DTR2.AMT.tRWDD;
 
-	TIMING(mc, cha).tddWrTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR3.Z8000.tWRDD;
+	TIMING(mc, cha).tddWrTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR3.AMT.tWRDD;
 
-	TIMING(mc, cha).tddWrTWr = RO(Proc)->Uncore.MC[mc].SLM.DTR2.Z8000.tWWDD;
+	TIMING(mc, cha).tddWrTWr = RO(Proc)->Uncore.MC[mc].SLM.DTR2.AMT.tWWDD;
 */
 /* Command Rate */
 	TIMING(mc, cha).CMD_Rate = 1
-				 + RO(Proc)->Uncore.MC[mc].SLM.DTR1.Z8000.tCMD;
+				 + RO(Proc)->Uncore.MC[mc].SLM.DTR1.AMT.tCMD;
 
-	TIMING(mc, cha).tXS = RO(Proc)->Uncore.MC[mc].SLM.DTR0.Z8000.tXS;
+	TIMING(mc, cha).tXS = RO(Proc)->Uncore.MC[mc].SLM.DTR0.AMT.tXS;
 
-	TIMING(mc, cha).tXP = RO(Proc)->Uncore.MC[mc].SLM.DTR3.Z8000.tXP;
+	TIMING(mc, cha).tXP = RO(Proc)->Uncore.MC[mc].SLM.DTR3.AMT.tXP;
 /* Topology */
 	for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
 	{
@@ -3382,17 +3382,17 @@ void AMT_MCR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		};
 
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
-				RO(Proc)->Uncore.MC[mc].SLM.DRP.Z8000.RKEN0
-			+	RO(Proc)->Uncore.MC[mc].SLM.DRP.Z8000.RKEN1;
+				RO(Proc)->Uncore.MC[mc].SLM.DRP.AMT.RKEN0
+			+	RO(Proc)->Uncore.MC[mc].SLM.DRP.AMT.RKEN1;
 
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = \
-		DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.Z8000.DIMMDDEN0].Banks;
+		DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.AMT.DIMMDDEN0].Banks;
 
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = \
-		DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.Z8000.DIMMDDEN0].Rows;
+		DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.AMT.DIMMDDEN0].Rows;
 
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = \
-		DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.Z8000.DIMMDDEN0].Cols;
+		DDR3L[RO(Proc)->Uncore.MC[mc].SLM.DRP.AMT.DIMMDDEN0].Cols;
 
 		DIMM_Size = 8LLU
 			* RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
@@ -3406,7 +3406,7 @@ void AMT_MCR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 /* Error Correcting Code */
 	TIMING(mc, cha).ECC = RO(Proc)->Uncore.MC[mc].SLM.BIOS_CFG.ECC_EN;
     }
-    if (RO(Proc)->Uncore.MC[mc].SLM.DRP.Z8000.DRAMTYPE) {
+    if (RO(Proc)->Uncore.MC[mc].SLM.DRP.AMT.DRAMTYPE) {
 	RO(Shm)->Uncore.Unit.DDR_Ver = 2;
 	RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_LPDDR;
     } else {
