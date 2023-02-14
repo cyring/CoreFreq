@@ -14198,6 +14198,27 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 	PUBLIC(RO(Proc))->Counter[_T].MC6 =				\
 		readq(PRIVATE(OF(PCU)).BAR + PRIVATE(OF(PCU)).ADDR);	\
     }									\
+    switch (PUBLIC(RO(Proc))->ArchID) { 				\
+    case Tigerlake:							\
+    case Tigerlake_U:							\
+	TGL_SA(PRIVATE(OF(PCU)).BAR);					\
+	break;								\
+    case Rocketlake:							\
+    case Rocketlake_U:							\
+	RKL_SA(PRIVATE(OF(PCU)).BAR);					\
+	break;								\
+    case Alderlake_S:							\
+    case Alderlake_H:							\
+    case Alderlake_N:							\
+    case Meteorlake_M:							\
+    case Meteorlake_N:							\
+    case Meteorlake_S:							\
+    case Raptorlake:							\
+    case Raptorlake_P:							\
+    case Raptorlake_S:							\
+	ADL_SA(PRIVATE(OF(PCU)).BAR);					\
+	break;								\
+    }									\
   }									\
 })
 
