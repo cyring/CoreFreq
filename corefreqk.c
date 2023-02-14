@@ -5112,8 +5112,16 @@ void Query_TGL_IMC(void __iomem *mchmap, unsigned short mc)
 {	/*Source: 11th Generation Intel® Core Processor Datasheet Vol 2 */
 	unsigned short cha;
 
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 0;
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 0;
+
 	/*		Intra channel configuration			*/
 	PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADCH.value = readl(mchmap+0x5000);
+
+    if (PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADCH.value == 0xffffffff)
+    {
+		goto EXIT_TGL_IMC;
+    }
     if (PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADCH.CH_L_MAP)
     {
 	PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADC0.value = readl(mchmap+0x5008);
@@ -5122,9 +5130,20 @@ void Query_TGL_IMC(void __iomem *mchmap, unsigned short mc)
 	PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADC0.value = readl(mchmap+0x5004);
 	PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADC1.value = readl(mchmap+0x5008);
     }
+    if ( (PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADC0.value == 0xffffffff)
+      || (PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADC1.value == 0xffffffff) )
+    {
+		goto EXIT_TGL_IMC;
+    }
 	/*		DIMM parameters					*/
 	PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD0.value = readl(mchmap+0x500c);
 	PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD1.value = readl(mchmap+0x5010);
+
+    if ( (PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD0.value == 0xffffffff)
+      || (PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD1.value == 0xffffffff) )
+    {
+		goto EXIT_TGL_IMC;
+    }
 	/*		Sum up any present DIMM per channel.		*/
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
 	  ((PUBLIC(RO(Proc))->Uncore.MC[mc].TGL.MADD0.Dimm_L_Size != 0)
@@ -5173,16 +5192,25 @@ void Query_TGL_IMC(void __iomem *mchmap, unsigned short mc)
 	Query_Turbo_TDP_Config(mchmap);
 	TGL_SA(mchmap);
     }
+EXIT_TGL_IMC:
 }
 
 #define ADL_SA	TGL_SA
 
 void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
 {	/*Source: 12th Generation Intel® Core Processor Datasheet Vol 2 */
-	unsigned short cha, channelCount;
+	unsigned short cha;
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 0;
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 0;
 
 	/*		Intra channel configuration			*/
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADCH.value = readl(mchmap+0xd800);
+
+    if (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADCH.value == 0xffffffff)
+    {
+		goto EXIT_ADL_IMC;
+    }
     if (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADCH.CH_L_MAP)
     {
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADC0.value = readl(mchmap+0xd808);
@@ -5191,18 +5219,34 @@ void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADC0.value = readl(mchmap+0xd804);
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADC1.value = readl(mchmap+0xd808);
     }
+    if ( (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADC0.value == 0xffffffff)
+      || (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADC1.value == 0xffffffff) )
+    {
+		goto EXIT_ADL_IMC;
+    }
 	/*		DIMM parameters					*/
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.value = readl(mchmap+0xd80c);
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.value = readl(mchmap+0xd810);
+
+    if ( (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.value == 0xffffffff)
+      || (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.value == 0xffffffff) )
+    {
+		goto EXIT_ADL_IMC;
+    }
+	/*	Check for 2 DIMMs Per Channel is enabled		*/
+    if (PUBLIC(RO(Proc))->Uncore.Bus.ADL_Cap_A.DDPCD == 0) {
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 2;
+    } else {
 	/*	Guessing activated channel from the populated DIMM.	*/
-	channelCount = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
 	  ((PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.Dimm_L_Size != 0)
 	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.Dimm_S_Size != 0))
 	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.Dimm_L_Size != 0)
 	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.Dimm_S_Size != 0));
+    }
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
 
-    for (cha = 0 ; (cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount)
-		&& (cha < channelCount); cha++)
+    for (cha = 0 ; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
     {
 	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].ADL.Timing.value = \
 					readq(mchmap + 0xe000 + 0x800 * cha);
@@ -5241,6 +5285,7 @@ void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
 	Query_Turbo_TDP_Config(mchmap);
 	ADL_SA(mchmap);
     }
+EXIT_ADL_IMC:
 }
 
 void Query_GLK_IMC(void __iomem *mchmap, unsigned short mc)
@@ -6054,21 +6099,27 @@ static PCI_CALLBACK TGL_IMC(struct pci_dev *dev)
 	PCI_CALLBACK rc = 0;
 	unsigned short mc;
 
-	PUBLIC(RO(Proc))->Uncore.CtrlCount = 2;
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 0;
 	/*	Controller #0 is not necessary activated but enabled.	*/
-	for (mc = 0; mc < PUBLIC(RO(Proc))->Uncore.CtrlCount; mc++) {
+	for (mc = 0; mc < MC_MAX_CTRL; mc++)
+	{
 		rc = SKL_HOST(dev, Query_TGL_IMC, 0x10000, mc);
+
+		if ( ((PCI_CALLBACK) 0 == rc)
+		  && (PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount > 0) ) {
+			PUBLIC(RO(Proc))->Uncore.CtrlCount = mc + 1;
+		}
 	}
 	pci_read_config_dword(dev, 0xf0,
 				&PUBLIC(RO(Proc))->Uncore.Bus.TGL_Cap_E.value);
 	return rc;
 }
 
-static PCI_CALLBACK ADL_IMC(struct pci_dev *dev)
-{	/* Source: 12th Generation Intel Core Processors datasheet, vol 2 */
-	PCI_CALLBACK rc = 0;
-	unsigned short mc, cha;
-
+static PCI_CALLBACK ADL_HOST(	struct pci_dev *dev,
+				ROUTER Query,
+				unsigned long long wsize,
+				unsigned short mc )
+{
 	pci_read_config_dword(dev, 0xe4,
 				&PUBLIC(RO(Proc))->Uncore.Bus.ADL_Cap_A.value);
 
@@ -6081,21 +6132,25 @@ static PCI_CALLBACK ADL_IMC(struct pci_dev *dev)
 	pci_read_config_dword(dev, 0xf0,
 				&PUBLIC(RO(Proc))->Uncore.Bus.ADL_Cap_E.value);
 
-	/* MCHBAR corresponds to bits 41 to 17 ; two MC x 64KB memory space */
-	PUBLIC(RO(Proc))->Uncore.CtrlCount = 2;
-  for (mc = 0; mc < PUBLIC(RO(Proc))->Uncore.CtrlCount; mc++)
-  {	/*	2 DIMMs Per Channel Enable			*/
-   if (PUBLIC(RO(Proc))->Uncore.Bus.ADL_Cap_A.DDPCD == 0) {
-	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 2;
-   } else {
-	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 1;
-   }
-	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
+	SoC_SKL_VTD();
 
-	rc = SKL_HOST(dev, Query_ADL_IMC, 0x10000, mc);
+	return Router(dev, 0x48, 64, wsize, Query, mc);
+}
 
-   if ((PCI_CALLBACK) 0 == rc) {
-    if (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADCH.value) {
+static PCI_CALLBACK ADL_IMC(struct pci_dev *dev)
+{	/* Source: 12th Generation Intel Core Processors datasheet, vol 2 */
+	PCI_CALLBACK rc = 0;
+	unsigned short mc, cha;
+
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 0;
+	/* MCHBAR matches bits 41 to 17 ; two MC x 64KB memory space	*/
+  for (mc = 0; mc < MC_MAX_CTRL; mc++)
+  {
+	rc = ADL_HOST(dev, Query_ADL_IMC, 0x10000, mc);
+
+   if ( (PCI_CALLBACK) 0 == rc)
+   {
+    if (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADCH.value != 0xffffffff) {
      switch (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADCH.DDR_TYPE) {
      case 0b01:	/*	DDR5	*/
      case 0b10:	/*	LPDDR5	*/
@@ -6109,6 +6164,10 @@ static PCI_CALLBACK ADL_IMC(struct pci_dev *dev)
       }
 	break;
      }
+    }
+    if (PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount > 0)
+    {
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = mc + 1;
     }
    }
   }
