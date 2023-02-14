@@ -9502,6 +9502,10 @@ void Intel_Watchdog(CORE_RO *Core)
 		PCI_VDEVICE(INTEL, DID_INTEL_PCH_600_SMBUS),
 		.driver_data = (kernel_ulong_t) TCOBASE
 		},
+		{
+		PCI_VDEVICE(INTEL, DID_INTEL_PCH_P_SMBUS),
+		.driver_data = (kernel_ulong_t) TCOBASE
+		},
 		{0, }
 	};
 	if (CoreFreqK_ProbePCI(PCI_WDT_ids, NULL, NULL) < RC_SUCCESS) {

@@ -2851,6 +2851,10 @@ static struct pci_device_id PCI_ADL_RPL_ids[] = {
 		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_HM670_PCH),
 		.driver_data = (kernel_ulong_t) ADL_PCH
 	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_PCH_P),
+		.driver_data = (kernel_ulong_t) ADL_PCH
+	},
 /* 13th Generation							*/
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_S_8P_16E_HB),

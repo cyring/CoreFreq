@@ -1425,6 +1425,9 @@ typedef struct
 #define DID_INTEL_ALDERLAKE_WM690_PCH	0x7a8d
 #define DID_INTEL_ALDERLAKE_HM670_PCH	0x7a8c
 #define DID_INTEL_PCH_600_SMBUS 	0xa0a3
+/* Source: 12th Gen Intel(R) Core(TM) i7-12700H 			*/
+#define DID_INTEL_ALDERLAKE_PCH_P	0x5182 /* PCH eSPI Controller	*/
+#define DID_INTEL_PCH_P_SMBUS		0x51a3
 /* Source: 13th Generation Intel Core Processors Datasheet, vol 1	*/
 #define DID_INTEL_RAPTORLAKE_S_8P_16E_HB 0xa700
 #define DID_INTEL_RAPTORLAKE_S_8P_8E_HB 0xa703

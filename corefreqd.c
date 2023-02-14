@@ -6439,6 +6439,7 @@ static char *Chipset[CHIPSETS] = {
 	[IC_W680]		= "Intel W680",
 	[IC_WM690]		= "Intel WM690",
 	[IC_HM670]		= "Intel HM670",
+	[IC_ADL_PCH_P]		= "Intel ADL PCH-P",
 	[IC_Z790]		= "Intel Z790",
 	[IC_H770]		= "Intel H770",
 	[IC_B760]		= "Intel B760",
@@ -6931,6 +6932,9 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		break;
 	case DID_INTEL_ALDERLAKE_HM670_PCH:
 		SET_CHIPSET(IC_HM670);
+		break;
+	case DID_INTEL_ALDERLAKE_PCH_P:
+		SET_CHIPSET(IC_ADL_PCH_P);
 		break;
 	case DID_INTEL_GEMINILAKE_HB:
 		GLK_CAP(RO(Shm), RO(Proc), RO(Core));
