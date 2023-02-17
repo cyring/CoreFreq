@@ -3212,32 +3212,32 @@ void AMT_MCR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 /* BUS & DRAM frequency */
 	switch (RO(Proc)->Uncore.MC[0].SLM.DTR2.AMT.DFREQ) {
 	case 0b000:
+		RO(Shm)->Uncore.CtrlSpeed = 400LLU;
+		RO(Shm)->Uncore.Bus.Rate = 800;
+		break;
+	case 0b001:
+		RO(Shm)->Uncore.CtrlSpeed = 533LLU;
+		RO(Shm)->Uncore.Bus.Rate = 1066;
+		break;
+	case 0b010:
+		RO(Shm)->Uncore.CtrlSpeed = 666LLU;
+		RO(Shm)->Uncore.Bus.Rate = 1333;
+		break;
+	case 0b011:
 		RO(Shm)->Uncore.CtrlSpeed = 800LLU;
 		RO(Shm)->Uncore.Bus.Rate = 1600;
 		break;
-	case 0b001:
+	case 0b100:
+		RO(Shm)->Uncore.CtrlSpeed = 933LLU;
+		RO(Shm)->Uncore.Bus.Rate = 1866;
+		break;
+	case 0b101:
 		RO(Shm)->Uncore.CtrlSpeed = 1066LLU;
 		RO(Shm)->Uncore.Bus.Rate = 2133;
 		break;
-	case 0b010:
-		RO(Shm)->Uncore.CtrlSpeed = 1333LLU;
-		RO(Shm)->Uncore.Bus.Rate = 2666;
-		break;
-	case 0b011:
-		RO(Shm)->Uncore.CtrlSpeed = 1600LLU;
-		RO(Shm)->Uncore.Bus.Rate = 3200;
-		break;
-	case 0b100:
-		RO(Shm)->Uncore.CtrlSpeed = 1867LLU;
-		RO(Shm)->Uncore.Bus.Rate = 3733;
-		break;
-	case 0b101:
-		RO(Shm)->Uncore.CtrlSpeed = 2133LLU;
-		RO(Shm)->Uncore.Bus.Rate = 4266;
-		break;
 	default:
-		RO(Shm)->Uncore.CtrlSpeed = 2133LLU;
-		RO(Shm)->Uncore.Bus.Rate = 4266;
+		RO(Shm)->Uncore.CtrlSpeed = 1066LLU;
+		RO(Shm)->Uncore.Bus.Rate = 2133;
 		break;
 	}
 	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
