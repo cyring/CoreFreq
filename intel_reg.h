@@ -3147,6 +3147,16 @@ typedef union
 		PLL_REF100	:  9-8,  /* 0=133,33 MHz , 1=100,00 MHz */
 		ReservedBits2 	: 32-9;
 	};
+	struct {
+		unsigned int
+		MC_PLL_RATIO	:  8-0,  /* Each bin is 133/100MHz	*/
+		MC_PLL_REF	: 12-8,  /* 0=133,33 MHz , 1=100,00 MHz */
+		GEAR		: 14-12, /* 0:QCLK; 1:2xQCLK; 2:4xQCLK	*/
+		ReservedBits 	: 17-14,
+		REQ_VDDQ_TX_VOLT: 27-17,
+		REQ_VDDQ_TX_ICC : 31-27,
+		RUN_BUSY	: 32-31;
+	};
 } BIOS_MEMCLOCK;
 
 typedef union

@@ -5079,21 +5079,8 @@ void RKL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	unsigned int units = 12;
+	unsigned int Bus_Rate = RO(Proc)->Uncore.Bus.BIOS_DDR.MC_PLL_RATIO;
 	unsigned short mc, clock_done;
-
-    if (RO(Proc)->Uncore.Bus.RKL_SA_Pll.UCLK_RATIO > 0) {/* Ring Interconnect */
-	RO(Shm)->Uncore.Bus.Rate = RO(Proc)->Uncore.Bus.RKL_SA_Pll.UCLK_RATIO;
-	RO(Shm)->Uncore.Bus.Rate *= 100;
-	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;
-	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;
-    } else {					/* Advertised Bus Speed */
-	RO(Shm)->Uncore.Bus.Rate = 8000;
-	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MTS;
-	RO(Shm)->Uncore.Unit.BusSpeed = MC_MTS;
-    }
-	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
-				* RO(Shm)->Uncore.Bus.Rate)
-				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
   for (mc = 0, clock_done = 0;
 	mc < RO(Shm)->Uncore.CtrlCount && !clock_done;
@@ -5153,6 +5140,8 @@ void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
     {
 	RO(Shm)->Uncore.CtrlSpeed = (266 * units) + ((334 * units) / 501);
 	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MTS;
+
+	Bus_Rate = Bus_Rate * 100U;
     }
     else	/*	Is Memory frequency overclocked ?		*/
     {
@@ -5163,14 +5152,26 @@ void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		Freq_Hz = Freq_Hz * RO(Core)->Clock.Hz * 400LLU;
 		Freq_Hz = Freq_Hz / RO(Shm)->Proc.Features.Factory.Clock.Hz;
 		Freq_Hz = Freq_Hz / 3LLU;
+
+		Bus_Rate = Bus_Rate * 400U;
+		Bus_Rate = Bus_Rate / 3U;
 	} else {
 		Freq_Hz = RO(Proc)->Uncore.Bus.RKL_SA_Pll.QCLK_RATIO;
 		Freq_Hz = Freq_Hz * RO(Core)->Clock.Hz * 100LLU;
 		Freq_Hz = Freq_Hz / RO(Shm)->Proc.Features.Factory.Clock.Hz;
+
+		Bus_Rate = Bus_Rate * 100U;
 	}
 	RO(Shm)->Uncore.CtrlSpeed = (unsigned short) Freq_Hz;
 	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
     }
+	RO(Shm)->Uncore.Bus.Rate = Bus_Rate;
+	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
+				* RO(Shm)->Uncore.Bus.Rate)
+				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
+
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
 
 	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.RKL_Cap_A.VT_d;
@@ -5631,21 +5632,8 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	unsigned int units = 12;
+	unsigned int Bus_Rate = RO(Proc)->Uncore.Bus.BIOS_DDR.MC_PLL_RATIO;
 	unsigned short mc, clock_done;
-
-    if (RO(Proc)->Uncore.Bus.ADL_SA_Pll.UCLK_RATIO > 0) {/* Ring Interconnect */
-	RO(Shm)->Uncore.Bus.Rate = RO(Proc)->Uncore.Bus.ADL_SA_Pll.UCLK_RATIO;
-	RO(Shm)->Uncore.Bus.Rate *= 100;
-	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;
-	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;
-    } else {					/* Advertised Bus Speed */
-	RO(Shm)->Uncore.Bus.Rate = 8000;
-	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MTS;
-	RO(Shm)->Uncore.Unit.BusSpeed = MC_MTS;
-    }
-	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
-				* RO(Shm)->Uncore.Bus.Rate)
-				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
   for (mc = 0, clock_done = 0;
 	mc < RO(Shm)->Uncore.CtrlCount && !clock_done;
@@ -5705,6 +5693,8 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
     {
 	RO(Shm)->Uncore.CtrlSpeed = (266 * units) + ((334 * units) / 501);
 	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MTS;
+
+	Bus_Rate = Bus_Rate * 100U;
     }
     else	/*	Is Memory frequency overclocked ?		*/
     {
@@ -5715,14 +5705,26 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		Freq_Hz = Freq_Hz * RO(Core)->Clock.Hz * 400LLU;
 		Freq_Hz = Freq_Hz / RO(Shm)->Proc.Features.Factory.Clock.Hz;
 		Freq_Hz = Freq_Hz / 3LLU;
+
+		Bus_Rate = Bus_Rate * 400U;
+		Bus_Rate = Bus_Rate / 3U;
 	} else {
 		Freq_Hz = RO(Proc)->Uncore.Bus.ADL_SA_Pll.QCLK_RATIO;
 		Freq_Hz = Freq_Hz * RO(Core)->Clock.Hz * 100LLU;
 		Freq_Hz = Freq_Hz / RO(Shm)->Proc.Features.Factory.Clock.Hz;
+
+		Bus_Rate = Bus_Rate * 100U;
 	}
 	RO(Shm)->Uncore.CtrlSpeed = (unsigned short) Freq_Hz;
 	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
     }
+	RO(Shm)->Uncore.Bus.Rate = Bus_Rate;
+	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
+				* RO(Shm)->Uncore.Bus.Rate)
+				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
+
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
 
 	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.ADL_Cap_A.VT_d;

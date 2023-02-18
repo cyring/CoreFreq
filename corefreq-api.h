@@ -750,13 +750,13 @@ typedef struct
 		struct {
 			NHM_IMC_CLK_RATIO_STATUS DimmClock;
 			QPI_FREQUENCY		QuickPath;
+			BIOS_MEMCLOCK		BIOS_DDR;
 		};
 	union {
 		struct {
 			MCH_CLKCFG		ClkCfg;
 			SNB_CAPID_A		SNB_Cap;
 			IVB_CAPID_B		IVB_Cap;
-			BIOS_MEMCLOCK		BIOS_DDR;
 		};
 		struct {
 			SNB_EP_CAPID0		SNB_EP_Cap0;

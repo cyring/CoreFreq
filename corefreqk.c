@@ -5102,6 +5102,7 @@ void Query_RKL_IMC(void __iomem *mchmap, unsigned short mc)
     }
     if (mc == 0) {
 	Query_Turbo_TDP_Config(mchmap);
+	BIOS_DDR(mchmap);
 	RKL_SA(mchmap);
     }
 }
@@ -5190,6 +5191,7 @@ void Query_TGL_IMC(void __iomem *mchmap, unsigned short mc)
     }
     if (mc == 0) {
 	Query_Turbo_TDP_Config(mchmap);
+	BIOS_DDR(mchmap);
 	TGL_SA(mchmap);
     }
 EXIT_TGL_IMC:
@@ -5283,6 +5285,7 @@ void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
     }
     if (mc == 0) {
 	Query_Turbo_TDP_Config(mchmap);
+	BIOS_DDR(mchmap);
 	ADL_SA(mchmap);
     }
 EXIT_ADL_IMC:
