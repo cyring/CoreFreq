@@ -5139,7 +5139,6 @@ void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
     if (RO(Proc)->Uncore.Bus.RKL_SA_Pll.QCLK_RATIO == 0)
     {
 	RO(Shm)->Uncore.CtrlSpeed = (266 * units) + ((334 * units) / 501);
-	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MTS;
 
 	Bus_Rate = Bus_Rate * 100U;
     }
@@ -5149,7 +5148,7 @@ void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 
 	if (RO(Proc)->Uncore.Bus.RKL_SA_Pll.QCLK_REF == 0) {
 		Freq_Hz = RO(Proc)->Uncore.Bus.RKL_SA_Pll.QCLK_RATIO;
-		Freq_Hz = Freq_Hz * RO(Core)->Clock.Hz * 400LLU;
+		Freq_Hz = Freq_Hz * RO(Core)->Clock.Hz * 800LLU;
 		Freq_Hz = Freq_Hz / RO(Shm)->Proc.Features.Factory.Clock.Hz;
 		Freq_Hz = Freq_Hz / 3LLU;
 
@@ -5157,13 +5156,12 @@ void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		Bus_Rate = Bus_Rate / 3U;
 	} else {
 		Freq_Hz = RO(Proc)->Uncore.Bus.RKL_SA_Pll.QCLK_RATIO;
-		Freq_Hz = Freq_Hz * RO(Core)->Clock.Hz * 100LLU;
+		Freq_Hz = Freq_Hz * RO(Core)->Clock.Hz * 200LLU;
 		Freq_Hz = Freq_Hz / RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
 		Bus_Rate = Bus_Rate * 100U;
 	}
 	RO(Shm)->Uncore.CtrlSpeed = (unsigned short) Freq_Hz;
-	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
     }
 	RO(Shm)->Uncore.Bus.Rate = Bus_Rate;
 	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
@@ -5173,6 +5171,7 @@ void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;
 	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MTS;
 
 	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.RKL_Cap_A.VT_d;
 
@@ -5692,7 +5691,6 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
     if (RO(Proc)->Uncore.Bus.ADL_SA_Pll.QCLK_RATIO == 0)
     {
 	RO(Shm)->Uncore.CtrlSpeed = (266 * units) + ((334 * units) / 501);
-	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MTS;
 
 	Bus_Rate = Bus_Rate * 100U;
     }
@@ -5702,7 +5700,7 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 
 	if (RO(Proc)->Uncore.Bus.ADL_SA_Pll.QCLK_REF == 0) {
 		Freq_Hz = RO(Proc)->Uncore.Bus.ADL_SA_Pll.QCLK_RATIO;
-		Freq_Hz = Freq_Hz * RO(Core)->Clock.Hz * 400LLU;
+		Freq_Hz = Freq_Hz * RO(Core)->Clock.Hz * 800LLU;
 		Freq_Hz = Freq_Hz / RO(Shm)->Proc.Features.Factory.Clock.Hz;
 		Freq_Hz = Freq_Hz / 3LLU;
 
@@ -5710,13 +5708,12 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		Bus_Rate = Bus_Rate / 3U;
 	} else {
 		Freq_Hz = RO(Proc)->Uncore.Bus.ADL_SA_Pll.QCLK_RATIO;
-		Freq_Hz = Freq_Hz * RO(Core)->Clock.Hz * 100LLU;
+		Freq_Hz = Freq_Hz * RO(Core)->Clock.Hz * 200LLU;
 		Freq_Hz = Freq_Hz / RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
 		Bus_Rate = Bus_Rate * 100U;
 	}
 	RO(Shm)->Uncore.CtrlSpeed = (unsigned short) Freq_Hz;
-	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MHZ;
     }
 	RO(Shm)->Uncore.Bus.Rate = Bus_Rate;
 	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
@@ -5726,6 +5723,7 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;
 	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;
 	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MTS;
 
 	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.ADL_Cap_A.VT_d;
 
