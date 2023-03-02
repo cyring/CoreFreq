@@ -5195,6 +5195,7 @@ void Query_TGL_IMC(void __iomem *mchmap, unsigned short mc)
 	TGL_SA(mchmap);
     }
 EXIT_TGL_IMC:
+	EMPTY_STMT();
 }
 
 #define ADL_SA	TGL_SA
@@ -5289,6 +5290,7 @@ void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
 	ADL_SA(mchmap);
     }
 EXIT_ADL_IMC:
+	EMPTY_STMT();
 }
 
 void Query_GLK_IMC(void __iomem *mchmap, unsigned short mc)
