@@ -20623,7 +20623,12 @@ static int CoreFreqK_FreqDriver_UnInit(void)
 {
 	int rc = -EINVAL;
 #ifdef CONFIG_CPU_FREQ
-	rc = cpufreq_unregister_driver(&CoreFreqK.FreqDriver);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 3, 0)) && (!defined(CONFIG_CACHY))
+	rc =
+#else
+	rc = 0;
+#endif
+	cpufreq_unregister_driver(&CoreFreqK.FreqDriver);
 #endif /* CONFIG_CPU_FREQ */
 	return rc;
 }
