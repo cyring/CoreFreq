@@ -132,6 +132,7 @@ enum {	GenuineArch = 0,
 	AMD_Zen3Plus_RMB,
 	AMD_Zen4_Genoa,
 	AMD_Zen4_RPL,
+	AMD_Zen4_PHX,
 	ARCHITECTURES
 };
 

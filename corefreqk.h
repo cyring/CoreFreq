@@ -1702,6 +1702,9 @@ static void CCD_AMD_Family_19h_Zen4_Temp(CORE_RO *Core) ;
 static void Query_AMD_F19h_61h_PerCluster(unsigned int cpu) ;
 static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 
+#define     Query_AMD_F19h_74h_PerSocket Query_AMD_F19h_61h_PerCluster
+#define     InitTimer_AMD_Zen4_PHX InitTimer_AMD_Zen4_RPL
+
 /*	[Void]								*/
 #define _Void_Signature {.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
 
@@ -1974,11 +1977,11 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 	[Zen3/Badami]		AF_30h			 7 nm	[BA]/SVR
 	[Zen3+ Rembrandt]	AF_44h Stepping 1	 6 nm	[RMB]
 	[Zen4/Genoa]		AF_11h Stepping 1	 5 nm	SVR
-	[Zen4/Raphael]		AF_61h Stepping 2	 5 nm	[RPL]	*/
+	[Zen4/Raphael]		AF_61h Stepping 2	 5 nm	[RPL]
+	[Zen4/Dragon Range]	AF_61h Stepping 2	 5 nm	FL1
+	[Zen4/Phoenix]		AF_74h			 4 nm	[PHX]	*/
 /*
 	[Zen4/Storm Peak]	AF_18h Stepping 1		TR5
-	[Zen4/Phoenix]		AF_74h				[PHX]
-	[Zen4/Dragon Range]					FL1
 	[Zen5/Granite Ridge]						*/
 #define _AMD_Family_19h {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 #define _AMD_Zen3_VMR	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x2, .Model=0x1}
@@ -1993,6 +1996,7 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 
 #define _AMD_Zen4_Genoa {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x1, .Model=0x1}
 #define _AMD_Zen4_RPL	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x6, .Model=0x1}
+#define _AMD_Zen4_PHX	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x7, .Model=0x4}
 
 typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
 
@@ -3414,7 +3418,11 @@ enum {
 	CN_GENOA
 };
 enum {
-	CN_RAPHAEL
+	CN_RAPHAEL,
+	CN_DRAGON_RANGE
+};
+enum {
+	CN_PHOENIX
 };
 
 enum {
@@ -3488,7 +3496,11 @@ static char *Arch_AMD_Zen4_Genoa[] = ZLIST(
 		[CN_GENOA]		=	"EPYC/Genoa"
 );
 static char *Arch_AMD_Zen4_RPL[] = ZLIST(
-		[CN_RAPHAEL]		=	"Zen4/Raphael"
+		[CN_RAPHAEL]		=	"Zen4/Raphael",
+		[CN_DRAGON_RANGE]	=	"Zen4/Dragon Range"
+);
+static char *Arch_AMD_Zen4_PHX[] = ZLIST(
+		[CN_PHOENIX]		=	"Zen4/Phoenix"
 );
 
 static char *Arch_AMD_Family_17h[] = ZLIST("AMD Zen");
@@ -6102,6 +6114,19 @@ static PROCESSOR_SPECIFIC AMD_Zen3_VMR_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
 		|LATCH_HSMP_CAPABLE
 	},
+	{
+	.Brand = ZLIST("AMD Ryzen 9 PRO 5945"),
+	.Boost = {+17, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_VERMEER,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
 	{0}
 };
 static PROCESSOR_SPECIFIC AMD_Zen3_CZN_Specific[] = {
@@ -6729,6 +6754,67 @@ static PROCESSOR_SPECIFIC AMD_Zen3Plus_RMB_Specific[] = {
 	.HSMP_Capable = 0,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
+	/*		Ryzen Embedded V3000 Processor Family		*/
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded V3C48"),
+	.Boost = {+5, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_REMBRANDT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded V3C44"),
+	.Boost = {+3, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_REMBRANDT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded V3C18I"),
+	.Boost = {+19, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_REMBRANDT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded V3C16"),
+	.Boost = {+18, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_REMBRANDT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded V3C14"),
+	.Boost = {+15, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_REMBRANDT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK
+	},
 	{0}
 };
 static PROCESSOR_SPECIFIC AMD_Zen3_Chagall_Specific[] = {
@@ -7034,6 +7120,93 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.HSMP_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
 		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 9 7945HX"),
+	.Boost = {+29, +1},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_DRAGON_RANGE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 9 7845HX"),
+	.Boost = {+22, +1},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_DRAGON_RANGE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 7 7745HX"),
+	.Boost = {+15, +1},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_DRAGON_RANGE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 5 7645HX"),
+	.Boost = {+10, +1},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_DRAGON_RANGE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{0}
+};
+static PROCESSOR_SPECIFIC AMD_Zen4_PHX_Specific[] = {
+	{
+	.Brand = ZLIST("AMD Ryzen 9 7940HS"),
+	.Boost = {+12, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PHOENIX,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 7 7840HS"),
+	.Boost = {+13, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PHOENIX,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 5 7640HS"),
+	.Boost = {+7, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PHOENIX,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{0}
 };
@@ -10246,5 +10419,29 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Specific = AMD_Zen4_RPL_Specific,
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen4_RPL
+	},
+[AMD_Zen4_PHX] = {							/*105*/
+	.Signature = _AMD_Zen4_PHX,
+	.Query = Query_AMD_F19h_74h_PerSocket,
+	.Update = PerCore_AMD_Family_19h_Query,
+	.Start = Start_AMD_Family_19h,
+	.Stop = Stop_AMD_Family_19h,
+	.Exit = Exit_AMD_F19h,
+	.Timer = InitTimer_AMD_Zen4_PHX,
+	.BaseClock = BaseClock_AMD_Family_19h,
+	.ClockMod = ClockMod_AMD_Zen,
+	.TurboClock = TurboClock_AMD_Zen,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN4,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_ZEN4,
+	.powerFormula   = POWER_FORMULA_AMD_19h,
+	.PCI_ids = PCI_AMD_19h_ids,
+	.Uncore = {
+		.Start = Start_Uncore_AMD_Family_19h,
+		.Stop = Stop_Uncore_AMD_Family_19h,
+		.ClockMod = NULL
+		},
+	.Specific = AMD_Zen4_PHX_Specific,
+	.SystemDriver = AMD_Zen_Driver,
+	.Architecture = Arch_AMD_Zen4_PHX
 	}
 };
