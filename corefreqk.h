@@ -1912,10 +1912,10 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 	[Zen/Summit Ridge]	8F_01h Stepping 1	14 nm
 	[Zen/Whitehaven]	8F_01h Stepping 1	14 nm	HEDT
 	[EPYC/Naples]		8F_01h Stepping 2	14 nm	SVR
+	[EPYC/Snowy Owl] 	8F_01h Stepping 2	14 nm	SVR
 	[Zen+ Pinnacle Ridge] 	8F_08h Stepping 2	12 nm
 	[Zen+ Colfax]		8F_08h Stepping 2	12 nm	HEDT
 	[Zen/Raven Ridge]	8F_11h Stepping 0	14 nm	APU
-	[Zen/Snowy Owl] 	8F_11h Stepping 2	14 nm	SVR
 	[Zen+ Picasso]		8F_18h Stepping 1	12 nm	APU
 	[Zen/Dali]		8F_20h Stepping 1	14 nm	APU/Raven2
 	[EPYC/Rome]		8F_31h Stepping 0	 7 nm	SVR
@@ -3360,11 +3360,11 @@ static char *Arch_AMD_Family_16h[]	=	ZLIST("Jaguar");
 enum {
 	CN_SUMMIT_RIDGE,
 	CN_WHITEHAVEN,
-	CN_NAPLES
+	CN_NAPLES,
+	CN_SNOWY_OWL
 };
 enum {
-	CN_RAVEN_RIDGE,
-	CN_SNOWY_OWL
+	CN_RAVEN_RIDGE
 };
 enum {
 	CN_PINNACLE_RIDGE,
@@ -3434,11 +3434,11 @@ enum {
 static char *Arch_AMD_Zen[] = ZLIST(
 		[CN_SUMMIT_RIDGE]	=	"Zen/Summit Ridge",
 		[CN_WHITEHAVEN] 	=	"Zen/Whitehaven",
-		[CN_NAPLES]		=	"Zen/EPYC/Naples"
+		[CN_NAPLES]		=	"Zen/EPYC/Naples",
+		[CN_SNOWY_OWL]		=	"Zen/EPYC/Snowy Owl"
 );
 static char *Arch_AMD_Zen_APU[] = ZLIST(
-		[CN_RAVEN_RIDGE]	=	"Zen/Raven Ridge",
-		[CN_SNOWY_OWL]		=	"Zen/Snowy Owl"
+		[CN_RAVEN_RIDGE]	=	"Zen/Raven Ridge"
 );
 static char *Arch_AMD_ZenPlus[] = ZLIST(
 		[CN_PINNACLE_RIDGE]	=	"Zen+ Pinnacle Ridge",
@@ -4646,6 +4646,74 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.UncoreUnlocked = 0,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
+/*	[Zen/Snowy Owl] 	8F_01h Stepping 2			*/
+	{	/* AMD EPYC Embedded Processors 			*/
+	.Brand = ZLIST("AMD EPYC 3101"),
+	.Boost = {+8, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_SNOWY_OWL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 3151"),
+	.Boost = {+2, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_SNOWY_OWL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 3201"),
+	.Boost = {+16, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_SNOWY_OWL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC 3251",	\
+			"AMD EPYC 3255"		),
+	.Boost = {+6, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_SNOWY_OWL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 3351"),
+	.Boost = {+11, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_SNOWY_OWL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 3451"),
+	.Boost = {+9, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_SNOWY_OWL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
 	{0}
 };
 static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
@@ -4782,19 +4850,6 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
-	.UncoreUnlocked = 0,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
-	},
-/*	[Zen/Snowy Owl] 	8F_11h Stepping 2			*/
-	{	/* AMD EPYC Embedded Processors 			*/
-	.Brand = ZLIST( "AMD EPYC 31",	\
-			"AMD EPYC 32"	),
-	.Boost = {+0, 0},
-	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_SNOWY_OWL,
-	.TgtRatioUnlocked = 1,
-	.ClkRatioUnlocked = 0b10,
-	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
