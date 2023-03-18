@@ -181,9 +181,9 @@ void AggregateRatio(void)
 	highest = RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[min_boost];
 
 	Ruler.Count = 0;
-	SetTopOfRuler(RO(Shm)->Proc.Service.Core, min_boost);
+	SetTopOfRuler(RO(Shm)->Proc.Service.Core, BOOST(MIN));
 
-	lt = min_boost;
+	lt = BOOST(MIN);
     while (lt < BOOST(SIZE))
     {
 	Ruler.Top[lt] = RO(Shm)->Proc.Service.Core;
@@ -197,9 +197,9 @@ void AggregateRatio(void)
 	    if ((RO(Shm)->Cpu[cpu].Boost[lt] > 0)
 	     && (RO(Shm)->Cpu[cpu].Boost[lt] <= highestFactory) )
 	    {
-		SetTopOftheTop(cpu, lt, &lowest, & highest);
+		SetTopOftheTop(cpu, lt, &lowest, &highest);
 
-		for (rt = min_boost; rt < Ruler.Count; rt++)
+		for (rt = BOOST(MIN); rt < Ruler.Count; rt++)
 		{
 			if (Ruler.Uniq[rt] == RO(Shm)->Cpu[cpu].Boost[lt])
 			{
@@ -214,7 +214,7 @@ void AggregateRatio(void)
 	}
 	lt = lt + 1;
     }
-	InsertionSortRuler(Ruler.Uniq, Ruler.Count, min_boost);
+	InsertionSortRuler(Ruler.Uniq, Ruler.Count, BOOST(MIN));
 
 	Ruler.Minimum = (double) lowest;
 	Ruler.Maximum = (double) highest;
