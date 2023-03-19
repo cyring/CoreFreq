@@ -3999,17 +3999,24 @@ void Refresh_HWP_Cap_Freq(TGrid *grid, DATA_TYPE data[])
 				CFlop->Clock
 		);
 
+	const unsigned int maxRatio = MAXCLOCK_TO_RATIO(unsigned int,
+							CFlop->Clock.Hz);
+
 	if (StrLenFormat(length, item, grid->cell.length + 1,
 		"CPU #%-3u  %7.2f (%3u)  %7.2f (%3u)  %7.2f (%3u)  %7.2f (%3u)",
-			cpu,
-			Lowest_MHz,
-			SProc->PowerThermal.HWP.Capabilities.Lowest,
-			Efficient_MHz,
-			SProc->PowerThermal.HWP.Capabilities.Most_Efficient,
-			Guaranteed_MHz,
-			SProc->PowerThermal.HWP.Capabilities.Guaranteed,
-			Highest_MHz,
-			SProc->PowerThermal.HWP.Capabilities.Highest) > 0)
+		cpu,
+		SProc->PowerThermal.HWP.Capabilities.Lowest <= maxRatio ?
+			Lowest_MHz : 0,
+		SProc->PowerThermal.HWP.Capabilities.Lowest,
+		SProc->PowerThermal.HWP.Capabilities.Most_Efficient <= maxRatio?
+			Efficient_MHz : 0,
+		SProc->PowerThermal.HWP.Capabilities.Most_Efficient,
+		SProc->PowerThermal.HWP.Capabilities.Guaranteed <= maxRatio ?
+			Guaranteed_MHz : 0,
+		SProc->PowerThermal.HWP.Capabilities.Guaranteed,
+		SProc->PowerThermal.HWP.Capabilities.Highest <= maxRatio ?
+			Highest_MHz : 0,
+		SProc->PowerThermal.HWP.Capabilities.Highest) > 0)
 	{
 		memcpy(&grid->cell.item[3], item, length);
 	}
@@ -4628,18 +4635,25 @@ REASON_CODE SysInfoPerfCaps(	Window *win,
 				CFlop->Clock
 		);
 
+	const unsigned int maxRatio = MAXCLOCK_TO_RATIO(unsigned int,
+							CFlop->Clock.Hz);
+
 	GridCall(
 	    PUT(SCANKEY_NULL, HWP_Cap_Attr[bix], width, 3,
 		"CPU #%-3u  %7.2f (%3u)  %7.2f (%3u)  %7.2f (%3u)  %7.2f (%3u)",
-			cpu,
-			Lowest_MHz,
-			SProc->PowerThermal.HWP.Capabilities.Lowest,
-			Efficient_MHz,
-			SProc->PowerThermal.HWP.Capabilities.Most_Efficient,
-			Guaranteed_MHz,
-			SProc->PowerThermal.HWP.Capabilities.Guaranteed,
-			Highest_MHz,
-			SProc->PowerThermal.HWP.Capabilities.Highest),
+		cpu,
+		SProc->PowerThermal.HWP.Capabilities.Lowest <= maxRatio ?
+			Lowest_MHz : 0,
+		SProc->PowerThermal.HWP.Capabilities.Lowest,
+		SProc->PowerThermal.HWP.Capabilities.Most_Efficient <= maxRatio?
+			Efficient_MHz : 0,
+		SProc->PowerThermal.HWP.Capabilities.Most_Efficient,
+		SProc->PowerThermal.HWP.Capabilities.Guaranteed <= maxRatio ?
+			Guaranteed_MHz : 0,
+		SProc->PowerThermal.HWP.Capabilities.Guaranteed,
+		SProc->PowerThermal.HWP.Capabilities.Highest <= maxRatio ?
+			Highest_MHz : 0,
+		SProc->PowerThermal.HWP.Capabilities.Highest),
 		Refresh_HWP_Cap_Freq, cpu);
       } else {
 	GridCall(
