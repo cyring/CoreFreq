@@ -3919,7 +3919,8 @@ signed int Get_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 			.Energy 	= 0
 		};
 	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
-		#if defined(CONFIG_SCHED_BORE) || defined(CONFIG_CACHY)
+		#if (defined(CONFIG_SCHED_BORE) || defined(CONFIG_CACHY)) \
+		 && (LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0))
 		rc = cppc_get_desired_perf(Core->Bind, &desired_perf);
 		rc = rc == -EINVAL ? 0 : rc;
 		#else
@@ -3942,19 +3943,17 @@ signed int Get_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 signed int Get_EPP_ACPI_CPPC(unsigned int cpu)
 {
 	signed int rc = -ENODEV;
-#if defined(CONFIG_SCHED_BORE) || defined(CONFIG_CACHY)
-#if defined(FEAT_DBG) && (FEAT_DBG >= 100) && (FEAT_DBG < 1000)
-	struct cppc_perf_caps CPPC_Caps;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+	u64 epp_perf;
 
-	if ((rc = cppc_get_epp_caps(cpu, &CPPC_Caps)) == 0)
+	if ((rc = cppc_get_epp_perf((signed int) cpu, &epp_perf)) == 0)
 	{
 		CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-		Core->PowerThermal.ACPI_CPPC.Energy = CPPC_Caps.energy_perf;
+		Core->PowerThermal.ACPI_CPPC.Energy = epp_perf;
 	} else {
-	    pr_debug("CoreFreq: cppc_get_epp_caps(cpu=%u) error %d\n", cpu, rc);
+	    pr_debug("CoreFreq: cppc_get_epp_perf(cpu=%u) error %d\n", cpu, rc);
 	}
-#endif
 #endif
 	return rc;
 }
@@ -3962,14 +3961,14 @@ signed int Get_EPP_ACPI_CPPC(unsigned int cpu)
 signed int Put_EPP_ACPI_CPPC(unsigned int cpu, signed short epp)
 {
 	signed int rc = -ENODEV;
-#if defined(CONFIG_SCHED_BORE) || defined(CONFIG_CACHY)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
 	struct cppc_perf_ctrls perf_ctrls = {
 		.max_perf = 0,
 		.min_perf = 0,
 		.desired_perf = 0,
 		.energy_perf = epp
 	};
-	if ((rc = cppc_set_epp_perf(cpu, &perf_ctrls, true)) < 0) {
+	if ((rc = cppc_set_epp_perf((signed int) cpu, &perf_ctrls, true)) < 0) {
 	    pr_debug("CoreFreq: cppc_set_epp_perf(cpu=%u) error %d\n", cpu, rc);
 	}
 #endif
