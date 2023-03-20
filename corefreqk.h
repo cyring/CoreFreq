@@ -3364,14 +3364,16 @@ enum {
 	CN_SNOWY_OWL
 };
 enum {
-	CN_RAVEN_RIDGE
+	CN_RAVEN_RIDGE,
+	CN_GREAT_HORNED_OWL
 };
 enum {
 	CN_PINNACLE_RIDGE,
 	CN_COLFAX
 };
 enum {
-	CN_PICASSO
+	CN_PICASSO,
+	CN_RIVER_HAWK
 };
 enum {
 	CN_DALI,
@@ -3382,7 +3384,8 @@ enum {
 	CN_CASTLE_PEAK
 };
 enum {
-	CN_RENOIR
+	CN_RENOIR,
+	CN_GREY_HAWK
 };
 enum {
 	CN_LUCIENNE
@@ -3438,14 +3441,16 @@ static char *Arch_AMD_Zen[] = ZLIST(
 		[CN_SNOWY_OWL]		=	"Zen/EPYC/Snowy Owl"
 );
 static char *Arch_AMD_Zen_APU[] = ZLIST(
-		[CN_RAVEN_RIDGE]	=	"Zen/Raven Ridge"
+		[CN_RAVEN_RIDGE]	=	"Zen/Raven Ridge",
+		[CN_GREAT_HORNED_OWL]	=	"Zen/Great Horned Owl"
 );
 static char *Arch_AMD_ZenPlus[] = ZLIST(
 		[CN_PINNACLE_RIDGE]	=	"Zen+ Pinnacle Ridge",
 		[CN_COLFAX]		=	"Zen+ Colfax"
 );
 static char *Arch_AMD_ZenPlus_APU[] = ZLIST(
-		[CN_PICASSO]		=	"Zen+ Picasso"
+		[CN_PICASSO]		=	"Zen+ Picasso",
+		[CN_RIVER_HAWK] 	=	"Zen+ River Hawk"
 );
 static char *Arch_AMD_Zen_Dali[] = ZLIST(
 		[CN_DALI]		=	"Zen/Dali",
@@ -3456,7 +3461,8 @@ static char *Arch_AMD_EPYC_Rome_CPK[] = ZLIST(
 		[CN_CASTLE_PEAK]	=	"Zen2/Castle Peak"
 );
 static char *Arch_AMD_Zen2_Renoir[] = ZLIST(
-		[CN_RENOIR]		=	"Zen2/Renoir"
+		[CN_RENOIR]		=	"Zen2/Renoir",
+		[CN_GREY_HAWK]		=	"Zen2/Grey Hawk"
 );
 static char *Arch_AMD_Zen2_LCN[] = ZLIST(
 		[CN_LUCIENNE]		=	"Zen2/Lucienne"
@@ -4777,6 +4783,18 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
+	.Brand = ZLIST( "AMD Ryzen 3 PRO 2300U",	\
+			"AMD Ryzen 3 2300U"		),
+	.Boost = {+14, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_RAVEN_RIDGE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
 	.Brand = ZLIST("AMD Ryzen 5 PRO 2400GE"),
 	.Boost = {+6, 0},
 	.Param.Offset = {0, 0, 0},
@@ -4821,7 +4839,9 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 5 2500U"),
+	.Brand = ZLIST( "AMD Ryzen 5 2500U",	\
+			"AMD Ryzen 5 PRO 2500U" \
+			"AMD Ryzen 7 PRO 2700U" ),
 	.Boost = {+16, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
@@ -4853,21 +4873,22 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 	.UncoreUnlocked = 0,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
-	{0}
-};
-static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
-/*	[Zen+ Pinnacle Ridge] 	8F_08h Stepping 2			*/
 	{
-	.Brand = ZLIST("AMD Athlon 300U"),
-	.Boost = {+9, 0},
+	/*		Ryzen Embedded V1000 Processor Family		*/
+	.Brand = ZLIST("AMD Ryzen Embedded V1605B"),
+	.Boost = {+16, 0},
 	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_PINNACLE_RIDGE,
+	.CodeNameIdx = CN_GREAT_HORNED_OWL,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch = LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
+	{0}
+};
+static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
+/*	[Zen+ Pinnacle Ridge] 	8F_08h Stepping 2			*/
 	{
 	.Brand = ZLIST("AMD Athlon 3"),
 	.Boost = {+9, 0},
@@ -5030,6 +5051,17 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
 };
 static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 /*	[Zen+ Picasso]		8F_18h Stepping 1			*/
+	{
+	.Brand = ZLIST("AMD Athlon 300U"),
+	.Boost = {+9, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PICASSO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK
+	},
 	{
 	.Brand = ZLIST("AMD Athlon 3000G"),
 	.Boost = {+0, 0},
@@ -5220,7 +5252,8 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 7 3780U",	\
 			"AMD Ryzen 7 3750H",	\
 			"AMD Ryzen 7 3700U",	\
-			"AMD Ryzen 7 3700C"	),
+			"AMD Ryzen 7 3700C",	\
+			"AMD Ryzen 7 PRO 3700U"	),
 	.Boost = {+17, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PICASSO,
@@ -5247,6 +5280,51 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	.Boost = {+9, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PICASSO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	/*		Ryzen Embedded R2000 Processor Family		*/
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded R2312"),
+	.Boost = {+8, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_RIVER_HAWK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded R2314"),
+	.Boost = {+14, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_RIVER_HAWK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded R2514"),
+	.Boost = {+16, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_RIVER_HAWK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded R2544"),
+	.Boost = {+4, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_RIVER_HAWK,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
@@ -5810,6 +5888,51 @@ static PROCESSOR_SPECIFIC AMD_Zen2_Renoir_Specific[] = {
 	.Boost = {+11, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	/*		Ryzen Embedded V2000 Processor Family		*/
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded V2516"),
+	.Boost = {+19, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GREY_HAWK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded V2546"),
+	.Boost = {+10, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GREY_HAWK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded V2718"),
+	.Boost = {+25, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GREY_HAWK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded V2748"),
+	.Boost = {+14, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GREY_HAWK,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
