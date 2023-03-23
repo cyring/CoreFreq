@@ -1252,7 +1252,7 @@ EXIT:
 void SliceScheduling(	RO(SHM_STRUCT) *RO(Shm),
 			unsigned int cpu, enum PATTERN pattern )
 {
-	unsigned int seek;
+	unsigned int seek = 0;
 	switch (pattern) {
 	case RESET_CSP:
 		for (seek = 0; seek < RO(Shm)->Proc.CPU.Count; seek++) {
