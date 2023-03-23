@@ -3373,6 +3373,7 @@ enum {
 };
 enum {
 	CN_PICASSO,
+	CN_BANDED_KESTREL,
 	CN_RIVER_HAWK
 };
 enum {
@@ -3450,6 +3451,7 @@ static char *Arch_AMD_ZenPlus[] = ZLIST(
 );
 static char *Arch_AMD_ZenPlus_APU[] = ZLIST(
 		[CN_PICASSO]		=	"Zen+ Picasso",
+		[CN_BANDED_KESTREL]	=	"Zen+ Banded Kestrel",
 		[CN_RIVER_HAWK] 	=	"Zen+ River Hawk"
 );
 static char *Arch_AMD_Zen_Dali[] = ZLIST(
@@ -5280,6 +5282,52 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	.Boost = {+9, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PICASSO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	/*		Ryzen Embedded R1000 Processor Family		*/
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded R1102G"),
+	.Boost = {+14, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_BANDED_KESTREL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded R1305G"),
+	.Boost = {+13, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_BANDED_KESTREL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen Embedded R1505G",	\
+			"AMD Ryzen Embedded R1606G"	),
+	.Boost = {+9, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_BANDED_KESTREL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded R1600"),
+	.Boost = {+5, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_BANDED_KESTREL,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
