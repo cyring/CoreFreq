@@ -13752,13 +13752,18 @@ void AMD_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 	} else {							\
 		RDTSCP64(Core->Counter[T].TSC); 			\
 	}								\
-	/* HV_X64_MSR_VP_RUNTIME: vcpu runtime in 100ns units	*/	\
-	RDCOUNTER(Core->Counter[T].C0.URC, 0x40000010); 		\
+	/* HV_PARTITION_PRIVILEGE_MASK: AccessVpRunTimeReg	*/	\
+	if (BITVAL(Core->CpuID[						\
+			CPUID_40000003_00000000_HYPERVISOR_FEATURES	\
+			].reg[REG_CPUID_EAX], 0))			\
+	{/* HV_X64_MSR_VP_RUNTIME: vcpu runtime in 100ns units	*/	\
+		RDCOUNTER(Core->Counter[T].C0.URC, 0x40000010); 	\
 									\
-	Core->Counter[T].C0.URC = Core->Counter[T].C0.URC		\
-	        * PUBLIC(RO(Proc))->Features.Factory.Ratio * 10;	\
+		Core->Counter[T].C0.URC = Core->Counter[T].C0.URC	\
+		 * PUBLIC(RO(Proc))->Features.Factory.Ratio * 10;	\
 									\
-	Core->Counter[T].C0.UCC = Core->Counter[T].C0.URC;		\
+		Core->Counter[T].C0.UCC = Core->Counter[T].C0.URC;	\
+	}								\
 	/* Derive C1: */						\
 	Core->Counter[T].C1 =						\
 	    (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?		\
