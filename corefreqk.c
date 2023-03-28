@@ -10289,7 +10289,7 @@ void PowerThermal(CORE_RO *Core)
 		{_Core_Penryn,		0, 1, 0, 0},
 		{_Core_Dunnington,	0, 1, 1, 0},
 
-		{_Atom_Bonnell ,	0, 1, 1, 0},	/* 06_1C */
+		{_Atom_Bonnell, 	0, 1, 1, 0},	/* 06_1C */
 		{_Atom_Silvermont,	0, 1, 1, 0},	/* 06_26 */
 		{_Atom_Lincroft,	0, 1, 1, 0},	/* 06_27 */
 		{_Atom_Clover_Trail,	0, 1, 1, 0},	/* 06_35 */
@@ -10298,7 +10298,7 @@ void PowerThermal(CORE_RO *Core)
 		{_Silvermont_Bay_Trail, 0, 1, 0, 0},	/* 06_37 */
 
 		{_Atom_Avoton,		0, 1, 1, 0},	/* 06_4D */
-		{_Atom_Airmont ,	0, 1, 0, 0},	/* 06_4C */
+		{_Atom_Airmont, 	0, 1, 0, 0},	/* 06_4C */
 		{_Atom_Goldmont,	1, 0, 1, 0},	/* 06_5C */
 		{_Atom_Sofia,		0, 1, 1, 0},	/* 06_5D */
 		{_Atom_Merrifield,	0, 1, 1, 0},	/* 06_4A */
@@ -10317,7 +10317,7 @@ void PowerThermal(CORE_RO *Core)
 		{_SandyBridge_EP,	1, 1, 0, 0},	/* 06_2D */
 
 		{_IvyBridge,		1, 1, 0, 0},	/* 06_3A */
-		{_IvyBridge_EP ,	1, 1, 0, 0},	/* 06_3E */
+		{_IvyBridge_EP, 	1, 1, 0, 0},	/* 06_3E */
 
 		{_Haswell_DT,		1, 1, 0, 0},	/* 06_3C */
 		{_Haswell_EP,		1, 1, 1, 0},	/* 06_3F */
@@ -10327,7 +10327,7 @@ void PowerThermal(CORE_RO *Core)
 		{_Broadwell,		1, 1, 1, 0},	/* 06_3D */
 		{_Broadwell_D,		1, 1, 1, 0},	/* 06_56 */
 		{_Broadwell_H,		1, 1, 1, 0},	/* 06_47 */
-		{_Broadwell_EP ,	1, 1, 1, 0},	/* 06_4F */
+		{_Broadwell_EP, 	1, 1, 1, 0},	/* 06_4F */
 
 		{_Skylake_UY,		1, 1, 1, 0},	/* 06_4E */
 		{_Skylake_S,		1, 0, 0, 0},	/* 06_5E */
@@ -10338,8 +10338,8 @@ void PowerThermal(CORE_RO *Core)
 		{_Kabylake,		1, 1, 0, 0},	/* 06_9E */
 		{_Kabylake_UY,		1, 1, 1, 0},	/* 06_8E */
 
-		{_Cannonlake_U ,	1, 1, 1, 0},	/* 06_66 */
-		{_Cannonlake_H ,	1, 1, 1, 0},
+		{_Cannonlake_U, 	1, 1, 1, 0},	/* 06_66 */
+		{_Cannonlake_H, 	1, 1, 1, 0},
 		{_Geminilake,		1, 0, 1, 0},	/* 06_7A */
 		{_Icelake_UY,		1, 1, 1, 0},	/* 06_7E */
 
@@ -10349,7 +10349,7 @@ void PowerThermal(CORE_RO *Core)
 		{_Tigerlake,		1, 1, 1, 0},
 		{_Tigerlake_U,		1, 1, 0, 0},	/* 06_8C */
 		{_Cometlake,		1, 1, 1, 0},
-		{_Cometlake_UY ,	1, 1, 1, 0},
+		{_Cometlake_UY, 	1, 1, 1, 0},
 		{_Atom_Denverton,	1, 1, 1, 0},
 		{_Tremont_Jacobsville,	1, 1, 1, 0},
 		{_Tremont_Lakefield,	1, 1, 1, 0},
@@ -10358,16 +10358,18 @@ void PowerThermal(CORE_RO *Core)
 		{_Sapphire_Rapids,	1, 1, 1, 0},
 		{_Emerald_Rapids,	1, 1, 1, 0},
 		{_Rocketlake,		1, 1, 1, 0},
-		{_Rocketlake_U ,	1, 1, 1, 0},
+		{_Rocketlake_U, 	1, 1, 1, 0},
 		{_Alderlake_S,		1, 1, 0, 0},	/* 06_97 */
 		{_Alderlake_H,		1, 1, 0, 0},
 		{_Alderlake_N,		1, 1, 0, 0},
-		{_Meteorlake_M ,	1, 1, 1, 0},
-		{_Meteorlake_N ,	1, 1, 1, 0},
-		{_Meteorlake_S ,	1, 1, 1, 0},
+		{_Meteorlake_M, 	1, 1, 1, 0},
+		{_Meteorlake_N, 	1, 1, 1, 0},
+		{_Meteorlake_S, 	1, 1, 1, 0},
 		{_Raptorlake,		1, 1, 0, 0},	/* 06_B7 */
-		{_Raptorlake_P ,	1, 1, 0, 0},
-		{_Raptorlake_S ,	1, 1, 0, 0}
+		{_Raptorlake_P, 	1, 1, 0, 0},
+		{_Raptorlake_S, 	1, 1, 0, 0},
+		{_Lunarlake,		1, 1, 1, 0},	/* 06_BD */
+		{_Arrowlake,		1, 1, 1, 0}	/* 06_C6 */
 	};
 	unsigned int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
  for (id = 0; id < ids; id++)
@@ -14227,6 +14229,8 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
     case Raptorlake:							\
     case Raptorlake_P:							\
     case Raptorlake_S:							\
+    case Lunarlake:							\
+    case Arrowlake:							\
 	ADL_SA(PRIVATE(OF(PCU)).BAR);					\
 	break;								\
     }									\
