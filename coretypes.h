@@ -1007,7 +1007,10 @@ enum CPUID_ENUM {
 	CPUID_80000022_00000000_EXT_PERF_MON_DEBUG,
 /* AMD64 Architecture Programmer’s Manual rev 4.05 */
 	CPUID_80000023_00000000_MULTIKEY_ENCRYPTED_MEM,
-	CPUID_80000026_00000000_EXTENDED_CPU_TOPOLOGY,
+	CPUID_80000026_00000000_EXTENDED_CPU_TOPOLOGY_L0,
+	CPUID_80000026_00000000_EXTENDED_CPU_TOPOLOGY_L1,
+	CPUID_80000026_00000000_EXTENDED_CPU_TOPOLOGY_L2,
+	CPUID_80000026_00000000_EXTENDED_CPU_TOPOLOGY_L3,
 /* x86 */
 	CPUID_40000000_00000000_HYPERVISOR_VENDOR,
 	CPUID_40000001_00000000_HYPERVISOR_INTERFACE,
@@ -1666,7 +1669,7 @@ typedef struct	/* Architectural Performance Monitoring Leaf.		*/
 		_100MHz :  7-6,  /* 100 MHz multiplier Control. 	*/
 		NotUsed : 32-7;
 	};
-	struct { /* AMD Family 15h					*/
+	struct { /* AMD starting at family 15h				*/
 		unsigned int
 		Fam_0Fh :  7-0,  /* Family 0Fh features.		*/
 		HwPstate:  8-7,  /* Hardware P-state control MSR 0xc0010061-63*/
@@ -1676,8 +1679,9 @@ typedef struct	/* Architectural Performance Monitoring Leaf.		*/
 		ProcFb	: 12-11, /* Processor feedback interf. available if 1 */
 		ProcPwr : 13-12, /* Core power reporting interface supported. */
 		ConStdBy: 14-13, /* ConnectedStandby			*/
-		RAPL	: 15-14, /* RAPL support ?			*/
-		Reserved: 32-15;
+		RAPL	: 15-14, /* F17h and afterward: RAPL support	*/
+		FastCPPC: 16-15, /* F19h Model 61h: Fast CPPC support	*/
+		Reserved: 32-16;
 	};
       };
     } EDX;
@@ -1922,6 +1926,44 @@ typedef struct	/* AMD Extended Performance Monitoring and Debug.	*/
 		Reserved	: 32-0;
 	} EDX;
 } CPUID_0x80000022;
+
+typedef struct	/* AMD [Extended CPU Topology.				*/
+{ /*
+CPUID Fn8000_0026_E[D,C,B,A]X_x[3:0] specifies the hierarchy of logical cores
+ from the SMT level through the processor socket level.
+Software reads CPUID Fn8000_0026_E[C,B,A]X for ascending values
+ of ECX until (CPUID Fn8000_0026_EBX[LogProcAtThisLevel] == 0).
+Note: While CPUID Fn8000_0026 is a preferred superset to CPUID_Fn0000000B,
+ CPUID_Fn0000000B information is valid for software for
+ the supported levels on AMD.
+*/
+	struct {
+		unsigned int
+		CoreMaskWidth	:  5-0,
+		Reserved	: 29-5,
+		PowerRankingCap	: 30-29, /* ProcessorPowerEfficiencyRanking */
+		CoreTopology	: 31-30, /* CoreType:HeterogeneousCoreTopology*/
+		AsymmetricCores : 31-30;
+	} EAX;
+	struct {
+		unsigned int
+		LogProcThisLevel: 16-0,  /*Number of logical processors @Level*/
+		PowerRanking	: 24-16, /* ProcessorPowerEfficiencyRanking */
+		Native_Model_ID : 28-24, /* Iff Level Type=Core: 0=Zen4 Core */
+		CoreType	: 32-28; /* 0: P-core ; 1: E-core	*/
+	} EBX;
+	struct {
+		unsigned int
+		ECX_Value	:  8-0,  /* ECX input value		*/
+		LevelType	: 16-8,  /* 0:Rsv; 1:Core; 2:CCX; 3:CCD; 4:Skt*/
+		Reserved	: 32-16;
+	} ECX;
+	struct
+	{
+		unsigned int
+		Extended_APIC_ID: 32-0; /* Extended Local APIC ID	*/
+	} EDX;
+} CPUID_0x80000026;
 
 typedef struct	/* BSP CPUID features.					*/
 {
