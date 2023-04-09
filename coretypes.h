@@ -2318,7 +2318,7 @@ typedef struct {
 	pid_t			pid,	/* type of __kernel_pid_t is integer */
 				tgid,
 				ppid;
-	short int		state;		/* TASK_STATE_MAX = 0x1000 */
+	short int		state;		/* TASK_STATE_MAX = 0x10000 */
 	short int		wake_cpu;	/* limited to 64K CPUs	*/
 	char			comm[TASK_COMM_LEN];
 } TASK_MCB;

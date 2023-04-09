@@ -231,7 +231,7 @@ void AggregateRatio(void)
 
 ATTRIBUTE *StateToSymbol(short int state, char stateStr[])
 {
-	ATTRIBUTE *symbAttr[14] = {
+	ATTRIBUTE *symbAttr[16] = {
 	/* R */ RSC(RUN_STATE_COLOR).ATTR(),
 	/* S */ RSC(SLEEP_STATE_COLOR).ATTR(),
 	/* D */ RSC(UNINT_STATE_COLOR).ATTR(),
@@ -245,10 +245,12 @@ ATTRIBUTE *StateToSymbol(short int state, char stateStr[])
 	/* W */ RSC(RUN_STATE_COLOR).ATTR(),
 	/* i */ RSC(WAIT_STATE_COLOR).ATTR(),
 	/* N */ RSC(RUN_STATE_COLOR).ATTR(),
-	/* m */ RSC(OTHER_STATE_COLOR).ATTR()
+	/* m */ RSC(OTHER_STATE_COLOR).ATTR(),		/* Linux 5.15	*/
+	/* F */ RSC(UNINT_STATE_COLOR).ATTR(),		/* Linux 6.1	*/
+	/* f */ RSC(UNINT_STATE_COLOR).ATTR()
 	}, *stateAttr = RSC(OTHER_STATE_COLOR).ATTR();
-	const char symbol[14] = "RSDTtXZPIKWiNm";
-	unsigned short idx, jdx = 0;
+	const char symbol[16] = "RSDTtXZPIKWiNmFf";
+	register unsigned short idx, jdx = 0;
 
 	if (BITBSR(state, idx) == 1) {
 		stateStr[jdx++] = symbol[0];
@@ -256,9 +258,14 @@ ATTRIBUTE *StateToSymbol(short int state, char stateStr[])
 	} else
 		do {
 			BITCLR(LOCKLESS, state, (unsigned int) idx);
-			stateStr[jdx++] = symbol[1 + idx];
-			stateAttr = symbAttr[1 + idx];
-		} while (!BITBSR(state, idx));
+		    if (idx < 15) {
+			const unsigned short bdx = 1 + idx;
+			stateStr[jdx++] = symbol[bdx];
+			stateAttr = symbAttr[bdx];
+		    } else {
+			stateStr[jdx++] = '?';
+		    }
+		} while (BITBSR(state, idx) == 0);
 	stateStr[jdx] = '\0';
 	return stateAttr;
 }
