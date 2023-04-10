@@ -1778,6 +1778,19 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 #define _Tremont_Jasperlake \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x9, .Model=0xC}
 
+/*	[Granite Rapids/X]	06_ADh				GNR
+	[Granite Rapids/D]	06_AEh
+	[Sierra Forest] 	06_AFh				SRF
+	[Grand Ridge]		06_B6h					*/
+#define _Granite_Rapids_X \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xA, .Model=0xD}
+#define _Granite_Rapids_D \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xA, .Model=0xE}
+#define _Sierra_Forest \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xA, .Model=0xF}
+#define _Grand_Ridge \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xB, .Model=0x6}
+
 /*	[Nehalem]	06_1Ah, 06_1Eh, 06_1Fh, 06_2Eh			*/
 #define _Nehalem_Bloomfield \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xA}
@@ -1887,11 +1900,6 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 #define _Raptorlake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xB, .Model=0x7}
 #define _Raptorlake_P	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xB, .Model=0xA}
 #define _Raptorlake_S	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xB, .Model=0xF}
-
-/*	[GraniteRapids/X]	06_ADh				GNR
-	[GraniteRapids/D]	06_AEh
-	[SierraForest/X]	06_AFh				SRF
-	[Grand Ridge]		06_B6h					*/
 
 /*	[LunarLake]	06_BDh
 	[ArrowLake]	06_C6h						*/
@@ -3336,6 +3344,11 @@ static char *Arch_Tremont_Elkhartlake[] =	ZLIST("Tremont/Elkhart Lake");
 static char *Arch_Tremont_Jasperlake[]	=	ZLIST("Tremont/Jasper Lake");
 static char *Arch_Sapphire_Rapids[]	=	ZLIST("Sapphire Rapids");
 static char *Arch_Emerald_Rapids[]	=	ZLIST("Emerald Rapids");
+static char *Arch_Granite_Rapids_X[]	=	ZLIST("Granite Rapids/X");
+static char *Arch_Granite_Rapids_D[]	=	ZLIST("Granite Rapids/D");
+static char *Arch_Sierra_Forest[]	=	ZLIST("Sierra Forest");
+static char *Arch_Grand_Ridge[] 	=	ZLIST("Grand Ridge");
+
 static char *Arch_Rocketlake[]		=	ZLIST("Rocket Lake");
 static char *Arch_Rocketlake_U[]	=	ZLIST("Rocket Lake/U");
 static char *Arch_Alderlake_S[] 	=	ZLIST("Alder Lake");
@@ -9911,8 +9924,104 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = Intel_Driver,
 	.Architecture = Arch_Emerald_Rapids
 	},
+[Granite_Rapids_X] = {							/* 74*/
+	.Signature = _Granite_Rapids_X,
+	.Query = Query_Skylake,
+	.Update = PerCore_Skylake_Query,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_Skylake,
+	.BaseClock = BaseClock_Skylake,
+	.ClockMod = ClockMod_Skylake_HWP,
+	.TurboClock = Intel_Turbo_Config8C,
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = Start_Uncore_Skylake,
+		.Stop = Stop_Uncore_Skylake,
+		.ClockMod = Haswell_Uncore_Ratio
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = Intel_Driver,
+	.Architecture = Arch_Granite_Rapids_X
+	},
+[Granite_Rapids_D] = {							/* 75*/
+	.Signature = _Granite_Rapids_D,
+	.Query = Query_Skylake,
+	.Update = PerCore_Skylake_Query,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_Skylake,
+	.BaseClock = BaseClock_Skylake,
+	.ClockMod = ClockMod_Skylake_HWP,
+	.TurboClock = Intel_Turbo_Config8C,
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = Start_Uncore_Skylake,
+		.Stop = Stop_Uncore_Skylake,
+		.ClockMod = Haswell_Uncore_Ratio
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = Intel_Driver,
+	.Architecture = Arch_Granite_Rapids_D
+	},
+[Sierra_Forest] = {							/* 76*/
+	.Signature = _Sierra_Forest,
+	.Query = Query_Skylake,
+	.Update = PerCore_Skylake_Query,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_Skylake,
+	.BaseClock = BaseClock_Skylake,
+	.ClockMod = ClockMod_Skylake_HWP,
+	.TurboClock = Intel_Turbo_Config8C,
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = Start_Uncore_Skylake,
+		.Stop = Stop_Uncore_Skylake,
+		.ClockMod = Haswell_Uncore_Ratio
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = Intel_Driver,
+	.Architecture = Arch_Sierra_Forest
+	},
+[Grand_Ridge] = {							/* 77*/
+	.Signature = _Grand_Ridge,
+	.Query = Query_Skylake,
+	.Update = PerCore_Skylake_Query,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_Skylake,
+	.BaseClock = BaseClock_Skylake,
+	.ClockMod = ClockMod_Skylake_HWP,
+	.TurboClock = Intel_Turbo_Config8C,
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = Start_Uncore_Skylake,
+		.Stop = Stop_Uncore_Skylake,
+		.ClockMod = Haswell_Uncore_Ratio
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = Intel_Driver,
+	.Architecture = Arch_Grand_Ridge
+	},
 
-[Rocketlake] = {							/* 74*/
+[Rocketlake] = {							/* 78*/
 	.Signature = _Rocketlake,
 	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
@@ -9936,7 +10045,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Rocketlake
 	},
-[Rocketlake_U] = {							/* 75*/
+[Rocketlake_U] = {							/* 79*/
 	.Signature = _Rocketlake_U,
 	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
@@ -9961,7 +10070,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Architecture = Arch_Rocketlake_U
 	},
 
-[Alderlake_S] = {							/* 76*/
+[Alderlake_S] = {							/* 80*/
 	.Signature = _Alderlake_S,
 	.Query = Query_Skylake,
 	.Update = PerCore_Kaby_Lake_Query,
@@ -9985,7 +10094,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Alderlake_S
 	},
-[Alderlake_H] = {							/* 77*/
+[Alderlake_H] = {							/* 81*/
 	.Signature = _Alderlake_H,
 	.Query = Query_Skylake,
 	.Update = PerCore_Kaby_Lake_Query,
@@ -10009,7 +10118,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Alderlake_H
 	},
-[Alderlake_N] = {							/* 78*/
+[Alderlake_N] = {							/* 82*/
 	.Signature = _Alderlake_N,
 	.Query = Query_Skylake,
 	.Update = PerCore_Kaby_Lake_Query,
@@ -10034,7 +10143,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Architecture = Arch_Alderlake_N
 	},
 
-[Meteorlake_M] = {							/* 79*/
+[Meteorlake_M] = {							/* 83*/
 	.Signature = _Meteorlake_M,
 	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
@@ -10058,7 +10167,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Meteorlake_M
 	},
-[Meteorlake_N] = {							/* 80*/
+[Meteorlake_N] = {							/* 84*/
 	.Signature = _Meteorlake_N,
 	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
@@ -10082,7 +10191,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Meteorlake_N
 	},
-[Meteorlake_S] = {							/* 81*/
+[Meteorlake_S] = {							/* 85*/
 	.Signature = _Meteorlake_S,
 	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
@@ -10106,7 +10215,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Meteorlake_S
 	},
-[Raptorlake] = {							/* 82*/
+[Raptorlake] = {							/* 86*/
 	.Signature = _Raptorlake,
 	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
@@ -10130,7 +10239,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Raptorlake
 	},
-[Raptorlake_P] = {							/* 83*/
+[Raptorlake_P] = {							/* 87*/
 	.Signature = _Raptorlake_P,
 	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
@@ -10154,7 +10263,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Raptorlake_P
 	},
-[Raptorlake_S] = {							/* 84*/
+[Raptorlake_S] = {							/* 88*/
 	.Signature = _Raptorlake_S,
 	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
@@ -10178,7 +10287,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Raptorlake_S
 	},
-[LunarLake] = { 							/* 85*/
+[LunarLake] = { 							/* 89*/
 	.Signature = _Lunarlake,
 	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
@@ -10202,7 +10311,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Lunarlake
 	},
-[ArrowLake] = { 							/* 86*/
+[ArrowLake] = { 							/* 90*/
 	.Signature = _Arrowlake,
 	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
@@ -10227,7 +10336,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Architecture = Arch_Arrowlake
 	},
 
-[AMD_Zen] = {								/* 87*/
+[AMD_Zen] = {								/* 91*/
 	.Signature = _AMD_Zen,
 	.Query = Query_AMD_F17h_PerSocket,
 	.Update = PerCore_AMD_Family_17h_Query,
@@ -10251,7 +10360,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen
 	},
-[AMD_Zen_APU] = {							/* 88*/
+[AMD_Zen_APU] = {							/* 92*/
 	.Signature = _AMD_Zen_APU,
 	.Query = Query_AMD_F17h_PerSocket,
 	.Update = PerCore_AMD_Family_17h_Query,
@@ -10275,7 +10384,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen_APU
 	},
-[AMD_ZenPlus] = {							/* 89*/
+[AMD_ZenPlus] = {							/* 93*/
 	.Signature = _AMD_ZenPlus,
 	.Query = Query_AMD_F17h_PerSocket,
 	.Update = PerCore_AMD_Family_17h_Query,
@@ -10299,7 +10408,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_ZenPlus
 	},
-[AMD_ZenPlus_APU] = {							/* 90*/
+[AMD_ZenPlus_APU] = {							/* 94*/
 	.Signature = _AMD_ZenPlus_APU,
 	.Query = Query_AMD_F17h_PerSocket,
 	.Update = PerCore_AMD_Family_17h_Query,
@@ -10323,7 +10432,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_ZenPlus_APU
 	},
-[AMD_Zen_Dali] = {							/* 91*/
+[AMD_Zen_Dali] = {							/* 95*/
 	.Signature = _AMD_Zen_Dali,
 	.Query = Query_AMD_F17h_PerSocket,
 	.Update = PerCore_AMD_Family_17h_Query,
@@ -10347,7 +10456,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen_Dali
 	},
-[AMD_EPYC_Rome_CPK] = { 						/* 92*/
+[AMD_EPYC_Rome_CPK] = { 						/* 96*/
 	.Signature = _AMD_EPYC_Rome_CPK,
 	.Query = Query_AMD_F17h_PerCluster,
 	.Update = PerCore_AMD_Family_17h_Query,
@@ -10371,7 +10480,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_EPYC_Rome_CPK
 	},
-[AMD_Zen2_Renoir] = {							/* 93*/
+[AMD_Zen2_Renoir] = {							/* 97*/
 	.Signature = _AMD_Zen2_Renoir,
 	.Query = Query_AMD_F17h_PerSocket,
 	.Update = PerCore_AMD_Family_17h_Query,
@@ -10395,7 +10504,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen2_Renoir
 	},
-[AMD_Zen2_LCN] = {							/* 94*/
+[AMD_Zen2_LCN] = {							/* 98*/
 	.Signature = _AMD_Zen2_LCN,
 	.Query = Query_AMD_F17h_PerSocket,
 	.Update = PerCore_AMD_Family_17h_Query,
@@ -10419,7 +10528,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen2_LCN
 	},
-[AMD_Zen2_MTS] = {							/* 95*/
+[AMD_Zen2_MTS] = {							/* 99*/
 	.Signature = _AMD_Zen2_MTS,
 	.Query = Query_AMD_F17h_PerCluster,
 	.Update = PerCore_AMD_Family_17h_Query,
@@ -10443,7 +10552,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen2_MTS
 	},
-[AMD_Zen2_Ariel] = {							/* 96*/
+[AMD_Zen2_Ariel] = {							/*100*/
 	.Signature = _AMD_Zen2_Ariel,
 	.Query = Query_AMD_F17h_PerCluster,
 	.Update = PerCore_AMD_Family_17h_Query,
@@ -10467,7 +10576,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen2_Ariel
 	},
-[AMD_Zen2_Jupiter] = {							/* 97*/
+[AMD_Zen2_Jupiter] = {							/*101*/
 	.Signature = _AMD_Zen2_Jupiter,
 	.Query = Query_AMD_F17h_PerCluster,
 	.Update = PerCore_AMD_Family_17h_Query,
@@ -10491,7 +10600,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen2_Jupiter
 	},
-[AMD_Zen2_MDN] = {							/* 98*/
+[AMD_Zen2_MDN] = {							/*102*/
 	.Signature = _AMD_Zen2_MDN,
 	.Query = Query_AMD_F17h_PerCluster,
 	.Update = PerCore_AMD_Family_17h_Query,
@@ -10515,7 +10624,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen2_MDN
 	},
-[AMD_Zen3_VMR] = {							/* 99*/
+[AMD_Zen3_VMR] = {							/*103*/
 	.Signature = _AMD_Zen3_VMR,
 	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -10539,7 +10648,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3_VMR
 	},
-[AMD_Zen3_CZN] = {							/*100*/
+[AMD_Zen3_CZN] = {							/*104*/
 	.Signature = _AMD_Zen3_CZN,
 	.Query = Query_AMD_F19h_PerSocket,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -10563,7 +10672,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3_CZN
 	},
-[AMD_EPYC_Milan] = {							/*101*/
+[AMD_EPYC_Milan] = {							/*105*/
 	.Signature = _AMD_EPYC_Milan,
 	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -10587,7 +10696,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_EPYC_Milan
 	},
-[AMD_Zen3_Chagall] = {							/*102*/
+[AMD_Zen3_Chagall] = {							/*106*/
 	.Signature = _AMD_Zen3_Chagall,
 	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -10611,7 +10720,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3_Chagall
 	},
-[AMD_Zen3_Badami] = {							/*103*/
+[AMD_Zen3_Badami] = {							/*107*/
 	.Signature = _AMD_Zen3_Badami,
 	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -10635,7 +10744,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3_Badami
 	},
-[AMD_Zen3Plus_RMB] = {							/*104*/
+[AMD_Zen3Plus_RMB] = {							/*108*/
 	.Signature = _AMD_Zen3Plus_RMB,
 	.Query = Query_AMD_F19h_PerSocket,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -10659,7 +10768,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3Plus_RMB
 	},
-[AMD_Zen4_Genoa] = {							/*105*/
+[AMD_Zen4_Genoa] = {							/*109*/
 	.Signature = _AMD_Zen4_Genoa,
 	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -10683,7 +10792,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen4_Genoa
 	},
-[AMD_Zen4_RPL] = {							/*106*/
+[AMD_Zen4_RPL] = {							/*110*/
 	.Signature = _AMD_Zen4_RPL,
 	.Query = Query_AMD_F19h_61h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -10707,7 +10816,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen4_RPL
 	},
-[AMD_Zen4_PHX] = {							/*107*/
+[AMD_Zen4_PHX] = {							/*111*/
 	.Signature = _AMD_Zen4_PHX,
 	.Query = Query_AMD_F19h_74h_PerSocket,
 	.Update = PerCore_AMD_Family_19h_Query,
