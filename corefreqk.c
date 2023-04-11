@@ -6405,11 +6405,11 @@ static void AMD_Zen_UMC(struct pci_dev *dev,
 
 	Core_AMD_SMN_Read(
 	    PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.DAC,
-	    SMU_AMD_UMC_BASE_CHA_F17H(cha) + UMC_DAC + (slot << 2), dev
+	    UMC_BAR + UMC_DAC + (slot << 2), dev
 	);
 	Core_AMD_SMN_Read(
 	    PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.CFG,
-	    SMU_AMD_UMC_BASE_CHA_F17H(cha) + UMC_DIMM_CFG + (slot << 2), dev
+	    UMC_BAR + UMC_DIMM_CFG + (slot << 2), dev
 	);
 	for (sec = 0; sec < 2; sec++)
 	{
