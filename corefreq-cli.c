@@ -270,17 +270,19 @@ ATTRIBUTE *StateToSymbol(short int state, char stateStr[])
 	return stateAttr;
 }
 
-unsigned int Dec2Digit( const unsigned int length, unsigned int decimal,
-			unsigned int thisDigit[] )
-{
-	memset(thisDigit, 0, length * sizeof(unsigned int));
-	register unsigned int j = length, dec = decimal;
-	while (dec > 0) {
-		thisDigit[--j] = dec % 10;
-		dec /= 10;
-	}
-	return length - j;
-}
+#define Dec2Digit(decimal, thisDigit)					\
+({									\
+	register __typeof__(decimal) dec = decimal;			\
+	register size_t j = sizeof(thisDigit) / sizeof(thisDigit[0]);	\
+									\
+	while (j > 0 && dec > 0) {					\
+		thisDigit[--j] = dec % 10;				\
+		dec /= 10;						\
+	}								\
+	while (j > 0) { 						\
+		thisDigit[--j] = 0;					\
+	}								\
+})
 
 #define Cels2Fahr(cels)	(((cels * 117965) >> 16) + 32)
 
@@ -19776,7 +19778,7 @@ void Draw_Header(Layer *layer, CUINT row)
 	CFlop = &RO(Shm)->Cpu[ Draw.iClock + Draw.cpuScroll ]		\
 		.FlipFlop[ !RO(Shm)->Cpu[Draw.iClock + Draw.cpuScroll].Toggle ];
 
-	Dec2Digit(9, CFlop->Clock.Hz, digit);
+	Dec2Digit(CFlop->Clock.Hz, digit);
 
 	LayerAt(layer, code, 26 +  0, row) = digit[0] + '0';
 	LayerAt(layer, code, 26 +  1, row) = digit[1] + '0';
@@ -20046,7 +20048,7 @@ void Layout_Card_Core(Layer *layer, Card *card)
 	unsigned int digit[3];
 	unsigned int _cpu = card->data.dword.lo;
 
-	Dec2Digit(3, _cpu, digit);
+	Dec2Digit(_cpu, digit);
 
 	if (!BITVAL(RO(Shm)->Cpu[_cpu].OffLine, OS))
 	{
@@ -20371,7 +20373,7 @@ void Draw_Card_Core(Layer *layer, Card *card)
     case FORMULA_SCOPE_SMT:
 	{
 	unsigned int digit[3];
-	Dec2Digit( 3, Setting.fahrCels	? Cels2Fahr(CFlop->Thermal.Temp)
+	Dec2Digit( Setting.fahrCels	? Cels2Fahr(CFlop->Thermal.Temp)
 					: CFlop->Thermal.Temp, digit );
 
 	LayerAt(layer, code, (card->origin.col + 6), (card->origin.row + 3)) = \
