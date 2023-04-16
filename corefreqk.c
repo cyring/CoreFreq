@@ -6765,6 +6765,18 @@ static PCI_CALLBACK AMD_DataFabric_Raphael(struct pci_dev *pdev)
 		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
 }
 
+static PCI_CALLBACK AMD_DataFabric_Genoa(struct pci_dev *pdev)
+{
+	return AMD_17h_DataFabric(	pdev,
+					(const unsigned int[2][2]) {
+						{ 0x0, 0x20},
+						{0x10, 0x30}
+					},
+					0x40, 0x90,
+					1, MC_MAX_CHA,
+		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
+}
+
 static void CoreFreqK_ResetChip(struct pci_dev *dev)
 {
 	UNUSED(dev);
