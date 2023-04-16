@@ -1995,7 +1995,7 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 	[Zen3/Chagall]		AF_08h Stepping 2	 7 nm	HEDT/TRX4
 	[Zen3/Badami]		AF_30h			 7 nm	[BA]/SVR
 	[Zen3+ Rembrandt]	AF_44h Stepping 1	 6 nm	[RMB]
-	[Zen4/Genoa]		AF_11h Stepping 1	 5 nm	SVR
+	[Zen4/Genoa]		AF_11h Stepping 1	 5 nm	[GNA]/SVR
 	[Zen4/Raphael]		AF_61h Stepping 2	 5 nm	[RPL]
 	[Zen4/Dragon Range]	AF_61h Stepping 2	 5 nm	FL1
 	[Zen4/Phoenix]		AF_74h			 4 nm	[PHX]	*/
@@ -2090,6 +2090,7 @@ static PCI_CALLBACK AMD_DataFabric_Vermeer(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Cezanne(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Rembrandt(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Raphael(struct pci_dev *pdev) ;
+#define AMD_DataFabric_Genoa AMD_DataFabric_Raphael
 
 static struct pci_device_id PCI_Void_ids[] = {
 	{0, }
@@ -3046,6 +3047,10 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 		PCI_VDEVICE(AMD, DID_AMD_19H_ZEN4_RPL_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_19H_ZEN4_GNA_NB_IOMMU),
+		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
+	},
 	/* Source: HYGON: PCI list					*/
 	{
 		PCI_VDEVICE(HYGON, DID_AMD_17H_ZEN_PLUS_NB_IOMMU),
@@ -3105,6 +3110,10 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 	{
 		PCI_VDEVICE(AMD, DID_AMD_19H_RAPHAEL_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_DataFabric_Raphael
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_19H_GENOA_DF_UMC),
+		.driver_data = (kernel_ulong_t) AMD_DataFabric_Genoa
 	},
 	{0, }
 };
@@ -10566,7 +10575,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_AMD_ZEN2,
 	.voltageFormula = VOLTAGE_FORMULA_AMD_17h,
 	.powerFormula   = POWER_FORMULA_AMD_17h,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_AMD_17h_ids,
 	.Uncore = {
 		.Start = Start_Uncore_AMD_Family_17h,
 		.Stop = Stop_Uncore_AMD_Family_17h,
@@ -10590,7 +10599,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_AMD_ZEN2,
 	.voltageFormula = VOLTAGE_FORMULA_AMD_17h,
 	.powerFormula   = POWER_FORMULA_AMD_17h,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_AMD_17h_ids,
 	.Uncore = {
 		.Start = Start_Uncore_AMD_Family_17h,
 		.Stop = Stop_Uncore_AMD_Family_17h,
@@ -10614,7 +10623,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_AMD_ZEN2,
 	.voltageFormula = VOLTAGE_FORMULA_AMD_17h,
 	.powerFormula   = POWER_FORMULA_AMD_17h,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_AMD_17h_ids,
 	.Uncore = {
 		.Start = Start_Uncore_AMD_Family_17h,
 		.Stop = Stop_Uncore_AMD_Family_17h,
@@ -10782,7 +10791,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_AMD_ZEN4,
 	.voltageFormula = VOLTAGE_FORMULA_AMD_ZEN4,
 	.powerFormula   = POWER_FORMULA_AMD_19h,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_AMD_19h_ids,
 	.Uncore = {
 		.Start = Start_Uncore_AMD_Family_19h,
 		.Stop = Stop_Uncore_AMD_Family_19h,

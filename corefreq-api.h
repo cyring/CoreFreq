@@ -1477,6 +1477,7 @@ typedef struct
 #define DID_AMD_19H_ZEN3_RMB_NB_IOMMU	0x14b6	/*	Rembrandt	*/
 /* Source: AMD Ryzen 9 7950X [ Zen4/Raphael ]				*/
 #define DID_AMD_19H_ZEN4_RPL_NB_IOMMU	0x14d9	/*	Raphael 	*/
+#define DID_AMD_19H_ZEN4_GNA_NB_IOMMU	0x149e	/*	Genoa		*/
 /* Source: /include/linux/pci_ids.h					*/
 #define DID_AMD_17H_ZEPPELIN_DF_UMC	0x1460	/*	Zeppelin	*/
 #define DID_AMD_17H_RAVEN_DF_UMC	0x15e8	/*	Raven		*/
@@ -1491,3 +1492,4 @@ typedef struct
 #define DID_AMD_19H_CEZANNE_DF_UMC	0x166a	/*	Cezanne 	*/
 #define DID_AMD_19H_REMBRANDT_DF_UMC	0x1679	/*	Rembrandt 	*/
 #define DID_AMD_19H_RAPHAEL_DF_UMC	0x14e0	/*	Raphael 	*/
+#define DID_AMD_19H_GENOA_DF_UMC	0x14ad	/*	Genoa		*/
