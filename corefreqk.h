@@ -7434,7 +7434,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 };
 static PROCESSOR_SPECIFIC AMD_Zen4_PHX_Specific[] = {
 	{
-	.Brand = ZLIST("AMD Ryzen 9 7940HS"),
+	.Brand = ZLIST( "AMD Ryzen 9 PRO 7940HS",	\
+			"AMD Ryzen 9 7940HS"		),
 	.Boost = {+12, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PHOENIX,
@@ -7446,7 +7447,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHX_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 7 7840HS"),
+	.Brand = ZLIST( "AMD Ryzen 7 PRO 7840HS",	\
+			"AMD Ryzen 7 7840HS"		),
 	.Boost = {+13, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PHOENIX,
@@ -7460,6 +7462,44 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHX_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 7640HS"),
 	.Boost = {+7, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PHOENIX,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 7 7840U",	\
+			"Ryzen Z1 Extreme"	),
+	.Boost = {+18, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PHOENIX,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 5 7540U",	\
+			"Ryzen Z1"		),
+	.Boost = {+17, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PHOENIX,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 5 7640U"),
+	.Boost = {+14, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PHOENIX,
 	.TgtRatioUnlocked = 1,
