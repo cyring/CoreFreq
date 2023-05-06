@@ -23251,8 +23251,6 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 	Policy_Aggregate_Turbo();
 	#endif /* CONFIG_CPU_FREQ */
 
-	CoreFreqK_Register_ClockSource(pArg->localProcessor);
-
 	return 0;
 }
 
@@ -23262,6 +23260,12 @@ static int CoreFreqK_User_Ops_Level_Up(INIT_ARG *pArg)
 {
 	UNUSED(pArg);
 
+  if (Register_ClockSource == COREFREQ_TOGGLE_ON)
+  {
+	Controller_Stop(1);
+	Controller_Start(1);
+	CoreFreqK_Register_ClockSource(PUBLIC(RO(Proc))->Service.Core);
+  }
   if (Ratio_HWP_Count > 0)
   {
 	CLOCK_ARG clockMod;
