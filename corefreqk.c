@@ -22768,7 +22768,11 @@ static int CoreFreqK_Create_Device_Level_Up(INIT_ARG *pArg)
 	struct device *tmpDev;
 	UNUSED(pArg);
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
+	CoreFreqK.clsdev = class_create(DRV_DEVNAME);
+#else
 	CoreFreqK.clsdev = class_create(THIS_MODULE, DRV_DEVNAME);
+#endif
 	CoreFreqK.clsdev->pm = COREFREQ_PM_OPS;
 	CoreFreqK.clsdev->devnode = CoreFreqK_DevNode;
 
