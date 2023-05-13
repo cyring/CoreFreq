@@ -7200,10 +7200,13 @@ static PROCESSOR_SPECIFIC AMD_Zen3_Chagall_Specific[] = {
 };
 static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 	{
-	.Brand = ZLIST( "AMD EPYC 9654P",	\
-			"AMD EPYC 9654",	\
-			"AMD EPYC 9534",	\
-			"AMD EPYC 9254" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 9654P",	\
+			"AMD EPYC Embedded 9654",	\
+			"AMD EPYC Embedded 9254",	\
+			"AMD EPYC 9654P",		\
+			"AMD EPYC 9654",		\
+			"AMD EPYC 9534",		\
+			"AMD EPYC 9254" 		),
 	.Boost = {+13, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_GENOA,
@@ -7229,9 +7232,12 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 9554P",	\
-			"AMD EPYC 9554",	\
-			"AMD EPYC 9124" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 9554P",	\
+			"AMD EPYC Embedded 9554",	\
+			"AMD EPYC Embedded 9124",	\
+			"AMD EPYC 9554P",		\
+			"AMD EPYC 9554",		\
+			"AMD EPYC 9124" 		),
 	.Boost = {+7, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_GENOA,
@@ -7258,8 +7264,10 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 9454P",	\
-			"AMD EPYC 9454" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 9454P",	\
+			"AMD EPYC Embedded 9454",	\
+			"AMD EPYC 9454P",		\
+			"AMD EPYC 9454" 		),
 	.Boost = {+11, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_GENOA,
@@ -7272,8 +7280,10 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 9354P",	\
-			"AMD EPYC 9354" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 9354P",	\
+			"AMD EPYC Embedded 9354",	\
+			"AMD EPYC 9354P",		\
+			"AMD EPYC 9354" 		),
 	.Boost = {+6, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_GENOA,
