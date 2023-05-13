@@ -5463,8 +5463,10 @@ static PROCESSOR_SPECIFIC AMD_Zen_Dali_Specific[] = {
 static PROCESSOR_SPECIFIC AMD_EPYC_Rome_CPK_Specific[] = {
 /*	[EPYC/Rome]		8F_31h Stepping 0			*/
 	{
-	.Brand = ZLIST( "AMD EPYC 7232P",	\
-			"AMD EPYC 7252" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 7232P",	\
+			"AMD EPYC Embedded 7252",	\
+			"AMD EPYC 7232P",		\
+			"AMD EPYC 7252" 		),
 	.Boost = {+1, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
@@ -5477,8 +5479,10 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_CPK_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 7262",	\
-			"AMD EPYC 7F32" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 7262",	\
+			"AMD EPYC Embedded 7F32",	\
+			"AMD EPYC 7262",		\
+			"AMD EPYC 7F32" 		),
 	.Boost = {+2, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
@@ -5491,7 +5495,8 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_CPK_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7272"),
+	.Brand = ZLIST( "AMD EPYC Embedded 7272",	\
+			"AMD EPYC 7272" 		),
 	.Boost = {+3, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
@@ -5504,8 +5509,10 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_CPK_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 7282",	\
-			"AMD EPYC 7F52" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 7282",	\
+			"AMD EPYC Embedded 7F52",	\
+			"AMD EPYC 7282",		\
+			"AMD EPYC 7F52" 		),
 	.Boost = {+4, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
@@ -5518,8 +5525,10 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_CPK_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 7302P",	\
-			"AMD EPYC 7302" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 7302P",	\
+			"AMD EPYC Embedded 7302",	\
+			"AMD EPYC 7302P",		\
+			"AMD EPYC 7302" 		),
 	.Boost = {+3, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
@@ -5532,8 +5541,10 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_CPK_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 7402P",	\
-			"AMD EPYC 7402" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 7402P",	\
+			"AMD EPYC Embedded 7402",	\
+			"AMD EPYC 7402P",		\
+			"AMD EPYC 7402" 		),
 	.Boost = {+6, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
@@ -5546,7 +5557,8 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_CPK_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7352"),
+	.Brand = ZLIST( "AMD EPYC Embedded 7352",	\
+			"AMD EPYC 7352" 		),
 	.Boost = {+9, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
@@ -5559,9 +5571,12 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_CPK_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 7502P",	\
-			"AMD EPYC 7502",	\
-			"AMD EPYC 7532" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 7502P",	\
+			"AMD EPYC Embedded 7502",	\
+			"AMD EPYC Embedded 7532",	\
+			"AMD EPYC 7502P",		\
+			"AMD EPYC 7502",		\
+			"AMD EPYC 7532" 		),
 	.Boost = {+9, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
@@ -5574,8 +5589,10 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_CPK_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 7542",	\
-			"AMD EPYC 7F72" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 7542",	\
+			"AMD EPYC Embedded 7F72",	\
+			"AMD EPYC 7542",		\
+			"AMD EPYC 7F72" 		),
 	.Boost = {+5, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
@@ -5588,7 +5605,8 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_CPK_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7552"),
+	.Brand = ZLIST( "AMD EPYC Embedded 7552",	\
+			"AMD EPYC 7552" 		),
 	.Boost = {+11, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
@@ -5601,8 +5619,10 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_CPK_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 7452",	\
-			"AMD EPYC 7642" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 7452",	\
+			"AMD EPYC Embedded 7642",	\
+			"AMD EPYC 7452",		\
+			"AMD EPYC 7642" 		),
 	.Boost = {+10, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
@@ -5615,7 +5635,8 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_CPK_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7662"),
+	.Brand = ZLIST( "AMD EPYC Embedded 7662",	\
+			"AMD EPYC 7662" 		),
 	.Boost = {+13, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
@@ -5628,8 +5649,10 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_CPK_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 7702P",	\
-			"AMD EPYC 7702" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 7702P",	\
+			"AMD EPYC Embedded 7702",	\
+			"AMD EPYC 7702P",		\
+			"AMD EPYC 7702" 		),
 	.Boost = {+14, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
@@ -5642,7 +5665,8 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_CPK_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7742"),
+	.Brand = ZLIST( "AMD EPYC Embedded 7742",	\
+			"AMD EPYC 7742" 		),
 	.Boost = {+12, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
@@ -5655,7 +5679,8 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_CPK_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7H12"),
+	.Brand = ZLIST( "AMD EPYC Embedded 7H12",	\
+			"AMD EPYC 7H12" 		),
 	.Boost = {+7, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
