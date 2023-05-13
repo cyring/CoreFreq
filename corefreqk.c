@@ -19407,10 +19407,11 @@ static int CoreFreqK_HALT_Handler(struct cpuidle_device *pIdleDevice,
 	__asm__ volatile
 	(
 		"sti"		"\n\t"
-		"hlt"
+		"hlt"		"\n\t"
+		"cli"
 		:
 		:
-		:
+		: "cc"
 	);
 	return index;
 }
@@ -19436,10 +19437,11 @@ static int CoreFreqK_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
 	__asm__ volatile
 	(
 		"sti"		"\n\t"
-		"hlt"
+		"hlt"		"\n\t"
+		"cli"
 		:
 		:
-		:
+		: "cc"
 	);
 #if ((LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)) || (RHEL_MINOR >= 4))
 	return index;
