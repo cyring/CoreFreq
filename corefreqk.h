@@ -4597,7 +4597,8 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	},
 /*	[EPYC/Naples]		8F_01h Stepping 2			*/
 	{	/* AMD EPYC Server Processors				*/
-	.Brand = ZLIST("AMD EPYC 7251"),
+	.Brand = ZLIST( "AMD EPYC Embedded 7251",	\
+			"AMD EPYC 7251"			),
 	.Boost = {+8, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
@@ -4608,7 +4609,8 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7261"),
+	.Brand = ZLIST( "AMD EPYC Embedded 7261",	\
+			"AMD EPYC 7261"			),
 	.Boost = {+4, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
@@ -4619,7 +4621,8 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7281"),
+	.Brand = ZLIST( "AMD EPYC Embedded 7281",	\
+			"AMD EPYC 7281" 		),
 	.Boost = {+6, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
@@ -4630,9 +4633,11 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 7351P",	\
-			"AMD EPYC 7351",	\
-			"AMD EPYC 7301" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 735P",	\
+			"AMD EPYC Embedded 7351",	\
+			"AMD EPYC 7351P",		\
+			"AMD EPYC 7351",		\
+			"AMD EPYC 7301" 		),
 	.Boost = {+5, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
@@ -4643,8 +4648,23 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 7401P",	\
-			"AMD EPYC 7401" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 7371",	\
+			"AMD EPYC Embedded 7301",	\
+			"AMD EPYC 7371" 		),
+	.Boost = {+7, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_NAPLES,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC Embedded 740P",	\
+			"AMD EPYC Embedded 7401",	\
+			"AMD EPYC 7401P",		\
+			"AMD EPYC 7401" 		),
 	.Boost = {+8, +2},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
@@ -4655,7 +4675,8 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7451"),
+	.Brand = ZLIST( "AMD EPYC Embedded 7451",	\
+			"AMD EPYC 7451"			),
 	.Boost = {+6, +3},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
@@ -4666,9 +4687,12 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 7551P",	\
-			"AMD EPYC 7551",	\
-			"AMD EPYC 7501" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 755P",	\
+			"AMD EPYC Embedded 7551",	\
+			"AMD EPYC Embedded 7501",	\
+			"AMD EPYC 7551P",		\
+			"AMD EPYC 7551",		\
+			"AMD EPYC 7501" 		),
 	.Boost = {+6, +4},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
@@ -4679,7 +4703,8 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7601"),
+	.Brand = ZLIST( "AMD EPYC Embedded 7601",	\
+			"AMD EPYC 7601" 		),
 	.Boost = {+5, +5},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
