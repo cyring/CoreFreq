@@ -6769,8 +6769,10 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Milan_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 7713P",	\
-			"AMD EPYC 7713" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 7713P",	\
+			"AMD EPYC Embedded 7713",	\
+			"AMD EPYC 7713P",		\
+			"AMD EPYC 7713" 		),
 	.Boost = {+17, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MILAN,
@@ -6796,8 +6798,9 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Milan_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 7773X",	\
-			"AMD EPYC 7643" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 7643",	\
+			"AMD EPYC 7773X",		\
+			"AMD EPYC 7643" 		),
 	.Boost = {+13, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MILAN,
@@ -6810,8 +6813,10 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Milan_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 7543P",	\
-			"AMD EPYC 7543" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 7543P",	\
+			"AMD EPYC Embedded 7543",	\
+			"AMD EPYC 7543P",		\
+			"AMD EPYC 7543" 		),
 	.Boost = {+9, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MILAN,
@@ -6837,10 +6842,12 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Milan_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 7453",	\
-			"AMD EPYC 7343",	\
-			"AMD EPYC 7313P",	\
-			"AMD EPYC 7313" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 7313P",	\
+			"AMD EPYC Embedded 7313",	\
+			"AMD EPYC 7453",		\
+			"AMD EPYC 7343",		\
+			"AMD EPYC 7313P",		\
+			"AMD EPYC 7313" 		),
 	.Boost = {+7, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MILAN,
@@ -6853,8 +6860,10 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Milan_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 7443P",	\
-			"AMD EPYC 7443" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 7443P",	\
+			"AMD EPYC Embedded 7443",	\
+			"AMD EPYC 7443P",		\
+			"AMD EPYC 7443" 		),
 	.Boost = {+12, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MILAN,
@@ -6867,7 +6876,8 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Milan_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7413"),
+	.Brand = ZLIST( "AMD EPYC Embedded 7413",	\
+			"AMD EPYC 7413" 		),
 	.Boost = {+10, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MILAN,
