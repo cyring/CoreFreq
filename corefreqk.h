@@ -7528,7 +7528,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHX_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 7 7840U",	\
-			"Ryzen Z1 Extreme"	),
+			"AMD Ryzen Z1 Extreme"	),
 	.Boost = {+18, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PHOENIX,
@@ -7541,7 +7541,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHX_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 5 7540U",	\
-			"Ryzen Z1"		),
+			"AMD Ryzen Z1"		),
 	.Boost = {+17, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PHOENIX,
