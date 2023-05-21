@@ -111,6 +111,16 @@
 	#define MSR_AMD_DC_CFG			0xc0011022
 #endif
 
+#define MSR_AMD_TW_CFG				0xc0011023
+
+#ifndef MSR_AMD64_DE_CFG
+	#define MSR_AMD64_DE_CFG		0xc0011029
+#endif
+
+#ifndef MSR_AMD64_BU_CFG2
+	#define MSR_AMD64_BU_CFG2		0xc001102a
+#endif
+
 #ifndef MSR_AMD_CU_CFG3
 	#define MSR_AMD_CU_CFG3 		0xc001102b
 #endif
@@ -844,30 +854,77 @@ typedef union
 	HW_IP_Prefetch	:  6-5,  /* F17h: 1=Disable Instruction Cache	*/
 	ReservedBits2	:  9-6,
 	DisSpecTlbRld 	: 10-9,  /* F16h: 1=Disable speculative ITLB reloads */
-	ReservedBits3	: 26-10,
+	ReservedBits3	: 11-10,
+	DIS_SEQ_PREFETCH: 12-11, /* K8: 1=Disable IC sequential prefetch */
+	ReservedBits4	: 26-12,
 	WIDEREAD_PWRSAVE: 27-26, /* F16h: 1=Disable wide read power mgmt */
-	ReservedBits4	: 39-27,
+	ReservedBits5	: 39-27,
 	DisLoopPredictor: 40-39, /* F15h-C0: 1=Disable loop predictor	*/
-	ReservedBits5	: 64-40;
+	ReservedBits6	: 64-40;
     };
 } AMD_IC_CFG;
 
 typedef union
 {
-	unsigned long long value; /* Scope[?]: MSR 0xc0011022		*/
+	unsigned long long value; /* Scope[Core]: MSR 0xc0011022	*/
     struct
     {
 	unsigned long long
 	ReservedBits1	:  4-0,
 	DisSpecTlbRld	:  5-4, /* 1=Disable speculative DTLB reloads	*/
-	ReservedBits2	: 13-5,
+	ReservedBits2	:  8-5,
+	Dis_WBTOL2	:  9-8, /* F12h: 1=DIS_CLR_WBTOL2_SMC_HIT	*/
+	ReservedBits3	: 13-9,
 	DisHwPf 	: 14-13,
-	ReservedBits3	: 15-14,
+	ReservedBits4	: 15-14,
 	DisPfHwForSw	: 16-15,
 	L1_HW_Prefetch	: 17-16, /* F17h (BIOS) , Disable=1		*/
-	ReservedBits4	: 64-17;
+	ReservedBits5	: 64-17;
     };
-} AMD_DC_CFG; /* Family: 15h(BKDG), 17h(BIOS), Other(TODO)		*/
+} AMD_DC_CFG; /* Family: 12h(BKDG) ... 17h(BIOS)			*/
+
+typedef union
+{
+	unsigned long long value; /* Scope[Core]: MSR 0xc0011023	*/
+    struct
+    {
+	unsigned long long
+	ReservedBits1	: 49-0,
+	CombineCr0Cd	: 50-49,
+	ReservedBits5	: 64-50;
+    };
+} AMD_TW_CFG; /* Family: 10h(BKDG) ... 17h				*/
+
+typedef union
+{
+	unsigned long long value; /* Scope[?]: MSR 0xc0011029		*/
+    struct
+    {
+	unsigned long long
+	ReservedBits1	:  1-0,
+	LFENCE_SER	:  2-1,  /* F10h: LFENCE as serializing instruction */
+	ReservedBits2	: 23-2,
+	CLFLUSH_SER	: 24-23, /* F12h: CLFLUSH as serializing instruction */
+	ReservedBits3	: 64-24;
+    };
+} AMD_DE_CFG; /* Family: 12h ... 17h					*/
+
+typedef union
+{
+	unsigned long long value; /* SharedC: MSR 0xc001102a		*/
+    struct
+    {
+	unsigned long long
+	ReservedBits1	: 35-0,
+	IcDisSpecTlbWr	: 36-35, /* F12h: 1=Dis Speculative writes to ITLB */
+	ReservedBits2	: 50-36,
+	RdMmExtCfgDwDis : 51-50, /* F12h: 1=Dis Read MMIO extended config */
+	ReservedBits3	: 56-51,
+	L2ClkGatingEn	: 57-56, /* F12h: 1=Enable L2 clock gating	*/
+	L2HystCnt	: 59-57, /* F12h: Periodic clocks max number	*/
+	ReservedBits4	: 64-59;
+    };
+} AMD_BU_CFG2; /* Family: 12h ... 17h					*/
 
 typedef union
 {
