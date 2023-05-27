@@ -1371,9 +1371,11 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 		"Usage:\t%s [-Option <argument>] [-Commande <argument>]\n"\
 		"\n    Options de l'interface\n"			\
 		"\t-Oa\tFréquence absolue\n"				\
+		"\t-Op\tAfficher États-Package\n"			\
 		"\t-Ok\tUnité mémoire en kilo-octet\n"			\
 		"\t-Om\tUnité mémoire en méga-octet\n"			\
 		"\t-Og\tUnité mémoire en giga-octet\n"			\
+		"\t-OW\tChanger d'unité d'Énergie\n"			\
 		"\t-OF\tTempérature en Fahrenheit\n"			\
 		"\t-OJ #\tNuméro d'index de chaîne SMBIOS\n"		\
 		"\t-OE #\tNuméro d'index du thème de couleurs\n"	\

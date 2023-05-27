@@ -1906,9 +1906,11 @@
 		"Usage:\t%s [-Option <argument>] [-Command <argument>]\n"\
 		"\n    Interface options\n"				\
 		"\t-Oa\tAbsolute frequency\n"				\
+		"\t-Op\tShow Package C-States\n"			\
 		"\t-Ok\tMemory unit in kilobyte\n"			\
 		"\t-Om\tMemory unit in megabyte\n"			\
 		"\t-Og\tMemory unit in gigabyte\n"			\
+		"\t-OW\tToggle Energy units\n"				\
 		"\t-OF\tTemperature in Fahrenheit\n"			\
 		"\t-OJ #\tSMBIOS string index number\n" 		\
 		"\t-OE #\tColor theme index number\n"			\

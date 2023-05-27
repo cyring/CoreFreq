@@ -21007,6 +21007,9 @@ int main(int argc, char *argv[])
 		case 'a':
 			Draw.Load = 1;
 			break;
+		case 'p':
+			Draw.Flag.avgOrPC = 1;
+			break;
 		case 'k':
 			Draw.Unit.Memory = 10 * 0;
 			break;
@@ -21015,6 +21018,9 @@ int main(int argc, char *argv[])
 			break;
 		case 'g':
 			Draw.Unit.Memory = 10 * 2;
+			break;
+		case 'W':
+			Setting.jouleWatt = !Setting.jouleWatt;
 			break;
 		case 'F':
 			Setting.fahrCels = 1;

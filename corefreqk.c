@@ -3,6 +3,9 @@
  * Copyright (C) 2015-2023 CYRIL COURTIAT
  * Licenses: GPL2
  *
+ * Vedolizumab [05.25.2023]
+ * First injection
+ *
  * CYRIL INGENIERIE[11.30.2022]
  * Company closed down
  *
