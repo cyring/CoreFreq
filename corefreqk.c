@@ -4177,7 +4177,8 @@ signed int Read_ACPI_CST_Registers(unsigned int cpu)
 
 void For_All_ACPI_CPPC(signed int(*CPPC_Func)(unsigned int, void*), void *arg)
 {
-	#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+	#if defined(CONFIG_ACPI_CPPC_LIB) \
+	 && LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
 	signed int rc = acpi_cpc_valid() == false;
 	#else
 	signed int rc = acpi_disabled;
