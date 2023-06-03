@@ -189,10 +189,9 @@ CPU     IPS            IPC            CPI
 
 ## ArchLinux
 * [![corefreq](https://img.shields.io/aur/version/corefreq-dkms?style=flat-square)](https://aur.archlinux.org/pkgbase/corefreq/) follows released tags
-* [![corefreq-git](https://img.shields.io/aur/version/corefreq-dkms-git?style=flat-square)](https://aur.archlinux.org/pkgbase/corefreq-git/) follows `develop` branch
 
 ## Gentoo Linux
-* In [GURU overlay](https://wiki.gentoo.org/wiki/Project:GURU/Information_for_End_Users) https://github.com/gentoo/guru/tree/master/sys-apps/corefreq
+* In [GURU overlay](https://wiki.gentoo.org/wiki/Project:GURU/Information_for_End_Users) CoreFreq [package](https://github.com/gentoo/guru/tree/master/sys-apps/corefreq), please contact [vitaly-zdanevich](https://github.com/vitaly-zdanevich)  
 
 ## Debian, Ubuntu
  * Installing the DKMS package will pull the Kernel development packages  

@@ -58,7 +58,7 @@ ccflags-y += -D MSR_CORE_PERF_UCC=$(MSR_CORE_PERF_UCC)
 ccflags-y += -D MSR_CORE_PERF_URC=$(MSR_CORE_PERF_URC)
 
 ifneq ($(HWM_CHIPSET),)
-	ccflags-y += -D HWM_CHIPSET=$(HWM_CHIPSET)
+ccflags-y += -D HWM_CHIPSET=$(HWM_CHIPSET)
 endif
 
 ifneq ($(NO_HEADER),)
