@@ -6591,6 +6591,38 @@ static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
 
 static PCI_CALLBACK AMD_DataFabric_Zeppelin(struct pci_dev *pdev)
 {
+    if (strncmp(PUBLIC(RO(Proc))->Architecture,
+		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_WHITEHAVEN],
+		CODENAME_LEN) == 0)
+    {		/*		Two controllers 			*/
+	return AMD_17h_DataFabric(	pdev,
+					(const unsigned int[2][2]) {
+						{ 0x0, 0x20},
+						{0x10, 0x28}
+					},
+					0x30, 0x80,
+					2, MC_MAX_CHA,
+		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0),
+					PCI_DEVFN(0x19, 0x0)} );
+    }
+    else if (strncmp(PUBLIC(RO(Proc))->Architecture,
+			Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_NAPLES],
+			CODENAME_LEN) == 0)
+    {		/*		Four controllers			*/
+	return AMD_17h_DataFabric(	pdev,
+					(const unsigned int[2][2]) {
+						{ 0x0, 0x20},
+						{0x10, 0x28}
+					},
+					0x30, 0x80,
+					4, MC_MAX_CHA,
+		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0),
+					PCI_DEVFN(0x19, 0x0),
+					PCI_DEVFN(0x1a, 0x0),
+					PCI_DEVFN(0x1b, 0x0)} );
+    }
+    else	/*	CN_SNOWY_OWL, CN_SUMMIT_RIDGE			*/
+    {		/*		One controller				*/
 	return AMD_17h_DataFabric(	pdev,
 					(const unsigned int[2][2]) {
 						{ 0x0, 0x20},
@@ -6599,6 +6631,7 @@ static PCI_CALLBACK AMD_DataFabric_Zeppelin(struct pci_dev *pdev)
 					0x30, 0x80,
 					1, MC_MAX_CHA,
 		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
+    }
 }
 
 static PCI_CALLBACK AMD_DataFabric_Raven(struct pci_dev *pdev)
