@@ -5772,6 +5772,9 @@ void GLK_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 #define RPL_CAP ADL_CAP
 #define RPL_IMC ADL_IMC
 
+#define MTL_CAP ADL_CAP
+#define MTL_IMC ADL_IMC
+
 void AMD_0Fh_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
     struct {
@@ -6443,6 +6446,7 @@ static char *Chipset[CHIPSETS] = {
 	[IC_Z790]		= "Intel Z790",
 	[IC_H770]		= "Intel H770",
 	[IC_B760]		= "Intel B760",
+	[IC_MTL_PCH]		= "Intel MTL PCH",
 	[IC_K8] 		= "K8/HyperTransport",
 	[IC_ZEN]		= "Zen UMC"
 };
@@ -6972,6 +6976,13 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		break;
 	case DID_INTEL_RAPTORLAKE_B760_PCH:
 		SET_CHIPSET(IC_B760);
+		break;
+	case DID_INTEL_METEORLAKE_M_6_8_2_HB:
+		MTL_CAP(RO(Shm), RO(Proc), RO(Core));
+		MTL_IMC(RO(Shm), RO(Proc));
+		break;
+	case DID_INTEL_METEORLAKE_PCH:
+		SET_CHIPSET(IC_MTL_PCH);
 		break;
 	}
 }

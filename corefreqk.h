@@ -2079,6 +2079,8 @@ static PCI_CALLBACK ADL_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK GLK_IMC(struct pci_dev *dev) ;
 #define RPL_IMC ADL_IMC
 #define RPL_PCH CML_PCH
+#define MTL_IMC ADL_IMC
+#define MTL_PCH CML_PCH
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev) ;
@@ -2984,6 +2986,19 @@ static struct pci_device_id PCI_Geminilake_ids[] = {
 	{	/* Goldmont Plus					*/
 		PCI_VDEVICE(INTEL, DID_INTEL_GEMINILAKE_HB),
 		.driver_data = (kernel_ulong_t) GLK_IMC
+	},
+	{0, }
+};
+
+/* Meteor Lake								*/
+static struct pci_device_id PCI_MTL_ids[] = {
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_METEORLAKE_M_6_8_2_HB),
+		.driver_data = (kernel_ulong_t) MTL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_METEORLAKE_PCH),
+		.driver_data = (kernel_ulong_t) MTL_PCH
 	},
 	{0, }
 };
@@ -10325,7 +10340,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [Meteorlake_M] = {							/* 83*/
 	.Signature = _Meteorlake_M,
 	.Query = Query_Skylake,
-	.Update = PerCore_Skylake_Query,
+	.Update = PerCore_Kaby_Lake_Query,
 	.Start = Start_Alderlake,
 	.Stop = Stop_Alderlake,
 	.Exit = NULL,
@@ -10334,12 +10349,12 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Skylake_HWP,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SAV,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_MTL_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_Alderlake,
+		.Stop = Stop_Uncore_Alderlake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
@@ -10349,7 +10364,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [Meteorlake_N] = {							/* 84*/
 	.Signature = _Meteorlake_N,
 	.Query = Query_Skylake,
-	.Update = PerCore_Skylake_Query,
+	.Update = PerCore_Kaby_Lake_Query,
 	.Start = Start_Alderlake,
 	.Stop = Stop_Alderlake,
 	.Exit = NULL,
@@ -10358,12 +10373,12 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Skylake_HWP,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SAV,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_MTL_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_Alderlake,
+		.Stop = Stop_Uncore_Alderlake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
@@ -10373,7 +10388,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [Meteorlake_S] = {							/* 85*/
 	.Signature = _Meteorlake_S,
 	.Query = Query_Skylake,
-	.Update = PerCore_Skylake_Query,
+	.Update = PerCore_Kaby_Lake_Query,
 	.Start = Start_Alderlake,
 	.Stop = Stop_Alderlake,
 	.Exit = NULL,
@@ -10382,18 +10397,19 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Skylake_HWP,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SAV,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_MTL_ids,
 	.Uncore = {
-		.Start = NULL,
-		.Stop = NULL,
+		.Start = Start_Uncore_Alderlake,
+		.Stop = Stop_Uncore_Alderlake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
 	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Meteorlake_S
 	},
+
 [Raptorlake] = {							/* 86*/
 	.Signature = _Raptorlake,
 	.Query = Query_Skylake,
