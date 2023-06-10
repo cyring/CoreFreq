@@ -1689,6 +1689,35 @@ REASON_CODE SysInfoISA( Window *win,
 	},
 /* Row Mark */
 	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_AMX_BF16).CODE(), RSC(ISA_AMX_BF16_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.ExtFeature.EDX.AMX_BF16 },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature.EDX.AMX_BF16 },
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_AMX_TILE).CODE(), RSC(ISA_AMX_TILE_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.ExtFeature.EDX.AMX_TILE },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature.EDX.AMX_TILE },
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_AMX_INT8).CODE(), RSC(ISA_AMX_INT8_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.ExtFeature.EDX.AMX_INT8 },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature.EDX.AMX_INT8 },
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_AMX_FP16).CODE(), RSC(ISA_AMX_FP16_COMM).CODE(),
+		{ 1, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AMX_FP16 },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AMX_FP16 },
+	},
+/* Row Mark */
+	{
 		NULL,
 		RSC(ISA_AVX512_F).CODE(), NULL,
 		{ 0, RO(Shm)->Proc.Features.ExtFeature.EBX.AVX_512F },
@@ -1822,14 +1851,14 @@ REASON_CODE SysInfoISA( Window *win,
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		RSC(ISA_AVX_INT8).CODE(), NULL,
-		{ 0,RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_VNNI_INT8},
+		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_VNNI_INT8},
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_VNNI_INT8 },
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		RSC(ISA_AVX_NE_CONV).CODE(), NULL,
-		{ 0,RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_NE_CONVERT},
+		{ 1,RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_NE_CONVERT},
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_NE_CONVERT },
 	},

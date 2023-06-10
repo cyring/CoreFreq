@@ -894,6 +894,18 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.TSXLDTRK);
 					json_key(&s, "PCONFIG");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.PCONFIG);
+					json_key(&s, "Architectural_LBRs");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.ArchitecturalLBRs);
+					json_key(&s, "CET_IBT");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.CET_IBT);
+					json_key(&s, "AMX_BF16");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.AMX_BF16);
+					json_key(&s, "AMX_TILE");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.AMX_TILE);
+					json_key(&s, "AMX_INT8");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.AMX_INT8);
+					json_key(&s, "AVX512_FP16");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.AVX512_FP16);
 					json_key(&s, "IBRS_IBPB");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap);
 					json_key(&s, "STIBP");
