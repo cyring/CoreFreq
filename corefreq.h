@@ -393,7 +393,8 @@ typedef struct
 				BTC_NOBR	:  8-6,
 				DRAM_Scrambler	: 10-8,
 				TSME		: 12-10,
-				_UnusedMechBits : 64-12;
+				DDPD_U_DIS	: 14-12,
+				_UnusedMechBits : 64-14;
 	} Mechanisms;
 
 	enum THERMAL_FORMULAS	thermalFormula;

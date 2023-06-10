@@ -473,9 +473,10 @@ typedef union
 		RRSBA_DIS_U	:  6-5,  /* CPUID(EAX=07H,ECX=2):EDX[ 2] == 1 */
 		RRSBA_DIS_S	:  7-6,  /* CPUID(EAX=07H,ECX=2):EDX[ 2] == 1 */
 		PSFD		:  8-7,  /* CPUID(EAX=07H,ECX=2):EDX[ 0] == 1 */
-		ReservedBits1	: 10-8,
+		DDPD_U_DIS	:  9-8,  /* CPUID(EAX=07H,ECX=2):EDX[ 3] == 1 */
+		ReservedBits1	: 10-9,
 		BHI_DIS_S	: 11-10, /* CPUID(EAX=07H,ECX=2):EDX[ 4] == 1 */
-		ReservedBits	: 64-11;
+		ReservedBits2	: 64-11;
 	};
 } SPEC_CTRL;
 

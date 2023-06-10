@@ -1818,6 +1818,22 @@ REASON_CODE SysInfoISA( Window *win,
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX_VNNI_VEX },
 	},
+	/* Intel ISA */
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_AVX_INT8).CODE(), NULL,
+		{ 0,RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_VNNI_INT8},
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_VNNI_INT8 },
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_AVX_NE_CONV).CODE(), NULL,
+		{ 0,RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_NE_CONVERT},
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_NE_CONVERT },
+	},
+	/* AMD ISA */
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		RSC(ISA_AVX_128).CODE(), NULL,
@@ -1831,6 +1847,21 @@ REASON_CODE SysInfoISA( Window *win,
 		{ 1, AVX.FP256 },
 		(unsigned short[])
 		{ AVX.FP256 },
+	},
+/* Row Mark */
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_AVX_IFMA).CODE(), NULL,
+		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX_IFMA },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX_IFMA },
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_CMPCCXADD).CODE(), RSC(ISA_CMPCCXADD_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.CMPCCXADD },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.CMPCCXADD },
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
@@ -2496,6 +2527,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.LASS == 1,
+		attr_Feat,
+		2, "%s%.*sLASS   [%7s]", RSC(FEATURES_LASS).CODE(),
+		width - 19 - RSZ(FEATURES_LASS),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
 		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.LAM == 1,
 		attr_Feat,
 		2, "%s%.*sLAM   [%7s]", RSC(FEATURES_LAM).CODE(),
@@ -2662,6 +2701,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		attr_Feat,
 		2, "%s%.*sPTWRITE   [%7s]", RSC(FEATURES_PTWRITE).CODE(),
 		width - 22 - RSZ(FEATURES_PTWRITE),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.PREFETCHI == 1,
+		attr_Feat,
+		2, "%s%.*sPREFETCHI   [%7s]", RSC(FEATURES_PREFETCHI).CODE(),
+		width - 24 - RSZ(FEATURES_PREFETCHI),
 		NULL
 	},
 	{
@@ -3205,6 +3252,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		attr_Feat,
 		2, "%s%.*sRRSBA_DIS_S   [%7s]", RSC(MECH_RRSBA_DIS_S).CODE(),
 		width - 26 - RSZ(MECH_RRSBA_DIS_S),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.DDPD_U_DIS,
+		attr_Feat,
+		2, "%s%.*sDDPD_U_DIS   [%7s]", RSC(MECH_DDPD_U_DIS).CODE(),
+		width - 25 - RSZ(MECH_DDPD_U_DIS),
 		MECH
 	},
 	{

@@ -1229,7 +1229,8 @@ typedef struct THERMAL_POWER_LEAF
 		HWP_Idle	: 21-20,/* Ignore (or not) Idle SMT Processor */
 		Reserved3	: 23-21,
 		ITD_MSR 	: 24-23, /* HW_FEEDBACK_{CHAR,THREAD_CONFIG} */
-		Reserved4	: 32-24;
+		THERM_INT_MSR	: 25-24, /* IA32_THERM_INTERRUPT MSR	*/
+		Reserved4	: 32-25;
 	} EAX;
 	struct
 	{	/* Intel reserved.					*/
@@ -1333,9 +1334,9 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 		MAWAU		: 22-17, /* for BNDLDX & BNDSTX instructions*/
 		RDPID		: 23-22, /* Intel RDPID inst. & IA32_TSC_AUX */
 		KL		: 24-23, /* Key Locker			*/
-		Reserved2	: 25-24,
+		BUS_LOCK_DETECT : 25-24,
 		CLDEMOTE	: 26-25, /* Support of cache line demote */
-		Reserved3	: 27-26,
+		Reserved2	: 27-26,
 		MOVDIRI 	: 28-27, /* Move Doubleword as Direct Store*/
 		MOVDIR64B	: 29-28, /* Move 64 Bytes as Direct Store*/
 		ENQCMD		: 30-29, /* Support of Enqueue Stores	*/
@@ -1345,7 +1346,8 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 	struct
 	{	/* Intel reserved.					*/
 		unsigned int
-		Reserved1	:  2-0,
+		Reserved1	:  1-0,
+		SGX_KEYS	:  2-1,
 		AVX512_4VNNIW	:  3-2,  /* Intel Xeon Phi		*/
 		AVX512_4FMAPS	:  4-3,  /* Intel Xeon Phi		*/
 		FSRM		:  5-4,  /* Fast Short REP MOVSB 	*/
@@ -1364,7 +1366,11 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 		PCONFIG 	: 19-18,
 		ArchitecturalLBRs:20-19,
 		CET_IBT 	: 21-20, /* CET Indirect Branch Tracking */
-		Reserved5	: 26-21,
+		Reserved5	: 22-21,
+		AMX_BF16	: 23-22,
+		AVX512_FP16	: 24-23,
+		AMX_TILE	: 25-24,
+		AMX_INT8	: 26-25,
 		IBRS_IBPB_Cap	: 27-26, /* IA32_SPEC_CTRL,IA32_PRED_CMD */
 		STIBP_Cap	: 28-27, /* IA32_SPEC_CTRL[1]		*/
 		L1D_FLUSH_Cap	: 29-28, /* IA32_FLUSH_CMD		*/
@@ -1383,23 +1389,23 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf 1		*/
 		RAO_INT 	:  4-3,  /* Grand Ridge			*/
 		AVX_VNNI_VEX	:  5-4,  /* Vector Neural Network Instructions*/
 		AVX512_BF16	:  6-5,  /* BFLOAT16 support in AVX512	*/
-		Reserved2	:  7-6,
+		LASS		:  7-6,
 		CMPCCXADD	:  8-7,  /* Sierra Forest, Grand Ridge	*/
 		ArchPerfmonExt	:  9-8,
-		Reserved3	: 10-9,
+		Reserved2	: 10-9,
 		FZRM		: 11-10, /* Fast Zero-length REP MOVSB	*/
 		FSRS		: 12-11, /* Fast Short REP STOSB:Store String */
 		FSRC		: 13-12, /* Fast Short REP CMPSB, REP SCASB */
-		Reserved4	: 19-13,
+		Reserved3	: 19-13,
 		WRMSRNS 	: 20-19, /* Sierra Forest, Grand Ridge	*/
-		Reserved5	: 21-20,
+		Reserved4	: 21-20,
 		AMX_FP16	: 22-21, /* Granite Rapids		*/
 		HRESET		: 23-22, /* History Reset instruction	*/
 		AVX_IFMA	: 24-23, /* Sierra Forest, Grand Ridge	*/
-		Reserved6	: 26-24,
+		Reserved5	: 26-24,
 		LAM		: 27-26, /* Linear Address Masking	*/
 		RDMSRLIST	: 28-27, /* Sierra Forest, Grand Ridge	*/
-		Reserved7	: 32-28;
+		Reserved6	: 32-28;
 	} EAX;
 	struct
 	{
@@ -1419,8 +1425,10 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf 1		*/
 		AVX_VNNI_INT8	:  5-4,  /* Sierra Forest, Grand Ridge	*/
 		AVX_NE_CONVERT	:  6-5,  /* Sierra Forest, Grand Ridge	*/
 		Reserved2	: 14-6,
-		PREFETCHITI	: 15-14, /* Granite Rapids: IA32_UINTR	*/
-		Reserved3	: 32-15;
+		PREFETCHI	: 15-14, /* Granite Rapids: IA32_UINTR	*/
+		Reserved3	: 18-15,
+		CET_SSS 	: 19-18,
+		Reserved4	: 32-19;
 	} EDX;
 } CPUID_0x00000007_1;
 
@@ -1437,10 +1445,10 @@ typedef struct	/* Extended Feature Flags Leaf equal or greater than 2	*/
 		PSFD_SPEC_CTRL	:  1-0,
 		IPRED_SPEC_CTRL :  2-1,
 		RRSBA_SPEC_CTRL :  3-2,
-		Reserved1	:  4-3,
+		DDPD_U_SPEC_CTRL:  4-3,
 		BHI_SPEC_CTRL	:  5-4,
 		MCDT_NO 	:  6-5,
-		Reserved2	: 32-6;
+		Reserved	: 32-6;
 	} EDX;
 } CPUID_0x00000007_2;
 

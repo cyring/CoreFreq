@@ -1849,6 +1849,10 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 						RW(Proc)->RRSBA_DIS_S,
 						RO(Proc)->SPEC_CTRL_Mask),
 
+			DDPD_U_DIS = BITCMP_CC( LOCKLESS,
+						RW(Proc)->DDPD_U_DIS,
+						RO(Proc)->SPEC_CTRL_Mask ),
+
 			BHI_DIS_S = BITCMP_CC(	LOCKLESS,
 						RW(Proc)->BHI_DIS_S,
 						RO(Proc)->SPEC_CTRL_Mask );
@@ -1992,6 +1996,12 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 	   && (RO(Shm)->Proc.Features.ExtFeature_Leaf2_EDX.RRSBA_SPEC_CTRL == 1)
 	);
 	RO(Shm)->Proc.Mechanisms.RRSBA_DIS_S += (2 * RRSBA_DIS_S);
+
+	RO(Shm)->Proc.Mechanisms.DDPD_U_DIS = (
+	      (RO(Shm)->Proc.Features.ExtFeature.EAX.MaxSubLeaf >= 2)
+	   && (RO(Shm)->Proc.Features.ExtFeature_Leaf2_EDX.DDPD_U_SPEC_CTRL ==1)
+	);
+	RO(Shm)->Proc.Mechanisms.DDPD_U_DIS += (2 * DDPD_U_DIS);
 
 	RO(Shm)->Proc.Mechanisms.BHI_DIS_S = (
 	      (RO(Shm)->Proc.Features.ExtFeature.EAX.MaxSubLeaf >= 2)

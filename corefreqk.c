@@ -11347,6 +11347,7 @@ void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IPRED_DIS_S, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA_DIS_U, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA_DIS_S, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->DDPD_U_DIS, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BHI_DIS_S, Core->Bind);
 
     if (PUBLIC(RO(Proc))->Features.ExtFeature.EAX.MaxSubLeaf >= 2)
@@ -11386,6 +11387,15 @@ void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA_DIS_S, Core->Bind);
 	    } else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA_DIS_S, Core->Bind);
+	    }
+	}
+	if (PUBLIC(RO(Proc))->Features.ExtFeature_Leaf2_EDX.DDPD_U_SPEC_CTRL) {
+		RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
+
+	    if (Spec_Ctrl.DDPD_U_DIS) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->DDPD_U_DIS, Core->Bind);
+	    } else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->DDPD_U_DIS, Core->Bind);
 	    }
 	}
 	if (PUBLIC(RO(Proc))->Features.ExtFeature_Leaf2_EDX.BHI_SPEC_CTRL) {
@@ -11872,6 +11882,7 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IPRED_DIS_S, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA_DIS_U, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA_DIS_S, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->DDPD_U_DIS, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BHI_DIS_S	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BTC_NOBR	, Core->Bind);
 

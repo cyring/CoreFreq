@@ -1085,6 +1085,7 @@ typedef struct
 	BitCC			IPRED_DIS_S	__attribute__ ((aligned (16)));
 	BitCC			RRSBA_DIS_U	__attribute__ ((aligned (16)));
 	BitCC			RRSBA_DIS_S	__attribute__ ((aligned (16)));
+	BitCC			DDPD_U_DIS	__attribute__ ((aligned (16)));
 	BitCC			BHI_DIS_S	__attribute__ ((aligned (16)));
 	BitCC	/* AMD */	BTC_NOBR	__attribute__ ((aligned (16)));
 

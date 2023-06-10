@@ -493,6 +493,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_ISA_ADX_COMM_CODE_FR	RSC_ISA_ADX_COMM_CODE_EN
 #define RSC_ISA_AES_COMM_CODE_FR	RSC_ISA_AES_COMM_CODE_EN
 #define RSC_ISA_AVX_COMM_CODE_FR	RSC_ISA_AVX_COMM_CODE_EN
+#define RSC_ISA_CMPCCXADD_COMM_CODE_FR	RSC_ISA_CMPCCXADD_COMM_CODE_EN
 #define RSC_ISA_BMI_COMM_CODE_FR	RSC_ISA_BMI_COMM_CODE_EN
 #define RSC_ISA_CLWB_COMM_CODE_FR	RSC_ISA_CLWB_COMM_CODE_EN
 #define RSC_ISA_CLFLUSH_COMM_CODE_FR	RSC_ISA_CLFLUSH_COMM_CODE_EN
@@ -583,6 +584,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_INVLPGB_CODE_FR	"Instruction INVLPGB"
 #define RSC_FEATURES_INVPCID_CODE_FR	"Instruction INVPCID"
 #define RSC_FEATURES_LM_CODE_FR 	"Long Mode 64 bits"
+#define RSC_FEATURES_LASS_CODE_FR	"Linear Address Space Separation"
 #define RSC_FEATURES_LAM_CODE_FR	"Linear Address Masking"
 #define RSC_FEATURES_LWP_CODE_FR	"LightWeight Profiling"
 #define RSC_FEATURES_MBE_CODE_FR	"Memory Bandwidth Enforcement"
@@ -604,6 +606,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_PSE36_CODE_FR	"36-bit Page Size Extension"
 #define RSC_FEATURES_PSN_CODE_FR	"Processor Serial Number"
 #define RSC_FEATURES_PTWRITE_CODE_FR	"Write Data to a Processor Trace Packet"
+#define RSC_FEATURES_PREFETCHI_CODE_FR	"Instructions PREFETCHIT0/1"
 #define RSC_FEATURES_RDT_PQE_CODE_FR	"Resource Director Technology/PQE"
 #define RSC_FEATURES_RDT_PQM_CODE_FR	"Resource Director Technology/PQM"
 #define RSC_FEATURES_RDPRU_CODE_FR	"Read Processor Register at User level"
@@ -1483,6 +1486,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_MECH_IPRED_DIS_S_CODE_FR	RSC_MECH_IPRED_DIS_S_CODE_EN
 #define RSC_MECH_RRSBA_DIS_U_CODE_FR	RSC_MECH_RRSBA_DIS_U_CODE_EN
 #define RSC_MECH_RRSBA_DIS_S_CODE_FR	RSC_MECH_RRSBA_DIS_S_CODE_EN
+#define RSC_MECH_DDPD_U_DIS_CODE_FR	RSC_MECH_DDPD_U_DIS_CODE_EN
 #define RSC_MECH_BHI_DIS_S_CODE_FR	RSC_MECH_BHI_DIS_S_CODE_EN
 #define RSC_MECH_MCDT_NO_CODE_FR	RSC_MECH_MCDT_NO_CODE_EN
 #define RSC_MECH_BTC_NO_CODE_FR 	RSC_MECH_BTC_NO_CODE_EN
