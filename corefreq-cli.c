@@ -2362,6 +2362,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Features.ExtInfo.ECX.AltMov == 1,
+		attr_Feat,
+		2, "%s%.*sAltMov   [%7s]", RSC(FEATURES_ALTMOV).CODE(),
+		width - 21 - RSZ(FEATURES_ALTMOV),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		RO(Shm)->Proc.Features.leaf80000008.EBX.CLZERO,
 		attr_Feat,
 		2, "%s%.*sCLZERO   [%7s]", RSC(FEATURES_CLZERO).CODE(),
@@ -2474,12 +2482,19 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		NULL
 	},
 	{
-		NULL,
-		(RO(Shm)->Proc.Features.Std.ECX.FMA == 1)
-		|| (RO(Shm)->Proc.Features.ExtInfo.ECX.FMA4 == 1),
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Features.ExtInfo.ECX.FMA4 == 1,
 		attr_Feat,
-		2, "%s%.*sFMA | FMA4   [%7s]", RSC(FEATURES_FMA).CODE(),
-		width - 25 - RSZ(FEATURES_FMA),
+		2, "%s%.*sFMA4   [%7s]", RSC(FEATURES_FMA).CODE(),
+		width - 19 - RSZ(FEATURES_FMA),
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Features.Std.ECX.FMA == 1,
+		attr_Feat,
+		2, "%s%.*sFMA   [%7s]", RSC(FEATURES_FMA).CODE(),
+		width - 18 - RSZ(FEATURES_FMA),
 		NULL
 	},
 	{
@@ -2640,6 +2655,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		attr_Feat,
 		2, "%s%.*sOSXSAVE   [%7s]", RSC(FEATURES_OSXSAVE).CODE(),
 		width - 22 - RSZ(FEATURES_OSXSAVE),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Features.ExtInfo.ECX.OSVW == 1,
+		attr_Feat,
+		2, "%s%.*sOSVW   [%7s]", RSC(FEATURES_OSVW).CODE(),
+		width - 19 - RSZ(FEATURES_OSVW),
 		NULL
 	},
 	{
@@ -2813,6 +2836,22 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		NULL
 	},
 	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Features.ExtInfo.ECX.TBM == 1,
+		attr_Feat,
+		2, "%s%.*sTBM   [%7s]", RSC(FEATURES_TBM).CODE(),
+		width - 18 - RSZ(FEATURES_TBM),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Features.ExtInfo.ECX.TCE == 1,
+		attr_Feat,
+		2, "%s%.*sTCE   [%7s]", RSC(FEATURES_TCE).CODE(),
+		width - 18 - RSZ(FEATURES_TCE),
+		NULL
+	},
+	{
 		NULL,
 		RO(Shm)->Proc.Features.InvariantTSC,
 		attr_TSC,
@@ -2916,6 +2955,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		attr_Feat,
 		2, "%s%.*sxTPR   [%7s]", RSC(FEATURES_XTPR).CODE(),
 		width - 19 - RSZ(FEATURES_XTPR),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Features.ExtInfo.ECX.XOP == 1,
+		attr_Feat,
+		2, "%s%.*sXOP   [%7s]", RSC(FEATURES_XOP).CODE(),
+		width - 18 - RSZ(FEATURES_XOP),
 		NULL
 	},
 /* Section Mark */
