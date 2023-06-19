@@ -4736,7 +4736,8 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	},
 /*	[Zen/Snowy Owl] 	8F_01h Stepping 2			*/
 	{	/* AMD EPYC Embedded Processors 			*/
-	.Brand = ZLIST("AMD EPYC 3101"),
+	.Brand = ZLIST( "AMD EPYC Embedded 3101",	\
+			"AMD EPYC 3101" 		),
 	.Boost = {+8, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_SNOWY_OWL,
@@ -4747,7 +4748,8 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 3151"),
+	.Brand = ZLIST( "AMD EPYC Embedded 3151",	\
+			"AMD EPYC 3151" 		),
 	.Boost = {+2, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_SNOWY_OWL,
@@ -4758,7 +4760,8 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 3201"),
+	.Brand = ZLIST( "AMD EPYC Embedded 3201",	\
+			"AMD EPYC 3201" 		),
 	.Boost = {+16, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_SNOWY_OWL,
@@ -4769,8 +4772,10 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 3251",	\
-			"AMD EPYC 3255"		),
+	.Brand = ZLIST( "AMD EPYC Embedded 3251",	\
+			"AMD EPYC Embedded 3255",	\
+			"AMD EPYC 3251",		\
+			"AMD EPYC 3255" 		),
 	.Boost = {+6, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_SNOWY_OWL,
@@ -4781,7 +4786,8 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 3351"),
+	.Brand = ZLIST( "AMD EPYC Embedded 3351",	\
+			"AMD EPYC 3351" 		),
 	.Boost = {+11, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_SNOWY_OWL,
@@ -4792,7 +4798,8 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 3451"),
+	.Brand = ZLIST( "AMD EPYC Embedded 3451",	\
+			"AMD EPYC 3451" 		),
 	.Boost = {+9, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_SNOWY_OWL,
@@ -4967,10 +4974,66 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 	.UncoreUnlocked = 0,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
-	{
 	/*		Ryzen Embedded V1000 Processor Family		*/
-	.Brand = ZLIST("AMD Ryzen Embedded V1605B"),
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded V1202B"),
+	.Boost = {+9, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GREAT_HORNED_OWL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded V1500B"),
+	.Boost = {0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GREAT_HORNED_OWL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen Embedded V1404I",	\
+			"AMD Ryzen Embedded V1605B"	),
 	.Boost = {+16, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GREAT_HORNED_OWL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded V1756B"),
+	.Boost = {+4, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GREAT_HORNED_OWL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded V1780B"),
+	.Boost = {+3, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GREAT_HORNED_OWL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded V1807B"),
+	.Boost = {+5, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_GREAT_HORNED_OWL,
 	.TgtRatioUnlocked = 1,
