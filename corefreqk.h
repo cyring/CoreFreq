@@ -4807,10 +4807,22 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 /*	[Zen/Raven Ridge]	8F_11h Stepping 0			*/
 	{
-	.Brand = ZLIST( "AMD Athlon 240GE",	\
+	.Brand = ZLIST( "AMD Athlon PRO 200GE", \
+			"AMD Athlon 240GE",	\
 			"AMD Athlon 220GE",	\
 			"AMD Athlon 200GE"	),
 	.Boost = {+0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_RAVEN_RIDGE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Athlon PRO 200U"),
+	.Boost = {+9, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 1,
@@ -5306,6 +5318,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD Ryzen 3 3350U",	\
 			"AMD Ryzen 3 3300U",	\
+			"AMD Ryzen 3 PRO 3300U",\
 			"AMD Ryzen 5 3450U"	),
 	.Boost = {+14, 0},
 	.Param.Offset = {0, 0, 0},
@@ -5320,7 +5333,8 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 5 3580U",	\
 			"AMD Ryzen 5 3550H",	\
 			"AMD Ryzen 5 3500U",	\
-			"AMD Ryzen 5 3500C"	),
+			"AMD Ryzen 5 3500C",
+			"AMD Ryzen 5 PRO 3500U" ),
 	.Boost = {+16, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PICASSO,
@@ -5335,7 +5349,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 			"AMD Ryzen 7 3750H",	\
 			"AMD Ryzen 7 3700U",	\
 			"AMD Ryzen 7 3700C",	\
-			"AMD Ryzen 7 PRO 3700U"	),
+			"AMD Ryzen 7 PRO 3700U" ),
 	.Boost = {+17, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PICASSO,
@@ -5923,7 +5937,8 @@ static PROCESSOR_SPECIFIC AMD_Zen2_Renoir_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 5 PRO 4650G"),
+	.Brand = ZLIST( "AMD Ryzen 5 PRO 4655G", \
+			"AMD Ryzen 5 PRO 4650G"	),
 	.Boost = {+5, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
@@ -6314,7 +6329,8 @@ static PROCESSOR_SPECIFIC AMD_Zen2_Jupiter_Specific[] = {
 static PROCESSOR_SPECIFIC AMD_Zen2_MDN_Specific[] = {
 /*	[Zen2/Mendocino]						*/
 	{
-	.Brand = ZLIST("AMD Ryzen 5 7520U"),
+	.Brand = ZLIST( "AMD Ryzen 5 7520C",	\
+			"AMD Ryzen 5 7520U"	),
 	.Boost = {+15, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MENDOCINO,
@@ -6326,7 +6342,8 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MDN_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 3 7320U"),
+	.Brand = ZLIST( "AMD Ryzen 3 7320C",	\
+			"AMD Ryzen 3 7320U"	),
 	.Boost = {+17, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MENDOCINO,
@@ -6338,7 +6355,8 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MDN_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Athlon Gold 7220U"),
+	.Brand = ZLIST( "AMD Athlon Gold 7220C", \
+			"AMD Athlon Gold 7220U" ),
 	.Boost = {+13, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MENDOCINO,
@@ -6350,7 +6368,8 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MDN_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Athlon Silver 7120U"),
+	.Brand = ZLIST( "AMD Athlon Silver 7120C", \
+			"AMD Athlon Silver 7120U" ),
 	.Boost = {+11, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MENDOCINO,
@@ -7407,6 +7426,45 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 };
 static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	{
+	.Brand = ZLIST("AMD Ryzen 9 PRO 7945"),
+	.Boost = {+17, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_RAPHAEL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 7 PRO 7745"),
+	.Boost = {+15, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_RAPHAEL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 5 PRO 7645"),
+	.Boost = {+13, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_RAPHAEL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
 	.Brand = ZLIST("AMD Ryzen 9 7950X3D"),
 	.Boost = {+15, 0},
 	.Param.Offset = {0, 0, 0},
@@ -7604,7 +7662,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHX_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD Ryzen 5 7640HS",		\
+	.Brand = ZLIST( "AMD Ryzen 5 PRO 7640HS",	\
+			"AMD Ryzen 5 7640HS",		\
 			"AMD Ryzen 5 7640H" /* zh-cn */ ),
 	.Boost = {+7, 0},
 	.Param.Offset = {0, 0, 0},
@@ -7617,8 +7676,9 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHX_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD Ryzen 7 7840U",	\
-			"AMD Ryzen Z1 Extreme"	),
+	.Brand = ZLIST( "AMD Ryzen 7 PRO 7840U",	\
+			"AMD Ryzen 7 7840U",		\
+			"AMD Ryzen Z1 Extreme"		),
 	.Boost = {+18, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PHOENIX,
@@ -7630,8 +7690,9 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHX_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD Ryzen 5 7540U",	\
-			"AMD Ryzen Z1"		),
+	.Brand = ZLIST( "AMD Ryzen 5 PRO 7540U",	\
+			"AMD Ryzen 5 7540U",		\
+			"AMD Ryzen Z1"			),
 	.Boost = {+17, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PHOENIX,
@@ -7643,7 +7704,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHX_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 5 7640U"),
+	.Brand = ZLIST( "AMD Ryzen 5 PRO 7640U",	\
+			"AMD Ryzen 5 7640U"		),
 	.Boost = {+14, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PHOENIX,
