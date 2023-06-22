@@ -2006,6 +2006,14 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 	[Zen4/Phoenix Point]	AF_74h			 4 nm	[PHX]	*/
 /*
 	[Zen4/Storm Peak]	AF_18h Stepping 1		HEDT/TR5
+	[Zen4/Genoa-X]		??_??h Stepping ?	 5 nm
+			"AMD EPYC Embedded 9684X"	.Boost = {+12, 0}
+			"AMD EPYC Embedded 9384X"	.Boost = {+8, 0}
+			"AMD EPYC Embedded 9184X"	.Boost = {+7, 0}
+	[Zen4c/Bergamo] 	AF_A0h Stepping 1	 5 nm
+			"AMD EPYC Embedded 9754S"	.Boost = {+9, 0}
+			"AMD EPYC Embedded 9754"	.Boost = {+9, 0}
+			"AMD EPYC Embedded 9734"	.Boost = {+8, 0}
 	[Zen5/Granite Ridge]						*/
 #define _AMD_Family_19h {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 #define _AMD_Zen3_VMR	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x2, .Model=0x1}
