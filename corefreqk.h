@@ -6461,7 +6461,8 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MDN_Specific[] = {
 };
 static PROCESSOR_SPECIFIC AMD_Zen3_VMR_Specific[] = {
 	{
-	.Brand = ZLIST("AMD Ryzen 7 5800X3D"),
+	.Brand = ZLIST( "AMD Ryzen 5 5600X3D",	\
+			"AMD Ryzen 7 5800X3D"	),
 	.Boost = {+11, +1},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_VERMEER,
