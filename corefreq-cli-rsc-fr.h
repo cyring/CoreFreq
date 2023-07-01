@@ -646,6 +646,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_TECHNOLOGIES_ICU_CODE_FR  "Unit""\xa9"" de cache d'instructions"
 #define RSC_TECH_L1_HW_PREFETCH_CODE_FR "Pr""\xa9""lecteur L1"
 #define RSC_TECH_L1_HW_IP_PREFETCH_CODE_FR "Pr""\xa9""lecteur L1 IP"
+#define RSC_TECH_L1_SCRUBBING_CODE_FR	"L1 Scrubbing"
 #define RSC_TECH_L2_HW_PREFETCH_CODE_FR  "Pr""\xa9""lecteur L2"
 #define RSC_TECH_L2_HW_CL_PREFETCH_CODE_FR  "Pr""\xa9""lecteur L2 ligne"
 #define RSC_TECHNOLOGIES_SMM_CODE_FR	"Mode de Gestion Syst""\xa8""me"

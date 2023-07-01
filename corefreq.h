@@ -349,7 +349,8 @@ typedef struct
 				WDT		: 29-28,
 				TM1		: 31-29,
 				TM2		: 33-31,
-				_pad64		: 64-33;
+				L1_Scrubbing	: 34-33,
+				_pad64		: 64-34;
 	} Technology;
 
 	struct {

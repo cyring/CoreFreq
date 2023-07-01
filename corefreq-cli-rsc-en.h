@@ -1172,6 +1172,7 @@
 #define RSC_TECHNOLOGIES_ICU_CODE_EN	"Instruction Cache Unit"
 #define RSC_TECH_L1_HW_PREFETCH_CODE_EN "L1 Prefetcher"
 #define RSC_TECH_L1_HW_IP_PREFETCH_CODE_EN "L1 IP Prefetcher"
+#define RSC_TECH_L1_SCRUBBING_CODE_EN	"L1 Scrubbing"
 #define RSC_TECH_L2_HW_PREFETCH_CODE_EN "L2 Prefetcher"
 #define RSC_TECH_L2_HW_CL_PREFETCH_CODE_EN "L2 Line Prefetcher"
 #define RSC_TECHNOLOGIES_SMM_CODE_EN	"System Management Mode"
@@ -2111,6 +2112,7 @@
 
 #define RSC_BOX_CU_L1_TITLE_CODE	" Cache Unit L1 Prefetcher "
 #define RSC_BOX_CU_L1_IP_TITLE_CODE	" Cache Unit L1 IP Prefetcher "
+#define RSC_BOX_L1_SCRUBBING_TITLE_CODE " Cache Unit L1 Scrubbing "
 #define RSC_BOX_CU_L2_TITLE_CODE	" Cache Unit L2 Prefetcher "
 #define RSC_BOX_CU_L2_CL_TITLE_CODE	" Cache Unit L2 CL Prefetcher "
 

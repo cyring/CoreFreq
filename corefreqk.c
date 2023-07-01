@@ -197,6 +197,10 @@ static signed short L1_HW_IP_PREFETCH_Disable = -1;
 module_param(L1_HW_IP_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L1_HW_IP_PREFETCH_Disable, "Disable L1 HW IP Prefetcher");
 
+static signed short L1_Scrubbing_Enable = -1;
+module_param(L1_Scrubbing_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(L1_Scrubbing_Enable, "Enable L1 Scrubbing");
+
 static signed short L2_HW_PREFETCH_Disable = -1;
 module_param(L2_HW_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L2_HW_PREFETCH_Disable, "Disable L2 HW Prefetcher");
@@ -8851,6 +8855,45 @@ void Intel_DCU_Technology(CORE_RO *Core)			/*Per Core */
   }
 }
 
+
+void Intel_Cache_Scrubbing(CORE_RO *Core)		/* Per P-Core	*/
+{ /* 06_7D, 06_7E, 06_8C, 06_8D, 06_97, 06_9A, 06_B7, 06_BA, 06_BF, MTL */
+  if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
+  {
+    switch (Core->T.Cluster.Hybrid.CoreType) {
+    case Hybrid_Atom:
+	/*	No MSR_CORE_UARCH_CTL(0x541) register with E-Core	*/
+	break;
+    case Hybrid_Core:
+      {
+	CORE_UARCH_CTL Core_Uarch_Ctl = {.value = 0};
+	RDMSR(Core_Uarch_Ctl, MSR_CORE_UARCH_CTL);
+
+	switch (L1_Scrubbing_Enable) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		Core_Uarch_Ctl.L1_Scrubbing_En = L1_Scrubbing_Enable;
+		WRMSR(Core_Uarch_Ctl, MSR_CORE_UARCH_CTL);
+		RDMSR(Core_Uarch_Ctl, MSR_CORE_UARCH_CTL);
+		break;
+	}
+	if (Core_Uarch_Ctl.L1_Scrubbing_En == 1) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Scrubbing, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Scrubbing, Core->Bind);
+	}
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->Scrubbing_Mask, Core->Bind);
+      }
+	break;
+    case Hybrid_RSVD1:
+    case Hybrid_RSVD2:
+    default:
+	/*	Unspecified MSR_CORE_UARCH_CTL(0x541) register with IDs */
+	break;
+    }
+  }
+}
+
 void SpeedStep_Technology(CORE_RO *Core)			/*Per Package*/
 {
   if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
@@ -11852,6 +11895,7 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->ODCM	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_Prefetch	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch , Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Scrubbing	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_Prefetch	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_CL_Prefetch , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PowerMgmt , Core->Bind);
@@ -12889,6 +12933,24 @@ static void PerCore_Kaby_Lake_Query(void *arg)
 					PPn_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(RAM) );
 	}
+}
+
+static void PerCore_Icelake_Query(void *arg)
+{
+	CORE_RO *Core = (CORE_RO *) arg;
+
+	PerCore_Skylake_Query(arg);
+
+	Intel_Cache_Scrubbing(Core);
+}
+
+static void PerCore_Tigerlake_Query(void *arg)
+{
+	CORE_RO *Core = (CORE_RO *) arg;
+
+	PerCore_Kaby_Lake_Query(arg);
+
+	Intel_Cache_Scrubbing(Core);
 }
 
 static void PerCore_AMD_Family_0Fh_Query(void *arg)
@@ -21520,6 +21582,19 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			L1_HW_IP_PREFETCH_Disable = !prm.dl.lo;
 			Controller_Start(1);
 			L1_HW_IP_PREFETCH_Disable = -1;
+			rc = RC_SUCCESS;
+			break;
+		}
+		break;
+
+	case TECHNOLOGY_L1_SCRUBBING:
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			L1_Scrubbing_Enable = prm.dl.lo;
+			Controller_Start(1);
+			L1_Scrubbing_Enable =  -1;
 			rc = RC_SUCCESS;
 			break;
 		}

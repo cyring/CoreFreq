@@ -412,6 +412,8 @@
     #endif
 #endif
 
+#define MSR_CORE_UARCH_CTL		 	0x00000541
+
 /*	Partially documented registers					*/
 #define MSR_FLEX_RATIO				0x00000194
 #define MSR_IA32_OVERCLOCKING_STATUS		0x00000195
@@ -1867,6 +1869,16 @@ typedef union
 		ReservedBits2	: 64-54;
 	};
 } VMX_BASIC;
+
+typedef union
+{	/* MSR_CORE_UARCH_CTL(0x541): R/W, SMT, P-Core only		*/
+	unsigned long long	value;
+	struct {
+		unsigned long long	/* 10th, 12th, 13th generations */
+		L1_Scrubbing_En :  1-0,
+		ReservedBits	: 64-1;
+	};
+} CORE_UARCH_CTL;
 
 typedef union
 {
