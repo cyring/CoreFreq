@@ -246,11 +246,12 @@ enum SYS_REG {
 	XCR0_FPU	= 0,
 	XCR0_SSE	= 1,
 	XCR0_AVX	= 2,
-	XCR0_MPX	= 3,
+	XCR0_MPX	= 3,	/* [BNDCSR:4, BNDREG:3] 		*/
 	XCR0_AVX512	= 5,	/* [7:5]				*/
 	XCR0_PKRU	= 9,
-	XCR0_CET_U	= 11,	/* AMD64				*/
-	XCR0_CET_S	= 12,	/* AMD64				*/
+	XCR0_CET_U	= 11,	/* AMD64, Intel 			*/
+	XCR0_CET_S	= 12,	/* AMD64, Intel 			*/
+	XCR0_AMX	= 17,	/* Sapphire Rapids [TILEDATA:18, TILECFG:17] */
 	XCR0_LWP	= 62,	/* AMD64				*/
 
 	SYSCFG_MFD	= 18,	/* AMD64: System Configuration Register */
