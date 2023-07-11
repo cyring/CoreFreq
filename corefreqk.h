@@ -2109,6 +2109,7 @@ static PCI_CALLBACK AMD_DataFabric_Cezanne(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Rembrandt(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Raphael(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Genoa(struct pci_dev *pdev) ;
+static PCI_CALLBACK AMD_DataFabric_Phoenix(struct pci_dev *pdev) ;
 
 static struct pci_device_id PCI_Void_ids[] = {
 	{0, }
@@ -3082,6 +3083,10 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 		PCI_VDEVICE(AMD, DID_AMD_19H_ZEN4_GNA_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_19H_ZEN4_PHX_NB_IOMMU),
+		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
+	},
 	/* Source: HYGON: PCI list					*/
 	{
 		PCI_VDEVICE(HYGON, DID_AMD_17H_ZEN_PLUS_NB_IOMMU),
@@ -3145,6 +3150,10 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 	{
 		PCI_VDEVICE(AMD, DID_AMD_19H_GENOA_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_DataFabric_Genoa
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_19H_PHOENIX_DF_UMC),
+		.driver_data = (kernel_ulong_t) AMD_DataFabric_Phoenix
 	},
 	{0, }
 };
