@@ -2,9 +2,11 @@
 # Copyright (C) 2015-2023 CYRIL COURTIAT
 # Licenses: GPL2
 
+HW = $(shell uname -m)
 CC ?= cc
 WARNING = -Wall -Wfatal-errors
 PWD ?= $(shell pwd)
+BUILD ?= build
 KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 PREFIX ?= /usr
 UBENCH = 0
@@ -17,7 +19,10 @@ DELAY_TSC ?= 1
 ARCH_PMC ?=
 
 obj-m := corefreqk.o
-ccflags-y :=	-D CORE_COUNT=$(CORE_COUNT) \
+corefreqk-y := module/corefreqk.o
+
+ccflags-y := -I$(PWD)/$(HW)
+ccflags-y +=	-D CORE_COUNT=$(CORE_COUNT) \
 		-D TASK_ORDER=$(TASK_ORDER) \
 		-D MAX_FREQ_HZ=$(MAX_FREQ_HZ)
 ccflags-y += $(WARNING)
@@ -82,77 +87,116 @@ LAYOUT += -D UI_TRANSPARENCY=$(UI_TRANSPARENCY)
 endif
 
 .PHONY: all
-all: corefreqd corefreq-cli
-	$(MAKE) -j1 -C $(KERNELDIR) M=$(PWD) modules
+all: prepare corefreqd corefreq-cli
+	@if [ -e $(BUILD)/Makefile ]; then \
+		$(MAKE) -j1 -C $(KERNELDIR) M=$(PWD)/$(BUILD) modules; \
+	fi
+
+.PHONY: prepare
+prepare:
+	@if [ ! -d $(BUILD) ]; then \
+		mkdir -m +t $(BUILD); \
+	fi
+	@if [ ! -d $(BUILD)/module ]; then \
+		mkdir $(BUILD)/module; \
+	fi
+	@if [ ! -e $(BUILD)/Makefile ]; then \
+		ln -rs Makefile $(BUILD)/Makefile; \
+	fi
+	@if [ ! -e $(BUILD)/module/corefreqk.c ]; then \
+		ln -rs $(HW)/corefreqk.c $(BUILD)/module/corefreqk.c; \
+	fi
 
 .PHONY: install
 install: module-install
-	install -Dm 0755 corefreq-cli corefreqd -t $(PREFIX)/bin
+	install -Dm 0755 $(BUILD)/corefreq-cli $(BUILD)/corefreqd \
+		-t $(PREFIX)/bin
 	install -Dm 0644 corefreqd.service \
 		$(PREFIX)/lib/systemd/system/corefreqd.service
 
 .PHONY: module-install
 module-install:
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules_install
+	$(MAKE) -C $(KERNELDIR) M=$(PWD)/$(BUILD) modules_install
 
 .PHONY: clean
 clean:
-	rm -f corefreqd corefreq-cli
-	$(MAKE) -j1 -C $(KERNELDIR) M=$(PWD) clean
+	@if [ -e $(BUILD)/Makefile ]; then \
+		$(MAKE) -j1 -C $(KERNELDIR) M=$(PWD)/$(BUILD) clean; \
+	fi
+	@if [ -e $(BUILD)/corefreqd ]; then \
+		rm -f $(BUILD)/corefreqd; \
+	fi
+	@if [ -e $(BUILD)/corefreq-cli ]; then \
+		rm -f $(BUILD)/corefreq-cli; \
+	fi
+	@if [ -e $(BUILD)/module/corefreqk.c ]; then \
+		rm -f $(BUILD)/module/corefreqk.c; \
+	fi
+	@if [ -e $(BUILD)/Makefile ]; then \
+		rm -f $(BUILD)/Makefile; \
+	fi
+	@if [ -d $(BUILD)/module ]; then \
+		rmdir $(BUILD)/module; \
+	fi
+	@if [ -d $(BUILD) ] && [ -z "$(ls -A $(BUILD))" ]; then \
+		rmdir $(BUILD); \
+	fi
 
-corefreqm.o: corefreqm.c
-	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreqm.c \
+corefreqm.o: $(HW)/corefreqm.c
+	$(CC) $(OPTIM_FLG) $(WARNING) -c $(HW)/corefreqm.c \
 	  $(DEFINITIONS) \
-	  -o corefreqm.o
+	  -o $(BUILD)/corefreqm.o
 
-corefreqd.o: corefreqd.c
-	$(CC) $(OPTIM_FLG) $(WARNING) -pthread -c corefreqd.c \
+corefreqd.o: $(HW)/corefreqd.c
+	$(CC) $(OPTIM_FLG) $(WARNING) -pthread -c $(HW)/corefreqd.c \
 	  $(DEFINITIONS) \
-	  -o corefreqd.o
+	  -o $(BUILD)/corefreqd.o
 
 corefreqd: corefreqd.o corefreqm.o
-	$(CC) $(OPTIM_FLG) $(WARNING) corefreqd.c corefreqm.c \
+	$(CC) $(OPTIM_FLG) $(WARNING) $(HW)/corefreqd.c $(HW)/corefreqm.c \
 	  $(DEFINITIONS) \
-	  -o corefreqd -lpthread -lm -lrt
+	  -o $(BUILD)/corefreqd -lpthread -lm -lrt
 
-corefreq-ui.o: corefreq-ui.c
-	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-ui.c \
+corefreq-ui.o: $(HW)/corefreq-ui.c
+	$(CC) $(OPTIM_FLG) $(WARNING) -c $(HW)/corefreq-ui.c \
 	  $(DEFINITIONS) \
-	  -o corefreq-ui.o
+	  -o $(BUILD)/corefreq-ui.o
 
-corefreq-cli.o: corefreq-cli.c
-	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-cli.c \
+corefreq-cli.o: $(HW)/corefreq-cli.c
+	$(CC) $(OPTIM_FLG) $(WARNING) -c $(HW)/corefreq-cli.c \
 	  $(DEFINITIONS) $(LAYOUT) \
-	  -o corefreq-cli.o
+	  -o $(BUILD)/corefreq-cli.o
 
-corefreq-cli-rsc.o: corefreq-cli-rsc.c
-	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-cli-rsc.c \
+corefreq-cli-rsc.o: $(HW)/corefreq-cli-rsc.c
+	$(CC) $(OPTIM_FLG) $(WARNING) -c $(HW)/corefreq-cli-rsc.c \
 	  $(DEFINITIONS) $(LAYOUT) \
-	  -o corefreq-cli-rsc.o
+	  -o $(BUILD)/corefreq-cli-rsc.o
 
-corefreq-cli-json.o: corefreq-cli-json.c
-	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-cli-json.c \
+corefreq-cli-json.o: $(HW)/corefreq-cli-json.c
+	$(CC) $(OPTIM_FLG) $(WARNING) -c $(HW)/corefreq-cli-json.c \
 	  $(DEFINITIONS) \
-	  -o corefreq-cli-json.o
+	  -o $(BUILD)/corefreq-cli-json.o
 
-corefreq-cli-extra.o: corefreq-cli-extra.c
-	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-cli-extra.c \
+corefreq-cli-extra.o: $(HW)/corefreq-cli-extra.c
+	$(CC) $(OPTIM_FLG) $(WARNING) -c $(HW)/corefreq-cli-extra.c \
 	  $(DEFINITIONS) \
-	  -o corefreq-cli-extra.o
+	  -o $(BUILD)/corefreq-cli-extra.o
 
 corefreq-cli: corefreq-cli.o corefreq-ui.o corefreq-cli-rsc.o \
 		corefreq-cli-json.o corefreq-cli-extra.o
 	$(CC) $(OPTIM_FLG) $(WARNING) \
-	  corefreq-cli.c corefreq-ui.c corefreq-cli-rsc.c \
-	  corefreq-cli-json.c corefreq-cli-extra.c \
+	  $(HW)/corefreq-cli.c $(HW)/corefreq-ui.c $(HW)/corefreq-cli-rsc.c \
+	  $(HW)/corefreq-cli-json.c $(HW)/corefreq-cli-extra.c \
 	  $(DEFINITIONS) $(LAYOUT) \
-	  -o corefreq-cli -lm -lrt
+	  -o $(BUILD)/corefreq-cli -lm -lrt
 
 .PHONY: info
 info:
+	$(info HW [$(HW)])
 	$(info CC [$(shell whereis -b $(CC))])
 	$(info WARNING [$(WARNING)])
 	$(info PWD [$(PWD)])
+	$(info BUILD [$(BUILD)])
 	$(info KERNELDIR [$(KERNELDIR)])
 	$(info PREFIX [$(PREFIX)])
 	$(info LEGACY [$(LEGACY)])
@@ -167,6 +211,7 @@ info:
 	$(info NO_FOOTER [$(NO_FOOTER)])
 	$(info NO_UPPER [$(NO_UPPER)])
 	$(info NO_LOWER [$(NO_LOWER)])
+	@echo -n
 
 .PHONY: help
 help:

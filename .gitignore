@@ -9,3 +9,4 @@ corefreq-gui
 corefreq-cli
 corefreqd
 *.keep
+build/*
