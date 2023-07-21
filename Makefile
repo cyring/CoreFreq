@@ -5,6 +5,11 @@
 HW = $(shell uname -m)
 CC ?= cc
 WARNING = -Wall -Wfatal-errors
+SYMLINK ?= ln -rs
+INSTALL ?= install
+MKDIR ?= mkdir
+RMDIR ?= rmdir
+RM ?= rm -f
 PWD ?= $(shell pwd)
 BUILD ?= build
 KERNELDIR ?= /lib/modules/$(shell uname -r)/build
@@ -95,23 +100,23 @@ all: prepare corefreqd corefreq-cli
 .PHONY: prepare
 prepare:
 	@if [ ! -d $(BUILD) ]; then \
-		mkdir -m +t $(BUILD); \
+		$(MKDIR) -m +t $(BUILD); \
 	fi
 	@if [ ! -d $(BUILD)/module ]; then \
-		mkdir $(BUILD)/module; \
+		$(MKDIR) $(BUILD)/module; \
 	fi
 	@if [ ! -e $(BUILD)/Makefile ]; then \
-		ln -rs Makefile $(BUILD)/Makefile; \
+		$(SYMLINK) Makefile $(BUILD)/Makefile; \
 	fi
 	@if [ ! -e $(BUILD)/module/corefreqk.c ]; then \
-		ln -rs $(HW)/corefreqk.c $(BUILD)/module/corefreqk.c; \
+		$(SYMLINK) $(HW)/corefreqk.c $(BUILD)/module/corefreqk.c; \
 	fi
 
 .PHONY: install
 install: module-install
-	install -Dm 0755 $(BUILD)/corefreq-cli $(BUILD)/corefreqd \
+	$(INSTALL) -Dm 0755 $(BUILD)/corefreq-cli $(BUILD)/corefreqd \
 		-t $(PREFIX)/bin
-	install -Dm 0644 corefreqd.service \
+	$(INSTALL) -Dm 0644 corefreqd.service \
 		$(PREFIX)/lib/systemd/system/corefreqd.service
 
 .PHONY: module-install
@@ -124,22 +129,22 @@ clean:
 		$(MAKE) -j1 -C $(KERNELDIR) M=$(PWD)/$(BUILD) clean; \
 	fi
 	@if [ -e $(BUILD)/corefreqd ]; then \
-		rm -f $(BUILD)/corefreqd; \
+		$(RM) $(BUILD)/corefreqd; \
 	fi
 	@if [ -e $(BUILD)/corefreq-cli ]; then \
-		rm -f $(BUILD)/corefreq-cli; \
+		$(RM) $(BUILD)/corefreq-cli; \
 	fi
 	@if [ -e $(BUILD)/module/corefreqk.c ]; then \
-		rm -f $(BUILD)/module/corefreqk.c; \
+		$(RM) $(BUILD)/module/corefreqk.c; \
 	fi
 	@if [ -e $(BUILD)/Makefile ]; then \
-		rm -f $(BUILD)/Makefile; \
+		$(RM) $(BUILD)/Makefile; \
 	fi
 	@if [ -d $(BUILD)/module ]; then \
-		rmdir $(BUILD)/module; \
+		$(RMDIR) $(BUILD)/module; \
 	fi
 	@if [ -d $(BUILD) ] && [ -z "$(ls -A $(BUILD))" ]; then \
-		rmdir $(BUILD); \
+		$(RMDIR) $(BUILD); \
 	fi
 
 corefreqm.o: $(HW)/corefreqm.c
