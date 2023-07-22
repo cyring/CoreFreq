@@ -188,14 +188,14 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	_ret;								\
 })
 
-#define _BITSET_IMM(_lock, _base, _imm8)				\
+#define _BITSET_IMM(_lock, _base, _imm6)				\
 ({									\
 	volatile unsigned char _ret = 0;				\
 									\
 	__asm__ volatile						\
 	(								\
 		"mov	x2, #1" 		"\n\t"			\
-		"lsl	x2, x2, %[imm8]"	"\n\t"			\
+		"lsl	x2, x2, %[imm6]"	"\n\t"			\
 		"ldr	x1, %[base]"		"\n\t"			\
 		"tst	x1, x2" 		"\n\t"			\
 		"cset	x0, ne" 		"\n\t"			\
@@ -204,7 +204,7 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		"str	x1, %[base]"					\
 		: [ret] "+m" (_ret),					\
 		  [base] "=Q" (_base)					\
-		: [imm8] "i" (_imm8)					\
+		: [imm6] "i" (_imm6)					\
 		: "cc", "memory", "%x0", "%x1", "%x2"			\
 	);								\
 	_ret;								\
@@ -233,14 +233,14 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	_ret;								\
 })
 
-#define _BITCLR_IMM(_lock, _base, _imm8)				\
+#define _BITCLR_IMM(_lock, _base, _imm6)				\
 ({									\
 	volatile unsigned char _ret = 0;				\
 									\
 	__asm__ volatile						\
 	(								\
 		"mov	x2, #1" 		"\n\t"			\
-		"lsl	x2, x2, %[imm8]"	"\n\t"			\
+		"lsl	x2, x2, %[imm6]"	"\n\t"			\
 		"ldr	x1, %[base]"		"\n\t"			\
 		"tst	x1, x2" 		"\n\t"			\
 		"cset	x0, ne" 		"\n\t"			\
@@ -249,7 +249,7 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		"str	x1, %[base]"					\
 		: [ret] "+m" (_ret),					\
 		  [base] "=Q" (_base)					\
-		: [imm8] "i" (_imm8)					\
+		: [imm6] "i" (_imm6)					\
 		: "cc", "memory", "%x0", "%x1", "%x2"			\
 	);								\
 	_ret;								\
@@ -293,19 +293,19 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	_ret;								\
 })
 
-#define _BITVAL_IMM(_lock, _base, _imm8)				\
+#define _BITVAL_IMM(_lock, _base, _imm6)				\
 ({									\
 	volatile unsigned char _ret = 0;				\
 									\
 	__asm__ volatile						\
 	(								\
 		"mov	x2, #1" 		"\n\t"			\
-		"lsl	x2, x2, %[imm8]"	"\n\t"			\
+		"lsl	x2, x2, %[imm6]"	"\n\t"			\
 		"tst	%x[base], x2"		"\n\t"			\
 		"cset	%x[ret], eq"					\
 		: [ret] "+r" (_ret)					\
 		: [base] "r" (_base),					\
-		  [imm8] "i" (_imm8)					\
+		  [imm6] "i" (_imm6)					\
 		: "cc", "memory", "%x2" 				\
 	);								\
 	_ret;								\
@@ -330,19 +330,19 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	_ret;								\
 })
 
-#define _BIT_TEST_IMM(_base, _imm8)					\
+#define _BIT_TEST_IMM(_base, _imm6)					\
 ({									\
 	volatile unsigned char _ret = 0;				\
 									\
 	__asm__ volatile						\
 	(								\
 		"mov	x2, #1" 		"\n\t"			\
-		"lsl	x2, x2, %[imm8]"	"\n\t"			\
+		"lsl	x2, x2, %[imm6]"	"\n\t"			\
 		"tst	%x[base], x2"		"\n\t"			\
 		"cset	%x[ret], ne"					\
 		: [ret] "+r" (_ret)					\
 		: [base] "r" (_base),					\
-		  [imm8] "i" (_imm8)					\
+		  [imm6] "i" (_imm6)					\
 		: "cc", "memory", "%x2" 				\
 	);								\
 	_ret;								\
@@ -441,7 +441,7 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	(								\
 		"neg	%x[dest], %x[src]"				\
 		: [dest] "=rQ" (_dest)					\
-		: [src] "ir" (_src)					\
+		: [src] "Jr" (_src)					\
 		: "cc", "memory"					\
 	);								\
 	_dest;								\
