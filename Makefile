@@ -4,7 +4,7 @@
 
 HW = $(shell uname -m)
 CC ?= cc
-WARNING = -Wall -Wfatal-errors
+WARNING = -Wall -Wfatal-errors -Wno-unused-variable
 SYMLINK ?= ln -rs
 INSTALL ?= install
 MKDIR ?= mkdir

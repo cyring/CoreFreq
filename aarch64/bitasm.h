@@ -181,7 +181,7 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		"orr	x1, x1, x3"		"\n\t"			\
 		"str	x1, %[base]"					\
 		: [ret] "+m" (_ret),					\
-		  [base] "=m" (_base)					\
+		  [base] "=Q" (_base)					\
 		: [offset] "r" (_offset)				\
 		: "cc", "memory", "%x0", "%x1", "%x2", "%x3"		\
 	);								\
@@ -203,7 +203,7 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		"orr	x1, x1, x2"		"\n\t"			\
 		"str	x1, %[base]"					\
 		: [ret] "+m" (_ret),					\
-		  [base] "=m" (_base)					\
+		  [base] "=Q" (_base)					\
 		: [imm8] "i" (_imm8)					\
 		: "cc", "memory", "%x0", "%x1", "%x2"			\
 	);								\
@@ -226,7 +226,7 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		"bic	x1, x1, x3"		"\n\t"			\
 		"str	x1, %[base]"					\
 		: [ret] "+m" (_ret),					\
-		  [base] "=m" (_base)					\
+		  [base] "=Q" (_base)					\
 		: [offset] "r" (_offset)				\
 		: "cc", "memory", "%x0", "%x1", "%x2", "%x3"		\
 	);								\
@@ -248,7 +248,7 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		"bic	x1, x1, x2"		"\n\t"			\
 		"str	x1, %[base]"					\
 		: [ret] "+m" (_ret),					\
-		  [base] "=m" (_base)					\
+		  [base] "=Q" (_base)					\
 		: [imm8] "i" (_imm8)					\
 		: "cc", "memory", "%x0", "%x1", "%x2"			\
 	);								\
@@ -284,7 +284,7 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	__asm__ volatile						\
 	(								\
 		"tst	%x[base], %x[offset]"	"\n\t"			\
-		"cset	%w[ret], eq"					\
+		"cset	%x[ret], eq"					\
 		: [ret] "+r" (_ret)					\
 		: [base] "r" (_base),					\
 		  [offset] "r" (_offset)				\
@@ -299,12 +299,14 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 									\
 	__asm__ volatile						\
 	(								\
-		"tst	%x[base], %[imm8]"	"\n\t"			\
-		"cset	%w[ret], eq"					\
+		"mov	x2, #1" 		"\n\t"			\
+		"lsl	x2, x2, %[imm8]"	"\n\t"			\
+		"tst	%x[base], x2"		"\n\t"			\
+		"cset	%x[ret], eq"					\
 		: [ret] "+r" (_ret)					\
 		: [base] "r" (_base),					\
 		  [imm8] "i" (_imm8)					\
-		: "cc", "memory"					\
+		: "cc", "memory", "%x2" 				\
 	);								\
 	_ret;								\
 })
@@ -315,12 +317,15 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 									\
 	__asm__ volatile						\
 	(								\
-		"tst	%x[base], %x[offset]"	"\n\t"			\
-		"cset	%w[ret], eq"					\
+		"mov	x2, %x[offset]" 	"\n\t"			\
+		"mov	x3, #1" 		"\n\t"			\
+		"lsl	x3, x3, x2"		"\n\t"			\
+		"tst	%x[base], x3"		"\n\t"			\
+		"cset	%x[ret], ne"					\
 		: [ret] "+r" (_ret)					\
 		: [base] "r" (_base),					\
 		  [offset] "r" (_offset)				\
-		: "cc", "memory"					\
+		: "cc", "memory", "%x2", "%x3"				\
 	);								\
 	_ret;								\
 })
@@ -334,7 +339,7 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		"mov	x2, #1" 		"\n\t"			\
 		"lsl	x2, x2, %[imm8]"	"\n\t"			\
 		"tst	%x[base], x2"		"\n\t"			\
-		"cset	%w[ret], eq"					\
+		"cset	%x[ret], ne"					\
 		: [ret] "+r" (_ret)					\
 		: [base] "r" (_base),					\
 		  [imm8] "i" (_imm8)					\
@@ -431,15 +436,14 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 #define BITCPL(_src)							\
 ({									\
 	unsigned long long _dest;					\
-/*TODO									\
+									\
 	__asm__ volatile						\
 	(								\
-		"movq	%[src], %[dest]"	"\n\t"			\
-		"negq	%[dest]"					\
-		: [dest] "=m" (_dest)					\
+		"neg	%x[dest], %x[src]"				\
+		: [dest] "=rQ" (_dest)					\
 		: [src] "ir" (_src)					\
 		: "cc", "memory"					\
-	);							*/	\
+	);								\
 	_dest;								\
 })
 
@@ -481,23 +485,23 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	__asm__ volatile						\
 	(								\
 		"str	%[src], %[dest]"				\
-		: [dest] "=m" (_dest)					\
-		: [src] "Jmr" (_src)					\
+		: [dest] "=Q" (_dest)					\
+		: [src] "r" (_src)					\
 		: "cc", "memory"					\
 	);								\
 })
 
 #define BITZERO(_lock, _src)						\
 ({									\
-	Bit64 _tmp __attribute__ ((aligned (8))) = _src;		\
 	volatile unsigned char _ret = 0;				\
 									\
 	__asm__ volatile						\
 	(								\
-	_lock	"orr	%[tmp], %[tmp], xzr"		"\n\t"		\
-		"cset	%[ret], ne" 					\
+		"clz	%x[ret], %x[src]"		"\n\t"		\
+		"cmp	%x[ret], #64"			"\n\t"		\
+		"cset	%x[ret], eq" 					\
 		: [ret] "+r" (_ret)					\
-		: [tmp] "r" (_tmp)					\
+		: [src] "r" (_src)					\
 		: "cc", "memory"					\
 	);								\
 	_ret;								\
@@ -645,7 +649,7 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 ({									\
 	__asm__ volatile						\
 	(								\
-	_lock	"mov	%[dest], xzr"					\
+		"mov	%[dest], xzr"					\
 		: [dest] "=r" (_dest)					\
 		:							\
 		: "cc", "memory"					\
@@ -754,8 +758,8 @@ FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
 			"cset	x2	,	eq"		"\n\t"	\
 			"str	x2	,	%[ret]" 		\
 			: [ret]	"+m"	(_ret)				\
-			: [opl] "m"	(_opl[cw]),			\
-			  [opr] "m"	(_opr[cw])			\
+			: [opl] "Q"	(_opl[cw]),			\
+			  [opr] "Q"	(_opr[cw])			\
 			: "cc", "memory", "%x2", "%x6", "%x7"		\
 		);							\
 		ret &= _ret;						\

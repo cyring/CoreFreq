@@ -39,16 +39,18 @@
 #include <linux/sched/signal.h>
 #endif /* KERNEL_VERSION(4, 11, 0) */
 #include <linux/clocksource.h>
-/*TODO(CleanUp)
+#ifdef CONFIG_X86_64
 #include <asm/msr.h>
+#endif
+#if defined(CONFIG_HAVE_NMI) && defined(CONFIG_X86_64)
 #include <asm/nmi.h>
-*/
+#endif
 #ifdef CONFIG_XEN
 #include <xen/xen.h>
 #endif /* CONFIG_XEN */
-/*TODO(CleanUp)
+#ifdef CONFIG_X86_64
 #include <asm/mwait.h>
-*/
+#endif
 #ifdef CONFIG_AMD_NB
 #include <asm/amd_nb.h>
 #endif
@@ -21082,11 +21084,12 @@ void MatchPeerForDownService(SERVICE_PROC *pService, unsigned int cpu)
 }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
+#if defined(CONFIG_HAVE_NMI) && defined(CONFIG_X86_64)
 static int CoreFreqK_NMI_Handler(unsigned int type, struct pt_regs *pRegs)
 {
 	unsigned int cpu = smp_processor_id();
 	UNUSED(pRegs);
-/*TODO(CleanUp)
+
 	switch (type) {
 	case NMI_LOCAL:
 		PUBLIC(RO(Core, AT(cpu)))->Interrupt.NMI.LOCAL++;
@@ -21102,9 +21105,8 @@ static int CoreFreqK_NMI_Handler(unsigned int type, struct pt_regs *pRegs)
 		break;
 	}
 	return NMI_DONE;
-*/
-	return 0;
 }
+#endif /* CONFIG_HAVE_NMI */
 
 static long CoreFreqK_UnRegister_CPU_Idle(void)
 {
@@ -21233,9 +21235,9 @@ static long CoreFreqK_Register_Governor(void)
 
 static void CoreFreqK_Register_NMI(void)
 {
+#if defined(CONFIG_HAVE_NMI) && defined(CONFIG_X86_64)
   if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_LOCAL) == 0)
   {
-/*TODO(CleanUp)
     if(register_nmi_handler(NMI_LOCAL,
 			CoreFreqK_NMI_Handler,
 			0,
@@ -21245,11 +21247,9 @@ static void CoreFreqK_Register_NMI(void)
     } else {
 	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_LOCAL);
     }
-*/
   }
   if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_UNKNOWN) == 0)
   {
-/*TODO(CleanUp)
     if(register_nmi_handler(NMI_UNKNOWN,
 			CoreFreqK_NMI_Handler,
 			0,
@@ -21259,11 +21259,9 @@ static void CoreFreqK_Register_NMI(void)
     } else {
 	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_UNKNOWN);
     }
-*/
   }
   if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_SERR) == 0)
   {
-/*TODO(CleanUp)
     if(register_nmi_handler(NMI_SERR,
 			CoreFreqK_NMI_Handler,
 			0,
@@ -21273,11 +21271,9 @@ static void CoreFreqK_Register_NMI(void)
     } else {
 	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_SERR);
     }
-*/
   }
   if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_IO_CHECK) == 0)
   {
-/*TODO(CleanUp)
     if(register_nmi_handler(NMI_IO_CHECK,
 			CoreFreqK_NMI_Handler,
 			0,
@@ -21287,32 +21283,34 @@ static void CoreFreqK_Register_NMI(void)
     } else {
 	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_IO_CHECK);
     }
-*/
   }
+#endif /* CONFIG_HAVE_NMI */
 }
 
 static void CoreFreqK_UnRegister_NMI(void)
 {
+#if defined(CONFIG_HAVE_NMI) && defined(CONFIG_X86_64)
     if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_LOCAL) == 1)
     {
-/*TODO	unregister_nmi_handler(NMI_LOCAL, "corefreqk");		*/
+	unregister_nmi_handler(NMI_LOCAL, "corefreqk");
 	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_LOCAL);
     }
     if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_UNKNOWN) == 1)
     {
-/*TODO	unregister_nmi_handler(NMI_UNKNOWN, "corefreqk");	*/
+	unregister_nmi_handler(NMI_UNKNOWN, "corefreqk");
 	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_UNKNOWN);
     }
     if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_SERR) == 1)
     {
-/*TODO	unregister_nmi_handler(NMI_SERR, "corefreqk");		*/
+	unregister_nmi_handler(NMI_SERR, "corefreqk");
 	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_SERR);
     }
     if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_IO_CHECK) == 1)
     {
-/*TODO	unregister_nmi_handler(NMI_IO_CHECK, "corefreqk");	*/
+	unregister_nmi_handler(NMI_IO_CHECK, "corefreqk");
 	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_IO_CHECK);
     }
+#endif /* CONFIG_HAVE_NMI */
 }
 #else
 static void CoreFreqK_Register_NMI(void) {}
