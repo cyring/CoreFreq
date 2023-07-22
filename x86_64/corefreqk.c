@@ -40,7 +40,9 @@
 #endif /* KERNEL_VERSION(4, 11, 0) */
 #include <linux/clocksource.h>
 #include <asm/msr.h>
+#ifdef CONFIG_HAVE_NMI
 #include <asm/nmi.h>
+#endif
 #ifdef CONFIG_XEN
 #include <xen/xen.h>
 #endif /* CONFIG_XEN */
@@ -4209,8 +4211,10 @@ void For_All_ACPI_CPPC(signed int(*CPPC_Func)(unsigned int, void*), void *arg)
 	#if defined(CONFIG_ACPI_CPPC_LIB) \
 	 && LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
 	signed int rc = acpi_cpc_valid() == false;
-	#else
+	#elif defined(CONFIG_ACPI)
 	signed int rc = acpi_disabled;
+	#else
+	signed int rc = false;
 	#endif
 	unsigned int cpu;
 
@@ -21044,6 +21048,7 @@ void MatchPeerForDownService(SERVICE_PROC *pService, unsigned int cpu)
 }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
+#ifdef CONFIG_HAVE_NMI
 static int CoreFreqK_NMI_Handler(unsigned int type, struct pt_regs *pRegs)
 {
 	unsigned int cpu = smp_processor_id();
@@ -21065,6 +21070,7 @@ static int CoreFreqK_NMI_Handler(unsigned int type, struct pt_regs *pRegs)
 	}
 	return NMI_DONE;
 }
+#endif /* CONFIG_HAVE_NMI */
 
 static long CoreFreqK_UnRegister_CPU_Idle(void)
 {
@@ -21193,6 +21199,7 @@ static long CoreFreqK_Register_Governor(void)
 
 static void CoreFreqK_Register_NMI(void)
 {
+#ifdef CONFIG_HAVE_NMI
   if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_LOCAL) == 0)
   {
     if(register_nmi_handler(NMI_LOCAL,
@@ -21241,10 +21248,12 @@ static void CoreFreqK_Register_NMI(void)
 	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_IO_CHECK);
     }
   }
+#endif /* CONFIG_HAVE_NMI */
 }
 
 static void CoreFreqK_UnRegister_NMI(void)
 {
+#ifdef CONFIG_HAVE_NMI
     if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_LOCAL) == 1)
     {
 	unregister_nmi_handler(NMI_LOCAL, "corefreqk");
@@ -21265,6 +21274,7 @@ static void CoreFreqK_UnRegister_NMI(void)
 	unregister_nmi_handler(NMI_IO_CHECK, "corefreqk");
 	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_IO_CHECK);
     }
+#endif /* CONFIG_HAVE_NMI */
 }
 #else
 static void CoreFreqK_Register_NMI(void) {}
