@@ -167,7 +167,7 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define _BITSET_GPR(_lock, _base, _offset)				\
 ({									\
-	volatile unsigned char _ret = 0;				\
+/*	volatile unsigned char _ret = 0;				\
 									\
 	__asm__ volatile						\
 	(								\
@@ -185,12 +185,15 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: [offset] "r" (_offset)				\
 		: "cc", "memory", "%x0", "%x1", "%x2", "%x3"		\
 	);								\
+	_ret;							*/	\
+	unsigned char _ret = (_base & (1LLU << _offset)) != 0;		\
+	_base = _base | (1LLU << _offset);				\
 	_ret;								\
 })
 
 #define _BITSET_IMM(_lock, _base, _imm6)				\
 ({									\
-	volatile unsigned char _ret = 0;				\
+/*	volatile unsigned char _ret = 0;				\
 									\
 	__asm__ volatile						\
 	(								\
@@ -207,12 +210,15 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: [imm6] "i" (_imm6)					\
 		: "cc", "memory", "%x0", "%x1", "%x2"			\
 	);								\
+	_ret;							*/	\
+	unsigned char _ret = (_base & (1LLU << _imm6)) != 0;		\
+	_base = _base | (1LLU << _imm6);				\
 	_ret;								\
 })
 
 #define _BITCLR_GPR(_lock, _base, _offset)				\
 ({									\
-	volatile unsigned char _ret = 0;				\
+/*	volatile unsigned char _ret = 0;				\
 									\
 	__asm__ volatile						\
 	(								\
@@ -230,12 +236,15 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: [offset] "r" (_offset)				\
 		: "cc", "memory", "%x0", "%x1", "%x2", "%x3"		\
 	);								\
+	_ret;							*/	\
+	unsigned char _ret = (_base & (1LLU << _offset)) != 0;		\
+	_base = _base & ~(1LLU << _offset);				\
 	_ret;								\
 })
 
 #define _BITCLR_IMM(_lock, _base, _imm6)				\
 ({									\
-	volatile unsigned char _ret = 0;				\
+/*	volatile unsigned char _ret = 0;				\
 									\
 	__asm__ volatile						\
 	(								\
@@ -252,18 +261,24 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: [imm6] "i" (_imm6)					\
 		: "cc", "memory", "%x0", "%x1", "%x2"			\
 	);								\
+	_ret;							*/	\
+	unsigned char _ret = (_base & (1LLU << _imm6)) != 0;		\
+	_base = _base & ~(1LLU << _imm6);				\
 	_ret;								\
 })
 
 #define _BITBTC_GPR(_lock,_base, _offset)				\
 ({									\
-/*TODO	__asm__ volatile						\
+/*	__asm__ volatile						\
 	(								\
 	_lock	"btcq	%%rdx,	%[base]"				\
 		: [base] "=m" (_base)					\
 		: "d" (_offset) 					\
 		: "cc", "memory"					\
 	);							*/	\
+	if ((_base & (1LLU << _offset)) != 0) { 			\
+		_base ^= (1LLU << _offset);				\
+	}								\
 })
 
 #define _BITBTC_IMM(_lock, _base, _imm8)				\
@@ -275,11 +290,14 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: [imm8] "i" (_imm8)					\
 		: "cc", "memory"					\
 	);							*/	\
+	if ((_base & (1LLU << _imm8)) != 0) {				\
+		_base ^= (1LLU << _imm8);				\
+	}								\
 })
 
 #define _BITVAL_GPR(_lock, _base, _offset)				\
 ({									\
-	volatile unsigned char _ret = 0;				\
+/*	volatile unsigned char _ret = 0;				\
 									\
 	__asm__ volatile						\
 	(								\
@@ -290,12 +308,14 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		  [offset] "r" (_offset)				\
 		: "cc", "memory"					\
 	);								\
+	_ret;							*/	\
+	unsigned char _ret = (_base & (1LLU << _offset)) != 0;		\
 	_ret;								\
 })
 
 #define _BITVAL_IMM(_lock, _base, _imm6)				\
 ({									\
-	volatile unsigned char _ret = 0;				\
+/*	volatile unsigned char _ret = 0;				\
 									\
 	__asm__ volatile						\
 	(								\
@@ -308,12 +328,14 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		  [imm6] "i" (_imm6)					\
 		: "cc", "memory", "%x2" 				\
 	);								\
+	_ret;							*/	\
+	unsigned char _ret = (_base & (1LLU << _imm6)) != 0;		\
 	_ret;								\
 })
 
 #define _BIT_TEST_GPR(_base, _offset)					\
 ({									\
-	volatile unsigned char _ret = 0;				\
+/*	volatile unsigned char _ret = 0;				\
 									\
 	__asm__ volatile						\
 	(								\
@@ -327,12 +349,14 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		  [offset] "r" (_offset)				\
 		: "cc", "memory", "%x2", "%x3"				\
 	);								\
+	_ret;							*/	\
+	unsigned char _ret = (_base & (1LLU << _offset)) != 0;		\
 	_ret;								\
 })
 
 #define _BIT_TEST_IMM(_base, _imm6)					\
 ({									\
-	volatile unsigned char _ret = 0;				\
+/*	volatile unsigned char _ret = 0;				\
 									\
 	__asm__ volatile						\
 	(								\
@@ -345,6 +369,8 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		  [imm6] "i" (_imm6)					\
 		: "cc", "memory", "%x2" 				\
 	);								\
+	_ret;							*/	\
+	unsigned char _ret = (_base & (1LLU << _imm6)) != 0;		\
 	_ret;								\
 })
 

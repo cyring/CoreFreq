@@ -850,6 +850,25 @@ static void Query_Features(void *pArg)
 {	/* Must have x86 CPUID 0x0, 0x1, and Intel CPUID 0x4 */
 	INIT_ARG *iArg = (INIT_ARG *) pArg;
 	unsigned int eax = 0x0, ebx = 0x0, ecx = 0x0, edx = 0x0; /*DWORD Only!*/
+
+	enum HYPERVISOR hypervisor = HYPERV_KVM;
+
+	memcpy(iArg->Features->Info.Vendor.ID, VENDOR_KVM, sizeof(VENDOR_KVM));
+	iArg->Features->Info.LargestStdFunc = 0x1;
+	iArg->Features->Info.LargestExtFunc = 0x80000001;
+	iArg->Features->Info.Vendor.CRC = CRC_KVM;
+	iArg->SMT_Count = 1;
+
+	__asm__ __volatile__(
+		"isb"			"\n\t"
+		"mrs %0, CNTFRQ_EL0"
+		: "=r" (iArg->Features->Factory.Freq)
+		:
+		: "memory"
+	);
+	iArg->Features->Factory.Freq /= 10000;
+
+/*TODO(CleanUp)
 	enum HYPERVISOR hypervisor = HYPERV_NONE;
 
 	VendorFromCPUID(iArg->Features->Info.Vendor.ID,
@@ -862,7 +881,7 @@ static void Query_Features(void *pArg)
 		iArg->rc = -ENXIO;
 		return;
 	}
-/*TODO(CleanUp)
+
 	__asm__ volatile
 	(
 		"movq	$0x1,  %%rax	\n\t"
@@ -1132,10 +1151,10 @@ static void Query_Features(void *pArg)
 		  "=r" (edx)
 		:
 		: "%rax", "%rbx", "%rcx", "%rdx"
-	);							*/
+	);
 	iArg->SMT_Count = (eax >> 26) & 0x3f;
 	iArg->SMT_Count++;
-
+*/
 	if (iArg->Features->Info.LargestStdFunc >= 0xa)
 	{
 /*TODO		__asm__ volatile
@@ -1157,10 +1176,10 @@ static void Query_Features(void *pArg)
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);						*/
 	}
-	/*	Extract the factory frequency from the brand string.	*/
+	/*	Extract the factory frequency from the brand string.
 	iArg->Features->Factory.Freq = Intel_Brand( iArg->Features->Info.Brand,
 							iArg->Brand );
-
+	*/
     } else if ( (iArg->Features->Info.Vendor.CRC == CRC_AMD)
 	||	(iArg->Features->Info.Vendor.CRC == CRC_HYGON) )
     {	/*	AMD PM version: Use Intel bits as AMD placeholder.	*/
@@ -4370,7 +4389,7 @@ PCI_CALLBACK Router(struct pci_dev *dev, unsigned int offset,
 		pci_read_config_dword(dev, offset + 4, &mchbar.high);
 		break;
 	}
-	mchbarEnable = BITVAL(mchbar, 0);
+	mchbarEnable = BITVAL(mchbar.addr, 0);
 	if (mchbarEnable) {
 		mchbar.addr &= wmask;
 		mchbar.addr += wsize * mc;
@@ -4415,7 +4434,7 @@ PCI_CALLBACK GetMemoryBAR(int M, int B, int D, int F, unsigned int offset,
 		pci_read_config_dword((*device), offset + 4, &membar.high);
 		break;
 	}
-	membarEnable = BITVAL(membar, 0);
+	membarEnable = BITVAL(membar.addr, 0);
 	if (membarEnable) {
 		membar.addr &= wmask;
 		membar.addr += wsize * range;
