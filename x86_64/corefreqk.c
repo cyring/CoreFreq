@@ -4365,7 +4365,7 @@ PCI_CALLBACK Router(struct pci_dev *dev, unsigned int offset,
 		pci_read_config_dword(dev, offset + 4, &mchbar.high);
 		break;
 	}
-	mchbarEnable = BITVAL(mchbar, 0);
+	mchbarEnable = BITVAL(mchbar.addr, 0);
 	if (mchbarEnable) {
 		mchbar.addr &= wmask;
 		mchbar.addr += wsize * mc;
@@ -4410,7 +4410,7 @@ PCI_CALLBACK GetMemoryBAR(int M, int B, int D, int F, unsigned int offset,
 		pci_read_config_dword((*device), offset + 4, &membar.high);
 		break;
 	}
-	membarEnable = BITVAL(membar, 0);
+	membarEnable = BITVAL(membar.addr, 0);
 	if (membarEnable) {
 		membar.addr &= wmask;
 		membar.addr += wsize * range;
