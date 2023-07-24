@@ -252,6 +252,7 @@ enum SYS_REG {
 	XCR0_CET_U	= 11,	/* AMD64, Intel 			*/
 	XCR0_CET_S	= 12,	/* AMD64, Intel 			*/
 	XCR0_AMX	= 17,	/* Sapphire Rapids [TILEDATA:18, TILECFG:17] */
+	XCR0_APX	= 19,
 	XCR0_LWP	= 62,	/* AMD64				*/
 
 	SYSCFG_MFD	= 18,	/* AMD64: System Configuration Register */
@@ -1430,7 +1431,8 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf 1		*/
 		PREFETCHI	: 15-14, /* Granite Rapids: IA32_UINTR	*/
 		Reserved3	: 18-15,
 		CET_SSS 	: 19-18,
-		Reserved4	: 32-19;
+		AVX10		: 20-19, /* AVX10 Converged Vector ISA	*/
+		Reserved4	: 32-20;
 	} EDX;
 } CPUID_0x00000007_1;
 
