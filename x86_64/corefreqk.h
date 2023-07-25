@@ -7661,7 +7661,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 5 7600"),
+	.Brand = ZLIST( "AMD Ryzen 5 7600",	\
+			"AMD Ryzen 5 7500F"	),
 	.Boost = {+12, +1},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RAPHAEL,
