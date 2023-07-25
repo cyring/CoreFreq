@@ -186,8 +186,9 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: "cc", "memory", "%x0", "%x1", "%x2", "%x3"		\
 	);								\
 	_ret;							*/	\
-	unsigned char _ret = (_base & (1LLU << _offset)) != 0;		\
-	_base = _base | (1LLU << _offset);				\
+	const __typeof__(_base) _shl = 1LLU << _offset; 		\
+	const unsigned char _ret = (_base & _shl) != 0;			\
+	_base = _base | _shl;						\
 	_ret;								\
 })
 
@@ -211,8 +212,9 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: "cc", "memory", "%x0", "%x1", "%x2"			\
 	);								\
 	_ret;							*/	\
-	unsigned char _ret = (_base & (1LLU << _imm6)) != 0;		\
-	_base = _base | (1LLU << _imm6);				\
+	const __typeof__(_base) _shl = 1LLU << _imm6;			\
+	const unsigned char _ret = (_base & _shl) != 0; 		\
+	_base = _base | _shl;						\
 	_ret;								\
 })
 
@@ -237,8 +239,9 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: "cc", "memory", "%x0", "%x1", "%x2", "%x3"		\
 	);								\
 	_ret;							*/	\
-	unsigned char _ret = (_base & (1LLU << _offset)) != 0;		\
-	_base = _base & ~(1LLU << _offset);				\
+	const __typeof__(_base) _shl = 1LLU << _offset; 		\
+	const unsigned char _ret = (_base & _shl) != 0; 		\
+	_base = _base & ~_shl;						\
 	_ret;								\
 })
 
@@ -262,8 +265,9 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: "cc", "memory", "%x0", "%x1", "%x2"			\
 	);								\
 	_ret;							*/	\
-	unsigned char _ret = (_base & (1LLU << _imm6)) != 0;		\
-	_base = _base & ~(1LLU << _imm6);				\
+	const __typeof__(_base) _shl = 1LLU << _imm6;			\
+	const unsigned char _ret = (_base & _shl) != 0; 		\
+	_base = _base & ~_shl;						\
 	_ret;								\
 })
 
@@ -276,8 +280,9 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: "d" (_offset) 					\
 		: "cc", "memory"					\
 	);							*/	\
-	if ((_base & (1LLU << _offset)) != 0) { 			\
-		_base ^= (1LLU << _offset);				\
+	const __typeof__(_base) _shl = 1LLU << _offset; 		\
+	if ((_base & _shl) != 0) { 					\
+		_base ^= _shl;						\
 	}								\
 })
 
@@ -290,8 +295,9 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: [imm8] "i" (_imm8)					\
 		: "cc", "memory"					\
 	);							*/	\
-	if ((_base & (1LLU << _imm8)) != 0) {				\
-		_base ^= (1LLU << _imm8);				\
+	const __typeof__(_base) _shl = 1LLU << _imm8;			\
+	if ((_base & _shl) != 0) {					\
+		_base ^= _shl;						\
 	}								\
 })
 
@@ -309,7 +315,7 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: "cc", "memory"					\
 	);								\
 	_ret;							*/	\
-	unsigned char _ret = (_base & (1LLU << _offset)) != 0;		\
+	const unsigned char _ret = (_base & (1LLU << _offset)) != 0;	\
 	_ret;								\
 })
 
@@ -329,7 +335,7 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: "cc", "memory", "%x2" 				\
 	);								\
 	_ret;							*/	\
-	unsigned char _ret = (_base & (1LLU << _imm6)) != 0;		\
+	const unsigned char _ret = (_base & (1LLU << _imm6)) != 0;	\
 	_ret;								\
 })
 
@@ -350,7 +356,7 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: "cc", "memory", "%x2", "%x3"				\
 	);								\
 	_ret;							*/	\
-	unsigned char _ret = (_base & (1LLU << _offset)) != 0;		\
+	const unsigned char _ret = (_base & (1LLU << _offset)) != 0;	\
 	_ret;								\
 })
 
@@ -370,7 +376,7 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: "cc", "memory", "%x2" 				\
 	);								\
 	_ret;							*/	\
-	unsigned char _ret = (_base & (1LLU << _imm6)) != 0;		\
+	const unsigned char _ret = (_base & (1LLU << _imm6)) != 0;	\
 	_ret;								\
 })
 

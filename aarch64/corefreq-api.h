@@ -1104,11 +1104,11 @@ typedef struct
 #ifndef PCI_VENDOR_ID_AMD
 	#define PCI_VENDOR_ID_AMD	0x1022
 #endif
-
+/*TODO(CleanUp)
 #define DID_INTEL_82945P_HB		0x2770
 #define DID_INTEL_82945GM_HB		0x27a0
 #define DID_INTEL_82955_HB		0x2774
-/* Source: /drivers/char/agp/intel-agp.h				*/
+** Source: /drivers/char/agp/intel-agp.h				**
 #define DID_INTEL_82945GME_HB		0x27ac
 #define DID_INTEL_82946GZ_HB		0x2970
 #define DID_INTEL_82965Q_HB		0x2990
@@ -1119,23 +1119,23 @@ typedef struct
 #define DID_INTEL_Q35_HB		0x29b0
 #define DID_INTEL_G33_HB		0x29c0
 #define DID_INTEL_Q33_HB		0x29d0
-/* Source: /drivers/edac/x38_edac.c					*/
+** Source: /drivers/edac/x38_edac.c					**
 #define DID_INTEL_X38_HB		0x29e0
-/* Source: /drivers/edac/i3200_edac.c					*/
+** Source: /drivers/edac/i3200_edac.c					**
 #define DID_INTEL_3200_HB		0x29f0
-/* Source: /drivers/char/agp/intel-agp.h				*/
+** Source: /drivers/char/agp/intel-agp.h				**
 #define DID_INTEL_Q45_HB		0x2e10
 #define DID_INTEL_G45_HB		0x2e20
 #define DID_INTEL_G41_HB		0x2e30
-/* Source: Intel Atom Processor N400 & N500 Series Datasheet– Volume 2	*/
+** Source: Intel Atom Processor N400 & N500 Series Datasheet– Volume 2	**
 #define DID_INTEL_BONNELL_HB		0xa010
-/* Source: Intel Atom Processor D2000 & N2000 Series Datasheet– Volume 2 */
+** Source: Intel Atom Processor D2000 & N2000 Series Datasheet– Volume 2 **
 #define DID_INTEL_SALTWELL_HB		0x0bf1
-/* Source: SoC / Silvermont / Processor Transaction Router		*/
+** Source: SoC / Silvermont / Processor Transaction Router		**
 #define DID_INTEL_SLM_PTR		0x0f00
-/* Source: [Atom/Airmont] Pentium(R) CPU N3700				*/
+** Source: [Atom/Airmont] Pentium(R) CPU N3700				**
 #define DID_INTEL_AIRMONT_HB		0x2280
-/* Source: /include/linux/pci_ids.h					*/
+** Source: /include/linux/pci_ids.h					**
 #define DID_INTEL_I7_MCR		0x2c18
 #define DID_INTEL_I7_MC_CH0_CTRL	0x2c20
 #define DID_INTEL_I7_MC_CH1_CTRL	0x2c28
@@ -1172,146 +1172,146 @@ typedef struct
 #define DID_INTEL_NHM_EP_MC_CH1_ADDR	0x2da9
 #define DID_INTEL_NHM_EP_MC_CH2_ADDR	0x2db1
 #define DID_INTEL_NHM_EP_NON_CORE	0x2c70
-/* Source: Intel Using the Intel ICH Family Watchdog Timer (WDT)	*/
+** Source: Intel Using the Intel ICH Family Watchdog Timer (WDT)	**
 #define DID_INTEL_ICH10_LPC		0x3a16
-/* Source: Intel X58 Express Chipset Datasheet				*/
+** Source: Intel X58 Express Chipset Datasheet				**
 #define DID_INTEL_X58_HUB_CORE		0x342e
 #define DID_INTEL_X58_HUB_CTRL		0x3423
 #define DID_INTEL_IIO_CORE_REG		0x3728
-/* Source: /include/linux/pci_ids.h					*/
+** Source: /include/linux/pci_ids.h					**
 #define DID_INTEL_SNB_IMC_HA0		0x3ca0
-/* Source: 2nd Generation Intel® Core™ Processor Family Vol2		*/
+** Source: 2nd Generation Intel® Core™ Processor Family Vol2		**
 #define DID_INTEL_SNB_IMC_SA		0x0100
 #define DID_INTEL_SNB_IMC_0104		0x0104
-/* Source: /drivers/edac/sb_edac.c					*/
-/*TODO( Harware missing )*/
+** Source: /drivers/edac/sb_edac.c					**
+**TODO( Harware missing )**
 #define DID_INTEL_IVB_IMC_HA0		0x0ea0
 #define DID_INTEL_IVB_IMC_HA1		0x0e60
-/* Source: 3rd Generation Intel® Core™ Processor Family Vol2		*/
+** Source: 3rd Generation Intel® Core™ Processor Family Vol2		**
 #define DID_INTEL_IVB_IMC_SA		0x0150
 #define DID_INTEL_IVB_IMC_0154		0x0154
-/* Source: Intel Xeon Processor E5 & E7 v1 Datasheet Vol 2		*/
-/*	DMI2: Device=0 - Function=0					*/
+** Source: Intel Xeon Processor E5 & E7 v1 Datasheet Vol 2		**
+**	DMI2: Device=0 - Function=0					**
 #define DID_INTEL_SNB_EP_HOST_BRIDGE	0x3c00
-/*	QPIMISCSTAT: Device=8,9 - Function=0				*/
+**	QPIMISCSTAT: Device=8,9 - Function=0				**
 #define DID_INTEL_SNB_EP_QPI_LINK0	0x3c80
 #define DID_INTEL_SNB_EP_QPI_LINK1	0x3c90
-/*	Integrated Memory Controller # : General and MemHot Registers	*/
-/*	Xeon E5 - CPGC: Device=15 - Function=0				*/
+**	Integrated Memory Controller # : General and MemHot Registers	**
+**	Xeon E5 - CPGC: Device=15 - Function=0				**
 #define DID_INTEL_SNB_EP_IMC_CTRL0_CPGC 0x3ca8
-/*TODO( Nehalem/Xeon E7 - CPGC: Device=?? - Function=? )
-#define DID_INTEL_SNB_EP_IMC_CTRL1_CPGC 0x0				*/
-/*	Integrated Memory Controller # : Channel [m-M] Thermal Registers*/
-/*	Controller #0: Device=16 - Function=0,1,2,3			*/
+**TODO( Nehalem/Xeon E7 - CPGC: Device=?? - Function=? )
+#define DID_INTEL_SNB_EP_IMC_CTRL1_CPGC 0x0				**
+**	Integrated Memory Controller # : Channel [m-M] Thermal Registers**
+**	Controller #0: Device=16 - Function=0,1,2,3			**
 #define DID_INTEL_SNB_EP_IMC_CTRL0_CH0	0x3cb0
 #define DID_INTEL_SNB_EP_IMC_CTRL0_CH1	0x3cb1
 #define DID_INTEL_SNB_EP_IMC_CTRL0_CH2	0x3cb2
 #define DID_INTEL_SNB_EP_IMC_CTRL0_CH3	0x3cb3
-/*	Controller #1: Device=16 - Function=4,5,6,7			*/
+**	Controller #1: Device=16 - Function=4,5,6,7			**
 #define DID_INTEL_SNB_EP_IMC_CTRL1_CH0	0x3cb4
 #define DID_INTEL_SNB_EP_IMC_CTRL1_CH1	0x3cb5
 #define DID_INTEL_SNB_EP_IMC_CTRL1_CH2	0x3cb6
 #define DID_INTEL_SNB_EP_IMC_CTRL1_CH3	0x3cb7
-/*	Integrated Memory Controller 0 : Channel # TAD Registers	*/
-/*	Xeon E5 - TAD Controller #0: Device=15 - Function=2,3,4,5,6	*/
+**	Integrated Memory Controller 0 : Channel # TAD Registers	**
+**	Xeon E5 - TAD Controller #0: Device=15 - Function=2,3,4,5,6	**
 #define DID_INTEL_SNB_EP_TAD_CTRL0_CH0	0x3caa
 #define DID_INTEL_SNB_EP_TAD_CTRL0_CH1	0x3cab
 #define DID_INTEL_SNB_EP_TAD_CTRL0_CH2	0x3cac
 #define DID_INTEL_SNB_EP_TAD_CTRL0_CH3	0x3cad
 #define DID_INTEL_SNB_EP_TAD_CTRL0_CH4	0x3cae
-/*	Integrated Memory Controller 1 : Channel # TAD Registers	*/
-/*TODO( Nehalem/Xeon E7 - TAD Controller #1: Device=?? - Function=? )
+**	Integrated Memory Controller 1 : Channel # TAD Registers	**
+**TODO( Nehalem/Xeon E7 - TAD Controller #1: Device=?? - Function=? )
 #define DID_INTEL_SNB_EP_TAD_CTRL1_CH0	0x0
 #define DID_INTEL_SNB_EP_TAD_CTRL1_CH1	0x0
 #define DID_INTEL_SNB_EP_TAD_CTRL1_CH2	0x0
 #define DID_INTEL_SNB_EP_TAD_CTRL1_CH3	0x0
-#define DID_INTEL_SNB_EP_TAD_CTRL1_CH4	0x0				*/
-/*	Power Control Unit						*/
-/*	PCU: Device=10 - Function=3					*/
+#define DID_INTEL_SNB_EP_TAD_CTRL1_CH4	0x0				**
+**	Power Control Unit						**
+**	PCU: Device=10 - Function=3					**
 #define DID_INTEL_SNB_EP_CAPABILITY	0x3cd0
-/* Source: Intel Xeon Processor E5 & E7 v2 Datasheet Vol 2		*/
-/*	DMI2: Device=0 - Function=0					*/
+** Source: Intel Xeon Processor E5 & E7 v2 Datasheet Vol 2		**
+**	DMI2: Device=0 - Function=0					**
 #define DID_INTEL_IVB_EP_HOST_BRIDGE	0x0e00
-/*	IIO - Bus0: 0x0, Bus1:0x40 - Device=5 - Function=0		*/
+**	IIO - Bus0: 0x0, Bus1:0x40 - Device=5 - Function=0		**
 #define DID_INTEL_IVB_EP_IIO_VTD	0x0e28
-/*	QPIMISCSTAT: Device={8,9},10 - Function=0			*/
+**	QPIMISCSTAT: Device={8,9},10 - Function=0			**
 #define DID_INTEL_IVB_EP_QPI_LINK0	0x0e80
 #define DID_INTEL_IVB_EP_QPI_LINK1	0x0e90
 #define DID_INTEL_IVB_EP_QPI_LINK2	0x0e40
-/*	Integrated Memory Controller # : General and MemHot Registers	*/
-/*	Xeon E5 - CPGC: Device=15 - Function=0				*/
+**	Integrated Memory Controller # : General and MemHot Registers	**
+**	Xeon E5 - CPGC: Device=15 - Function=0				**
 #define DID_INTEL_IVB_EP_IMC_CTRL0_CPGC 0x0ea8
-/*	Xeon E7 - CPGC: Device=29 - Function=0				*/
+**	Xeon E7 - CPGC: Device=29 - Function=0				**
 #define DID_INTEL_IVB_EP_IMC_CTRL1_CPGC 0x0e68
-/*	Integrated Memory Controller # : Channel [m-M] Thermal Registers*/
-/*	Controller #0: Device=16 - Function=0,1,2,3			*/
+**	Integrated Memory Controller # : Channel [m-M] Thermal Registers**
+**	Controller #0: Device=16 - Function=0,1,2,3			**
 #define DID_INTEL_IVB_EP_IMC_CTRL0_CH0	0x0eb0
 #define DID_INTEL_IVB_EP_IMC_CTRL0_CH1	0x0eb1
 #define DID_INTEL_IVB_EP_IMC_CTRL0_CH2	0x0eb2
 #define DID_INTEL_IVB_EP_IMC_CTRL0_CH3	0x0eb3
-/*	Controller #1: Device=16 - Function=4,5,6,7			*/
+**	Controller #1: Device=16 - Function=4,5,6,7			**
 #define DID_INTEL_IVB_EP_IMC_CTRL1_CH0	0x0eb4
 #define DID_INTEL_IVB_EP_IMC_CTRL1_CH1	0x0eb5
 #define DID_INTEL_IVB_EP_IMC_CTRL1_CH2	0x0eb6
 #define DID_INTEL_IVB_EP_IMC_CTRL1_CH3	0x0eb7
-/*	Integrated Memory Controller 0 : Channel # TAD Registers	*/
-/*	Xeon E5 - TAD Controller #0: Device=15 - Function=2,3,4,5	*/
+**	Integrated Memory Controller 0 : Channel # TAD Registers	**
+**	Xeon E5 - TAD Controller #0: Device=15 - Function=2,3,4,5	**
 #define DID_INTEL_IVB_EP_TAD_CTRL0_CH0	0x0eaa
 #define DID_INTEL_IVB_EP_TAD_CTRL0_CH1	0x0eab
 #define DID_INTEL_IVB_EP_TAD_CTRL0_CH2	0x0eac
 #define DID_INTEL_IVB_EP_TAD_CTRL0_CH3	0x0ead
-/*	Integrated Memory Controller 1 : Channel # TAD Registers	*/
-/*	Xeon E7 - TAD Controller #1: Device=29 - Function=2,3,4,5	*/
+**	Integrated Memory Controller 1 : Channel # TAD Registers	**
+**	Xeon E7 - TAD Controller #1: Device=29 - Function=2,3,4,5	**
 #define DID_INTEL_IVB_EP_TAD_CTRL1_CH0	0x0e6a
 #define DID_INTEL_IVB_EP_TAD_CTRL1_CH1	0x0e6b
 #define DID_INTEL_IVB_EP_TAD_CTRL1_CH2	0x0e6c
 #define DID_INTEL_IVB_EP_TAD_CTRL1_CH3	0x0e6d
-/*	Power Control Unit						*/
-/*	PCU: Device=10 - Function=3					*/
+**	Power Control Unit						**
+**	PCU: Device=10 - Function=3					**
 #define DID_INTEL_IVB_EP_CAPABILITY	0x0ec3
-/* Source: Intel 7 Series / C216 Chipset Family Platform Controller Hub */
+** Source: Intel 7 Series / C216 Chipset Family Platform Controller Hub **
 #define DID_INTEL_PCH_C216_LPC		0x1e44
-/* Source: Intel Xeon Processor E5 & E7 v3 Datasheet Vol 2		*/
-/*	DMI2: Device=0 - Function=0					*/
+** Source: Intel Xeon Processor E5 & E7 v3 Datasheet Vol 2		**
+**	DMI2: Device=0 - Function=0					**
 #define DID_INTEL_HSW_EP_HOST_BRIDGE	0x2f00
-/*	QPIMISCSTAT: Device={8,9},10 - Function=0			*/
+**	QPIMISCSTAT: Device={8,9},10 - Function=0			**
 #define DID_INTEL_HSW_EP_QPI_LINK0	0x2f80
 #define DID_INTEL_HSW_EP_QPI_LINK1	0x2f90
 #define DID_INTEL_HSW_EP_QPI_LINK2	0x2f40
-/*	Integrated Memory Controller # : General and MemHot Registers	*/
-/*	Xeon E7 - CPGC: Device=19 - Function=0,1			*/
+**	Integrated Memory Controller # : General and MemHot Registers	**
+**	Xeon E7 - CPGC: Device=19 - Function=0,1			**
 #define DID_INTEL_HSW_E7_IMC_CTRL0_F0_CPGC 0x2fa8
 #define DID_INTEL_HSW_E7_IMC_CTRL0_F1_CPGC 0x2f71
-/*	Xeon E7 - CPGC: Device=22 - Function=0,1			*/
+**	Xeon E7 - CPGC: Device=22 - Function=0,1			**
 #define DID_INTEL_HSW_E7_IMC_CTRL1_F0_CPGC 0x2f68
 #define DID_INTEL_HSW_E7_IMC_CTRL1_F1_CPGC 0x2f79
-/*	Integrated Memory Controller # : Channel [m-M] Thermal Registers*/
-/*	Controller #0: Device=20,21 - Function=0,1			*/
+**	Integrated Memory Controller # : Channel [m-M] Thermal Registers**
+**	Controller #0: Device=20,21 - Function=0,1			**
 #define DID_INTEL_HSW_EP_IMC_CTRL0_CH0	0x2fb4
 #define DID_INTEL_HSW_EP_IMC_CTRL0_CH1	0x2fb5
 #define DID_INTEL_HSW_EP_IMC_CTRL0_CH2	0x2fb0
 #define DID_INTEL_HSW_EP_IMC_CTRL0_CH3	0x2fb1
-/*	Controller #1: Device=23,24 - Function=2,3			*/
+**	Controller #1: Device=23,24 - Function=2,3			**
 #define DID_INTEL_HSW_EP_IMC_CTRL1_CH0	0x2fd6
 #define DID_INTEL_HSW_EP_IMC_CTRL1_CH1	0x2fd7
 #define DID_INTEL_HSW_EP_IMC_CTRL1_CH2	0x2fd2
 #define DID_INTEL_HSW_EP_IMC_CTRL1_CH3	0x2fd3
-/*	Integrated Memory Controller 0 : Channel # TAD Registers	*/
-/*	Xeon E5 - TAD Controller #0: Device=19 - Function=2,3,4,5	*/
+**	Integrated Memory Controller 0 : Channel # TAD Registers	**
+**	Xeon E5 - TAD Controller #0: Device=19 - Function=2,3,4,5	**
 #define DID_INTEL_HSW_EP_TAD_CTRL0_CH0	0x2faa
 #define DID_INTEL_HSW_EP_TAD_CTRL0_CH1	0x2fab
 #define DID_INTEL_HSW_EP_TAD_CTRL0_CH2	0x2fac
 #define DID_INTEL_HSW_EP_TAD_CTRL0_CH3	0x2fad
-/*	Integrated Memory Controller 1 : Channel # TAD Registers	*/
-/*	Xeon E7 - TAD Controller #1: Device=22 - Function=2,3,4,5	*/
+**	Integrated Memory Controller 1 : Channel # TAD Registers	**
+**	Xeon E7 - TAD Controller #1: Device=22 - Function=2,3,4,5	**
 #define DID_INTEL_HSW_EP_TAD_CTRL1_CH0	0x2f6a
 #define DID_INTEL_HSW_EP_TAD_CTRL1_CH1	0x2f6b
 #define DID_INTEL_HSW_EP_TAD_CTRL1_CH2	0x2f6c
 #define DID_INTEL_HSW_EP_TAD_CTRL1_CH3	0x2f6d
-/*	Power Control Unit						*/
-/*	PCU: Device=30 - Function=3					*/
+**	Power Control Unit						**
+**	PCU: Device=30 - Function=3					**
 #define DID_INTEL_HSW_EP_CAPABILITY	0x2fc0
-/* Source: 4th, 5th Generation Intel® Core™ Processor Family Vol2 §3.0	*/
+** Source: 4th, 5th Generation Intel® Core™ Processor Family Vol2 §3.0	**
 #define DID_INTEL_HASWELL_IMC_HA0	0x2fa0
 #define DID_INTEL_HASWELL_IMC_SA	0x0c00
 #define DID_INTEL_HASWELL_MH_IMC_HA0	0x0c04
@@ -1320,18 +1320,18 @@ typedef struct
 #define DID_INTEL_BROADWELL_D_IMC_HA0	0x1610
 #define DID_INTEL_BROADWELL_H_IMC_HA0	0x1614
 #define DID_INTEL_BROADWELL_U_IMC_HA0	0x1618
-/* Source: 6th Generation Intel® Processor Datasheet for U/Y-Platforms Vol2 */
+** Source: 6th Generation Intel® Processor Datasheet for U/Y-Platforms Vol2 **
 #define DID_INTEL_SKYLAKE_U_IMC_HA	0x1904
 #define DID_INTEL_SKYLAKE_Y_IMC_HA	0x190c
-/* Source: 6th Generation Intel® Processor Datasheet for S-Platforms Vol2 */
+** Source: 6th Generation Intel® Processor Datasheet for S-Platforms Vol2 **
 #define DID_INTEL_SKYLAKE_S_IMC_HAD	0x190f
 #define DID_INTEL_SKYLAKE_S_IMC_HAQ	0x191f
-/* Source: 6th Generation Intel® Processor Datasheet for H-Platforms Vol2 */
+** Source: 6th Generation Intel® Processor Datasheet for H-Platforms Vol2 **
 #define DID_INTEL_SKYLAKE_H_IMC_HAD	0x1900
 #define DID_INTEL_SKYLAKE_H_IMC_HAQ	0x1910
-/* Source: Intel Xeon Processor E3-1200 v5 Product Family		*/
+** Source: Intel Xeon Processor E3-1200 v5 Product Family		**
 #define DID_INTEL_SKYLAKE_DT_IMC_HA	0x1918
-/* Source:7th Generation Intel® Processor for S-Platforms & Core X-Series Vol2*/
+** Source:7th Generation Intel® Processor for S-Platforms & Core X-Series Vol2**
 #define DID_INTEL_KABYLAKE_H_IMC_HAD	0x5900
 #define DID_INTEL_KABYLAKE_U_IMC_HA	0x5904
 #define DID_INTEL_KABYLAKE_Y_IMC_HA	0x590c
@@ -1342,10 +1342,10 @@ typedef struct
 #define DID_INTEL_KABYLAKE_U_IMC_HAQ	0x5914
 #define DID_INTEL_KABYLAKE_S_IMC_HAQ	0x591f
 #define DID_INTEL_KABYLAKE_X_IMC_HAQ	0x5906
-/* Source: 8th Generation Intel® Processor for S-Platforms Datasheet Vol2 */
+** Source: 8th Generation Intel® Processor for S-Platforms Datasheet Vol2 **
 #define DID_INTEL_COFFEELAKE_S_IMC_HAQ	0x3e1f
 #define DID_INTEL_COFFEELAKE_S_IMC_HAS	0x3ec2
-/* Source: 8th and 9th Generation Intel® Core™ and Xeon™ E Processor Families */
+** Source: 8th and 9th Generation Intel® Core™ and Xeon™ E Processor Families **
 #define DID_INTEL_COFFEELAKE_R_S_IMC_HAD 0x3e0f
 #define DID_INTEL_COFFEELAKE_R_U_IMC_HAD 0x3ecc
 #define DID_INTEL_COFFEELAKE_R_U_IMC_HAQ 0x3ed0
@@ -1358,11 +1358,11 @@ typedef struct
 #define DID_INTEL_COFFEELAKE_R_S_IMC_HAQ 0x3e33
 #define DID_INTEL_COFFEELAKE_R_S_IMC_HAS 0x3eca
 #define DID_INTEL_COFFEELAKE_R_S_IMC_HAO 0x3e32
-/* Source: 8th Generation Intel® Core™ Processor Families Datasheet Vol2 */
+** Source: 8th Generation Intel® Core™ Processor Families Datasheet Vol2 **
 #define DID_INTEL_WHISKEYLAKE_U_IMC_HAD 0x3e35
 #define DID_INTEL_WHISKEYLAKE_U_IMC_HAQ 0x3e34
 #define DID_INTEL_CANNONLAKE_U_IMC_HB	0x5a04
-/* Source: Intel 400 Series Chipset Family On-Package Platform Controller Hub */
+** Source: Intel 400 Series Chipset Family On-Package Platform Controller Hub **
 #define DID_INTEL_COMETLAKE_S_IMC_6C	0x9b53
 #define DID_INTEL_COMETLAKE_S_IMC_10C	0x9b54
 #define DID_INTEL_COMETLAKE_H_IMC_10C	0x9b63
@@ -1383,7 +1383,7 @@ typedef struct
 #define DID_INTEL_COMETLAKE_W480_PCH	0x0697
 #define DID_INTEL_ICELAKE_U_4C		0x8a12
 #define DID_INTEL_ICELAKE_U_PCH 	0x3482
-/* Source: Linux: arch/x86/events/intel/uncore_snb.c			*/
+** Source: Linux: arch/x86/events/intel/uncore_snb.c			**
 #define DID_INTEL_COMETLAKE_U1_IMC	0x9b51
 #define DID_INTEL_COMETLAKE_U3_IMC	0x9b71
 #define DID_INTEL_COMETLAKE_S1_IMC	0x9b33
@@ -1395,22 +1395,22 @@ typedef struct
 #define DID_INTEL_TIGERLAKE_U3_IMC	0x9a12
 #define DID_INTEL_TIGERLAKE_U4_IMC	0x9a14
 #define DID_INTEL_TIGERLAKE_H_IMC	0x9a36
-/* Source: 11th Generation Intel® Core™ Processor Desktop Datasheet Vol1 */
+** Source: 11th Generation Intel® Core™ Processor Desktop Datasheet Vol1 **
 #define DID_INTEL_TIGERLAKE_UP3_IMC	0xa082
 #define DID_INTEL_TIGERLAKE_UP4_IMC	0xa087
 #define DID_INTEL_ROCKETLAKE_S_8C_IMC_HB 0x4c43
 #define DID_INTEL_ROCKETLAKE_S_6C_IMC_HB 0x4c53
-/* Source: Intel 500 Series Chipset Family Platform Controller Hub	*/
+** Source: Intel 500 Series Chipset Family Platform Controller Hub	**
 #define DID_INTEL_ROCKETLAKE_H510_PCH	0x4388
 #define DID_INTEL_ROCKETLAKE_B560_PCH	0x4387
 #define DID_INTEL_ROCKETLAKE_H570_PCH	0x4386
 #define DID_INTEL_ROCKETLAKE_Q570_PCH	0x4384
 #define DID_INTEL_ROCKETLAKE_Z590_PCH	0x4385
 #define DID_INTEL_ROCKETLAKE_W580_PCH	0x438f
-/* Source: 12th Generation Intel Core Processors datasheet, vol 1	*/
+** Source: 12th Generation Intel Core Processors datasheet, vol 1	**
 #define DID_INTEL_ALDERLAKE_S_8P_8E_HB	0x4660
 #define DID_INTEL_ALDERLAKE_S_8P_4E_HB	0x4668
-#define DID_INTEL_ALDERLAKE_S_6P_4E_HB	0x4648	/* RAPTORLAKE_S_6P_4E	*/
+#define DID_INTEL_ALDERLAKE_S_6P_4E_HB	0x4648	** RAPTORLAKE_S_6P_4E	**
 #define DID_INTEL_ALDERLAKE_S_6P_0E_HB	0x4650
 #define DID_INTEL_ALDERLAKE_S_4P_0E_HB	0x4630
 #define DID_INTEL_ALDERLAKE_S_2P_0E_HB	0x4610
@@ -1418,7 +1418,7 @@ typedef struct
 #define DID_INTEL_ALDERLAKE_H_6P_4E_HB	0x4649
 #define DID_INTEL_ALDERLAKE_H_4P_8E_HB	0x4621
 #define DID_INTEL_ALDERLAKE_H_4P_4E_HB	0x4629
-/* Source: Intel 600 Series Chipset Family Platform Controller Hub	*/
+** Source: Intel 600 Series Chipset Family Platform Controller Hub	**
 #define DID_INTEL_ALDERLAKE_H610_PCH	0x7a87
 #define DID_INTEL_ALDERLAKE_B660_PCH	0x7a86
 #define DID_INTEL_ALDERLAKE_H670_PCH	0x7a85
@@ -1428,16 +1428,16 @@ typedef struct
 #define DID_INTEL_ALDERLAKE_WM690_PCH	0x7a8d
 #define DID_INTEL_ALDERLAKE_HM670_PCH	0x7a8c
 #define DID_INTEL_PCH_600_SMBUS 	0xa0a3
-/* Source: 12th Gen Intel(R) Core(TM) i7-12700H 			*/
-#define DID_INTEL_ALDERLAKE_PCH_P	0x5182 /* PCH eSPI Controller	*/
+** Source: 12th Gen Intel(R) Core(TM) i7-12700H 			**
+#define DID_INTEL_ALDERLAKE_PCH_P	0x5182 ** PCH eSPI Controller	**
 #define DID_INTEL_PCH_P_SMBUS		0x51a3
-/* Source: 13th Generation Intel Core Processors Datasheet, vol 1	*/
+** Source: 13th Generation Intel Core Processors Datasheet, vol 1	**
 #define DID_INTEL_RAPTORLAKE_S_8P_16E_HB 0xa700
 #define DID_INTEL_RAPTORLAKE_S_8P_8E_HB 0xa703
 #define DID_INTEL_RAPTORLAKE_S_6P_8E_HB1 0xa704
 #define DID_INTEL_RAPTORLAKE_S_6P_4E_HB 0xa705
 #define DID_INTEL_RAPTORLAKE_S_6P_8E_HB2 0x4640
-#define DID_INTEL_RAPTORLAKE_S_4P_0E_HB 0x4692	/* ALDERLAKE_S_6P_0E	*/
+#define DID_INTEL_RAPTORLAKE_S_4P_0E_HB 0x4692	** ALDERLAKE_S_6P_0E	**
 #define DID_INTEL_RAPTORLAKE_HX_8P_16E_HB 0xa702
 #define DID_INTEL_RAPTORLAKE_HX_8P_12E_HB 0xa729
 #define DID_INTEL_RAPTORLAKE_HX_8P_8E_HB1 0xa728
@@ -1452,52 +1452,53 @@ typedef struct
 #define DID_INTEL_RAPTORLAKE_U_2P_8E_HB 0xa708
 #define DID_INTEL_RAPTORLAKE_U_2P_4E_HB 0xa71b
 #define DID_INTEL_RAPTORLAKE_U_1P_4E_HB 0xa71c
-/* Source: PCH Controller Device IDs—Intel 700 Series Chipset Family PCH */
+** Source: PCH Controller Device IDs—Intel 700 Series Chipset Family PCH **
 #define DID_INTEL_RAPTORLAKE_Z790_PCH	0x7a04
 #define DID_INTEL_RAPTORLAKE_H770_PCH	0x7a05
 #define DID_INTEL_RAPTORLAKE_B760_PCH	0x7a06
-/* Source: Intel(R) Pentium(R) Silver N5000 CPU @ 1.10GHz		*/
+** Source: Intel(R) Pentium(R) Silver N5000 CPU @ 1.10GHz		**
 #define DID_INTEL_GEMINILAKE_HB 	0x31f0
-/* Source: Meteor Lake kernel preview: Intel(R) Core(TM) Ultra 7 1003H	*/
+** Source: Meteor Lake kernel preview: Intel(R) Core(TM) Ultra 7 1003H	**
 #define DID_INTEL_METEORLAKE_M_6_8_2_HB 0x7d01
 #define DID_INTEL_METEORLAKE_PCH	0x7e02
-/* Source: /include/linux/pci_ids.h					*/
+** Source: /include/linux/pci_ids.h					**
 #define DID_AMD_K8_NB_MEMCTL		0x1102
 #define DID_AMD_K8_NB			0x1100
-/* Source: AMD Ryzen 7 2700X [ Zen+ Pinnacle Ridge ]			*/
-#define DID_AMD_17H_ZEN_PLUS_NB_IOMMU	0x1451	/*	PinnacleRidge	*/
-#define DID_AMD_17H_ZEPPELIN_NB_IOMMU	0x14a1	/*	Zeppelin	*/
-#define DID_AMD_17H_RAVEN_NB_IOMMU	0x1629	/*	Raven		*/
-/* Source: AMD Ryzen 9 3950X [ Zen2/Matisse ]				*/
-#define DID_AMD_17H_ZEN2_MTS_NB_IOMMU	0x1481	/*	Matisse 	*/
-#define DID_AMD_17H_STARSHIP_NB_IOMMU	0x14d1	/*	Starship	*/
-#define DID_AMD_17H_RENOIR_NB_IOMMU	0x1489	/*	Renoir		*/
-/* Source: AMD PPR for AMD Family 17h Models 18h & 20h Processors	*/
-#define DID_AMD_17H_ZEN_APU_NB_IOMMU	0x15d1	/*	Raven2		*/
-/* Source: AMD PPR for AMD Family 17h Model 60h Processors		*/
-/* Source: AMD PPR for AMD Family 19h Model 51h, Rev A1 Processors	*/
-#define DID_AMD_17H_ZEN2_APU_NB_IOMMU	0x1631	/*	Renoir/Cezanne	*/
-#define DID_AMD_17H_FIREFLIGHT_NB_IOMMU 0x15f9	/*	FireFlight	*/
-#define DID_AMD_17H_ARDEN_NB_IOMMU	0x1627	/*	Arden		*/
-/* Source: AMD Ryzen 5 6600H [ Zen3+ Rembrandt ]			*/
-#define DID_AMD_19H_ZEN3_RMB_NB_IOMMU	0x14b6	/*	Rembrandt	*/
-/* Source: AMD Ryzen 9 7950X [ Zen4/Raphael ]				*/
-#define DID_AMD_19H_ZEN4_RPL_NB_IOMMU	0x14d9	/*	Raphael 	*/
-#define DID_AMD_19H_ZEN4_GNA_NB_IOMMU	0x149e	/*	Genoa		*/
-#define DID_AMD_19H_ZEN4_PHX_NB_IOMMU	0x14e9	/*	Phoenix 	*/
-/* Source: /include/linux/pci_ids.h					*/
-#define DID_AMD_17H_ZEPPELIN_DF_UMC	0x1460	/*	Zeppelin	*/
-#define DID_AMD_17H_RAVEN_DF_UMC	0x15e8	/*	Raven		*/
-#define DID_AMD_17H_MATISSE_DF_UMC	0x1440	/*	Matisse 	*/
-#define DID_AMD_17H_STARSHIP_DF_UMC	0x1490	/*	Starship	*/
-#define DID_AMD_17H_RENOIR_DF_UMC	0x1448	/*	Renoir		*/
-#define DID_AMD_17H_ARIEL_DF_UMC	0x13f3	/*	Ariel		*/
-#define DID_AMD_17H_RAVEN2_DF_UMC	0x15eb	/*	Raven2		*/
-#define DID_AMD_17H_FIREFLIGHT_DF_UMC	0x15f3	/*	FireFlight	*/
-#define DID_AMD_17H_ARDEN_DF_UMC	0x160b	/*	Arden		*/
-#define DID_AMD_19H_VERMEER_DF_UMC	0x1650	/*	Vermeer 	*/
-#define DID_AMD_19H_CEZANNE_DF_UMC	0x166a	/*	Cezanne 	*/
-#define DID_AMD_19H_REMBRANDT_DF_UMC	0x1679	/*	Rembrandt 	*/
-#define DID_AMD_19H_RAPHAEL_DF_UMC	0x14e0	/*	Raphael 	*/
-#define DID_AMD_19H_GENOA_DF_UMC	0x14ad	/*	Genoa		*/
-#define DID_AMD_19H_PHOENIX_DF_UMC	0x14f0	/*	Phoenix 	*/
+** Source: AMD Ryzen 7 2700X [ Zen+ Pinnacle Ridge ]			**
+#define DID_AMD_17H_ZEN_PLUS_NB_IOMMU	0x1451	**	PinnacleRidge	**
+#define DID_AMD_17H_ZEPPELIN_NB_IOMMU	0x14a1	**	Zeppelin	**
+#define DID_AMD_17H_RAVEN_NB_IOMMU	0x1629	**	Raven		**
+** Source: AMD Ryzen 9 3950X [ Zen2/Matisse ]				**
+#define DID_AMD_17H_ZEN2_MTS_NB_IOMMU	0x1481	**	Matisse 	**
+#define DID_AMD_17H_STARSHIP_NB_IOMMU	0x14d1	**	Starship	**
+#define DID_AMD_17H_RENOIR_NB_IOMMU	0x1489	**	Renoir		**
+** Source: AMD PPR for AMD Family 17h Models 18h & 20h Processors	**
+#define DID_AMD_17H_ZEN_APU_NB_IOMMU	0x15d1	**	Raven2		**
+** Source: AMD PPR for AMD Family 17h Model 60h Processors		**
+** Source: AMD PPR for AMD Family 19h Model 51h, Rev A1 Processors	**
+#define DID_AMD_17H_ZEN2_APU_NB_IOMMU	0x1631	**	Renoir/Cezanne	**
+#define DID_AMD_17H_FIREFLIGHT_NB_IOMMU 0x15f9	**	FireFlight	**
+#define DID_AMD_17H_ARDEN_NB_IOMMU	0x1627	**	Arden		**
+** Source: AMD Ryzen 5 6600H [ Zen3+ Rembrandt ]			**
+#define DID_AMD_19H_ZEN3_RMB_NB_IOMMU	0x14b6	**	Rembrandt	**
+** Source: AMD Ryzen 9 7950X [ Zen4/Raphael ]				**
+#define DID_AMD_19H_ZEN4_RPL_NB_IOMMU	0x14d9	**	Raphael 	**
+#define DID_AMD_19H_ZEN4_GNA_NB_IOMMU	0x149e	**	Genoa		**
+#define DID_AMD_19H_ZEN4_PHX_NB_IOMMU	0x14e9	**	Phoenix 	**
+** Source: /include/linux/pci_ids.h					**
+#define DID_AMD_17H_ZEPPELIN_DF_UMC	0x1460	**	Zeppelin	**
+#define DID_AMD_17H_RAVEN_DF_UMC	0x15e8	**	Raven		**
+#define DID_AMD_17H_MATISSE_DF_UMC	0x1440	**	Matisse 	**
+#define DID_AMD_17H_STARSHIP_DF_UMC	0x1490	**	Starship	**
+#define DID_AMD_17H_RENOIR_DF_UMC	0x1448	**	Renoir		**
+#define DID_AMD_17H_ARIEL_DF_UMC	0x13f3	**	Ariel		**
+#define DID_AMD_17H_RAVEN2_DF_UMC	0x15eb	**	Raven2		**
+#define DID_AMD_17H_FIREFLIGHT_DF_UMC	0x15f3	**	FireFlight	**
+#define DID_AMD_17H_ARDEN_DF_UMC	0x160b	**	Arden		**
+#define DID_AMD_19H_VERMEER_DF_UMC	0x1650	**	Vermeer 	**
+#define DID_AMD_19H_CEZANNE_DF_UMC	0x166a	**	Cezanne 	**
+#define DID_AMD_19H_REMBRANDT_DF_UMC	0x1679	**	Rembrandt 	**
+#define DID_AMD_19H_RAPHAEL_DF_UMC	0x14e0	**	Raphael 	**
+#define DID_AMD_19H_GENOA_DF_UMC	0x14ad	**	Genoa		**
+#define DID_AMD_19H_PHOENIX_DF_UMC	0x14f0	**	Phoenix 	**
+*/

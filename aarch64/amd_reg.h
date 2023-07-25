@@ -3,7 +3,7 @@
  * Copyright (C) 2015-2023 CYRIL COURTIAT
  * Licenses: GPL2
  */
-
+/*TODO(CleanUp)
 #ifndef PCI_VENDOR_ID_HYGON
 	#define PCI_VENDOR_ID_HYGON		0x1d94
 #endif
@@ -125,12 +125,12 @@
 	#define MSR_AMD_CU_CFG3 		0xc001102b
 #endif
 
-/* Sources: TECHNICAL GUIDANCE FOR MITIGATING BRANCH TYPE CONFUSION	*/
+** Sources: TECHNICAL GUIDANCE FOR MITIGATING BRANCH TYPE CONFUSION	**
 #ifndef MSR_AMD_DE_CFG2
 	#define MSR_AMD_DE_CFG2 		0xc00110e3
 #endif
 
-/* Sources: 56569-A1 Rev 3.03 - PPR for AMD Family 19h Model 51h A1	*/
+** Sources: 56569-A1 Rev 3.03 - PPR for AMD Family 19h Model 51h A1	**
 #ifndef MSR_AMD_CPPC_CAP1
 	#define MSR_AMD_CPPC_CAP1		0xc00102b0
 #endif
@@ -151,23 +151,23 @@
 	#define MSR_AMD_CPPC_STATUS		0xc00102b4
 #endif
 
-/* Sources: BKDG for AMD Family 0Fh,15_00h-15_0Fh,15_10h-15_1Fh,15_30-15_3Fh */
+** Sources: BKDG for AMD Family 0Fh,15_00h-15_0Fh,15_10h-15_1Fh,15_30-15_3Fh **
 #define PCI_AMD_TEMPERATURE_TCTL	PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0xa4)
 #define PCI_AMD_THERMTRIP_STATUS	PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0xe4)
 
-/* BKDG for AMD Family [15_00h - 15_0Fh]
+** BKDG for AMD Family [15_00h - 15_0Fh]
 	D18F3x1D4 Probe Filter Control
 	D18F3x1C4 L3 Cache Parameter
-*/
+**
 #define PCI_AMD_PROBE_FILTER_CTRL	PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0x1d4)
 #define PCI_AMD_L3_CACHE_PARAMETER	PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0x1c4)
 
-/* Sources:
+** Sources:
  * BKDG for AMD Family [15_60h - 15_70h]
 	SMU index/data pair registers, D0F0xB8 and D0F0xBC
  * BKDG for AMD Family 16h
 	D0F0x60: miscellaneous index to access the registers at D0F0x64_x[FF:00]
-*/
+**
 #define SMU_AMD_INDEX_REGISTER_F15H	PCI_CONFIG_ADDRESS(0, 0, 0, 0xb8)
 #define SMU_AMD_DATA_REGISTER_F15H	PCI_CONFIG_ADDRESS(0, 0, 0, 0xbc)
 
@@ -189,17 +189,17 @@
 #define AMD_HSMP_DATA_REGISTER						\
 	PCI_CONFIG_ADDRESS(0, 0, 0, AMD_HSMP_DATA_PORT)
 
-/* Sources:
+** Sources:
  * BKDG for AMD Family [15_60h - 15_70h]
 	D0F0xBC_xD820_0CA4 Reported Temperature Control
  * OSRR for AMD Family 17h processors / Memory Map - SMN
 	59800h: SMU::THM
-*/
+**
 #define SMU_AMD_THM_TRIP_REGISTER_F15H		0xd8200ce4
 #define SMU_AMD_THM_TCTL_REGISTER_F15H		0xd8200ca4
 #define SMU_AMD_THM_TCTL_REGISTER_F17H		0x00059800
 
-/* Sources: PPR for AMD Family 19h Model 51h A1 : REGx59800...x59B14	*/
+** Sources: PPR for AMD Family 19h Model 51h A1 : REGx59800...x59B14	**
 #define SMU_AMD_THM_TCTL_CCD_REGISTER_F17H	0x00059954
 
 #define SMU_AMD_THM_TCTL_CCD_REGISTER_F19H_61H				\
@@ -212,32 +212,32 @@
 #define SMU_AMD_F17H_MATISSE_COF		0x0005d2c4
 #define SMU_AMD_F17H_ZEN2_MCM_COF		0x0005d324
 
-/* Sources: PPR Vol 2 for AMD Family 19h Model 01h B1			*/
+** Sources: PPR Vol 2 for AMD Family 19h Model 01h B1			**
 #define SMU_HSMP_CMD		0x3b10534
 #define SMU_HSMP_ARG		0x3b109e0
 #define SMU_HSMP_RSP		0x3b10980
 
 enum HSMP_FUNC {
-	HSMP_TEST_MSG	= 0x1,	/* Returns [ARG0] + 1			*/
-	HSMP_RD_SMU_VER = 0x2,	/* SMU FW Version			*/
-	HSMP_RD_VERSION = 0x3,	/* Interface Version			*/
-	HSMP_RD_CUR_PWR = 0x4,	/* Current Socket power (mWatts)	*/
-	HSMP_WR_PKG_PL1 = 0x5,	/* Input within [31:0]; Limit (mWatts)	*/
-	HSMP_RD_PKG_PL1 = 0x6,	/* Returns Socket power limit (mWatts)	*/
-	HSMP_RD_MAX_PPT = 0x7,	/* Max Socket power limit (mWatts)	*/
-	HSMP_WR_SMT_BOOST=0x8,	/* ApicId[31:16], Max Freq. (MHz)[15:0] */
-	HSMP_WR_ALL_BOOST=0x9,	/* Max Freq. (MHz)[15:0] for ALL	*/
-	HSMP_RD_SMT_BOOST=0xa,	/* Input ApicId[15:0]; Dflt Fmax[15:0]	*/
-	HSMP_RD_PROCHOT = 0xb,	/* 1 = PROCHOT is asserted		*/
-	HSMP_WR_XGMI_WTH= 0xc,	/* 0 = x2, 1 = x8, 2 = x16		*/
-	HSMP_RD_APB_PST = 0xd,	/* Data Fabric P-state[7-0]={0,1,2,3}	*/
-	HSMP_ENABLE_APB = 0xe,	/* Data Fabric P-State Performance Boost*/
-	HSMP_RD_DF_MCLK = 0xf,	/* FCLK[ARG:0], MEMCLK[ARG:1] (MHz)	*/
-	HSMP_RD_CCLK	= 0x10, /* CPU core clock limit (MHz)		*/
-	HSMP_RD_PC0	= 0x11, /* Socket C0 Residency (100%)		*/
-	HSMP_WR_DPM_LCLK= 0x12, /* NBIO[24:16]; Max[15:8], Min[7:0] DPM */
+	HSMP_TEST_MSG	= 0x1,	** Returns [ARG0] + 1			**
+	HSMP_RD_SMU_VER = 0x2,	** SMU FW Version			**
+	HSMP_RD_VERSION = 0x3,	** Interface Version			**
+	HSMP_RD_CUR_PWR = 0x4,	** Current Socket power (mWatts)	**
+	HSMP_WR_PKG_PL1 = 0x5,	** Input within [31:0]; Limit (mWatts)	**
+	HSMP_RD_PKG_PL1 = 0x6,	** Returns Socket power limit (mWatts)	**
+	HSMP_RD_MAX_PPT = 0x7,	** Max Socket power limit (mWatts)	**
+	HSMP_WR_SMT_BOOST=0x8,	** ApicId[31:16], Max Freq. (MHz)[15:0] **
+	HSMP_WR_ALL_BOOST=0x9,	** Max Freq. (MHz)[15:0] for ALL	**
+	HSMP_RD_SMT_BOOST=0xa,	** Input ApicId[15:0]; Dflt Fmax[15:0]	**
+	HSMP_RD_PROCHOT = 0xb,	** 1 = PROCHOT is asserted		**
+	HSMP_WR_XGMI_WTH= 0xc,	** 0 = x2, 1 = x8, 2 = x16		**
+	HSMP_RD_APB_PST = 0xd,	** Data Fabric P-state[7-0]={0,1,2,3}	**
+	HSMP_ENABLE_APB = 0xe,	** Data Fabric P-State Performance Boost**
+	HSMP_RD_DF_MCLK = 0xf,	** FCLK[ARG:0], MEMCLK[ARG:1] (MHz)	**
+	HSMP_RD_CCLK	= 0x10, ** CPU core clock limit (MHz)		**
+	HSMP_RD_PC0	= 0x11, ** Socket C0 Residency (100%)		**
+	HSMP_WR_DPM_LCLK= 0x12, ** NBIO[24:16]; Max[15:8], Min[7:0] DPM **
 	HSMP_RESERVED	= 0x13,
-	HSMP_RD_DDR_BW	= 0x14	/* Max[31:20];Usage{Gbps[19:8],Pct[7:0]}*/
+	HSMP_RD_DDR_BW	= 0x14	** Max[31:20];Usage{Gbps[19:8],Pct[7:0]}**
 };
 
 enum {
@@ -252,22 +252,22 @@ enum {
 #define IS_HSMP_OOO(_rx) (_rx == HSMP_UNSPECIFIED			\
 			|| (_rx >= HSMP_FAIL_BGN && _rx <= HSMP_FAIL_END))
 
-/* Sources: BKDG for AMD Families 0Fh, 10h up to 16h			*/
+** Sources: BKDG for AMD Families 0Fh, 10h up to 16h			**
 const struct {
 	unsigned int	MCF,
 			PCF[5];
 } VCO[0b1000] = {
-/* FID */
-/* 000000b */	{ 8, { 0,  0, 16, 17, 18}},
-/* 000001b */	{ 9, {16, 17, 18, 19, 20}},
-/* 000010b */	{10, {18, 19, 20, 21, 22}},
-/* 000011b */	{11, {20, 21, 22, 23, 24}},
-/* 000100b */	{12, {22, 23, 24, 25, 26}},
-/* 000101b */	{13, {24, 25, 26, 27, 28}},
-/* 000110b */	{14, {26, 27, 28, 29, 30}},
-/* 000111b */	{15, {28, 29, 30, 31, 32}},
+** FID **
+** 000000b **	{ 8, { 0,  0, 16, 17, 18}},
+** 000001b **	{ 9, {16, 17, 18, 19, 20}},
+** 000010b **	{10, {18, 19, 20, 21, 22}},
+** 000011b **	{11, {20, 21, 22, 23, 24}},
+** 000100b **	{12, {22, 23, 24, 25, 26}},
+** 000101b **	{13, {24, 25, 26, 27, 28}},
+** 000110b **	{14, {26, 27, 28, 29, 30}},
+** 000111b **	{15, {28, 29, 30, 31, 32}},
 };
-
+*/
 typedef union
 {	/* Speculative Control: SMT MSR 0x00000048			*/
 	unsigned long long value;
@@ -2111,7 +2111,7 @@ typedef union
 		MinRatio	: 32-25; /* Computed COF of P-State P2	*/
 	};
 } AMD_17_ZEN2_COF;
-
+/*TODO(CleanUp)
 #ifndef SMU_AMD_F17H_SVI
 	#define SMU_AMD_F17H_SVI(_plane)	(0x0005a00c + (_plane << 2))
 #endif
@@ -2123,7 +2123,7 @@ typedef union
 #ifndef SMU_AMD_RMB_SVI
 	#define SMU_AMD_RMB_SVI(_plane) 	(0x0006f010 + (_plane << 2))
 #endif
-
+*/
 typedef union
 {/*		--- SMU SVI [ 0x5a00c ; 0x5a010 ; 0x5a014 ; 0x6f038] ---
  *				[ CPU addr]	[ SoC addr]
@@ -2159,11 +2159,11 @@ typedef union
 		SVI3		: 32-24;
 	};
 } AMD_RMB_SVI;
-
+/*TODO(CleanUp)
 #ifndef SMU_AMD_F17H_CORE_VID
 	#define SMU_AMD_F17H_CORE_VID(_mod)	(0x0005a04c + (_mod << 2))
 #endif
-/*
+**
  * where addr = { 0x5a04c ... 0x5a04f || 0x5a050 ... 0x5a053 }
  * and '_mod' register offset could be equaled to:
  * 0x0		: Zen & Zen+		[UNTESTED]

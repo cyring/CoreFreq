@@ -3,7 +3,7 @@
  * Copyright (C) 2015-2023 CYRIL COURTIAT
  * Licenses: GPL2
  */
-
+/*TODO(CleanUp)
 #ifndef MSR_SMI_COUNT
 	#define MSR_SMI_COUNT			0x00000034
 #endif
@@ -341,7 +341,7 @@
 	#define MSR_IA32_HWP_REQUEST		MSR_HWP_REQUEST
 #endif
 
-/*	MSR registers related to Hardware Duty Cycling (HDC)		*/
+**	MSR registers related to Hardware Duty Cycling (HDC)		**
 #ifndef MSR_IA32_PKG_HDC_CTL
 	#define MSR_IA32_PKG_HDC_CTL		0x00000db0
 #endif
@@ -354,7 +354,7 @@
 	#define MSR_IA32_THREAD_STALL		0x00000db2
 #endif
 
-/*	Source: Intel Atom Processor E3800 Product Family Datasheet	*/
+**	Source: Intel Atom Processor E3800 Product Family Datasheet	**
 #define MSR_PKG_TURBO_CFG			0x00000670
 #define MSR_THERM_CFG1				0x00000673
 #define MSR_THERM_CFG2				0x00000674
@@ -369,7 +369,7 @@
 	#define MSR_RING_PERF_LIMIT_REASONS	0x000006b1
 #endif
 
-/*	Source: Linux kernel /arch/x86/include/asm/msr-index.h		*/
+**	Source: Linux kernel /arch/x86/include/asm/msr-index.h		**
 #ifndef MSR_ATOM_CORE_RATIOS
 	#define MSR_ATOM_CORE_RATIOS		0x0000066a
 #endif
@@ -386,7 +386,7 @@
 	#define MSR_ATOM_CORE_TURBO_VIDS	0x0000066d
 #endif
 
-/*	Package C-State Interrupt Response Limit			*/
+**	Package C-State Interrupt Response Limit			**
 #ifndef MSR_PKGC3_IRTL
 	#define MSR_PKGC3_IRTL			0x0000060a
 #endif
@@ -399,7 +399,7 @@
 	#define MSR_PKGC7_IRTL			0x0000060c
 #endif
 
-/*	Additional MSRs supported by 6th up to 13th Gen	and Xeon scalable */
+**	Additional MSRs supported by 6th up to 13th Gen	and Xeon scalable **
 #ifndef MSR_PPERF
 	#define MSR_PPERF			0x0000064e
 #endif
@@ -414,11 +414,11 @@
 
 #define MSR_CORE_UARCH_CTL		 	0x00000541
 
-/*	Partially documented registers					*/
+**	Partially documented registers					**
 #define MSR_FLEX_RATIO				0x00000194
 #define MSR_IA32_OVERCLOCKING_STATUS		0x00000195
 #define MSR_IA32_MISC_PACKAGE_CTLS		0x000000bc
-
+*/
 typedef union
 {
 	unsigned long long value;

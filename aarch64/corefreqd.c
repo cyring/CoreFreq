@@ -2044,7 +2044,7 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 	RO(Shm)->Proc.Mechanisms.BTC_NOBR += (2 * BTC_NOBR);
     }
 }
-
+/*TODO(CleanUp)
 #define TIMING(_mc, _cha)	RO(Shm)->Uncore.MC[_mc].Channel[_cha].Timing
 
 typedef struct {
@@ -2296,7 +2296,7 @@ void P945_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		break;
 	}
 
-	RO(Shm)->Uncore.CtrlSpeed = (RO(Core)->Clock.Hz * Ratio.Q * 2)/* DDR2 */
+	RO(Shm)->Uncore.CtrlSpeed = (RO(Core)->Clock.Hz * Ratio.Q * 2)** DDR2 **
 				/ (Ratio.R * 1000000L);
 
 	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
@@ -2353,9 +2353,9 @@ void P965_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	TIMING(mc, cha).tRTPr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT2.ReservedBits;
-/* TODO(Timings)
+** TODO(Timings)
 	TIMING(mc, cha).tCWL  = ?
-*/
+**
 	TIMING(mc, cha).tddRdTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].P965.DRT3.tRD_WR;
 
@@ -2380,7 +2380,7 @@ void P965_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
 	{
 		unsigned long long DIMM_Size;
-/* TODO(Geometry):Hardware missing! */
+** TODO(Geometry):Hardware missing! **
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 0;
@@ -2417,7 +2417,7 @@ void P965_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RAM_Ratio Ratio = {.Q = 1, .R = 1};
 
 	switch (RO(Proc)->Uncore.Bus.ClkCfg.FSB_Select) {
-	case 0b111:	/* Unknown */
+	case 0b111:	** Unknown **
 		fallthrough;
 	case 0b000:
 		RO(Shm)->Uncore.Bus.Rate = 1066;
@@ -2544,7 +2544,7 @@ void P965_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		break;
 	}
 
-	RO(Shm)->Uncore.CtrlSpeed = (RO(Core)->Clock.Hz * Ratio.Q * 2) /* DDR2 */
+	RO(Shm)->Uncore.CtrlSpeed = (RO(Core)->Clock.Hz * Ratio.Q * 2) ** DDR2**
 				/ (Ratio.R * 1000000L);
 
 	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
@@ -2850,7 +2850,7 @@ void G965_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		break;
 	}
 
-	RO(Shm)->Uncore.CtrlSpeed = (RO(Core)->Clock.Hz * Ratio.Q * 2) /* DDR2 */
+	RO(Shm)->Uncore.CtrlSpeed = (RO(Core)->Clock.Hz * Ratio.Q * 2) ** DDR2**
 				/ (Ratio.R * 1000000L);
 
 	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
@@ -2897,9 +2897,9 @@ void P3S_MCH(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 
 	TIMING(mc, cha).tRTPr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT2.ReservedBits;
-/* TODO(Timings)
+** TODO(Timings)
 	TIMING(mc, cha).tCWL = ?
-*/
+**
 	TIMING(mc, cha).tddRdTWr = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].P35.DRT3.tRD_WR;
 
@@ -2971,7 +2971,7 @@ void P35_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		break;
 	    }
 	}
-	/*TODO(Geometry registers)*/
+	**TODO(Geometry registers)**
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 16384;
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1024;
 
@@ -3007,11 +3007,11 @@ void P4S_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	P3S_MCH(RO(Shm), RO(Proc), mc, cha);
 
 	TIMING(mc, cha).tCL -= 6;
-/* TODO(Timings) */
+** TODO(Timings) **
       for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
       {
 	unsigned long long DIMM_Size;
-/* TODO(Geometry):Hardware missing! */
+** TODO(Geometry):Hardware missing! **
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 0;
@@ -3034,7 +3034,7 @@ void P4S_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 void SLM_PTR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	unsigned short mc, cha, slot;
-/* BUS & DRAM frequency */
+** BUS & DRAM frequency **
 	RO(Shm)->Uncore.CtrlSpeed = 800LLU + (
 			((2134LLU * RO(Proc)->Uncore.MC[0].SLM.DTR0.DFREQ) >> 3)
 	);
@@ -3056,7 +3056,7 @@ void SLM_PTR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 
     for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
     {
-/* Standard Timings */
+** Standard Timings **
 	TIMING(mc, cha).tCL  = RO(Proc)->Uncore.MC[mc].SLM.DTR0.tCL + 5;
 
 	TIMING(mc, cha).tRCD = RO(Proc)->Uncore.MC[mc].SLM.DTR0.tRCD + 5;
@@ -3104,16 +3104,16 @@ void SLM_PTR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 
 	TIMING(mc, cha).tCWL = RO(Proc)->Uncore.MC[mc].SLM.DTR1.tWCL + 3;
 
-/*TODO( Read to Read. Same Rank )
+**TODO( Read to Read. Same Rank )
 	TIMING(mc, cha).tsrRdTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR?.;
-*/
+**
 	TIMING(mc, cha).tsrRdTWr = 6 + RO(Proc)->Uncore.MC[mc].SLM.DTR3.tRWSR;
 
 	TIMING(mc, cha).tsrWrTRd = 11 + RO(Proc)->Uncore.MC[mc].SLM.DTR3.tWRSR;
-/*TODO( Write to Write. Same Rank )
+**TODO( Write to Write. Same Rank )
 	TIMING(mc, cha).tsrWrTWr = RO(Proc)->Uncore.MC[mc].SLM.DTR?.;
-*/
-/* Different Rank */
+**
+** Different Rank **
 	TIMING(mc, cha).tdrRdTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR2.tRRDR;
 	if (TIMING(mc, cha).tdrRdTRd > 0) {
 		TIMING(mc, cha).tdrRdTRd += 5;
@@ -3130,7 +3130,7 @@ void SLM_PTR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	}
 
 	TIMING(mc, cha).tdrWrTWr = 4 + RO(Proc)->Uncore.MC[mc].SLM.DTR2.tWWDR;
-/* Different DIMM */
+** Different DIMM **
 	TIMING(mc, cha).tddRdTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR2.tRRDD;
 	if (TIMING(mc, cha).tddRdTRd > 0) {
 		TIMING(mc, cha).tddRdTRd += 5;
@@ -3144,13 +3144,13 @@ void SLM_PTR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	TIMING(mc, cha).tddWrTRd = 4 + RO(Proc)->Uncore.MC[mc].SLM.DTR3.tWRDD;
 
 	TIMING(mc, cha).tddWrTWr = 4 + RO(Proc)->Uncore.MC[mc].SLM.DTR2.tWWDD;
-/* Command Rate */
+** Command Rate **
 	TIMING(mc, cha).CMD_Rate = 1 + RO(Proc)->Uncore.MC[mc].SLM.DTR1.tCMD;
 
 	TIMING(mc, cha).tXS = RO(Proc)->Uncore.MC[mc].SLM.DTR0.tXS;
 
 	TIMING(mc, cha).tXP = RO(Proc)->Uncore.MC[mc].SLM.DTR3.tXP;
-/* Topology */
+** Topology **
 	for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
 	{
 		unsigned long long DIMM_Size;
@@ -3200,7 +3200,7 @@ void SLM_PTR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
 						(unsigned int)(DIMM_Size >> 20);
 	}
-/* Error Correcting Code */
+** Error Correcting Code **
 	TIMING(mc, cha).ECC = \
 			  RO(Proc)->Uncore.MC[mc].SLM.BIOS_CFG.EFF_ECC_EN
 			| RO(Proc)->Uncore.MC[mc].SLM.BIOS_CFG.ECC_EN;
@@ -3223,7 +3223,7 @@ void SLM_PTR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 void AMT_MCR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
 	unsigned short mc, cha, slot;
-/* BUS & DRAM frequency */
+** BUS & DRAM frequency **
 	switch (RO(Proc)->Uncore.MC[0].SLM.DTR2.AMT.DFREQ) {
 	case 0b000:
 		RO(Shm)->Uncore.CtrlSpeed = 400LLU;
@@ -3270,7 +3270,7 @@ void AMT_MCR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 
     for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
     {
-/* Standard Timings */
+** Standard Timings **
 	TIMING(mc, cha).tCL  = RO(Proc)->Uncore.MC[mc].SLM.DTR0.AMT.tCL + 5;
 
 	TIMING(mc, cha).tRCD = RO(Proc)->Uncore.MC[mc].SLM.DTR0.AMT.tRCD + 5;
@@ -3333,18 +3333,18 @@ void AMT_MCR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 
 	TIMING(mc, cha).tCWL = RO(Proc)->Uncore.MC[mc].SLM.DTR1.AMT.tWCL + 3;
 
-/*TODO( Read to Read. Same Rank )
+**TODO( Read to Read. Same Rank )
 	TIMING(mc, cha).tsrRdTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR?.;
-*/
+**
 	TIMING(mc, cha).tsrRdTWr = 6
 				 + RO(Proc)->Uncore.MC[mc].SLM.DTR3.AMT.tRWSR;
 
 	TIMING(mc, cha).tsrWrTRd = 11
 				 + RO(Proc)->Uncore.MC[mc].SLM.DTR3.AMT.tWRSR;
-/*TODO( Write to Write. Same Rank )
+**TODO( Write to Write. Same Rank )
 	TIMING(mc, cha).tsrWrTWr = RO(Proc)->Uncore.MC[mc].SLM.DTR?.;
-*/
-/* Different Rank */
+**
+** Different Rank **
 	TIMING(mc, cha).tdrRdTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR2.AMT.tRRDR;
 	if (TIMING(mc, cha).tdrRdTRd > 0) {
 		TIMING(mc, cha).tdrRdTRd += 5;
@@ -3364,7 +3364,7 @@ void AMT_MCR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	if (TIMING(mc, cha).tdrWrTWr > 1) {
 		TIMING(mc, cha).tdrWrTWr += 4;
 	}
-/*TODO( Different DIMM )
+**TODO( Different DIMM )
 	TIMING(mc, cha).tddRdTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR2.AMT.tRRDD;
 
 	TIMING(mc, cha).tddRdTWr = RO(Proc)->Uncore.MC[mc].SLM.DTR2.AMT.tRWDD;
@@ -3372,15 +3372,15 @@ void AMT_MCR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	TIMING(mc, cha).tddWrTRd = RO(Proc)->Uncore.MC[mc].SLM.DTR3.AMT.tWRDD;
 
 	TIMING(mc, cha).tddWrTWr = RO(Proc)->Uncore.MC[mc].SLM.DTR2.AMT.tWWDD;
-*/
-/* Command Rate */
+**
+** Command Rate **
 	TIMING(mc, cha).CMD_Rate = 1
 				 + RO(Proc)->Uncore.MC[mc].SLM.DTR1.AMT.tCMD;
 
 	TIMING(mc, cha).tXS = RO(Proc)->Uncore.MC[mc].SLM.DTR0.AMT.tXS;
 
 	TIMING(mc, cha).tXP = RO(Proc)->Uncore.MC[mc].SLM.DTR3.AMT.tXP;
-/* Topology */
+** Topology **
 	for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
 	{
 		unsigned long long DIMM_Size;
@@ -3417,7 +3417,7 @@ void AMT_MCR(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
 						(unsigned int)(DIMM_Size >> 20);
 	}
-/* Error Correcting Code */
+** Error Correcting Code **
 	TIMING(mc, cha).ECC = RO(Proc)->Uncore.MC[mc].SLM.BIOS_CFG.ECC_EN;
     }
     if (RO(Proc)->Uncore.MC[mc].SLM.DRP.AMT.DRAMTYPE) {
@@ -3752,7 +3752,7 @@ void DMI_CLK(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.CtrlSpeed *= RO(Core)->Clock.Hz;
 	RO(Shm)->Uncore.CtrlSpeed /= RO(Shm)->Proc.Features.Factory.Clock.Hz;
 
-	RO(Shm)->Uncore.Bus.Rate = 2500; /* TODO: hardwired to Lynnfield */
+	RO(Shm)->Uncore.Bus.Rate = 2500; ** TODO: hardwired to Lynnfield **
 
 	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
 				* RO(Shm)->Uncore.Bus.Rate)
@@ -4113,10 +4113,10 @@ void SNB_EP_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	TIMING(mc, cha).tdrWrTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tWRDR;
-/*TODO
+**TODO
 	TIMING(mc, cha).tsrWrTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.???.EP.t????;
-*/
+**
 	TIMING(mc, cha).tddRdTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.OTP.EP.tRWDD;
 
@@ -4131,19 +4131,19 @@ void SNB_EP_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	TIMING(mc, cha).tdrRdTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tRRDR;
-/* TODO
+** TODO
 	TIMING(mc, cha).tsrRdTRd = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.???.EP.t????;
-*/
+**
 	TIMING(mc, cha).tddWrTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tWWDD;
 
 	TIMING(mc, cha).tdrWrTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tWWDR;
-/* TODO
+** TODO
 	TIMING(mc, cha).tsrWrTWr = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.???.EP.t????;
-*/
+**
 	TIMING(mc, cha).B2B = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tCCD;
 
@@ -4370,13 +4370,13 @@ void HSW_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	TIMING(mc, cha).tCWL  = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.Rank.tCWL;
-/*TODO(Not Found)
+**TODO(Not Found)
 	TIMING(mc, cha).tWR = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW._.tWR;
 
 	TIMING(mc, cha).tFAW = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW._.tFAW;
-*/
+**
 	TIMING(mc, cha).tRP = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.REG4C00.tRP;
 
@@ -4445,13 +4445,13 @@ void HSW_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		TIMING(mc, cha).CMD_Rate = 0;
 		break;
 	}
-/*
+**
 	TIMING(mc, cha).B2B = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW._.B2B;
 
 	TIMING(mc, cha).tXS = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].HSW._.tXS;
-*/
+**
 	TIMING(mc, cha).PDM_EN = \
 		0 != RO(Proc)->Uncore.MC[mc].Channel[cha].HSW.PDWN.PDWN_Mode;
 
@@ -4584,7 +4584,7 @@ void HSW_EP_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	} else {
 		RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_RDIMM;
 	}
-/*TODO(VT-d capability from device 30 in CAPID# registers among offsets 0x80)*/
+**TODO(VT-d capability from device 30 in CAPID# registers among offsets 0x80)**
 	RO(Shm)->Proc.Technology.IOMMU = 0;
 	RO(Shm)->Proc.Technology.IOMMU_Ver_Major = 0;
 	RO(Shm)->Proc.Technology.IOMMU_Ver_Minor = 0;
@@ -4611,7 +4611,7 @@ void SKL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.ACT.tRCD_WR;
 
     if (TIMING(mc, cha).tRCD_WR == 0) {
-	/* ACT to CAS (RD or WR) same bank minimum delay in DCLK cycles */
+	** ACT to CAS (RD or WR) same bank minimum delay in DCLK cycles **
 	TIMING(mc, cha).tRCD_WR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].SKL.Timing.tRP;
     }
@@ -4815,11 +4815,11 @@ void SKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	case Skylake_UY:
 	case Kabylake_UY:
 		DMFC = RO(Proc)->Uncore.Bus.SKL_Cap_B.DMFC_DDR3;
-		RO(Shm)->Uncore.Bus.Rate = 4000;	/* 4 GT/s QPI */
+		RO(Shm)->Uncore.Bus.Rate = 4000;	** 4 GT/s QPI **
 		break;
 	default:
 		DMFC = RO(Proc)->Uncore.Bus.SKL_Cap_C.DMFC_DDR4;
-		RO(Shm)->Uncore.Bus.Rate = 8000;	/* 8 GT/s DMI3 */
+		RO(Shm)->Uncore.Bus.Rate = 8000;	** 8 GT/s DMI3 **
 		break;
 	}
     if (RO(Proc)->Uncore.Bus.SKL_SA_Pll.QCLK == 0)
@@ -5103,7 +5103,7 @@ void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
     if (RO(Proc)->Uncore.MC[mc].RKL.MADCH.value) {
 	switch (RO(Proc)->Uncore.MC[mc].RKL.MADCH.DDR_TYPE) {
 	default:
-	case 0b00:	/*	DDR4	*/
+	case 0b00:	**	DDR4	**
 		RO(Shm)->Uncore.Unit.DDR_Ver = 4;
 		RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_SDRAM;
 
@@ -5114,7 +5114,7 @@ void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 			clock_done = 1;
 		}
 		break;
-	case 0b11:	/*	LPDDR4	*/
+	case 0b11:	**	LPDDR4	**
 		RO(Shm)->Uncore.Unit.DDR_Ver = 4;
 		RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_LPDDR;
 
@@ -5125,7 +5125,7 @@ void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 			clock_done = 1;
 		}
 		break;
-	case 0b01:	/*	DDR5	*/
+	case 0b01:	**	DDR5	**
 		RO(Shm)->Uncore.Unit.DDR_Ver = 5;
 		RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_SDRAM;
 
@@ -5136,7 +5136,7 @@ void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 			clock_done = 1;
 		}
 		break;
-	case 0b10:	/*	LPDDR5	*/
+	case 0b10:	**	LPDDR5	**
 		RO(Shm)->Uncore.Unit.DDR_Ver = 5;
 		RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_LPDDR;
 
@@ -5156,7 +5156,7 @@ void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 
 	Bus_Rate = Bus_Rate * 100U;
     }
-    else	/*	Is Memory frequency overclocked ?		*/
+    else	**	Is Memory frequency overclocked ?		**
     {
 	unsigned long long Freq_Hz;
 
@@ -5212,7 +5212,7 @@ void TGL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	TIMING(mc, cha).tCL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.ODT.tCL;
 
-	/*	ACT to CAS (RD or WR) same bank minimum delay in tCK	*/
+	**	ACT to CAS (RD or WR) same bank minimum delay in tCK	**
 	TIMING(mc, cha).tRCD_RD = \
 	TIMING(mc, cha).tRCD_WR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].TGL.Timing.tRCD;
@@ -5655,7 +5655,7 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
     if (RO(Proc)->Uncore.MC[mc].ADL.MADCH.value) {
 	switch (RO(Proc)->Uncore.MC[mc].ADL.MADCH.DDR_TYPE) {
 	default:
-	case 0b00:	/*	DDR4	*/
+	case 0b00:	**	DDR4	**
 		RO(Shm)->Uncore.Unit.DDR_Ver = 4;
 		RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_SDRAM;
 
@@ -5666,7 +5666,7 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 			clock_done = 1;
 		}
 		break;
-	case 0b11:	/*	LPDDR4	*/
+	case 0b11:	**	LPDDR4	**
 		RO(Shm)->Uncore.Unit.DDR_Ver = 4;
 		RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_LPDDR;
 
@@ -5677,7 +5677,7 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 			clock_done = 1;
 		}
 		break;
-	case 0b01:	/*	DDR5	*/
+	case 0b01:	**	DDR5	**
 		RO(Shm)->Uncore.Unit.DDR_Ver = 5;
 		RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_SDRAM;
 
@@ -5688,7 +5688,7 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 			clock_done = 1;
 		}
 		break;
-	case 0b10:	/*	LPDDR5	*/
+	case 0b10:	**	LPDDR5	**
 		RO(Shm)->Uncore.Unit.DDR_Ver = 5;
 		RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_LPDDR;
 
@@ -5708,7 +5708,7 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 
 	Bus_Rate = Bus_Rate * 100U;
     }
-    else	/*	Is Memory frequency overclocked ?		*/
+    else	**	Is Memory frequency overclocked ?		**
     {
 	unsigned long long Freq_Hz;
 
@@ -5961,11 +5961,11 @@ void AMD_0Fh_HTT(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 			Ratio.R = 0;
 			break;
 	}
-	RO(Shm)->Uncore.CtrlSpeed = (Ratio.Q * 2) + Ratio.R;	/* DDR2 */
+	RO(Shm)->Uncore.CtrlSpeed = (Ratio.Q * 2) + Ratio.R;	** DDR2 **
 
 	if ((link = RO(Proc)->Uncore.Bus.UnitID.McUnit) < 0b11) {
 		switch (RO(Proc)->Uncore.Bus.LDTi_Freq[link].LinkFreqMax)
-		{						/* "MHz" */
+		{						** "MHz" **
 		case 0b0000:
 			HTT_Clock = 200;
 			break;
@@ -5985,8 +5985,8 @@ void AMD_0Fh_HTT(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 			HTT_Clock = 100;
 			break;
 		}
-		RO(Shm)->Uncore.Bus.Rate = HTT_Clock * 2;	/* "MT/s" */
-		RO(Shm)->Uncore.Bus.Speed = HTT_Clock * 4;	/* "MB/s" */
+		RO(Shm)->Uncore.Bus.Rate = HTT_Clock * 2;	** "MT/s" **
+		RO(Shm)->Uncore.Bus.Speed = HTT_Clock * 4;	** "MB/s" **
 	}
 	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MTS;
 	RO(Shm)->Uncore.Unit.BusSpeed = MC_MBS;
@@ -6020,7 +6020,7 @@ void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 			chipselect_pair
 		][0].Chip.value, 0)
       )
-      { /*			CSEnable				*/
+      { **			CSEnable				**
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8 << \
 	RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.DAC.NumBanks;
 
@@ -6163,9 +6163,9 @@ void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR12.tREFI;
 
     switch(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.CONFIG.BurstLength) {
-    case 0x0:	/* BL2 */
-    case 0x1:	/* BL4 */
-    case 0x2:	/* BL8 */
+    case 0x0:	** BL2 **
+    case 0x1:	** BL4 **
+    case 0x2:	** BL8 **
 	TIMING(mc, cha).tRFC1 = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTRFC.DDR4.tRFC1;
 
@@ -6191,7 +6191,7 @@ void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	    RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.DDR4.GearDownMode;
 
 	break;
-    case 0x3:	/* BL16 */
+    case 0x3:	** BL16 **
 	TIMING(mc, cha).tRFC1 = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTRFC.DDR5.tRFC1;
 
@@ -6308,9 +6308,9 @@ void AMD_17h_CAP(RO(SHM_STRUCT) *RO(Shm),
 	unsigned short slot;
 
     switch(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.CONFIG.BurstLength) {
-    case 0x0:	/* BL2 */
-    case 0x1:	/* BL4 */
-    case 0x2:	/* BL8 */
+    case 0x0:	** BL2 **
+    case 0x1:	** BL4 **
+    case 0x2:	** BL8 **
       if (RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.DDR4.MEMCLK)
       {
 	RO(Shm)->Uncore.Bus.Rate = \
@@ -6340,7 +6340,7 @@ void AMD_17h_CAP(RO(SHM_STRUCT) *RO(Shm),
 	clock_done = 1;
       }
 	break;
-    case 0x3:	/* BL16 */
+    case 0x3:	** BL16 **
       if (RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC.DDR5.MEMCLK)
       {
 	RO(Shm)->Uncore.Bus.Rate = \
@@ -6393,7 +6393,7 @@ void AMD_17h_IOMMU(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 }
 
 #undef TIMING
-
+*/
 static char *Chipset[CHIPSETS] = {
 	[IC_CHIPSET]		= NULL,
 	[IC_LAKEPORT]		= "82945/Lakeport",
@@ -6473,7 +6473,7 @@ static char *Chipset[CHIPSETS] = {
 
 void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		unsigned short DID)
-{
+{/*TODO(CleanUp)
 	switch (DID) {
 	case DID_INTEL_82945P_HB:
 		P945_CLK(RO(Shm), RO(Proc), RO(Core));
@@ -6578,8 +6578,8 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 	case DID_INTEL_IVB_EP_IIO_VTD:
 		X58_VTD(RO(Shm), RO(Proc), RO(Core));
 		break;
-	case DID_INTEL_I7_MCR:			/*	Bloomfield	*/
-	case DID_INTEL_NHM_EP_MCR:		/*	Westmere EP	*/
+	case DID_INTEL_I7_MCR:
+	case DID_INTEL_NHM_EP_MCR:
 		NHM_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_TYLERSBURG);
 		break;
@@ -6589,17 +6589,17 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 	case DID_INTEL_NHM_EC_MC_TEST:
 		DMI_CLK(RO(Shm), RO(Proc), RO(Core));
 		break;
-	case DID_INTEL_LYNNFIELD_MCR:		/*	Lynnfield	*/
-	case DID_INTEL_NHM_EC_MCR:		/*	C5500-C3500	*/
+	case DID_INTEL_LYNNFIELD_MCR:
+	case DID_INTEL_NHM_EC_MCR:
 		NHM_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_IBEXPEAK);
 		break;
-	case DID_INTEL_SNB_IMC_HA0:		/*	Sandy Bridge-E	*/
+	case DID_INTEL_SNB_IMC_HA0:
 		SNB_EP_CAP(RO(Shm), RO(Proc), RO(Core));
 		SNB_EP_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_PATSBURG);
 		break;
-	case DID_INTEL_SNB_IMC_SA:		/*	SNB Desktop	*/
+	case DID_INTEL_SNB_IMC_SA:
 		SNB_CAP(RO(Shm), RO(Proc), RO(Core));
 		SNB_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_COUGARPOINT);
@@ -6609,34 +6609,34 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		SNB_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_IBEXPEAK_M);
 		break;
-	case DID_INTEL_SNB_EP_HOST_BRIDGE:	/* Xeon E5-2640		*/
-	case DID_INTEL_IVB_EP_HOST_BRIDGE:	/* Xeon E5 & E7 v2	*/
+	case DID_INTEL_SNB_EP_HOST_BRIDGE:
+	case DID_INTEL_IVB_EP_HOST_BRIDGE:
 		SNB_EP_CAP(RO(Shm), RO(Proc), RO(Core));
 		SNB_EP_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CAVECREEK);
 		break;
-	case DID_INTEL_IVB_IMC_SA:		/*	IVB Desktop	*/
+	case DID_INTEL_IVB_IMC_SA:
 		IVB_CAP(RO(Shm), RO(Proc), RO(Core));
 		SNB_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_PANTHERPOINT);
 		break;
-	case DID_INTEL_IVB_IMC_0154:		/* IVB Mobile i5-3337U	*/
+	case DID_INTEL_IVB_IMC_0154:
 		IVB_CAP(RO(Shm), RO(Proc), RO(Core));
 		SNB_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_PANTHERPOINT_M);
 		break;
-	case DID_INTEL_HASWELL_IMC_SA:		/* HSW & BDW Desktop	*/
-	case DID_INTEL_HASWELL_MH_IMC_HA0:	/* HSW Mobile M/H	*/
+	case DID_INTEL_HASWELL_IMC_SA:
+	case DID_INTEL_HASWELL_MH_IMC_HA0:
 		HSW_CAP(RO(Shm), RO(Proc), RO(Core));
 		HSW_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_LYNXPOINT_M);
 		break;
-	case DID_INTEL_HASWELL_UY_IMC_HA0:	/* HSW Mobile U/Y	*/
+	case DID_INTEL_HASWELL_UY_IMC_HA0:
 		HSW_CAP(RO(Shm), RO(Proc), RO(Core));
 		HSW_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_LYNXPOINT_M);
 		break;
-	case DID_INTEL_HASWELL_IMC_HA0: 		/* Haswell	*/
+	case DID_INTEL_HASWELL_IMC_HA0:
 		HSW_CAP(RO(Shm), RO(Proc), RO(Core));
 		HSW_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_LYNXPOINT);
@@ -6646,90 +6646,90 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		HSW_EP_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_WELLSBURG);
 		break;
-	case DID_INTEL_BROADWELL_IMC_HA0:	/* Broadwell/Y/U Core m */
+	case DID_INTEL_BROADWELL_IMC_HA0:
 		HSW_CAP(RO(Shm), RO(Proc), RO(Core));
 		HSW_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_WILDCATPOINT_M);
 		break;
-	case DID_INTEL_BROADWELL_D_IMC_HA0:	/*	BDW/Desktop	*/
-	case DID_INTEL_BROADWELL_H_IMC_HA0:	/*	Broadwell/H	*/
-	case DID_INTEL_BROADWELL_U_IMC_HA0:	/*	Broadwell/U	*/
+	case DID_INTEL_BROADWELL_D_IMC_HA0:
+	case DID_INTEL_BROADWELL_H_IMC_HA0:
+	case DID_INTEL_BROADWELL_U_IMC_HA0:
 		HSW_CAP(RO(Shm), RO(Proc), RO(Core));
 		HSW_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_WELLSBURG);
 		break;
-	case DID_INTEL_SKYLAKE_U_IMC_HA:	/* Skylake/U Processor */
+	case DID_INTEL_SKYLAKE_U_IMC_HA:
 		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
-	case DID_INTEL_SKYLAKE_Y_IMC_HA:	/* Skylake/Y Processor */
+	case DID_INTEL_SKYLAKE_Y_IMC_HA:
 		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
-	case DID_INTEL_SKYLAKE_S_IMC_HAD:	/* Skylake/S Dual Core */
+	case DID_INTEL_SKYLAKE_S_IMC_HAD:
 		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
-	case DID_INTEL_SKYLAKE_S_IMC_HAQ:	/* Skylake/S Quad Core	*/
+	case DID_INTEL_SKYLAKE_S_IMC_HAQ:
 		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
-	case DID_INTEL_SKYLAKE_H_IMC_HAD:	/* Skylake/H Dual Core	*/
+	case DID_INTEL_SKYLAKE_H_IMC_HAD:
 		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
-	case DID_INTEL_SKYLAKE_H_IMC_HAQ:	/* Skylake/H Quad Core	*/
+	case DID_INTEL_SKYLAKE_H_IMC_HAQ:
 		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
-	case DID_INTEL_SKYLAKE_DT_IMC_HA:	/* Skylake/DT Server	*/
+	case DID_INTEL_SKYLAKE_DT_IMC_HA:
 		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
-	case DID_INTEL_KABYLAKE_U_IMC_HA:	/*	BGA 1356	*/
+	case DID_INTEL_KABYLAKE_U_IMC_HA:
 		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case DID_INTEL_KABYLAKE_Y_IMC_HA:	/*	BGA 1515	*/
+	case DID_INTEL_KABYLAKE_Y_IMC_HA:
 	case DID_INTEL_KABYLAKE_Y_IMC_HQ:
 		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case DID_INTEL_KABYLAKE_H_IMC_HAD:	/* Kaby Lake/H Dual Core */
+	case DID_INTEL_KABYLAKE_H_IMC_HAD
 		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case DID_INTEL_KABYLAKE_S_IMC_HAD:	/* Kaby Lake/S Dual Core */
+	case DID_INTEL_KABYLAKE_S_IMC_HAD:
 		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case DID_INTEL_KABYLAKE_H_IMC_HAQ:	/* Kaby Lake/H Quad Core */
+	case DID_INTEL_KABYLAKE_H_IMC_HAQ:
 		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case DID_INTEL_KABYLAKE_DT_IMC_HA:	/* Kaby Lake/DT Server	*/
+	case DID_INTEL_KABYLAKE_DT_IMC_HA:
 		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case DID_INTEL_KABYLAKE_U_IMC_HAQ:	/* U-Quad Core BGA 1356 */
+	case DID_INTEL_KABYLAKE_U_IMC_HAQ:
 		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case DID_INTEL_KABYLAKE_S_IMC_HAQ:	/* Kaby Lake/S Quad Core */
+	case DID_INTEL_KABYLAKE_S_IMC_HAQ:
 		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_UNIONPOINT);
@@ -6739,12 +6739,12 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case DID_INTEL_COFFEELAKE_S_IMC_HAQ:	/* Coffee Lake Quad Core */
+	case DID_INTEL_COFFEELAKE_S_IMC_HAQ:
 		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case DID_INTEL_COFFEELAKE_S_IMC_HAS:	/* Coffee Lake Hexa Core */
+	case DID_INTEL_COFFEELAKE_S_IMC_HAS:
 		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
@@ -6809,17 +6809,17 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case DID_INTEL_WHISKEYLAKE_U_IMC_HAD:	/*	WHL Dual Core	*/
+	case DID_INTEL_WHISKEYLAKE_U_IMC_HAD:
 		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case DID_INTEL_WHISKEYLAKE_U_IMC_HAQ:	/*	WHL Quad Core	*/
+	case DID_INTEL_WHISKEYLAKE_U_IMC_HAQ:
 		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case DID_INTEL_CANNONLAKE_U_IMC_HB:	/*	CNL-U		*/
+	case DID_INTEL_CANNONLAKE_U_IMC_HB:
 		SKL_CAP(RO(Shm), RO(Proc), RO(Core));
 		SKL_IMC(RO(Shm), RO(Proc));
 		SET_CHIPSET(IC_CANNONPOINT);
@@ -6999,11 +6999,11 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		SET_CHIPSET(IC_MTL_PCH);
 		break;
 	}
-}
+*/}
 
 void PCI_AMD(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		unsigned short DID)
-{
+{/*TODO(CleanUp)
 	switch (DID) {
 	case DID_AMD_K8_NB_MEMCTL:
 		AMD_0Fh_HTT(RO(Shm), RO(Proc));
@@ -7046,7 +7046,7 @@ void PCI_AMD(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		SET_CHIPSET(IC_ZEN);
 		break;
 	}
-}
+*/}
 
 #undef SET_CHIPSET
 
