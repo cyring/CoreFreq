@@ -23207,12 +23207,13 @@ static int CoreFreqK_Alloc_Per_CPU_Level_Up(INIT_ARG *pArg)
 			rc = -ENOMEM;
 			break;
 		}
-
+	    if (rc == 0) {
 		BITCLR(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
 
 		PUBLIC(RO(Core, AT(cpu)))->Bind = cpu;
 
 		Define_CPUID(PUBLIC(RO(Core, AT(cpu))), CpuIDforVendor);
+	    }
 	}
 	return rc;
 }
