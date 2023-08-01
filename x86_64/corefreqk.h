@@ -7675,6 +7675,18 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
+	.Brand = ZLIST("AMD Ryzen 9 7945HX3D"),
+	.Boost = {+31, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_DRAGON_RANGE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
 	.Brand = ZLIST("AMD Ryzen 9 7945HX"),
 	.Boost = {+29, +1},
 	.Param.Offset = {0, 0, 0},
