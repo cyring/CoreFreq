@@ -3354,6 +3354,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 22 - RSZ(MECH_MCDT_NO),
 		MECH
 	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Mechanisms.XPROC_LEAK,
+		attr_Feat,
+		2, "%s%.*sXPROC_LEAK   [%7s]", RSC(MECH_XPROC_LEAK).CODE(),
+		width - 25 - RSZ(MECH_XPROC_LEAK),
+		MECH
+	},
 /* Section Mark */
 	{
 		NULL,

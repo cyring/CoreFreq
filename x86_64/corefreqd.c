@@ -2042,6 +2042,24 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 		RO(Shm)->Proc.Features.leaf80000008.EBX.STIBP == 1
 	);
 	RO(Shm)->Proc.Mechanisms.BTC_NOBR += (2 * BTC_NOBR);
+
+	switch (RO(Shm)->Proc.ArchID) {
+	case AMD_EPYC_Rome_CPK:
+	case AMD_Zen2_Renoir:
+	case AMD_Zen2_LCN:
+	case AMD_Zen2_MTS:
+	case AMD_Zen2_Ariel:
+	case AMD_Zen2_Jupiter:
+	case AMD_Zen2_MDN:
+		RO(Shm)->Proc.Mechanisms.XPROC_LEAK = \
+			BITCMP_CC(LOCKLESS,
+				RW(Proc)->XPROC_LEAK,
+				RO(Proc)->XPROC_LEAK_Mask) ? 0b11 : 0b10;
+		break;
+	default:
+		RO(Shm)->Proc.Mechanisms.XPROC_LEAK = 0;
+		break;
+	}
     }
 }
 

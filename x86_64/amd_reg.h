@@ -903,9 +903,11 @@ typedef union
 	unsigned long long
 	ReservedBits1	:  1-0,
 	LFENCE_SER	:  2-1,  /* F10h: LFENCE as serializing instruction */
-	ReservedBits2	: 23-2,
+	ReservedBits2	:  9-2,
+	Cross_Proc_Leak : 10-9,  /* F17h: CVE-2023-20593		*/
+	ReservedBits3	: 23-10,
 	CLFLUSH_SER	: 24-23, /* F12h: CLFLUSH as serializing instruction */
-	ReservedBits3	: 64-24;
+	ReservedBits4	: 64-24;
     };
 } AMD_DE_CFG; /* Family: 12h ... 17h					*/
 

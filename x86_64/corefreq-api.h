@@ -912,6 +912,7 @@ typedef struct
 	BitCC			ARCH_CAP_Mask	__attribute__ ((aligned (16)));
 	BitCC	/* AMD */	BTC_NOBR_Mask	__attribute__ ((aligned (16)));
 	BitCC			WDT_Mask	__attribute__ ((aligned (16)));
+	BitCC	/* AMD */	XPROC_LEAK_Mask __attribute__ ((aligned (16)));
 
 	enum THERMAL_FORMULAS	thermalFormula;
 	enum VOLTAGE_FORMULAS	voltageFormula;
@@ -1090,6 +1091,7 @@ typedef struct
 	BitCC			DDPD_U_DIS	__attribute__ ((aligned (16)));
 	BitCC			BHI_DIS_S	__attribute__ ((aligned (16)));
 	BitCC	/* AMD */	BTC_NOBR	__attribute__ ((aligned (16)));
+	BitCC	/* AMD */	XPROC_LEAK	__attribute__ ((aligned (16)));
 
 	struct {
 		Bit64		Signal	__attribute__ ((aligned (8)));

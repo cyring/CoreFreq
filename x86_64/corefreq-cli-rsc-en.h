@@ -2037,6 +2037,7 @@
 #define RSC_MECH_MCDT_NO_CODE_EN "No MXCSR Configuration Dependent Timing"
 #define RSC_MECH_BTC_NO_CODE_EN 	"No Branch Type Confusion"
 #define RSC_MECH_BTC_NOBR_CODE_EN 	"BTC on Non-Branch instruction"
+#define RSC_MECH_XPROC_LEAK_CODE_EN  "Arch - Cross Processor Information Leak"
 
 #define RSC_SECURITY_CPUID_KL_CODE_EN	"CPUID Key Locker"
 #define RSC_SECURITY_AESKLE_CODE_EN	"AES Key Locker instructions"

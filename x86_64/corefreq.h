@@ -395,7 +395,8 @@ typedef struct
 				DRAM_Scrambler	: 10-8,
 				TSME		: 12-10,
 				DDPD_U_DIS	: 14-12,
-				_UnusedMechBits : 64-14;
+				XPROC_LEAK	: 16-14,
+				_UnusedMechBits : 64-16;
 	} Mechanisms;
 
 	enum THERMAL_FORMULAS	thermalFormula;

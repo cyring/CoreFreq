@@ -420,6 +420,10 @@ static signed short Mech_BTC_NOBR = -1;
 module_param(Mech_BTC_NOBR, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Mech_BTC_NOBR, "Mitigation Mechanism BTC-NOBR");
 
+static signed short Mech_XPROC_LEAK = -1;
+module_param(Mech_XPROC_LEAK, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Mech_XPROC_LEAK, "Mitigation Mech. Cross Processor Leak");
+
 static signed short WDT_Enable = -1;
 module_param(WDT_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(WDT_Enable, "Watchdog Hardware Timer");
@@ -11842,6 +11846,42 @@ void AMD_Mitigation_Mechanisms(CORE_RO *Core)
 	break;
     }
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask, Core->Bind);
+
+    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+      switch (PUBLIC(RO(Proc))->ArchID) {
+      case AMD_EPYC_Rome_CPK:
+      case AMD_Zen2_Renoir:
+      case AMD_Zen2_LCN:
+      case AMD_Zen2_MTS:
+      case AMD_Zen2_Ariel:
+      case AMD_Zen2_Jupiter:
+      case AMD_Zen2_MDN:
+       {
+	AMD_DE_CFG DE_CFG = {.value = 0};
+	RDMSR(DE_CFG, MSR_AMD64_DE_CFG);
+
+	if ((Mech_XPROC_LEAK == COREFREQ_TOGGLE_OFF)
+	 || (Mech_XPROC_LEAK == COREFREQ_TOGGLE_ON))
+	{
+		DE_CFG.Cross_Proc_Leak = Mech_XPROC_LEAK;
+		WRMSR(DE_CFG, MSR_AMD64_DE_CFG);
+		RDMSR(DE_CFG, MSR_AMD64_DE_CFG);
+	}
+	if (DE_CFG.Cross_Proc_Leak) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->XPROC_LEAK, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->XPROC_LEAK, Core->Bind);
+	}
+       }
+	break;
+      default:
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->XPROC_LEAK, Core->Bind);
+	break;
+      }
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->XPROC_LEAK_Mask, Core->Bind);
+    } else {
+	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->XPROC_LEAK_Mask, Core->Bind);
+    }
 }
 
 void Intel_VirtualMachine(CORE_RO *Core)
@@ -11902,6 +11942,7 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->XPROC_LEAK_Mask,Core->Bind);
 
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask	, Core->Bind);
@@ -11971,6 +12012,7 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->DDPD_U_DIS, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BHI_DIS_S	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BTC_NOBR	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->XPROC_LEAK, Core->Bind);
 
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.Mask);
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.Kind);

@@ -1818,6 +1818,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.DRAM_Scrambler);
 			json_key(&s, "TSME");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.TSME);
+			json_key(&s, "XPROC_LEAK");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.XPROC_LEAK);
 
 			json_end_object(&s);
 		}
