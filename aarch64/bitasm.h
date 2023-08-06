@@ -173,7 +173,6 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	_base = _base | _shl;						\
 	_ret;								\
 })
-#define _BITSET_ADR_GPR _BITSET_GPR
 
 #define _BITSET_IMM(_lock, _base, _imm6)				\
 ({									\
@@ -182,7 +181,6 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	_base = _base | _shl;						\
 	_ret;								\
 })
-#define _BITSET_ADR_IMM _BITSET_IMM
 
 #define _BITCLR_GPR(_lock, _base, _offset)				\
 ({									\
@@ -191,7 +189,6 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	_base = _base & ~_shl;						\
 	_ret;								\
 })
-#define _BITCLR_ADR_GPR _BITCLR_GPR
 
 #define _BITCLR_IMM(_lock, _base, _imm6)				\
 ({									\
@@ -200,236 +197,218 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	_base = _base & ~_shl;						\
 	_ret;								\
 })
-#define _BITCLR_ADR_IMM _BITCLR_IMM
-
-#else /* LEGACY */
-
-#define _BITSET_GPR(_lock, _base, _offset)				\
-({									\
-	volatile unsigned char _ret;					\
-									\
-	__asm__ volatile						\
-	(								\
-		"mov	x2, #1" 		"\n\t"			\
-		"lsl	x2, x2, %[offset]"	"\n\t"			\
-		"ldr	x3, %[base]"		"\n\t"			\
-		"ldr	x1, [x3]"		"\n\t"			\
-		"tst	x1, x2" 		"\n\t"			\
-		"cset	w0, ne" 		"\n\t"			\
-		"orr	x1, x1, x2"		"\n\t"			\
-		"str	x1, [x3]"		"\n\t"			\
-		"strb	w0, %[ret]"					\
-		: [ret] "=m" (_ret)					\
-		: [base] "m" (_base),					\
-		  [offset] "r" (_offset)				\
-		: "cc", "memory", "%w0", "%x1", "%x2", "%x3"		\
-	);								\
-	_ret;								\
-})
-
-#define _BITSET_ADR_GPR(_lock, _base, _offset)				\
-({									\
-	const __typeof__(_base) *_adr = &_base; 			\
-	_BITSET_GPR(_lock, _adr, _offset);				\
-})
-
-#define _BITSET_IMM(_lock, _base, _imm6)				\
-({									\
-	volatile unsigned char _ret;					\
-									\
-	__asm__ volatile						\
-	(								\
-		"mov	x2, #1" 		"\n\t"			\
-		"lsl	x2, x2, %[imm6]"	"\n\t"			\
-		"ldr	x3, %[base]"		"\n\t"			\
-		"ldr	x1, [x3]"		"\n\t"			\
-		"tst	x1, x2" 		"\n\t"			\
-		"cset	w0, ne" 		"\n\t"			\
-		"orr	x1, x1, x2"		"\n\t"			\
-		"str	x1, [x3]"		"\n\t"			\
-		"strb	w0, %[ret]"					\
-		: [ret] "=m" (_ret)					\
-		: [base] "m" (_base),					\
-		  [imm6] "i" (_imm6)					\
-		: "cc", "memory", "%w0", "%x1", "%x2", "%x3"		\
-	);								\
-	_ret;								\
-})
-
-#define _BITSET_ADR_IMM(_lock, _base, _imm6)				\
-({									\
-	const __typeof__(_base) *_adr = &_base; 			\
-	_BITSET_IMM(_lock, _adr, _imm6);				\
-})
-
-#define _BITCLR_GPR(_lock, _base, _offset)				\
-({									\
-	volatile unsigned char _ret;					\
-									\
-	__asm__ volatile						\
-	(								\
-		"mov	x2, #1" 		"\n\t"			\
-		"lsl	x2, x2, %[offset]"	"\n\t"			\
-		"ldr	x3, %[base]"		"\n\t"			\
-		"ldr	x1, [x3]"		"\n\t"			\
-		"tst	x1, x2" 		"\n\t"			\
-		"cset	w0, ne" 		"\n\t"			\
-		"bic	x1, x1, x2"		"\n\t"			\
-		"str	x1, [x3]"		"\n\t"			\
-		"strb	w0, %[ret]"					\
-		: [ret] "=m" (_ret)					\
-		: [base] "m" (_base),					\
-		  [offset] "r" (_offset)				\
-		: "cc", "memory", "%w0", "%x1", "%x2", "%x3"		\
-	);								\
-	_ret;								\
-})
-
-#define _BITCLR_ADR_GPR(_lock, _base, _offset)				\
-({									\
-	const __typeof__(_base) *_adr = &_base; 			\
-	_BITCLR_GPR(_lock, _adr, _offset);				\
-})
-
-#define _BITCLR_IMM(_lock, _base, _imm6)				\
-({									\
-	volatile unsigned char _ret;					\
-									\
-	__asm__ volatile						\
-	(								\
-		"mov	x2, #1" 		"\n\t"			\
-		"lsl	x2, x2, %[imm6]"	"\n\t"			\
-		"ldr	x3, %[base]"		"\n\t"			\
-		"ldr	x1, [x3]"		"\n\t"			\
-		"tst	x1, x2" 		"\n\t"			\
-		"cset	w0, ne" 		"\n\t"			\
-		"bic	x1, x1, x2"		"\n\t"			\
-		"str	x1, [x3]"		"\n\t"			\
-		"strb	w0, %[ret]"					\
-		: [ret] "=m" (_ret)					\
-		: [base] "m" (_base),					\
-		  [imm6] "i" (_imm6)					\
-		: "cc", "memory", "%w0", "%x1", "%x2", "%x3"		\
-	);								\
-	_ret;								\
-})
-
-#define _BITCLR_ADR_IMM(_lock, _base, _imm6)				\
-({									\
-	const __typeof__(_base) *_adr = &_base; 			\
-	_BITCLR_IMM(_lock, _adr, _imm6);				\
-})
-
-#endif /* LEGACY */
-
-#define _BITBTC_GPR(_lock,_base, _offset)				\
-({									\
-/*	__asm__ volatile						\
-	(								\
-	_lock	"btcq	%%rdx,	%[base]"				\
-		: [base] "=m" (_base)					\
-		: "d" (_offset) 					\
-		: "cc", "memory"					\
-	);							*/	\
-	const __typeof__(_base) _shl = 1LLU << _offset; 		\
-	if ((_base & _shl) != 0) { 					\
-		_base ^= _shl;						\
-	}								\
-})
-
-#define _BITBTC_IMM(_lock, _base, _imm8)				\
-({									\
-/*	__asm__ volatile						\
-	(								\
-	_lock	"btcq	%[imm8], %[base]"				\
-		: [base] "=m" (_base)					\
-		: [imm8] "i" (_imm8)					\
-		: "cc", "memory"					\
-	);							*/	\
-	const __typeof__(_base) _shl = 1LLU << _imm8;			\
-	if ((_base & _shl) != 0) {					\
-		_base ^= _shl;						\
-	}								\
-})
 
 #define _BITVAL_GPR(_lock, _base, _offset)				\
 ({									\
-/*	volatile unsigned char _ret = 0;				\
-									\
-	__asm__ volatile						\
-	(								\
-		"tst	%x[base], %x[offset]"	"\n\t"			\
-		"cset	%x[ret], eq"					\
-		: [ret] "+r" (_ret)					\
-		: [base] "r" (_base),					\
-		  [offset] "r" (_offset)				\
-		: "cc", "memory"					\
-	);								\
-	_ret;							*/	\
 	const unsigned char _ret = (_base & (1LLU << _offset)) != 0;	\
 	_ret;								\
 })
 
 #define _BITVAL_IMM(_lock, _base, _imm6)				\
 ({									\
-/*	volatile unsigned char _ret = 0;				\
-									\
-	__asm__ volatile						\
-	(								\
-		"mov	x2, #1" 		"\n\t"			\
-		"lsl	x2, x2, %[imm6]"	"\n\t"			\
-		"tst	%x[base], x2"		"\n\t"			\
-		"cset	%x[ret], eq"					\
-		: [ret] "+r" (_ret)					\
-		: [base] "r" (_base),					\
-		  [imm6] "i" (_imm6)					\
-		: "cc", "memory", "%x2" 				\
-	);								\
-	_ret;							*/	\
 	const unsigned char _ret = (_base & (1LLU << _imm6)) != 0;	\
 	_ret;								\
 })
 
 #define _BIT_TEST_GPR(_base, _offset)					\
 ({									\
-/*	volatile unsigned char _ret = 0;				\
-									\
-	__asm__ volatile						\
-	(								\
-		"mov	x2, %x[offset]" 	"\n\t"			\
-		"mov	x3, #1" 		"\n\t"			\
-		"lsl	x3, x3, x2"		"\n\t"			\
-		"tst	%x[base], x3"		"\n\t"			\
-		"cset	%x[ret], ne"					\
-		: [ret] "+r" (_ret)					\
-		: [base] "r" (_base),					\
-		  [offset] "r" (_offset)				\
-		: "cc", "memory", "%x2", "%x3"				\
-	);								\
-	_ret;							*/	\
 	const unsigned char _ret = (_base & (1LLU << _offset)) != 0;	\
 	_ret;								\
 })
 
 #define _BIT_TEST_IMM(_base, _imm6)					\
 ({									\
-/*	volatile unsigned char _ret = 0;				\
+	const unsigned char _ret = (_base & (1LLU << _imm6)) != 0;	\
+	_ret;								\
+})
+
+#else /* LEGACY */
+
+#define _BITSET_GPR(_lock, _base, _offset)				\
+({									\
+	const __typeof__(_base) *_adr = &_base; 			\
+	volatile unsigned char _ret;					\
+									\
+	__asm__ volatile						\
+	(								\
+		"mov	x2, #1" 		"\n\t"			\
+		"lsl	x2, x2, %[offset]"	"\n\t"			\
+		"ldr	x3, %[base]"		"\n\t"			\
+		"ldr	x1, [x3]"		"\n\t"			\
+		"tst	x1, x2" 		"\n\t"			\
+		"cset	w0, ne" 		"\n\t"			\
+		"orr	x1, x1, x2"		"\n\t"			\
+		"str	x1, [x3]"		"\n\t"			\
+		"strb	w0, %[ret]"					\
+		: [ret] "=m" (_ret)					\
+		: [base] "m" (_adr),					\
+		  [offset] "r" (_offset)				\
+		: "cc", "memory", "%w0", "%x1", "%x2", "%x3"		\
+	);								\
+	_ret;								\
+})
+
+#define _BITSET_IMM(_lock, _base, _imm6)				\
+({									\
+	const __typeof__(_base) *_adr = &_base; 			\
+	volatile unsigned char _ret;					\
 									\
 	__asm__ volatile						\
 	(								\
 		"mov	x2, #1" 		"\n\t"			\
 		"lsl	x2, x2, %[imm6]"	"\n\t"			\
-		"tst	%x[base], x2"		"\n\t"			\
-		"cset	%x[ret], ne"					\
-		: [ret] "+r" (_ret)					\
-		: [base] "r" (_base),					\
+		"ldr	x3, %[base]"		"\n\t"			\
+		"ldr	x1, [x3]"		"\n\t"			\
+		"tst	x1, x2" 		"\n\t"			\
+		"cset	w0, ne" 		"\n\t"			\
+		"orr	x1, x1, x2"		"\n\t"			\
+		"str	x1, [x3]"		"\n\t"			\
+		"strb	w0, %[ret]"					\
+		: [ret] "=m" (_ret)					\
+		: [base] "m" (_adr),					\
 		  [imm6] "i" (_imm6)					\
-		: "cc", "memory", "%x2" 				\
+		: "cc", "memory", "%w0", "%x1", "%x2", "%x3"		\
 	);								\
-	_ret;							*/	\
-	const unsigned char _ret = (_base & (1LLU << _imm6)) != 0;	\
 	_ret;								\
 })
+
+#define _BITCLR_GPR(_lock, _base, _offset)				\
+({									\
+	const __typeof__(_base) *_adr = &_base; 			\
+	volatile unsigned char _ret;					\
+									\
+	__asm__ volatile						\
+	(								\
+		"mov	x2, #1" 		"\n\t"			\
+		"lsl	x2, x2, %[offset]"	"\n\t"			\
+		"ldr	x3, %[base]"		"\n\t"			\
+		"ldr	x1, [x3]"		"\n\t"			\
+		"tst	x1, x2" 		"\n\t"			\
+		"cset	w0, ne" 		"\n\t"			\
+		"bic	x1, x1, x2"		"\n\t"			\
+		"str	x1, [x3]"		"\n\t"			\
+		"strb	w0, %[ret]"					\
+		: [ret] "=m" (_ret)					\
+		: [base] "m" (_adr),					\
+		  [offset] "r" (_offset)				\
+		: "cc", "memory", "%w0", "%x1", "%x2", "%x3"		\
+	);								\
+	_ret;								\
+})
+
+#define _BITCLR_IMM(_lock, _base, _imm6)				\
+({									\
+	const __typeof__(_base) *_adr = &_base; 			\
+	volatile unsigned char _ret;					\
+									\
+	__asm__ volatile						\
+	(								\
+		"mov	x2, #1" 		"\n\t"			\
+		"lsl	x2, x2, %[imm6]"	"\n\t"			\
+		"ldr	x3, %[base]"		"\n\t"			\
+		"ldr	x1, [x3]"		"\n\t"			\
+		"tst	x1, x2" 		"\n\t"			\
+		"cset	w0, ne" 		"\n\t"			\
+		"bic	x1, x1, x2"		"\n\t"			\
+		"str	x1, [x3]"		"\n\t"			\
+		"strb	w0, %[ret]"					\
+		: [ret] "=m" (_ret)					\
+		: [base] "m" (_adr),					\
+		  [imm6] "i" (_imm6)					\
+		: "cc", "memory", "%w0", "%x1", "%x2", "%x3"		\
+	);								\
+	_ret;								\
+})
+
+#define _BITVAL_GPR(_lock, _base, _offset)				\
+({									\
+	const __typeof__(_base) *_adr = &_base; 			\
+	volatile unsigned char _ret;					\
+									\
+	__asm__ volatile						\
+	(								\
+		"mov	x2, #1" 		"\n\t"			\
+		"lsl	x2, x2, %[offset]"	"\n\t"			\
+		"ldr	x3, %[base]"		"\n\t"			\
+		"ldr	x1, [x3]"		"\n\t"			\
+		"tst	x1, x2" 		"\n\t"			\
+		"cset	w0, ne" 		"\n\t"			\
+		"strb	w0, %[ret]"					\
+		: [ret] "=m" (_ret)					\
+		: [base] "m" (_adr),					\
+		  [offset] "r" (_offset)				\
+		: "cc", "memory", "%w0", "%x1", "%x2", "%x3"		\
+	);								\
+	_ret;								\
+})
+
+#define _BITVAL_IMM(_lock, _base, _imm6)				\
+({									\
+	const __typeof__(_base) *_adr = &_base; 			\
+	volatile unsigned char _ret;					\
+									\
+	__asm__ volatile						\
+	(								\
+		"mov	x2, #1" 		"\n\t"			\
+		"lsl	x2, x2, %[imm6]"	"\n\t"			\
+		"ldr	x3, %[base]"		"\n\t"			\
+		"ldr	x1, [x3]"		"\n\t"			\
+		"tst	x1, x2" 		"\n\t"			\
+		"cset	w0, ne" 		"\n\t"			\
+		"strb	w0, %[ret]"					\
+		: [ret] "=m" (_ret)					\
+		: [base] "m" (_adr),					\
+		  [imm6] "i" (_imm6)					\
+		: "cc", "memory", "%w0", "%x1", "%x2", "%x3"		\
+	);								\
+	_ret;								\
+})
+
+#define _BIT_TEST_GPR(_base, _offset)					\
+({									\
+	const __typeof__(_base) *_adr = &_base; 			\
+	volatile unsigned char _ret;					\
+									\
+	__asm__ volatile						\
+	(								\
+		"mov	x2, #1" 		"\n\t"			\
+		"lsl	x2, x2, %[offset]"	"\n\t"			\
+		"ldr	x3, %[base]"		"\n\t"			\
+		"ldr	x1, [x3]"		"\n\t"			\
+		"tst	x1, x2" 		"\n\t"			\
+		"cset	w0, ne" 		"\n\t"			\
+		"strb	w0, %[ret]"					\
+		: [ret] "=m" (_ret)					\
+		: [base] "m" (_adr),					\
+		  [offset] "r" (_offset)				\
+		: "cc", "memory", "%w0", "%x1", "%x2", "%x3"		\
+	);								\
+	_ret;								\
+})
+
+#define _BIT_TEST_IMM(_base, _imm6)					\
+({									\
+	const __typeof__(_base) *_adr = &_base; 			\
+	volatile unsigned char _ret;					\
+									\
+	__asm__ volatile						\
+	(								\
+		"mov	x2, #1" 		"\n\t"			\
+		"lsl	x2, x2, %[imm6]"	"\n\t"			\
+		"ldr	x3, %[base]"		"\n\t"			\
+		"ldr	x1, [x3]"		"\n\t"			\
+		"tst	x1, x2" 		"\n\t"			\
+		"cset	w0, ne" 		"\n\t"			\
+		"strb	w0, %[ret]"					\
+		: [ret] "=m" (_ret)					\
+		: [base] "m" (_adr),					\
+		  [imm6] "i" (_imm6)					\
+		: "cc", "memory", "%w0", "%x1", "%x2", "%x3"		\
+	);								\
+	_ret;								\
+})
+
+#endif /* LEGACY */
 
 #define _BITWISEAND(_lock, _opl, _opr)					\
 ({									\
@@ -480,34 +459,20 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	:	_BITSET_GPR(_lock, _base, _offset)			\
 )
 
-#define BITSET_ADR(_lock, _base, _offset)				\
-(									\
-	__builtin_constant_p(_offset) ? 				\
-		_BITSET_ADR_IMM(_lock, _base, _offset)			\
-	:	_BITSET_ADR_GPR(_lock, _base, _offset)			\
-)
-
 #define BITCLR(_lock, _base, _offset)					\
 (									\
 	__builtin_constant_p(_offset) ? 				\
 		_BITCLR_IMM(_lock, _base, _offset)			\
 	:	_BITCLR_GPR(_lock, _base, _offset)			\
 )
-
-#define BITCLR_ADR(_lock, _base, _offset)				\
-(									\
-	__builtin_constant_p(_offset) ? 				\
-		_BITCLR_ADR_IMM(_lock, _base, _offset)			\
-	:	_BITCLR_ADR_GPR(_lock, _base, _offset)			\
-)
-
+/*TODO(CleanUp)
 #define BITBTC(_lock, _base, _offset)					\
 (									\
 	__builtin_constant_p(_offset) ? 				\
 		_BITBTC_IMM(_lock, _base, _offset)			\
 	:	_BITBTC_GPR(_lock, _base, _offset)			\
 )
-
+*/
 #define BITVAL_2xPARAM(_base, _offset)					\
 (									\
 	__builtin_constant_p(_offset) ? 				\
@@ -547,27 +512,27 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 #define BITWISEAND(_lock, _opl, _opr)	_BITWISEAND(_lock, _opl, _opr)
 #define BITWISEOR(_lock, _opl, _opr)	_BITWISEOR(_lock, _opl, _opr)
 #define BITWISEXOR(_lock, _opl, _opr)	_BITWISEXOR(_lock, _opl, _opr)
-
+/*TODO(CleanUp)
 #define _BITADD_GPR(_lock, _dest, _src) 				\
 ({									\
-/*TODO	__asm__ volatile						\
+	__asm__ volatile						\
 	(								\
 	_lock	"addq	%%rax, %[dest]" 				\
 		: [dest] "=m" (_dest)					\
 		: "a" (_src)						\
 		: "cc", "memory"					\
-	);							*/	\
+	);								\
 })
 
 #define _BITADD_IMM(_lock, _dest, _imm32)				\
 ({									\
-/*TODO	__asm__ volatile						\
+	__asm__ volatile						\
 	(								\
 	_lock	"addq	%[imm32], %[dest]"				\
 		: [dest] "=m" (_dest)					\
 		: [imm32] "i" (_imm32)					\
 		: "cc", "memory"					\
-	);							*/	\
+	);								\
 })
 
 #define BITADD(_lock, _dest, _src)					\
@@ -576,7 +541,7 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		_BITADD_IMM(_lock , _dest , _src)			\
 	:	_BITADD_GPR(_lock , _dest , _src)			\
 )
-
+*/
 #define BITSTOR(_lock, _dest, _src)					\
 ({									\
 	__asm__ volatile						\

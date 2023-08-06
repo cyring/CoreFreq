@@ -21427,14 +21427,14 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	case COREFREQ_TOGGLE_OFF:
 		Controller_Stop(1);
 		For_All_CPU_Compute_Clock();
-		BITCLR_ADR(LOCKLESS, AutoClock, 1);
+		BITCLR(LOCKLESS, AutoClock, 1);
 		PUBLIC(RO(Proc))->Registration.AutoClock = AutoClock;
 		Controller_Start(1);
 		rc = RC_SUCCESS;
 		break;
 	case COREFREQ_TOGGLE_ON:
 		Controller_Stop(1);
-		BITSET_ADR(LOCKLESS, AutoClock, 1);
+		BITSET(LOCKLESS, AutoClock, 1);
 		PUBLIC(RO(Proc))->Registration.AutoClock = AutoClock;
 		Controller_Start(1);
 		rc = RC_SUCCESS;
