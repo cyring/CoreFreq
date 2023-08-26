@@ -659,7 +659,7 @@ REASON_CODE SystemRegisters(	Window *win,
 	[ 8] =	{RSC(SYS_REG_HDR_CR4_PKS).CODE(),RSC(SYS_REG_CR4_PKS).CODE()},
 	[ 9] ={RSC(SYS_REG_HDR_CR4_UINTR).CODE(),RSC(SYS_REG_CR4_UINTR).CODE()},
 	[10] =	{RSC(SYS_REG_HDR_CR4_LAM).CODE(),RSC(SYS_REG_CR4_LAM).CODE()},
-	[11] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[11] =	{RSC(SYS_REG_HDR_CR4_FRED).CODE(),RSC(SYS_REG_CR4_FRED).CODE()},
 	[12] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
 	[13] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
 	[14] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
@@ -679,7 +679,7 @@ REASON_CODE SystemRegisters(	Window *win,
 	[ 8] =	{DO_CR4 , 1	, CR4_PKS	, 1	},
 	[ 9] =	{DO_CR4 , 1	, CR4_UINTR	, 1	},
 	[10] =	{DO_CR4 , 1	, CR4_LAM_SUP	, 1	},
-	[11] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[11] =	{DO_CR4 , 1	, CR4_FRED	, 1	},
 	[12] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
 	[13] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
 	[14] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
@@ -2499,6 +2499,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FRED == 1,
+		attr_Feat,
+		2, "%s%.*sFRED   [%7s]", RSC(FEATURES_FRED).CODE(),
+		width - 19 - RSZ(FEATURES_FRED),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
 		RO(Shm)->Proc.Features.Power.EAX.HWFB_Cap == 1,
 		attr_Feat,
 		2, "%s%.*sHFI   [%7s]", RSC(FEATURES_HFI).CODE(),
@@ -2583,6 +2591,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		attr_Feat,
 		2, "%s%.*sLAM   [%7s]", RSC(FEATURES_LAM).CODE(),
 		width - 18 - RSZ(FEATURES_LAM),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.LKGS == 1,
+		attr_Feat,
+		2, "%s%.*sLKGS   [%7s]", RSC(FEATURES_LKGS).CODE(),
+		width - 19 - RSZ(FEATURES_LKGS),
 		NULL
 	},
 	{
@@ -3387,6 +3403,30 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		attr_Feat,
 		2, "%s%.*sAESKLE   [%7s]", RSC(SECURITY_AESKLE).CODE(),
 		width - 21 - RSZ(SECURITY_AESKLE),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Features.ExtFeature.ECX.CET_SS == 1,
+		attr_Feat,
+		2, "%s%.*sCET-SS   [%7s]", RSC(SECURITY_CET_SS).CODE(),
+		width - 21 - RSZ(SECURITY_CET_SS),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Features.ExtFeature.EDX.CET_IBT == 1,
+		attr_Feat,
+		2, "%s%.*sCET-IBT   [%7s]", RSC(SECURITY_CET_IBT).CODE(),
+		width - 22 - RSZ(SECURITY_CET_IBT),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.CET_SSS == 1,
+		attr_Feat,
+		2, "%s%.*sCET-SSS   [%7s]", RSC(SECURITY_CET_SSS).CODE(),
+		width - 22 - RSZ(SECURITY_CET_SSS),
 		NULL
 	},
 	{

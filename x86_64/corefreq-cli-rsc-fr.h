@@ -442,6 +442,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_SYS_REG_CR4_PKS_CODE_FR	RSC_SYS_REG_CR4_PKS_CODE_EN
 #define RSC_SYS_REG_CR4_UINTR_CODE_FR	RSC_SYS_REG_CR4_UINTR_CODE_EN
 #define RSC_SYS_REG_CR4_LAM_CODE_FR	RSC_SYS_REG_CR4_LAM_CODE_EN
+#define RSC_SYS_REG_CR4_FRED_CODE_FR	RSC_SYS_REG_CR4_FRED_CODE_EN
 #define RSC_SYS_REGS_CR8_CODE_FR	RSC_SYS_REGS_CR8_CODE_EN
 #define RSC_SYS_REG_CR8_TPL_CODE_FR	RSC_SYS_REG_CR8_TPL_CODE_EN
 #define RSC_SYS_REGS_EFCR_CODE_FR	RSC_SYS_REGS_EFCR_CODE_EN
@@ -582,6 +583,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_FZRM_CODE_FR	"Fast Zero-length REP MOVSB"
 #define RSC_FEATURES_ERMS_CODE_FR	"Fast-String Operation"
 #define RSC_FEATURES_FMA_CODE_FR	"Fused Multiply Add"
+#define RSC_FEATURES_FRED_CODE_FR	"Flexible Return and Event Delivery"
 #define RSC_FEATURES_HFI_CODE_FR	"Hardware Feedback Interface"
 #define RSC_FEATURES_HLE_CODE_FR	"Hardware Lock Elision"
 #define RSC_FEATURES_HwP_CODE_FR	"Hardware P-state control"
@@ -593,6 +595,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_LM_CODE_FR 	"Long Mode 64 bits"
 #define RSC_FEATURES_LASS_CODE_FR	"Linear Address Space Separation"
 #define RSC_FEATURES_LAM_CODE_FR	"Linear Address Masking"
+#define RSC_FEATURES_LKGS_CODE_FR	"Load Kernel GS segment register"
 #define RSC_FEATURES_LWP_CODE_FR	"LightWeight Profiling"
 #define RSC_FEATURES_MBE_CODE_FR	"Memory Bandwidth Enforcement"
 #define RSC_FEATURES_MCA_CODE_FR	"Machine-Check Architecture"
@@ -1507,6 +1510,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_SECURITY_CPUID_KL_CODE_FR	RSC_SECURITY_CPUID_KL_CODE_EN
 #define RSC_SECURITY_AESKLE_CODE_FR	RSC_SECURITY_AESKLE_CODE_EN
+#define RSC_SECURITY_CET_SS_CODE_FR	RSC_SECURITY_CET_SS_CODE_EN
+#define RSC_SECURITY_CET_IBT_CODE_FR	RSC_SECURITY_CET_IBT_CODE_EN
+#define RSC_SECURITY_CET_SSS_CODE_FR	RSC_SECURITY_CET_SSS_CODE_EN
 #define RSC_SECURITY_WIDE_KL_CODE_FR	RSC_SECURITY_WIDE_KL_CODE_EN
 #define RSC_SECURITY_SGX1_CODE_FR	RSC_SECURITY_SGX1_CODE_EN
 #define RSC_SECURITY_SGX2_CODE_FR	RSC_SECURITY_SGX2_CODE_EN

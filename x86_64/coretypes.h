@@ -218,6 +218,7 @@ enum SYS_REG {
 	CR4_PKS 	= 24,
 	CR4_UINTR	= 25,
 	CR4_LAM_SUP	= 28,
+	CR4_FRED	= 32,
 
 	CR8_TPL 	= 0,	/* [3:0]				*/
 
@@ -1399,7 +1400,9 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf 1		*/
 		FZRM		: 11-10, /* Fast Zero-length REP MOVSB	*/
 		FSRS		: 12-11, /* Fast Short REP STOSB:Store String */
 		FSRC		: 13-12, /* Fast Short REP CMPSB, REP SCASB */
-		Reserved3	: 19-13,
+		Reserved3	: 17-13,
+		FRED		: 18-17, /* Flexible Return and Event Delivery*/
+		LKGS		: 19-18, /* Load Kernel GS segment register */
 		WRMSRNS 	: 20-19, /* Sierra Forest, Grand Ridge	*/
 		Reserved4	: 21-20,
 		AMX_FP16	: 22-21, /* Granite Rapids		*/

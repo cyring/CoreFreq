@@ -943,6 +943,7 @@
 
 #define RSC_SYS_REG_CR4_UINTR_CODE_EN	" User Interrupts Enable "
 #define RSC_SYS_REG_CR4_LAM_CODE_EN	" LAM_SUP for Supervisor pointers "
+#define RSC_SYS_REG_CR4_FRED_CODE_EN	" Flexible Return and Event Delivery "
 
 #define RSC_SYS_REGS_CR8_CODE_EN	" Control Register 8 "
 #define RSC_SYS_REG_CR8_TPL_CODE_EN	" Task Priority Level "
@@ -1108,6 +1109,7 @@
 #define RSC_FEATURES_FZRM_CODE_EN	"Fast Zero-length REP MOVSB"
 #define RSC_FEATURES_ERMS_CODE_EN	"Fast-String Operation"
 #define RSC_FEATURES_FMA_CODE_EN	"Fused Multiply Add"
+#define RSC_FEATURES_FRED_CODE_EN	"Flexible Return and Event Delivery"
 #define RSC_FEATURES_HFI_CODE_EN	"Hardware Feedback Interface"
 #define RSC_FEATURES_HLE_CODE_EN	"Hardware Lock Elision"
 #define RSC_FEATURES_HwP_CODE_EN	"Hardware P-state control"
@@ -1119,6 +1121,7 @@
 #define RSC_FEATURES_LM_CODE_EN 	"Long Mode 64 bits"
 #define RSC_FEATURES_LASS_CODE_EN	"Linear Address Space Separation"
 #define RSC_FEATURES_LAM_CODE_EN	"Linear Address Masking"
+#define RSC_FEATURES_LKGS_CODE_EN	"Load Kernel GS segment register"
 #define RSC_FEATURES_LWP_CODE_EN	"LightWeight Profiling"
 #define RSC_FEATURES_MBE_CODE_EN	"Memory Bandwidth Enforcement"
 #define RSC_FEATURES_MCA_CODE_EN	"Machine-Check Architecture"
@@ -2041,6 +2044,9 @@
 
 #define RSC_SECURITY_CPUID_KL_CODE_EN	"CPUID Key Locker"
 #define RSC_SECURITY_AESKLE_CODE_EN	"AES Key Locker instructions"
+#define RSC_SECURITY_CET_SS_CODE_EN	"CET Shadow Stack features"
+#define RSC_SECURITY_CET_IBT_CODE_EN	"CET Indirect Branch Tracking"
+#define RSC_SECURITY_CET_SSS_CODE_EN	"CET Supervisor Shadow Stack"
 #define RSC_SECURITY_WIDE_KL_CODE_EN	"AES Wide Key Locker instructions"
 #define RSC_SECURITY_SGX1_CODE_EN	"Software Guard SGX1 Extensions"
 #define RSC_SECURITY_SGX2_CODE_EN	"Software Guard SGX2 Extensions"
@@ -2565,6 +2571,7 @@
 #define RSC_SYS_REG_HDR_CR4_PKS_CODE	" PKS"
 #define RSC_SYS_REG_HDR_CR4_UINTR_CODE	" U-I"
 #define RSC_SYS_REG_HDR_CR4_LAM_CODE	" LAM"
+#define RSC_SYS_REG_HDR_CR4_FRED_CODE	" FRD"
 #define RSC_SYS_REG_HDR_CR8_CODE	"CR8:"
 #define RSC_SYS_REG_HDR_CR8_TPL_CODE	" TPL"
 #define RSC_SYS_REG_HDR_EFCR_CODE	"EFCR"
