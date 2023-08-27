@@ -137,7 +137,15 @@ __asm__ volatile							\
 	: "%rax", "%rcx", "%rdx",					\
 	  "%" #_reg0"", "%" #_reg1"",					\
 	  "cc", "memory"						\
-);								*/
+);								*/	\
+__asm__ volatile							\
+(									\
+	_tsc_inst(_reg0)						\
+	: "=m" (mem_tsc), "=m" (_mem1)					\
+	:								\
+	: "%" #_reg0"", "%" #_reg1"",					\
+	  "cc", "memory"						\
+);
 
 
 #define ASM_COUNTERx2(	_reg0, _reg1, _reg2,				\
@@ -158,7 +166,15 @@ __asm__ volatile							\
 	: "%rax", "%rcx", "%rdx",					\
 	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"",			\
 	  "cc", "memory"						\
-);								*/
+);								*/	\
+__asm__ volatile							\
+(									\
+	_tsc_inst(_reg0)						\
+	: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2)			\
+	:								\
+	: "%" #_reg0"", "%" #_reg1"", "%" #_reg2"",			\
+	  "cc", "memory"						\
+);
 
 
 #define ASM_COUNTERx3(	_reg0, _reg1, _reg2, _reg3,			\
@@ -421,16 +437,16 @@ __asm__ volatile							\
 
 
 #define RDTSC_COUNTERx1(mem_tsc, ...) \
-ASM_COUNTERx1(r10, r11, ASM_RDTSC, mem_tsc, __VA_ARGS__)
+ASM_COUNTERx1(x0, x1, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define RDTSCP_COUNTERx1(mem_tsc, ...) \
-ASM_COUNTERx1(r10, r11, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
+ASM_COUNTERx1(x0, x1, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define RDTSC_COUNTERx2(mem_tsc, ...) \
-ASM_COUNTERx2(r10, r11, r12, ASM_RDTSC, mem_tsc, __VA_ARGS__)
+ASM_COUNTERx2(x0, x1, x2, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define RDTSCP_COUNTERx2(mem_tsc, ...) \
-ASM_COUNTERx2(r10, r11, r12, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
+ASM_COUNTERx2(x0, x1, x2, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define RDTSC_COUNTERx3(mem_tsc, ...) \
 ASM_COUNTERx3(r10, r11, r12, r13, ASM_RDTSC, mem_tsc, __VA_ARGS__)
@@ -1733,6 +1749,10 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 #define     Query_AMD_F19h_74h_PerSocket Query_AMD_F19h_61h_PerCluster
 #define     InitTimer_AMD_Zen4_PHX InitTimer_AMD_Zen4_RPL
 */
+static void Query_GenericMachine(unsigned int cpu) ;
+static void Start_GenericMachine(void *arg) ;
+static void Stop_GenericMachine(void *arg) ;
+static void InitTimer_GenericMachine(unsigned int cpu) ;
 /*	[Void]								*/
 #define _Void_Signature {.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
 /*TODO(CleanUp)
@@ -8460,12 +8480,12 @@ static IDLE_STATE Zen_IdleState[] = {
 static ARCH Arch[ARCHITECTURES] = {
 [GenuineArch] = {							/*  0*/
 	.Signature = _Void_Signature,
-	.Query = NULL,
+	.Query = Query_GenericMachine,
 	.Update = NULL,
-	.Start = NULL,
-	.Stop = NULL,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
 	.Exit = NULL,
-	.Timer = NULL,
+	.Timer = InitTimer_GenericMachine,
 	.BaseClock = NULL,
 	.ClockMod = NULL,
 	.TurboClock = NULL,

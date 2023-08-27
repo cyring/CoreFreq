@@ -222,6 +222,24 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	_ret;								\
 })
 
+#define _BITWISEAND(_lock, _opl, _opr)					\
+({									\
+	const Bit64 _dest __attribute__ ((aligned (8))) = _opl & _opr;	\
+	_dest;								\
+})
+
+#define _BITWISEOR(_lock, _opl, _opr)					\
+({									\
+	const Bit64 _dest __attribute__ ((aligned (8))) = _opl | _opr;	\
+	_dest;								\
+})
+
+#define _BITWISEXOR(_lock, _opl, _opr)					\
+({									\
+	const Bit64 _dest __attribute__ ((aligned (8))) = _opl ^ _opr;	\
+	_dest;								\
+})
+
 #else /* LEGACY */
 
 #define _BITSET_GPR(_lock, _base, _offset)				\
@@ -408,18 +426,18 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	_ret;								\
 })
 
-#endif /* LEGACY */
-
 #define _BITWISEAND(_lock, _opl, _opr)					\
 ({									\
 	volatile Bit64 _dest __attribute__ ((aligned (8))) = _opl;	\
 									\
 	__asm__ volatile						\
 	(								\
-		"and	%[dest], %[dest], %[opr]"			\
-		: [dest] "=r" (_dest)					\
+		"ldr	x0, %[dest]"		"\n\t"			\
+		"and	x0, x0, %[opr]" 	"\n\t"			\
+		"str	x0, %[dest]"					\
+		: [dest] "=m" (_dest)					\
 		: [opr]  "Jr" (_opr)					\
-		: "cc", "memory"					\
+		: "cc", "memory", "%x0" 				\
 	);								\
 	_dest;								\
 })
@@ -430,10 +448,12 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 									\
 	__asm__ volatile						\
 	(								\
-		"orr	%[dest], %[dest], %[opr]"			\
-		: [dest] "=r" (_dest)					\
+		"ldr	x0, %[dest]"		"\n\t"			\
+		"orr	x0, x0, %[opr]" 	"\n\t"			\
+		"str	x0, %[dest]"					\
+		: [dest] "=m" (_dest)					\
 		: [opr]  "Jr" (_opr)					\
-		: "cc", "memory"					\
+		: "cc", "memory", "%x0" 				\
 	);								\
 	_dest;								\
 })
@@ -444,13 +464,17 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 									\
 	__asm__ volatile						\
 	(								\
-		"eor	%[dest], %[dest], %[opr]"			\
-		: [dest] "=r" (_dest)					\
+		"ldr	x0, %[dest]"		"\n\t"			\
+		"eor	x0, x0, %[opr]" 	"\n\t"			\
+		"str	x0, %[dest]"					\
+		: [dest] "=m" (_dest)					\
 		: [opr]  "Jr" (_opr)					\
-		: "cc", "memory"					\
+		: "cc", "memory", "%x0" 				\
 	);								\
 	_dest;								\
 })
+
+#endif /* LEGACY */
 
 #define BITSET(_lock, _base, _offset)					\
 (									\

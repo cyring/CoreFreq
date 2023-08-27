@@ -122,15 +122,15 @@ module_param(ServiceProcessor, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ServiceProcessor, "Select a CPU to run services with");
 
 static SERVICE_PROC DefaultSMT = RESET_SERVICE;
-
+/*
 static unsigned short RDPMC_Enable = 0;
 module_param(RDPMC_Enable, ushort, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(RDPMC_Enable, "Enable RDPMC bit in CR4 register");
-
+*/
 static unsigned short NMI_Disable = 1;
 module_param(NMI_Disable, ushort, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(NMI_Disable, "Disable the NMI Handler");
-
+/*
 static int Override_SubCstate_Depth = 0;
 static unsigned short Override_SubCstate[CPUIDLE_STATE_MAX] = {
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -194,7 +194,7 @@ MODULE_PARM_DESC(Custom_TDC_Offset, "TDC Limit Offset (amp)");
 static signed short Activate_TDC_Limit = -1;
 module_param(Activate_TDC_Limit, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Activate_TDC_Limit, "Activate TDC Limiting");
-
+*/
 static signed short L1_HW_PREFETCH_Disable = -1;
 module_param(L1_HW_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L1_HW_PREFETCH_Disable, "Disable L1 HW Prefetcher");
@@ -214,7 +214,7 @@ MODULE_PARM_DESC(L2_HW_PREFETCH_Disable, "Disable L2 HW Prefetcher");
 static signed short L2_HW_CL_PREFETCH_Disable = -1;
 module_param(L2_HW_CL_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L2_HW_CL_PREFETCH_Disable, "Disable L2 HW CL Prefetcher");
-
+/*
 static signed short SpeedStep_Enable = -1;
 module_param(SpeedStep_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(SpeedStep_Enable, "Enable SpeedStep");
@@ -222,13 +222,13 @@ MODULE_PARM_DESC(SpeedStep_Enable, "Enable SpeedStep");
 static signed short C1E_Enable = -1;
 module_param(C1E_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(C1E_Enable, "Enable SpeedStep C1E");
-
+*/
 static unsigned int TurboBoost_Enable_Count = 1;
 static signed short TurboBoost_Enable[2] = {-1, -1};
 module_param_array(TurboBoost_Enable, short, &TurboBoost_Enable_Count,	\
 					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(TurboBoost_Enable, "Enable Turbo Boost");
-
+/*
 static signed short C3A_Enable = -1;
 module_param(C3A_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(C3A_Enable, "Enable C3 Auto Demotion");
@@ -272,7 +272,7 @@ MODULE_PARM_DESC(PowerPolicy, "Power Policy Preference [0-15]");
 static signed short Turbo_Activation_Ratio = -1;
 module_param(Turbo_Activation_Ratio, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Turbo_Activation_Ratio, "Turbo Activation Ratio");
-
+*/
 static signed int PState_FID = -1;
 module_param(PState_FID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PState_FID, "P-State Frequency Id");
@@ -327,7 +327,7 @@ static signed int Ratio_HWP[1 + (BOOST(HWP_TGT) - BOOST(HWP_MIN))] = {
 module_param_array(Ratio_HWP, int, &Ratio_HWP_Count,	\
 				S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Ratio_HWP, "Hardware-Controlled Performance ratios");
-
+/*
 static signed short HDC_Enable = -1;
 module_param(HDC_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(HDC_Enable, "Hardware Duty Cycling");
@@ -339,11 +339,11 @@ MODULE_PARM_DESC(EEO_Disable, "Disable Energy Efficiency Optimization");
 static signed short R2H_Disable = -1;
 module_param(R2H_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(R2H_Disable, "Disable Race to Halt");
-
+*/
 static unsigned long long Clear_Events = 0;
 module_param(Clear_Events, ullong, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Clear_Events, "Clear Thermal and Power Events");
-
+/*
 static unsigned int ThermalPoint_Count = 0;
 static signed short ThermalPoint[THM_POINTS_DIM] = {
 			-1, -1, -1, -1, -1
@@ -363,7 +363,7 @@ MODULE_PARM_DESC(PkgThermalPoint, "Package Thermal Point");
 static signed short ThermalOffset = 0;
 module_param(ThermalOffset, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ThermalOffset, "Thermal Offset");
-
+*/
 static int ThermalScope = -1;
 module_param(ThermalScope, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ThermalScope, "[0:None; 1:SMT; 2:Core; 3:Package]");
@@ -395,7 +395,7 @@ MODULE_PARM_DESC(Register_ClockSource, "Register Clock Source driver");
 static signed short Idle_Route = -1;
 module_param(Idle_Route, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Idle_Route, "[0:Default; 1:I/O; 2:HALT; 3:MWAIT]");
-
+/*
 static signed short Mech_IBRS = -1;
 module_param(Mech_IBRS, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Mech_IBRS, "Mitigation Mechanism IBRS");
@@ -431,7 +431,7 @@ MODULE_PARM_DESC(WDT_Enable, "Watchdog Hardware Timer");
 static signed short HSMP_Attempt = -1;
 module_param(HSMP_Attempt, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(HSMP_Attempt, "Attempt the HSMP interface");
-
+*/
 static struct {
 	signed int		Major;
 	struct cdev		*kcdev;
@@ -920,7 +920,7 @@ static void Query_Features(void *pArg)
 		  "=r" (iArg->Features->MWait.EDX)
 		:
 		: "%rax", "%rbx", "%rcx", "%rdx"
-	);							*/
+	);
       switch (Override_SubCstate_Depth) {
       case 8:
 	iArg->Features->MWait.EDX.SubCstate_MWAIT7 = Override_SubCstate[7];
@@ -950,14 +950,14 @@ static void Query_Features(void *pArg)
 
 	CoreFreqK.SubCstate[0] = iArg->Features->MWait.EDX.SubCstate_MWAIT0;
 	CoreFreqK.SubCstate[1] = iArg->Features->MWait.EDX.SubCstate_MWAIT1;
-/*C1E*/ CoreFreqK.SubCstate[2] = iArg->Features->MWait.EDX.SubCstate_MWAIT1;
+//C1E// CoreFreqK.SubCstate[2] = iArg->Features->MWait.EDX.SubCstate_MWAIT1;
 	CoreFreqK.SubCstate[3] = iArg->Features->MWait.EDX.SubCstate_MWAIT2;
 	CoreFreqK.SubCstate[4] = iArg->Features->MWait.EDX.SubCstate_MWAIT3;
 	CoreFreqK.SubCstate[5] = iArg->Features->MWait.EDX.SubCstate_MWAIT4;
 	CoreFreqK.SubCstate[6] = iArg->Features->MWait.EDX.SubCstate_MWAIT5;
 	CoreFreqK.SubCstate[7] = iArg->Features->MWait.EDX.SubCstate_MWAIT6;
 	CoreFreqK.SubCstate[8] = iArg->Features->MWait.EDX.SubCstate_MWAIT7;
-    }
+*/  }
     if (iArg->Features->Info.LargestStdFunc >= 0x6)
     {
 /*TODO	__asm__ volatile
@@ -2452,10 +2452,10 @@ unsigned int Proc_Topology(void)
 
     for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++) {
 	PUBLIC(RO(Core, AT(cpu)))->T.Base.value = 0;
-	PUBLIC(RO(Core, AT(cpu)))->T.ApicID     = -1;
-	PUBLIC(RO(Core, AT(cpu)))->T.CoreID     = -1;
+	PUBLIC(RO(Core, AT(cpu)))->T.ApicID     = cpu;
+	PUBLIC(RO(Core, AT(cpu)))->T.CoreID     = cpu;
 	PUBLIC(RO(Core, AT(cpu)))->T.ThreadID   = -1;
-	PUBLIC(RO(Core, AT(cpu)))->T.PackageID  = -1;
+	PUBLIC(RO(Core, AT(cpu)))->T.PackageID  = 0;
 	PUBLIC(RO(Core, AT(cpu)))->T.Cluster.ID = 0;
 
 	BITSET(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine, HW);
@@ -2476,12 +2476,12 @@ unsigned int Proc_Topology(void)
     }
 	return CountEnabledCPU;
 }
-/*TODO(CleanUp)
+
 #define HyperThreading_Technology()					\
 (									\
 	PUBLIC(RO(Proc))->CPU.OnLine = Proc_Topology()			\
 )
-*/
+
 void Package_Init_Reset(void)
 {
 	PUBLIC(RO(Proc))->Features.TgtRatio_Unlock = 1;
@@ -2521,12 +2521,14 @@ void Default_Unlock_Reset(void)
 	PUBLIC(RO(Proc))->Features.Uncore_Unlock = Uncore_Ratio_Unlock;
 	break;
     }
+/*TODO(CleanUp)
     switch (HSMP_Attempt) {
     case COREFREQ_TOGGLE_OFF:
     case COREFREQ_TOGGLE_ON:
 	PUBLIC(RO(Proc))->Features.HSMP_Capable = HSMP_Attempt;
 	break;
     }
+*/
 }
 
 void OverrideCodeNameString(PROCESSOR_SPECIFIC *pSpecific)
@@ -6942,7 +6944,7 @@ static int CoreFreqK_ProbePCI(	struct pci_device_id PCI_ids[],
 	}
 	return rc;
 }
-/*TODO(CleanUp)
+
 void Query_Same_Genuine_Features(void)
 {
 	if ((PRIVATE(OF(Specific)) = LookupProcessor()) != NULL)
@@ -6959,7 +6961,7 @@ void Query_Same_Genuine_Features(void)
 		PUBLIC(RO(Proc))->Features.SpecTurboRatio = 0;
 	}
 }
-
+/*TODO(CleanUp)
 static void Query_GenuineIntel(unsigned int cpu)
 {
 	Query_Same_Genuine_Features();
@@ -8710,6 +8712,23 @@ static void Query_Hygon_F18h(unsigned int cpu)
 	Query_AMD_F17h_PerSocket(cpu);
 }
 */
+
+static void Query_GenericMachine(unsigned int cpu)
+{
+	Query_Same_Genuine_Features();
+	/* Reset Max ratio to call the clock estimation in Controller_Init() */
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = 0;
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = 8;
+
+    if (PRIVATE(OF(Specific)) != NULL) {
+	/*	Save the thermal parameters if specified		*/
+	PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
+    } else {
+	PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
+    }
+	HyperThreading_Technology();
+}
+
 void Dump_CPUID(CORE_RO *Core)
 {
 	unsigned int i;
@@ -10202,7 +10221,7 @@ void ThermalMonitor_Set(CORE_RO *Core)
 
 	ThermalMonitor_IA32(Core);
 }
-*/
+
 void CorePerfLimitReasons(CORE_RO *Core)
 {
     if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
@@ -10436,7 +10455,7 @@ void RingPerfLimitReasons(CORE_RO *Core)
 	);
     }
 }
-/*TODO(CleanUp)
+
 void PowerThermal(CORE_RO *Core)
 {
 	struct {
@@ -13520,7 +13539,7 @@ void Sys_DumpTask(SYSGATE_RO *SysGate)
 		}						\
 	}							\
 })
-/*TODO(MANDATORY)
+
 static void InitTimer(void *Cycle_Function)
 {
 	unsigned int cpu = smp_processor_id();
@@ -13535,7 +13554,7 @@ static void InitTimer(void *Cycle_Function)
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, CREATED);
     }
 }
-*/
+
 void Controller_Init(void)
 {
 	CLOCK sClock = {.Q = 0, .R = 0, .Hz = 0};
@@ -13983,10 +14002,10 @@ void AMD_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 })
 */
 #define Counters_Generic(Core, T)					\
-({	/*TODO(CleanUp)							\
+({									\
 	RDTSC_COUNTERx2(Core->Counter[T].TSC,				\
-			MSR_CORE_PERF_UCC, Core->Counter[T].C0.UCC,	\
-			MSR_CORE_PERF_URC, Core->Counter[T].C0.URC);*/	\
+			0x0, Core->Counter[T].C0.UCC,			\
+			0x0, Core->Counter[T].C0.URC);			\
 	/* Derive C1: */						\
 	Core->Counter[T].C1 =						\
 	  (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?		\
@@ -15032,7 +15051,7 @@ static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T)
 	**			Data Fabric Counter		**	\
 	RDCOUNTER(Pkg->Counter[_T].Uncore.FC0, MSR_AMD_F17H_DF_PERF_CTR);\
 })
-*/
+
 #define Pkg_AMD_Zen_PMC_PCU_Closure(Pkg, Core, _T)			\
 ({									\
 	Delta_PTSC_OVH(Pkg, Core);					\
@@ -15042,7 +15061,7 @@ static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T)
 #define Pkg_AMD_Zen_PMC_PCU_Counters(Pkg, Core, _T, ...)		\
 ({									\
 	Pkg->Counter[_T].PCLK = Core->Counter[_T].TSC;			\
-	/*			Closure statement		*/	\
+	//			Closure statement		//	\
 	__VA_ARGS__;							\
 })
 
@@ -15063,14 +15082,14 @@ static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T)
 #define Pkg_AMD_Zen_PMC_ARCH_PMC_Counters(Pkg, Core, _T, ...)		\
 ({									\
 	Pkg->Counter[_T].PCLK = Core->Counter[_T].TSC;			\
-	/*			Closure statement		*/	\
+	//			Closure statement		//	\
 	__VA_ARGS__;							\
 })
 
 void Core_Intel_Temp(CORE_RO *Core)
 {
 	THERM_STATUS ThermStatus = {.value = 0};
-	RDMSR(ThermStatus, MSR_IA32_THERM_STATUS);	/*All Intel families.*/
+	RDMSR(ThermStatus, MSR_IA32_THERM_STATUS);	//All Intel families.//
 
 	Core->PowerThermal.Sensor = ThermStatus.DTS;
 
@@ -15210,7 +15229,7 @@ void Monitor_RingPerfLimitReasons(PROC_RO *Pkg)
 		| ((Bit64) limit.EDP_Status	<< LSHIFT_RING_EDP_STS)
 	);
 }
-/*TODO(CleanUp)
+
 void Core_AMD_Family_0Fh_Temp(CORE_RO *Core)
 {
 	if (PUBLIC(RO(Proc))->Features.AdvPower.EDX.TTP == 1) {
@@ -19367,6 +19386,111 @@ static void Stop_Uncore_AMD_Family_17h(void *arg)
 }
 */
 
+static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
+{
+	CORE_RO *Core;
+	unsigned int cpu;
+
+	cpu = smp_processor_id();
+	Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+	if (!PUBLIC(RO(Proc))->Features.AdvPower.EDX.Inv_TSC) {
+		RDTSC64(Core->Overhead.TSC);
+	} else {
+		RDTSCP64(Core->Overhead.TSC);
+	}
+	if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
+	{
+		hrtimer_forward(pTimer,
+				hrtimer_cb_get_time(pTimer),
+				RearmTheTimer);
+
+		Counters_Generic(Core, 1);
+
+		if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+		{
+			PKG_Counters_Generic(Core, 1);
+
+			Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
+
+			Save_PTSC(PUBLIC(RO(Proc)));
+
+			Sys_Tick(PUBLIC(RO(Proc)));
+		}
+
+		Delta_C0(Core);
+
+		Delta_TSC_OVH(Core);
+
+		Delta_C1(Core);
+
+		Save_TSC(Core);
+
+		Save_C0(Core);
+
+		Save_C1(Core);
+
+		BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
+
+		return HRTIMER_RESTART;
+	} else
+		return HRTIMER_NORESTART;
+}
+
+static void InitTimer_GenericMachine(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_GenericMachine, 1);
+}
+
+static void Start_GenericMachine(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	UNUSED(arg);
+
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
+
+	Counters_Generic(Core, 0);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
+		PKG_Counters_Generic(Core, 0);
+	}
+
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
+
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
+}
+
+static void Stop_GenericMachine(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	UNUSED(arg);
+
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
+
+	hrtimer_cancel(&PRIVATE(OF(Core, AT(cpu)))->Join.Timer);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
+		}
+		Pkg_Reset_ThermalPoint(PUBLIC(RO(Proc)));
+	}
+	PerCore_Reset(Core);
+
+	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
+}
+
 long Sys_OS_Driver_Query(void)
 {
 	int rc = RC_SUCCESS;
@@ -21690,7 +21814,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			break;
 		}
 		break;
-
+/*TODO(CleanUp)
 	case TECHNOLOGY_EIST:
 		switch (prm.dl.lo) {
 		case COREFREQ_TOGGLE_OFF:
@@ -21716,7 +21840,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			break;
 		}
 		break;
-
+*/
 	case TECHNOLOGY_TURBO:
 		switch (prm.dl.lo) {
 			case COREFREQ_TOGGLE_OFF:
@@ -21732,7 +21856,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				break;
 		}
 		break;
-
+/*TODO(CleanUp)
 	case TECHNOLOGY_C1A:
 		switch (prm.dl.lo) {
 			case COREFREQ_TOGGLE_OFF:
@@ -21863,7 +21987,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		PowerPolicy = -1;
 		rc = RC_SUCCESS;
 		break;
-
+*/
 	case TECHNOLOGY_HWP:
 	    switch (prm.dl.lo) {
 	    case COREFREQ_TOGGLE_ON:
@@ -21916,20 +22040,17 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		HWP_EPP = -1;
 		rc = RC_SUCCESS;
 		break;
-
-	case TECHNOLOGY_HDC:
 /*TODO(CleanUp)
+	case TECHNOLOGY_HDC:
 		Controller_Stop(1);
 		HDC_Enable = prm.dl.lo;
 		Intel_Hardware_Performance();
 		Controller_Start(1);
 		HDC_Enable = -1;
 		rc = RC_SUCCESS;
-*/
 		break;
 
 	case TECHNOLOGY_EEO:
-/*TODO(CleanUp)
 	    if (PUBLIC(RO(Proc))->Features.EEO_Capable)
 	    {
 		EEO_Disable = prm.dl.lo;
@@ -21939,11 +22060,9 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	    } else {
 		rc = -ENXIO;
 	    }
-*/
 		break;
 
 	case TECHNOLOGY_R2H:
-/*TODO(CleanUp)
 	    if (PUBLIC(RO(Proc))->Features.R2H_Capable)
 	    {
 		R2H_Disable = prm.dl.lo;
@@ -21953,7 +22072,6 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	    } else {
 		rc = -ENXIO;
 	    }
-*/
 		break;
 
 	case TECHNOLOGY_CFG_TDP_LVL:
@@ -22027,7 +22145,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	    {
 		const enum PWR_DOMAIN	pw = prm.dh.lo;
 		const enum PWR_LIMIT	pl = prm.dh.hi;
-		/* Offset is capped within [ -127 , +128 ] watt */
+		// Offset is capped within [ -127 , +128 ] watt //
 		const signed short offset = (signed char) prm.dl.lo;
 
 		const unsigned int idx = (PWR_LIMIT_SIZE * pw) + pl;
@@ -22071,7 +22189,6 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		break;
 
 	case TECHNOLOGY_THM_OFFSET:
-/*TODO(CleanUp)
 	    {
 		const signed short offset = (signed short) prm.dl.lo;
 		if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
@@ -22087,7 +22204,6 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			rc = -RC_UNIMPLEMENTED;
 		}
 	    }
-*/
 		break;
 
 	case TECHNOLOGY_TW_POWER:
@@ -22129,7 +22245,6 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (prm.dl.lo) {
 		case COREFREQ_TOGGLE_OFF:
 		case COREFREQ_TOGGLE_ON:
-/*TODO(CleanUp)
 		    {
 			unsigned int rx;
 			Controller_Stop(1);
@@ -22139,10 +22254,10 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			rc = (rx >= HSMP_FAIL_BGN && rx <= HSMP_FAIL_END) ?
 				-RC_UNIMPLEMENTED : RC_SUCCESS;
 		    }
-*/
 			break;
 		}
 		break;
+*/
 	}
 	break;
     }
@@ -22224,7 +22339,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		rc = -RC_UNIMPLEMENTED;
 	}
 	break;
-
+/*TODO(CleanUp)
     case COREFREQ_IOCTL_CONFIG_TDP: {
 		CLOCK_ARG clockMod = {.sllong = arg};
 		const short MaxRatio = MAXCLOCK_TO_RATIO(short, \
@@ -22244,7 +22359,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		}
 	}
 	break;
-
+*/
     case COREFREQ_IOCTL_UNCORE_CLOCK:
 	if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.ClockMod) {
 		CLOCK_ARG clockMod = {.sllong = arg};
