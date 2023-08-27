@@ -2065,6 +2065,7 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Zen4_RPL:
 	case AMD_Zen4_PHX:
 	case AMD_Zen4_Bergamo:
+	case AMD_Zen4_STP:
 	case AMD_Family_17h:
 	case Hygon_Family_18h:
 	case AMD_Family_19h:
@@ -2146,7 +2147,8 @@ static void Map_AMD_Topology(void *arg)
 			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Chagall)
 			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Badami)
 			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Genoa)
-			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Bergamo)))
+			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Bergamo)
+			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_STP)))
 
 			|| ((leaf80000008.ECX.NC == 0x17)
 			 && ((PUBLIC(RO(Proc))->ArchID == AMD_EPYC_Rome_CPK)
@@ -2154,7 +2156,8 @@ static void Map_AMD_Topology(void *arg)
 			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Chagall)
 			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Badami)
 			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Genoa)
-			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Bergamo)));
+			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Bergamo)
+			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_STP)));
 	      }
 	      else
 	      { 	/*		SMT is disabled.		*/
@@ -2176,7 +2179,8 @@ static void Map_AMD_Topology(void *arg)
 			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Chagall)
 			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Badami)
 			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Genoa)
-			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Bergamo)))
+			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Bergamo)
+			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_STP)))
 
 			|| ((leaf80000008.ECX.NC == 0x0b)
 			 && ((PUBLIC(RO(Proc))->ArchID == AMD_EPYC_Rome_CPK)
@@ -2184,7 +2188,8 @@ static void Map_AMD_Topology(void *arg)
 			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Chagall)
 			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Badami)
 			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Genoa)
-			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Bergamo)));
+			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Bergamo)
+			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_STP)));
 	      }
 		/* CCD has to remain within range values from 0 to 7	*/
 		factor = factor & (Core->T.CoreID < 32);

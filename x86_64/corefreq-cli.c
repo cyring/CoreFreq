@@ -7023,6 +7023,7 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 	case AMD_Zen4_RPL:
 	case AMD_Zen4_PHX:
 	case AMD_Zen4_Bergamo:
+	case AMD_Zen4_STP:
 		TopologyFunc = Topology_CCD;
 		OffLineItem = RSC(TOPOLOGY_OFF_2).CODE();
 		TopologySubHeader[1] = TopologyAltSubHeader[2];

@@ -2008,13 +2008,8 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 	[Zen4/Raphael]		AF_61h Stepping 2	 5 nm	[RPL]
 	[Zen4/Dragon Range]	AF_61h Stepping 2	 5 nm	FL1
 	[Zen4/Phoenix Point]	AF_74h			 4 nm	[PHX]
-	[Zen4c/Bergamo] 	AF_A0h Stepping 1	 5 nm	SVR	*/
-/*
-	[Zen4/Storm Peak]	AF_18h Stepping 1		HEDT/TR5
-	[Zen4/Genoa-X]		??_??h Stepping ?	 5 nm
-			"AMD EPYC Embedded 9684X"	.Boost = {+12, 0}
-			"AMD EPYC Embedded 9384X"	.Boost = {+8, 0}
-			"AMD EPYC Embedded 9184X"	.Boost = {+7, 0}
+	[Zen4c/Bergamo] 	AF_A0h Stepping 1	 5 nm	SVR
+	[Zen4/Storm Peak]	AF_18h Stepping 1	 5 nm	WS/SP6
 	[Zen5/Granite Ridge]						*/
 #define _AMD_Family_19h {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 #define _AMD_Zen3_VMR	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x2, .Model=0x1}
@@ -2032,6 +2027,8 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 #define _AMD_Zen4_PHX	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x7, .Model=0x4}
 #define _AMD_Zen4_Bergamo	\
 			{.ExtFamily=0xa, .Family=0xF, .ExtModel=0xa, .Model=0x0}
+
+#define _AMD_Zen4_STP	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x1, .Model=0x8}
 
 typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
 
@@ -3494,7 +3491,8 @@ enum {
 	CN_REMBRANDT_R
 };
 enum {
-	CN_GENOA
+	CN_GENOA,
+	CN_GENOA_X
 };
 enum {
 	CN_RAPHAEL,
@@ -3512,6 +3510,10 @@ enum {
 
 enum {
 	CN_BERGAMO
+};
+
+enum {
+	CN_STORM_PEAK
 };
 
 static char *Arch_AMD_Zen[] = ZLIST(
@@ -3580,7 +3582,8 @@ static char *Arch_AMD_Zen3Plus_RMB[] = ZLIST(
 		[CN_REMBRANDT_R]	=	"Zen3+ Rembrandt-R"
 );
 static char *Arch_AMD_Zen4_Genoa[] = ZLIST(
-		[CN_GENOA]		=	"EPYC/Genoa"
+		[CN_GENOA]		=	"EPYC/Genoa",
+		[CN_GENOA_X]		=	"EPYC/Genoa-X"
 );
 static char *Arch_AMD_Zen4_RPL[] = ZLIST(
 		[CN_RAPHAEL]		=	"Zen4/Raphael",
@@ -3591,6 +3594,9 @@ static char *Arch_AMD_Zen4_PHX[] = ZLIST(
 );
 static char *Arch_AMD_Zen4_Bergamo[] = ZLIST(
 		[CN_BERGAMO]		=	"Zen4c/Bergamo"
+);
+static char *Arch_AMD_Zen4_STP[] = ZLIST(
+		[CN_STORM_PEAK]		=	"Zen4/Storm Peak"
 );
 
 static char *Arch_AMD_Family_17h[] = ZLIST("AMD Zen");
@@ -7513,6 +7519,46 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
 		|LATCH_HSMP_CAPABLE
 	},
+	/*	EPYC Genoa-X Family with 3D V-Cache Technology		*/
+	{
+	.Brand = ZLIST("AMD EPYC 9684X"),
+	.Boost = {+12, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GENOA_X,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 9384X"),
+	.Boost = {+8, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GENOA_X,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 9184X"),
+	.Boost = {+7, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_GENOA_X,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
 	{0}
 };
 static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
@@ -7825,7 +7871,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHX_Specific[] = {
 static PROCESSOR_SPECIFIC AMD_Zen4_Bergamo_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD EPYC Embedded 9754S",	\
-			"AMD EPYC Embedded 9754"	),
+			"AMD EPYC Embedded 9754",	\
+			"AMD EPYC 9754" 		),
 	.Boost = {+9, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_BERGAMO,
@@ -7842,6 +7889,22 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Bergamo_Specific[] = {
 	.Boost = {+8, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_BERGAMO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{0}
+};
+static PROCESSOR_SPECIFIC AMD_Zen4_STP_Specific[] = {
+	{
+	.Brand = ZLIST("AMD Ryzen Threadripper PRO 7995WX"),
+	.Boost = {+23, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_STORM_PEAK,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
@@ -11254,5 +11317,29 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Specific = AMD_Zen4_Bergamo_Specific,
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen4_Bergamo
+	},
+[AMD_Zen4_STP] = {							/*113*/
+	.Signature = _AMD_Zen4_STP,
+	.Query = Query_AMD_F19h_PerCluster,
+	.Update = PerCore_AMD_Family_19h_Query,
+	.Start = Start_AMD_Family_19h,
+	.Stop = Stop_AMD_Family_19h,
+	.Exit = Exit_AMD_F19h,
+	.Timer = InitTimer_AMD_F19h_Zen3_MP,
+	.BaseClock = BaseClock_AMD_Family_19h,
+	.ClockMod = ClockMod_AMD_Zen,
+	.TurboClock = TurboClock_AMD_Zen,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN4,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_ZEN4,
+	.powerFormula   = POWER_FORMULA_AMD_19h,
+	.PCI_ids = PCI_AMD_19h_ids,
+	.Uncore = {
+		.Start = Start_Uncore_AMD_Family_19h,
+		.Stop = Stop_Uncore_AMD_Family_19h,
+		.ClockMod = NULL
+		},
+	.Specific = AMD_Zen4_STP_Specific,
+	.SystemDriver = AMD_Zen_Driver,
+	.Architecture = Arch_AMD_Zen4_STP
 	}
 };
