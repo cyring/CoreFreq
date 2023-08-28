@@ -821,7 +821,7 @@ enum UNCORE_BOOST {
 #define CLOCK_GHz(_t, _f)	((_t)(_f) / (_t)UNIT_GHz(1))
 
 #if !defined(MAX_FREQ_HZ)
-	#define MAX_FREQ_HZ	6575000000
+	#define MAX_FREQ_HZ	7125000000
 #elif (MAX_FREQ_HZ < 4850000000)
 	#error "MAX_FREQ_HZ must be at least 4850000000 Hz"
 #endif
