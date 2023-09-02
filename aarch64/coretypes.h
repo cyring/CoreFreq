@@ -855,11 +855,12 @@ typedef struct
 
 #define REL_BCLK(clock, ratio, delta_tsc, interval)			\
 ({	/*		Compute Clock (Hertz)			*/	\
-	clock.Hz = (1000LLU * delta_tsc) / (interval * ratio);		\
+	clock.Hz= (1000LLU * PRECISION * delta_tsc)			\
+		/ (interval * ratio);					\
 	/*		Compute Quotient (MHz)			*/	\
-	clock.Q  = clock.Hz / (1000LLU * 1000LLU);			\
-	/*		Compute Remainder (MHz)			*/	\
-	clock.R  = clock.Hz % (1000LLU * 1000LLU);			\
+	clock.Q = clock.Hz / (1000LLU * 1000LLU);			\
+	/*		Compute Remainder (MHz) 		*/	\
+	clock.R = clock.Hz % (1000LLU * 1000LLU);			\
 })
 
 #define REL_FREQ_MHz(this_type, this_ratio, clock, interval)		\

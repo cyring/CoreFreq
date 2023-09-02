@@ -141,6 +141,9 @@ __asm__ volatile							\
 __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
+	"# Store values into memory."		"\n\t"			\
+	"str	" #_reg0 ",	%0"		"\n\t"			\
+	"str	" #_reg1 ",	%1"					\
 	: "=m" (mem_tsc), "=m" (_mem1)					\
 	:								\
 	: "%" #_reg0"", "%" #_reg1"",					\
@@ -170,6 +173,10 @@ __asm__ volatile							\
 __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
+	"# Store values into memory."		"\n\t"			\
+	"str	" #_reg0 ",	%0"		"\n\t"			\
+	"str	" #_reg1 ",	%1"		"\n\t"			\
+	"str	" #_reg2 ",	%2"					\
 	: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2)			\
 	:								\
 	: "%" #_reg0"", "%" #_reg1"", "%" #_reg2"",			\
@@ -1749,7 +1756,9 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 #define     Query_AMD_F19h_74h_PerSocket Query_AMD_F19h_61h_PerCluster
 #define     InitTimer_AMD_Zen4_PHX InitTimer_AMD_Zen4_RPL
 */
+static CLOCK BaseClock_GenericMachine(unsigned int ratio) ;
 static void Query_GenericMachine(unsigned int cpu) ;
+static void PerCore_GenericMachine(void *arg) ;
 static void Start_GenericMachine(void *arg) ;
 static void Stop_GenericMachine(void *arg) ;
 static void InitTimer_GenericMachine(unsigned int cpu) ;
@@ -8481,12 +8490,12 @@ static ARCH Arch[ARCHITECTURES] = {
 [GenuineArch] = {							/*  0*/
 	.Signature = _Void_Signature,
 	.Query = Query_GenericMachine,
-	.Update = NULL,
+	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
 	.Exit = NULL,
 	.Timer = InitTimer_GenericMachine,
-	.BaseClock = NULL,
+	.BaseClock = BaseClock_GenericMachine,
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,

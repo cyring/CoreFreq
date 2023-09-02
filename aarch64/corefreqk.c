@@ -849,7 +849,7 @@ unsigned int Intel_Brand(char *pBrand, char buffer[])
 static void Query_Features(void *pArg)
 {	/* Must have x86 CPUID 0x0, 0x1, and Intel CPUID 0x4 */
 	INIT_ARG *iArg = (INIT_ARG *) pArg;
-	unsigned int eax = 0x0, ebx = 0x0, ecx = 0x0, edx = 0x0; /*DWORD Only!*/
+/*	unsigned int eax = 0x0, ebx = 0x0, ecx = 0x0, edx = 0x0; **DWORD Only!*/
 
 	enum HYPERVISOR hypervisor = HYPERV_KVM;
 
@@ -1481,6 +1481,13 @@ void ClockToHz(CLOCK *clock)
 	clock->Hz  = clock->Q * 1000000L;
 	clock->Hz += clock->R * PRECISION;
 }
+
+static CLOCK BaseClock_GenericMachine(unsigned int ratio)
+{
+	CLOCK clock = {.Q = 100, .R = 0, .Hz = 100000000L};
+	UNUSED(ratio);
+	return clock;
+};
 /*TODO(CleanUp)
 ** [Genuine Intel] **
 static CLOCK BaseClock_GenuineIntel(unsigned int ratio)
@@ -2425,9 +2432,31 @@ static void Map_Intel_Extended_Topology(void *arg)
     }
 }
 */
+
+static void Map_Generic_Topology(void *arg)
+{
+    if (arg != NULL) {
+	CORE_RO *Core = (CORE_RO *) arg;
+	Bit64 mpid;
+
+	__asm__ volatile
+	(
+		"mrs	x0, mpidr_el1	\n\t"
+		"str	x0, %0"
+		: "=m" (mpid)
+		:
+		: "memory", "x0"
+	);
+	Core->T.ApicID = mpid & 0xfffff;
+	Core->T.CoreID = mpid & 0x0700;
+	Core->T.CoreID = Core->T.CoreID >> 8;
+	Core->T.PackageID = mpid & 0xf0000;
+	Core->T.PackageID = Core->T.PackageID >> 16;
+    }
+}
+
 int Core_Topology(unsigned int cpu)
 {
-	int rc = 0;
 /*TODO(CleanUp)
 	int rc = smp_call_function_single(cpu,
 		( (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
@@ -2437,6 +2466,8 @@ int Core_Topology(unsigned int cpu)
 			Map_Intel_Extended_Topology : Map_Intel_Topology,
 		PUBLIC(RO(Core, AT(cpu))), 1); ** Synchronous call. **
 */
+	int rc = smp_call_function_single(cpu , Map_Generic_Topology,
+						PUBLIC(RO(Core, AT(cpu))), 1);
 	if (	!rc
 		&& (PUBLIC(RO(Proc))->Features.HTT_Enable == 0)
 		&& (PUBLIC(RO(Core, AT(cpu)))->T.ThreadID > 0) )
@@ -2452,10 +2483,10 @@ unsigned int Proc_Topology(void)
 
     for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++) {
 	PUBLIC(RO(Core, AT(cpu)))->T.Base.value = 0;
-	PUBLIC(RO(Core, AT(cpu)))->T.ApicID     = cpu;
-	PUBLIC(RO(Core, AT(cpu)))->T.CoreID     = cpu;
+	PUBLIC(RO(Core, AT(cpu)))->T.ApicID     = -1;
+	PUBLIC(RO(Core, AT(cpu)))->T.CoreID     = -1;
 	PUBLIC(RO(Core, AT(cpu)))->T.ThreadID   = -1;
-	PUBLIC(RO(Core, AT(cpu)))->T.PackageID  = 0;
+	PUBLIC(RO(Core, AT(cpu)))->T.PackageID  = -1;
 	PUBLIC(RO(Core, AT(cpu)))->T.Cluster.ID = 0;
 
 	BITSET(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine, HW);
@@ -12025,6 +12056,40 @@ void PerCore_Reset(CORE_RO *Core)
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.Kind);
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.State);
 }
+
+static void PerCore_GenericMachine(void *arg)
+{
+	CORE_RO *Core = (CORE_RO *) arg;
+
+	PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(MIN)] = 8;
+	PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(MAX)] = \
+				PUBLIC(RO(Proc))->Features.Factory.Ratio;
+
+	BITSET_CC(LOCKLESS,PUBLIC(RO(Proc))->SpeedStep_Mask,Core->Bind);
+	BITSET_CC(LOCKLESS,PUBLIC(RO(Proc))->ODCM_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS,PUBLIC(RO(Proc))->PowerMgmt_Mask,Core->Bind);
+
+	Dump_CPUID(Core);
+
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask	, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask	, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask	, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask	, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask	, Core->Bind);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
+
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
+}
 /*TODO(CleanUp)
 static void PerCore_VirtualMachine(void *arg)
 {
@@ -13610,7 +13675,7 @@ void Controller_Init(void)
 
 		PUBLIC(RO(Core, AT(cpu)))->Clock = Compute_Clock(cpu,&Compute);
 
-		    if (PUBLIC(RO(Proc))->Features.Std.ECX.Hyperv)
+	/*	    if (PUBLIC(RO(Proc))->Features.Std.ECX.Hyperv)	*/
 		    {
 			PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = ratio;
 		    }
