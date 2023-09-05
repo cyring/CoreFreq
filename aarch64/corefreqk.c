@@ -14291,7 +14291,14 @@ void AMD_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 */
 #define PKG_Counters_Generic(Core, T)					\
 ({									\
-	PUBLIC(RO(Proc))->Counter[T].PCLK = Core->Counter[T].TSC;	\
+	__asm__ volatile						\
+	(								\
+		"isb"					"\n\t"		\
+		"mrs	%0	,	cntpct_el0"			\
+		: "=r" (PUBLIC(RO(Proc))->Counter[T].PCLK)		\
+		:							\
+		: "cc", "memory"					\
+	);								\
 })
 /*TODO(CleanUp)
 #define PKG_Counters_SLM(Core, T)					\
