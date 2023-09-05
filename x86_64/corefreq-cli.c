@@ -3209,6 +3209,16 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(MECH_PSFD),
 		MECH
 	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
+			CPUID_80000021_00000000_EXTENDED_FEATURE_2
+		].reg[REG_CPUID_EAX], CPUID_80000021_00000000_EAX_EPSF),
+		attr_Feat,
+		2, "%s%.*sEPSF   [%7s]", RSC(MECH_EPSF).CODE(),
+		width - 19 - RSZ(MECH_EPSF),
+		NULL
+	},
 /* Section Mark */
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },

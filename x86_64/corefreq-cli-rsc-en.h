@@ -2013,6 +2013,7 @@
 #define RSC_MECH_SPLA_CODE_EN		"Arch - Split Locked Access Exception"
 #define RSC_MECH_SNOOP_FILTER_CODE_EN	"Arch - Snoop Filter QoS Mask"
 #define RSC_MECH_PSFD_CODE_EN	"Arch - No Fast Predictive Store Forwarding"
+#define RSC_MECH_EPSF_CODE_EN	"Arch - Enhanced Predictive Store Forwarding"
 #define RSC_MECH_IBRS_ALWAYS_ON_CODE_EN "IBRS Always-On preferred by processor"
 #define RSC_MECH_IBRS_PREFERRED_CODE_EN "IBRS preferred over software solution"
 #define RSC_MECH_IBRS_SAME_MODE_CODE_EN "IBRS provides same speculation limits"
