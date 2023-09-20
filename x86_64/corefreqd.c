@@ -1087,7 +1087,7 @@ static void *Core_Cycle(void *arg)
 	}
 
 	if (Quiet & 0x100) {
-		printf("    Thread [%lx] Init CYCLE %03u\n", tid, cpu);
+		printf("    Thread [%lx] Init CYCLE %03u\n", (long) tid, cpu);
 		fflush(stdout);
 	}
 	BITSET_CC(BUS_LOCK, roomSeed, cpu);
@@ -1241,7 +1241,7 @@ static void *Core_Cycle(void *arg)
 	BITCLR_CC(BUS_LOCK, roomSeed, cpu);
 EXIT:
 	if (Quiet & 0x100) {
-		printf("    Thread [%lx] %s CYCLE %03u\n", tid,
+		printf("    Thread [%lx] %s CYCLE %03u\n", (long) tid,
 			BITVAL(RO(Core)->OffLine, OS) ? "Offline" : "Shutdown",
 			cpu);
 		fflush(stdout);
@@ -1270,8 +1270,12 @@ void SliceScheduling(	RO(SHM_STRUCT) *RO(Shm),
 		break;
 	case RAND_SMT:
 		do {
+		  #ifdef __GLIBC__
 		    if (random_r(&RO(Shm)->Cpu[cpu].Slice.Random.data,
 				&RO(Shm)->Cpu[cpu].Slice.Random.value[0]) == 0)
+		  #else
+		    RO(Shm)->Cpu[cpu].Slice.Random.value[0] = (int) random();
+		  #endif /* __GLIBC__ */
 		    {
 			seek = RO(Shm)->Cpu[cpu].Slice.Random.value[0]
 				% RO(Shm)->Proc.CPU.Count;
@@ -1332,7 +1336,7 @@ static void *Child_Thread(void *arg)
 		free(comm);
 	}
 	if (Quiet & 0x100) {
-		printf("    Thread [%lx] Init CHILD %03u\n", tid, cpu);
+		printf("    Thread [%lx] Init CHILD %03u\n", (long) tid, cpu);
 		fflush(stdout);
 	}
 
@@ -1381,7 +1385,7 @@ static void *Child_Thread(void *arg)
 	RESET_Slice(Cpu->Slice);
 EXIT:
 	if (Quiet & 0x100) {
-		printf("    Thread [%lx] %s CHILD %03u\n", tid,
+		printf("    Thread [%lx] %s CHILD %03u\n", (long) tid,
 			BITVAL(Cpu->OffLine, OS) ? "Offline" : "Shutdown",cpu);
 		fflush(stdout);
 	}
@@ -8248,7 +8252,11 @@ REASON_CODE Core_Manager(REF *Ref)
 	unsigned int		cpu = 0;
 
 	pthread_t tid = pthread_self();
+    #ifdef __GLIBC__
 	RO(Shm)->App.Svr = tid;
+    #else
+	RO(Shm)->App.Svr = getpid();
+    #endif
 
   if (ServerFollowService(&localService, &RO(Shm)->Proc.Service, tid) == 0) {
 	pthread_setname_np(tid, "corefreqd-pmgr");
@@ -8733,11 +8741,14 @@ REASON_CODE Child_Manager(REF *Ref)
 			:
 			: "%rax", "%rcx", "%rdx", "cc", "memory"
 		);
+	    #ifdef __GLIBC__
 		initstate_r(	seed32,
 				RO(Shm)->Cpu[cpu].Slice.Random.state,
 				sizeof(RO(Shm)->Cpu[cpu].Slice.Random.state),
 				&RO(Shm)->Cpu[cpu].Slice.Random.data );
-
+	    #else
+		initstate(seed32, RO(Shm)->Cpu[cpu].Slice.Random.state, 128);
+	    #endif
 		if (!Arg[cpu].TID) {
 			/*	Add this child thread.			*/
 			Arg[cpu].Ref  = Ref;

@@ -276,11 +276,15 @@ void Slice_Monte_Carlo(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
     {
 	double X, Y, Z;
 	UNUSED(arg);
-
+      #ifdef __GLIBC__
 	if (!random_r(	&RO(Shm)->Cpu[cpu].Slice.Random.data,
 			&RO(Shm)->Cpu[cpu].Slice.Random.value[0] )
 	 && !random_r(	&RO(Shm)->Cpu[cpu].Slice.Random.data,
 			&RO(Shm)->Cpu[cpu].Slice.Random.value[1] ))
+      #else
+	RO(Shm)->Cpu[cpu].Slice.Random.value[0] = (int) random();
+	RO(Shm)->Cpu[cpu].Slice.Random.value[1] = (int) random();
+      #endif /* __GLIBC__ */
 	{
 		X = (double) RO(Shm)->Cpu[cpu].Slice.Random.value[0] / RAND_MAX;
 		Y = (double) RO(Shm)->Cpu[cpu].Slice.Random.value[1] / RAND_MAX;
