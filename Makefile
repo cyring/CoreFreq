@@ -5,7 +5,7 @@
 HW = $(shell uname -m)
 CC ?= cc
 WARNING = -Wall -Wfatal-errors -Wno-unused-variable
-SYMLINK ?= ln -rs
+SYMLINK ?= ln -s
 INSTALL ?= install
 MKDIR ?= mkdir
 RMDIR ?= rmdir
@@ -106,10 +106,11 @@ prepare:
 		$(MKDIR) $(BUILD)/module; \
 	fi
 	@if [ ! -e $(BUILD)/Makefile ]; then \
-		$(SYMLINK) Makefile $(BUILD)/Makefile; \
+		$(SYMLINK) $(PWD)/Makefile $(BUILD)/Makefile; \
 	fi
 	@if [ ! -e $(BUILD)/module/corefreqk.c ]; then \
-		$(SYMLINK) $(HW)/corefreqk.c $(BUILD)/module/corefreqk.c; \
+		$(SYMLINK) $(PWD)/$(HW)/corefreqk.c \
+			$(BUILD)/module/corefreqk.c; \
 	fi
 
 .PHONY: install
