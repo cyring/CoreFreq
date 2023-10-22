@@ -2,16 +2,6 @@
  * CoreFreq
  * Copyright (C) 2015-2023 CYRIL COURTIAT
  * Licenses: GPL2
- *
- * Vedolizumab [05.25.2023]
- * First injection
- *
- * CYRIL INGENIERIE[11.30.2022]
- * Company closed down
- *
- * Time Capsule[02.02.2022]
- * Cyril to Marcel Courtiat
- * RIP Daddy; love you forever
  */
 
 #include <linux/version.h>
@@ -648,12 +638,6 @@ static long CoreFreqK_Register_ClockSource(unsigned int cpu)
 	    case 0:
 		PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_ENABLE;
 		rc = RC_SUCCESS;
-/*TODO(CleanUp)
-		pr_debug("%s: Freq_KHz[%u] Kernel CPU_KHZ[%u] TSC_KHZ[%u]\n" \
-			"LPJ[%lu] mask[%llx] mult[%u] shift[%u]\n",
-		CoreFreqK_CS.name, Freq_KHz, cpu_khz, tsc_khz, loops_per_jiffy,
-		CoreFreqK_CS.mask, CoreFreqK_CS.mult, CoreFreqK_CS.shift);
-*/
 		break;
 	    }
 	}
@@ -662,7 +646,7 @@ static long CoreFreqK_Register_ClockSource(unsigned int cpu)
     }
 	return rc;
 }
-
+/*TODO(CleanUp)
 void VendorFromCPUID(	char *pVendorID, unsigned int *pLargestFunc,
 			unsigned int *pCRC, enum HYPERVISOR *pHypervisor,
 			unsigned long leaf, unsigned long subLeaf )
@@ -682,8 +666,8 @@ void VendorFromCPUID(	char *pVendorID, unsigned int *pLargestFunc,
       {VENDOR_VMWARE ,__builtin_strlen(VENDOR_VMWARE),CRC_VMWARE,HYPERV_VMWARE},
       {VENDOR_HYPERV ,__builtin_strlen(VENDOR_HYPERV),CRC_HYPERV,HYPERV_HYPERV}
     };
-	unsigned int eax = 0x0, ebx = 0x0, ecx = 0x0, edx = 0x0; /*DWORD Only!*/
-/*TODO(CleanUp)
+	unsigned int eax = 0x0, ebx = 0x0, ecx = 0x0, edx = 0x0; **DWORD Only!**
+
 	__asm__ volatile
 	(
 		"movq	%4, %%rax	\n\t"
@@ -702,7 +686,7 @@ void VendorFromCPUID(	char *pVendorID, unsigned int *pLargestFunc,
 		: "ir" (leaf),
 		  "ir" (subLeaf)
 		: "%rax", "%rbx", "%rcx", "%rdx"
-	);							*/
+	);
 	pVendorID[ 0] = ebx;
 	pVendorID[ 1] = (ebx >> 8);
 	pVendorID[ 2] = (ebx >> 16);
@@ -729,7 +713,7 @@ void VendorFromCPUID(	char *pVendorID, unsigned int *pLargestFunc,
 	}
     }
 }
-
+*/
 signed int SearchArchitectureID(void)
 {
 	signed int id;
@@ -19704,16 +19688,16 @@ long SysGate_OnDemand(void)
 		break;							\
 	};								\
 }
-
+/*TODO(CleanUp)
 #if defined(CONFIG_CPU_IDLE) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
-	/*			MWAIT Idle methods			*/
+	**			MWAIT Idle methods			**
 static int CoreFreqK_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
-{/*	Source: /drivers/cpuidle/cpuidle.c				*/
+{**	Source: /drivers/cpuidle/cpuidle.c				**
 	unsigned long MWAIT=(CoreFreqK.IdleDriver.states[index].flags>>24)&0xff;
 	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
-/*TODO(CleanUp)
+
 	__asm__ volatile
 	(
 		"xorq	%%rcx	,	%%rcx"	"\n\t"
@@ -19729,7 +19713,6 @@ static int CoreFreqK_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 		  [hint] "ir" (MWAIT)
 		: "%rax", "%rcx", "%rdx", "memory"
 	);
-*/
 	return index;
 }
 
@@ -19746,12 +19729,12 @@ static void CoreFreqK_S2_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 #else
 static int CoreFreqK_S2_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
-#endif /* 5.9.0 */
+#endif ** 5.9.0 **
 {
 	unsigned long MWAIT=(CoreFreqK.IdleDriver.states[index].flags>>24)&0xff;
 	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
-/*TODO(CleanUp)
+
 	__asm__ volatile
 	(
 		"xorq	%%rcx	,	%%rcx"	"\n\t"
@@ -19767,10 +19750,10 @@ static int CoreFreqK_S2_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 		  [hint] "ir" (MWAIT)
 		: "%rax", "%rcx", "%rdx", "memory"
 	);
-*/
+
 #if ((LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)) || (RHEL_MINOR >= 4))
 	return index;
-#endif /* 5.9.0 */
+#endif ** 5.9.0 **
 }
 
 #if ((LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)) && (RHEL_MAJOR == 0)) \
@@ -19786,15 +19769,15 @@ static int CoreFreqK_S2_MWAIT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 {
 	return CoreFreqK_S2_MWAIT_Handler(pIdleDevice, pIdleDriver, index);
 }
-#endif /* 5.9.0 */
-	/*			HALT Idle methods			*/
+#endif ** 5.9.0 **
+	**			HALT Idle methods			**
 static int CoreFreqK_HALT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
 	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
-/*	Source: /arch/x86/include/asm/irqflags.h: native_safe_halt();	*/
-/*TODO	__asm__ volatile
+**	Source: /arch/x86/include/asm/irqflags.h: native_safe_halt();	**
+	__asm__ volatile
 	(
 		"sti"		"\n\t"
 		"hlt"		"\n\t"
@@ -19802,7 +19785,7 @@ static int CoreFreqK_HALT_Handler(struct cpuidle_device *pIdleDevice,
 		:
 		:
 		: "cc"
-	);							*/
+	);
 	return index;
 }
 
@@ -19819,11 +19802,11 @@ static void CoreFreqK_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
 #else
 static int CoreFreqK_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
-#endif /* 5.9.0 */
+#endif ** 5.9.0 **
 {
 	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
-/*TODO
+
 	__asm__ volatile
 	(
 		"sti"		"\n\t"
@@ -19832,10 +19815,10 @@ static int CoreFreqK_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
 		:
 		:
 		: "cc"
-	);							*/
+	);
 #if ((LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)) || (RHEL_MINOR >= 4))
 	return index;
-#endif /* 5.9.0 */
+#endif ** 5.9.0 **
 }
 
 #if ((LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)) && (RHEL_MAJOR == 0)) \
@@ -19851,8 +19834,8 @@ static int CoreFreqK_S2_HALT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 {
 	return CoreFreqK_S2_HALT_Handler(pIdleDevice, pIdleDriver, index);
 }
-#endif /* 5.9.0 */
-	/*			I/O Idle methods			*/
+#endif ** 5.9.0 **
+	**			I/O Idle methods			**
 static int CoreFreqK_IO_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
@@ -19861,7 +19844,7 @@ static int CoreFreqK_IO_Handler(struct cpuidle_device *pIdleDevice,
 
 	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
-/*TODO
+
 	__asm__ volatile
 	(
 		"xorw	%%ax,	%%ax"	"\n\t"
@@ -19870,7 +19853,7 @@ static int CoreFreqK_IO_Handler(struct cpuidle_device *pIdleDevice,
 		:
 		: "ir" (Core->Query.CStateBaseAddr)
 		: "%ax", "%dx"
-	);							*/
+	);
 	return index;
 }
 
@@ -19887,14 +19870,14 @@ static void CoreFreqK_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
 #else
 static int CoreFreqK_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
-#endif /* 5.9.0 */
+#endif ** 5.9.0 **
 {
 	const unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
 	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
-/*TODO
+
 	__asm__ volatile
 	(
 		"xorw	%%ax,	%%ax"	"\n\t"
@@ -19903,10 +19886,10 @@ static int CoreFreqK_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
 		:
 		: "ir" (Core->Query.CStateBaseAddr)
 		: "%ax", "%dx"
-	);							*/
+	);
 #if ((LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)) || (RHEL_MINOR >= 4))
 	return index;
-#endif /* 5.9.0 */
+#endif ** 5.9.0 **
 }
 
 #if ((LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)) && (RHEL_MAJOR == 0)) \
@@ -19922,8 +19905,8 @@ static int CoreFreqK_S2_IO_AMD_Handler(struct cpuidle_device *pIdleDevice,
 {
 	return CoreFreqK_S2_IO_Handler(pIdleDevice, pIdleDriver, index);
 }
-#endif /* 5.9.0 */
-	/*		Idle Cycles callback functions			*/
+#endif ** 5.9.0 **
+	**		Idle Cycles callback functions			**
 static int Alternative_Computation_Of_Cycles(
 	int (*Handler)(struct cpuidle_device*, struct cpuidle_driver*, int),
 			struct cpuidle_device *pIdleDevice,
@@ -19977,7 +19960,7 @@ static int Alternative_Computation_Of_Cycles_S2(
 			struct cpuidle_device *pIdleDevice,
 			struct cpuidle_driver *pIdleDriver, int index
 )
-#endif /* 5.9.0 */
+#endif ** 5.9.0 **
 {
 	unsigned long long TSC[3] __attribute__ ((aligned (8)));
 	const unsigned int cpu = smp_processor_id();
@@ -20013,11 +19996,11 @@ static int Alternative_Computation_Of_Cycles_S2(
 
 #if ((LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)) || (RHEL_MINOR >= 4))
 	return index;
-#endif /* 5.9.0 */
-}
+#endif ** 5.9.0 **
+}*/
 #undef Atomic_Write_VPMC
-
-	/*		Alternative Idle methods			*/
+/*TODO(CleanUp)
+	**		Alternative Idle methods			**
 static int CoreFreqK_Alt_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
@@ -20222,9 +20205,9 @@ static int CoreFreqK_Alt_S2_IO_AMD_Handler(struct cpuidle_device *pIdleDevice,
 						index );
 	return rx;
 }
-#endif /* 5.9.0 */
-#endif /* CONFIG_CPU_IDLE and 4.14.0 */
-
+#endif ** 5.9.0 **
+#endif ** CONFIG_CPU_IDLE and 4.14.0 **
+*/
 static void CoreFreqK_IdleDriver_UnInit(void)
 {
 #if defined(CONFIG_CPU_IDLE) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
@@ -20299,7 +20282,7 @@ static int CoreFreqK_IdleDriver_Init(void)
 		].target_residency = pIdleState->Residency;
 
 	  switch (Idle_Route) {
-	  case ROUTE_MWAIT:
+	  case ROUTE_MWAIT:/*
 	    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
 	    {
 		CoreFreqK.IdleDriver.states[
@@ -20328,7 +20311,7 @@ static int CoreFreqK_IdleDriver_Init(void)
 		goto IDLE_WARNING;
 	      }
 	    }
-	    else {
+	    else */{
 		goto IDLE_DEFAULT;
 	    }
 		CoreFreqK.IdleDriver.states[
@@ -20346,7 +20329,7 @@ static int CoreFreqK_IdleDriver_Init(void)
 		PUBLIC(RO(Proc))->Registration.Driver.Route = ROUTE_MWAIT;
 		break;
 
-	  case ROUTE_HALT:
+	  case ROUTE_HALT:/*
 	    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
 	    {
 		CoreFreqK.IdleDriver.states[
@@ -20375,7 +20358,7 @@ static int CoreFreqK_IdleDriver_Init(void)
 		goto IDLE_WARNING;
 	      }
 	    }
-	    else {
+	    else */{
 		goto IDLE_DEFAULT;
 	    }
 		CoreFreqK.IdleDriver.states[
@@ -20394,7 +20377,7 @@ static int CoreFreqK_IdleDriver_Init(void)
 		break;
 
 	  case ROUTE_IO:
-	  {
+	  {/*
 	    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
 	    {
 		CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
@@ -20442,7 +20425,7 @@ static int CoreFreqK_IdleDriver_Init(void)
 		goto IDLE_WARNING;
 	      }
 	    }
-	    else {
+	    else */{
 		goto IDLE_DEFAULT;
 	    }
 		CoreFreqK.IdleDriver.states[
@@ -20466,7 +20449,7 @@ static int CoreFreqK_IdleDriver_Init(void)
 	  default:
 		PUBLIC(RO(Proc))->Registration.Driver.Route = ROUTE_DEFAULT;
 
-	    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
+	/*  if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
 	    {
 		CoreFreqK.IdleDriver.states[
 			CoreFreqK.IdleDriver.state_count
@@ -20480,7 +20463,7 @@ static int CoreFreqK_IdleDriver_Init(void)
 	    }
 	    else if ((PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
 		|| (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON))
-	    {	/* Avoid kernel crash if the MWAIT opcode has been disabled */
+	    {	** Avoid kernel crash if the MWAIT opcode has been disabled **
 		HWCR HwCfgRegister;
 		RDMSR(HwCfgRegister, MSR_K7_HWCR);
 	      if (BITVAL(HwCfgRegister.value, 9) == 0)
@@ -20519,7 +20502,7 @@ static int CoreFreqK_IdleDriver_Init(void)
 IDLE_WARNING:	pr_warn("CoreFreq: "					\
 			"No Idle implementation for Vendor CRC 0x%x\n",
 			PUBLIC(RO(Proc))->Features.Info.Vendor.CRC);
-	    }
+	    }*/
 		break;
 	  }
 		CoreFreqK.IdleDriver.state_count++;
@@ -23562,7 +23545,7 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 		PUBLIC(RO(Proc))->HypervisorID = HYPERV_XEN;
 	}
 	#endif /* CONFIG_XEN */
-
+/*TODO(CleanUp)
 	if ((PUBLIC(RO(Proc))->Features.Std.ECX.Hyperv == 1) && (ArchID == -1))
 	{
 		VendorFromCPUID(PUBLIC(RO(Proc))->Features.Info.Hypervisor.ID,
@@ -23573,7 +23556,7 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 
 		switch (PUBLIC(RO(Proc))->HypervisorID) {
 		case HYPERV_NONE:
-/*TODO(CleanUp)
+
 			PUBLIC(RO(Proc))->ArchID = GenuineArch;
 			Arch[GenuineArch].Query = Query_VirtualMachine;
 			Arch[GenuineArch].Update= PerCore_VirtualMachine;
@@ -23584,14 +23567,12 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 			Arch[GenuineArch].thermalFormula = THERMAL_FORMULA_NONE;
 			Arch[GenuineArch].voltageFormula = VOLTAGE_FORMULA_NONE;
 			Arch[GenuineArch].powerFormula = POWER_FORMULA_NONE;
-*/
 			break;
 		case HYPERV_KVM:
 		case HYPERV_VBOX:
 		case HYPERV_KBOX:
 		case HYPERV_VMWARE:
 		case HYPERV_HYPERV:
-/*TODO(CleanUp)
 			PUBLIC(RO(Proc))->ArchID = GenuineArch;
 			Arch[GenuineArch].Query = Query_VirtualMachine;
 			Arch[GenuineArch].Update= PerCore_VirtualMachine;
@@ -23602,14 +23583,14 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 			Arch[GenuineArch].thermalFormula = THERMAL_FORMULA_NONE;
 			Arch[GenuineArch].voltageFormula = VOLTAGE_FORMULA_NONE;
 			Arch[GenuineArch].powerFormula = POWER_FORMULA_NONE;
-*/
+
 			break;
 		case BARE_METAL:
 		case HYPERV_XEN:
-		/*	Xen virtualizes better the MSR & PCI registers	*/
+		**	Xen virtualizes better the MSR & PCI registers	**
 			break;
 		}
-	}
+	}*/
 	PUBLIC(RO(Proc))->thermalFormula = \
 				Arch[PUBLIC(RO(Proc))->ArchID].thermalFormula;
 

@@ -267,29 +267,29 @@ const struct {
 ** 000110b **	{14, {26, 27, 28, 29, 30}},
 ** 000111b **	{15, {28, 29, 30, 31, 32}},
 };
-*/
+
 typedef union
-{	/* Speculative Control: SMT MSR 0x00000048			*/
+{
 	unsigned long long value;
     struct
     {
 	unsigned long long
-	IBRS		:  1-0,  /*RW: Indirect Branch Restriction Speculation*/
-	STIBP		:  2-1,  /*RW: Single Thread Indirect Branch Predictor*/
-	SSBD		:  3-2,  /*RW: Speculative Store Bypass Disable */
+	IBRS		:  1-0,
+	STIBP		:  2-1,
+	SSBD		:  3-2,
 	Reserved1	:  7-3,
-	PSFD		:  8-7,  /* RW: Predictive Store Forwarding Disable */
+	PSFD		:  8-7,
 	Reserved2	: 64-8;
     };
 } AMD_SPEC_CTRL;
 
 typedef union
-{	/* Speculative Control: Per Core MSR 0x00000049 iff CPUID:IBPB	*/
+{
 	unsigned long long value;
     struct
     {
 	unsigned long long
-	IBPB		:  1-0,  /* WO: Indirect Branch Prediction Barrier */
+	IBPB		:  1-0,
 	Reserved	: 64-1;
     };
 } AMD_PRED_CMD;
@@ -300,94 +300,94 @@ typedef union
     struct
     {
 	unsigned long long
-	SmmLock 	:  1-0,  /* SMM Configuration Lock.		*/
+	SmmLock 	:  1-0,
 	Reserved1	:  3-1,
-	TlbCacheDis	:  4-3,  /* Cacheable Memory Disable.		*/
-	INVDWBINVD	:  5-4,  /* INVD to WBINVD Conversion.		*/
+	TlbCacheDis	:  4-3,
+	INVDWBINVD	:  5-4,
 	Reserved2	:  7-5,
-	AllowFerrOnNe	:  8-7,  /* Allow FERR on NE..			*/
-	IgnneEm 	:  9-8,  /* IGNNE port emulation enable.	*/
-	MonMwaitDis	: 10-9,  /* 1=MONITOR & MWAIT opcodes become invalid. */
-	MonMwaitUserEn	: 11-10, /* MONITOR/MWAIT user mode enable. 0=pl0 only*/
+	AllowFerrOnNe	:  8-7,
+	IgnneEm 	:  9-8,
+	MonMwaitDis	: 10-9,
+	MonMwaitUserEn	: 11-10,
 	Reserved3	: 12-11,
-	HltXSpCycEn	: 13-12, /* halt-exit special bus cycle enable. */
-	SmiSpCycDis	: 14-13, /* SMI special bus cycle disable.	*/
-	RsmSpCycDis	: 15-14, /* RSM special bus cycle disable.	*/
+	HltXSpCycEn	: 13-12,
+	SmiSpCycDis	: 14-13,
+	RsmSpCycDis	: 15-14,
 	Reserved4	: 17-15,
-	Wrap32Dis	: 18-17, /* 32-bit address wrap disable.	*/
-	McStatusWrEn	: 19-18, /* Machine check status write enable.	*/
+	Wrap32Dis	: 18-17,
+	McStatusWrEn	: 19-18,
 	Reserved5	: 20-19,
-	IoCfgGpFault	: 21-20, /* IO-space configuration causes a GP fault. */
+	IoCfgGpFault	: 21-20,
 	Reserved6	: 23-21,
-	ForceRdWrSzPrb	: 24-23, /* Force probes for RdSized and WrSized. */
-	TscFreqSel	: 25-24, /* 1=The TSC increments at the P0 frequency. */
-	CpbDis		: 26-25, /* 1=Core performance boost disable.	*/
-	EffFreqCntMwait : 27-26, /* Effective frequency counting during mwait.*/
-	/* Family 15h */
-	EffFreqROLock	: 28-27, /* Read-only effective frequency counter lock*/
+	ForceRdWrSzPrb	: 24-23,
+	TscFreqSel	: 25-24,
+	CpbDis		: 26-25,
+	EffFreqCntMwait : 27-26,
+
+	EffFreqROLock	: 28-27,
 	SmuLock 	: 29-28,
-	CSEnable	: 30-29, /* Connected standby enable.		*/
+	CSEnable	: 30-29,
 	Reserved7	: 32-30,
 	Reserved	: 64-32;
     } Family_12h;
     struct
     {
 	unsigned long long
-	SmmLock 	:  1-0,  /* RWO: BIOS SMM code lock		*/
+	SmmLock 	:  1-0,
 	Reserved1	:  3-1,
-	TlbCacheDis	:  4-3,  /* RW: 1=Disable cacheable PML4,PDP,PDE,PTE */
-	INVDWBINVD	:  5-4,  /* RW: 1=Convert INVD to WBINVD	*/
+	TlbCacheDis	:  4-3,
+	INVDWBINVD	:  5-4,
 	Reserved2	:  7-5,
-	AllowFerrOnNe	:  8-7,  /* RW: 1=Legacy FERR signaling/exception */
-	IgnneEm 	:  9-8,  /* RW: 1=Enable emulation of IGNNE port */
-	MonMwaitDis	: 10-9,  /* RW: 1=Disable MONITOR & MWAIT opcodes */
-	MonMwaitUserEn	: 11-10, /* RW: 1=MONITOR/MWAIT all privilege levels */
+	AllowFerrOnNe	:  8-7,
+	IgnneEm 	:  9-8,
+	MonMwaitDis	: 10-9,
+	MonMwaitUserEn	: 11-10,
 	Reserved3	: 13-11,
-	SmiSpCycDis	: 14-13, /* 0=Generate SMI special bus cycle	*/
-	RsmSpCycDis	: 15-14, /* 0=Generate RSM special bus cycle	*/
+	SmiSpCycDis	: 14-13,
+	RsmSpCycDis	: 15-14,
 	Reserved4	: 17-15,
-	Wrap32Dis	: 18-17, /* RW: 1=Above 4GB Memory in 32-bits mode */
-	McStatusWrEn	: 19-18, /* RW: 1=Machine Check status writeable */
+	Wrap32Dis	: 18-17,
+	McStatusWrEn	: 19-18,
 	Reserved5	: 20-19,
-	IoCfgGpFault	: 21-20, /* RW: 1=IO-space config. causes GP fault */
-	LockTscToCurrP0 : 22-21, /* RW: 1=Lock TSC to current P0 frequency */
+	IoCfgGpFault	: 21-20,
+	LockTscToCurrP0 : 22-21,
 	Reserved6	: 24-22,
-	TscFreqSel	: 25-24, /* RO: 1=TSC increments at the P0 frequency */
-	CpbDis		: 26-25, /* RW: 1=Core Performance Boost disable */
-	EffFreqCntMwait : 27-26, /* RW: A-M-Perf increment during MWAIT */
-	EffFreqROLock	: 28-27, /* W1: Lock A-M-Perf & IR-Perf counters */
+	TscFreqSel	: 25-24,
+	CpbDis		: 26-25,
+	EffFreqCntMwait : 27-26,
+	EffFreqROLock	: 28-27,
 	Reserved7	: 29-28,
 	CSEnable	: 30-29,
-	IRPerfEn	: 31-30, /* RW: Enable Instructions Retired counter */
-	SmmBaseLock	: 32-31, /* MSR SMM_BASE saved/restored from save area*/
-	TprLoweringDis	: 33-32, /* RW: FastTprLoweringDis: 1=Disabled	*/
-	SmmPgCfgLock	: 34-33, /* SMM reserved and iff 8000_0021_EAX[3] */
+	IRPerfEn	: 31-30,
+	SmmBaseLock	: 32-31,
+	TprLoweringDis	: 33-32,
+	SmmPgCfgLock	: 34-33,
 	Reserved8	: 35-34,
-	CpuidUserDis	: 36-35, /* CPUID User Disable iff 8000_0021_EAX[17] */
+	CpuidUserDis	: 36-35,
 	Reserved9	: 64-36;
     } Family_17h;
     struct
     {
 	unsigned long long
 	SmmLock 	:  1-0,
-	SLOWFENCE	:  2-1,  /* Slow SFENCE Enable.			*/
+	SLOWFENCE	:  2-1,
 	Reserved1	:  3-2,
 	TlbCacheDis	:  4-3,
-	INVDWBINVD	:  5-4,  /* This bit is required to be set for CC6 */
+	INVDWBINVD	:  5-4,
 	Reserved2	:  6-5,
-	FFDIS		:  7-6,  /* TLB Flush Filter Disable.		*/
-	DISLOCK 	:  8-7,  /* Disable x86 LOCK prefix functionality. */
+	FFDIS		:  7-6,
+	DISLOCK 	:  8-7,
 	IgnneEm 	:  9-8,
 	Reserved3	: 12-9,
 	HltXSpCycEn	: 13-12,
 	SmiSpCycDis	: 14-13,
 	RsmSpCycDis	: 15-14,
-	SSEDIS		: 16-15, /* SSE Instructions Disable.		*/
+	SSEDIS		: 16-15,
 	Reserved4	: 17-16,
 	Wrap32Dis	: 18-17,
 	McStatusWrEn	: 19-18,
 	Reserved5	: 24-19,
-	StartFID	: 30-24, /* Startup FID Status.			*/
+	StartFID	: 30-24,
 	Reserved6	: 32-30,
 	Reserved	: 64-32;
     } Family_0Fh;
@@ -403,9 +403,9 @@ typedef union
 	Reserved1	:  8-6,
 	NewVID		: 14-8,
 	Reserved2	: 16-14,
-	InitFidVid	: 17-16,	/* Initiate FID/VID Change	*/
+	InitFidVid	: 17-16,
 	Reserved3	: 32-17,
-	StpGntTOCnt	: 52-32,	/* Stop Grant Time-Out Count	*/
+	StpGntTOCnt	: 52-32,
 	Reserved4	: 64-52;
     };
 } FIDVID_CONTROL;
@@ -416,25 +416,25 @@ typedef union
     struct
     {
 	unsigned long long
-	CurrFID 	:  6-0,  /* Current FID				*/
+	CurrFID 	:  6-0,
 	Reserved1	:  8-6,
-	StartFID	: 14-8,  /* Startup FID				*/
+	StartFID	: 14-8,
 	Reserved2	: 16-14,
-	MaxFID		: 22-16, /* Max FID				*/
+	MaxFID		: 22-16,
 	Reserved3	: 24-22,
-	MaxRampVID	: 30-24, /* Max Ramp VID			*/
+	MaxRampVID	: 30-24,
 	Reserved4	: 31-30,
-	FidVidPending	: 32-31, /* 0b when the FID/VID change has completed.*/
-	CurrVID 	: 38-32, /* Current VID				*/
+	FidVidPending	: 32-31,
+	CurrVID 	: 38-32,
 	Reserved5	: 40-38,
-	StartVID	: 46-40, /* Startup VID				*/
+	StartVID	: 46-40,
 	Reserved6	: 48-46,
-	MaxVID		: 54-48, /* Max VID				*/
+	MaxVID		: 54-48,
 	Reserved7	: 56-54,
-	PstateStep	: 57-56, /* voltage reduction: 0b=25mV; 1b=50mV */
-	AltVidOffset	: 60-57, /* [NA;-50;-100;-125;-150;-175;-200;-225]mV */
+	PstateStep	: 57-56,
+	AltVidOffset	: 60-57,
 	Reserved8	: 61-60,
-	IntPstateSup	: 62-61, /* 1b = Intermediate P-states is supported. */
+	IntPstateSup	: 62-61,
 	Reserved9	: 64-62;
     };
 } FIDVID_STATUS;
@@ -444,68 +444,68 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* MSR 0xC001_00[68:64] P-State [4:0]	*/
-	CpuFid		:  6-0,  /* Core Frequency ID. RW: Value <= 2Fh */
-	CpuDid		:  9-6,  /* Core Divisor ID. RW: 0h-4h divide by 1-16 */
-	CpuVid		: 16-9,  /* Core Voltage ID. RW			*/
+	unsigned long long
+	CpuFid		:  6-0,
+	CpuDid		:  9-6,
+	CpuVid		: 16-9,
 	Reserved1	: 22-16,
-	NbDid		: 23-22, /* Northbridge Divisor ID. RW: 0-1 => 0-2 */
+	NbDid		: 23-22,
 	Reserved2	: 25-23,
-	NbVid		: 32-25, /* NB VID. RW: MSR 0xC0010071[MaxVid,MinVid]*/
-	IddValue	: 40-32, /* Current Dissipation. RW:00-10b->1,10,100A */
-	IddDiv		: 42-40, /* Current Dissipation Divisor. RW	*/
+	NbVid		: 32-25,
+	IddValue	: 40-32,
+	IddDiv		: 42-40,
 	Reserved3	: 63-42,
-	PstateEn	: 64-63; /* Pstate enabled. RW			*/
+	PstateEn	: 64-63;
     } Family_10h;
     struct
     {
-	unsigned long long	 /* MSR 0xC001_00[6B:64] P-State [7:0]	*/
-	CpuDid		:  4-0,  /* Core Divisor ID. RW			*/
-	CpuFid		:  9-4,  /* Core Frequency ID. RW		*/
-	CpuVid		: 16-9,  /* Core Voltage ID. RW			*/
+	unsigned long long
+	CpuDid		:  4-0,
+	CpuFid		:  9-4,
+	CpuVid		: 16-9,
 	Reserved1	: 32-16,
-	IddValue	: 40-32, /* Current value field. RW		*/
-	IddDiv		: 42-40, /* Current divisor field. RW		*/
+	IddValue	: 40-32,
+	IddDiv		: 42-40,
 	Reserved2	: 63-42,
-	PstateEn	: 64-63; /* Pstate enabled. RW			*/
+	PstateEn	: 64-63;
     } Family_12h;
     struct
     {
-	unsigned long long	 /* MSR 0xC001_00[6B:64] P-State [7:0]	*/
-	CpuDidLSD	:  4-0,  /* Core Divisor ID least significant digit.RW*/
-	CpuDidMSD	:  9-4,  /* Core Divisor ID most significant digit. RW*/
-	CpuVid		: 16-9,  /* Core Voltage ID. RW			*/
+	unsigned long long
+	CpuDidLSD	:  4-0,
+	CpuDidMSD	:  9-4,
+	CpuVid		: 16-9,
 	Reserved1	: 32-16,
-	IddValue	: 40-32, /* Current value field. RW		*/
-	IddDiv		: 42-40, /* Current divisor field. RW		*/
+	IddValue	: 40-32,
+	IddDiv		: 42-40,
 	Reserved2	: 63-42,
-	PstateEn	: 64-63; /* Pstate enabled. RW			*/
+	PstateEn	: 64-63;
     } Family_14h;
     struct
     {
-	unsigned long long	 /* MSR 0xC001_00[6B:64] P-state [7:0]	*/
-	CpuFid		:  6-0,  /* Core Frequency ID. RW		*/
-	CpuDid		:  9-6,  /* Core Divisor ID. RW:0h-4h divide by 1-16 */
-	CpuVid		: 16-9,  /* Core Voltage ID. RW			*/
+	unsigned long long
+	CpuFid		:  6-0,
+	CpuDid		:  9-6,
+	CpuVid		: 16-9,
 	CpuVid_bit	: 17-16,
 	Reserved1	: 22-17,
-	NbPstate	: 23-22, /* Northbrige MSR 0xC001_0071[NbPstateDis] */
+	NbPstate	: 23-22,
 	Reserved2	: 32-23,
-	IddValue	: 40-32, /* Max Current Dissipation:00-10b->1,10,100A */
-	IddDiv		: 42-40, /* Current Dissipation Divisor. RW	*/
+	IddValue	: 40-32,
+	IddDiv		: 42-40,
 	Reserved3	: 63-42,
-	PstateEn	: 64-63; /* Pstate enabled. RW			*/
+	PstateEn	: 64-63;
     } Family_15h;
     struct
     {
-	unsigned long long	 /* MSR 0xC001_0064 [P-state [7:0]]	*/
-	CpuFid		:  8-0,  /* Core Frequency ID. RW: FFh-10h <Value>*25 */
-	CpuDfsId	: 14-8,  /* Core Divisor ID. RW			*/
-	CpuVid		: 22-14, /* Core Voltage ID. RW			*/
-	IddValue	: 30-22, /* Current Dissipation in amps. RW	*/
-	IddDiv		: 32-30, /* Current Dissipation Divisor. RW	*/
+	unsigned long long
+	CpuFid		:  8-0,
+	CpuDfsId	: 14-8,
+	CpuVid		: 22-14,
+	IddValue	: 30-22,
+	IddDiv		: 32-30,
 	Reserved	: 63-32,
-	PstateEn	: 64-63; /* RW: Is this Pstate MSR valid ?	*/
+	PstateEn	: 64-63;
     } Family_17h;
 } PSTATEDEF;
 
@@ -513,7 +513,7 @@ typedef union
 {
 	unsigned long long value;
     struct
-    {	/* MSR 0xC001020{0,2,4,6,8,a} ; 0xC001000{0,1,2,3}		*/
+    {
 	unsigned long long
 	EventSelect00	:  8-0,
 	UnitMask	: 16-8,
@@ -537,7 +537,7 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	/* MSR 0xC001023{0,2,4,6,8,a}		*/
+	unsigned long long
 	EventSelect	:  8-0,
 	UnitMask	: 16-8,
 	Reserved1	: 22-16,
@@ -548,57 +548,57 @@ typedef union
 	ThreadMask	: 64-56;
     };
 } ZEN_L3_PERF_CTL;
-
+*/
 #define SMU_AMD_UMC_PERF_CTL_CLK(_umc)	(0x00050d00 + (_umc << 20))
-
+/*
 typedef union
 {
 	unsigned int value;
     struct
-    {	/*	SMU addresses = 0x{0,1,2,3,4,5,6,7}50d00		*/
+    {
 	unsigned int
-	GlblResetMsk	:  6-0, /* Six Counters can be reset by GlblReset */
+	GlblResetMsk	:  6-0,
 	Reserved1	: 24-6,
-	GlblReset	: 25-24,/* Reset Ctr not masked within GlblResetMsk */
-	GlblMonEn	: 26-25,/* Global counter enable		*/
+	GlblReset	: 25-24,
+	GlblMonEn	: 26-25,
 	Reserved2	: 31-26,
 	CtrClkEn	: 32-31;
     };
 } ZEN_UMC_PERF_CTL_CLK;
-
+*/
 #define SMU_AMD_ZEN_UMC_PERF_CTL(_umc, _cha)				\
 	(0x00050d04 + (_umc << 20) + (_cha << 2))
-
+/*
 typedef union
 {
 	unsigned int value;
     struct
-    {	/*	SMU addresses = 0x{0,1,2,3,4,5,6,7}50d{04,08,0c,10}	*/
+    {
 	unsigned int
 	EventSelect	:  8-0,
-	RdWrMask	: 10-8, /* Masking: 0=None; 1=Writes; 2=Reads; 3=Rsvd */
-	PriorityMask	: 14-10,/* Masking: 0=Low; 1=Medium; 2=High; 3=Urgent */
-	ReqSizeMask	: 16-14,/* Transactions: 0=None; 1=32B; 2=64B; 3=Rsvd */
-	ChipSelMask	: 20-16,/* Chip Select: 0=CS0; 1=CS1; 2=CS2; 3=CS3 */
-	ChipIDSel	: 24-20,/* Only events from 0=C0; 1=C1; 2=C2; 3=Enable*/
-	VCSel		: 29-24,/* Only events from 0=VC0; 1=VC1; 2=VC2; 3=VC3*/
+	RdWrMask	: 10-8,
+	PriorityMask	: 14-10,
+	ReqSizeMask	: 16-14,
+	ChipSelMask	: 20-16,
+	ChipIDSel	: 24-20,
+	VCSel		: 29-24,
 	Reserved	: 31-29,
 	CounterEn	: 32-31;
     };
 } ZEN_UMC_PERF_CTL;
-
+*/
 #define SMU_AMD_ZEN_UMC_PERF_CLK_LOW(_cha)				\
 	(0x00050d20 + (_cha << 20))
 
 #define SMU_AMD_ZEN_UMC_PERF_CLK_HIGH(_cha)				\
 	(0x00050d24 + (_cha << 20))
-
+/*
 typedef union
 {
 	unsigned long long value;
     struct
     {
-	unsigned long long	/* MSR 0xC001024{0,2,4,6}		*/
+	unsigned long long
 	EventSelect00	:  8-0,
 	UnitMask	: 16-8,
 	Reserved1	: 22-16,
@@ -616,16 +616,16 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* MSR 0xC0010292			*/
-	CurPstateLimit	:  3-0,  /* CurHwPstateLimit ; BOOST(MAX)	*/
-	StartupPstate	:  6-3,  /* BOOST(MAX)				*/
+	unsigned long long
+	CurPstateLimit	:  3-0,
+	StartupPstate	:  6-3,
 	DFPstateDis	:  7-6,
 	CurDFVid	: 15-7,
 	MaxCpuCof	: 21-15,
 	MaxDFCof	: 26-21,
 	CpbCap		: 29-26,
 	Reserved1	: 32-29,
-	PC6En		: 33-32, /* RW: 0=Disable PC6. 1=Enable PC6	*/
+	PC6En		: 33-32,
 	Reserved2	: 64-33;
     };
 } ZEN_PMGT_MISC;
@@ -635,7 +635,7 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* Per Core: MSR 0xC0010294 (R/W)	*/
+	unsigned long long
 	CC1_TMRSEL	:  2-0,
 	CC1_TMRLEN	:  7-2,
 	HYST_TMRSEL	:  9-7,
@@ -660,7 +660,7 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* Per Core: MSR 0xC0010296 (R/W)	*/
+	unsigned long long
 	CCR0_CC1DFSID	:  6-0,
 	CCR0_CC6EN	:  7-6,
 	Reserved1	:  8-7,
@@ -678,10 +678,10 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* MSR 0xC0010061 : iff HwPstate == 1	*/
-	CurPstateLimit	:  3-0,  /* Lowest P-State (highest-performance)*/
+	unsigned long long
+	CurPstateLimit	:  3-0,
 	Reserved1	:  4-3,
-	PstateMaxVal	:  7-4,  /* highest P-State (lowest-performance)*/
+	PstateMaxVal	:  7-4,
 	Reserved2	: 64-7;
     } Family_17h;
 } PSTATELIMIT;
@@ -691,7 +691,7 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* MSR 0xC0010062 : Family 10h up to 17h */
+	unsigned long long
 	PstateCmd	:  3-0,
 	Reserved	: 64-3;
     };
@@ -702,7 +702,7 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* MSR 0xC0010063 : Family 10h up to 17h */
+	unsigned long long
 	Current 	:  3-0,
 	Reserved	: 64-3;
     };
@@ -713,7 +713,7 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* MSR 0xC001_0071 COFVID Status	*/
+	unsigned long long
 	CurCpuFid	:  6-0,
 	CurCpuDid	:  9-6,
 	CurCpuVid	: 16-9,
@@ -732,21 +732,21 @@ typedef union
     } Arch_COF;
     struct
     {
-	unsigned long long	 /* MSR 0xC0010071 COFVID Status	*/
-	CurCpuDidLSD	:  4-0,  /* Current Core Divisor ID. RO 	*/
+	unsigned long long
+	CurCpuDidLSD	:  4-0,
 	CurCpuDidMSD	:  9-4,
-	CurCpuVid	: 16-9,  /* Current Core Voltage ID. RO 	*/
-	CurPstate	: 19-16, /* Current P-state. RO 		*/
+	CurCpuVid	: 16-9,
+	CurPstate	: 19-16,
 	Reserved1	: 20-19,
-	PstateInProgress: 21-20, /* RO: 1=Change, 0=No change		*/
+	PstateInProgress: 21-20,
 	Reserved2	: 25-21,
-	CurNbVid	: 32-25, /* Current Northbridge VID. RO 	*/
-	StartupPstate	: 35-32, /* Startup P-state Number. RO		*/
-	MaxVid		: 42-35, /* Maximum Voltage ID. RO		*/
-	MinVid		: 49-42, /* Minimum Voltage ID. RO		*/
-	MainPllOpFidMax : 55-49, /* Main Pll Operating Frequency ID maximum.RO*/
+	CurNbVid	: 32-25,
+	StartupPstate	: 35-32,
+	MaxVid		: 42-35,
+	MinVid		: 49-42,
+	MainPllOpFidMax : 55-49,
 	Reserved3	: 56-55,
-	CurPstateLimit	: 59-56, /* Current P-state Limit. RO		*/
+	CurPstateLimit	: 59-56,
 	Reserved4	: 64-59;
     } Arch_Pll;
 } COFVID;
@@ -756,15 +756,15 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* Per SMT: MSR 0xC0010073 (RW)	*/
-	IOaddr		: 16-0,  /* 0:dis, [0x1-0xFFF8]+[1...6] Six C-States */
+	unsigned long long
+	IOaddr		: 16-0,
 	Reserved	: 64-16;
     };
 } CSTATE_BASE_ADDR;
 
 typedef union
 {
-	unsigned long long value; /* MSR 0xC0010055			*/
+	unsigned long long value;
     struct
     {
 	unsigned long long
@@ -773,119 +773,119 @@ typedef union
 	IntrPndMsgDis	: 25-24,
 	IntrPndMsg	: 26-25,
 	IORd		: 27-26,
-	SmiOnCmpHalt	: 28-27, /* SMI on Multi-core halt		*/
-	C1eOnCmpHalt	: 29-28, /* C1E on Multi-core halt: Fam. 0Fh,10h,11h */
-	BmStsClrOnHaltEn: 30-29, /* BM_STS clear on Halt enable: Fam. 10h,15h*/
-	EnPmTmrCheckLoop: 31-30, /* Enable. Fam. 12h,14h,15h_60h-6Fh	*/
+	SmiOnCmpHalt	: 28-27,
+	C1eOnCmpHalt	: 29-28,
+	BmStsClrOnHaltEn: 30-29,
+	EnPmTmrCheckLoop: 31-30,
 	Reserved	: 32-31,
-	RAZ		: 64-32; /* [63:29]0Fh, [63:32]10h,11h,15h, [63:0]16h*/
+	RAZ		: 64-32;
     };
 } INT_PENDING_MSG;
 
 typedef union
 {
-	unsigned long long value; /* Per SMT: MSR 0xC0010114 (VM_CR)	*/
+	unsigned long long value;
     struct
     {
 	unsigned long long
-	DPD		:  1-0,  /* Debug Port Disable. ReservedBits: F17h */
+	DPD		:  1-0,
 	InterceptInit	:  2-1,
-	DisA20m 	:  3-2,  /* Disable A20 Masking. ReservedBits: F17h */
-	SVM_Lock	:  4-3,  /* 0=SvmeDisable is read-write, 1=read-only */
-	SVME_Disable	:  5-4,  /* 0 = MSR::EFER[SVME] is RW, 1 = read-only */
+	DisA20m 	:  3-2,
+	SVM_Lock	:  4-3,
+	SVME_Disable	:  5-4,
 	Reserved1	: 32-5,
 	Reserved2	: 64-32;
     };
-} VM_CR;	/* Family: 17h, 16h, 15h, 14h, 12h, 11h, 10h, 0Fh	*/
+} VM_CR;
 
 typedef union
 {
-	unsigned long long value; /* Per SMT: MSR 0xC0010118		*/
+	unsigned long long value;
     struct
     {
 	unsigned long long
-	SvmLockKey	: 64-0; /* Write if (Core::X86::Msr::VM_CR[Lock] == 0)*/
+	SvmLockKey	: 64-0;
     };
-} SVM_LOCK_KEY; /* Family: 17h, 16h, 15h, 14h, 12h, 11h, 10h		*/
+} SVM_LOCK_KEY;
 
 typedef union
 {
-	unsigned long long value; /* Pkg: MSR 0xc00102f0		*/
+	unsigned long long value;
     struct
     {
 	unsigned long long
-	LockOut 	:  1-0, /* R/WO: iff CPUID_Fn80000008_EBX.PPIN	*/
-	Enable		:  2-1, /* R/W: iff CPUID_Fn80000008_EBX.PPIN  */
+	LockOut 	:  1-0,
+	Enable		:  2-1,
 	ReservedBits	: 64-2;
     };
-} AMD_PPIN_CTL; /* Family: 17h, UNK: 16h,15h,14h,12h,11h,10h. Not: 0Fh	*/
+} AMD_PPIN_CTL;
 
 typedef union
 {
-	unsigned long long value; /* Per SMT: MSR 0xc0011020		*/
+	unsigned long long value;
     struct
     {
 	unsigned long long
 	ReservedBits1	: 10-0,
-	F17h_SSBD_EN	: 11-10, /* F17h: 1=Enable SSBD per SMT [low perf] */
+	F17h_SSBD_EN	: 11-10,
 	ReservedBits2	: 15-11,
-	CVE_2013_6885	: 16-15, /* F16h erratum 793, CVE-2013-6885	*/
+	CVE_2013_6885	: 16-15,
 	ReservedBits3	: 26-16,
-	HitCurPageOpt	: 27-26, /* Disable current table-walk page hit optim.*/
+	HitCurPageOpt	: 27-26,
 	ReservedBits4	: 28-27,
-	StreamingStore	: 29-28, /* F10h...F15h: 1=Disable | Mainboard Enable */
+	StreamingStore	: 29-28,
 	F16h_SSBD	: 30-29,
 	ReservedBits5	: 33-30,
-	F16h_SSBD_EN	: 34-33, /* F16h: 1=Enable SSBD per SMT 	*/
+	F16h_SSBD_EN	: 34-33,
 	ReservedBits6	: 54-34,
-	F15h_SSBD	: 55-54, /* F15h,F16h,some F17h: disable SpecLockMap */
+	F15h_SSBD	: 55-54,
 	ReservedBits7	: 64-55;
     };
 } AMD_LS_CFG;
 
 typedef union
 {
-	unsigned long long value; /* Scope[Core]: MSR 0xc0011021	*/
+	unsigned long long value;
     struct
     {
 	unsigned long long
 	ReservedBits1	:  1-0,
-	DisIcWayFilter	:  5-1,  /* F15h-C0: 1=Disable IC way access filter */
-	HW_IP_Prefetch	:  6-5,  /* F17h: 1=Disable Instruction Cache	*/
+	DisIcWayFilter	:  5-1,
+	HW_IP_Prefetch	:  6-5,
 	ReservedBits2	:  9-6,
-	DisSpecTlbRld 	: 10-9,  /* F16h: 1=Disable speculative ITLB reloads */
+	DisSpecTlbRld 	: 10-9,
 	ReservedBits3	: 11-10,
-	DIS_SEQ_PREFETCH: 12-11, /* K8: 1=Disable IC sequential prefetch */
+	DIS_SEQ_PREFETCH: 12-11,
 	ReservedBits4	: 26-12,
-	WIDEREAD_PWRSAVE: 27-26, /* F16h: 1=Disable wide read power mgmt */
+	WIDEREAD_PWRSAVE: 27-26,
 	ReservedBits5	: 39-27,
-	DisLoopPredictor: 40-39, /* F15h-C0: 1=Disable loop predictor	*/
+	DisLoopPredictor: 40-39,
 	ReservedBits6	: 64-40;
     };
 } AMD_IC_CFG;
 
 typedef union
 {
-	unsigned long long value; /* Scope[Core]: MSR 0xc0011022	*/
+	unsigned long long value;
     struct
     {
 	unsigned long long
 	ReservedBits1	:  4-0,
-	DisSpecTlbRld	:  5-4, /* 1=Disable speculative DTLB reloads	*/
+	DisSpecTlbRld	:  5-4,
 	ReservedBits2	:  8-5,
-	Dis_WBTOL2	:  9-8, /* F12h: 1=DIS_CLR_WBTOL2_SMC_HIT	*/
+	Dis_WBTOL2	:  9-8,
 	ReservedBits3	: 13-9,
 	DisHwPf 	: 14-13,
 	ReservedBits4	: 15-14,
 	DisPfHwForSw	: 16-15,
-	L1_HW_Prefetch	: 17-16, /* F17h (BIOS) , Disable=1		*/
+	L1_HW_Prefetch	: 17-16,
 	ReservedBits5	: 64-17;
     };
-} AMD_DC_CFG; /* Family: 12h(BKDG) ... 17h(BIOS)			*/
+} AMD_DC_CFG;
 
 typedef union
 {
-	unsigned long long value; /* Scope[Core]: MSR 0xc0011023	*/
+	unsigned long long value;
     struct
     {
 	unsigned long long
@@ -893,46 +893,46 @@ typedef union
 	CombineCr0Cd	: 50-49,
 	ReservedBits5	: 64-50;
     };
-} AMD_TW_CFG; /* Family: 10h(BKDG) ... 17h				*/
+} AMD_TW_CFG;
 
 typedef union
 {
-	unsigned long long value; /* Scope[?]: MSR 0xc0011029		*/
+	unsigned long long value;
     struct
     {
 	unsigned long long
 	ReservedBits1	:  1-0,
-	LFENCE_SER	:  2-1,  /* F10h: LFENCE as serializing instruction */
+	LFENCE_SER	:  2-1,
 	ReservedBits2	: 23-2,
-	CLFLUSH_SER	: 24-23, /* F12h: CLFLUSH as serializing instruction */
+	CLFLUSH_SER	: 24-23,
 	ReservedBits3	: 64-24;
     };
-} AMD_DE_CFG; /* Family: 12h ... 17h					*/
+} AMD_DE_CFG;
 
 typedef union
 {
-	unsigned long long value; /* SharedC: MSR 0xc001102a		*/
+	unsigned long long value;
     struct
     {
 	unsigned long long
 	ReservedBits1	: 35-0,
-	IcDisSpecTlbWr	: 36-35, /* F12h: 1=Dis Speculative writes to ITLB */
+	IcDisSpecTlbWr	: 36-35,
 	ReservedBits2	: 50-36,
-	RdMmExtCfgDwDis : 51-50, /* F12h: 1=Dis Read MMIO extended config */
+	RdMmExtCfgDwDis : 51-50,
 	ReservedBits3	: 56-51,
-	L2ClkGatingEn	: 57-56, /* F12h: 1=Enable L2 clock gating	*/
-	L2HystCnt	: 59-57, /* F12h: Periodic clocks max number	*/
+	L2ClkGatingEn	: 57-56,
+	L2HystCnt	: 59-57,
 	ReservedBits4	: 64-59;
     };
-} AMD_BU_CFG2; /* Family: 12h ... 17h					*/
+} AMD_BU_CFG2;
 
 typedef union
 {
-	unsigned long long value; /* SharedC: MSR 0xc001102b		*/
+	unsigned long long value;
     struct
     {
 	unsigned long long
-	L2_HW_Prefetch	:  1-0, /* F17h (BIOS) , Enable=1		*/
+	L2_HW_Prefetch	:  1-0,
 	ReservedBits1	:  3-1,
 	PfcL1TrainDis	:  4-3,
 	ReservedBits2	: 16-4,
@@ -943,49 +943,49 @@ typedef union
 	PfcStrideMul	: 22-20,
 	PfcDoubleStride : 23-22,
 	ReservedBits4	: 42-23,
-	DisWalkerSharing: 43-42, /* PwcDisableWalkerSharing		*/
+	DisWalkerSharing: 43-42,
 	ReservedBits5	: 49-43,
 	CombineCr0Cd	: 50-49,
-	AsidIncFactor	: 51-50, /* ASID Increment Scale Factor: [16,64]TLB*/
-	AsidDecFactor	: 53-52, /* Decrement Factor [16,32,64,128]TLB	*/
+	AsidIncFactor	: 51-50,
+	AsidDecFactor	: 53-52,
 	ReservedBits6	: 64-53;
     };
-} AMD_CU_CFG3; /* Family: 15h(BKDG), 17h(BIOS), Other(TODO)		*/
+} AMD_CU_CFG3;
 
 typedef union
 {
-	unsigned long long value; /* Scope[SMT]: MSR 0xc00110e3 	*/
+	unsigned long long value;
     struct
     {
 	unsigned long long
-	UnspecifiedBit	:  1-0, /* Dumped as one			*/
-	SuppressBPOnNonBr: 2-1, /* 1: BTC-NOBR mitigation enabled	*/
+	UnspecifiedBit	:  1-0,
+	SuppressBPOnNonBr: 2-1,
 	ReservedBits	: 64-2;
     };
-} AMD_DE_CFG2; /* Zen2 Family: 17h Models: 30h-4Fh, 60h-7Fh, A0h-AFh	*/
+} AMD_DE_CFG2;
 
 typedef struct
 {
-	unsigned long long value; /* Pkg: MSR 0xc00102f1		*/
+	unsigned long long value;
 } AMD_PPIN_NUM;
 
 typedef struct
 {
 	unsigned int
 	Reserved1	:  1-0,
-	SensorTrip	:  2-1,  /*1 if temp. sensor trip occurs & was enabled*/
-	SensorCoreSelect:  3-2,  /*0b:CPU1 Therm Sensor. 1b:CPU0 Therm Sensor */
-	Sensor0Trip	:  4-3,  /*1 if trip @ CPU0 (single), or @ CPU1 (dual)*/
-	Sensor1Trip	:  5-4,  /*1 if sensor trip occurs @ CPU0 (dual core) */
-	SensorTripEnable:  6-5,  /*THERMTRIP High event causes a PLL shutdown */
-	SelectSensorCPU	:  7-6,  /*0b:CPU[0,1] Sensor 0. 1b:CPU[0,1] Sensor 1 */
+	SensorTrip	:  2-1,
+	SensorCoreSelect:  3-2,
+	Sensor0Trip	:  4-3,
+	Sensor1Trip	:  5-4,
+	SensorTripEnable:  6-5,
+	SelectSensorCPU	:  7-6,
 	Reserved2	:  8-7,
-	DiodeOffset	: 14-8,  /*offset should be added to the external temp*/
+	DiodeOffset	: 14-8,
 	Reserved3	: 16-14,
-	CurrentTemp	: 24-16, /* 00h = -49C , 01h = -48C ... ffh = 206C */
-	TjOffset	: 29-24, /* Tcontrol = CurTmp - TjOffset * 2 - 49  */
+	CurrentTemp	: 24-16,
+	TjOffset	: 29-24,
 	Reserved4	: 31-29,
-	SwThermTrip	: 32-31; /* diagnostic bit, for testing purposes only.*/
+	SwThermTrip	: 32-31;
 } THERMTRIP_STATUS;
 
 typedef union {
@@ -1004,7 +1004,7 @@ typedef union {
 } AMD_0F_DRAM_CS_BASE_ADDR;
 
 typedef union
-{	/* Function: 2 - Offset: 80h					*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1017,7 +1017,7 @@ typedef union
 } AMD_0F_DRAM_CS_MAPPING;
 
 typedef union
-{	/* Function: 2 - Offset: 88h					*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1037,7 +1037,7 @@ typedef union
 } AMD_0F_DRAM_TIMING_LOW;
 
 typedef union
-{	/* Function: 2 - Offset: 90h					*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1049,8 +1049,8 @@ typedef union
 		DRAM_DrvWeak	:  8-7,
 		Parity_Enable	:  9-8,
 		SelfRefRateEn	: 10-9,
-		BurstLength32	: 11-10,  /* 0b: 64-Byte, 1b: 32-Byte	*/
-		Width128	: 12-11,  /* 0b: 64-bits, 1b: 128-bits	*/
+		BurstLength32	: 11-10,
+		Width128	: 12-11,
 		X4_DIMMS	: 16-12,
 		UnbufferedDIMM	: 17-16,
 		ReservedBits3	: 19-17,
@@ -1060,11 +1060,11 @@ typedef union
 } AMD_0F_DRAM_CONFIG_LOW;
 
 typedef union
-{	/* Function: 2 - Offset: 94h					*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
-		MemClkFreq	:  3-0,  /*000b:200,001b:266,010b:333,011b:400*/
+		MemClkFreq	:  3-0,
 		MemClkFreqValid :  4-3,
 		MaxAsyncLatency :  8-4,
 		ReservedBits1	: 12-8,
@@ -1076,7 +1076,7 @@ typedef union
 		FourRankSODimm	: 18-17,
 		FourRankRDimm	: 19-18,
 		ReservedBits3	: 20-19,
-		SlowAccessMode	: 21-20,  /* 2T Mode=[0b:1T , 1b:2T]	*/
+		SlowAccessMode	: 21-20,
 		ReservedBits4	: 22-21,
 		BankSwizzleMode : 24-22,
 		DcqBypassMax	: 28-24,
@@ -1085,7 +1085,7 @@ typedef union
 } AMD_0F_DRAM_CONFIG_HIGH;
 
 typedef union
-{	/* HTT Node ID Register: Func: 0 - Off: 60h			*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1103,7 +1103,7 @@ typedef union
 } AMD_0F_HTT_NODE_ID;
 
 typedef union
-{	/* HTT Unit ID Register: Func: 0 - Off: 64h			*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1117,7 +1117,7 @@ typedef union
 } AMD_0F_HTT_UNIT_ID;
 
 typedef union
-{	/* HTT Link Frequency Capabilities: Func: 0 - Off: 88h, a8h, c8h */
+{
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1214,7 +1214,7 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* Per Core: MSR 0xC0010074 (RW)	*/
+	unsigned long long
 	TmrCfgEn	:  1-0,
 	TmrTimebaseSel	:  3-1,
 	Reserved1	:  7-3,
@@ -1228,7 +1228,7 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* Per SMT: MSR 0xC00102B0 (RO)	*/
+	unsigned long long
 	Lowest		:  8-0,
 	LowNonlinear	: 16-8,
 	Nominal 	: 24-16,
@@ -1242,7 +1242,7 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* Package: MSR 0xC00102B1 (RW)	*/
+	unsigned long long
 	CPPC_Enable	:  1-0,
 	Reserved	: 64-1;
     };
@@ -1253,7 +1253,7 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* Per SMT: MSR 0xC00102B2 (RO)	*/
+	unsigned long long
 	ConstrainedMax	:  8-0,
 	Reserved	: 64-8;
     };
@@ -1264,7 +1264,7 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* Per SMT: MSR 0xC00102B3 (RW)	*/
+	unsigned long long
 	Minimum_Perf	:  8-0,
 	Maximum_Perf	: 16-8,
 	Desired_Perf	: 24-16,
@@ -1278,7 +1278,7 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* Package: MSR 0xC00102B4 (RW)	*/
+	unsigned long long
 	Reserved1	:  1-0,
 	Min_Excursion	:  2-1,
 	Reserved2	: 64-2;
@@ -1291,39 +1291,39 @@ typedef union
 	struct
 	{
 		unsigned int
-		PerStepTimeUp	:  5-0,  /* Family: 12h, 14h, 15h	*/
-		TmpMaxDiffUp	:  7-5,  /* Family: 12h, 14h, 15h	*/
-		TmpSlewDnEn	:  8-7,  /* Family: 12h, 14h, 15h	*/
-		PerStepTimeDn	: 13-8,  /* Family: 12h, 14h, 15h	*/
+		PerStepTimeUp	:  5-0,
+		TmpMaxDiffUp	:  7-5,
+		TmpSlewDnEn	:  8-7,
+		PerStepTimeDn	: 13-8,
 		ReservedBits	: 16-13,
-		CurTempTJselect : 18-16, /* Family: 15h, 16h		*/
+		CurTempTJselect : 18-16,
 		CurTempTJslewSel: 19-18,
-		CurTempRangeSel : 20-19, /* Family: 17h 		*/
+		CurTempRangeSel : 20-19,
 		MCM_EN		: 21-20,
-		CurTmp		: 32-21; /* Family: 12h, 14h, 15h, 17h	*/
+		CurTmp		: 32-21;
 	};
 } TCTL_REGISTER;
 
 typedef union
 {
-	unsigned int		value;	/* Family: 17h, 19h @ SMU(0x59804) */
+	unsigned int		value;
 	struct
 	{
 		unsigned int
-		HTC_EN		:  1-0,  /* 1: HTC feature is enabled	*/
+		HTC_EN		:  1-0,
 		ReservedBits1	:  2-1,
 		EXTERNAL_PROCHOT:  3-2,
 		INTERNAL_PROCHOT:  4-3,
 		HTC_ACTIVE	:  5-4,
-		HTC_ACTIVE_LOG	:  6-5,  /* 1: HTC_ACTIVE is asserted	*/
+		HTC_ACTIVE_LOG	:  6-5,
 		ReservedBits2	:  8-6,
-		HTC_DIAG	:  9-8,  /* 1: Trigger HTC iff ACT & EN */
-		PROCHOT_PIN_OUT : 10-9,  /* 1: Disable HTC to trigger PROCHOT*/
-		HTC_TO_IH_EN	: 11-10, /* Internal PROCHOT Int Handler */
-		PROCHOT_TO_IH_EN: 12-11, /* External PROCHOT Int Handler */
-		PROCHOT_EVENTSRC: 15-12, /* Select 1=Ext, 2=Internal, 4=Both */
-		PROCHOT_PIN_IN	: 16-15, /* 1: Disable external PROCHOT */
-		HTC_TMP_LIMIT	: 23-16, /* HTC Temperature Limit	*/
+		HTC_DIAG	:  9-8,
+		PROCHOT_PIN_OUT : 10-9,
+		HTC_TO_IH_EN	: 11-10,
+		PROCHOT_TO_IH_EN: 12-11,
+		PROCHOT_EVENTSRC: 15-12,
+		PROCHOT_PIN_IN	: 16-15,
+		HTC_TMP_LIMIT	: 23-16,
 		HTC_HYST_LIMIT	: 27-23,
 		HTC_SLEW_SEL	: 29-27,
 		ReservedBits3	: 32-29;
@@ -1332,32 +1332,32 @@ typedef union
 
 typedef union
 {
-	unsigned int		value;	/* Family: 17h, 19h @ SMU(0x59808) */
+	unsigned int		value;
 	struct
 	{
 		unsigned int
-		CTF_PAD_POLARITY:  1-0,  /* Critical Temperature Fault	*/
-		THERM_TP	:  2-1,  /* Asserted if THERM_TP_EN == 1 */
-		CTF_THRESHOLD	:  3-2,  /* CTF_THRESHOLD_EXCEEDED	*/
+		CTF_PAD_POLARITY:  1-0,
+		THERM_TP	:  2-1,
+		CTF_THRESHOLD	:  3-2,
 		THERM_TP_SENSE	:  4-3,
 		ReservedBits1	:  5-4,
-		THERM_TP_EN	:  6-5,  /* 1: ThermTrip is enabled	*/
+		THERM_TP_EN	:  6-5,
 		THERM_TP_LIMIT	: 14-6,
 		ReservedBits2	: 31-14,
-		SW_THERM_TP	: 32-31; /* 1: Trigger ThermTrip (R/O)	*/
+		SW_THERM_TP	: 32-31;
 	};
 } TCTL_THERM_TRIP;
 
 typedef struct
-{	/* Family: [15_00h - 15_0Fh]	Bus:0h,Dev:18h,Func:3h,Reg:1D4h */
+{
 	unsigned int
-	Mode		:  2-0,  /* 00b: Disabled , 01b: Enabled	*/
-	WayNum		:  4-2,  /* 00b: 1-way , 01b: 2-way		*/
-	SubCacheSize0	:  6-4,  /* 00b: 1MB , 01b: 2MB 		*/
+	Mode		:  2-0,
+	WayNum		:  4-2,
+	SubCacheSize0	:  6-4,
 	SubCacheSize1	:  8-6,
 	SubCacheSize2	: 10-8,
 	SubCacheSize3	: 12-10,
-	SubCache0En	: 13-12, /* Subcache bitmask #0, #1, #2 and #3	*/
+	SubCache0En	: 13-12,
 	SubCache1En	: 14-13,
 	SubCache2En	: 15-14,
 	SubCache3En	: 16-15,
@@ -1374,9 +1374,9 @@ typedef struct
 } PROBE_FILTER_CTRL;
 
 typedef struct
-{	/* Family: [15_00h - 15_0Fh]	Bus:0h,Dev:18h,Func:3h,Reg:1C4h */
+{
 	unsigned int
-	SubCacheSize0	:  4-0,  /* 0x0c: 2MB , 0x0d: 1 MB , 0xe: 1 MB	*/
+	SubCacheSize0	:  4-0,
 	SubCacheSize1	:  8-4,
 	SubCacheSize2	: 12-8,
 	SubCacheSize3	: 16-12,
@@ -1385,11 +1385,11 @@ typedef struct
 } L3_CACHE_PARAMETER;
 
 typedef struct
-{	/* PM CStateEn: 16-bits offset I/O=0x7E or MMIO=0xFED80300	*/
+{
 	unsigned short int
 	Reserved1	:  4-0,
-	C1eToC2En	:  5-4,  /* RW: 1="Put APU into C2 in C1E"	*/
-	C1eToC3En	:  6-5,  /* RW: 1="Put APU into C3 in C1E"	*/
+	C1eToC2En	:  5-4,
+	C1eToC3En	:  6-5,
 	Reserved2	: 16-6;
 } AMD_17_PM_CSTATE;
 
@@ -1400,7 +1400,7 @@ typedef union
 } PM16;
 
 typedef union
-{	/* SMU: address = 0x59954 + ( 4 * CCD[ID] )			*/
+{
 	unsigned int		value;
 	struct
 	{
@@ -1410,7 +1410,7 @@ typedef union
 		ReservedBits	: 31-12;
 	};
 } TCCD_REGISTER;
-
+*/
 /* Sources: drivers/edac/amd64_edac.h					*/
 #ifndef SMU_AMD_UMC_BASE_CHA_F17H
 	#define SMU_AMD_UMC_BASE_CHA_F17H(_cha) (0x00050000 + (_cha << 20))
@@ -1463,47 +1463,40 @@ zencli smu 0x500d8
 Remark: if BGS_Alt[ON][AUTO] is set then BGS[OFF]
 */
 #define AMD_17_UMC_BGS_ALT_MASK_ON	0x000007f0
-
+/*TODO(CleanUp)
 typedef union
-{	/* SMU addresses:
-		DIMM[0] = 0x{0,1,2,3,4,5,6,7}50030
-		DIMM[1] = 0x{0,1,2,3,4,5,6,7}50034
-	*/
-	unsigned int		value;
+{	unsigned int		value;
 	struct
 	{
 		unsigned int
 		ReservedBits1	:  2-0,
-		NumBankGroups	:  4-2,  /* 0=None; 1=2x; 2=4x; 3=8x BGs */
-		NumRM		:  6-4,  /* 0=None; 1=2x; 2=4x; 3=8x RM */
+		NumBankGroups	:  4-2,
+		NumRM		:  6-4,
 		ReservedBits2	:  8-6,
-		NumRowLo	: 12-8,  /* [0-8] = 10 + NumRowLo	*/
+		NumRowLo	: 12-8,
 		NumRowHi	: 16-12,
-		NumCol		: 20-16, /* [0-0xb] = 5 + NumCol	*/
-		NumBanks	: 22-20, /* 0=8x; 1=16x; 2=32x Banks	*/
+		NumCol		: 20-16,
+		NumBanks	: 22-20,
 		ReservedBits3	: 32-22;
 	};
 	struct
-	{	/* SMU addresses: 0x500{40,44,48,4c} [RMB]		*/
+	{
 		unsigned int
 		ReservedBits1	:  2-0,
-		NumBankGroups	:  4-2,  /* 0=None; 1=2x; 2=4x; 3=8x BGs */
-		NumRM		:  7-4,  /* 0=None; 1=2x; 2=4x; 3=8x RM */
+		NumBankGroups	:  4-2,
+		NumRM		:  7-4,
 		ReservedBits2	:  8-7,
-		NumRow		: 12-8,  /* [0-8] = 10 + NumRowLo	*/
+		NumRow		: 12-8,
 		ReservedBits3	: 16-12,
-		NumCol		: 20-16, /* [0-0xb] = 5 + NumCol	*/
-		NumBanks	: 22-20, /* 0=8x; 1=16x; 2=32x Banks	*/
+		NumCol		: 20-16,
+		NumBanks	: 22-20,
 		ReservedBits4	: 30-22,
 		CSXor		: 32-30;
 	} Zen4;
 } AMD_ZEN_UMC_DRAM_ADDR_CFG;
 
 typedef union
-{	/* SMU addresses
-		DIMM[0] = 0x{0,1,2,3,4,5,6,7}50080 ; 50090 [RMB]
-		DIMM[1] = 0x{0,1,2,3,4,5,6,7}50084 ; 50094 [RMB]
-	*/
+{
 	unsigned int		value;
 	struct
 	{
@@ -1513,7 +1506,7 @@ typedef union
 		DRAM_3DS	:  3-2,
 		CIsCS		:  4-3,
 		RDIMM		:  5-4,
-		LRDIMM		:  6-5, /* DDR4 iff not LR_DDR4 and not R_DDR4*/
+		LRDIMM		:  6-5,
 		X4_DIMMS	:  7-6,
 		X16_DIMMS	:  8-7,
 		DqMapSwapDis	:  9-8,
@@ -1524,12 +1517,12 @@ typedef union
 } AMD_17_UMC_DIMM_CFG;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50100			*/
+{
 	unsigned int		value;
 	struct
 	{
 		unsigned int
-		DdrType 	:  3-0, /* F19h Model:11h_B1:	1=DDR5	*/
+		DdrType 	:  3-0,
 		ReservedBits1	:  8-3,
 		BurstLength	: 10-8,
 		BurstCtrl	: 12-10,
@@ -1540,7 +1533,7 @@ typedef union
 } AMD_ZEN_UMC_CONFIG;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50104			*/
+{
 	unsigned int		value;
 	struct
 	{
@@ -1553,120 +1546,55 @@ typedef union
 		DramScrubCrdt	: 10-9,
 		ReservedBits3	: 16-10,
 		CmdBufferCount	: 23-16,
-		ReservedBits4	: 24-23, /* Not for F19h Model:11h_B1	*/
+		ReservedBits4	: 24-23,
 		DatBufferCount	: 31-24,
 		SdpInit 	: 32-31;
 	};
 } AMD_17_UMC_SDP_CTRL;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}5012c			*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
-		DisAutoRefresh	:  1-0,  /* Disable periodic refresh	*/
+		DisAutoRefresh	:  1-0,
 		ReservedBits1	:  3-1,
-		LpDis		:  4-3,  /* Disable DFI low power requests */
-		UrgRefLimit	:  7-4,  /* UrgRefLimit Refresh range [1-6] */
+		LpDis		:  4-3,
+		UrgRefLimit	:  7-4,
 		ReservedBits2	:  8-7,
-		SubUrgRef	: 11-8,  /* SubUrgRefLowerBound <= UrgRefLimit*/
+		SubUrgRef	: 11-8,
 		ReservedBits3	: 16-11,
-		AutoRef_DDR4	: 19-16, /* {1X,2X,4X,RSVD,RSVD,OTF-2X,OTF-4X}*/
+		AutoRef_DDR4	: 19-16,
 		ReservedBits4	: 20-19,
-		PchgCmdSep	: 24-20, /* CMD separation between PRE CMDs */
-		AutoRefCmdSep	: 28-24, /* CMD separation between REF CMDs */
-		PwrDownEn	: 29-28, /* 1: Enable DRAM Power Down Mode */
-		PwrDownMode	: 30-29, /* 0: Full; 1: Partial Channel PD */
-		AggrPwrDownEn	: 31-30, /* 1: Aggressive Power Down Mode */
-		RefCntMode	: 32-31; /* SPAZ counter: 0: SRX; 1: ARB */
+		PchgCmdSep	: 24-20,
+		AutoRefCmdSep	: 28-24,
+		PwrDownEn	: 29-28,
+		PwrDownMode	: 30-29,
+		AggrPwrDownEn	: 31-30,
+		RefCntMode	: 32-31;
 	};
 } AMD_17_UMC_SPAZ_CTRL;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50144 (1) 		*/
+{
 	unsigned int		value;
 	struct
 	{
 		unsigned int
-		DataScrambleEn	:  1-0,  /* 0=Disable, 1=Enable 	*/
+		DataScrambleEn	:  1-0,
 		ReservedBits1	:  8-1,
-		DataEncrEn	:  9-8,  /* 1=Enable data encryption	*/
+		DataEncrEn	:  9-8,
 		ReservedBits2	: 11-9,
-		ForceEncrEn	: 12-11, /* region 0 encrypt. for all requests*/
-		Vmguard2Mode	: 13-12, /* 0=511 Keys. 1=255 VmGuard2 Keys */
+		ForceEncrEn	: 12-11,
+		Vmguard2Mode	: 13-12,
 		ReservedBits3	: 16-13,
-		DisAddrTweak	: 20-16, /* Disable address tweaking by region*/
+		DisAddrTweak	: 20-16,
 		ReservedBits4	: 32-20;
 	};
 } AMD_17_UMC_DATA_CTRL;
 
-/* (1)
-BIOS UMC Scramble[ENABLE][AUTO]
----
-Channel 0
-[0x00050144] READ(smu) = 0x00001101 (4353)
-   60   56   52   48   44   40   36   32   28   24   20   16   12   08   04   00
- 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0001 0001 0000 0001
-
-Channel 1
-[0x00150144] READ(smu) = 0x00001101 (4353)
-   60   56   52   48   44   40   36   32   28   24   20   16   12   08   04   00
- 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0001 0001 0000 0001
-
-Channel 2...7
-[0x00750144] READ(smu) = 0xffffffff (4294967295)
-   60   56   52   48   44   40   36   32   28   24   20   16   12   08   04   00
- 0000 0000 0000 0000 0000 0000 0000 0000 1111 1111 1111 1111 1111 1111 1111 1111
-
-BIOS UMC Scramble[DISABLE]
----
-Channel 0
-[0x00050144] READ(smu) = 0x00001100 (4352)
-   60   56   52   48   44   40   36   32   28   24   20   16   12   08   04   00
- 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0001 0001 0000 0000
-
-Channel 1
-[0x00150144] READ(smu) = 0x00001100 (4352)
-   60   56   52   48   44   40   36   32   28   24   20   16   12   08   04   00
- 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0001 0001 0000 0000
-
-Channel 2...7
-[0x00750144] READ(smu) = 0xffffffff (4294967295)
-   60   56   52   48   44   40   36   32   28   24   20   16   12   08   04   00
- 0000 0000 0000 0000 0000 0000 0000 0000 1111 1111 1111 1111 1111 1111 1111 1111
-
-(2)
-UMC::CH::DataScrambleKey
-[ENABLE]
----
-[0x00050148] READ(smu) = 0xda7a5c11 (3665452049)
-   60   56   52   48   44   40   36   32   28   24   20   16   12   08   04   00
- 0000 0000 0000 0000 0000 0000 0000 0000 1101 1010 0111 1010 0101 1100 0001 0001
-
-[DISABLE]
----
-[0x00050148] READ(smu) = 0xda7a5c11 (3665452049)
-   60   56   52   48   44   40   36   32   28   24   20   16   12   08   04   00
- 0000 0000 0000 0000 0000 0000 0000 0000 1101 1010 0111 1010 0101 1100 0001 0001
-
-(3)
-BIOS UMC TSME[ENABLE]
----
-Channel 0
-[0x00050144] READ(smu) = 0x00001101 (4353)
-   60   56   52   48   44   40   36   32   28   24   20   16   12   08   04   00
- 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0001 0001 0000 0001
-
-BIOS UMC TSME[DISABLE][AUTO]
----
-Channel 0
-[0x00050144] READ(smu) = 0x000f1101 (987393)
-   60   56   52   48   44   40   36   32   28   24   20   16   12   08   04   00
- 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 1111 0001 0001 0000 0001
-*/
-
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}5014c			*/
+{
 	unsigned int		value;
 	struct
 	{
@@ -1676,7 +1604,7 @@ typedef union
 		BadDramSymEn	:  5-4,
 		HardwareHistory :  6-5,
 		BitInterleaving :  7-6,
-		X8_Syndromes	:  8-7, /* X4 iff not X8 and not X16	*/
+		X8_Syndromes	:  8-7,
 		UCFatalEn	:  9-8,
 		X16_Syndromes	: 10-9,
 		RdEccEn 	: 11-10,
@@ -1688,13 +1616,13 @@ typedef union
 } AMD_17_UMC_ECC_CTRL;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50d6c			*/
+{
 	unsigned int		value;
 	struct
 	{
 		unsigned int
-		RAM_Pstate	:  3-0,  /* Current Memory Pstate	*/
-		UCLK_Divisor	:  4-3,  /* UCLK:MEMCLK 0[1:2], 1[1:1]	*/
+		RAM_Pstate	:  3-0,
+		UCLK_Divisor	:  4-3,
 		DFI_Initialized :  5-4,
 		UMC_Ready	:  6-5,
 		ReservedBits	: 32-6;
@@ -1702,15 +1630,15 @@ typedef union
 } AMD_17_UMC_DEBUG_MISC;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50df0			*/
+{
 	unsigned int		value;
 	struct
 	{
 		unsigned int
 		DDR_MaxRate	:  8-0,
 		ReservedBits1	: 16-8,
-		Reg_DIMM_Dis	: 17-16, /* 1: RDIMM/LRDIMM support	*/
-		Disable 	: 18-17, /* 1: ECC Support disabled	*/
+		Reg_DIMM_Dis	: 17-16,
+		Disable 	: 18-17,
 		Encryption_Dis	: 19-18,
 		MemChannel_Dis	: 20-19,
 		ReservedBits2	: 32-20;
@@ -1718,37 +1646,37 @@ typedef union
 } AMD_17_UMC_ECC_CAP_LO;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50df4			*/
+{
 	unsigned int		value;
 	struct
 	{
 		unsigned int
 		DDR_MaxRateEnf	:  8-0,
 		ReservedBits	: 30-8,
-		Enable		: 31-30, /* 1: ECC logic configured	*/
-		ChipKill	: 32-31; /* 1: ECC chipkill configured	*/
+		Enable		: 31-30,
+		ChipKill	: 32-31;
 	};
 } AMD_17_UMC_ECC_CAP_HI;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{200,300,400,500}	*/
+{
 	unsigned int		value;
 	struct
 	{
 		unsigned int
-		MEMCLK		:  6-0,  /* UMC=((Value * 100) / 3) MHz */
+		MEMCLK		:  6-0,
 		ReservedBits1	:  7-6,
 		ReservedBits2	:  8-7,
-		BankGroup	:  9-8,  /* 1: BankGroup is Enable	*/
-		CMD_Rate	: 11-9,  /* 0b10 = 2T ; 0b00 = 1T	*/
-		GearDownMode	: 12-11, /* BIOS match is OK		*/
-		Preamble2T	: 13-12, /* 1: 2T DQS preambles enabled */
+		BankGroup	:  9-8,
+		CMD_Rate	: 11-9,
+		GearDownMode	: 12-11,
+		Preamble2T	: 13-12,
 		ReservedBits3	: 32-13;
 	} DDR4;
 	struct
 	{
 		unsigned int
-		MEMCLK		: 16-0,  /* DRAM = (Value * 2) MT/s	*/
+		MEMCLK		: 16-0,
 		CMD_Rate	: 18-16,
 		GearDownMode	: 19-18,
 		ReservedBits1	: 32-19;
@@ -1756,7 +1684,7 @@ typedef union
 } AMD_ZEN_UMC_CFG_MISC;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{204,304,404,504}	*/
+{
 	unsigned int		value;
 	struct
 	{
@@ -1773,22 +1701,22 @@ typedef union
 } AMD_17_UMC_TIMING_DTR1;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{208,308,405,508}	*/
+{
 	unsigned int		value;
 	struct
 	{
 		unsigned int
 		tRC		:  8-0,
-		tRCPB		: 16-8,	 /* Row Cycle Time, Per-Bank	*/
+		tRCPB		: 16-8,
 		tRP		: 22-16,
 		ReservedBits1	: 24-22,
-		tRPPB		: 30-24, /* Row Precharge Time, Per-Bank */
+		tRPPB		: 30-24,
 		ReservedBits2	: 32-22;
 	};
 } AMD_17_UMC_TIMING_DTR2;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{20c,30c,40c,50c}	*/
+{
 	unsigned int		value;
 	struct
 	{
@@ -1797,7 +1725,7 @@ typedef union
 		ReservedBits1	:  8-5,
 		tRRDL		: 13-8,
 		ReservedBits2	: 16-13,
-		tRRDDLR 	: 21-16, /* tRRD(Different Logical Ranks) */
+		tRRDDLR 	: 21-16,
 		ReservedBits3	: 24-21,
 		tRTP		: 29-24,
 		ReservedBits4	: 32-29;
@@ -1805,21 +1733,21 @@ typedef union
 } AMD_17_UMC_TIMING_DTR3;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{210,310,410,510}	*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
 		tFAW		:  7-0,
 		ReservedBits1	: 18-7,
-		tFAWSLR 	: 24-18, /* tFAW(Same Logical Rank)	*/
+		tFAWSLR 	: 24-18,
 		ReservedBits2	: 25-24,
-		tFAWDLR 	: 31-25, /* FAW(Different Logical Ranks) */
+		tFAWDLR 	: 31-25,
 		ReservedBits4	: 32-31;
 	};
 } AMD_17_UMC_TIMING_DTR4;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{214,314,414,514}	*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1833,7 +1761,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR5;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{218,318,418,518}	*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1843,17 +1771,17 @@ typedef union
 } AMD_17_UMC_TIMING_DTR6;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{21c,31c,41c,51c}	*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
 		ReservedBits	: 20-0,
-		tRCPage 	: 32-20; /*	Page Time Line Period	*/
+		tRCPage 	: 32-20;
 	};
 } AMD_17_UMC_TIMING_DTR7;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{220,320,420,520}	*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1862,15 +1790,15 @@ typedef union
 		tsdRdTRd	: 12-8,
 		ReservedBits2	: 16-12,
 		tscRdTRd	: 20-16,
-		tRdRdScDLR	: 24-20, /* tRdRdSc(Different Logical Ranks) */
+		tRdRdScDLR	: 24-20,
 		tRdRdScl	: 28-24,
 		ReservedBits3	: 30-28,
-		tRdRdBan	: 32-30; /* Read to Read Timing Ban	*/
-	};				/*  Ban: 00=None, 01=One, 1x=Two */
+		tRdRdBan	: 32-30;
+	};
 } AMD_17_UMC_TIMING_DTR8;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{224,324,424,524}	*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1879,14 +1807,14 @@ typedef union
 		tsdWrTWr	: 12-8,
 		ReservedBits2	: 16-12,
 		tscWrTWr	: 20-16,
-		tWrWrScDLR	: 24-20, /* tWrWrSc(Different Logical Ranks) */
+		tWrWrScDLR	: 24-20,
 		tWrWrScl	: 30-24,
-		tWrWrBan	: 32-30; /* Write to Write Timing Ban	*/
+		tWrWrBan	: 32-30;
 	};
 } AMD_17_UMC_TIMING_DTR9;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{228,328,428,528}	*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1894,26 +1822,26 @@ typedef union
 		ReservedBits1	:  8-4,
 		tddRdTWr	: 13-8,
 		ReservedBits2	: 16-13,
-		tWrRdScDLR	: 21-16, /* tWrRdSc(Different Logical Ranks) */
+		tWrRdScDLR	: 21-16,
 		ReservedBits3	: 32-21;
 	};
 } AMD_17_UMC_TIMING_DTR10;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{22c,32c,42c,52c}	*/
+{
 	unsigned int		value;
 	struct {
-		unsigned int /* 0000 1110 0100 0010 0000 0000 1000 0000 */
+		unsigned int
 		tZQCS		:  8-0,
 		tZQOPER 	: 20-8,
-		ZqcsInterval	: 30-20, /* Value x (2 ^ Exp)		*/
+		ZqcsInterval	: 30-20,
 		ReservedBits	: 31-30,
-		ShortInit	: 32-31; /* if 1 then Exp=10 else Exp=20 */
+		ShortInit	: 32-31;
 	};
 } AMD_17_UMC_TIMING_DTR11;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{230,330,430,530}	*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1923,7 +1851,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR12;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{234,334,434,534}	*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1939,7 +1867,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR13;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{238,338,438,538}	*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1951,7 +1879,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR14;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{23c,33c,43c,53c}	*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1967,45 +1895,45 @@ typedef union
 } AMD_17_UMC_TIMING_DTR15;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{244,344,444,544}	*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
-		tPD		:  5-0,  /* Powerdown Min Delay 	*/
+		tPD		:  5-0,
 		ReservedBits1	: 17-5,
-		tPOWERDOWN	: 25-17, /* Powerdown Delay		*/
-		tPRE_PD 	: 31-25, /* Precharge Powerdown 	*/
+		tPOWERDOWN	: 25-17,
+		tPRE_PD 	: 31-25,
 		ReservedBits2	: 32-31;
 	};
 } AMD_17_UMC_TIMING_DTR17;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{250,350,450,550}	*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
 		ReservedBits1	: 16-0,
-		tSTAG		: 24-16,  /* Min Delay between REF cmd	*/
+		tSTAG		: 24-16,
 		ReservedBits2	: 32-24;
 	};
 } AMD_17_UMC_TIMING_DTR20;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{254,354,454,554}	*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
 		tXP		:  6-0,
 		ReservedBits1	: 16-6,
-		tCPDED		: 20-16, /* Command pass disable delay	*/
+		tCPDED		: 20-16,
 		ReservedBits2	: 24-20,
-		tCKE		: 29-24, /*	Clock Enable Time	*/
+		tCKE		: 29-24,
 		ReservedBits3	: 32-29;
 	};
 } AMD_17_UMC_TIMING_DTR21;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{258,358,458,558}	*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -2023,10 +1951,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR22;
 
 typedef union
-{	/* SMU addresses
-		DIMM[0] = 0x{0,1,2,3,4,5,6,7}50{260,360,460,560}
-		DIMM[1] = 0x{0,1,2,3,4,5,6,7}50{264,364,464,564}
-	*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -2042,8 +1967,8 @@ typedef union
 } AMD_ZEN_UMC_TIMING_DTRFC;
 
 typedef union
-{	/* SMU addresses = 0x50{2c0,2c4,2c8,2cc}			*/
-	unsigned int		value;	/* Rembrandt = 0x00480138	*/
+{
+	unsigned int		value;
 	struct {
 		unsigned int
 		tRFCsb		: 16-0,
@@ -2052,7 +1977,7 @@ typedef union
 } AMD_ZEN_UMC_TIMING_RFCSB;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50{28c,38c,48c,58c}	*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -2065,7 +1990,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR35;
 
 typedef union
-{	/* SMU: address = { 0x5d2b4 , 0x5d2b5 , 0x5d2b6 , 0x5d2b7 }	*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -2077,24 +2002,24 @@ typedef union
 } AMD_17_MTS_MCM_PWR;
 
 typedef union
-{	/* SMU: address = { 0x5d2b8 , 0x5d2b9 , 0x5d2ba , 0x5d2bb }	*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
 		ReservedBits1	:  3-0,
 		TDP		: 12-3,
-		TDP2		: 21-12, /* Same value returned as TDP! */
-		TDP3		: 30-21, /* Same value returned as TDP! */
+		TDP2		: 21-12,
+		TDP3		: 30-21,
 		ReservedBits2	: 32-30;
 	};
 } AMD_17_MTS_MCM_TDP;
 
 typedef union
-{	/* SMU: address = { 0x5d2bc , 0x5d2bd , 0x5d2be , 0x5d2bf }	*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
-		EDC		:  7-0, /* Returns 35 mult by 4 = 140	*/
+		EDC		:  7-0,
 		ReservedBits1	: 16-7,
 		TDC		: 25-16,
 		ReservedBits2	: 32-25;
@@ -2102,16 +2027,16 @@ typedef union
 } AMD_17_MTS_MCM_EDC;
 
 typedef union
-{	/* SMU: address = { 0x5d2c4 , 0x5d2c5 , 0x5d2c6 , 0x5d2c7 }	*/
+{
 	unsigned int		value;
 	struct {
 		unsigned int
 		ReservedBits	: 17-0,
-		BoostRatio	: 25-17, /* Frequence ID of Boosted P-State */
-		MinRatio	: 32-25; /* Computed COF of P-State P2	*/
+		BoostRatio	: 25-17,
+		MinRatio	: 32-25;
 	};
 } AMD_17_ZEN2_COF;
-/*TODO(CleanUp)
+
 #ifndef SMU_AMD_F17H_SVI
 	#define SMU_AMD_F17H_SVI(_plane)	(0x0005a00c + (_plane << 2))
 #endif
@@ -2123,33 +2048,21 @@ typedef union
 #ifndef SMU_AMD_RMB_SVI
 	#define SMU_AMD_RMB_SVI(_plane) 	(0x0006f010 + (_plane << 2))
 #endif
-*/
+
 typedef union
-{/*		--- SMU SVI [ 0x5a00c ; 0x5a010 ; 0x5a014 ; 0x6f038] ---
- *				[ CPU addr]	[ SoC addr]
- * ZEN	[8F_01h]		[ 0x5a00c ]	[ 0x5a010 ]
- * ZEN(+) [8F_08h]		[ 0x5a00c ]	[ 0x5a010 ]
- * ZEN(+) [8F_11h ; 8F_18h]	[ 0x5a00c ]	[ 0x5a010 ]
- * ZEN2 [8F_71h]		[ 0x5a010 ]	[ 0x5a00c ]
- * ZEN2 [8F_60h]		[ 0x6f038 ]	[ 0x6f03c ]
- * ZEN2 [8F_31h]		[ 0x5a014 ]	[ 0x5a010 ]
- * ZEN3 [9F_21h]		[ 0x5a010 ]	[ 0x5a00c ]
- */
+{
 	unsigned int		value;
 	struct {
 		unsigned int
-		IDD		:  8-0,  /* Current: SVI{0,1}_PLANE0_IDDCOR */
+		IDD		:  8-0,
 		ReservedBits1	: 16-8,
-		VID		: 24-16, /* Voltage: SVI{0,1}_PLANE0_VDDCOR */
+		VID		: 24-16,
 		ReservedBits2	: 32-24;
 	};
 } AMD_17_SVI;
 
 typedef union
-{/*				--- SMU SVI [ Rembrandt ] ---
- *				[ CPU addr]	[ SoC addr]
- * ZEN3(+) [AF_44]		[ 0x6f010 ]	[ 0x6f014 ]
- */
+{
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -2159,24 +2072,18 @@ typedef union
 		SVI3		: 32-24;
 	};
 } AMD_RMB_SVI;
-/*TODO(CleanUp)
+
 #ifndef SMU_AMD_F17H_CORE_VID
 	#define SMU_AMD_F17H_CORE_VID(_mod)	(0x0005a04c + (_mod << 2))
 #endif
-**
- * where addr = { 0x5a04c ... 0x5a04f || 0x5a050 ... 0x5a053 }
- * and '_mod' register offset could be equaled to:
- * 0x0		: Zen & Zen+		[UNTESTED]
- * 0x1		: Zen2/Matisse		[VERIFIED]
- * 0x2		: Zen2/CastlePeak	[UNTESTED]
- * 0x5404	: Renoir		[UNTESTED]
-*/
+
 typedef union
 {
 	unsigned int		value;
 	struct {
 		unsigned int
-		ReservedBits	: 24-0, 	/*	MTS: All zeros	*/
-		VID		: 32-24;	/*	Voltage ID	*/
+		ReservedBits	: 24-0,
+		VID		: 32-24;
 	};
 } AMD_17_CORE_VID;
+*/

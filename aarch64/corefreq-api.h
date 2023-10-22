@@ -283,10 +283,10 @@ typedef struct
 	struct {
 		enum THERM_PWR_EVENTS	Events[eDIM];
 	};
-	PERF_CONTROL			PerfControl;
+/*	PERF_CONTROL			PerfControl;
 	CLOCK_MODULATION		ClockModulation;
 	ENERGY_PERF_BIAS		PerfEnergyBias;
-	MISC_PWR_MGMT			PwrManagement;
+	MISC_PWR_MGMT			PwrManagement;*/
 	HWP_CAPABILITIES		HWP_Capabilities;
 	HWP_INTERRUPT			HWP_Interrupt;
 	HWP_REQUEST			HWP_Request;
@@ -429,7 +429,7 @@ typedef struct
 
 	CACHE_TOPOLOGY			T;
 
-	struct {
+	struct {/*
 		Bit64			RFLAGS	__attribute__ ((aligned (8))),
 					CR0	__attribute__ ((aligned (8))),
 					CR3	__attribute__ ((aligned (8))),
@@ -442,7 +442,7 @@ typedef struct
 
 		};
 		Bit64			XCR0	__attribute__ ((aligned (8)));
-		Bit64			SYSCFG	__attribute__ ((aligned (8)));
+		Bit64			SYSCFG	__attribute__ ((aligned (8)));*/
 	} SystemRegister;
 
 	unsigned int			Bind;
@@ -468,44 +468,44 @@ typedef struct
 
 typedef struct
 {
-	struct {
+	struct {/*
 		union {
 			struct {
-	/* 100h */		P945_MC_DRAM_RANK_BOUND DRB[4]; /* 4x8 bits   */
-	/* 110h */		P945_MC_DRAM_TIMING_R0	DRT0;	/* 32 bits    */
-	/* 114h */		P945_MC_DRAM_TIMING_R1	DRT1;	/* 32 bits    */
-	/* 118h */		P945_MC_DRAM_TIMING_R2	DRT2;	/* 32 bits    */
-	/* 10Eh */		P945_MC_DRAM_BANK_ARCH	BANK;	/* 16 bits    */
-	/* 40Ch */		P945_MC_DRAM_RANK_WIDTH WIDTH;	/* 16 bits    */
+				P945_MC_DRAM_RANK_BOUND DRB[4];
+				P945_MC_DRAM_TIMING_R0	DRT0;
+				P945_MC_DRAM_TIMING_R1	DRT1;
+				P945_MC_DRAM_TIMING_R2	DRT2;
+				P945_MC_DRAM_BANK_ARCH	BANK;
+				P945_MC_DRAM_RANK_WIDTH WIDTH;
 			} P945;
 			struct {
-	/* 100h */		P945_MC_DRAM_RANK_BOUND DRB[4]; /* 4x8 bits   */
-	/* 114h */		P955_MC_DRAM_TIMING_R1	DRT1;	/* 32 bits    */
-	/* 10Eh */		P945_MC_DRAM_BANK_ARCH	BANK;	/* 16 bits    */
-	/* 40Ch */		P945_MC_DRAM_RANK_WIDTH WIDTH;	/* 16 bits    */
+				P945_MC_DRAM_RANK_BOUND DRB[4];
+				P955_MC_DRAM_TIMING_R1	DRT1;
+				P945_MC_DRAM_BANK_ARCH	BANK;
+				P945_MC_DRAM_RANK_WIDTH WIDTH;
 			} P955;
 			struct {
-	/* 29Ch */		P965_MC_ODTCTRL 	DRT0;	/* 32 bits    */
-	/* 250h */		P965_MC_CYCTRK_PCHG	DRT1;	/* 16 bits    */
-	/* 252h */		P965_MC_CYCTRK_ACT	DRT2;	/* 32 bits    */
-	/* 256h */		P965_MC_CYCTRK_WR	DRT3;	/* 16 bits    */
-	/* 258h */		P965_MC_CYCTRK_RD	DRT4;	/* 24 bits    */
+				P965_MC_ODTCTRL 	DRT0;
+				P965_MC_CYCTRK_PCHG	DRT1;
+				P965_MC_CYCTRK_ACT	DRT2;
+				P965_MC_CYCTRK_WR	DRT3;
+				P965_MC_CYCTRK_RD	DRT4;
 			} P965;
 			struct {
-	/* 1210h */		G965_MC_DRAM_TIMING_R0	DRT0;	/* 32 bits    */
-	/* 1214h */		G965_MC_DRAM_TIMING_R1	DRT1;	/* 32 bits    */
-	/* 1218h */		G965_MC_DRAM_TIMING_R2	DRT2;	/* 32 bits    */
-	/* 121Ch */		G965_MC_DRAM_TIMING_R3	DRT3;	/* 32 bits    */
+				G965_MC_DRAM_TIMING_R0	DRT0;
+				G965_MC_DRAM_TIMING_R1	DRT1;
+				G965_MC_DRAM_TIMING_R2	DRT2;
+				G965_MC_DRAM_TIMING_R3	DRT3;
 			} G965;
 			struct {
-	/* 200h */		P35_MC_DRAM_RANK_BOUND	DRB[4]; /* 4x16 bits  */
-	/* 208h */		P35_MC_DRAM_BANK_RANK	DRA[2]; /* 2x16 bits  */
-	/* 265h */		P35_MC_UNKNOWN_R0	DRT0;	/* 16 bits    */
-	/* 250h */		P35_MC_CYCTRK_PCHG	DRT1;	/* 16 bits    */
-	/* 252h */		P35_MC_CYCTRK_ACT	DRT2;	/* 32 bits    */
-	/* 256h */		P35_MC_CYCTRK_WR	DRT3;	/* 16 bits    */
-	/* 258h */		P35_MC_CYCTRK_RD	DRT4;	/* 24 bits    */
-	/* 25Dh */		P35_MC_UNKNOWN_R1	DRT5;	/* 16 bits    */
+				P35_MC_DRAM_RANK_BOUND	DRB[4];
+				P35_MC_DRAM_BANK_RANK	DRA[2];
+				P35_MC_UNKNOWN_R0	DRT0;
+				P35_MC_CYCTRK_PCHG	DRT1;
+				P35_MC_CYCTRK_ACT	DRT2;
+				P35_MC_CYCTRK_WR	DRT3;
+				P35_MC_CYCTRK_RD	DRT4;
+				P35_MC_UNKNOWN_R1	DRT5;
 			} P35;
 			struct {
 				NHM_IMC_MRS_VALUE_0_1	MR0_1;
@@ -519,235 +519,235 @@ typedef struct
 				NHM_IMC_DIMM_INIT_PARAMS DIMM_Init;
 			} NHM;
 			struct {
-	/* 4000h */		SNB_IMC_TC_DBP		DBP;	/* 32 bits    */
-	/* 4004h */		SNB_IMC_TC_RAP		RAP;	/* 32 bits    */
-	/* 4008h */		SNB_IMC_TC_RWP		RWP;	/* 32 bits    */
-	/* 400Ch */		SNB_IMC_TC_OTP		OTP;	/* 32 bits    */
-	/* 40B0h */		SNB_IMC_PDWN		PDWN;	/* 32 bits    */
-	/* 4294h */		SNB_IMC_TC_RFP		RFP;	/* 32 bits    */
-	/* 4298h */		SNB_IMC_TC_RFTP 	RFTP;	/* 32 bits    */
-	/* 42A4h */		SNB_IMC_TC_SRFTP	SRFTP;	/* 32 bits    */
+				SNB_IMC_TC_DBP		DBP;
+				SNB_IMC_TC_RAP		RAP;
+				SNB_IMC_TC_RWP		RWP;
+				SNB_IMC_TC_OTP		OTP;
+				SNB_IMC_PDWN		PDWN;
+				SNB_IMC_TC_RFP		RFP;
+				SNB_IMC_TC_RFTP 	RFTP;
+				SNB_IMC_TC_SRFTP	SRFTP;
 			} SNB;
 			struct {
-	/*  200h */		SNB_IMC_TC_DBP		DBP;	/* 32 bits    */
-	/*  204h */		SNB_IMC_TC_RAP		RAP;	/* 32 bits    */
-	/*  208h */		SNB_IMC_TC_RWP		RWP;	/* 32 bits    */
-	/*  20Ch */		SNB_IMC_TC_OTP		OTP;	/* 32 bits    */
-	/*  210h */		SNB_IMC_TC_RFP		RFP;	/* 32 bits    */
-	/*  214h */		SNB_IMC_TC_RFTP 	RFTP;	/* 32 bits    */
-	/*  218h */		SNB_IMC_TC_SRFTP	SRFTP;	/* 32 bits    */
+				SNB_IMC_TC_DBP		DBP;
+				SNB_IMC_TC_RAP		RAP;
+				SNB_IMC_TC_RWP		RWP;
+				SNB_IMC_TC_OTP		OTP;
+				SNB_IMC_TC_RFP		RFP;
+				SNB_IMC_TC_RFTP 	RFTP;
+				SNB_IMC_TC_SRFTP	SRFTP;
 			} SNB_EP;
 			struct {
-	/* 4C00h */		HSW_DDR_TIMING_4C00	REG4C00; /*32 bits    */
-	/* 4C04h */		HSW_DDR_TIMING		Timing; /* 32 bits    */
-	/* 4C08h */		HSW_DDR_RANK_TIMING_A	Rank_A; /* 32 bits    */
-	/* 4C0Ch */		HSW_DDR_RANK_TIMING_B	Rank_B; /* 32 bits    */
-	/* 4C14h */		HSW_DDR_RANK_TIMING	Rank;	/* 32 bits    */
-	/* 4E98h */		HSW_TC_REFRESH_TIMING	Refresh; /*32 bits    */
-	/* 4CB0h */		HSW_PM_POWER_DOWN	PDWN;	/* 32 bits    */
+				HSW_DDR_TIMING_4C00	REG4C00;
+				HSW_DDR_TIMING		Timing;
+				HSW_DDR_RANK_TIMING_A	Rank_A;
+				HSW_DDR_RANK_TIMING_B	Rank_B;
+				HSW_DDR_RANK_TIMING	Rank;
+				HSW_TC_REFRESH_TIMING	Refresh;
+				HSW_PM_POWER_DOWN	PDWN;
 			} HSW;
 			struct {
-	/* 4000h */		SKL_IMC_CR_TC_PRE	Timing; /* 32 bits    */
-	/* 4004h */		SKL_IMC_CR_TC_ACT	ACT;	/* 32 bits    */
-	/* 400Ch */		SKL_IMC_CR_TC_RDRD	RDRD;	/* 32 bits    */
-	/* 4010h */		SKL_IMC_CR_TC_RDWR	RDWR;	/* 32 bits    */
-	/* 4014h */		SKL_IMC_CR_TC_WRRD	WRRD;	/* 32 bits    */
-	/* 4018h */		SKL_IMC_CR_TC_WRWR	WRWR;	/* 32 bits    */
-	/* 401Ch */		SKL_IMC_CR_SC_CFG	Sched;	/* 32 bits    */
-	/* 4070h */		SKL_IMC_CR_TC_ODT	ODT;	/* 32 bits    */
-	/* 423Ch */		SKL_IMC_REFRESH_TC	Refresh; /*32 bits    */
+				SKL_IMC_CR_TC_PRE	Timing;
+				SKL_IMC_CR_TC_ACT	ACT;
+				SKL_IMC_CR_TC_RDRD	RDRD;
+				SKL_IMC_CR_TC_RDWR	RDWR;
+				SKL_IMC_CR_TC_WRRD	WRRD;
+				SKL_IMC_CR_TC_WRWR	WRWR;
+				SKL_IMC_CR_SC_CFG	Sched;
+				SKL_IMC_CR_TC_ODT	ODT;
+				SKL_IMC_REFRESH_TC	Refresh;
 			} SKL;
 			struct {
-	/* 4000h */		RKL_IMC_CR_TC_PRE	Timing; /* 32 bits    */
-	/* 4004h */		RKL_IMC_CR_TC_ACT	ACT;	/* 32 bits    */
-	/* 400Ch */		RKL_IMC_CR_TC_RDRD	RDRD;	/* 32 bits    */
-	/* 4010h */		RKL_IMC_CR_TC_RDWR	RDWR;	/* 32 bits    */
-	/* 4014h */		RKL_IMC_CR_TC_WRRD	WRRD;	/* 32 bits    */
-	/* 4018h */		RKL_IMC_CR_TC_WRWR	WRWR;	/* 32 bits    */
-	/* 4050h */		RKL_IMC_TC_PWDEN	PWDEN;	/* 64-bits    */
-	/* 4070h */		RKL_IMC_CR_TC_ODT	ODT;	/* 64 bits    */
-	/* 4088h */		RKL_IMC_SC_GS_CFG	Sched;	/* 64 bits    */
-	/* 423Ch */		RKL_IMC_REFRESH_TC	Refresh; /*32 bits    */
-	/* 42C4h */		RKL_IMC_SREXITTP	SRExit;	/* 32 bits    */
+				RKL_IMC_CR_TC_PRE	Timing;
+				RKL_IMC_CR_TC_ACT	ACT;
+				RKL_IMC_CR_TC_RDRD	RDRD;
+				RKL_IMC_CR_TC_RDWR	RDWR;
+				RKL_IMC_CR_TC_WRRD	WRRD;
+				RKL_IMC_CR_TC_WRWR	WRWR;
+				RKL_IMC_TC_PWDEN	PWDEN;
+				RKL_IMC_CR_TC_ODT	ODT;
+				RKL_IMC_SC_GS_CFG	Sched;
+				RKL_IMC_REFRESH_TC	Refresh;
+				RKL_IMC_SREXITTP	SRExit;
 			} RKL;
 			struct {
-	/* 4000h */		TGL_IMC_CR_TC_PRE	Timing; /* 64 bits    */
-	/* 4008h */		TGL_IMC_CR_TC_ACT	ACT;	/* 32 bits    */
-	/* 400Ch */		TGL_IMC_CR_TC_RDRD	RDRD;	/* 32 bits    */
-	/* 4010h */		TGL_IMC_CR_TC_RDWR	RDWR;	/* 32 bits    */
-	/* 4014h */		TGL_IMC_CR_TC_WRRD	WRRD;	/* 32 bits    */
-	/* 4018h */		TGL_IMC_CR_TC_WRWR	WRWR;	/* 32 bits    */
-	/* 4050h */		TGL_IMC_TC_PWDEN	PWDEN;	/* 64-bits    */
-	/* 4070h */		TGL_IMC_CR_TC_ODT	ODT;	/* 64 bits    */
-	/* 4088h */		TGL_IMC_SC_GS_CFG	Sched;	/* 64 bits    */
-	/* 423Ch */		TGL_IMC_REFRESH_TC	Refresh; /*32 bits    */
-	/* 42C0h */		TGL_IMC_SREXITTP	SRExit;	/* 64 bits    */
+				TGL_IMC_CR_TC_PRE	Timing;
+				TGL_IMC_CR_TC_ACT	ACT;
+				TGL_IMC_CR_TC_RDRD	RDRD;
+				TGL_IMC_CR_TC_RDWR	RDWR;
+				TGL_IMC_CR_TC_WRRD	WRRD;
+				TGL_IMC_CR_TC_WRWR	WRWR;
+				TGL_IMC_TC_PWDEN	PWDEN;
+				TGL_IMC_CR_TC_ODT	ODT;
+				TGL_IMC_SC_GS_CFG	Sched;
+				TGL_IMC_REFRESH_TC	Refresh;
+				TGL_IMC_SREXITTP	SRExit;
 			} TGL;
 			struct {
-	/* E000h */		ADL_IMC_CR_TC_PRE	Timing; /* 64 bits    */
-	/* E008h */		ADL_IMC_CR_TC_ACT	ACT;	/* 32 bits    */
-	/* E00Ch */		ADL_IMC_CR_TC_RDRD	RDRD;	/* 32 bits    */
-	/* E010h */		ADL_IMC_CR_TC_RDWR	RDWR;	/* 32 bits    */
-	/* E014h */		ADL_IMC_CR_TC_WRRD	WRRD;	/* 32 bits    */
-	/* E018h */		ADL_IMC_CR_TC_WRWR	WRWR;	/* 32 bits    */
-	/* E050h */		ADL_IMC_TC_PWDEN	PWDEN;	/* 64-bits    */
-	/* E070h */		ADL_IMC_CR_TC_ODT	ODT;	/* 64 bits    */
-	/* E088h */		ADL_IMC_SC_GS_CFG	Sched;	/* 64 bits    */
-	/* E43Ch */		ADL_IMC_REFRESH_TC	Refresh; /*32 bits    */
-	/* E4C0h */		ADL_IMC_SREXITTP	SRExit;	/* 64 bits    */
+				ADL_IMC_CR_TC_PRE	Timing;
+				ADL_IMC_CR_TC_ACT	ACT;
+				ADL_IMC_CR_TC_RDRD	RDRD;
+				ADL_IMC_CR_TC_RDWR	RDWR;
+				ADL_IMC_CR_TC_WRRD	WRRD;
+				ADL_IMC_CR_TC_WRWR	WRWR;
+				ADL_IMC_TC_PWDEN	PWDEN;
+				ADL_IMC_CR_TC_ODT	ODT;
+				ADL_IMC_SC_GS_CFG	Sched;
+				ADL_IMC_REFRESH_TC	Refresh;
+				ADL_IMC_SREXITTP	SRExit;
 			} ADL;
 			struct {
-	/* 88h */		AMD_0F_DRAM_TIMING_LOW	DTRL;	/* 32 bits    */
+				AMD_0F_DRAM_TIMING_LOW	DTRL;
 			} AMD0Fh;
 			struct
 			{
-				AMD_17_UMC_DEBUG_MISC	DbgMisc;/* 32 bits   */
+				AMD_17_UMC_DEBUG_MISC	DbgMisc;
 			  struct {
-				AMD_17_UMC_ECC_CAP_LO	Lo;	/* 32 bits   */
-				AMD_17_UMC_ECC_CAP_HI	Hi;	/* 32 bits   */
+				AMD_17_UMC_ECC_CAP_LO	Lo;
+				AMD_17_UMC_ECC_CAP_HI	Hi;
 			  } ECC;
 			  struct {
 			    struct {
 				unsigned int value;
-			    }				Chip,	/* 32 bits   */
-							Mask;	/* 32 bits   */
+			    }				Chip,
+							Mask;
 			  } CHIP[4][2];
-				AMD_ZEN_UMC_CONFIG	CONFIG; /* 32 bits   */
-				AMD_17_UMC_SPAZ_CTRL	SPAZ;	/* 32 bits   */
-				AMD_17_UMC_DATA_CTRL	ENCR;	/* 32 bits   */
-				AMD_ZEN_UMC_CFG_MISC	MISC;	/* 32 bits   */
-				AMD_17_UMC_TIMING_DTR1	DTR1;	/* 32 bits   */
-				AMD_17_UMC_TIMING_DTR2	DTR2;	/* 32 bits   */
-				AMD_17_UMC_TIMING_DTR3	DTR3;	/* 32 bits   */
-				AMD_17_UMC_TIMING_DTR4	DTR4;	/* 32 bits   */
-				AMD_17_UMC_TIMING_DTR5	DTR5;	/* 32 bits   */
-				AMD_17_UMC_TIMING_DTR6	DTR6;	/* 32 bits   */
-				AMD_17_UMC_TIMING_DTR7	DTR7;	/* 32 bits   */
-				AMD_17_UMC_TIMING_DTR8	DTR8;	/* 32 bits   */
-				AMD_17_UMC_TIMING_DTR9	DTR9;	/* 32 bits   */
-				AMD_17_UMC_TIMING_DTR10 DTR10;	/* 32 bits   */
-				AMD_17_UMC_TIMING_DTR12 DTR12;	/* 32 bits   */
-				AMD_17_UMC_TIMING_DTR13 DTR13;	/* 32 bits   */
-				AMD_17_UMC_TIMING_DTR14 DTR14;	/* 32 bits   */
-				AMD_17_UMC_TIMING_DTR20 DTR20;	/* 32 bits   */
-				AMD_17_UMC_TIMING_DTR21 DTR21;	/* 32 bits   */
-				AMD_17_UMC_TIMING_DTR22 DTR22;	/* 32 bits   */
-				AMD_ZEN_UMC_TIMING_DTRFC DTRFC; /* 32 bits   */
-				AMD_ZEN_UMC_TIMING_RFCSB RFCSB; /* 32 bits   */
-				AMD_17_UMC_TIMING_DTR35 DTR35;	/* 32 bits   */
+				AMD_ZEN_UMC_CONFIG	CONFIG;
+				AMD_17_UMC_SPAZ_CTRL	SPAZ;
+				AMD_17_UMC_DATA_CTRL	ENCR;
+				AMD_ZEN_UMC_CFG_MISC	MISC;
+				AMD_17_UMC_TIMING_DTR1	DTR1;
+				AMD_17_UMC_TIMING_DTR2	DTR2;
+				AMD_17_UMC_TIMING_DTR3	DTR3;
+				AMD_17_UMC_TIMING_DTR4	DTR4;
+				AMD_17_UMC_TIMING_DTR5	DTR5;
+				AMD_17_UMC_TIMING_DTR6	DTR6;
+				AMD_17_UMC_TIMING_DTR7	DTR7;
+				AMD_17_UMC_TIMING_DTR8	DTR8;
+				AMD_17_UMC_TIMING_DTR9	DTR9;
+				AMD_17_UMC_TIMING_DTR10 DTR10;
+				AMD_17_UMC_TIMING_DTR12 DTR12;
+				AMD_17_UMC_TIMING_DTR13 DTR13;
+				AMD_17_UMC_TIMING_DTR14 DTR14;
+				AMD_17_UMC_TIMING_DTR20 DTR20;
+				AMD_17_UMC_TIMING_DTR21 DTR21;
+				AMD_17_UMC_TIMING_DTR22 DTR22;
+				AMD_ZEN_UMC_TIMING_DTRFC DTRFC;
+				AMD_ZEN_UMC_TIMING_RFCSB RFCSB;
+				AMD_17_UMC_TIMING_DTR35 DTR35;
 			    struct {
-				unsigned int value;		/* 32 bits   */
+				unsigned int value;
 			    }				BGS,
 							BGS_ALT;
 			} AMD17h;
-		};
+		};*/
 		union {
-	/* 1208h */	G965_MC_DRAM_RANK_ATTRIB	DRA;	/* 32 bits    */
-	/* 48h */	NHM_IMC_DOD_CHANNEL		DOD;	/* 32 bits    */
-	/* 80h */	SNB_EP_DIMM_MTR 		MTR;	/* 32 bits    */
-	/* 40h */	AMD_0F_DRAM_CS_BASE_ADDR	MBA;	/* 32 bits    */
+		/*	G965_MC_DRAM_RANK_ATTRIB	DRA;
+			NHM_IMC_DOD_CHANNEL		DOD;
+			SNB_EP_DIMM_MTR 		MTR;
+			AMD_0F_DRAM_CS_BASE_ADDR	MBA;
 		    struct {
-	/* 5003{0,4}h*/ AMD_ZEN_UMC_DRAM_ADDR_CFG	DAC;	/* 32 bits    */
-	/* 5008{0,4}h*/ AMD_17_UMC_DIMM_CFG		CFG;	/* 32 bits    */
-		    } AMD17h;
+			 AMD_ZEN_UMC_DRAM_ADDR_CFG	DAC;
+			 AMD_17_UMC_DIMM_CFG		CFG;
+		    } AMD17h;*/
 		} DIMM[MC_MAX_DIMM];
 	} Channel[MC_MAX_CHA];
-
+/*
 	union {
 		struct {
-	/* 200h */	P945_MC_DCC		DCC;		/* 32 bits    */
+			P945_MC_DCC		DCC;
 		} P945;
 		struct {
-	/* 200h */	P945_MC_DCC		DCC;		/* 32 bits    */
+			P945_MC_DCC		DCC;
 		} P955;
 		struct {
-	/* 260h */	P965_MC_CKECTRL 	CKE0,		/* 32 bits    */
-						CKE1;		/* 32 bits    */
+			P965_MC_CKECTRL 	CKE0,
+						CKE1;
 		} P965;
 		struct {
-	/* 1200h */	G965_MC_DRB_0_1 	DRB0,	/* 32 bits @ channel0 */
-	/* 1300h */				DRB1;	/* 32 bits @ channel1 */
+			G965_MC_DRB_0_1 	DRB0,
+						DRB1;
 		} G965;
 		struct {
-	/* 260h */	P35_MC_CKECTRL		CKE0,		/* 32 bits    */
-						CKE1;		/* 32 bits    */
+			P35_MC_CKECTRL		CKE0,
+						CKE1;
 		} P35;
 		struct {
-	/* 0F00h */	SOC_MC_DRP		DRP;		/* 32 bits    */
-	/* 0F00h */	SOC_MC_DTR0		DTR0;		/* 32 bits    */
-	/* 0F00h */	SOC_MC_DTR1		DTR1;		/* 32 bits    */
-	/* 0F00h */	SOC_MC_DTR2		DTR2;		/* 32 bits    */
-	/* 0F00h */	SOC_MC_DTR3		DTR3;		/* 32 bits    */
-	/* 0F00h */	SOC_MC_DRFC		DRFC;		/* 32 bits    */
-			SOC_MC_DRMC		DRMC;		/* 32 bits    */
-	/* 0F00h */	SOC_MC_BIOS_CFG 	BIOS_CFG;	/* 32 bits    */
+			SOC_MC_DRP		DRP;
+			SOC_MC_DTR0		DTR0;
+			SOC_MC_DTR1		DTR1;
+			SOC_MC_DTR2		DTR2;
+			SOC_MC_DTR3		DTR3;
+			SOC_MC_DRFC		DRFC;
+			SOC_MC_DRMC		DRMC;
+			SOC_MC_BIOS_CFG 	BIOS_CFG;
 		} SLM;
 		struct {
-	/* 3:0-48h */	NHM_IMC_CONTROL 	CONTROL;	/* 32 bits    */
-	/* 3:0 4Ch */	NHM_IMC_STATUS		STATUS; 	/* 32 bits    */
+			NHM_IMC_CONTROL 	CONTROL;
+			NHM_IMC_STATUS		STATUS;
 		} NHM;
 		struct {
-	/* 5000h */	SNB_IMC_MAD_MAPPING	MADCH;		/* 32 bits    */
-	/* 5004h */	SNB_IMC_MAD_CHANNEL	MAD0,		/* 32 bits    */
-	/* 5008h */				MAD1;		/* 32 bits    */
+			SNB_IMC_MAD_MAPPING	MADCH;
+			SNB_IMC_MAD_CHANNEL	MAD0,
+						MAD1;
 		} SNB;
 		struct {
-	/* 7Ch*/	SNB_EP_MC_TECH		TECH;		/* 32 bits    */
-	/* 80h */	SNB_EP_TADWAYNESS	TAD;		/* 12x32 bits */
+			SNB_EP_MC_TECH		TECH;
+			SNB_EP_TADWAYNESS	TAD;
 		} SNB_EP;
 		struct {
-	/* 7Ch*/	HSW_EP_MC_TECH		TECH;		/* 32 bits    */
-	/* 80h */	HSW_EP_TADWAYNESS	TAD;		/* 12x32 bits */
+			HSW_EP_MC_TECH		TECH;
+			HSW_EP_TADWAYNESS	TAD;
 		} HSW_EP;
 		struct {
-	/* 5000h */	SKL_IMC_MAD_MAPPING	MADCH;		/* 32 bits    */
-	/* 5004h */	SKL_IMC_MAD_CHANNEL	MADC0,		/* 32 bits    */
-	/* 5008h */				MADC1;		/* 32 bits    */
-	/* 500Ch */	SKL_IMC_MAD_DIMM	MADD0,		/* 32 bits    */
-	/* 5010h */				MADD1;		/* 32 bits    */
+			SKL_IMC_MAD_MAPPING	MADCH;
+			SKL_IMC_MAD_CHANNEL	MADC0,
+						MADC1;
+			SKL_IMC_MAD_DIMM	MADD0,
+						MADD1;
 		} SKL;
 		struct {
-	/* 5000h */	RKL_IMC_MAD_MAPPING	MADCH;		/* 32 bits    */
-	/* 5004h */	RKL_IMC_MAD_CHANNEL	MADC0,		/* 32 bits    */
-	/* 5008h */				MADC1;		/* 32 bits    */
-	/* 500Ch */	RKL_IMC_MAD_DIMM	MADD0,		/* 32 bits    */
-	/* 5010h */				MADD1;		/* 32 bits    */
+			RKL_IMC_MAD_MAPPING	MADCH;
+			RKL_IMC_MAD_CHANNEL	MADC0,
+						MADC1;
+			RKL_IMC_MAD_DIMM	MADD0,
+						MADD1;
 		} RKL;
 		struct {
-	/* 5000h */	TGL_IMC_MAD_MAPPING	MADCH;		/* 32 bits    */
-	/* 5004h */	TGL_IMC_MAD_CHANNEL	MADC0,		/* 32 bits    */
-	/* 5008h */				MADC1;		/* 32 bits    */
-	/* 500Ch */	TGL_IMC_MAD_DIMM	MADD0,		/* 32 bits    */
-	/* 5010h */				MADD1;		/* 32 bits    */
+			TGL_IMC_MAD_MAPPING	MADCH;
+			TGL_IMC_MAD_CHANNEL	MADC0,
+						MADC1;
+			TGL_IMC_MAD_DIMM	MADD0,
+						MADD1;
 		} TGL;
 		struct {
-	/* D800h */	ADL_IMC_MAD_MAPPING	MADCH;		/* 32 bits    */
-	/* D804h */	ADL_IMC_MAD_CHANNEL	MADC0,		/* 32 bits    */
-	/* D808h */				MADC1;		/* 32 bits    */
-	/* D80Ch */	ADL_IMC_MAD_DIMM	MADD0,		/* 32 bits    */
-	/* D810h */				MADD1;		/* 32 bits    */
+			ADL_IMC_MAD_MAPPING	MADCH;
+			ADL_IMC_MAD_CHANNEL	MADC0,
+						MADC1;
+			ADL_IMC_MAD_DIMM	MADD0,
+						MADD1;
 		} ADL;
 		struct {
-	/* 90h */	AMD_0F_DRAM_CONFIG_LOW	DCRL;		/* 32 bits    */
-	/* 94h */	AMD_0F_DRAM_CONFIG_HIGH DCRH;		/* 32 bits    */
+			AMD_0F_DRAM_CONFIG_LOW	DCRL;
+			AMD_0F_DRAM_CONFIG_HIGH DCRH;
 		} AMD0Fh;
 	};
-
+*/
 	union {
-		struct {
-	/* 64h */	NHM_IMC_MAX_DOD 	DOD;		/* 32 bits    */
+/*		struct {
+			NHM_IMC_MAX_DOD 	DOD;
 		} NHM;
 		struct {
-	/* 80h */	AMD_0F_DRAM_CS_MAPPING	CS;		/* 32 bits    */
+			AMD_0F_DRAM_CS_MAPPING	CS;
 		} AMD0Fh;
-	} MaxDIMMs;
+*/	} MaxDIMMs;
 
 	unsigned short		SlotCount, ChannelCount;
 } MC_REGISTERS;
 
 typedef struct
 {
-		struct {
+/*		struct {
 			NHM_IMC_CLK_RATIO_STATUS DimmClock;
 			QPI_FREQUENCY		QuickPath;
 			BIOS_MEMCLOCK		BIOS_DDR;
@@ -803,14 +803,14 @@ typedef struct
 	};
 	union {
 		struct {
-			AMD_IOMMU_CTRL_REG	IOMMU_CR;	/* 64 bits    */
-			AMD_IOMMU_CAP_HEADER	IOMMU_HDR;	/* 32 bits    */
+			AMD_IOMMU_CTRL_REG	IOMMU_CR;
+			AMD_IOMMU_CAP_HEADER	IOMMU_HDR;
 		};
 		struct {
-			Intel_IOMMU_CAP_REG	IOMMU_Cap;	/* 64 bits    */
-			Intel_IOMMU_VER_REG	IOMMU_Ver;	/* 32 bits    */
+			Intel_IOMMU_CAP_REG	IOMMU_Cap;
+			Intel_IOMMU_VER_REG	IOMMU_Ver;
 		};
-	};
+	};*/
 } BUS_REGISTERS;
 
 
@@ -948,7 +948,7 @@ typedef struct
 	    } VID;
 
 	enum THERM_PWR_EVENTS	Events[eDIM];
-
+/*TODO(CleanUp)
 		RAPL_POWER_UNIT Unit;
 
 	    struct {
@@ -956,15 +956,18 @@ typedef struct
 				PC06,
 				PC07;
 	    } IRTL;
-
+*/
 	  union {
 	    struct {
 	      struct {
-/*64-bits*/	DOMAIN_POWER_LIMIT	PowerLimit;
+/*TODO(CleanUp)
+		DOMAIN_POWER_LIMIT	PowerLimit;
+*/
 /*16-bits*/	unsigned short		Unlock; /* Not Agent Locked */
 	      } Domain[PWR_DOMAIN(SIZE)];
-
-/*64-bits*/	DOMAIN_POWER_INFO	PowerInfo;
+/*TODO(CleanUp)
+		DOMAIN_POWER_INFO	PowerInfo;
+*/
 /*32-bits*/	struct {
 			unsigned int	TDC	:  1-0,
 					_Unused : 32-1;
@@ -977,10 +980,10 @@ typedef struct
 /*64-bits*/	unsigned long long	_pad64;
 /*16-bits*/	unsigned short		_pad16;
 	      } Domain[PWR_DOMAIN(SIZE)];
-
-/*32-bits*/	AMD_17_MTS_MCM_PWR	PWR;
-/*32-bits*/	AMD_17_MTS_MCM_TDP	TDP;
-/*32-bits*/	AMD_17_MTS_MCM_EDC	EDC;
+/*TODO(CleanUp)
+		AMD_17_MTS_MCM_PWR	PWR;
+		AMD_17_MTS_MCM_TDP	TDP;
+		AMD_17_MTS_MCM_EDC	EDC;*/
 /*32-bits*/	unsigned int		_pad32;
 	    } Zen;
 	  };

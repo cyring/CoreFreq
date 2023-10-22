@@ -1448,6 +1448,7 @@ void PowerInterface(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	enum PWR_DOMAIN pw;
 
     switch (KIND_OF_FORMULA(RO(Proc)->powerFormula)) {
+	/*TODO(CleanUp)
     case POWER_KIND_INTEL:
     case POWER_KIND_AMD:
     case POWER_KIND_AMD_17h:
@@ -1471,12 +1472,14 @@ void PowerInterface(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		0.001 / (double) (1 << RO(Proc)->PowerThermal.Unit.ESU) : 0;
 	goto TIME_UNIT;
 	break;
+	*/
     case POWER_KIND_NONE:
 	break;
     }
+/*TODO(CleanUp)
   if (	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
   ||	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
-  { /* AMD PowerNow */
+  { ** AMD PowerNow **
 	if (RO(Proc)->Features.AdvPower.EDX.FID) {
 		BITSET(LOCKLESS, RO(Shm)->Proc.PowerNow, 0);
 	} else {
@@ -1586,7 +1589,7 @@ void PowerInterface(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
     }
 	RO(Shm)->Proc.Power.TDC = RO(Proc)->PowerThermal.TDC;
 	RO(Shm)->Proc.Power.Feature.TDC=RO(Proc)->PowerThermal.Enable_Limit.TDC;
-  } else {
+  } else */{
 	RO(Shm)->Proc.PowerNow = 0;
   }
 }
@@ -7280,7 +7283,7 @@ void PowerThermal(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 			RO(CORE) **RO(Core), unsigned int cpu )
 {
 	UNUSED(RO(Proc));
-
+/*TODO(CleanUp)
 	RO(Shm)->Cpu[cpu].PowerThermal.DutyCycle.Extended = \
 		RO(Core, AT(cpu))->PowerThermal.ClockModulation.ECMD;
 
@@ -7290,7 +7293,7 @@ void PowerThermal(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 
 	RO(Shm)->Cpu[cpu].PowerThermal.PowerPolicy = \
 		RO(Core, AT(cpu))->PowerThermal.PerfEnergyBias.PowerPolicy;
-
+*/
 	RO(Shm)->Cpu[cpu].PowerThermal.HWP.Capabilities.Highest = \
 		RO(Core, AT(cpu))->PowerThermal.HWP_Capabilities.Highest;
 
@@ -7323,6 +7326,7 @@ void PowerThermal(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 void SystemRegisters(	RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core),
 			unsigned int cpu )
 {
+/*TODO(CleanUp)
 	RO(Shm)->Cpu[cpu].SystemRegister.RFLAGS = \
 				RO(Core, AT(cpu))->SystemRegister.RFLAGS;
 
@@ -7349,6 +7353,7 @@ void SystemRegisters(	RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core),
 
 	RO(Shm)->Cpu[cpu].SystemRegister.SYSCFG = \
 				RO(Core, AT(cpu))->SystemRegister.SYSCFG;
+*/
 }
 
 void SysGate_OS_Driver(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
