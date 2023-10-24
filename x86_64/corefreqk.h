@@ -7970,12 +7970,25 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Bergamo_Specific[] = {
 static PROCESSOR_SPECIFIC AMD_Zen4_STP_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen Threadripper PRO 7995WX"),
-	.Boost = {+23, 0},
+	.Boost = {+26, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_STORM_PEAK,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
-	.TurboUnlocked = 0,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Threadripper PRO 7985WX"),
+	.Boost = {+19, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_STORM_PEAK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
 	.HSMP_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
@@ -7983,12 +7996,51 @@ static PROCESSOR_SPECIFIC AMD_Zen4_STP_Specific[] = {
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen Threadripper PRO 7975WX"),
+	.Boost = {+13, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_STORM_PEAK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Threadripper PRO 7965WX"),
+	.Boost = {+11, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_STORM_PEAK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Threadripper PRO 7955WX"),
 	.Boost = {+8, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_STORM_PEAK,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
-	.TurboUnlocked = 0,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Threadripper PRO 7945WX"),
+	.Boost = {+6, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_STORM_PEAK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
 	.HSMP_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
