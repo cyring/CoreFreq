@@ -7940,6 +7940,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Bergamo_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD EPYC Embedded 9754S",	\
 			"AMD EPYC Embedded 9754",	\
+			"AMD EPYC 9754S",		\
 			"AMD EPYC 9754" 		),
 	.Boost = {+9, 0},
 	.Param.Offset = {0, 0, 0},
@@ -7953,7 +7954,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Bergamo_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD EPYC Embedded 9734"),
+	.Brand = ZLIST( "AMD EPYC Embedded 9734",	\
+			"AMD EPYC 9734"		),
 	.Boost = {+8, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_BERGAMO,
