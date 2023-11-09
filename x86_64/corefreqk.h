@@ -2010,6 +2010,7 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 	[Zen4/Raphael]		AF_61h Stepping 2	 5 nm	[RPL]
 	[Zen4/Dragon Range]	AF_61h Stepping 2	 5 nm	FL1
 	[Zen4/Phoenix Point]	AF_74h			 4 nm	[PHX]
+	[Zen4c/Phoenix2]	AF_78h			 4 nm	[PHX2]
 	[Zen4c/Bergamo] 	AF_A0h Stepping 1	 5 nm	SVR
 	[Zen4/Storm Peak]	AF_18h Stepping 1	 5 nm	WS/SP6
 	[Zen5/Granite Ridge]						*/
@@ -2027,6 +2028,7 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 #define _AMD_Zen4_Genoa {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x1, .Model=0x1}
 #define _AMD_Zen4_RPL	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x6, .Model=0x1}
 #define _AMD_Zen4_PHX	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x7, .Model=0x4}
+#define _AMD_Zen4_PHX2	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x7, .Model=0x8}
 #define _AMD_Zen4_Bergamo	\
 			{.ExtFamily=0xa, .Family=0xF, .ExtModel=0xa, .Model=0x0}
 
@@ -3504,6 +3506,9 @@ enum {
 enum {
 	CN_PHOENIX
 };
+enum {
+	CN_PHOENIX2
+};
 
 enum {
 	CN_DHYANA,
@@ -3594,6 +3599,9 @@ static char *Arch_AMD_Zen4_RPL[] = ZLIST(
 );
 static char *Arch_AMD_Zen4_PHX[] = ZLIST(
 		[CN_PHOENIX]		=	"Zen4/Phoenix Point"
+);
+static char *Arch_AMD_Zen4_PHX2[] = ZLIST(
+		[CN_PHOENIX2]		=	"Zen4/Phoenix2"
 );
 static char *Arch_AMD_Zen4_Bergamo[] = ZLIST(
 		[CN_BERGAMO]		=	"Zen4c/Bergamo"
@@ -7939,6 +7947,23 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHX_Specific[] = {
 	},
 	{0}
 };
+static PROCESSOR_SPECIFIC AMD_Zen4_PHX2_Specific[] = {
+	{
+	.Brand = ZLIST( "AMD Ryzen 5 PRO 7545U",	\
+			"AMD Ryzen 5 7545U",		\
+			"AMD Ryzen 3 7440U"		),
+	.Boost = {+17, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PHOENIX2,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{0}
+};
 static PROCESSOR_SPECIFIC AMD_Zen4_Bergamo_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD EPYC Embedded 9754S",	\
@@ -11456,7 +11481,31 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen4_PHX
 	},
-[AMD_Zen4_Bergamo] = {							/*113*/
+[AMD_Zen4_PHX2] = {							/*113*/
+	.Signature = _AMD_Zen4_PHX2,
+	.Query = Query_AMD_F19h_74h_PerSocket,
+	.Update = PerCore_AMD_Family_19h_Query,
+	.Start = Start_AMD_Family_19h,
+	.Stop = Stop_AMD_Family_19h,
+	.Exit = Exit_AMD_F19h,
+	.Timer = InitTimer_AMD_Zen4_PHX,
+	.BaseClock = BaseClock_AMD_Family_19h,
+	.ClockMod = ClockMod_AMD_Zen,
+	.TurboClock = TurboClock_AMD_Zen,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN4,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_ZEN4,
+	.powerFormula   = POWER_FORMULA_AMD_19h,
+	.PCI_ids = PCI_AMD_19h_ids,
+	.Uncore = {
+		.Start = Start_Uncore_AMD_Family_19h,
+		.Stop = Stop_Uncore_AMD_Family_19h,
+		.ClockMod = NULL
+		},
+	.Specific = AMD_Zen4_PHX2_Specific,
+	.SystemDriver = AMD_Zen_Driver,
+	.Architecture = Arch_AMD_Zen4_PHX2
+	},
+[AMD_Zen4_Bergamo] = {							/*114*/
 	.Signature = _AMD_Zen4_Bergamo,
 	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -11480,7 +11529,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen4_Bergamo
 	},
-[AMD_Zen4_STP] = {							/*114*/
+[AMD_Zen4_STP] = {							/*115*/
 	.Signature = _AMD_Zen4_STP,
 	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
