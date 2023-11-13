@@ -8012,7 +8012,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_STP_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen Threadripper PRO 7985WX"),
+	.Brand = ZLIST( "AMD Ryzen Threadripper PRO 7985WX",	\
+			"AMD Ryzen Threadripper 7980X"		),
 	.Boost = {+19, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_STORM_PEAK,
@@ -8025,7 +8026,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_STP_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen Threadripper PRO 7975WX"),
+	.Brand = ZLIST( "AMD Ryzen Threadripper PRO 7975WX",	\
+			"AMD Ryzen Threadripper 7970X"		),
 	.Boost = {+13, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_STORM_PEAK,
@@ -8038,7 +8040,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_STP_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen Threadripper PRO 7965WX"),
+	.Brand = ZLIST( "AMD Ryzen Threadripper PRO 7965WX",	\
+			"AMD Ryzen Threadripper 7960X"		),
 	.Boost = {+11, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_STORM_PEAK,
