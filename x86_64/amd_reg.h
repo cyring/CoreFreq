@@ -1205,9 +1205,16 @@ typedef union
 	ReservedBits2	: 50-49,
 	XTEn		: 51-50,
 	IntCapXTEn	: 52-51,
-	ReservedBits3	: 54-52,
+	vCmdEn		: 53-52,
+	vIommuEn	: 54-53,
 	GAUpdateDis	: 55-54,
-	ReservedBits4	: 64-55;
+	GAPPIEn 	: 56-55,
+	TMPMEn		: 57-56,
+	ReservedBits3	: 58-57,
+	GCR3TRPMode	: 59-58,
+	IRTCacheDis	: 60-59,
+	GstBufferTRPMode: 61-60,
+	SNPAVICEn	: 64-61;
     };
 } AMD_IOMMU_CTRL_REG;
 
