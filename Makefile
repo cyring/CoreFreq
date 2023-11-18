@@ -7,12 +7,14 @@ CC ?= cc
 WARNING = -Wall -Wfatal-errors -Wno-unused-variable
 SYMLINK ?= ln -s
 INSTALL ?= install
+DEPMOD ?= depmod
 MKDIR ?= mkdir
 RMDIR ?= rmdir
 RM ?= rm -f
 PWD ?= $(shell pwd)
 BUILD ?= build
-KERNELDIR ?= /lib/modules/$(shell uname -r)/build
+KERNELREL ?= /lib/modules/$(shell uname -r)
+KERNELDIR ?= $(KERNELREL)/build
 PREFIX ?= /usr
 UBENCH = 0
 CORE_COUNT ?= 256
@@ -113,12 +115,47 @@ prepare:
 			$(BUILD)/module/corefreqk.c; \
 	fi
 
+.PHONY: uninstall
+uninstall:
+	@if [ -e $(PREFIX)/bin/corefreq-cli ]; then \
+		$(RM) $(PREFIX)/bin/corefreq-cli; \
+	fi
+	@if [ -e $(PREFIX)/bin/corefreqd ]; then \
+		$(RM) $(PREFIX)/bin/corefreqd; \
+	fi
+	@if [ -e $(PREFIX)/lib/systemd/system/corefreqd.service ]; then \
+		$(RM) $(PREFIX)/lib/systemd/system/corefreqd.service; \
+	fi
+	@MCNT=0; \
+	for MDIR in updates extra ; do \
+	    if [ -d $(KERNELREL)/$${MDIR} ]; then \
+		for MEXT in ko ko.gz ko.xz ko.zst ; do \
+			MFILE=$(KERNELREL)/$${MDIR}/corefreqk.$${MEXT}; \
+			if [ -e $${MFILE} ]; then \
+				$(RM) $${MFILE}; \
+				if [ $$? -eq 0 ]; then \
+					MCNT=$$((MCNT + 1)); \
+				fi \
+			fi \
+		done \
+	    fi \
+	done; \
+	if [ $${MCNT} -ge 1 ]; then \
+		$(DEPMOD) -a; \
+	fi
+
 .PHONY: install
 install: module-install
-	$(INSTALL) -Dm 0755 $(BUILD)/corefreq-cli $(BUILD)/corefreqd \
-		-t $(PREFIX)/bin
-	$(INSTALL) -Dm 0644 corefreqd.service \
-		$(PREFIX)/lib/systemd/system/corefreqd.service
+	@if [ -e $(BUILD)/corefreq-cli ]; then \
+		$(INSTALL) -m 0755 $(BUILD)/corefreq-cli $(PREFIX)/bin; \
+	fi
+	@if [ -e $(BUILD)/corefreqd ]; then \
+		$(INSTALL) -m 0755 $(BUILD)/corefreqd $(PREFIX)/bin; \
+	fi
+	@if [ -d $(PREFIX)/lib/systemd/system ]; then \
+		$(INSTALL) -m 0644 corefreqd.service \
+			$(PREFIX)/lib/systemd/system; \
+	fi
 
 .PHONY: module-install
 module-install:
