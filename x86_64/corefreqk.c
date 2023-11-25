@@ -424,6 +424,10 @@ static signed short Mech_XPROC_LEAK = -1;
 module_param(Mech_XPROC_LEAK, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Mech_XPROC_LEAK, "Mitigation Mech. Cross Processor Leak");
 
+static signed short Mech_AGENPICK = -1;
+module_param(Mech_AGENPICK, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Mech_AGENPICK, "Mitigation Mech. LsCfgDisAgenPick");
+
 static signed short WDT_Enable = -1;
 module_param(WDT_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(WDT_Enable, "Watchdog Hardware Timer");
@@ -11824,6 +11828,7 @@ void AMD_Mitigation_Mechanisms(CORE_RO *Core)
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask, Core->Bind);
 
     switch (PUBLIC(RO(Proc))->ArchID) {
+    case AMD_EPYC_Rome_CPK:
     case AMD_Zen2_Renoir:
     case AMD_Zen2_LCN:
     case AMD_Zen2_MTS:
@@ -11831,7 +11836,9 @@ void AMD_Mitigation_Mechanisms(CORE_RO *Core)
     case AMD_Zen2_Jupiter:
     case AMD_Zen2_MDN:
       {
+	AMD_LS_CFG LS_CFG = {.value = 0};
 	AMD_DE_CFG2 DE_CFG = {.value = 0};
+
 	RDMSR(DE_CFG, MSR_AMD_DE_CFG2);
 
 	if (((Mech_BTC_NOBR == COREFREQ_TOGGLE_OFF)
@@ -11846,6 +11853,21 @@ void AMD_Mitigation_Mechanisms(CORE_RO *Core)
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->BTC_NOBR, Core->Bind);
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BTC_NOBR, Core->Bind);
+	}
+
+	RDMSR(LS_CFG, MSR_AMD64_LS_CFG);
+
+	if ( (Mech_AGENPICK == COREFREQ_TOGGLE_OFF)
+	  || (Mech_AGENPICK == COREFREQ_TOGGLE_ON) )
+	{
+		LS_CFG.F17h_AgenPick = Mech_AGENPICK;
+		WRMSR(LS_CFG, MSR_AMD64_LS_CFG);
+		RDMSR(LS_CFG, MSR_AMD64_LS_CFG);
+	}
+	if (LS_CFG.F17h_AgenPick == 1) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->AGENPICK, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->AGENPICK, Core->Bind);
 	}
       }
 	break;

@@ -1092,6 +1092,7 @@ typedef struct
 	BitCC			BHI_DIS_S	__attribute__ ((aligned (16)));
 	BitCC	/* AMD */	BTC_NOBR	__attribute__ ((aligned (16)));
 	BitCC	/* AMD */	XPROC_LEAK	__attribute__ ((aligned (16)));
+	BitCC	/* AMD */	AGENPICK	__attribute__ ((aligned (16)));
 
 	struct {
 		Bit64		Signal	__attribute__ ((aligned (8)));

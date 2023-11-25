@@ -2059,9 +2059,15 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 			BITCMP_CC(LOCKLESS,
 				RW(Proc)->XPROC_LEAK,
 				RO(Proc)->XPROC_LEAK_Mask) ? 0b11 : 0b10;
+
+		RO(Shm)->Proc.Mechanisms.AGENPICK = \
+			BITCMP_CC(LOCKLESS,
+				RW(Proc)->AGENPICK,
+				RO(Proc)->BTC_NOBR_Mask) ? 0b11 : 0b10;
 		break;
 	default:
 		RO(Shm)->Proc.Mechanisms.XPROC_LEAK = 0;
+		RO(Shm)->Proc.Mechanisms.AGENPICK = 0;
 		break;
 	}
     }

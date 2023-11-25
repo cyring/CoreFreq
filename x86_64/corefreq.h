@@ -403,7 +403,8 @@ typedef struct
 				TSME		: 12-10,
 				DDPD_U_DIS	: 14-12,
 				XPROC_LEAK	: 16-14,
-				_UnusedMechBits : 64-16;
+				AGENPICK	: 18-16,
+				_UnusedMechBits : 64-18;
 	} Mechanisms;
 
 	enum THERMAL_FORMULAS	thermalFormula;

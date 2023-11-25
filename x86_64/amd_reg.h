@@ -837,7 +837,8 @@ typedef union
 	F16h_SSBD	: 30-29,
 	ReservedBits5	: 33-30,
 	F16h_SSBD_EN	: 34-33, /* F16h: 1=Enable SSBD per SMT 	*/
-	ReservedBits6	: 54-34,
+	F17h_AgenPick	: 35-34, /* Zen 2: Limited Early Redirect Window */
+	ReservedBits6	: 54-35,
 	F15h_SSBD	: 55-54, /* F15h,F16h,some F17h: disable SpecLockMap */
 	ReservedBits7	: 64-55;
     };

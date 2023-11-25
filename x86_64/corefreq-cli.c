@@ -3080,6 +3080,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		MECH
 	},
 	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Mechanisms.AGENPICK,
+		attr_Feat,
+		2, "%s%.*sAGENPICK   [%7s]", RSC(MECH_AGENPICK).CODE(),
+		width - 23 - RSZ(MECH_AGENPICK),
+		MECH
+	},
+	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		RO(Shm)->Proc.Features.ExtFeature.EDX.L1D_FLUSH_Cap == 1,
 		attr_Feat,
