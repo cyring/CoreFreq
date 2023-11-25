@@ -1824,6 +1824,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.TSME);
 			json_key(&s, "XPROC_LEAK");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.XPROC_LEAK);
+			json_key(&s, "AGENPICK");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.AGENPICK);
 
 			json_end_object(&s);
 		}
