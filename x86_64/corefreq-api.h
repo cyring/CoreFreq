@@ -896,7 +896,7 @@ typedef struct
 	BitCC			TM_Mask 	__attribute__ ((aligned (16)));
 	BitCC			ODCM_Mask	__attribute__ ((aligned (16)));
 	BitCC			DCU_Mask	__attribute__ ((aligned (16)));
-	BitCC			Scrubbing_Mask	__attribute__ ((aligned (16)));
+	BitCC			PCORE_Mask	__attribute__ ((aligned (16)));
 	BitCC			PowerMgmt_Mask	__attribute__ ((aligned (16)));
 	BitCC			SpeedStep_Mask	__attribute__ ((aligned (16)));
 	BitCC			TurboBoost_Mask __attribute__ ((aligned (16)));
@@ -1037,6 +1037,7 @@ typedef struct
 	BitCC	/* Intel */	L1_Scrubbing	__attribute__ ((aligned (16)));
 	BitCC			L2_HW_Prefetch __attribute__ ((aligned (16)));
 	BitCC			L2_HW_CL_Prefetch __attribute__((aligned (16)));
+	BitCC	/* Intel */	L2_AMP_Prefetch __attribute__ ((aligned (16)));
 	BitCC			PowerMgmt	__attribute__ ((aligned (16)));
 	BitCC			SpeedStep	__attribute__ ((aligned (16)));
 	BitCC			TurboBoost	__attribute__ ((aligned (16)));

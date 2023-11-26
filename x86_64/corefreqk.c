@@ -211,6 +211,10 @@ static signed short L2_HW_CL_PREFETCH_Disable = -1;
 module_param(L2_HW_CL_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L2_HW_CL_PREFETCH_Disable, "Disable L2 HW CL Prefetcher");
 
+static signed short L2_AMP_PREFETCH_Disable = -1;
+module_param(L2_AMP_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(L2_AMP_PREFETCH_Disable, "Adaptive Multipath Probability");
+
 static signed short SpeedStep_Enable = -1;
 module_param(SpeedStep_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(SpeedStep_Enable, "Enable SpeedStep");
@@ -8887,7 +8891,7 @@ void Intel_DCU_Technology(CORE_RO *Core)			/*Per Core */
 }
 
 
-void Intel_Cache_Scrubbing(CORE_RO *Core)		/* Per P-Core	*/
+void Intel_Core_MicroArchitecture(CORE_RO *Core)	/* Per P-Core	*/
 { /* 06_7D, 06_7E, 06_8C, 06_8D, 06_97, 06_9A, 06_B7, 06_BA, 06_BF, MTL */
   if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
   {
@@ -8898,6 +8902,8 @@ void Intel_Cache_Scrubbing(CORE_RO *Core)		/* Per P-Core	*/
     case Hybrid_Core:
       {
 	CORE_UARCH_CTL Core_Uarch_Ctl = {.value = 0};
+	MISC_FEATURE_CONTROL MiscFeatCtrl = {.value = 0};
+
 	RDMSR(Core_Uarch_Ctl, MSR_CORE_UARCH_CTL);
 
 	switch (L1_Scrubbing_Enable) {
@@ -8913,7 +8919,24 @@ void Intel_Cache_Scrubbing(CORE_RO *Core)		/* Per P-Core	*/
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Scrubbing, Core->Bind);
 	}
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->Scrubbing_Mask, Core->Bind);
+
+	RDMSR(MiscFeatCtrl, MSR_MISC_FEATURE_CONTROL);
+
+	switch (L2_AMP_PREFETCH_Disable) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		MiscFeatCtrl.L2_AMP_Prefetch = L2_AMP_PREFETCH_Disable;
+		WRMSR(MiscFeatCtrl, MSR_MISC_FEATURE_CONTROL);
+		RDMSR(MiscFeatCtrl, MSR_MISC_FEATURE_CONTROL);
+		break;
+	}
+	if (MiscFeatCtrl.L2_AMP_Prefetch == 1) {
+	    BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_AMP_Prefetch, Core->Bind);
+	} else {
+	    BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_AMP_Prefetch, Core->Bind);
+	}
+
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PCORE_Mask, Core->Bind);
       }
 	break;
     case Hybrid_RSVD1:
@@ -11957,6 +11980,7 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->DCU_Mask  , Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->PCORE_Mask, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
@@ -11985,6 +12009,7 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Scrubbing	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_Prefetch	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_CL_Prefetch , Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_AMP_Prefetch	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PowerMgmt , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SpeedStep , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
@@ -13029,7 +13054,7 @@ static void PerCore_Icelake_Query(void *arg)
 
 	PerCore_Skylake_Query(arg);
 
-	Intel_Cache_Scrubbing(Core);
+	Intel_Core_MicroArchitecture(Core);
 }
 
 static void PerCore_Tigerlake_Query(void *arg)
@@ -13038,7 +13063,7 @@ static void PerCore_Tigerlake_Query(void *arg)
 
 	PerCore_Kaby_Lake_Query(arg);
 
-	Intel_Cache_Scrubbing(Core);
+	Intel_Core_MicroArchitecture(Core);
 }
 
 static void PerCore_AMD_Family_0Fh_Query(void *arg)
@@ -21716,6 +21741,19 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			L2_HW_CL_PREFETCH_Disable = !prm.dl.lo;
 			Controller_Start(1);
 			L2_HW_CL_PREFETCH_Disable = -1;
+			rc = RC_SUCCESS;
+			break;
+		}
+		break;
+
+	case TECHNOLOGY_L2_AMP_PREFETCH:
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			L2_AMP_PREFETCH_Disable = !prm.dl.lo;
+			Controller_Start(1);
+			L2_AMP_PREFETCH_Disable = -1;
 			rc = RC_SUCCESS;
 			break;
 		}

@@ -1511,6 +1511,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.L2_HW_Prefetch);
 			json_key(&s, "L2_HW_CL_Prefetch");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.L2_HW_CL_Prefetch);
+			json_key(&s, "L2_AMP_Prefetch");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.L2_AMP_Prefetch);
 
 			json_end_object(&s);
 		}

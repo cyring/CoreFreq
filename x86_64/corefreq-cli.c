@@ -3677,6 +3677,15 @@ void L2_HW_CL_Prefetch_Update(TGrid *grid, DATA_TYPE data[])
 	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
+void L2_AMP_Prefetch_Update(TGrid *grid, DATA_TYPE data[])
+{
+	const unsigned int bix=RO(Shm)->Proc.Technology.L2_AMP_Prefetch == 1;
+	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
+
+	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
+}
+
 void SpeedStepUpdate(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Technology.EIST == 1;
@@ -3843,6 +3852,16 @@ REASON_CODE SysInfoTech(Window *win,
 		NULL,
 		BOXKEY_L2_HW_CL_PREFETCH,
 		L2_HW_CL_Prefetch_Update
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Technology.L2_AMP_Prefetch,
+		3, "%s%.*sL2 AMP   <%3s>",
+		RSC(TECH_L2_AMP_PREFETCH).CODE(), NULL,
+		width - (OutFunc ? 18 : 20) - RSZ(TECH_L2_AMP_PREFETCH),
+		NULL,
+		BOXKEY_L2_AMP_PREFETCH,
+		L2_AMP_Prefetch_Update
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
@@ -13547,6 +13566,54 @@ int Shortcut(SCANKEY *scan)
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_L2_HW_CL_PREFETCH );
+	}
+    break;
+
+    case BOXKEY_L2_AMP_PREFETCH:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	const Coordinate origin = {
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.row = TOP_HEADER_ROW + 5
+	}, select = {
+		.col = 0,
+		.row = RO(Shm)->Proc.Technology.L2_AMP_Prefetch ? 2 : 1
+	};
+	AppendWindow(
+		CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_L2_AMP_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][RO(Shm)->Proc.Technology.L2_AMP_Prefetch],
+			stateAttr[RO(Shm)->Proc.Technology.L2_AMP_Prefetch],
+						BOXKEY_L2_AMP_PREFETCH_ON,
+		       stateStr[0][!RO(Shm)->Proc.Technology.L2_AMP_Prefetch],
+			stateAttr[!RO(Shm)->Proc.Technology.L2_AMP_Prefetch],
+						BOXKEY_L2_AMP_PREFETCH_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+		&winList);
+      } else {
+	SetHead(&winList, win);
+      }
+    }
+    break;
+
+    case BOXKEY_L2_AMP_PREFETCH_OFF:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_L2_AMP_PREFETCH );
+	}
+    break;
+
+    case BOXKEY_L2_AMP_PREFETCH_ON:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_L2_AMP_PREFETCH );
 	}
     break;
 

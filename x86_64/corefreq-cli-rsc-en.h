@@ -1180,6 +1180,7 @@
 #define RSC_TECH_L1_SCRUBBING_CODE_EN	"L1 Scrubbing"
 #define RSC_TECH_L2_HW_PREFETCH_CODE_EN "L2 Prefetcher"
 #define RSC_TECH_L2_HW_CL_PREFETCH_CODE_EN "L2 Line Prefetcher"
+#define RSC_TECH_L2_AMP_PREFETCH_CODE_EN "L2 Adaptive Multipath Probability"
 #define RSC_TECHNOLOGIES_SMM_CODE_EN	"System Management Mode"
 #define RSC_TECHNOLOGIES_HTT_CODE_EN	"Hyper-Threading"
 #define RSC_TECHNOLOGIES_EIST_CODE_EN	"SpeedStep"
@@ -2126,6 +2127,7 @@
 #define RSC_BOX_L1_SCRUBBING_TITLE_CODE " Cache Unit L1 Scrubbing "
 #define RSC_BOX_CU_L2_TITLE_CODE	" Cache Unit L2 Prefetcher "
 #define RSC_BOX_CU_L2_CL_TITLE_CODE	" Cache Unit L2 CL Prefetcher "
+#define RSC_BOX_L2_AMP_TITLE_CODE	" Adaptive Multipath Probability "
 
 #define RSC_BOX_EIST_TITLE_CODE 	" EIST "
 

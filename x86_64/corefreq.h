@@ -357,7 +357,8 @@ typedef struct
 				TM1		: 31-29,
 				TM2		: 33-31,
 				L1_Scrubbing	: 34-33,
-				_pad64		: 64-34;
+				L2_AMP_Prefetch : 35-34,
+				_pad64		: 64-35;
 	} Technology;
 
 	struct {

@@ -654,6 +654,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_TECH_L1_SCRUBBING_CODE_FR	"L1 Scrubbing"
 #define RSC_TECH_L2_HW_PREFETCH_CODE_FR  "Pr""\xa9""lecteur L2"
 #define RSC_TECH_L2_HW_CL_PREFETCH_CODE_FR  "Pr""\xa9""lecteur L2 ligne"
+#define RSC_TECH_L2_AMP_PREFETCH_CODE_FR RSC_TECH_L2_AMP_PREFETCH_CODE_EN
 #define RSC_TECHNOLOGIES_SMM_CODE_FR	"Mode de Gestion Syst""\xa8""me"
 #define RSC_TECHNOLOGIES_HTT_CODE_FR	"Hyper-Threading"
 #define RSC_TECHNOLOGIES_EIST_CODE_FR	"SpeedStep"

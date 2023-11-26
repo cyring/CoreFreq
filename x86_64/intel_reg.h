@@ -530,23 +530,23 @@ typedef union
 		PSCHANGE_MC_NO		:  7-6,
 		TSX_CTRL		:  8-7,
 		TAA_NO			:  9-8,
-		ReservedBits1		: 10-9,
+		MCU_CONTROL_SUP		: 10-9,  /* IA32_MCU_CONTROL MSR */
 		MISC_PACKAGE_CTLS_SUP	: 11-10, /* IA32_MISC_PACKAGE_CTLS */
 		ENERGY_FILTERING_CTL_SUP: 12-11, /* ENERGY_FILTERING_CTL */
 		DOITM_UARCH_MISC_CTRL	: 13-12,
 		SBDR_SSDP_NO		: 14-13,
 		FBSDP_NO		: 15-14,
 		PSDP_NO 		: 16-15,
-		ReservedBits2		: 17-16,
+		ReservedBits1		: 17-16,
 		FB_CLEAR		: 18-17,
 		FB_CLEAR_CTRL		: 19-18, /* IA32_MCU_OPT_CTRL[3] */
 		RRSBA			: 20-19,
 		BHI_NO			: 21-20,
 		XAPIC_DISABLE_STATUS_MSR: 22-21, /* xAPIC disable status */
-		ReservedBits3		: 23-22,
+		ReservedBits2		: 23-22,
 		OVERCLOCKING_STATUS_SUP : 24-23, /* IA32_OVERLOCKING_STATUS */
 		PBRSB_NO		: 25-24,
-		ReservedBits4		: 64-25;
+		ReservedBits3		: 64-25;
 	};
 } ARCH_CAPABILITIES;
 
@@ -745,9 +745,11 @@ typedef union
 		L2_HW_CL_Prefetch	:  2-1,  /* NHM, SNB		*/
 		L1_HW_Prefetch		:  3-2,  /* Avoton, Goldmont, NHM, SNB*/
 		L1_HW_IP_Prefetch	:  4-3,  /* NHM, SNB		*/
-		ReservedBits1		: 11-4,
+		ReservedBits1		:  5-4,
+		L2_AMP_Prefetch 	:  6-5,  /* 12th, 13th Gen; Xeon 4th */
+		ReservedBits2		: 11-6,
 		DISABLE_THREE_STRIKE_CNT: 12-11, /* Errata [ADL021]	*/
-		ReservedBits2		: 64-12;
+		ReservedBits3		: 64-12;
 	};
 	struct
 	{
