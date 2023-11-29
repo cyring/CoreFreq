@@ -2072,6 +2072,7 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Zen4_Genoa:
 	case AMD_Zen4_RPL:
 	case AMD_Zen4_PHX:
+	case AMD_Zen4_HWK:
 	case AMD_Zen4_PHX2:
 	case AMD_Zen4_Bergamo:
 	case AMD_Zen4_STP:
@@ -7726,6 +7727,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 
 	switch (PUBLIC(RO(Proc))->ArchID) {
 	case AMD_Zen4_PHX2:
+	case AMD_Zen4_HWK:
 	case AMD_Zen4_PHX:
 	case AMD_Zen4_RPL:
 	case AMD_Zen3Plus_RMB:
