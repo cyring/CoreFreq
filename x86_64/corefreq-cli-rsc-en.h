@@ -987,9 +987,9 @@
 #define RSC_SYS_REG_CFG_MVDM_CODE_EN	" MtrrVarDram Enable "
 #define RSC_SYS_REG_CFG_TOM2_CODE_EN	" MtrrTom2 Enable "
 #define RSC_SYS_REG_CFG_FWB_CODE_EN	" Tom2ForceMemTypeWriteBack "
-#define RSC_SYS_REG_CFG_MEM_CODE_EN	" MemEncryptionMode Enable "
+#define RSC_SYS_REG_CFG_MEM_CODE_EN	" MemEncryptionMode Enable (SMEE) "
 #define RSC_SYS_REG_CFG_SNP_CODE_EN	" SecureNestedPaging Enable "
-#define RSC_SYS_REG_CFG_VMPL_CODE_EN	" Virtual Machine Privilege Levels "
+#define RSC_SYS_REG_CFG_VMPL_CODE_EN " Virtual Machine Privilege Levels (VMPL) "
 #define RSC_SYS_REG_CFG_HMK_CODE_EN	" HostMultiKeyMemEncryptionMode "
 
 #define RSC_ISA_TITLE_CODE_EN		" Instruction Set Extensions "
