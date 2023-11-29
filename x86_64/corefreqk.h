@@ -3388,6 +3388,11 @@ static char *Arch_Tigerlake_U[] 	=	ZLIST("Tiger Lake/U");
 static char *Arch_Cometlake[]		=	ZLIST("Comet Lake");
 static char *Arch_Cometlake_UY[]	=	ZLIST("Comet Lake/UY");
 
+enum {
+	CN_ALDERLAKE_H,
+	CN_ARIZONA_BEACH
+};
+
 static char *Arch_Atom_Denverton[]	=	ZLIST("Atom/Denverton");
 
 static char *Arch_Tremont_Jacobsville[] =	ZLIST("Tremont/Jacobsville");
@@ -3404,7 +3409,10 @@ static char *Arch_Grand_Ridge[] 	=	ZLIST("Grand Ridge");
 static char *Arch_Rocketlake[]		=	ZLIST("Rocket Lake");
 static char *Arch_Rocketlake_U[]	=	ZLIST("Rocket Lake/U");
 static char *Arch_Alderlake_S[] 	=	ZLIST("Alder Lake");
-static char *Arch_Alderlake_H[] 	=	ZLIST("Alder Lake/H");
+static char *Arch_Alderlake_H[] = ZLIST(
+		[CN_ALDERLAKE_H]	=	"Alder Lake/H",
+		[CN_ARIZONA_BEACH]	=	"Arizona Beach"
+);
 static char *Arch_Alderlake_N[] 	=	ZLIST("Alder Lake/N");
 static char *Arch_Meteorlake_M[]	=	ZLIST("Meteor Lake/M");
 static char *Arch_Meteorlake_N[]	=	ZLIST("Meteor Lake/N");
@@ -4474,6 +4482,23 @@ static PROCESSOR_SPECIFIC Kabylake_UY_Specific[] = {
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 1,
 	.Latch = LATCH_TGT_RATIO_UNLOCK|LATCH_UNCORE_UNLOCK
+	},
+	{0}
+};
+
+static PROCESSOR_SPECIFIC Alderlake_H_Specific[] = {
+	{	/*		06_9A Stepping 4		*/
+	.Brand = ZLIST( "Intel(R) Atom C1130",	\
+			"Intel(R) Atom C1110",	\
+			"Intel(R) Atom C1100"	),
+	.Boost = {0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_ARIZONA_BEACH,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b00,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_TGT_RATIO_UNLOCK|LATCH_UNCORE_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{0}
 };
@@ -10780,7 +10805,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = Stop_Uncore_Alderlake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
-	.Specific = Void_Specific,
+	.Specific = Alderlake_H_Specific,
 	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Alderlake_H
 	},
