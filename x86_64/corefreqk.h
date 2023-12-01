@@ -2012,7 +2012,7 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 	[Zen4/Phoenix Point]	AF_74h			 4 nm	[PHX]
 	[Zen4/Hawk Point]	AF_75h			 4 nm	[PHX]
 	[Zen4c/Phoenix2]	AF_78h			 4 nm	[PHX2]
-	[Zen4c/Bergamo] 	AF_A0h Stepping 1	 5 nm	SVR
+	[Zen4c][Bergamo][Siena] AF_A0h Stepping [1][2]	 5 nm	SVR
 	[Zen4/Storm Peak]	AF_18h Stepping 1	 5 nm	WS/SP6
 	[Zen5/Granite Ridge]						*/
 #define _AMD_Family_19h {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x0, .Model=0x0}
@@ -3530,7 +3530,8 @@ enum {
 };
 
 enum {
-	CN_BERGAMO
+	CN_BERGAMO,
+	CN_SIENA
 };
 
 enum {
@@ -3620,7 +3621,8 @@ static char *Arch_AMD_Zen4_PHX2[] = ZLIST(
 		[CN_PHOENIX2]		=	"Zen4/Phoenix2"
 );
 static char *Arch_AMD_Zen4_Bergamo[] = ZLIST(
-		[CN_BERGAMO]		=	"Zen4c/Bergamo"
+		[CN_BERGAMO]		=	"Zen4c/Bergamo",
+		[CN_SIENA]		=	"Zen4c/Siena"
 );
 static char *Arch_AMD_Zen4_STP[] = ZLIST(
 		[CN_STORM_PEAK]		=	"Zen4/Storm Peak"
@@ -8055,10 +8057,94 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Bergamo_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD EPYC Embedded 9734",	\
-			"AMD EPYC 9734"		),
+			"AMD EPYC 9734" 		),
 	.Boost = {+8, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_BERGAMO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 8534PN"),
+	.Boost = {+11, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_SIENA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 8534P"),
+	.Boost = {+8, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_SIENA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC 8434PN",		\
+			"AMD EPYC 8324PN",		\
+			"AMD EPYC 8224PN",		\
+			"AMD EPYC 8124PN",		\
+			"AMD EPYC 8024PN"	)	,
+	.Boost = {+10, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_SIENA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC 8434P",		\
+			"AMD EPYC 8124P",		\
+			"AMD EPYC 8024P"	)	,
+	.Boost = {+6, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_SIENA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 8324P"),
+	.Boost = {+4, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_SIENA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 8224P"),
+	.Boost = {+5, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_SIENA,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
