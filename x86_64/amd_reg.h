@@ -30,6 +30,8 @@
 	#define MSR_AMD_F17H_IRPERF		MSR_F17H_IRPERF
 #endif
 
+#define MSR_AMD_PREFETCH_CTRL			0xc0000108
+
 #ifndef  MSR_AMD64_SYSCFG
 	#define MSR_AMD64_SYSCFG		0xc0010010
 #endif
@@ -293,6 +295,22 @@ typedef union
 	Reserved	: 64-1;
     };
 } AMD_PRED_CMD;
+
+typedef union
+{	/* MSR 0xc0000108 supported iff CPUID_Fn80000021_EAX[13]	*/
+	unsigned long long value;
+    struct
+    {						/*	Scope[Core]	*/
+	unsigned long long
+	L1Stream	:  1-0,
+	L1Stride	:  2-1,
+	L1Region	:  3-2,
+	L2Stream	:  4-3,
+	ReservedBits1	:  5-4,
+	UpDown		:  6-5,
+	ReservedBits2	: 64-6;
+    }; /* F19_M01, F19_M61, EPYC 9004					*/
+} AMD_PREFETCH_CONTROL;
 
 typedef union
 {
