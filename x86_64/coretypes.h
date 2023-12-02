@@ -1809,6 +1809,33 @@ typedef struct	/* AMD Extended ID Leaf.				*/
 	} EDX;
 } CPUID_0x8000001e;
 
+typedef struct	/*	AMD Extended Feature Identification 2			*/
+{
+	struct CPUID_0x80000021_EAX {
+		unsigned int
+		NoNestDataBp	:  1-0,
+		Reserved_01	:  2-1,
+		LFenceAlways	:  3-2,
+		SmmPgCfgLock	:  4-3,
+		Reserved_04	:  5-4,
+		Reserved_05	:  6-5,
+		NullSelector	:  7-6,
+		UAIE		:  8-7,
+		AUTO_IBRS	:  9-8,
+		NoSmmCtl_MSR	: 10-9,
+		Reserved_10	: 11-10,
+		Reserved_11	: 12-11,
+		Reserved_12	: 13-12,
+		PrefetchCtl_MSR : 14-13,
+		Reserved_14	: 15-14,
+		Reserved_15	: 16-15,
+		Reserved_16	: 17-16,
+		CpuidUserDis	: 18-17,
+		EPSF		: 19-18,
+		Reserved	: 32-19;
+	} EAX;
+} CPUID_0x80000021;
+
 enum	/*	Intel SGX Capability Enumeration Leaf.			*/
 {
 	CPUID_00000012_00000000_EAX_SGX1,
@@ -1921,29 +1948,6 @@ enum	/*	AMD Encrypted Memory Capabilities.			*/
 	CPUID_8000001F_00000000_EAX_Reserved_31
 };
 
-enum	/*	AMD Extended Feature Identification 2			*/
-{
-	CPUID_80000021_00000000_EAX_NoNestDataBp= 0,
-	CPUID_80000021_00000000_EAX_Reserved_01 = 1,
-	CPUID_80000021_00000000_EAX_LFenceAlways= 2,
-	CPUID_80000021_00000000_EAX_SmmPgCfgLock= 3,
-	CPUID_80000021_00000000_EAX_Reserved_04 = 4,
-	CPUID_80000021_00000000_EAX_Reserved_05 = 5,
-	CPUID_80000021_00000000_EAX_NullSelector= 6,
-	CPUID_80000021_00000000_EAX_UAIE	= 7,
-	CPUID_80000021_00000000_EAX_AUTO_IBRS	= 8,
-	CPUID_80000021_00000000_EAX_NoSmmCtl_MSR= 9,
-	CPUID_80000021_00000000_EAX_Reserved_10 =10,
-	CPUID_80000021_00000000_EAX_Reserved_11 =11,
-	CPUID_80000021_00000000_EAX_Reserved_12 =12,
-	CPUID_80000021_00000000_EAX_Prefetch_MSR=13,
-	CPUID_80000021_00000000_EAX_Reserved_14 =14,
-	CPUID_80000021_00000000_EAX_Reserved_15 =15,
-	CPUID_80000021_00000000_EAX_Reserved_16 =16,
-	CPUID_80000021_00000000_EAX_CpuidUserDis=17,
-	CPUID_80000021_00000000_EAX_EPSF	=18,
-};
-
 enum	/*	AMD Multi-Key Encrypted Memory Capabilities.		*/
 {
 	CPUID_80000023_00000000_EAX_MEM_HMK
@@ -2029,6 +2033,7 @@ typedef struct	/* BSP CPUID features.					*/
 	CPUID_0x80000001	ExtInfo;
 	CPUID_0x80000007	AdvPower;
 	CPUID_0x80000008	leaf80000008;
+ struct CPUID_0x80000021_EAX	ExtFeature2_EAX;
 
 	struct {
 		unsigned long long	PPIN;
@@ -2441,6 +2446,11 @@ enum {
 	TECHNOLOGY_L2_HW_PREFETCH,
 	TECHNOLOGY_L2_HW_CL_PREFETCH,
 	TECHNOLOGY_L2_AMP_PREFETCH,
+	TECHNOLOGY_L1_STRIDE_PREFETCH,
+	TECHNOLOGY_L1_REGION_PREFETCH,
+	TECHNOLOGY_L1_BURST_PREFETCH,
+	TECHNOLOGY_L2_STREAM_HW_PREFETCH,
+	TECHNOLOGY_L2_UPDOWN_PREFETCH,
 	TECHNOLOGY_CFG_TDP_LVL,
 	TECHNOLOGY_TDP_LIMITING,
 	TECHNOLOGY_TDP_OFFSET,

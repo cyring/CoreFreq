@@ -1513,6 +1513,16 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.L2_HW_CL_Prefetch);
 			json_key(&s, "L2_AMP_Prefetch");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.L2_AMP_Prefetch);
+			json_key(&s, "L1_Stride_Prefetch");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.L1_Stride_Pf);
+			json_key(&s, "L1_Region_Prefetch");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.L1_Region_Pf);
+			json_key(&s, "L1_Burst_Prefetch");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.L1_Burst_Pf);
+			json_key(&s, "L2_Stream_HW_Prefetch");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.L2_Stream_HW_Pf);
+			json_key(&s, "L2_UpDown_Prefetch");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.L2_UpDown_Pf);
 
 			json_end_object(&s);
 		}

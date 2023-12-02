@@ -215,6 +215,26 @@ static signed short L2_AMP_PREFETCH_Disable = -1;
 module_param(L2_AMP_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L2_AMP_PREFETCH_Disable, "Adaptive Multipath Probability");
 
+static signed short L1_STRIDE_PREFETCH_Disable = -1;
+module_param(L1_STRIDE_PREFETCH_Disable, short,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(L1_STRIDE_PREFETCH_Disable, "Disable L1 Stride Prefetcher");
+
+static signed short L1_REGION_PREFETCH_Disable = -1;
+module_param(L1_REGION_PREFETCH_Disable, short,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(L1_REGION_PREFETCH_Disable, "Disable L1 Region Prefetcher");
+
+static signed short L1_BURST_PREFETCH_Disable = -1;
+module_param(L1_BURST_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(L1_BURST_PREFETCH_Disable, "Disable L1 Burst Prefetcher");
+
+static signed short L2_STREAM_PREFETCH_Disable = -1;
+module_param(L2_STREAM_PREFETCH_Disable, short,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(L2_STREAM_PREFETCH_Disable, "Disable L2 Stream Prefetcher");
+
+static signed short L2_UPDOWN_PREFETCH_Disable = -1;
+module_param(L2_UPDOWN_PREFETCH_Disable, short,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(L2_UPDOWN_PREFETCH_Disable, "Disable L2 Up/Down Prefetcher");
+
 static signed short SpeedStep_Enable = -1;
 module_param(SpeedStep_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(SpeedStep_Enable, "Enable SpeedStep");
@@ -1249,6 +1269,27 @@ static void Query_Features(void *pArg)
 		iArg->SMT_Count = iArg->Features->Std.EBX.Max_SMT_ID;
 	} else {
 		iArg->SMT_Count = 1;
+	}
+	if (iArg->Features->Info.LargestExtFunc >= 0x80000021)
+	{
+		__asm__ volatile
+		(
+			"movq	$0x80000021, %%rax	\n\t"
+			"xorq	%%rbx, %%rbx		\n\t"
+			"xorq	%%rcx, %%rcx		\n\t"
+			"xorq	%%rdx, %%rdx		\n\t"
+			"cpuid				\n\t"
+			"mov	%%eax, %0		\n\t"
+			"mov	%%ebx, %1		\n\t"
+			"mov	%%ecx, %2		\n\t"
+			"mov	%%edx, %3"
+			: "=r" (iArg->Features->ExtFeature2_EAX),
+			  "=r" (ebx),
+			  "=r" (ecx),
+			  "=r" (edx)
+			:
+			: "%rax", "%rbx", "%rcx", "%rdx"
+		);
 	}
 	if (iArg->Features->Info.LargestExtFunc >= 0x80000022)
 	{
@@ -8806,7 +8847,6 @@ void AMD_F17h_DCU_Technology(CORE_RO *Core)			/* Per Core */
 		break;
 	}
 
-
     if (DC_Cfg1.L1_HW_Prefetch)
     {
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_Prefetch, Core->Bind);
@@ -8823,6 +8863,83 @@ void AMD_F17h_DCU_Technology(CORE_RO *Core)			/* Per Core */
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch, Core->Bind);
     } else {
 	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch, Core->Bind);
+    }
+
+    if (PUBLIC(RO(Proc))->Features.ExtFeature2_EAX.PrefetchCtl_MSR == 1)
+    {
+	int ToggleFeature = 0;
+	AMD_PREFETCH_CONTROL PrefetchCtl = {.value = 0};
+	RDMSR(PrefetchCtl, MSR_AMD_PREFETCH_CTRL);
+
+	switch (L1_STRIDE_PREFETCH_Disable) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		PrefetchCtl.L1Stride = L1_STRIDE_PREFETCH_Disable;
+		ToggleFeature = 1;
+		break;
+	}
+	switch (L1_REGION_PREFETCH_Disable) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		PrefetchCtl.L1Region = L1_REGION_PREFETCH_Disable;
+		ToggleFeature = 1;
+		break;
+	}
+	switch (L1_BURST_PREFETCH_Disable) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		PrefetchCtl.L1Stream = L1_BURST_PREFETCH_Disable;
+		ToggleFeature = 1;
+		break;
+	}
+	switch (L2_STREAM_PREFETCH_Disable) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		PrefetchCtl.L2Stream = L2_STREAM_PREFETCH_Disable;
+		ToggleFeature = 1;
+		break;
+	}
+	switch (L2_UPDOWN_PREFETCH_Disable) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		PrefetchCtl.UpDown = L2_UPDOWN_PREFETCH_Disable;
+		ToggleFeature = 1;
+		break;
+	}
+	if (ToggleFeature == 1) {
+		WRMSR(PrefetchCtl, MSR_AMD_PREFETCH_CTRL);
+		RDMSR(PrefetchCtl, MSR_AMD_PREFETCH_CTRL);
+	}
+	if (PrefetchCtl.L1Stride)
+	{
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Stride_Pf, Core->Bind);
+	} else {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Stride_Pf, Core->Bind);
+	}
+	if (PrefetchCtl.L1Region)
+	{
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Region_Pf, Core->Bind);
+	} else {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Region_Pf, Core->Bind);
+	}
+	if (PrefetchCtl.L1Stream)
+	{
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Burst_Pf, Core->Bind);
+	} else {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Burst_Pf, Core->Bind);
+	}
+	if (PrefetchCtl.L2Stream)
+	{
+	    BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_Stream_HW_Pf, Core->Bind);
+	} else {
+	    BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_Stream_HW_Pf, Core->Bind);
+	}
+	if (PrefetchCtl.UpDown)
+	{
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_UpDown_Pf, Core->Bind);
+	} else {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_UpDown_Pf, Core->Bind);
+	}
     }
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->DCU_Mask, Core->Bind);
 }
@@ -12012,6 +12129,11 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_Prefetch	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_CL_Prefetch , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_AMP_Prefetch	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Stride_Pf	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Region_Pf	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Burst_Pf	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_Stream_HW_Pf	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_UpDown_Pf	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PowerMgmt , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SpeedStep , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
@@ -21759,6 +21881,91 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			rc = RC_SUCCESS;
 			break;
 		}
+		break;
+
+	case TECHNOLOGY_L1_STRIDE_PREFETCH:
+	    if (PUBLIC(RO(Proc))->Features.ExtFeature2_EAX.PrefetchCtl_MSR) {
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			L1_STRIDE_PREFETCH_Disable = !prm.dl.lo;
+			Controller_Start(1);
+			L1_STRIDE_PREFETCH_Disable = -1;
+			rc = RC_SUCCESS;
+			break;
+		}
+	    } else {
+		rc = -ENXIO;
+	    }
+		break;
+
+	case TECHNOLOGY_L1_REGION_PREFETCH:
+	    if (PUBLIC(RO(Proc))->Features.ExtFeature2_EAX.PrefetchCtl_MSR) {
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			L1_REGION_PREFETCH_Disable = !prm.dl.lo;
+			Controller_Start(1);
+			L1_REGION_PREFETCH_Disable = -1;
+			rc = RC_SUCCESS;
+			break;
+		}
+	    } else {
+		rc = -ENXIO;
+	    }
+		break;
+
+	case TECHNOLOGY_L1_BURST_PREFETCH:
+	    if (PUBLIC(RO(Proc))->Features.ExtFeature2_EAX.PrefetchCtl_MSR) {
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			L1_BURST_PREFETCH_Disable = !prm.dl.lo;
+			Controller_Start(1);
+			L1_BURST_PREFETCH_Disable = -1;
+			rc = RC_SUCCESS;
+			break;
+		}
+	    } else {
+		rc = -ENXIO;
+	    }
+		break;
+
+	case TECHNOLOGY_L2_STREAM_HW_PREFETCH:
+	    if (PUBLIC(RO(Proc))->Features.ExtFeature2_EAX.PrefetchCtl_MSR) {
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			L2_STREAM_PREFETCH_Disable = !prm.dl.lo;
+			Controller_Start(1);
+			L2_STREAM_PREFETCH_Disable = -1;
+			rc = RC_SUCCESS;
+			break;
+		}
+	    } else {
+		rc = -ENXIO;
+	    }
+		break;
+
+	case TECHNOLOGY_L2_UPDOWN_PREFETCH:
+	    if (PUBLIC(RO(Proc))->Features.ExtFeature2_EAX.PrefetchCtl_MSR) {
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			L2_UPDOWN_PREFETCH_Disable = !prm.dl.lo;
+			Controller_Start(1);
+			L2_UPDOWN_PREFETCH_Disable = -1;
+			rc = RC_SUCCESS;
+			break;
+		}
+	    } else {
+		rc = -ENXIO;
+	    }
 		break;
 
 	case TECHNOLOGY_EIST:

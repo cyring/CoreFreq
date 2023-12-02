@@ -3219,9 +3219,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
-		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
-			CPUID_80000021_00000000_EXTENDED_FEATURE_2
-		].reg[REG_CPUID_EAX], CPUID_80000021_00000000_EAX_EPSF),
+		RO(Shm)->Proc.Features.ExtFeature2_EAX.EPSF,
 		attr_Feat,
 		2, "%s%.*sEPSF   [%7s]", RSC(MECH_EPSF).CODE(),
 		width - 19 - RSZ(MECH_EPSF),
@@ -3686,6 +3684,51 @@ void L2_AMP_Prefetch_Update(TGrid *grid, DATA_TYPE data[])
 	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
+void L1_Stride_Prefetch_Update(TGrid *grid, DATA_TYPE data[])
+{
+	const unsigned int bix=RO(Shm)->Proc.Technology.L1_Stride_Pf == 1;
+	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
+
+	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
+}
+
+void L1_Region_Prefetch_Update(TGrid *grid, DATA_TYPE data[])
+{
+	const unsigned int bix=RO(Shm)->Proc.Technology.L1_Region_Pf == 1;
+	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
+
+	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
+}
+
+void L1_Burst_Prefetch_Update(TGrid *grid, DATA_TYPE data[])
+{
+	const unsigned int bix=RO(Shm)->Proc.Technology.L1_Burst_Pf == 1;
+	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
+
+	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
+}
+
+void L2_Stream_HW_Prefetch_Update(TGrid *grid, DATA_TYPE data[])
+{
+	const unsigned int bix=RO(Shm)->Proc.Technology.L2_Stream_HW_Pf == 1;
+	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
+
+	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
+}
+
+void L2_UpDown_Prefetch_Update(TGrid *grid, DATA_TYPE data[])
+{
+	const unsigned int bix=RO(Shm)->Proc.Technology.L2_UpDown_Pf == 1;
+	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
+
+	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
+}
+
 void SpeedStepUpdate(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Technology.EIST == 1;
@@ -3862,6 +3905,66 @@ REASON_CODE SysInfoTech(Window *win,
 		NULL,
 		BOXKEY_L2_AMP_PREFETCH,
 		L2_AMP_Prefetch_Update
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		0,
+		2, "%s%.*s",
+		RSC(TECHNOLOGIES_PF).CODE(), NULL,
+		width - 3 - RSZ(TECHNOLOGIES_PF),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Technology.L1_Stride_Pf,
+		3, "%s%.*sL1 Stride   <%3s>",
+		RSC(TECH_L1_STRIDE_PF).CODE(), NULL,
+		width - (OutFunc ? 21 : 23) - RSZ(TECH_L1_STRIDE_PF),
+		NULL,
+		BOXKEY_L1_STRIDE_PREFETCH,
+		L1_Stride_Prefetch_Update
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Technology.L1_Region_Pf,
+		3, "%s%.*sL1 Region   <%3s>",
+		RSC(TECH_L1_REGION_PF).CODE(), NULL,
+		width - (OutFunc ? 21 : 23) - RSZ(TECH_L1_REGION_PF),
+		NULL,
+		BOXKEY_L1_REGION_PREFETCH,
+		L1_Region_Prefetch_Update
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Technology.L1_Burst_Pf,
+		3, "%s%.*sL1 Burst   <%3s>",
+		RSC(TECH_L1_BURST_PF).CODE(), NULL,
+		width - (OutFunc ? 20 : 22) - RSZ(TECH_L1_BURST_PF),
+		NULL,
+		BOXKEY_L1_BURST_PREFETCH,
+		L1_Burst_Prefetch_Update
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Technology.L2_Stream_HW_Pf,
+		3, "%s%.*sL2 Stream   <%3s>",
+		RSC(TECH_L2_STREAM_HW_PF).CODE(), NULL,
+		width - (OutFunc ? 21 : 23) - RSZ(TECH_L2_STREAM_HW_PF),
+		NULL,
+		BOXKEY_L2_STREAM_HW_PREFETCH,
+		L2_Stream_HW_Prefetch_Update
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Technology.L2_UpDown_Pf,
+		3, "%s%.*sL2 Up/Down   <%3s>",
+		RSC(TECH_L2_UPDOWN_PF).CODE(), NULL,
+		width - (OutFunc ? 22 : 24) - RSZ(TECH_L2_UPDOWN_PF),
+		NULL,
+		BOXKEY_L2_UPDOWN_PREFETCH,
+		L2_UpDown_Prefetch_Update
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
@@ -9132,7 +9235,7 @@ Window *CreateSysInfo(unsigned long long id)
 	case SCANKEY_t:
 		{
 		winOrigin.col = 23;
-		matrixSize.hth = 14;
+		matrixSize.hth = 16;
 		winOrigin.row = TOP_HEADER_ROW + 5;
 		winWidth = 60;
 		SysInfoFunc = SysInfoTech;
@@ -13615,6 +13718,246 @@ int Shortcut(SCANKEY *scan)
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_L2_AMP_PREFETCH );
+	}
+    break;
+
+    case BOXKEY_L1_STRIDE_PREFETCH:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	const Coordinate origin = {
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.row = TOP_HEADER_ROW + 1
+	}, select = {
+		.col = 0,
+		.row = RO(Shm)->Proc.Technology.L1_Stride_Pf ? 2 : 1
+	};
+	AppendWindow(
+		CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_L1_STRIDE_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][RO(Shm)->Proc.Technology.L1_Stride_Pf],
+			stateAttr[RO(Shm)->Proc.Technology.L1_Stride_Pf],
+						BOXKEY_L1_STRIDE_PF_ON,
+		       stateStr[0][!RO(Shm)->Proc.Technology.L1_Stride_Pf],
+			stateAttr[!RO(Shm)->Proc.Technology.L1_Stride_Pf],
+						BOXKEY_L1_STRIDE_PF_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+		&winList);
+      } else {
+	SetHead(&winList, win);
+      }
+    }
+    break;
+
+    case BOXKEY_L1_STRIDE_PF_OFF:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_L1_STRIDE_PREFETCH );
+	}
+    break;
+
+    case BOXKEY_L1_STRIDE_PF_ON:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_L1_STRIDE_PREFETCH );
+	}
+    break;
+
+    case BOXKEY_L1_REGION_PREFETCH:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	const Coordinate origin = {
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.row = TOP_HEADER_ROW + 2
+	}, select = {
+		.col = 0,
+		.row = RO(Shm)->Proc.Technology.L1_Region_Pf ? 2 : 1
+	};
+	AppendWindow(
+		CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_L1_REGION_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][RO(Shm)->Proc.Technology.L1_Region_Pf],
+			stateAttr[RO(Shm)->Proc.Technology.L1_Region_Pf],
+						BOXKEY_L1_REGION_PF_ON,
+		       stateStr[0][!RO(Shm)->Proc.Technology.L1_Region_Pf],
+			stateAttr[!RO(Shm)->Proc.Technology.L1_Region_Pf],
+						BOXKEY_L1_REGION_PF_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+		&winList);
+      } else {
+	SetHead(&winList, win);
+      }
+    }
+    break;
+
+    case BOXKEY_L1_REGION_PF_OFF:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_L1_REGION_PREFETCH );
+	}
+    break;
+
+    case BOXKEY_L1_REGION_PF_ON:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_L1_REGION_PREFETCH );
+	}
+    break;
+
+    case BOXKEY_L1_BURST_PREFETCH:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	const Coordinate origin = {
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.row = TOP_HEADER_ROW + 3
+	}, select = {
+		.col = 0,
+		.row = RO(Shm)->Proc.Technology.L1_Burst_Pf ? 2 : 1
+	};
+	AppendWindow(
+		CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_L1_BURST_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][RO(Shm)->Proc.Technology.L1_Burst_Pf],
+			stateAttr[RO(Shm)->Proc.Technology.L1_Burst_Pf],
+						BOXKEY_L1_BURST_PF_ON,
+		       stateStr[0][!RO(Shm)->Proc.Technology.L1_Burst_Pf],
+			stateAttr[!RO(Shm)->Proc.Technology.L1_Burst_Pf],
+						BOXKEY_L1_BURST_PF_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+		&winList);
+      } else {
+	SetHead(&winList, win);
+      }
+    }
+    break;
+
+    case BOXKEY_L1_BURST_PF_OFF:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_L1_BURST_PREFETCH );
+	}
+    break;
+
+    case BOXKEY_L1_BURST_PF_ON:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_L1_BURST_PREFETCH );
+	}
+    break;
+
+    case BOXKEY_L2_STREAM_HW_PREFETCH:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	const Coordinate origin = {
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.row = TOP_HEADER_ROW + 4
+	}, select = {
+		.col = 0,
+		.row = RO(Shm)->Proc.Technology.L2_Stream_HW_Pf ? 2 : 1
+	};
+	AppendWindow(
+		CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_L2_STREAM_HW_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][RO(Shm)->Proc.Technology.L2_Stream_HW_Pf],
+			stateAttr[RO(Shm)->Proc.Technology.L2_Stream_HW_Pf],
+						BOXKEY_L2_STREAM_HW_PF_ON,
+		       stateStr[0][!RO(Shm)->Proc.Technology.L2_Stream_HW_Pf],
+			stateAttr[!RO(Shm)->Proc.Technology.L2_Stream_HW_Pf],
+						BOXKEY_L2_STREAM_HW_PF_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+		&winList);
+      } else {
+	SetHead(&winList, win);
+      }
+    }
+    break;
+
+    case BOXKEY_L2_STREAM_HW_PF_OFF:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_L2_STREAM_HW_PREFETCH );
+	}
+    break;
+
+    case BOXKEY_L2_STREAM_HW_PF_ON:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_L2_STREAM_HW_PREFETCH );
+	}
+    break;
+
+    case BOXKEY_L2_UPDOWN_PREFETCH:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	const Coordinate origin = {
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.row = TOP_HEADER_ROW + 5
+	}, select = {
+		.col = 0,
+		.row = RO(Shm)->Proc.Technology.L2_UpDown_Pf ? 2 : 1
+	};
+	AppendWindow(
+		CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_L2_UPDOWN_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][RO(Shm)->Proc.Technology.L2_UpDown_Pf],
+			stateAttr[RO(Shm)->Proc.Technology.L2_UpDown_Pf],
+						BOXKEY_L2_UPDOWN_PF_ON,
+		       stateStr[0][!RO(Shm)->Proc.Technology.L2_UpDown_Pf],
+			stateAttr[!RO(Shm)->Proc.Technology.L2_UpDown_Pf],
+						BOXKEY_L2_UPDOWN_PF_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+		&winList);
+      } else {
+	SetHead(&winList, win);
+      }
+    }
+    break;
+
+    case BOXKEY_L2_UPDOWN_PF_OFF:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_L2_UPDOWN_PREFETCH );
+	}
+    break;
+
+    case BOXKEY_L2_UPDOWN_PF_ON:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_L2_UPDOWN_PREFETCH );
 	}
     break;
 
