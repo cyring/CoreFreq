@@ -13664,6 +13664,7 @@ void Sys_DumpTask(SYSGATE_RO *SysGate)
 
 	rcu_read_lock();
 	for_each_process_thread(process, thread) {
+	    if (cnt < TASK_LIMIT) {
 #if defined(CONFIG_SCHED_MUQSS) \
  || defined(CONFIG_SCHED_BMQ) \
  || defined(CONFIG_SCHED_PDS)
@@ -13690,9 +13691,8 @@ void Sys_DumpTask(SYSGATE_RO *SysGate)
 #endif /* CONFIG_SCHED_BMQ	*/
 		memcpy(SysGate->taskList[cnt].comm, thread->comm,TASK_COMM_LEN);
 
-		if (cnt < TASK_LIMIT) {
-			cnt++;
-		}
+		cnt++;
+	    }
 	}
 	rcu_read_unlock();
 	SysGate->taskCount = cnt;
