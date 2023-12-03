@@ -1502,6 +1502,75 @@ typedef struct	/* Architectural Performance Monitoring Leaf.		*/
 	} EDX;
 } CPUID_0x0000000a;
 
+typedef struct	/* Processor Extended State Enumeration Main Leaf.	*/
+{
+	struct
+	{
+		unsigned int
+		XCR0_FPU	:  1-0,
+		XCR0_SSE	:  2-1,
+		XCR0_AVX	:  3-2,
+		XCR0_MPX	:  5-3,
+		XCR0_AVX512	:  8-5,
+		IA32_XSS_8	:  9-8,
+		XCR0_PKRU	: 10-9,
+		IA32_XSS_10	: 17-10,
+		TILECFG 	: 18-17,
+		TILEDATA	: 19-18,
+		Reserved	: 32-19;
+	} EAX;
+	struct
+	{
+		unsigned int
+		XCR0_MaxSize	: 32-0;
+	} EBX, ECX;
+	struct
+	{
+		unsigned int
+		XCR0_UpperBits	: 32-0;
+	} EDX;
+} CPUID_0x0000000d;
+
+typedef struct	/* Processor Extended State Enumeration Sub-leaf.	*/
+{
+	struct
+	{
+		unsigned int
+		XSAVEOPT	:  1-0,
+		XSAVEC		:  2-1,
+		XGETBV		:  3-2,
+		IA32_XSS	:  4-3,
+		XFD		:  5-4,
+		Reserved	: 32-5;
+	} EAX;
+	struct
+	{
+		unsigned int
+		XSAVE_Size	: 32-0; /* if (!EAX.IA32_XSS &&	EAX.XSAVEC) */
+	} EBX;
+	struct
+	{
+		unsigned int
+		XSS_XCR0_0	:  8-0,
+		XSS_PT		:  9-8,
+		XSS_XCR0_9	: 10-9,
+		XSS_PASID	: 11-10,
+		XSS_CET_U	: 12-11,
+		XSS_CET_S	: 13-12,
+		XSS_HDC 	: 14-13,
+		XSS_UINTR	: 15-14,
+		XSS_LBR 	: 16-15,
+		XSS_HWP 	: 17-16,
+		XSS_XCR0_17	: 19-17,
+		Reserved	: 32-19;
+	} ECX;
+	struct
+	{
+		unsigned int
+		XSS_UpperBits	: 32-0;
+	} EDX;
+} CPUID_0x0000000d_1;
+
 typedef struct	/* Intel Hybrid Information Enumeration Leaf		*/
 {
 		unsigned int
@@ -2030,6 +2099,8 @@ typedef struct	/* BSP CPUID features.					*/
  struct CPUID_0x00000007_1_EDX	ExtFeature_Leaf1_EDX;
  struct CPUID_0x00000007_2_EDX	ExtFeature_Leaf2_EDX;
 	CPUID_0x0000000a	PerfMon;
+	CPUID_0x0000000d	ExtState;
+	CPUID_0x0000000d_1	ExtState_Leaf1;
 	CPUID_0x80000001	ExtInfo;
 	CPUID_0x80000007	AdvPower;
 	CPUID_0x80000008	leaf80000008;

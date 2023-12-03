@@ -442,6 +442,7 @@ typedef struct
 
 		};
 		Bit64			XCR0	__attribute__ ((aligned (8)));
+		Bit64			XSS	__attribute__ ((aligned (8)));
 		Bit64			SYSCFG	__attribute__ ((aligned (8)));
 	} SystemRegister;
 

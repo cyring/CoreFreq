@@ -1051,6 +1051,45 @@ static void Query_Features(void *pArg)
 		);
 	}
     }
+    if (iArg->Features->Info.LargestStdFunc >= 0xd)
+    {
+	__asm__ volatile
+	(
+		"movq	$0xd,  %%rax	\n\t"
+		"xorq	%%rbx, %%rbx    \n\t"
+		"xorq	%%rcx, %%rcx    \n\t"
+		"xorq	%%rdx, %%rdx    \n\t"
+		"cpuid			\n\t"
+		"mov	%%eax, %0	\n\t"
+		"mov	%%ebx, %1	\n\t"
+		"mov	%%ecx, %2	\n\t"
+		"mov	%%edx, %3"
+		: "=r" (iArg->Features->ExtState.EAX),
+		  "=r" (iArg->Features->ExtState.EBX),
+		  "=r" (iArg->Features->ExtState.ECX),
+		  "=r" (iArg->Features->ExtState.EDX)
+		:
+		: "%rax", "%rbx", "%rcx", "%rdx"
+	);
+	__asm__ volatile
+	(
+		"movq	$0xd,  %%rax	\n\t"
+		"movq	$0x1,  %%rcx    \n\t"
+		"xorq	%%rbx, %%rbx    \n\t"
+		"xorq	%%rdx, %%rdx    \n\t"
+		"cpuid			\n\t"
+		"mov	%%eax, %0	\n\t"
+		"mov	%%ebx, %1	\n\t"
+		"mov	%%ecx, %2	\n\t"
+		"mov	%%edx, %3"
+		: "=r" (iArg->Features->ExtState_Leaf1.EAX),
+		  "=r" (iArg->Features->ExtState_Leaf1.EBX),
+		  "=r" (iArg->Features->ExtState_Leaf1.ECX),
+		  "=r" (iArg->Features->ExtState_Leaf1.EDX)
+		:
+		: "%rax", "%rbx", "%rcx", "%rdx"
+	);
+    }
 	/* Must have 0x80000000,0x80000001,0x80000002,0x80000003,0x80000004 */
 	__asm__ volatile
 	(
@@ -11501,6 +11540,7 @@ void SystemRegisters(CORE_RO *Core)
 	 && BITVAL(Core->SystemRegister.CR4, CR4_OSXSAVE)) {
 		__asm__ volatile
 		(
+			"# XCR0"		"\n\t"
 			"xorq	%%rcx, %%rcx"	"\n\t"
 			"xgetbv"		"\n\t"
 			"shlq	$32, %%rdx"	"\n\t"
@@ -11508,6 +11548,22 @@ void SystemRegisters(CORE_RO *Core)
 			"movq	%%rax, %0"
 			: "=r" (Core->SystemRegister.XCR0)
 			:
+			: "%rax", "%rcx", "%rdx"
+		);
+	}
+	if (PUBLIC(RO(Proc))->Features.ExtState_Leaf1.EAX.IA32_XSS) {
+		__asm__ volatile
+		(
+			"# XSS" 		"\n\t"
+			"xorq	%%rax, %%rax"	"\n\t"
+			"xorq	%%rdx, %%rdx"	"\n\t"
+			"movq	%1,%%rcx"	"\n\t"
+			"rdmsr"			"\n\t"
+			"shlq	$32, %%rdx"	"\n\t"
+			"orq	%%rdx, %%rax"	"\n\t"
+			"movq	%%rax, %0"
+			: "=r" (Core->SystemRegister.XSS)
+			: "i" (MSR_IA32_XSS)
 			: "%rax", "%rcx", "%rdx"
 		);
 	}

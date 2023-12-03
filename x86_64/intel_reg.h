@@ -341,6 +341,10 @@
 	#define MSR_IA32_HWP_REQUEST		MSR_HWP_REQUEST
 #endif
 
+#ifndef MSR_IA32_XSS
+	#define MSR_IA32_XSS			0x00000da0
+#endif
+
 /*	MSR registers related to Hardware Duty Cycling (HDC)		*/
 #ifndef MSR_IA32_PKG_HDC_CTL
 	#define MSR_IA32_PKG_HDC_CTL		0x00000db0

@@ -282,6 +282,7 @@ typedef struct
 					EFCR	__attribute__ ((aligned (8))),
 					EFER	__attribute__ ((aligned (8))),
 					XCR0	__attribute__ ((aligned (8))),
+					XSS	__attribute__ ((aligned (8))),
 					SYSCFG	__attribute__ ((aligned (8)));
 	} SystemRegister;
 
