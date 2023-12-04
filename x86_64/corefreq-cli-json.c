@@ -1812,6 +1812,12 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.XAPIC_DIS);
 			json_key(&s, "PBRSB_NO");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.PBRSB_NO);
+			json_key(&s, "OC_UTILIZED");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.OC_UTILIZED);
+			json_key(&s, "OC_UNDERVOLT");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.OC_UNDERVOLT);
+			json_key(&s, "OC_UNLOCKED");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.OC_UNLOCKED);
 			json_key(&s, "IPRED_DIS_U");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.IPRED_DIS_U);
 			json_key(&s, "IPRED_DIS_S");

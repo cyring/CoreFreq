@@ -2050,6 +2050,10 @@
 #define RSC_MECH_BTC_NOBR_CODE_EN 	"BTC on Non-Branch instruction"
 #define RSC_MECH_XPROC_LEAK_CODE_EN  "Arch - Cross Processor Information Leak"
 #define RSC_MECH_AGENPICK_CODE_EN	"Limited Early Redirect Window"
+#define RSC_MECH_OVERCLOCKING_CODE_EN	"Overclocking"
+#define RSC_MECH_OC_UTILIZED_CODE_EN	"Overclocking Utilized"
+#define RSC_MECH_OC_UNDERVOLT_CODE_EN	"Undervolt Protection"
+#define RSC_MECH_OC_UNLOCKED_CODE_EN	"Overclocking Secure Status"
 
 #define RSC_SECURITY_CPUID_KL_CODE_EN	"CPUID Key Locker"
 #define RSC_SECURITY_AESKLE_CODE_EN	"AES Key Locker instructions"

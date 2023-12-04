@@ -11839,6 +11839,26 @@ void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PBRSB_NO, Core->Bind);
 	}
+	if (Arch_Cap.OVERCLOCKING_STATUS_MSR) {
+		OVERCLOCKING_STATUS OC_Status = {.value = 0};
+		RDMSR(OC_Status, MSR_IA32_OVERCLOCKING_STATUS);
+
+	    if (OC_Status.OC_Utilized) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UTILIZED, Core->Bind);
+	    } else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UTILIZED, Core->Bind);
+	    }
+	    if (OC_Status.OC_Undervolt) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UNDERVOLT, Core->Bind);
+	    } else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UNDERVOLT, Core->Bind);
+	    }
+	    if (OC_Status.OC_Unlocked) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UNLOCKED, Core->Bind);
+	    } else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UNLOCKED, Core->Bind);
+	    }
+	}
     }
     if (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.IA32_CORE_CAP)
     {
@@ -12248,6 +12268,9 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BHI_DIS_S	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BTC_NOBR	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->XPROC_LEAK, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UTILIZED, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UNDERVOLT, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UNLOCKED, Core->Bind);
 
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.Mask);
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.Kind);

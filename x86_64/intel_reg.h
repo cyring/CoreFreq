@@ -36,6 +36,8 @@
 	#define MSR_IA32_ARCH_CAPABILITIES	0x0000010a
 #endif
 
+#define MSR_IA32_OVERCLOCKING_STATUS		0x00000195
+
 #ifndef MSR_IA32_XAPIC_DISABLE_STATUS
 	#define MSR_IA32_XAPIC_DISABLE_STATUS	0x000000bd
 #endif
@@ -420,7 +422,6 @@
 
 /*	Partially documented registers					*/
 #define MSR_FLEX_RATIO				0x00000194
-#define MSR_IA32_OVERCLOCKING_STATUS		0x00000195
 #define MSR_IA32_MISC_PACKAGE_CTLS		0x000000bc
 
 typedef union
@@ -548,7 +549,7 @@ typedef union
 		BHI_NO			: 21-20,
 		XAPIC_DISABLE_STATUS_MSR: 22-21, /* xAPIC disable status */
 		ReservedBits2		: 23-22,
-		OVERCLOCKING_STATUS_SUP : 24-23, /* IA32_OVERLOCKING_STATUS */
+		OVERCLOCKING_STATUS_MSR : 24-23, /* IA32_OVERLOCKING_STATUS */
 		PBRSB_NO		: 25-24,
 		ReservedBits3		: 64-25;
 	};
@@ -639,8 +640,8 @@ typedef union
 	{
 		unsigned long long
 		OC_Utilized	:  1-0,  /* 1:OC have been enabled	*/
-		Undervolt	:  2-1,  /* 1:Dynamic OC Undervolt Protection*/
-		OC_Unlock	:  3-2,  /* 1:OC unlocked by BIOS	*/
+		OC_Undervolt	:  2-1,  /* 1:Dynamic OC Undervolt Protection*/
+		OC_Unlocked	:  3-2,  /* 1:OC unlocked by BIOS	*/
 		ReservedBits	: 64-3;
 	};
 } OVERCLOCKING_STATUS;

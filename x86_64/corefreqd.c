@@ -1865,6 +1865,18 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 						RW(Proc)->PBRSB_NO,
 						RO(Proc)->ARCH_CAP_Mask ),
 
+			OC_UTILIZED = BITCMP_CC(LOCKLESS,
+						RW(Proc)->OC_UTILIZED,
+						RO(Proc)->ARCH_CAP_Mask),
+
+			OC_UNDERVOLT = BITCMP_CC(LOCKLESS,
+						RW(Proc)->OC_UNDERVOLT,
+						RO(Proc)->ARCH_CAP_Mask),
+
+			OC_UNLOCKED = BITCMP_CC(LOCKLESS,
+						RW(Proc)->OC_UNLOCKED,
+						RO(Proc)->ARCH_CAP_Mask),
+
 			IPRED_DIS_U = BITCMP_CC(LOCKLESS,
 						RW(Proc)->IPRED_DIS_U,
 						RO(Proc)->SPEC_CTRL_Mask),
@@ -2003,6 +2015,21 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 	RO(Shm)->Proc.Mechanisms.PBRSB_NO = (
 		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
 		+ (2 * PBRSB_NO)
+	);
+
+	RO(Shm)->Proc.Mechanisms.OC_UTILIZED = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
+		+ (2 * OC_UTILIZED)
+	);
+
+	RO(Shm)->Proc.Mechanisms.OC_UNDERVOLT = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
+		+ (2 * OC_UNDERVOLT)
+	);
+
+	RO(Shm)->Proc.Mechanisms.OC_UNLOCKED = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
+		+ (2 * OC_UNLOCKED)
 	);
 
 	RO(Shm)->Proc.Mechanisms.IPRED_DIS_U = (

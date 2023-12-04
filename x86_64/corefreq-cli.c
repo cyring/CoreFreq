@@ -3394,6 +3394,38 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 25 - RSZ(MECH_XPROC_LEAK),
 		MECH
 	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		0,
+		attr_Feat,
+		2, "%s", RSC(MECH_OVERCLOCKING).CODE(),
+		0,
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.OC_UTILIZED,
+		attr_Feat,
+		3, "%s%.*sUTILIZED   [%7s]", RSC(MECH_OC_UTILIZED).CODE(),
+		width - (OutFunc == NULL ? 26:24) - RSZ(MECH_OC_UTILIZED),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.OC_UNDERVOLT,
+		attr_Feat,
+		3, "%s%.*sUVP   [%7s]", RSC(MECH_OC_UNDERVOLT).CODE(),
+		width - (OutFunc == NULL ? 21:19) - RSZ(MECH_OC_UNDERVOLT),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.OC_UNLOCKED,
+		attr_Feat,
+		3, "%s%.*sUNLOCKED   [%7s]", RSC(MECH_OC_UNLOCKED).CODE(),
+		width - (OutFunc == NULL ? 26:24) - RSZ(MECH_OC_UNLOCKED),
+		MECH
+	},
 /* Section Mark */
 	{
 		NULL,
