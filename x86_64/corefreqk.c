@@ -13756,10 +13756,11 @@ void Sys_DumpTask(SYSGATE_RO *SysGate)
 		SysGate->taskList[cnt].pid      = thread->pid;
 		SysGate->taskList[cnt].tgid     = thread->tgid;
 		SysGate->taskList[cnt].ppid     = thread->parent->pid;
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 14, 0)
-		SysGate->taskList[cnt].state    = (short int) thread->state;
-#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 14, 0) \
+ || (defined(RHEL_MAJOR) && (RHEL_MAJOR == 8) && (RHEL_MINOR >= 9))
 		SysGate->taskList[cnt].state    = (short int) thread->__state;
+#else
+		SysGate->taskList[cnt].state    = (short int) thread->state;
 #endif
 #if defined(CONFIG_SCHED_ALT)
 		SysGate->taskList[cnt].wake_cpu = (short int) task_cpu(thread);
@@ -21104,7 +21105,8 @@ static int CoreFreqK_FreqDriver_UnInit(void)
 {
 	int rc = -EINVAL;
 #ifdef CONFIG_CPU_FREQ
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 3, 0)) && (!defined(CONFIG_CACHY))
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 3, 0)) && (!defined(CONFIG_CACHY)) \
+ && (!defined(RHEL_MAJOR))
 	rc =
 #else
 	rc = 0;
@@ -23189,7 +23191,9 @@ void SMBIOS_Decoder(void)
 #endif /* CONFIG_DMI */
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 2, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 2, 0) \
+ || ((RHEL_MAJOR == 8) && ((RHEL_MINOR < 3) || (RHEL_MINOR > 8))) \
+ || ((RHEL_MAJOR == 9) && (RHEL_MINOR > 0))
 static char *CoreFreqK_DevNode(const struct device *dev, umode_t *mode)
 #else
 static char *CoreFreqK_DevNode(struct device *dev, umode_t *mode)
