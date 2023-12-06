@@ -1,6 +1,6 @@
 # _CoreFreq_
 ## Purpose
-_CoreFreq_, a CPU monitoring software with BIOS like functionalities, is designed for the 64-bits Processors of architecture Intel Atom, Core2, Nehalem, SandyBridge and superiors; AMD Families from 0Fh ... up to 17h (Zen , Zen+ , Zen2), 18h (Hygon Dhyana), 19h (Zen3)  
+_CoreFreq_, a CPU monitoring software with BIOS like functionalities, is designed for the 64-bits Processors of architecture Intel Atom, Core2, Nehalem, SandyBridge and superiors; AMD Families from 0Fh ... up to 17h (Zen , Zen+ , Zen 2), 18h (Hygon Dhyana), 19h (Zen 3, Zen 3+, Zen 4, Zen 4c)  
 
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_Top.gif "CoreFreq Top")
 
@@ -199,7 +199,7 @@ CPU     IPS            IPC            CPI
  * Or, install selectively the development packages prerequisites.  
 `apt-get install libpthread-stubs0-dev`  
 
-## Red Hat, CentOS
+## Red Hat, CentOS, AlmaLinux
  * Development packages prerequisites.  
 `yum install kernel-devel`  
 `yum group install "Development Tools"`  
@@ -233,6 +233,8 @@ systemctl start corefreqd
  * Plugin
 1. `corefreq.plg` from [ich777/unraid-corefreq](https://github.com/ich777/unraid-corefreq)
 2. Based on latest developments, please contact [ich777](https://github.com/ich777)  
+
+## [Buildroot](https://github.com/cyring/CoreFreq-buildroot)
 
 ## Q&A
 * Q: How many CPUs are supported by _CoreFreq_ ?  
