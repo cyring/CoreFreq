@@ -2522,6 +2522,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		NULL
 	},
 	{
+		NULL,
+		RO(Shm)->Proc.Features.Std.EDX.HTT == 1,
+		attr_Feat,
+		2, "%s%.*sHTT   [%7s]", RSC(FEATURES_HTT).CODE(),
+		width - 18 - RSZ(FEATURES_HTT),
+		NULL
+	},
+	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		RO(Shm)->Proc.Features.AdvPower.EDX.HwPstate == 1,
 		attr_Feat,
@@ -3454,7 +3462,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		NULL
 	},
 	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+		(unsigned int[]) { CRC_INTEL, CRC_AMD, CRC_HYGON, 0 },
 		RO(Shm)->Proc.Features.ExtFeature.ECX.CET_SS == 1,
 		attr_Feat,
 		2, "%s%.*sCET-SS   [%7s]", RSC(SECURITY_CET_SS).CODE(),
@@ -4791,6 +4799,22 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 		RO(Shm)->Proc.Features.MWait.EDX.SubCstate_MWAIT5,
 		RO(Shm)->Proc.Features.MWait.EDX.SubCstate_MWAIT6,
 		RO(Shm)->Proc.Features.MWait.EDX.SubCstate_MWAIT7 );
+
+	bix = RO(Shm)->Proc.Features.MWait.ECX.EMX_MWAIT == 1 ? 2 : 0;
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 3, "%s%.*s%s   [%7s]",
+		RSC(PERF_MON_MWAIT_EMX_MWAIT).CODE(),
+		width - (OutFunc == NULL ? 21 : 19 )
+		- RSZ(PERF_MON_MWAIT_EMX_MWAIT), hSpace,
+		RSC(PERF_LABEL_EMX).CODE(), POWERED(bix) );
+
+	bix = RO(Shm)->Proc.Features.MWait.ECX.IBE_MWAIT == 1 ? 2 : 0;
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 3, "%s%.*s%s   [%7s]",
+		RSC(PERF_MON_MWAIT_IBE_MWAIT).CODE(),
+		width - (OutFunc == NULL ? 21 : 19 )
+		- RSZ(PERF_MON_MWAIT_IBE_MWAIT), hSpace,
+		RSC(PERF_LABEL_IBE).CODE(), POWERED(bix) );
 /* Section Mark */
 	bix = (RO(Shm)->Proc.Features.PerfMon.EBX.CoreCycles == 0)
 	   || (RO(Shm)->Proc.Features.PerfMon.EAX.VectorSz > 0) ? 2 : 0;

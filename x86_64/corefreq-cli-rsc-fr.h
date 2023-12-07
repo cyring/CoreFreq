@@ -586,6 +586,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_FRED_CODE_FR	"Flexible Return and Event Delivery"
 #define RSC_FEATURES_HFI_CODE_FR	"Hardware Feedback Interface"
 #define RSC_FEATURES_HLE_CODE_FR	"Hardware Lock Elision"
+#define RSC_FEATURES_HTT_CODE_FR	"Hyper-Threading Technology"
 #define RSC_FEATURES_HwP_CODE_FR	"Hardware P-state control"
 #define RSC_FEATURES_HRESET_CODE_FR	"History Reset"
 #define RSC_FEATURES_HYBRID_CODE_FR	"Hybrid part processor"
@@ -730,6 +731,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_PERF_MON_MONITOR_MWAIT_CODE_FR	"MONITOR/MWAIT"
 #define RSC_PERF_MON_MWAIT_IDX_CSTATE_CODE_FR	"State index"
 #define RSC_PERF_MON_MWAIT_SUB_CSTATE_CODE_FR	"Sub C-State"
+#define RSC_PERF_MON_MWAIT_EMX_MWAIT_CODE_FR	"Monitor-Mwait Extensions"
+#define RSC_PERF_MON_MWAIT_IBE_MWAIT_CODE_FR	"Interrupt Break-Event"
 
 #define RSC_PERF_MON_CORE_CYCLE_CODE_FR "Core Cycles"
 #define RSC_PERF_MON_INST_RET_CODE_FR	"Instructions Retired"
