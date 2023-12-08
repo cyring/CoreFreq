@@ -96,6 +96,16 @@
 	#define MSR_TURBO_POWER_CURRENT_LIMIT	0x000001ac
 #endif
 
+#define MSR_IA32_FRED_STKLVLS			0x000001d0
+#define MSR_IA32_FRED_SSP1			0x000001d1
+#define MSR_IA32_FRED_SSP2			0x000001d2
+#define MSR_IA32_FRED_SSP3			0x000001d3
+#define MSR_IA32_FRED_CONFIG			0x000001d4
+#define MSR_IA32_FRED_RSP0			0x000001cc
+#define MSR_IA32_FRED_RSP1			0x000001cd
+#define MSR_IA32_FRED_RSP2			0x000001ce
+#define MSR_IA32_FRED_RSP3			0x000001cf
+
 #ifndef MSR_IA32_POWER_CTL
 	#define MSR_IA32_POWER_CTL		0x000001fc
 #endif
@@ -1082,6 +1092,23 @@ typedef union
 		ReservedBits8	: 64-40;
 	};
 } MISC_PROC_FEATURES;
+
+typedef union
+{	/*	IA32_FRED_CONFIG (MSR index 1D4H).			*/
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long int
+		CSL		:  2-0,
+		ReservedBits1	:  3-2,
+		SSP		:  4-3,
+		ReservedBits2	:  6-4,
+		RSP		:  9-6,
+		RING0		: 11-9,
+		ReservedBits3	: 12-11,
+		LAP		: 64-12;
+	};
+} FRED_CONFIG;
 
 typedef union
 {
