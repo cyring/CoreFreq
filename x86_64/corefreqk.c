@@ -14063,6 +14063,9 @@ void Intel_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 	Zen_L3_Cache_PerfControl.EventSelect =	0x90;			\
 	Zen_L3_Cache_PerfControl.UnitMask =	0x00;			\
 	Zen_L3_Cache_PerfControl.CounterEn =	1;			\
+	Zen_L3_Cache_PerfControl.CoreID =	0;			\
+	Zen_L3_Cache_PerfControl.EnAllSlices =	0;			\
+	Zen_L3_Cache_PerfControl.EnAllCores =	0;			\
 	Zen_L3_Cache_PerfControl.SliceMask =	0x0f;			\
 	Zen_L3_Cache_PerfControl.ThreadMask =	0xff;			\
 	WRMSR(Zen_L3_Cache_PerfControl, MSR_AMD_F17H_L3_PERF_CTL);	\

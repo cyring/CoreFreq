@@ -80,6 +80,7 @@
 #define MSR_AMD_F17H_HW_PSTATE_STATUS		0xc0010293
 #define MSR_AMD_F17H_CSTATE_POLICY		0xc0010294
 #define MSR_AMD_F17H_CSTATE_CONFIG		0xc0010296
+#define MSR_AMD_F17H_PMGT_DEFAULT		0xc0010297
 
 #ifndef MSR_AMD_RAPL_POWER_UNIT
 	#define MSR_AMD_RAPL_POWER_UNIT 	0xc0010299
@@ -560,9 +561,13 @@ typedef union
 	UnitMask	: 16-8,
 	Reserved1	: 22-16,
 	CounterEn	: 23-22,
-	Reserved2	: 48-23,
+	Reserved2	: 42-23,
+	CoreID		: 45-42,
+	Reserved3	: 46-45,
+	EnAllSlices	: 47-46,
+	EnAllCores	: 48-47,
 	SliceMask	: 52-48,
-	Reserved3	: 56-52,
+	Reserved4	: 56-52,
 	ThreadMask	: 64-56;
     };
 } ZEN_L3_PERF_CTL;
@@ -642,9 +647,11 @@ typedef union
 	MaxCpuCof	: 21-15,
 	MaxDFCof	: 26-21,
 	CpbCap		: 29-26,
-	Reserved1	: 32-29,
+	Reserved1	: 30-29,
+	MaxCpuCofPlus50 : 31-30, /* RO: Add 50 MHz to Max CPU frequency */
+	Reserved2	: 32-31,
 	PC6En		: 33-32, /* RW: 0=Disable PC6. 1=Enable PC6	*/
-	Reserved2	: 64-33;
+	Reserved3	: 64-33;
     };
 } ZEN_PMGT_MISC;
 
@@ -659,7 +666,11 @@ typedef union
 	HYST_TMRSEL	:  9-7,
 	HYST_TMRLEN	: 14-9,
 	CFOH_TMRLEN	: 21-14,
-	Reserved1	: 32-21,
+	CFOH_TMRSEL	: 22-21,
+	C1E_TMRSEL	: 24-22,
+	C1E_TMRLEN	: 29-24,
+	C1E_EN		: 30-29,
+	Reserved1	: 32-30,
 	CFSM_DURATION	: 39-32,
 	CFSM_THRESHOLD	: 42-39,
 	CFSM_MISPREDACT : 44-42,
@@ -669,7 +680,8 @@ typedef union
 	IRM_MAXDEPTH	: 60-56,
 	CIT_EN		: 61-60,
 	CIT_FASTSAMPLE	: 62-61,
-	Reserved2	: 64-62;
+	CLT_EN		: 63-62,
+	Reserved2	: 64-63;
     };
 } ZEN_CSTATE_POLICY;
 
@@ -687,9 +699,58 @@ typedef union
 	Reserved2	: 16-15,
 	CCR2_CC2DFSID	: 22-16,
 	CCR2_CC6EN	: 23-22,
-	Reserved3	: 64-23;
+	Reserved3	: 32-23,
+	CCR0_CFOHTMR_LEN: 39-32,
+	CCR0_CC1E_EN	: 40-39,
+	CCR1_CFOHTMR_LEN: 47-40,
+	CCR1_CC1E_EN	: 48-47,
+	CCR2_CFOHTMR_LEN: 55-48,
+	CCR2_CC1E_EN	: 56-55,
+	Reserved4	: 64-56;
     };
 } ZEN_CSTATE_CONFIG;
+
+typedef union
+{
+	unsigned long long value; /*	Per Core: MSR 0xC0010297 (R/0)	*/
+    struct
+    {
+	unsigned long long
+	CC6EXIT_DFSID	:  6-0,
+	CC6EXIT_POPUP_EN:  7-6,
+	CC6CF_DFSID	: 13-7,
+	CC6CF_POPDN_EN	: 14-13,
+	CC6EXIT_STRETCHEN:15-14,
+	CC6EX_STRCLKDIV2: 16-15, /*	CC6EXIT_STRETCHCLKDIV2	*/
+	CC6EX_STRALLDIV2: 17-16, /*	CC6EXIT_STRETCHALLDIV2	*/
+	CC6CF_STRETCHEN : 18-17,
+	CC6CF_STRCLKDIV2: 19-18, /*	CC6CF_STRETCHCLKDIV2	*/
+	CC6CF_STRALLDIV2: 20-19, /*	CC6CF_STRETCHALLDIV2	*/
+	Reserved	: 64-20;
+    };
+    struct
+    {
+	unsigned long long
+	CC6CF_PSMID	: 14-0,
+	CC6CF_DSMID	: 24-14,
+	CC6CF_CKS_DSMID : 32-24,
+	PSTATE_DFSID	: 38-32,
+	PSTATE_POPDN_EN : 39-38,
+	PSTATE_STRETCHEN: 40-39,
+	CC6CF_EN	: 41-40,
+	CC6CF_DFSID	: 47-41,
+	CC6CF_STRETCHEN : 48-47,
+	CC6CF_IVREN	: 49-48,
+	CC6CF_CKS_DSMID2: 51-49,
+	CC6EXIT_EN	: 52-51,
+	CC6EXIT_DFSID	: 58-52,
+	CC6EXIT_STRETCHEN:59-58,
+	CC6EXIT_IVREN	: 60-59,
+	CC6EXIT_CKS_DSMID:62-60,
+	POSTPC6_EN	: 63-62,
+	AUTOSEQCTL_EN	: 64-63;
+    } HWPSTATE;
+} ZEN_PMGT_DEFAULT;
 
 typedef union
 {
