@@ -168,6 +168,9 @@ enum HYPERVISOR {
 #define HYPERVISORS	( 1 + HYPERV_HYPERV )
 
 enum SYS_REG {
+	RFLAG_CF	= 0,
+	RFLAG_ZF	= 6,
+	RFLAG_SF	= 7,
 	RFLAG_TF	= 8,
 	RFLAG_IF	= 9,
 	RFLAG_DF	= 10,
