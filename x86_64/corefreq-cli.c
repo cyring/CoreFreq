@@ -2642,7 +2642,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		NULL
 	},
 	{
-		NULL,
+		(unsigned int[]) { CRC_INTEL, 0 },
 		RO(Shm)->Proc.Features.ExtFeature.EBX.MPX == 1,
 		attr_Feat,
 		2, "%s%.*sMPX   [%7s]", RSC(FEATURES_MPX).CODE(),
