@@ -170,6 +170,8 @@ enum HYPERVISOR {
 enum SYS_REG {
 	RFLAG_TF	= 8,
 	RFLAG_IF	= 9,
+	RFLAG_DF	= 10,
+	RFLAG_OF	= 11,
 	RFLAG_IOPL	= 12,	/* [13:12]				*/
 	RFLAG_NT	= 14,
 	RFLAG_RF	= 16,
