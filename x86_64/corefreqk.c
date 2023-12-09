@@ -11445,14 +11445,32 @@ void PerCore_AMD_Family_0Fh_PStates(CORE_RO *Core)
 
 void SystemRegisters(CORE_RO *Core)
 {
+	unsigned long long mem64;
+
 	__asm__ volatile
 	(
-		"# RFLAGS"		"\n\t"
-		"pushfq"		"\n\t"
-		"popq	%0"		"\n\t"
+		"xorq	%%rbx, %%rbx"		"\n\t"
+		"xorq	%%rcx, %%rcx"		"\n\t"
+		"xorq	%%rdx, %%rdx"		"\n\t"
+		"# Carry, Sign, Overflow Flags" "\n\t"
+		"xorq	%%rax, %%rax"		"\n\t"
+		"cmpl	$-0x80000000, %%eax"	"\n\t"
+		"# Zero Flag"			"\n\t"
+		"movq	%%rax, %1"		"\n\t"
+		"cmpxchg8b %1"			"\n\t"
+		"# Direction Flag"		"\n\t"
+		"std"				"\n\t"
+		"# Interrupt Flag"		"\n\t"
+		"sti"				"\n\t"
+		"# Save all RFLAGS"		"\n\t"
+		"pushfq"			"\n\t"
+		"popq	%0"			"\n\t"
+		"# Reset Flags"			"\n\t"
+		"cli"				"\n\t"
+		"cld"
 		: "=r" (Core->SystemRegister.RFLAGS)
-		:
-		:
+		: "m" (mem64)
+		: "%rax", "%rbx", "%rcx", "%rdx", "cc"
 	);
 	if (RDPMC_Enable) {
 		__asm__ volatile
