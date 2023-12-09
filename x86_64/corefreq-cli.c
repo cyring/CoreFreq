@@ -2666,7 +2666,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		NULL
 	},
 	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.EDX.NX == 1,
 		attr_Feat,
 		2, "%s%.*sNX   [%7s]", RSC(FEATURES_NX).CODE(),
