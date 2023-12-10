@@ -275,6 +275,36 @@ enum SYS_REG {
 	SYSCFG_VMPL	= 25,
 	SYSCFG_HMK	= 26,
 
+	HWCR_SMM	= 0,
+	HWCR_SLW	= 1,	/* AMD F0FH: SLOWFENCE			*/
+	HWCR_TLB	= 3,
+	HWCR_WBI	= 4,
+	HWCR_FF 	= 6,	/* AMD F0FH: TLB Flush Filter		*/
+	HWCR_FRR	= 7,
+	HWCR_IG 	= 8,
+	HWCR_SMW	= 9,
+	HWCR_UMW	= 10,
+	HWCR_HLT	= 12,	/* AMD F0FH,F12H: halt-exit special bus cycle */
+	HWCR_SMI	= 13,
+	HWCR_RSM	= 14,
+	HWCR_SSE	= 15,	/* AMD F0FH: SSE Instructions Disable.	*/
+	HWCR_WRP	= 17,
+	HWCR_MC 	= 18,
+	HWCR_IO 	= 20,
+	HWCR_P0 	= 21,
+	HWCR_PRB	= 23,	/* F12H: Force probes for RdSized and WrSized */
+	HWCR_INC	= 24,
+	HWCR_CPB	= 25,
+	HWCR_HCF	= 26,
+	HWCR_ROC	= 27,
+	HWCR_SMU	= 28,	/* AMD F12H: SmuLock			*/
+	HWCR_CSE	= 29,
+	HWCR_IR 	= 30,
+	HWCR_SBR	= 31,
+	HWCR_TPR	= 32,
+	HWCR_PG 	= 33,
+	HWCR_ID 	= 35,
+
 	UNDEF_CR	= 64
 };
 

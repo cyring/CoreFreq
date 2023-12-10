@@ -7434,6 +7434,9 @@ void SystemRegisters(	RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core),
 
 	RO(Shm)->Cpu[cpu].SystemRegister.SYSCFG = \
 				RO(Core, AT(cpu))->SystemRegister.SYSCFG;
+
+	RO(Shm)->Cpu[cpu].SystemRegister.HWCR = \
+				RO(Core, AT(cpu))->SystemRegister.HWCR.value;
 }
 
 void SysGate_OS_Driver(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))

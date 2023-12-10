@@ -283,7 +283,8 @@ typedef struct
 					EFER	__attribute__ ((aligned (8))),
 					XCR0	__attribute__ ((aligned (8))),
 					XSS	__attribute__ ((aligned (8))),
-					SYSCFG	__attribute__ ((aligned (8)));
+					SYSCFG	__attribute__ ((aligned (8))),
+					HWCR	__attribute__ ((aligned (8)));
 	} SystemRegister;
 
 	CPUID_STRUCT			CpuID[CPUID_MAX_FUNC];

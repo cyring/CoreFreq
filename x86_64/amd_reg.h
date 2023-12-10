@@ -389,7 +389,7 @@ typedef union
     {
 	unsigned long long
 	SmmLock 	:  1-0,
-	SLOWFENCE	:  2-1,  /* Slow SFENCE Enable.			*/
+	SLOWFENCE	:  2-1,  /* Slow SFENCE Enable. 		*/
 	Reserved1	:  3-2,
 	TlbCacheDis	:  4-3,
 	INVDWBINVD	:  5-4,  /* This bit is required to be set for CC6 */

@@ -501,7 +501,8 @@ REASON_CODE SystemRegisters(	Window *win,
 	enum AUTOMAT {
 		DO_END, DO_SPC, DO_CPU, DO_FLAG,
 		DO_CR0, DO_CR3, DO_CR4, DO_CR8,
-		DO_EFCR, DO_EFER, DO_XCR0, DO_CFG
+		DO_EFCR, DO_EFER, DO_XCR0, DO_CFG,
+		DO_HWCR
 	};
 	const unsigned int
 		fIntel = RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL,
@@ -855,6 +856,90 @@ REASON_CODE SystemRegisters(	Window *win,
 	[16] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
 		{DO_END , 1	, UNDEF_CR	, 0	}
 	}
+      },
+      {
+	.header = (struct SR_HDR[]) {
+	[ 0] = {RSC(SYS_REG_HDR_HWCR).CODE()	, RSC(SYS_REGS_HWCR).CODE()},
+	[ 1] = {RSC(SYS_REG_HDR_HWCR_SMM).CODE(), RSC(SYS_REG_HWCR_SMM).CODE()},
+	[ 2] = {RSC(SYS_REG_HDR_HWCR_SLW).CODE(), RSC(SYS_REG_HWCR_SLW).CODE()},
+	[ 3] = {RSC(SYS_REG_HDR_HWCR_TLB).CODE(), RSC(SYS_REG_HWCR_TLB).CODE()},
+	[ 4] = {RSC(SYS_REG_HDR_HWCR_WBI).CODE(), RSC(SYS_REG_HWCR_WBI).CODE()},
+	[ 5] = {RSC(SYS_REG_HDR_HWCR_FF).CODE() , RSC(SYS_REG_HWCR_FF).CODE()},
+	[ 6] = {RSC(SYS_REG_HDR_HWCR_FRR).CODE(), RSC(SYS_REG_HWCR_FRR).CODE()},
+	[ 7] = {RSC(SYS_REG_HDR_HWCR_IG).CODE() , RSC(SYS_REG_HWCR_IG).CODE()},
+	[ 8] = {RSC(SYS_REG_HDR_HWCR_SMW).CODE(), RSC(SYS_REG_HWCR_SMW).CODE()},
+	[ 9] = {RSC(SYS_REG_HDR_HWCR_UMW).CODE(), RSC(SYS_REG_HWCR_UMW).CODE()},
+	[10] = {RSC(SYS_REG_HDR_HWCR_HLT).CODE(), RSC(SYS_REG_HWCR_HLT).CODE()},
+	[11] = {RSC(SYS_REG_HDR_HWCR_SMI).CODE(), RSC(SYS_REG_HWCR_SMI).CODE()},
+	[12] = {RSC(SYS_REG_HDR_HWCR_RSM).CODE(), RSC(SYS_REG_HWCR_RSM).CODE()},
+	[13] = {RSC(SYS_REG_HDR_HWCR_SSE).CODE(), RSC(SYS_REG_HWCR_SSE).CODE()},
+	[14] = {RSC(SYS_REG_HDR_HWCR_WRP).CODE(), RSC(SYS_REG_HWCR_WRP).CODE()},
+	[15] = {RSC(SYS_REG_HDR_HWCR_MC).CODE() , RSC(SYS_REG_HWCR_MC).CODE()},
+	[16] = {RSC(SYS_REG_HDR_HWCR_IO).CODE() , RSC(SYS_REG_HWCR_IO).CODE()},
+		{NULL, NULL}
+	},
+	.flag = (struct SR_BIT[]) {
+	[ 0] =	{DO_CPU , 1	, UNDEF_CR	, 0	},
+	[ 1] =	{DO_HWCR, fAMD	, HWCR_SMM	, 1	},
+	[ 2] =	{DO_HWCR, fAMD	, HWCR_SLW	, 1	},
+	[ 3] =	{DO_HWCR, fAMD	, HWCR_TLB	, 1	},
+	[ 4] =	{DO_HWCR, fAMD	, HWCR_WBI	, 1	},
+	[ 5] =	{DO_HWCR, fAMD	, HWCR_FF	, 1	},
+	[ 6] =	{DO_HWCR, fAMD	, HWCR_FRR	, 1	},
+	[ 7] =	{DO_HWCR, fAMD	, HWCR_IG	, 1	},
+	[ 8] =	{DO_HWCR, fAMD	, HWCR_SMW	, 1	},
+	[ 9] =	{DO_HWCR, fAMD	, HWCR_UMW	, 1	},
+	[10] =	{DO_HWCR, fAMD	, HWCR_HLT	, 1	},
+	[11] =	{DO_HWCR, fAMD	, HWCR_SMI	, 1	},
+	[12] =	{DO_HWCR, fAMD	, HWCR_RSM	, 1	},
+	[13] =	{DO_HWCR, fAMD	, HWCR_SSE	, 1	},
+	[14] =	{DO_HWCR, fAMD	, HWCR_WRP	, 1	},
+	[15] =	{DO_HWCR, fAMD	, HWCR_MC	, 1	},
+	[16] =	{DO_HWCR, fAMD	, HWCR_IO	, 1	},
+		{DO_END , 1	, UNDEF_CR	, 0	}
+	}
+      },
+      {
+	.header = (struct SR_HDR[]) {
+	[ 0] = {RSC(SYS_REG_HDR_HWCR).CODE()	, RSC(SYS_REGS_HWCR).CODE()},
+	[ 1] = {RSC(SYS_REG_HDR_HWCR_P0).CODE() , RSC(SYS_REG_HWCR_P0).CODE()},
+	[ 2] = {RSC(SYS_REG_HDR_HWCR_PRB).CODE(), RSC(SYS_REG_HWCR_PRB).CODE()},
+	[ 3] = {RSC(SYS_REG_HDR_HWCR_INC).CODE(), RSC(SYS_REG_HWCR_INC).CODE()},
+	[ 4] = {RSC(SYS_REG_HDR_HWCR_CPB).CODE(), RSC(SYS_REG_HWCR_CPB).CODE()},
+	[ 5] = {RSC(SYS_REG_HDR_HWCR_HCF).CODE(), RSC(SYS_REG_HWCR_HCF).CODE()},
+	[ 6] = {RSC(SYS_REG_HDR_HWCR_ROC).CODE(), RSC(SYS_REG_HWCR_ROC).CODE()},
+	[ 7] = {RSC(SYS_REG_HDR_HWCR_SMU).CODE(), RSC(SYS_REG_HWCR_SMU).CODE()},
+	[ 8] = {RSC(SYS_REG_HDR_HWCR_CSE).CODE(), RSC(SYS_REG_HWCR_CSE).CODE()},
+	[ 9] = {RSC(SYS_REG_HDR_HWCR_IR).CODE() , RSC(SYS_REG_HWCR_IR).CODE()},
+	[10] = {RSC(SYS_REG_HDR_HWCR_SBR).CODE(), RSC(SYS_REG_HWCR_SBR).CODE()},
+	[11] = {RSC(SYS_REG_HDR_HWCR_TPR).CODE(), RSC(SYS_REG_HWCR_TPR).CODE()},
+	[12] = {RSC(SYS_REG_HDR_HWCR_PG).CODE() , RSC(SYS_REG_HWCR_PG).CODE()},
+	[13] = {RSC(SYS_REG_HDR_HWCR_ID).CODE() , RSC(SYS_REG_HWCR_ID).CODE()},
+	[14] = {RSC(SYS_REGS_SPACE).CODE(),		NULL},
+	[15] = {RSC(SYS_REGS_SPACE).CODE(),		NULL},
+	[16] = {RSC(SYS_REGS_SPACE).CODE(),		NULL},
+		{NULL, NULL}
+	},
+	.flag = (struct SR_BIT[]) {
+	[ 0] =	{DO_CPU , 1	, UNDEF_CR	, 0	},
+	[ 1] =	{DO_HWCR, fAMD	, HWCR_P0	, 1	},
+	[ 2] =	{DO_HWCR, fAMD	, HWCR_PRB	, 1	},
+	[ 3] =	{DO_HWCR, fAMD	, HWCR_INC	, 1	},
+	[ 4] =	{DO_HWCR, fAMD	, HWCR_CPB	, 1	},
+	[ 5] =	{DO_HWCR, fAMD	, HWCR_HCF	, 1	},
+	[ 6] =	{DO_HWCR, fAMD	, HWCR_ROC	, 1	},
+	[ 7] =	{DO_HWCR, fAMD	, HWCR_SMU	, 1	},
+	[ 8] =	{DO_HWCR, fAMD	, HWCR_CSE	, 1	},
+	[ 9] =	{DO_HWCR, fAMD	, HWCR_IR	, 1	},
+	[10] =	{DO_HWCR, fAMD	, HWCR_SBR	, 1	},
+	[11] =	{DO_HWCR, fAMD	, HWCR_TPR	, 1	},
+	[12] =	{DO_HWCR, fAMD	, HWCR_PG	, 1	},
+	[13] =	{DO_HWCR, fAMD	, HWCR_ID	, 1	},
+	[14] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[15] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[16] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+		{DO_END , 1	, UNDEF_CR	, 0	}
+	}
       }
     };
 
@@ -932,6 +1017,11 @@ REASON_CODE SystemRegisters(	Window *win,
 		    case DO_CFG:
 			PRT(REG, attrib[2], "%3llx ",
 			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.SYSCFG,
+					pFlag->pos, pFlag->len));
+			break;
+		    case DO_HWCR:
+			PRT(REG, attrib[2], "%3llx ",
+			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.HWCR,
 					pFlag->pos, pFlag->len));
 			break;
 		    default:
