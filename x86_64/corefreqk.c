@@ -8077,12 +8077,12 @@ signed int Put_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
+	RDMSR(Core->SystemRegister.HWCR, MSR_K7_HWCR);
+
     if ((cppc_get_perf_ctrs(Core->Bind, &CPPC_Perf) == 0)
      && (cppc_get_perf_caps(Core->Bind, &CPPC_Caps) == 0))
     {
 	unsigned short WrRdCPPC = 0;
-
-	RDMSR(Core->SystemRegister.HWCR, MSR_K7_HWCR);
 
 	struct cppc_perf_ctrls perf_ctrls = {
 		.max_perf = CPPC_Caps.highest_perf,
