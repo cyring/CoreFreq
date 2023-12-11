@@ -265,7 +265,7 @@ ATTRIBUTE *StateToSymbol(short int state, char stateStr[])
 		    } else {
 			stateStr[jdx++] = '?';
 		    }
-		} while (BITBSR(state, idx) == 0);
+		} while ((BITBSR(state, idx) == 0) && (jdx < TASK_COMM_LEN));
 	stateStr[jdx] = '\0';
 	return stateAttr;
 }
