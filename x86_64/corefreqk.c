@@ -10725,7 +10725,9 @@ void PowerThermal(CORE_RO *Core)
 		{_Raptorlake_S, 	1, 1, 0, 0},
 		{_Lunarlake,		1, 1, 1, 0},	/* 06_BD */
 		{_Arrowlake,		1, 1, 1, 0},	/* 06_C6 */
-		{_Arrowlake_H,		1, 1, 1, 0}	/* 06_C5 */
+		{_Arrowlake_H,		1, 1, 1, 0},	/* 06_C5 */
+		{_Pantherlake,		1, 1, 1, 0},	/* 06_CC */
+		{_Clearwater_Forest,	1, 1, 1, 0}	/* 06_DD */
 	};
 	unsigned int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
  for (id = 0; id < ids; id++)
@@ -14752,6 +14754,7 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
     case Lunarlake:							\
     case Arrowlake:							\
     case Arrowlake_H:							\
+    case Pantherlake:							\
 	ADL_SA(PRIVATE(OF(PCU)).BAR);					\
 	break;								\
     }									\
