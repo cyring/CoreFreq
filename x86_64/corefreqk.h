@@ -7994,7 +7994,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHX_Specific[] = {
 };
 static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 	{
-	.Brand = ZLIST("AMD Ryzen 9 8940H"),
+	.Brand = ZLIST("AMD Ryzen 9 8945HS"),
 	.Boost = {+12, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PHOENIX_R,
@@ -8006,7 +8006,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 7 8840H"),
+	.Brand = ZLIST("AMD Ryzen 7 8845HS"),
 	.Boost = {+13, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PHOENIX_R,
@@ -8018,8 +8018,46 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 5 8640H"),
+	.Brand = ZLIST( "AMD Ryzen 7 8840HS",		\
+			"AMD Ryzen 7 8840U"		),
+	.Boost = {+18, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PHOENIX_R,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 5 8645HS"),
 	.Boost = {+7, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PHOENIX_R,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 5 8640HS",		\
+			"AMD Ryzen 5 8640U"		),
+	.Boost = {+14, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PHOENIX_R,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 5 8540U"),
+	.Boost = {+17, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PHOENIX_R,
 	.TgtRatioUnlocked = 1,
