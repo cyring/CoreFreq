@@ -548,9 +548,9 @@ typedef union
 	ThreadMask	: 64-56;
     };
 } ZEN_L3_PERF_CTL;
-*/
+
 #define SMU_AMD_UMC_PERF_CTL_CLK(_umc)	(0x00050d00 + (_umc << 20))
-/*
+
 typedef union
 {
 	unsigned int value;
@@ -565,10 +565,10 @@ typedef union
 	CtrClkEn	: 32-31;
     };
 } ZEN_UMC_PERF_CTL_CLK;
-*/
+
 #define SMU_AMD_ZEN_UMC_PERF_CTL(_umc, _cha)				\
 	(0x00050d04 + (_umc << 20) + (_cha << 2))
-/*
+
 typedef union
 {
 	unsigned int value;
@@ -586,13 +586,13 @@ typedef union
 	CounterEn	: 32-31;
     };
 } ZEN_UMC_PERF_CTL;
-*/
+
 #define SMU_AMD_ZEN_UMC_PERF_CLK_LOW(_cha)				\
 	(0x00050d20 + (_cha << 20))
 
 #define SMU_AMD_ZEN_UMC_PERF_CLK_HIGH(_cha)				\
 	(0x00050d24 + (_cha << 20))
-/*
+
 typedef union
 {
 	unsigned long long value;
@@ -1410,13 +1410,11 @@ typedef union
 		ReservedBits	: 31-12;
 	};
 } TCCD_REGISTER;
-*/
-/* Sources: drivers/edac/amd64_edac.h					*/
+
 #ifndef SMU_AMD_UMC_BASE_CHA_F17H
 	#define SMU_AMD_UMC_BASE_CHA_F17H(_cha) (0x00050000 + (_cha << 20))
 #endif
 
-/*
 SMU: address = 0x50058 (BankGroupSwap) per channel
 
 BGS[ON]
@@ -1436,10 +1434,10 @@ zencli smu 0x50054
 [0x00050054] READ(smu) = 0xa9876543 (2844222787)
 zencli smu 0x50058
 [0x00050058] READ(smu) = 0x87654321 (2271560481)
-*/
+
 #define AMD_17_UMC_BGS_MASK_OFF 	0x87654321
 
-/*
+
 SMU: address = 0x500d0 (BankGroupSwap Alternate) per channel
 
 BGS_Alt[ON][AUTO]
@@ -1461,9 +1459,9 @@ zencli smu 0x500d8
 [0x000500d8] READ(smu) = 0x00000000 (0)
 
 Remark: if BGS_Alt[ON][AUTO] is set then BGS[OFF]
-*/
+
 #define AMD_17_UMC_BGS_ALT_MASK_ON	0x000007f0
-/*TODO(CleanUp)
+
 typedef union
 {	unsigned int		value;
 	struct

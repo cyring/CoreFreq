@@ -20721,7 +20721,8 @@ static ssize_t CoreFreqK_Show_SetSpeed(struct cpufreq_policy *policy,char *buf)
 	Core = (CORE_RO *) PUBLIC(RO(Core, AT(PUBLIC(RO(Proc))->Service.Core)));
     }
     if (PUBLIC(RO(Proc))->Features.HWP_Enable
-    && (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)) {
+/*TODO(CleanUp)
+    && (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)*/) {
 	boost = BOOST(HWP_TGT);
     } else {
 	boost = BOOST(TGT);
@@ -22046,30 +22047,32 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	case TECHNOLOGY_HWP:
 	    switch (prm.dl.lo) {
 	    case COREFREQ_TOGGLE_ON:
-/*TODO(CleanUp)
 		Controller_Stop(1);
 		HWP_Enable = prm.dl.lo;
+/*TODO(CleanUp)
 	      if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL) {
 		Intel_Hardware_Performance();
 	      } else if ((PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
 		|| (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON))
+*/
 	      {
-		if (PUBLIC(RO(Proc))->Features.leaf80000008.EBX.CPPC) {
+		/*if (PUBLIC(RO(Proc))->Features.leaf80000008.EBX.CPPC) {
 			AMD_F17h_CPPC();
-		} else if (PUBLIC(RO(Proc))->Features.ACPI_CPPC) {
+		} else */if (PUBLIC(RO(Proc))->Features.ACPI_CPPC) {
 			For_All_ACPI_CPPC(Enable_ACPI_CPPC, NULL);
 		}
 	      }
 		Controller_Start(1);
 		HWP_Enable = -1;
 		rc = RC_SUCCESS;
-*/
 		break;
 	    case COREFREQ_TOGGLE_OFF:
+/*TODO(CleanUp)
 	      if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL) {
 		rc = -RC_UNIMPLEMENTED;
 	      } else if ((PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
 		|| (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON))
+*/
 	      {
 		if (PUBLIC(RO(Proc))->Features.leaf80000008.EBX.CPPC) {
 			rc = -RC_UNIMPLEMENTED;
@@ -23473,13 +23476,11 @@ static void CoreFreqK_Ignition_Level_Down(void)
 
 static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 {
+/*TODO(CleanUp)
 	BIT_ATOM_INIT(PRIVATE(OF(Zen)).AMD_SMN_LOCK, ATOMIC_SEED);
 	BIT_ATOM_INIT(PRIVATE(OF(Zen)).AMD_FCH_LOCK, ATOMIC_SEED);
-
+*/
 	switch (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC) {
-	case CRC_INTEL:
-	case CRC_HYGON:
-	case CRC_AMD:
 /*TODO(CleanUp)
 	case CRC_INTEL: {
 		Arch[GenuineArch].Query = Query_GenuineIntel;
@@ -23779,6 +23780,7 @@ static int CoreFreqK_User_Ops_Level_Up(INIT_ARG *pArg)
 	RESET_ARRAY(Ratio_Boost, Ratio_Boost_Count, -1);
 	Ratio_Boost_Count = 0;
   }
+/*TODO(CleanUp)
   if (PUBLIC(RO(Proc))->ArchID != AMD_Family_0Fh)
   {
 	const unsigned int cpu = PUBLIC(RO(Proc))->Service.Core;
@@ -23818,7 +23820,8 @@ static int CoreFreqK_User_Ops_Level_Up(INIT_ARG *pArg)
       }
 	PState_FID = -1;
     }
-  } /* else handled by function PerCore_AMD_Family_0Fh_PStates()	*/
+  } else handled by function PerCore_AMD_Family_0Fh_PStates()
+*/
   if (Ratio_PPC >= 0)
   {
 	long rc = RC_SUCCESS;

@@ -124,7 +124,7 @@
 #define ASM_COUNTERx1(	_reg0, _reg1,					\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1)					\
-/*									\
+/*TODO(CleanUp)								\
 __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
@@ -154,7 +154,7 @@ __asm__ volatile							\
 #define ASM_COUNTERx2(	_reg0, _reg1, _reg2,				\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1, _msr2, _mem2)			\
-/*									\
+/*TODO(CleanUp)								\
 __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
@@ -187,7 +187,7 @@ __asm__ volatile							\
 #define ASM_COUNTERx3(	_reg0, _reg1, _reg2, _reg3,			\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3)	\
-/*									\
+/*TODO(CleanUp)								\
 __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
@@ -211,7 +211,7 @@ __asm__ volatile							\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
 			_msr4, _mem4)					\
-/*									\
+/*TODO(CleanUp)								\
 __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
@@ -239,7 +239,7 @@ __asm__ volatile							\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
 			_msr4, _mem4, _msr5, _mem5)			\
-/*									\
+/*TODO(CleanUp)								\
 __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
@@ -268,7 +268,7 @@ __asm__ volatile							\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
 			_msr4, _mem4, _msr5, _mem5)			\
-/*									\
+/*TODO(CleanUp)								\
 __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
@@ -301,7 +301,7 @@ __asm__ volatile							\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
 			_msr4, _mem4, _msr5, _mem5, _msr6, _mem6)	\
-/*									\
+/*TODO(CleanUp)								\
 __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
@@ -332,7 +332,7 @@ __asm__ volatile							\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
 			_msr4, _mem4, _msr5, _mem5, _msr6, _mem6)	\
-/*									\
+/*TODO(CleanUp)								\
 __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
@@ -370,7 +370,7 @@ __asm__ volatile							\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
 			_msr4, _mem4, _msr5, _mem5, _msr6, _mem6,	\
 			_msr7, _mem7)					\
-/*									\
+/*TODO(CleanUp)								\
 __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
@@ -404,7 +404,7 @@ __asm__ volatile							\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
 			_msr4, _mem4, _msr5, _mem5, _msr6, _mem6,	\
 			_msr7, _mem7)					\
-/*									\
+/*TODO(CleanUp)								\
 __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
@@ -549,9 +549,11 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 })
 */
 /* Manufacturers Identifier Strings.					*/
+/*TODO(CleanUp)
 #define VENDOR_INTEL	"GenuineIntel"
 #define VENDOR_AMD	"AuthenticAMD"
 #define VENDOR_HYGON	"HygonGenuine"
+*/
 #define VENDOR_KVM	"TCGTGTCGCGTC"
 #define VENDOR_VBOX	"VBoxVBoxVBox"
 #define VENDOR_KBOX	"KVMKM"
@@ -1128,7 +1130,7 @@ typedef struct
 {
 	PROCESSOR_SPECIFIC	*Specific;
 
-	union {/*
+	union {/*TODO(CleanUp)
 	    struct {
 		union {
 			UNCORE_GLOBAL_PERF_CONTROL Uncore_GlobalPerfControl;
@@ -1140,7 +1142,7 @@ typedef struct
 			ZEN_DF_PERF_CTL 	Zen_DataFabricPerfControl;
 	    } AMD;*/
 	} SaveArea;
-/*
+/*TODO(CleanUp)
 	union {
 		struct {
 		    struct {
@@ -1163,7 +1165,7 @@ typedef struct
 	struct PRIV_CORE_ST {
 		JOIN		Join;
 
-		union SAVE_AREA_CORE {/*
+		union SAVE_AREA_CORE {/*TODO(CleanUp)
 		    struct
 		    {
 			CORE_GLOBAL_PERF_CONTROL Core_GlobalPerfControl;

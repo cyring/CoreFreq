@@ -17,9 +17,9 @@
 
 enum CRC_MANUFACTURER
 {
-	CRC_INTEL	= 0x75a2ba39,
+/*	CRC_INTEL	= 0x75a2ba39,
 	CRC_AMD 	= 0x3485bbd3,
-	CRC_HYGON	= 0x18044630,
+	CRC_HYGON	= 0x18044630,*/
 	CRC_KVM 	= 0x0e8c8561,
 	CRC_VBOX	= 0x5091f045,
 	CRC_KBOX	= 0x02b76f04,
@@ -28,7 +28,7 @@ enum CRC_MANUFACTURER
 };
 
 enum {	GenuineArch = 0,
-	AMD_Family_0Fh,
+/*	AMD_Family_0Fh,
 	AMD_Family_10h,
 	AMD_Family_11h,
 	AMD_Family_12h,
@@ -139,7 +139,7 @@ enum {	GenuineArch = 0,
 	AMD_Zen4_Genoa,
 	AMD_Zen4_RPL,
 	AMD_Zen4_PHX,
-	AMD_Zen4_Bergamo,
+	AMD_Zen4_Bergamo,*/
 	ARCHITECTURES
 };
 

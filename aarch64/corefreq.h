@@ -17,7 +17,7 @@
 
 enum CHIPSET {
 	IC_CHIPSET,
-	IC_LAKEPORT,
+/*	IC_LAKEPORT,
 	IC_LAKEPORT_P,
 	IC_LAKEPORT_X,
 	IC_CALISTOGA,
@@ -84,7 +84,7 @@ enum CHIPSET {
 	IC_MTL_PCH,
 	IC_K8,
 	IC_ZEN,
-	CHIPSETS
+*/	CHIPSETS
 };
 
 /* Circular buffer							*/

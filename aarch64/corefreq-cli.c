@@ -265,7 +265,7 @@ ATTRIBUTE *StateToSymbol(short int state, char stateStr[])
 		    } else {
 			stateStr[jdx++] = '?';
 		    }
-		} while (BITBSR(state, idx) == 0);
+		} while ((BITBSR(state, idx) == 0) && (jdx < TASK_COMM_LEN));
 	stateStr[jdx] = '\0';
 	return stateAttr;
 }
@@ -504,9 +504,8 @@ REASON_CODE SystemRegisters(	Window *win,
 		DO_EFCR, DO_EFER, DO_XCR0, DO_CFG
 	};
 	const unsigned int
-		fIntel = RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL,
-		fAMD =  (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-		     || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON);
+		fIntel = 0,
+		fAMD = 0;
 	const struct SR_ST {
 		struct SR_HDR {
 			const ASCII	*flag,
@@ -1269,15 +1268,17 @@ REASON_CODE SysInfoProc(Window *win,
      || (RO(Shm)->Proc.Features.ACPI_CPPC == 1))
     {
 	coreClock = (CLOCK_ARG) {.NC = 0, .Offset = 0};
-
+/*TODO(CleanUp)
       if ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	|| (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
       {
+*/
 	PUT(SCANKEY_NULL, attrib[0], width, 3, "%s", RSC(CPPC).CODE());
+/*
       } else {
 	PUT(SCANKEY_NULL, attrib[0], width, 3, "%s", RSC(HWP).CODE());
       }
-
+*/
 	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_HWP_MIN;
 
 	CFlop = &RO(Shm)->Cpu[
@@ -1334,7 +1335,7 @@ REASON_CODE SysInfoProc(Window *win,
 		width - 12 - RSZ(BOOST), hSpace, 6,
 		RO(Shm)->Proc.Features.Turbo_Unlock ?
 			RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
-
+/*TODO(CleanUp)
     if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
      || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
@@ -1373,7 +1374,7 @@ REASON_CODE SysInfoProc(Window *win,
 		RefreshTopFreq, BOOST(CPB) );
       }
     }
-
+*/
     for(boost = BOOST(1C), activeCores = 1;
       boost > BOOST(1C)-(enum RATIO_BOOST)RO(Shm)->Proc.Features.SpecTurboRatio;
 		boost--, activeCores++)
@@ -1435,16 +1436,18 @@ REASON_CODE SysInfoProc(Window *win,
 			RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
 
 	ASCII *uncoreLabel[2];
-
+/*TODO(CleanUp)
 	if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	 || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON)) {
 		uncoreLabel[0] = RSC(UCLK).CODE();
 		uncoreLabel[1] = RSC(MCLK).CODE();
 	} else {
+*/
 		uncoreLabel[0] = RSC(MIN).CODE();
 		uncoreLabel[1] = RSC(MAX).CODE();
+/*
 	}
-
+*/
     if (RO(Shm)->Proc.Features.Uncore_Unlock) {
 	CLOCK_ARG uncoreClock = {.NC = 0, .Offset = 0};
 
@@ -1478,6 +1481,7 @@ REASON_CODE SysInfoProc(Window *win,
 				width, OutFunc, cellPadding, attrib[3]),
 		RefreshRatioFreq, &RO(Shm)->Uncore.Boost[UNCORE_BOOST(MAX)] );
     }
+/*TODO(CleanUp)
     if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
       if (RO(Shm)->Proc.Features.TDP_Cfg_Lock) {
@@ -1592,6 +1596,7 @@ REASON_CODE SysInfoProc(Window *win,
 	REASON_SET(reason, RC_MEM_ERR);
       }
     }
+*/
 	return reason;
 }
 
@@ -1687,30 +1692,30 @@ REASON_CODE SysInfoISA( Window *win,
 		RO(Shm)->Proc.Features.ExtFeature.EBX.AVX2
 		}
 	},
-/* Row Mark */
+/* Row Mark */	/* Intel ISA */
 	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+		NULL,
 		RSC(ISA_AMX_BF16).CODE(), RSC(ISA_AMX_BF16_COMM).CODE(),
 		{ 0, RO(Shm)->Proc.Features.ExtFeature.EDX.AMX_BF16 },
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.ExtFeature.EDX.AMX_BF16 },
 	},
 	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+		NULL,
 		RSC(ISA_AMX_TILE).CODE(), RSC(ISA_AMX_TILE_COMM).CODE(),
 		{ 0, RO(Shm)->Proc.Features.ExtFeature.EDX.AMX_TILE },
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.ExtFeature.EDX.AMX_TILE },
 	},
 	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+		NULL,
 		RSC(ISA_AMX_INT8).CODE(), RSC(ISA_AMX_INT8_COMM).CODE(),
 		{ 0, RO(Shm)->Proc.Features.ExtFeature.EDX.AMX_INT8 },
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.ExtFeature.EDX.AMX_INT8 },
 	},
 	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+		NULL,
 		RSC(ISA_AMX_FP16).CODE(), RSC(ISA_AMX_FP16_COMM).CODE(),
 		{ 1, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AMX_FP16 },
 		(unsigned short[])
@@ -1849,14 +1854,14 @@ REASON_CODE SysInfoISA( Window *win,
 	},
 	/* Intel ISA */
 	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+		NULL,
 		RSC(ISA_AVX_INT8).CODE(), NULL,
 		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_VNNI_INT8},
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_VNNI_INT8 },
 	},
 	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+		NULL,
 		RSC(ISA_AVX_NE_CONV).CODE(), NULL,
 		{ 1,RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_NE_CONVERT},
 		(unsigned short[])
@@ -1864,43 +1869,43 @@ REASON_CODE SysInfoISA( Window *win,
 	},
 	/* AMD ISA */
 	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		NULL,
 		RSC(ISA_AVX_128).CODE(), NULL,
 		{ 0, AVX.FP128 },
 		(unsigned short[])
 		{ AVX.FP128 },
 	},
 	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		NULL,
 		RSC(ISA_AVX_256).CODE(), NULL,
 		{ 1, AVX.FP256 },
 		(unsigned short[])
 		{ AVX.FP256 },
 	},
-/* Row Mark */
+/* Row Mark */	/* Intel ISA */
 	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+		NULL,
 		RSC(ISA_AVX_IFMA).CODE(), NULL,
 		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX_IFMA },
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX_IFMA },
 	},
 	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+		NULL,
 		RSC(ISA_CMPCCXADD).CODE(), RSC(ISA_CMPCCXADD_COMM).CODE(),
 		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.CMPCCXADD },
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.CMPCCXADD },
 	},
 	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+		NULL,
 		RSC(ISA_MOVDIRI).CODE(), RSC(ISA_MOVDIRI_COMM).CODE(),
 		{ 0, RO(Shm)->Proc.Features.ExtFeature.ECX.MOVDIRI },
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.ExtFeature.ECX.MOVDIRI },
 	},
 	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+		NULL,
 		RSC(ISA_MOVDIR64B).CODE(), RSC(ISA_MOVDIR64B_COMM).CODE(),
 		{ 1, RO(Shm)->Proc.Features.ExtFeature.ECX.MOVDIR64B },
 		(unsigned short[])
@@ -1999,30 +2004,30 @@ REASON_CODE SysInfoISA( Window *win,
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.ExtInfo.ECX.LAHFSAHF },
 	},
-/* Row Mark */
+/* Row Mark */	/* Intel ISA */
 	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+		NULL,
 		RSC(ISA_ENQCMD).CODE(), RSC(ISA_ENQCMD_COMM).CODE(),
 		{ 0, RO(Shm)->Proc.Features.ExtFeature.ECX.ENQCMD },
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.ExtFeature.ECX.ENQCMD },
 	},
 	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+		NULL,
 		RSC(ISA_GFNI).CODE(), RSC(ISA_GFNI_COMM).CODE(),
 		{ 0, RO(Shm)->Proc.Features.ExtFeature.ECX.GFNI },
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.ExtFeature.ECX.GFNI },
 	},
 	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+		NULL,
 		RSC(ISA_OSPKE).CODE(), RSC(ISA_OSPKE_COMM).CODE(),
 		{ 0, RO(Shm)->Proc.Features.ExtFeature.ECX.OSPKE },
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.ExtFeature.ECX.OSPKE },
 	},
 	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+		NULL,
 		RSC(ISA_WAITPKG).CODE(), RSC(ISA_WAITPKG_COMM).CODE(),
 		{ 1, RO(Shm)->Proc.Features.ExtFeature.ECX.WAITPKG },
 		(unsigned short[])
@@ -2184,15 +2189,15 @@ REASON_CODE SysInfoISA( Window *win,
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.ExtFeature.ECX.RDPID },
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RSC(ISA_UMIP).CODE(), RSC(ISA_UMIP_COMM).CODE(),
 		{ 1, RO(Shm)->Proc.Features.ExtFeature.ECX.UMIP },
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.ExtFeature.ECX.UMIP },
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RSC(ISA_SGX).CODE(), RSC(ISA_SGX_COMM).CODE(),
 		{ 1, RO(Shm)->Proc.Features.ExtFeature.EBX.SGX },
 		(unsigned short[])
@@ -2317,8 +2322,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 24 - RSZ(FEATURES_1GB_PAGES),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.AdvPower.EDX._100MHz == 1,
 		attr_Feat,
 		2, "%s%.*s100MHzSteps   [%7s]", RSC(FEATURES_100MHZ).CODE(),
@@ -2342,8 +2347,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(FEATURES_APIC),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_8000000A_00000000_SVM_REVISION
 		].reg[REG_CPUID_EDX], CPUID_8000000A_00000000_EDX_AVIC),
@@ -2360,16 +2365,16 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(FEATURES_ARAT),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.ECX.AltMov == 1,
 		attr_Feat,
 		2, "%s%.*sAltMov   [%7s]", RSC(FEATURES_ALTMOV).CODE(),
 		width - 21 - RSZ(FEATURES_ALTMOV),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.leaf80000008.EBX.CLZERO,
 		attr_Feat,
 		2, "%s%.*sCLZERO   [%7s]", RSC(FEATURES_CLZERO).CODE(),
@@ -2392,8 +2397,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 22 - RSZ(FEATURES_CNXT_ID),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		(RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1)
 		|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1),
 		attr_Feat,
@@ -2441,8 +2446,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 21 - RSZ(FEATURES_DTES_64),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FSRC == 1,
 		attr_Feat,
 		2, "%s%.*sFSRC   [%7s]", RSC(FEATURES_FSRC).CODE(),
@@ -2457,16 +2462,16 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(FEATURES_FSRM),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FSRS == 1,
 		attr_Feat,
 		2, "%s%.*sFSRS   [%7s]", RSC(FEATURES_FSRS).CODE(),
 		width - 19 - RSZ(FEATURES_FSRS),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FZRM == 1,
 		attr_Feat,
 		2, "%s%.*sFZRM   [%7s]", RSC(FEATURES_FZRM).CODE(),
@@ -2481,8 +2486,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(FEATURES_ERMS),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.ECX.FMA4 == 1,
 		attr_Feat,
 		2, "%s%.*sFMA4   [%7s]", RSC(FEATURES_FMA).CODE(),
@@ -2497,8 +2502,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(FEATURES_FMA),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Features.Power.EAX.HWFB_Cap == 1,
 		attr_Feat,
 		2, "%s%.*sHFI   [%7s]", RSC(FEATURES_HFI).CODE(),
@@ -2513,24 +2518,24 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(FEATURES_HLE),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.AdvPower.EDX.HwPstate == 1,
 		attr_Feat,
 		2, "%s%.*sHwP   [%7s]", RSC(FEATURES_HwP).CODE(),
 		width - 18 - RSZ(FEATURES_HwP),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.HRESET == 1,
 		attr_Feat,
 		2, "%s%.*sHRESET   [%7s]", RSC(FEATURES_HRESET).CODE(),
 		width - 21 - RSZ(FEATURES_HRESET),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Features.ExtFeature.EDX.Hybrid == 1,
 		attr_Feat,
 		2, "%s%.*sHYBRID   [%7s]", RSC(FEATURES_HYBRID).CODE(),
@@ -2545,8 +2550,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(FEATURES_IBS),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.leaf80000008.EBX.INVLPGB == 1,
 		attr_Feat,
 		2, "%s%.*sINVLPGB   [%7s]", RSC(FEATURES_INVLPGB).CODE(),
@@ -2569,16 +2574,16 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 24 - RSZ(FEATURES_LM),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.LASS == 1,
 		attr_Feat,
 		2, "%s%.*sLASS   [%7s]", RSC(FEATURES_LASS).CODE(),
 		width - 19 - RSZ(FEATURES_LASS),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.LAM == 1,
 		attr_Feat,
 		2, "%s%.*sLAM   [%7s]", RSC(FEATURES_LAM).CODE(),
@@ -2593,8 +2598,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(FEATURES_LWP),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.leaf80000008.EBX.MBE == 1,
 		attr_Feat,
 		2, "%s%.*sMBE   [%7s]", RSC(FEATURES_MBE).CODE(),
@@ -2609,8 +2614,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(FEATURES_MCA),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.leaf80000008.EBX.MCOMMIT == 1,
 		attr_Feat,
 		2, "%s%.*sMCOMMIT   [%7s]", RSC(FEATURES_MCOMMIT).CODE(),
@@ -2641,8 +2646,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(FEATURES_MTRR),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.EDX.NX == 1,
 		attr_Feat,
 		2, "%s%.*sNX   [%7s]", RSC(FEATURES_NX).CODE(),
@@ -2657,8 +2662,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 22 - RSZ(FEATURES_OSXSAVE),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.ECX.OSVW == 1,
 		attr_Feat,
 		2, "%s%.*sOSVW   [%7s]", RSC(FEATURES_OSVW).CODE(),
@@ -2689,8 +2694,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(FEATURES_PBE),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Features.ExtFeature.EDX.PCONFIG == 1,
 		attr_Feat,
 		2, "%s%.*sPCONFIG   [%7s]", RSC(FEATURES_PCONFIG).CODE(),
@@ -2745,8 +2750,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(FEATURES_PSN),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_00000014_00000000_PROCESSOR_TRACE
 		].reg[REG_CPUID_EBX], CPUID_00000014_00000000_EBX_PTWEn),
@@ -2755,8 +2760,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 22 - RSZ(FEATURES_PTWRITE),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.PREFETCHI == 1,
 		attr_Feat,
 		2, "%s%.*sPREFETCHI   [%7s]", RSC(FEATURES_PREFETCHI).CODE(),
@@ -2779,8 +2784,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 20 - RSZ(FEATURES_RDT_PQM),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.leaf80000008.EBX.RDPRU == 1,
 		attr_Feat,
 		2, "%s%.*sRDPRU   [%7s]", RSC(FEATURES_RDPRU).CODE(),
@@ -2827,24 +2832,24 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(FEATURES_SMEP),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Features.Power.EAX.ITD_MSR == 1,
 		attr_Feat,
 		2, "%s%.*sTD   [%7s]", RSC(FEATURES_ITD).CODE(),
 		width - 17 - RSZ(FEATURES_ITD),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.ECX.TBM == 1,
 		attr_Feat,
 		2, "%s%.*sTBM   [%7s]", RSC(FEATURES_TBM).CODE(),
 		width - 18 - RSZ(FEATURES_TBM),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.ECX.TCE == 1,
 		attr_Feat,
 		2, "%s%.*sTCE   [%7s]", RSC(FEATURES_TCE).CODE(),
@@ -2923,8 +2928,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 21 - RSZ(FEATURES_X2APIC),
 		x2APIC
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_8000000A_00000000_SVM_REVISION
 		].reg[REG_CPUID_EDX], CPUID_8000000A_00000000_EDX_x2AVIC),
@@ -2933,8 +2938,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 21 - RSZ(FEATURES_X2AVIC),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0},
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.EDX.XD_Bit == 1,
 		attr_Feat,
 		2, "%s%.*sXD-Bit   [%7s]", RSC(FEATURES_XD_BIT).CODE(),
@@ -2957,8 +2962,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(FEATURES_XTPR),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.ECX.XOP == 1,
 		attr_Feat,
 		2, "%s%.*sXOP   [%7s]", RSC(FEATURES_XOP).CODE(),
@@ -2982,24 +2987,24 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(MECH_IBRS),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.leaf80000008.EBX.IBRS_AlwaysOn,
 		attr_Feat,
 		3, "%s%.*s[%7s]", RSC(MECH_IBRS_ALWAYS_ON).CODE(),
 		width - (OutFunc == NULL ? 15:13) - RSZ(MECH_IBRS_ALWAYS_ON),
 		capability
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.leaf80000008.EBX.IBRS_Preferred,
 		attr_Feat,
 		3, "%s%.*s[%7s]", RSC(MECH_IBRS_PREFERRED).CODE(),
 		width - (OutFunc == NULL ? 15:13) - RSZ(MECH_IBRS_PREFERRED),
 		capability
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.leaf80000008.EBX.IBRS_SameMode,
 		attr_Feat,
 		3, "%s%.*s[%7s]", RSC(MECH_IBRS_SAME_MODE).CODE(),
@@ -3031,48 +3036,48 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(MECH_SSBD),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.leaf80000008.EBX.SSBD_VirtSpecCtrl,
 		attr_Feat,
 		3, "%s%.*s[%7s]", RSC(MECH_SSBD_VIRTSPECCTRL).CODE(),
 		width - (OutFunc == NULL ? 15:13) - RSZ(MECH_SSBD_VIRTSPECCTRL),
 		capability
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.leaf80000008.EBX.SSBD_NotRequired,
 		attr_Feat,
 		3, "%s%.*s[%7s]", RSC(MECH_SSBD_NOT_REQUIRED).CODE(),
 		width - (OutFunc == NULL ? 15:13) - RSZ(MECH_SSBD_NOT_REQUIRED),
 		capability
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.leaf80000008.EBX.BTC_NO,
 		attr_Feat,
 		2, "%s%.*sBTC_NO   [%7s]", RSC(MECH_BTC_NO).CODE(),
 		width - 21 - RSZ(MECH_BTC_NO),
 		capability
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.BTC_NOBR,
 		attr_Feat,
 		2, "%s%.*sBTC-NOBR   [%7s]", RSC(MECH_BTC_NOBR).CODE(),
 		width - 23 - RSZ(MECH_BTC_NOBR),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Features.ExtFeature.EDX.L1D_FLUSH_Cap == 1,
 		attr_Feat,
 		2, "%s%.*sL1D-FLUSH   [%7s]", RSC(MECH_L1D_FLUSH).CODE(),
 		width - 24 - RSZ(MECH_L1D_FLUSH),
 		capability
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.L1DFL_VMENTRY_NO,
 		attr_Feat,
 		2, "%s%.*sL1DFL_VMENTRY_NO   [%7s]",
@@ -3080,64 +3085,64 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 31 - RSZ(MECH_L1DFL_VMENTRY_NO),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Features.ExtFeature.EDX.MD_CLEAR_Cap == 1,
 		attr_Feat,
 		2, "%s%.*sMD-CLEAR   [%7s]", RSC(MECH_MD_CLEAR).CODE(),
 		width - 23 - RSZ(MECH_MD_CLEAR),
 		capability
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.RDCL_NO,
 		attr_Feat,
 		2, "%s%.*sRDCL_NO   [%7s]", RSC(MECH_RDCL_NO).CODE(),
 		width - 22 - RSZ(MECH_RDCL_NO),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.IBRS_ALL,
 		attr_Feat,
 		2, "%s%.*sIBRS_ALL   [%7s]", RSC(MECH_IBRS_ALL).CODE(),
 		width - 23 - RSZ(MECH_IBRS_ALL),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.RSBA,
 		attr_Feat,
 		2, "%s%.*sRSBA   [%7s]", RSC(MECH_RSBA).CODE(),
 		width - 19 - RSZ(MECH_RSBA),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.SSB_NO,
 		attr_Feat,
 		2, "%s%.*sSSB_NO   [%7s]", RSC(MECH_SSB_NO).CODE(),
 		width - 21 - RSZ(MECH_SSB_NO),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.MDS_NO,
 		attr_Feat,
 		2, "%s%.*sMDS_NO   [%7s]", RSC(MECH_MDS_NO).CODE(),
 		width - 21 - RSZ(MECH_MDS_NO),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.TAA_NO,
 		attr_Feat,
 		2, "%s%.*sTAA_NO   [%7s]", RSC(MECH_TAA_NO).CODE(),
 		width - 21 - RSZ(MECH_TAA_NO),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.PSCHANGE_MC_NO,
 		attr_Feat,
 		2, "%s%.*sPSCHANGE_MC_NO   [%7s]",
@@ -3145,40 +3150,40 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 29 - RSZ(MECH_PSCHANGE_MC_NO),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.STLB,
 		attr_Feat,
 		2, "%s%.*sSTLB   [%7s]", RSC(MECH_STLB).CODE(),
 		width - 19 - RSZ(MECH_STLB),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.FUSA,
 		attr_Feat,
 		2, "%s%.*sFuSa   [%7s]", RSC(MECH_FUSA).CODE(),
 		width - 19 - RSZ(MECH_FUSA),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.RSM_CPL0,
 		attr_Feat,
 		2, "%s%.*sRSM   [%7s]", RSC(MECH_RSM_CPL0).CODE(),
 		width - 18 - RSZ(MECH_RSM_CPL0),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.SPLA,
 		attr_Feat,
 		2, "%s%.*sSPLA   [%7s]", RSC(MECH_SPLA).CODE(),
 		width - 19 - RSZ(MECH_SPLA),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.SNOOP_FILTER,
 		attr_Feat,
 		2, "%s%.*sSNOOP_FILTER   [%7s]", RSC(MECH_SNOOP_FILTER).CODE(),
@@ -3194,160 +3199,160 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		MECH
 	},
 /* Section Mark */
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.DOITM_EN,
 		attr_Feat,
 		2, "%s%.*sDOITM   [%7s]", RSC(MECH_DOITM).CODE(),
 		width - 20 - RSZ(MECH_DOITM),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.SBDR_SSDP_NO,
 		attr_Feat,
 		2, "%s%.*sSBDR_SSDP_NO   [%7s]", RSC(MECH_SBDR_SSDP_NO).CODE(),
 		width - 27 - RSZ(MECH_SBDR_SSDP_NO),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.FBSDP_NO,
 		attr_Feat,
 		2, "%s%.*sFBSDP_NO   [%7s]", RSC(MECH_FBSDP_NO).CODE(),
 		width - 23 - RSZ(MECH_FBSDP_NO),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.PSDP_NO,
 		attr_Feat,
 		2, "%s%.*sPSDP_NO   [%7s]", RSC(MECH_PSDP_NO).CODE(),
 		width - 22 - RSZ(MECH_PSDP_NO),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.FB_CLEAR,
 		attr_Feat,
 		2, "%s%.*sFB_CLEAR   [%7s]", RSC(MECH_FB_CLEAR).CODE(),
 		width - 23 - RSZ(MECH_FB_CLEAR),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.SRBDS,
 		attr_Feat,
 		2, "%s%.*sSRBDS   [%7s]", RSC(MECH_SRBDS).CODE(),
 		width - 20 - RSZ(MECH_SRBDS),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.RNGDS,
 		attr_Feat,
 		3, "%s%.*sRNGDS   [%7s]", RSC(MECH_RNGDS).CODE(),
 		width - (OutFunc == NULL ? 23:21) - RSZ(MECH_RNGDS),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.RTM,
 		attr_Feat,
 		3, "%s%.*sRTM   [%7s]", RSC(MECH_RTM).CODE(),
 		width - (OutFunc == NULL ? 21:19) - RSZ(MECH_RTM),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.VERW,
 		attr_Feat,
 		3, "%s%.*sVERW   [%7s]", RSC(MECH_VERW).CODE(),
 		width - (OutFunc == NULL ? 22:20) - RSZ(MECH_VERW),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.RRSBA,
 		attr_Feat,
 		2, "%s%.*sRRSBA   [%7s]", RSC(MECH_RRSBA).CODE(),
 		width - 20 - RSZ(MECH_RRSBA),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.BHI_NO,
 		attr_Feat,
 		2, "%s%.*sBHI_NO   [%7s]", RSC(MECH_BHI_NO).CODE(),
 		width - 21 - RSZ(MECH_BHI_NO),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.XAPIC_DIS,
 		attr_Feat,
 		2, "%s%.*sXAPIC_DIS   [%7s]", RSC(MECH_XAPIC_DIS).CODE(),
 		width - 24 - RSZ(MECH_XAPIC_DIS),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.PBRSB_NO,
 		attr_Feat,
 		2, "%s%.*sPBRSB_NO   [%7s]", RSC(MECH_PBRSB_NO).CODE(),
 		width - 23 - RSZ(MECH_PBRSB_NO),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.IPRED_DIS_U,
 		attr_Feat,
 		2, "%s%.*sIPRED_DIS_U   [%7s]", RSC(MECH_IPRED_DIS_U).CODE(),
 		width - 26 - RSZ(MECH_IPRED_DIS_U),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.IPRED_DIS_S,
 		attr_Feat,
 		2, "%s%.*sIPRED_DIS_S   [%7s]", RSC(MECH_IPRED_DIS_S).CODE(),
 		width - 26 - RSZ(MECH_IPRED_DIS_S),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.RRSBA_DIS_U,
 		attr_Feat,
 		2, "%s%.*sRRSBA_DIS_U   [%7s]", RSC(MECH_RRSBA_DIS_U).CODE(),
 		width - 26 - RSZ(MECH_RRSBA_DIS_U),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.RRSBA_DIS_S,
 		attr_Feat,
 		2, "%s%.*sRRSBA_DIS_S   [%7s]", RSC(MECH_RRSBA_DIS_S).CODE(),
 		width - 26 - RSZ(MECH_RRSBA_DIS_S),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.DDPD_U_DIS,
 		attr_Feat,
 		2, "%s%.*sDDPD_U_DIS   [%7s]", RSC(MECH_DDPD_U_DIS).CODE(),
 		width - 25 - RSZ(MECH_DDPD_U_DIS),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.BHI_DIS_S,
 		attr_Feat,
 		2, "%s%.*sBHI_DIS_S   [%7s]", RSC(MECH_BHI_DIS_S).CODE(),
 		width - 24 - RSZ(MECH_BHI_DIS_S),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.MCDT_NO,
 		attr_Feat,
 		2, "%s%.*sMCDT_NO   [%7s]", RSC(MECH_MCDT_NO).CODE(),
@@ -3363,16 +3368,16 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		0,
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Features.ExtFeature.ECX.KL,
 		attr_Feat,
 		2, "%s%.*sKL   [%7s]", RSC(SECURITY_CPUID_KL).CODE(),
 		width - 17 - RSZ(SECURITY_CPUID_KL),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_00000019_00000000_KEY_LOCKER
 		].reg[REG_CPUID_EBX], CPUID_00000019_00000000_EBX_AESKLE),
@@ -3381,8 +3386,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 21 - RSZ(SECURITY_AESKLE),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_00000019_00000000_KEY_LOCKER
 		].reg[REG_CPUID_EBX], CPUID_00000019_00000000_EBX_WIDE_KL),
@@ -3391,8 +3396,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 22 - RSZ(SECURITY_WIDE_KL),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_00000012_00000000_SGX_CAPABILITY
 		].reg[REG_CPUID_EAX], CPUID_00000012_00000000_EAX_SGX1),
@@ -3401,8 +3406,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(SECURITY_SGX1),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_00000012_00000000_SGX_CAPABILITY
 		].reg[REG_CPUID_EAX], CPUID_00000012_00000000_EAX_SGX2),
@@ -3411,16 +3416,16 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(SECURITY_SGX2),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.ECX.SKINIT,
 		attr_Feat,
 		2, "%s%.*sSKINIT   [%7s]", RSC(SECURITY_SKINIT).CODE(),
 		width - 21 - RSZ(SECURITY_SKINIT),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_8000001F_00000000_SECURE_ENCRYPTION
 		].reg[REG_CPUID_EAX], CPUID_8000001F_00000000_EAX_SEV),
@@ -3429,8 +3434,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(SECURITY_SEV),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_8000001F_00000000_SECURE_ENCRYPTION
 		].reg[REG_CPUID_EAX], CPUID_8000001F_00000000_EAX_SEV_ES),
@@ -3439,8 +3444,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 21 - RSZ(SECURITY_SEV_ES),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_8000001F_00000000_SECURE_ENCRYPTION
 		].reg[REG_CPUID_EAX], CPUID_8000001F_00000000_EAX_SEV_SNP),
@@ -3449,8 +3454,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 22 - RSZ(SECURITY_SEV_SNP),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_8000000A_00000000_SVM_REVISION
 		].reg[REG_CPUID_EDX], CPUID_8000000A_00000000_EDX_GMET),
@@ -3459,8 +3464,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(SECURITY_GMET),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_8000000A_00000000_SVM_REVISION
 		].reg[REG_CPUID_EDX], CPUID_8000000A_00000000_EDX_SSS_Check),
@@ -3469,8 +3474,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(SECURITY_SSS),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_8000001F_00000000_SECURE_ENCRYPTION
 		].reg[REG_CPUID_EAX], CPUID_8000001F_00000000_EAX_VMPL),
@@ -3479,8 +3484,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(SECURITY_VMPL),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_8000001F_00000000_SECURE_ENCRYPTION
 		].reg[REG_CPUID_EAX], CPUID_8000001F_00000000_EAX_VMPL_SSS),
@@ -3489,8 +3494,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 23 - RSZ(SECURITY_VMPL_SSS),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_8000001F_00000000_SECURE_ENCRYPTION
 		].reg[REG_CPUID_EAX], CPUID_8000001F_00000000_EAX_SME),
@@ -3499,16 +3504,16 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(SECURITY_SME),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.TSME,
 		attr_Feat,
 		2, "%s%.*sTSME   [%7s]", RSC(SECURITY_TSME).CODE(),
 		width - 19 - RSZ(SECURITY_TSME),
 		MECH
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_80000023_00000000_MULTIKEY_ENCRYPTED_MEM
 		].reg[REG_CPUID_EAX], CPUID_80000023_00000000_EAX_MEM_HMK),
@@ -3517,8 +3522,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 21 - RSZ(SECURITY_SME_MK),
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Mechanisms.DRAM_Scrambler,
 		attr_Feat,
 		2, "%s%.*sScrambler   [%7s]", RSC(SECURITY_SCRAMBLER).CODE(),
@@ -3698,8 +3703,8 @@ REASON_CODE SysInfoTech(Window *win,
 		void			(*Update)(struct _Grid*, DATA_TYPE[]);
 	} TECH[] = \
     {
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		0,
 		2, "%s%.*s",
 		RSC(TECHNOLOGIES_ICU).CODE(), NULL,
@@ -3708,8 +3713,8 @@ REASON_CODE SysInfoTech(Window *win,
 		SCANKEY_NULL,
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Technology.L1_HW_IP_Prefetch,
 		3, "%s%.*sL1 HW IP   <%3s>",
 		RSC(TECH_L1_HW_IP_PREFETCH).CODE(), NULL,
@@ -3718,8 +3723,8 @@ REASON_CODE SysInfoTech(Window *win,
 		BOXKEY_L1_HW_IP_PREFETCH,
 		L1_HW_IP_Prefetch_Update
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, CRC_AMD, CRC_HYGON, 0 },
+	{	/* Intel ISA */	/* AMD ISA */
+		NULL,
 		0,
 		2, "%s%.*s",
 		RSC(TECHNOLOGIES_DCU).CODE(), NULL,
@@ -3728,8 +3733,8 @@ REASON_CODE SysInfoTech(Window *win,
 		SCANKEY_NULL,
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, CRC_AMD, CRC_HYGON, 0 },
+	{	/* Intel ISA */	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Technology.L1_HW_Prefetch,
 		3, "%s%.*sL1 HW   <%3s>",
 		RSC(TECH_L1_HW_PREFETCH).CODE(), NULL,
@@ -3738,8 +3743,8 @@ REASON_CODE SysInfoTech(Window *win,
 		BOXKEY_L1_HW_PREFETCH,
 		L1_HW_Prefetch_Update
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Technology.L1_HW_IP_Prefetch,
 		3, "%s%.*sL1 HW IP   <%3s>",
 		RSC(TECH_L1_HW_IP_PREFETCH).CODE(), NULL,
@@ -3748,8 +3753,8 @@ REASON_CODE SysInfoTech(Window *win,
 		BOXKEY_L1_HW_IP_PREFETCH,
 		L1_HW_IP_Prefetch_Update
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Technology.L1_Scrubbing,
 		3, "%s%.*sL1 Scrubbing   <%3s>",
 		RSC(TECH_L1_SCRUBBING).CODE(), NULL,
@@ -3758,8 +3763,8 @@ REASON_CODE SysInfoTech(Window *win,
 		BOXKEY_L1_SCRUBBING,
 		L1_Scrubbing_Update
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, CRC_AMD, CRC_HYGON, 0 },
+	{	/* Intel ISA */	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Technology.L2_HW_Prefetch,
 		3, "%s%.*sL2 HW   <%3s>",
 		RSC(TECH_L2_HW_PREFETCH).CODE(), NULL,
@@ -3768,8 +3773,8 @@ REASON_CODE SysInfoTech(Window *win,
 		BOXKEY_L2_HW_PREFETCH,
 		L2_HW_Prefetch_Update
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Technology.L2_HW_CL_Prefetch,
 		3, "%s%.*sL2 HW CL   <%3s>",
 		RSC(TECH_L2_HW_CL_PREFETCH).CODE(), NULL,
@@ -3778,8 +3783,8 @@ REASON_CODE SysInfoTech(Window *win,
 		BOXKEY_L2_HW_CL_PREFETCH,
 		L2_HW_CL_Prefetch_Update
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Technology.SMM == 1,
 		2, "%s%.*sSMM-Dual   [%3s]",
 		RSC(TECHNOLOGIES_SMM).CODE(), RSC(TECH_INTEL_SMM_COMM).CODE(),
@@ -3788,8 +3793,8 @@ REASON_CODE SysInfoTech(Window *win,
 		SCANKEY_NULL,
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Features.HyperThreading == 1,
 		2, "%s%.*sHTT   [%3s]",
 		RSC(TECHNOLOGIES_HTT).CODE(), NULL,
@@ -3798,8 +3803,8 @@ REASON_CODE SysInfoTech(Window *win,
 		SCANKEY_NULL,
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Technology.EIST == 1,
 		2, "%s%.*sEIST   <%3s>",
 		RSC(TECHNOLOGIES_EIST).CODE(), NULL,
@@ -3808,8 +3813,8 @@ REASON_CODE SysInfoTech(Window *win,
 		BOXKEY_EIST,
 		SpeedStepUpdate
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Features.Power.EAX.TurboIDA == 1,
 		2, "%s%.*sIDA   [%3s]",
 		RSC(TECHNOLOGIES_IDA).CODE(), NULL,
@@ -3818,8 +3823,8 @@ REASON_CODE SysInfoTech(Window *win,
 		SCANKEY_NULL,
 		IDA_Update
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Technology.Turbo == 1,
 		2, "%s%.*sTURBO   <%3s>",
 		RO(Shm)->Proc.Features.Power.EAX.Turbo_V3 == 1 ?
@@ -3831,8 +3836,8 @@ REASON_CODE SysInfoTech(Window *win,
 		BOXKEY_TURBO,
 		TurboUpdate
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Features.EEO_Enable == 1,
 		2, "%s%.*sEEO   <%3s>",
 		RSC(TECHNOLOGIES_EEO).CODE(), RSC(TECH_INTEL_EEO_COMM).CODE(),
@@ -3841,8 +3846,8 @@ REASON_CODE SysInfoTech(Window *win,
 		BOXKEY_EEO,
 		EEO_Update
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Features.R2H_Enable == 1,
 		2, "%s%.*sR2H   <%3s>",
 		RSC(TECHNOLOGIES_R2H).CODE(), RSC(TECH_INTEL_R2H_COMM).CODE(),
@@ -3851,8 +3856,8 @@ REASON_CODE SysInfoTech(Window *win,
 		BOXKEY_R2H,
 		R2H_Update
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Technology.WDT == 1,
 		2, "%s%.*sTCO   <%3s>",
 		RSC(TECHNOLOGIES_WDT).CODE(), RSC(TECH_INTEL_WDT_COMM).CODE(),
@@ -3861,8 +3866,8 @@ REASON_CODE SysInfoTech(Window *win,
 		BOXKEY_WDT,
 		WDT_Update
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Technology.VM == 1,
 		2, "%s%.*sVMX   [%3s]",
 		RSC(TECHNOLOGIES_VM).CODE(), RSC(TECH_INTEL_VMX_COMM).CODE(),
@@ -3871,8 +3876,8 @@ REASON_CODE SysInfoTech(Window *win,
 		SCANKEY_NULL,
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_INTEL, 0 },
+	{	/* Intel ISA */
+		NULL,
 		RO(Shm)->Proc.Technology.IOMMU == 1,
 		3, "%s%.*sVT-d   [%3s]",
 		RSC(TECHNOLOGIES_IOMMU).CODE(), RSC(TECH_INTEL_VTD_COMM).CODE(),
@@ -3881,8 +3886,8 @@ REASON_CODE SysInfoTech(Window *win,
 		SCANKEY_NULL,
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Technology.SMM == 1,
 		2, "%s%.*sSMM-Lock   [%3s]",
 		RSC(TECHNOLOGIES_SMM).CODE(), RSC(TECH_AMD_SMM_COMM).CODE(),
@@ -3891,8 +3896,8 @@ REASON_CODE SysInfoTech(Window *win,
 		SCANKEY_NULL,
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Features.HyperThreading == 1,
 		2, "%s%.*sSMT   [%3s]",
 		RSC(TECHNOLOGIES_SMT).CODE(), NULL,
@@ -3901,8 +3906,8 @@ REASON_CODE SysInfoTech(Window *win,
 		SCANKEY_NULL,
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.PowerNow == 0b11, /*	VID + FID	*/
 		2, "%s%.*sCnQ   [%3s]",
 		RSC(TECHNOLOGIES_CNQ).CODE(), NULL,
@@ -3911,8 +3916,8 @@ REASON_CODE SysInfoTech(Window *win,
 		SCANKEY_NULL,
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 	     RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Query.CStateBaseAddr != 0,
 		2, "%s%.*sCCx   [%3s]",
 		RSC(PERF_MON_CORE_CSTATE).CODE(), NULL,
@@ -3921,8 +3926,8 @@ REASON_CODE SysInfoTech(Window *win,
 		SCANKEY_NULL,
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Technology.Turbo == 1,
 		2, "%s%.*sCPB   <%3s>",
 		RSC(TECHNOLOGIES_CPB).CODE(), RSC(TECH_AMD_CPB_COMM).CODE(),
@@ -3931,8 +3936,8 @@ REASON_CODE SysInfoTech(Window *win,
 		BOXKEY_TURBO,
 		TurboUpdate
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Technology.WDT == 1,
 		2, "%s%.*sWDT   <%3s>",
 		RSC(TECHNOLOGIES_WDT).CODE(), RSC(TECH_AMD_WDT_COMM).CODE(),
@@ -3941,8 +3946,8 @@ REASON_CODE SysInfoTech(Window *win,
 		BOXKEY_WDT,
 		WDT_Update
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Technology.VM == 1,
 		2, "%s%.*sSVM   [%3s]",
 		RSC(TECHNOLOGIES_VM).CODE(), RSC(TECH_AMD_SVM_COMM).CODE(),
@@ -3951,8 +3956,8 @@ REASON_CODE SysInfoTech(Window *win,
 		SCANKEY_NULL,
 		NULL
 	},
-	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+	{	/* AMD ISA */
+		NULL,
 		RO(Shm)->Proc.Technology.IOMMU == 1,
 		3, "%s%.*sAMD-V   [%3s]",
 		RSC(TECHNOLOGIES_IOMMU).CODE(), RSC(TECH_AMD_V_COMM).CODE(),
@@ -4352,6 +4357,7 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 			RSC(PERF_LABEL_C1E).CODE(), ENABLED(bix) ),
 		C1E_Update );
 /* Row Mark */
+/*TODO(CleanUp)
     if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	bix = RO(Shm)->Proc.Technology.C1A == 1;
@@ -4361,7 +4367,7 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 			width - 18 - RSZ(PERF_MON_C1A), hSpace,
 			RSC(PERF_LABEL_C1A).CODE(), ENABLED(bix) ),
 		C1A_Update );
-/* Row Mark */
+** Row Mark **
 	bix = RO(Shm)->Proc.Technology.C3A == 1;
 
 	GridCall( PUT(	BOXKEY_C3A, attrib[bix], width, 2,
@@ -4370,9 +4376,10 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 			RSC(PERF_LABEL_C3A).CODE(), ENABLED(bix) ),
 		C3A_Update );
     }
+*/
 /* Row Mark */
 	bix = RO(Shm)->Proc.Technology.C1U == 1;
-
+/*TODO(CleanUp)
     if ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
      ||  (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
     {
@@ -4382,12 +4389,15 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 			RSC(PERF_LABEL_C2U).CODE(), ENABLED(bix) ),
 		C1U_Update );
     } else {
+*/
 	GridCall( PUT(	BOXKEY_C1U, attrib[bix], width, 2,
 			"%s%.*s%s       <%3s>", RSC(PERF_MON_C1U).CODE(),
 			width - 18 - RSZ(PERF_MON_C1U), hSpace,
 			RSC(PERF_LABEL_C1U).CODE(), ENABLED(bix) ),
 		C1U_Update );
+/*
     }
+*/
 /* Row Mark */
 	bix = RO(Shm)->Proc.Technology.C3U == 1;
 
@@ -4397,6 +4407,7 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 			RSC(PERF_LABEL_C3U).CODE(), ENABLED(bix) ),
 		C3U_Update );
 /* Row Mark */
+/*TODO(CleanUp)
     if((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
@@ -4407,7 +4418,7 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 			width - 18 - RSZ(PERF_MON_CC6), hSpace,
 			RSC(PERF_LABEL_CC6).CODE(), ENABLED(bix) ),
 		CC6_Update );
-/* Row Mark */
+** Row Mark **
 	bix = RO(Shm)->Proc.Technology.PC6 == 1;
 
 	GridCall( PUT(	BOXKEY_PC6, attrib[bix], width, 2,
@@ -4416,6 +4427,7 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 			RSC(PERF_LABEL_PC6).CODE(), ENABLED(bix) ),
 		PC6_Update );
     } else {
+*/
 	bix = RO(Shm)->Proc.Technology.CC6 == 1;
 
 	GridCall( PUT(	BOXKEY_CC6, attrib[bix], width, 2,
@@ -4431,7 +4443,9 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 			width - 18 - RSZ(PERF_MON_MC6), hSpace,
 			RSC(PERF_LABEL_MC6).CODE(), ENABLED(bix) ),
 		PC6_Update );
+/*
     }
+*/
 /* Section Mark */
 	bix = RO(Shm)->Proc.Features.AdvPower.EDX.FID == 1;
 
@@ -4447,17 +4461,21 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 		width - 18 - RSZ(PERF_MON_VID), hSpace,
 		RSC(PERF_LABEL_VID).CODE(), ENABLED(bix) );
 /* Row Mark */
+/*TODO(CleanUp)
 	bix = (RO(Shm)->Proc.Features.Power.ECX.HCF_Cap == 1)
 	   || ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 		&& (RO(Shm)->Proc.Features.AdvPower.EDX.EffFrqRO == 1))
 	   || ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON)
 		&& (RO(Shm)->Proc.Features.AdvPower.EDX.EffFrqRO == 1));
+*/
+	bix = RO(Shm)->Proc.Features.Power.ECX.HCF_Cap == 1;
 
 	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s%s       [%3s]", RSC(PERF_MON_HWCF).CODE(),
 		width - 26 - RSZ(PERF_MON_HWCF), hSpace,
 		RSC(PERF_LABEL_HWCF).CODE(), ENABLED(bix) );
 /* Section Mark */
+/*TODO(CleanUp)
     if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	bix = RO(Shm)->Proc.Features.HDC_Enable == 1;
@@ -4479,7 +4497,7 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 			width - 18 - RSZ(PERF_MON_HDC), hSpace,
 			RSC(PERF_LABEL_HDC).CODE(), ENABLED(bix) );
 	}
-/* Section Mark */
+** Section Mark **
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s", RSC(PERF_MON_PKG_CSTATE).CODE() );
 
@@ -4524,6 +4542,7 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 						].Query.CStateInclude] ),
 		CStateRange_Update );
     }
+*/
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s", RSC(PERF_MON_CORE_CSTATE).CODE() );
 
@@ -4599,7 +4618,7 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_REF_LLC).CODE(),
 		width - 12 - RSZ(PERF_MON_REF_LLC), hSpace, POWERED(bix) );
-
+/*TODO(CleanUp)
     if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	bix = (RO(Shm)->Proc.Features.PerfMon.EBX.LLC_Misses == 0)
@@ -4660,6 +4679,7 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 		"%s%.*s[%7s]", RSC(PERF_MON_CORE).CODE(),
 		width - 12 - RSZ(PERF_MON_CORE), hSpace, POWERED(bix) );
     }
+*/
 /* Section Mark */
 	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.ACPI_PCT_CAP ? 3:0],
 		width, 2,
@@ -4696,6 +4716,7 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 		width - 19 - RSZ(PERF_MON_PPC), hSpace,
 		RSC(PERF_LABEL_PPC).CODE(), RSC(MISSING).CODE() );
       }
+/*TODO(CleanUp)
     if   ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	|| (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
     {
@@ -4707,6 +4728,7 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 		RO(Shm)->Proc.Features.OSPM_CPC ? RSC(ENABLE).CODE()
 						: RSC(MISSING).CODE() );
     }
+*/
 	return reason;
 }
 
@@ -4736,7 +4758,7 @@ REASON_CODE SysInfoPerfCaps(	Window *win,
 	unsigned int cpu;
 
 	bix = RO(Shm)->Proc.Features.HWP_Enable == 1;
-
+/*TODO(CleanUp)
      if  ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	|| (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
      {
@@ -4758,13 +4780,15 @@ REASON_CODE SysInfoPerfCaps(	Window *win,
 		HWP_Update);
       }
      } else {
+*/
 	GridCall( PUT(	BOXKEY_HWP, attrib[bix], width, 2,
 			"%s%.*s%s       <%3s>", RSC(PERF_MON_HWP).CODE(),
 			width - 18 - RSZ(PERF_MON_HWP), hSpace,
 			RSC(PERF_LABEL_HWP).CODE(), ENABLED(bix) ),
 		HWP_Update);
+/*
      }
-
+*/
 	PUT(	SCANKEY_NULL, attrib[0], width, 3,
 		"%s     %s      %s     %s        %s",
 		RSC(CAPABILITIES).CODE(),
@@ -4822,6 +4846,7 @@ REASON_CODE SysInfoPerfCaps(	Window *win,
 		Refresh_HWP_Cap_Freq, cpu);
       }
     }
+/*TODO(CleanUp)
     else if ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	   || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
     {
@@ -4830,6 +4855,7 @@ REASON_CODE SysInfoPerfCaps(	Window *win,
 		width - 19 - RSZ(PERF_MON_CPPC), hSpace,
 		RSC(PERF_LABEL_CPPC).CODE(), RSC(NOT_AVAILABLE).CODE() );
     } else {
+*/
 	const unsigned int cix	= ((RO(Shm)->Proc.Features.HWP_Enable == 1)
 				|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1));
 
@@ -4837,7 +4863,9 @@ REASON_CODE SysInfoPerfCaps(	Window *win,
 		"%s%.*s%s       [%3s]", RSC(PERF_MON_HWP).CODE(),
 		width - 18 - RSZ(PERF_MON_HWP), hSpace,
 		RSC(PERF_LABEL_HWP).CODE(), ENABLED(cix) );
+/*
     }
+*/
 	return reason;
 }
 
@@ -5078,15 +5106,15 @@ REASON_CODE SysInfoPwrThermal(  Window *win,
 	];
 	unsigned int bix;
 /* Section Mark */
-	GridCall( PUT(	RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
-			BOXKEY_THM : SCANKEY_NULL,
+	GridCall( PUT(	/*RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
+			*/BOXKEY_THM/* : SCANKEY_NULL*/,
 			attrib[6], width, 2,
 			"%s%.*s%s %c%3u:%3u %c%c",
 			RSC(POWER_THERMAL_TJMAX).CODE(),
 			width - 20 - RSZ(POWER_THERMAL_TJMAX), hSpace,
 			RSC(POWER_LABEL_TJ).CODE(),
-			RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
-			'<' : '[',
+			/*RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
+			*/'<'/* : '['*/,
 			Setting.fahrCels ? Cels2Fahr(
 				SFlop->Thermal.Param.Offset[THERMAL_OFFSET_P1]
 			) : SFlop->Thermal.Param.Offset[THERMAL_OFFSET_P1],
@@ -5094,10 +5122,11 @@ REASON_CODE SysInfoPwrThermal(  Window *win,
 				SFlop->Thermal.Param.Offset[THERMAL_TARGET]
 			) : SFlop->Thermal.Param.Offset[THERMAL_TARGET],
 			Setting.fahrCels ? 'F' : 'C',
-			RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
-			'>' : ']' ),
+			/*RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
+			*/'>'/* : ']' */),
 		TjMax_Update );
 /* Section Mark */
+/*TODO(CleanUp)
   if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
   {
 	bix = RO(Shm)->Proc.Features.Std.EDX.ACPI == 1;
@@ -5131,7 +5160,7 @@ REASON_CODE SysInfoPwrThermal(  Window *win,
 			].PowerThermal.DutyCycle.ClockMod,
 			bix ? '>' : ']' ),
 		DutyCycle_Update );
-/* Row Mark */
+** Row Mark **
 	bix = RO(Shm)->Proc.Technology.PowerMgmt == 1;
 	PUT(	SCANKEY_NULL, attrib[ bix ? 3 : 0 ], width, 2,
 		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_MGMT).CODE(),
@@ -5163,7 +5192,7 @@ REASON_CODE SysInfoPwrThermal(  Window *win,
 				RO(Shm)->Proc.Service.Core
 			].PowerThermal.PowerPolicy );
     }
-/* Row Mark */
+** Row Mark **
 	bix = RO(Shm)->Proc.Features.HWP_Enable == 1;
     if (bix) {
 	GridCall( PUT(	BOXKEY_HWP_EPP, attrib[0], width, 3,
@@ -5182,7 +5211,7 @@ REASON_CODE SysInfoPwrThermal(  Window *win,
   } else if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	 || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
   {
-/* Row Mark */
+** Row Mark **
 	bix = (RO(Shm)->Proc.Features.HWP_Enable == 1)
 	   || (RO(Shm)->Proc.Features.OSPM_EPP == 1);
     if (bix) {
@@ -5206,6 +5235,7 @@ REASON_CODE SysInfoPwrThermal(  Window *win,
 		RSC(POWER_LABEL_CPPC).CODE(), POWERED(bix) );
     }
   }
+*/
 /* Row Mark */
 	bix = (RO(Shm)->Proc.Features.Power.EAX.DTS == 1)
 	   || (RO(Shm)->Proc.Features.AdvPower.EDX.TS == 1);
@@ -5229,6 +5259,7 @@ REASON_CODE SysInfoPwrThermal(  Window *win,
 		width - 18 - RSZ(POWER_THERMAL_PTM), hSpace,
 		RSC(POWER_LABEL_PTM).CODE(), POWERED(bix) );
 /* Section Mark */
+/*TODO(CleanUp)
     if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	bix = RO(Shm)->Proc.Technology.TM1;
@@ -5262,6 +5293,7 @@ REASON_CODE SysInfoPwrThermal(  Window *win,
 		width - 18 - RSZ(POWER_THERMAL_TM2), hSpace,
 		RSC(POWER_LABEL_HTC).CODE(), TM[bix] );
     }
+*/
 /* Section Mark */
     if (RO(Shm)->Proc.Power.TDP > 0) {
 	GridCall( PUT(	SCANKEY_NULL, attrib[5], width, 2,
@@ -5414,6 +5446,7 @@ REASON_CODE SysInfoPwrThermal(  Window *win,
       }
     }
 /* Section Mark */
+/*TODO(CleanUp)
     if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     ||	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
@@ -5429,6 +5462,7 @@ REASON_CODE SysInfoPwrThermal(  Window *win,
 			RSC(POWER_LABEL_PPT).CODE(), POWERED(0) );
 	}
     }
+*/
 /* Row Mark */
     if (RO(Shm)->Proc.Power.EDC > 0) {
 	PUT(	SCANKEY_NULL, attrib[5], width, 2,
@@ -5443,8 +5477,11 @@ REASON_CODE SysInfoPwrThermal(  Window *win,
     }
 /* Row Mark */
     if (RO(Shm)->Proc.Power.TDC > 0) {
+/*TODO(CleanUp)
 	bix	= (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
 		&& RO(Shm)->Proc.Features.TDP_Unlock;
+*/
+	bix	= RO(Shm)->Proc.Features.TDP_Unlock;
 
 	GridCall( PUT(	bix ? BOXKEY_TDC : SCANKEY_NULL,
 			attrib[ RO(Shm)->Proc.Power.Feature.TDC ? 3 : 5 ],
@@ -6935,6 +6972,7 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 	PRT(MAP, TopologyAttr[2], TopologyHeader[5]);
 /* Row Mark */
 	PRT(MAP, TopologyAttr[2], TopologySubHeader[0]);
+/*TODO(CleanUp)
     if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
      || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
@@ -6982,14 +7020,15 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 		break;
 	default:
 		if ( RO(Shm)->Proc.Features.Std.ECX.Hyperv )
-		{		/*	Is capable of Virtualization	*/
+		{		**	Is capable of Virtualization	**
 			goto TOPOLOGY_CMP;
-		}  else  {	/* AMD_Family_0Fh and AMD_Family_10h	*/
+		}  else  {	** AMD_Family_0Fh and AMD_Family_10h	**
 			TopologySubHeader[1] = TopologyAltSubHeader[0];
 		}
 		break;
 	}
     } else {
+*/
 	if (RO(Shm)->Proc.Features.ExtFeature.EDX.Hybrid) {
 		TopologyFunc = Topology_Hybrid;
 		OffLineItem = RSC(TOPOLOGY_OFF_3).CODE();
@@ -6998,7 +7037,9 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 	} else {
 		TopologySubHeader[1] = TopologyAltSubHeader[0];
 	}
+/*
     }
+*/
 	PRT(MAP, TopologyAttr[2], TopologySubHeader[1]);
 	PRT(MAP, TopologyAttr[2], TopologySubHeader[2]);
 	PRT(MAP, TopologyAttr[2], TopologySubHeader[3]);
@@ -8594,9 +8635,10 @@ void ScopeUpdate(TGrid *grid, DATA_TYPE data[])
 Window *CreateSettings(unsigned long long id)
 {
 	const CUINT height = \
+/*TODO(CleanUp)
 			(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 		||	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) ?
-			26 : 25;
+			26 : */25;
 	Window *wSet = CreateWindow(wLayer, id, 1, height, 8, TOP_HEADER_ROW+2);
     if (wSet != NULL)
     {
@@ -8678,7 +8720,7 @@ Window *CreateSettings(unsigned long long id)
 				RSC(SETTINGS_PCI_ENABLED).CODE(),
 				attrib[bix] ),
 		PCI_Probe_Update );
-
+/*TODO(CleanUp)
     if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
      || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
@@ -8688,6 +8730,7 @@ Window *CreateSettings(unsigned long long id)
 				attrib[bix] ),
 		HSMP_Registration_Update );
     }
+*/
 	bix=BITWISEAND(LOCKLESS, RO(Shm)->Registration.NMI, BIT_NMI_MASK) != 0;
 	GridCall( StoreTCell(	wSet, OPS_INTERRUPTS,
 				RSC(SETTINGS_NMI_REGISTERED).CODE(),
@@ -9303,6 +9346,7 @@ Window *CreateMemCtrl(unsigned long long id)
 	switch (RO(Shm)->Uncore.Unit.DDR_Ver) {
 	case 5:
 	case 4:
+/*TODO(CleanUp)
 	    if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
 	    {
 		ctrlHeaders = 7;
@@ -9317,6 +9361,7 @@ Window *CreateMemCtrl(unsigned long long id)
 		pTimingFunc = Timing_DRAM_Zen;
 	    }
 		break;
+*/
 	case 3:
 	case 2:
 	default:
@@ -9807,11 +9852,13 @@ unsigned int MultiplierIsRatio(unsigned int cpu, unsigned int multiplier)
 		switch (boost) {
 		case BOOST(CPB):
 		case BOOST(XFR):
+		/*TODO(CleanUp)
 		    if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 		     || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
 		    {
 			break;
 		    }
+		*/
 			fallthrough;
 		default:
 		    if (RO(Shm)->Cpu[cpu].Boost[boost] == multiplier)
@@ -13742,14 +13789,16 @@ int Shortcut(SCANKEY *scan)
 	};
 	AppendWindow(
 		CreateBox(scan->key, origin, select,
+		/*TODO(CleanUp)
 		    (  (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 		    || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) ) ?
 				  (char*) RSC(BOX_C2U_TITLE).CODE()
-				: (char*) RSC(BOX_C1U_TITLE).CODE(),
+				: */(char*) RSC(BOX_C1U_TITLE).CODE(),
 			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+		/*TODO(CleanUp)
 		    (  (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 		    || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) ) ?
-			RSC(BOX_C2U_DESC).CODE() : RSC(BOX_C1U_DESC).CODE(),
+			RSC(BOX_C2U_DESC).CODE() : */RSC(BOX_C1U_DESC).CODE(),
 						descAttr,	SCANKEY_NULL,
 			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
 			stateStr[1][RO(Shm)->Proc.Technology.C1U],
@@ -13848,14 +13897,18 @@ int Shortcut(SCANKEY *scan)
 		.col = 0,
 		.row = RO(Shm)->Proc.Technology.CC6 ? 4 : 3
 	};
+/*TODO(CleanUp)
 	if ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	  || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) ) {
 		title = RSC(BOX_CC6_TITLE).CODE();
 		descCode = RSC(BOX_CC6_DESC).CODE();
 	} else {
+*/
 		title = RSC(BOX_C6D_TITLE).CODE();
 		descCode = RSC(BOX_C6D_DESC).CODE();
+/*
 	}
+*/
 	AppendWindow(
 		CreateBox(scan->key, origin, select, (char*) title,
 			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
@@ -13907,14 +13960,18 @@ int Shortcut(SCANKEY *scan)
 		.col = 0,
 		.row = RO(Shm)->Proc.Technology.PC6 ? 4 : 3
 	};
+/*TODO(CleanUp)
 	if ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	  || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) ) {
 		title = RSC(BOX_PC6_TITLE).CODE();
 		descCode = RSC(BOX_PC6_DESC).CODE();
 	} else {
+*/
 		title = RSC(BOX_MC6_TITLE).CODE();
 		descCode = RSC(BOX_MC6_DESC).CODE();
+/*
 	}
+*/
 	AppendWindow(
 		CreateBox(scan->key, origin, select, (char*) title,
 			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
@@ -14586,10 +14643,11 @@ int Shortcut(SCANKEY *scan)
 	};
 	AppendWindow(
 		CreateBox(scan->key, origin, select,
+		/*TODO(CleanUp)
 		    (  (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 		    || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) ) ?
 				(char*) RSC(BOX_CPPC_TITLE).CODE()
-			:	(char*) RSC(BOX_HWP_TITLE).CODE(),
+			:*/	(char*) RSC(BOX_HWP_TITLE).CODE(),
 			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
 			RSC(BOX_HWP_DESC).CODE()  , descAttr,	SCANKEY_NULL,
 			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
@@ -16644,6 +16702,7 @@ void Layout_Header(Layer *layer, CUINT row)
 		hProc1.code[8] = (ASCII) Buffer[5];
 	}
 	unsigned int L1I_Size = 0, L1D_Size = 0, L2U_Size = 0, L3U_Size = 0;
+/*TODO(CleanUp)
     if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	L1I_Size = \
@@ -16673,6 +16732,7 @@ void Layout_Header(Layer *layer, CUINT row)
 	L3U_Size = \
 		RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Topology.Cache[3].Size;
     }
+*/
 	if (StrFormat(Buffer, 10+10+1, "%-3u" "%-3u", L1I_Size, L1D_Size) > 0)
 	{
 		hArch1.code[17] = (ASCII) Buffer[0];
@@ -17016,8 +17076,11 @@ CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 		RSC(LAYOUT_PACKAGE_CTR6).CODE(),
 		RSC(LAYOUT_PACKAGE_CTR7).CODE(),
 		RSC(LAYOUT_PACKAGE_FCLK).CODE()
-	}, **hCState = RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
+	},/*TODO(CleanUp)
+		**hCState = RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
 		Intel_CState : AMD_CState;
+	*/
+		**hCState = Intel_CState;
 
 	LayerFillAt(	layer, 0, row, Draw.Size.width,
 			RSC(LAYOUT_RULER_PACKAGE).CODE(),
@@ -17044,10 +17107,12 @@ CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 
 	LayerDeclare(	LAYOUT_PACKAGE_FABRIC, Draw.Size.width,
 			0, (row + 10), AMD_Fabric);
-
+/*TODO(CleanUp)
 	const LAYER_DECL_ST *hUncore = \
 		RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
 			&Intel_Uncore : &AMD_Fabric;
+*/
+	const LAYER_DECL_ST *hUncore = &Intel_Uncore;
 
 	LayerCopyAt(	layer, hUncore->origin.col, hUncore->origin.row,
 			hUncore->length, hUncore->attr, hUncore->code);
@@ -17207,7 +17272,7 @@ CUINT Layout_Ruler_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 			hSensors.length, hSensors.attr, hSensors.code );
 
 	LayerAt(layer,code,32,hSensors.origin.row)=Setting.fahrCels ? 'F':'C';
-
+/*TODO(CleanUp)
   if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
   {
     switch (RO(Shm)->Proc.ArchID) {
@@ -17242,6 +17307,7 @@ CUINT Layout_Ruler_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 	break;
     }
   } else {
+*/
 	LayerDeclare(	LAYOUT_RULER_PWR_SOC, Draw.Size.width,
 			0, (row + Draw.Area.MaxRows + 1), hPwrSoC );
 
@@ -17249,7 +17315,9 @@ CUINT Layout_Ruler_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 			hPwrSoC.length, hPwrSoC.attr, hPwrSoC.code );
 
 	oRow = hPwrSoC.origin.row;
+/*
   }
+*/
 	LayerAt(layer,code, 45, oRow) = '0'
 	+ RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Topology.PackageID;
 
@@ -17270,7 +17338,7 @@ CUINT Layout_Ruler_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 
 	LayerCopyAt(	layer, hVolt.origin.col, hVolt.origin.row,
 			hVolt.length, hVolt.attr, hVolt.code );
-
+/*TODO(CleanUp)
     if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	LayerDeclare(	LAYOUT_RULER_VPKG_SAV, Draw.Size.width,
@@ -17280,6 +17348,7 @@ CUINT Layout_Ruler_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 			hVPkg.length, hVPkg.attr, hVPkg.code );
     }
     else
+*/
     {
 	LayerDeclare(	LAYOUT_RULER_VPKG_SOC, Draw.Size.width,
 			0, (row + Draw.Area.MaxRows + 1), hVPkg );
@@ -17313,7 +17382,7 @@ CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 	LayerFillAt(	layer, 0, (row + Draw.Area.MaxRows + 1),
 			Draw.Size.width, hLine,
 			RSC(UI).ATTR()[UI_LAYOUT_RULER_ENERGY] );
-
+/*TODO(CleanUp)
   if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
   {
     switch (RO(Shm)->Proc.ArchID) {
@@ -17347,7 +17416,10 @@ CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 	}
 	break;
     }
-  } else {
+  }
+  else
+*/
+  {
 	LayerDeclare(	LAYOUT_RULER_PWR_SOC, Draw.Size.width,
 			0, (row + Draw.Area.MaxRows + 1), hPwrSoC);
 
@@ -17455,7 +17527,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 	LayerCopyAt(	layer, hTech0.origin.col, hTech0.origin.row,
 			hTech0.length, hTech0.attr, hTech0.code );
-
+/*TODO(CleanUp)
     if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	LayerDeclare(	LAYOUT_FOOTER_TECH_INTEL, RSZ(LAYOUT_FOOTER_TECH_INTEL),
@@ -17576,6 +17648,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 	Draw.Area.Footer.VoltTemp.Hot[1] = hTech1.origin.col + 42;
       }
     }
+*/
 	LayerCopyAt(layer, hVoltTemp0.origin.col, hVoltTemp0.origin.row,
 			hVoltTemp0.length, hVoltTemp0.attr, hVoltTemp0.code);
 
@@ -19741,8 +19814,9 @@ size_t Draw_AltMonitor_Custom_Energy_Joule(void)
 
 	size_t len;
 	StrLenFormat(len, Buffer, MAX_WIDTH,
-			(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
-			CUST_INTEL(J) CUST_CTR_FMT : CUST_AMD(J) CUST_CTR_FMT),
+			/*TODO(CleanUp)
+			(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?*/
+			CUST_INTEL(J) CUST_CTR_FMT/*: CUST_AMD(J) CUST_CTR_FMT)*/,
 
 			RO(Shm)->Proc.State.Energy[PWR_DOMAIN(RAM)].Current,
 			RO(Shm)->Proc.State.Energy[PWR_DOMAIN(UNCORE)].Current,
@@ -19777,8 +19851,9 @@ size_t Draw_AltMonitor_Custom_Power_Watt(void)
 
 	size_t len;
 	StrLenFormat(len, Buffer, MAX_WIDTH,
-			(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
-			CUST_INTEL(W) CUST_CTR_FMT : CUST_AMD(W) CUST_CTR_FMT),
+			/*TODO(CleanUp)
+			(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?*/
+			CUST_INTEL(W) CUST_CTR_FMT/*: CUST_AMD(W) CUST_CTR_FMT)*/,
 
 			RO(Shm)->Proc.State.Power[PWR_DOMAIN(RAM)].Current,
 			RO(Shm)->Proc.State.Power[PWR_DOMAIN(UNCORE)].Current,
@@ -21193,8 +21268,8 @@ int main(int argc, char *argv[])
 	|| (RO(Shm)->Proc.Features.ExtInfo.EDX.RDTSCP == 1) )
 
   #define CONDITION_RDPMC()						\
-	(  (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)	\
-	&& (RO(Shm)->Proc.PM_version >= 1)				\
+	(/*TODO(CleanUp) (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)	\
+	&& */(RO(Shm)->Proc.PM_version >= 1)				\
 	&& (BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].SystemRegister.CR4,\
 							CR4_PCE) == 1) )
 
@@ -21326,6 +21401,7 @@ int main(int argc, char *argv[])
 		switch (RO(Shm)->Uncore.Unit.DDR_Ver) {
 		case 5:
 		case 4:
+		/*TODO(CleanUp)
 		    if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {
 			MemoryController(&tty, NULL, NULL, Timing_DDR4);
 		    }
@@ -21335,6 +21411,7 @@ int main(int argc, char *argv[])
 			MemoryController(&tty, NULL, NULL, Timing_DRAM_Zen);
 		    }
 			break;
+		*/
 		case 3:
 		case 2:
 		default:

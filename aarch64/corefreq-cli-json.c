@@ -705,7 +705,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 		json_key(&s, "ECX");
 		{
 			json_start_object(&s);
-			if (vendor == CRC_INTEL) {
+			/*TODO(CleanUp)
+			if (vendor == CRC_INTEL) {*/
 				json_key(&s, "HCF_Cap");
 				json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.ECX.HCF_Cap);
 				json_key(&s, "ACNT_Cap");
@@ -714,13 +715,14 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 				json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.ECX.SETBH);
 				json_key(&s, "ITD_CLS");
 				json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.ECX.ITD_CLS);
+			/*
 			} else if ((vendor == CRC_AMD) || (vendor == CRC_HYGON)) {
 				json_key(&s, "EffFreq");
 				json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.ECX.EffFreq);
 			} else {
 				fprintf(stderr, "Unknown vendor");
 			}
-
+			*/
 			json_end_object(&s);
 		}
 		json_key(&s, "EDX");
@@ -1051,13 +1053,15 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 				json_key(&s, "ECX");
 				{
 					json_start_object(&s);
-					if (vendor == CRC_INTEL) {
+					/*TODO(CleanUp)
+					if (vendor == CRC_INTEL) {*/
 						json_key(&s, "LahfSahf");
 						json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.ECX.LAHFSAHF);
 						json_key(&s, "LZCNT");
 						json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.ECX.LZCNT);
 						json_key(&s, "PREFETCHW");
 						json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.ECX.PREFETCHW);
+					/*
 					} else if ((vendor == CRC_AMD) || (vendor == CRC_HYGON)) {
 						json_key(&s, "LahfSahf");
 						json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.ECX.LahfSahf);
@@ -1124,12 +1128,14 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					} else {
 						fprintf(stderr, "Unknown vendor");
 					}
+					*/
 					json_end_object(&s);
 				}
 				json_key(&s, "EDX");
 				{
 					json_start_object(&s);
-					if (vendor == CRC_INTEL) {
+					/*TODO(CleanUp)
+					if (vendor == CRC_INTEL) {*/
 						json_key(&s, "Reserved1");
 						json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.EDX.Reserved1);
 						json_key(&s, "SYSCALL");
@@ -1150,7 +1156,7 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 						json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.EDX.IA64);
 						json_key(&s, "Reserved5");
 						json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.EDX.Reserved5);
-					} else if ((vendor == CRC_AMD) || (vendor == CRC_HYGON)) {
+					/*} else if ((vendor == CRC_AMD) || (vendor == CRC_HYGON)) {
 						json_key(&s, "FPU");
 						json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.EDX.FPU);
 						json_key(&s, "VME");
@@ -1216,6 +1222,7 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					} else {
 						fprintf(stderr, "Unknown vendor");
 					}
+					*/
 					json_end_object(&s);
 				}
 
@@ -1255,10 +1262,11 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 				json_key(&s, "EDX");
 				{
 					json_start_object(&s);
-					if (vendor == CRC_INTEL) {
+					/*TODO(CleanUp)
+					if (vendor == CRC_INTEL) {*/
 			json_key(&s, "Inv_TSC");
 			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AdvPower.EDX.Inv_TSC);
-					} else if ((vendor == CRC_AMD) || (vendor == CRC_HYGON)) {
+					/*} else if ((vendor == CRC_AMD) || (vendor == CRC_HYGON)) {
 			json_key(&s, "TS");
 			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AdvPower.EDX.TS);
 			json_key(&s, "Legacy_FID");
@@ -1288,6 +1296,7 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					} else {
 						fprintf(stderr, "Unknown vendor");
 					}
+					*/
 					json_end_object(&s);
 				}
 
@@ -1673,7 +1682,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%u", RO(Shm)->Proc.Power.Min);
 			json_key(&s, "Max");
 			json_literal(&s, "%u", RO(Shm)->Proc.Power.Max);
-		    if (vendor == CRC_INTEL)
+		/*TODO(CleanUp)
+		    if (vendor == CRC_INTEL)*/
 		    {
 			enum PWR_DOMAIN pw;
 			json_key(&s, "PL1");
@@ -1694,10 +1704,10 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 				}
 				json_end_arr(&s);
 			}
-		    } else if ((vendor == CRC_AMD) || (vendor == CRC_HYGON)) {
+		    }/* else if ((vendor == CRC_AMD) || (vendor == CRC_HYGON)) {
 			json_key(&s, "PPT");
 			json_literal(&s, "%u", RO(Shm)->Proc.Power.PPT);
-		    }
+		    }*/
 			json_key(&s, "EDC");
 			json_literal(&s, "%u", RO(Shm)->Proc.Power.EDC);
 			json_key(&s, "TDC");
@@ -1874,6 +1884,7 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			}
 			json_key(&s, "PackageID");
 			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.PackageID);
+		/*TODO(CleanUp)
 		    if ((vendor == CRC_AMD) || (vendor == CRC_HYGON))
 		    {
 			json_key(&s, "CCD");
@@ -1882,6 +1893,7 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.Cluster.CCX);
 		    }
 		    else if (vendor == CRC_INTEL)
+		*/
 		    {
 			json_key(&s, "Hybrid_ID");
 			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID);

@@ -429,7 +429,7 @@ typedef struct
 
 	CACHE_TOPOLOGY			T;
 
-	struct {/*
+	struct {/*TODO(CleanUp)
 		Bit64			RFLAGS	__attribute__ ((aligned (8))),
 					CR0	__attribute__ ((aligned (8))),
 					CR3	__attribute__ ((aligned (8))),
@@ -468,7 +468,7 @@ typedef struct
 
 typedef struct
 {
-	struct {/*
+	struct {/*TODO(CleanUp)
 		union {
 			struct {
 				P945_MC_DRAM_RANK_BOUND DRB[4];
@@ -652,7 +652,7 @@ typedef struct
 		    } AMD17h;*/
 		} DIMM[MC_MAX_DIMM];
 	} Channel[MC_MAX_CHA];
-/*
+/*TODO(CleanUp)
 	union {
 		struct {
 			P945_MC_DCC		DCC;
@@ -746,8 +746,8 @@ typedef struct
 } MC_REGISTERS;
 
 typedef struct
-{
-/*		struct {
+{/*TODO(CleanUp)
+		struct {
 			NHM_IMC_CLK_RATIO_STATUS DimmClock;
 			QPI_FREQUENCY		QuickPath;
 			BIOS_MEMCLOCK		BIOS_DDR;

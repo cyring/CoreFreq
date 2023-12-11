@@ -594,10 +594,10 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 })
 
 #define BITBSF(_base, _index)						\
-({									\
+({/*TODO(CleanUp)							\
 	volatile unsigned char _ret = 0;				\
 									\
-/*TODO	__asm__ volatile						\
+	__asm__ volatile						\
 	(								\
 		"bsf	%[base], %[index]"	"\n\t"			\
 		"setz	%[ret]" 					\
@@ -606,16 +606,25 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: [base]  "rm" (_base)					\
 		: "cc", "memory"					\
 	);							*/	\
-	UNUSED(_base);							\
-	_index = 0;							\
+	unsigned char _ret = 0;						\
+	if (_base) {							\
+		_index = 0;						\
+		while ((_ret = BITVAL(_base, _index)) == 0) {		\
+			if (_index < (8 * sizeof(_base)) - 1) {		\
+				_index = _index + 1;			\
+			} else {					\
+				break;					\
+			}						\
+		}							\
+	}								\
 	_ret;								\
 })
 
 #define BITBSR(_base, _index)						\
-({									\
+({/*TODO(CleanUp)							\
 	volatile unsigned char _ret = 0;				\
 									\
-/*TODO	__asm__ volatile						\
+	__asm__ volatile						\
 	(								\
 		"bsr	%[base], %[index]"	"\n\t"			\
 		"setz	%[ret]" 					\
@@ -624,16 +633,25 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: [base]  "rm" (_base)					\
 		: "cc", "memory"					\
 	);							*/	\
-	UNUSED(_base);							\
-	_index = 0;							\
+	unsigned char _ret = 0;						\
+	if (_base) {							\
+		_index = (8 * sizeof(_base)) - 1;			\
+		while ((_ret = BITVAL(_base, _index)) == 0) {		\
+			if (_index > 0) {				\
+				_index = _index - 1;			\
+			} else {					\
+				break;					\
+			}						\
+		}							\
+	}								\
 	_ret;								\
 })
 
 #define BITEXTRZ(_src, _offset, _length)				\
-({									\
+({/*TODO(CleanUp)							\
 	volatile unsigned long long _dest;				\
 									\
-/*TODO	__asm__ volatile						\
+	__asm__ volatile						\
 	(								\
 		"movq	$1	,	%%rdx"		"\n\t"		\
 		"mov	%[len]	,	%%ecx"		"\n\t"		\
@@ -650,12 +668,14 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		  [len] 	"irm"	(_length) 			\
 		: "%ecx", "%rdx", "cc", "memory"			\
 	);							*/	\
+	unsigned long long 						\
+		_dest = ((1 << _length) - 1) & (_src >> (_offset - 1)); \
 	_dest;								\
 })
-
+/*TODO(CleanUp)
 #define BIT_ATOM_INIT(atom, seed)					\
 ({									\
-/*TODO	__asm__ volatile						\
+	__asm__ volatile						\
 	(								\
 		"leaq	%[_atom],	%%rdx"		"\n\t"		\
 		"movq	%[_seed],	%%rax"		"\n\t"		\
@@ -664,13 +684,13 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: [_atom]	"m"	(atom) ,			\
 		  [_seed]	"i"	(seed)				\
 		: "%rax", "%rdx", "memory"				\
-	);							*/	\
+	);								\
 })
 
 #define BIT_ATOM_TRYLOCK(_lock, atom, seed)				\
 ({									\
 	volatile unsigned char _ret;					\
-/*TODO									\
+									\
 	__asm__ volatile						\
 	(								\
 		"movq	%[_seed],	%%rdx"		"\n\t"		\
@@ -686,14 +706,14 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: [_atom]	"m"	(atom) ,			\
 		  [_seed]	"i"	(seed)				\
 		: "%rax", "%rbx", "%rcx", "%rdx", "cc", "memory"	\
-	);							*/	\
+	);								\
 	_ret;								\
 })
 
 #define BIT_ATOM_UNLOCK(_lock, atom, seed)				\
 ({									\
 	volatile unsigned long long tries;				\
-/*TODO									\
+									\
 	__asm__ volatile						\
 	(								\
 		"movq	%[count],	%%r12"		"\n\t"		\
@@ -716,10 +736,10 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		  [_seed]	"i"	(seed) ,			\
 		  [count]	"i"	(BIT_IO_RETRIES_COUNT)		\
 		: "%rax", "%rbx", "%rcx", "%rdx", "%r12", "cc", "memory"\
-	);							*/	\
+	);								\
 	tries;								\
 })
-
+*/
 #define BITWISESET(_lock, _opl, _opr)					\
 ({									\
 	__asm__ volatile						\

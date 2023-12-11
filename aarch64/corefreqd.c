@@ -1312,8 +1312,7 @@ static void *Child_Thread(void *arg)
 	};
 	const int withTSCP = ((RO(Shm)->Proc.Features.AdvPower.EDX.Inv_TSC == 1)
 			   || (RO(Shm)->Proc.Features.ExtInfo.EDX.RDTSCP == 1)),
-		withRDPMC=((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
-			  && (RO(Shm)->Proc.PM_version >= 1)
+		withRDPMC = ((RO(Shm)->Proc.PM_version >= 1)
 			  && (BITVAL(Cpu->SystemRegister.CR4, CR4_PCE) == 1));
 
 	CALL_FUNC CallSliceFunc = MatrixCallFunc[withTSCP][withRDPMC];
@@ -1726,7 +1725,7 @@ void Mitigation_2nd_Stage(	RO(SHM_STRUCT) *RO(Shm),
 	RO(Shm)->Proc.Mechanisms.SSBD  += (2 * (SSBD | AMD_LS_CFG_SSBD));
 	RO(Shm)->Proc.Mechanisms.PSFD  += (2 * PSFD);
 }
-
+/*TODO(CleanUp)
 void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 				RO(PROC) *RO(Proc), RW(PROC) *RW(Proc) )
 {
@@ -2047,7 +2046,7 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 	RO(Shm)->Proc.Mechanisms.BTC_NOBR += (2 * BTC_NOBR);
     }
 }
-/*TODO(CleanUp)
+
 #define TIMING(_mc, _cha)	RO(Shm)->Uncore.MC[_mc].Channel[_cha].Timing
 
 typedef struct {
@@ -6399,7 +6398,7 @@ void AMD_17h_IOMMU(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 */
 static char *Chipset[CHIPSETS] = {
 	[IC_CHIPSET]		= NULL,
-	[IC_LAKEPORT]		= "82945/Lakeport",
+/*	[IC_LAKEPORT]		= "82945/Lakeport",
 	[IC_LAKEPORT_P] 	= "82946/Lakeport-P",
 	[IC_LAKEPORT_X] 	= "82955/Lakeport-X",
 	[IC_CALISTOGA]		= "82945/Calistoga",
@@ -6465,7 +6464,7 @@ static char *Chipset[CHIPSETS] = {
 	[IC_B760]		= "Intel B760",
 	[IC_MTL_PCH]		= "Intel MTL PCH",
 	[IC_K8] 		= "K8/HyperTransport",
-	[IC_ZEN]		= "Zen UMC"
+	[IC_ZEN]		= "Zen UMC"	*/
 };
 
 #define SET_CHIPSET(ic) 						\
@@ -6473,10 +6472,10 @@ static char *Chipset[CHIPSETS] = {
 	RO(Shm)->Uncore.ChipID = DID;					\
 	RO(Shm)->Uncore.Chipset.ArchID = ic;				\
 })
-
+/*TODO(CleanUp)
 void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		unsigned short DID)
-{/*TODO(CleanUp)
+{
 	switch (DID) {
 	case DID_INTEL_82945P_HB:
 		P945_CLK(RO(Shm), RO(Proc), RO(Core));
@@ -7002,11 +7001,11 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		SET_CHIPSET(IC_MTL_PCH);
 		break;
 	}
-*/}
+}
 
 void PCI_AMD(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		unsigned short DID)
-{/*TODO(CleanUp)
+{
 	switch (DID) {
 	case DID_AMD_K8_NB_MEMCTL:
 		AMD_0Fh_HTT(RO(Shm), RO(Proc));
@@ -7049,8 +7048,8 @@ void PCI_AMD(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		SET_CHIPSET(IC_ZEN);
 		break;
 	}
-*/}
-
+}
+*/
 #undef SET_CHIPSET
 
 void Uncore_Update(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
@@ -7063,7 +7062,7 @@ void Uncore_Update(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 	Chipset[IC_CHIPSET] = RO(Proc)->Features.Info.Vendor.ID;
 	RO(Shm)->Uncore.ChipID = 0x0;
 	RO(Shm)->Uncore.Chipset.ArchID = IC_CHIPSET;
-
+/*TODO(CleanUp)
   for (idx = 0; idx < CHIP_MAX_PCI; idx++) {
     switch (RO(Proc)->Uncore.Chip[idx].VID) {
     case PCI_VENDOR_ID_INTEL:
@@ -7074,6 +7073,7 @@ void Uncore_Update(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 	break;
     }
   }
+*/
 	/*	Copy the chipset codename.				*/
 	StrCopy(RO(Shm)->Uncore.Chipset.CodeName,
 		Chipset[RO(Shm)->Uncore.Chipset.ArchID],
@@ -7099,7 +7099,7 @@ void CPUID_Dump(RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core), unsigned int cpu)
 	RO(Shm)->Cpu[cpu].CpuID[i].reg[3] = RO(Core, AT(cpu))->CpuID[i].reg[3];
     }
 }
-
+/*TODO(CleanUp)
 unsigned int AMD_L2_L3_Way_Associativity(RO(CORE) **RO(Core),
 					unsigned int cpu,
 					unsigned int level)
@@ -7127,7 +7127,7 @@ unsigned int AMD_L2_L3_Way_Associativity(RO(CORE) **RO(Core),
 		return RO(Core, AT(cpu))->T.Cache[level].Way;
 	}
 }
-
+*/
 void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 		unsigned int cpu)
 {
@@ -7141,13 +7141,14 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 	RO(Shm)->Cpu[cpu].Topology.Cluster.ID = RO(Core,AT(cpu))->T.Cluster.ID;
 	/*	x2APIC capability.					*/
 	RO(Shm)->Cpu[cpu].Topology.MP.x2APIC= RO(Proc)->Features.Std.ECX.x2APIC;
-
+/*TODO(CleanUp)
     if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     ||	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
 	RO(Shm)->Cpu[cpu].Topology.MP.x2APIC |= \
 				RO(Proc)->Features.ExtInfo.ECX.ExtApicId;
     }
+
   else if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
 	&& (RO(Shm)->Proc.Features.ExtFeature.EDX.Hybrid == 1))
     {
@@ -7162,6 +7163,7 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 	RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID = \
 				RO(Core,AT(cpu))->T.Cluster.Hybrid.Model_ID;
     }
+*/
 	/*	Is local APIC enabled in xAPIC mode ?			*/
 	RO(Shm)->Cpu[cpu].Topology.MP.x2APIC &= \
 					RO(Core, AT(cpu))->T.Base.APIC_EN;
@@ -7178,6 +7180,7 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 	if (RO(Core, AT(cpu))->T.Cache[loop].Type == 2) {/* Instruction	*/
 		level = 0;
 	}
+	/*TODO(CleanUp)
 	if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
 	{
 		RO(Shm)->Cpu[cpu].Topology.Cache[level].Set = \
@@ -7210,6 +7213,7 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 					RO(Core, AT(cpu))->T.Cache[loop].Size;
 	    }
 	}
+	*/
 	RO(Shm)->Cpu[cpu].Topology.Cache[level].Feature.WriteBack = \
 					RO(Core, AT(cpu))->T.Cache[loop].WrBack;
 
@@ -7218,9 +7222,9 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
       }
     }
 	/*	Apply various architecture size unit.			*/
+/*TODO(CleanUp)
     switch (RO(Proc)->ArchID) {
     case AMD_Family_15h:
-	/*TODO: do models 60h & 70h need a 512 KB size unit adjustment ? */
 	if ((RO(Shm)->Proc.Features.Std.EAX.ExtModel == 0x6)
 	 || (RO(Shm)->Proc.Features.Std.EAX.ExtModel == 0x7)) {
 		break;
@@ -7252,15 +7256,16 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
     case Hygon_Family_18h:
     case AMD_Family_19h:
     VIRTUALIZED_L3:
-	/* CPUID_Fn80000006_EDX: Value in [3FFFh - 0001h] = (<Value> *0.5) MB */
+	** CPUID_Fn80000006_EDX: Value in [3FFFh - 0001h] = (<Value> *0.5) MB **
 	RO(Shm)->Cpu[cpu].Topology.Cache[3].Size *= 512;
 	break;
     default:
-	if (RO(Shm)->Proc.Features.Std.ECX.Hyperv) {	/* Virtualized ? */
+	if (RO(Shm)->Proc.Features.Std.ECX.Hyperv) {	** Virtualized ? **
 		goto VIRTUALIZED_L3;
 	}
 	break;
     }
+*/
 }
 
 void CStates(RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core), unsigned int cpu)
@@ -7623,8 +7628,8 @@ void Package_Update(	RO(SHM_STRUCT) *RO(Shm),
 	PowerInterface(RO(Shm), RO(Proc));
 
 	ThermalPoint(RO(Shm), RO(Proc));
-
-	Mitigation_1st_Stage(RO(Shm), RO(Proc), RW(Proc));
+/*TODO(CleanUp)
+	Mitigation_1st_Stage(RO(Shm), RO(Proc), RW(Proc));	*/
 	/*	Aggregate OS idle driver data and Clock Source		*/
 	SysGate_OS_Driver(RO(Shm), RO(Proc));
 	ClockSource_Update(RO(Shm));
@@ -8361,8 +8366,7 @@ REASON_CODE Core_Manager(REF *Ref)
 	|| (RO(Proc)->Features.ExtInfo.EDX.RDTSCP == 1) )
 
     #define CONDITION_RDPMC()						\
-	(  (RO(Proc)->Features.Info.Vendor.CRC == CRC_INTEL)		\
-	&& (RO(Proc)->Features.PerfMon.EAX.Version >= 1)		\
+	(  (RO(Proc)->Features.PerfMon.EAX.Version >= 1)		\
 	&& (BITVAL(RO(Core, AT(RO(Proc)->Service.Core))->SystemRegister.CR4, \
 							CR4_PCE) == 1) )
 
