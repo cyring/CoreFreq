@@ -3823,6 +3823,15 @@ void L2_AMP_Prefetch_Update(TGrid *grid, DATA_TYPE data[])
 	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
+void L2_NLP_Prefetch_Update(TGrid *grid, DATA_TYPE data[])
+{
+	const unsigned int bix = RO(Shm)->Proc.Technology.L2_NLP_Prefetch == 1;
+	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
+
+	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
+}
+
 void L1_Stride_Prefetch_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix=RO(Shm)->Proc.Technology.L1_Stride_Pf == 1;
@@ -3862,6 +3871,15 @@ void L2_Stream_HW_Prefetch_Update(TGrid *grid, DATA_TYPE data[])
 void L2_UpDown_Prefetch_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix=RO(Shm)->Proc.Technology.L2_UpDown_Pf == 1;
+	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
+
+	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
+}
+
+void LLC_Streamer_Update(TGrid *grid, DATA_TYPE data[])
+{
+	const unsigned int bix = RO(Shm)->Proc.Technology.LLC_Streamer == 1;
 	const signed int pos = grid->cell.length - 5;
 	UNUSED(data);
 
@@ -4026,6 +4044,16 @@ REASON_CODE SysInfoTech(Window *win,
 		L1_Scrubbing_Update
 	},
 	{
+		NULL,
+		0,
+		2, "%s%.*s",
+		RSC(TECHNOLOGIES_PF).CODE(), NULL,
+		width - 3 - RSZ(TECHNOLOGIES_PF),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
 		(unsigned int[]) { CRC_INTEL, CRC_AMD, CRC_HYGON, 0 },
 		RO(Shm)->Proc.Technology.L2_HW_Prefetch,
 		3, "%s%.*sL2 HW   <%3s>",
@@ -4056,14 +4084,24 @@ REASON_CODE SysInfoTech(Window *win,
 		L2_AMP_Prefetch_Update
 	},
 	{
-		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
-		0,
-		2, "%s%.*s",
-		RSC(TECHNOLOGIES_PF).CODE(), NULL,
-		width - 3 - RSZ(TECHNOLOGIES_PF),
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Technology.L2_NLP_Prefetch,
+		3, "%s%.*sL2 NLP   <%3s>",
+		RSC(TECH_L2_NLP_PREFETCH).CODE(), NULL,
+		width - (OutFunc ? 18 : 20) - RSZ(TECH_L2_NLP_PREFETCH),
 		NULL,
-		SCANKEY_NULL,
-		NULL
+		BOXKEY_L2_NLP_PREFETCH,
+		L2_NLP_Prefetch_Update
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Technology.LLC_Streamer,
+		3, "%s%.*sLLC   <%3s>",
+		RSC(TECH_LLC_STREAMER).CODE(), NULL,
+		width - (OutFunc ? 15 : 17) - RSZ(TECH_LLC_STREAMER),
+		NULL,
+		BOXKEY_LLC_STREAMER,
+		LLC_Streamer_Update
 	},
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
@@ -9400,8 +9438,8 @@ Window *CreateSysInfo(unsigned long long id)
 	case SCANKEY_t:
 		{
 		winOrigin.col = 14;
-		matrixSize.hth = 17;
-		winOrigin.row = TOP_HEADER_ROW + 3;
+		matrixSize.hth = 18;
+		winOrigin.row = TOP_HEADER_ROW + 2;
 		winWidth = 60;
 		SysInfoFunc = SysInfoTech;
 		title = RSC(TECHNOLOGIES_TITLE).CODE();
@@ -13934,6 +13972,54 @@ int Shortcut(SCANKEY *scan)
 	}
     break;
 
+    case BOXKEY_L2_NLP_PREFETCH:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	const Coordinate origin = {
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.row = TOP_HEADER_ROW + 3
+	}, select = {
+		.col = 0,
+		.row = RO(Shm)->Proc.Technology.L2_NLP_Prefetch ? 2 : 1
+	};
+	AppendWindow(
+		CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_CU_L2_NLP_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][RO(Shm)->Proc.Technology.L2_NLP_Prefetch],
+			stateAttr[RO(Shm)->Proc.Technology.L2_NLP_Prefetch],
+						BOXKEY_L2_NLP_PREFETCH_ON,
+		       stateStr[0][!RO(Shm)->Proc.Technology.L2_NLP_Prefetch],
+			stateAttr[!RO(Shm)->Proc.Technology.L2_NLP_Prefetch],
+						BOXKEY_L2_NLP_PREFETCH_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+		&winList);
+      } else {
+	SetHead(&winList, win);
+      }
+    }
+    break;
+
+    case BOXKEY_L2_NLP_PREFETCH_OFF:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_L2_NLP_PREFETCH );
+	}
+    break;
+
+    case BOXKEY_L2_NLP_PREFETCH_ON:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_L2_NLP_PREFETCH );
+	}
+    break;
+
     case BOXKEY_L1_STRIDE_PREFETCH:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
@@ -14171,6 +14257,54 @@ int Shortcut(SCANKEY *scan)
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_L2_UPDOWN_PREFETCH );
+	}
+    break;
+
+    case BOXKEY_LLC_STREAMER:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	const Coordinate origin = {
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.row = TOP_HEADER_ROW + 3
+	}, select = {
+		.col = 0,
+		.row = RO(Shm)->Proc.Technology.LLC_Streamer ? 2 : 1
+	};
+	AppendWindow(
+		CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_LLC_STREAMER_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][RO(Shm)->Proc.Technology.LLC_Streamer],
+			stateAttr[RO(Shm)->Proc.Technology.LLC_Streamer],
+						BOXKEY_LLC_STREAMER_ON,
+		       stateStr[0][!RO(Shm)->Proc.Technology.LLC_Streamer],
+			stateAttr[!RO(Shm)->Proc.Technology.LLC_Streamer],
+						BOXKEY_LLC_STREAMER_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+		&winList);
+      } else {
+	SetHead(&winList, win);
+      }
+    }
+    break;
+
+    case BOXKEY_LLC_STREAMER_OFF:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_LLC_STREAMER );
+	}
+    break;
+
+    case BOXKEY_LLC_STREAMER_ON:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_LLC_STREAMER );
 	}
     break;
 

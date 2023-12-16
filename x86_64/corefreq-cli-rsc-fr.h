@@ -693,11 +693,13 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_TECH_L2_HW_PREFETCH_CODE_FR  "Pr""\xa9""lecteur L2"
 #define RSC_TECH_L2_HW_CL_PREFETCH_CODE_FR "Pr""\xa9""lecteur L2 ligne de cache"
 #define RSC_TECH_L2_AMP_PREFETCH_CODE_FR RSC_TECH_L2_AMP_PREFETCH_CODE_EN
+#define RSC_TECH_L2_NLP_PREFETCH_CODE_FR "Pr""\xa9""lecteur L2 page suivante"
 #define RSC_TECH_L1_STRIDE_PF_CODE_FR	"Pr""\xa9""lecteur L1 Stride"
 #define RSC_TECH_L1_REGION_PF_CODE_FR	"Pr""\xa9""lecteur L1 Region"
 #define RSC_TECH_L1_BURST_PF_CODE_FR	"Pr""\xa9""lecteur L1 Burst"
 #define RSC_TECH_L2_STREAM_HW_PF_CODE_FR "Pr""\xa9""lecteur HW L2 Stream"
 #define RSC_TECH_L2_UPDOWN_PF_CODE_FR	"Pr""\xa9""lecteur L2 Up/Down"
+#define RSC_TECH_LLC_STREAMER_CODE_FR	RSC_TECH_LLC_STREAMER_CODE_EN
 #define RSC_TECHNOLOGIES_SMM_CODE_FR	"Mode de Gestion Syst""\xa8""me"
 #define RSC_TECHNOLOGIES_HTT_CODE_FR	"Hyper-Threading"
 #define RSC_TECHNOLOGIES_EIST_CODE_FR	"SpeedStep"

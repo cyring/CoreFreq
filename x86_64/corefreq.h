@@ -361,12 +361,14 @@ typedef struct
 				L1_NLP_Prefetch : 34-33,
 				L1_Scrubbing	: 35-34,
 				L2_AMP_Prefetch : 36-35,
-				L1_Stride_Pf	: 37-36,
-				L1_Region_Pf	: 38-37,
-				L1_Burst_Pf	: 39-38,
-				L2_Stream_HW_Pf : 40-39,
-				L2_UpDown_Pf	: 41-40,
-				_pad64		: 64-41;
+				L2_NLP_Prefetch : 37-36,
+				L1_Stride_Pf	: 38-37,
+				L1_Region_Pf	: 39-38,
+				L1_Burst_Pf	: 40-39,
+				L2_Stream_HW_Pf : 41-40,
+				L2_UpDown_Pf	: 42-41,
+				LLC_Streamer	: 43-42,
+				_pad64		: 64-43;
 	} Technology;
 
 	struct {

@@ -219,6 +219,10 @@ static signed short L2_AMP_PREFETCH_Disable = -1;
 module_param(L2_AMP_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L2_AMP_PREFETCH_Disable, "Adaptive Multipath Probability");
 
+static signed short L2_NLP_PREFETCH_Disable = -1;
+module_param(L2_NLP_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(L2_NLP_PREFETCH_Disable, "Disable L2 NLP Prefetcher");
+
 static signed short L1_STRIDE_PREFETCH_Disable = -1;
 module_param(L1_STRIDE_PREFETCH_Disable, short,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L1_STRIDE_PREFETCH_Disable, "Disable L1 Stride Prefetcher");
@@ -238,6 +242,10 @@ MODULE_PARM_DESC(L2_STREAM_PREFETCH_Disable, "Disable L2 Stream Prefetcher");
 static signed short L2_UPDOWN_PREFETCH_Disable = -1;
 module_param(L2_UPDOWN_PREFETCH_Disable, short,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L2_UPDOWN_PREFETCH_Disable, "Disable L2 Up/Down Prefetcher");
+
+static signed short LLC_Streamer_Disable = -1;
+module_param(LLC_Streamer_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(LLC_Streamer_Disable, "Disable LLC Streamer");
 
 static signed short SpeedStep_Enable = -1;
 module_param(SpeedStep_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -9083,6 +9091,55 @@ void Intel_DCU_Technology(CORE_RO *Core)			/*Per Core */
 	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_NLP_Prefetch, Core->Bind);
     }
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->DCU_Mask, Core->Bind);
+
+    switch (Core->T.Cluster.Hybrid.CoreType) {
+    case Hybrid_Atom:
+     {
+	ATOM_L2_PREFETCH_0X1321 MLC_Ctrl = {.value = 0};
+	ATOM_L2_PREFETCH_0X1320 LLC_Ctrl = {.value = 0};
+
+	RDMSR(MLC_Ctrl, MSR_ATOM_L2_PREFETCH_0X1321);
+	RDMSR(LLC_Ctrl, MSR_ATOM_L2_PREFETCH_0X1320);
+
+      switch (L2_NLP_PREFETCH_Disable) {
+      case COREFREQ_TOGGLE_OFF:
+      case COREFREQ_TOGGLE_ON:
+	MLC_Ctrl.L2_DISABLE_NEXT_LINE_PREFETCH = L2_NLP_PREFETCH_Disable;
+	WRMSR(MLC_Ctrl, MSR_ATOM_L2_PREFETCH_0X1321);
+	RDMSR(MLC_Ctrl, MSR_ATOM_L2_PREFETCH_0X1321);
+	break;
+      }
+      if (MLC_Ctrl.L2_DISABLE_NEXT_LINE_PREFETCH == 1) {
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_NLP_Prefetch, Core->Bind);
+      } else {
+	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_NLP_Prefetch, Core->Bind);
+      }
+
+      switch (LLC_Streamer_Disable) {
+      case COREFREQ_TOGGLE_OFF:
+      case COREFREQ_TOGGLE_ON:
+	LLC_Ctrl.LLC_STREAM_DISABLE = LLC_Streamer_Disable;
+	WRMSR(LLC_Ctrl, MSR_ATOM_L2_PREFETCH_0X1320);
+	RDMSR(LLC_Ctrl, MSR_ATOM_L2_PREFETCH_0X1320);
+	break;
+      }
+      if (LLC_Ctrl.LLC_STREAM_DISABLE == 1) {
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->LLC_Streamer, Core->Bind);
+      } else {
+	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->LLC_Streamer, Core->Bind);
+      }
+
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ECORE_Mask, Core->Bind);
+     }
+	break;
+    case Hybrid_Core:
+	/*	Invalid MSR_ATOM_L2_PREFETCH registers with P-Core	*/
+	break;
+    case Hybrid_RSVD1:
+    case Hybrid_RSVD2:
+    default:
+	break;
+    }
   }
 }
 
@@ -12233,6 +12290,7 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->DCU_Mask  , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->PCORE_Mask, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->ECORE_Mask, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
@@ -12268,6 +12326,7 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Burst_Pf	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_Stream_HW_Pf	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_UpDown_Pf	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->LLC_Streamer	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PowerMgmt , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SpeedStep , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
@@ -22053,6 +22112,19 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		}
 		break;
 
+	case TECHNOLOGY_L2_NLP_PREFETCH:
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			L2_NLP_PREFETCH_Disable = !prm.dl.lo;
+			Controller_Start(1);
+			L2_NLP_PREFETCH_Disable = -1;
+			rc = RC_SUCCESS;
+			break;
+		}
+		break;
+
 	case TECHNOLOGY_L1_STRIDE_PREFETCH:
 	    if (PUBLIC(RO(Proc))->Features.ExtFeature2_EAX.PrefetchCtl_MSR) {
 		switch (prm.dl.lo) {
@@ -22136,6 +22208,19 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	    } else {
 		rc = -ENXIO;
 	    }
+		break;
+
+	case TECHNOLOGY_LLC_STREAMER:
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			LLC_Streamer_Disable = !prm.dl.lo;
+			Controller_Start(1);
+			LLC_Streamer_Disable = -1;
+			rc = RC_SUCCESS;
+			break;
+		}
 		break;
 
 	case TECHNOLOGY_EIST:
