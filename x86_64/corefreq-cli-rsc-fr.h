@@ -688,9 +688,10 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_TECHNOLOGIES_PF_CODE_FR	"Pr""\xa9""lecteur de Caches"
 #define RSC_TECH_L1_HW_PREFETCH_CODE_FR "Pr""\xa9""lecteur L1"
 #define RSC_TECH_L1_HW_IP_PREFETCH_CODE_FR "Pr""\xa9""lecteur L1 IP"
+#define RSC_TECH_L1_NLP_PREFETCH_CODE_FR "Pr""\xa9""lecteur L1 page suivante"
 #define RSC_TECH_L1_SCRUBBING_CODE_FR	"L1 Scrubbing"
 #define RSC_TECH_L2_HW_PREFETCH_CODE_FR  "Pr""\xa9""lecteur L2"
-#define RSC_TECH_L2_HW_CL_PREFETCH_CODE_FR  "Pr""\xa9""lecteur L2 ligne"
+#define RSC_TECH_L2_HW_CL_PREFETCH_CODE_FR "Pr""\xa9""lecteur L2 ligne de cache"
 #define RSC_TECH_L2_AMP_PREFETCH_CODE_FR RSC_TECH_L2_AMP_PREFETCH_CODE_EN
 #define RSC_TECH_L1_STRIDE_PF_CODE_FR	"Pr""\xa9""lecteur L1 Stride"
 #define RSC_TECH_L1_REGION_PF_CODE_FR	"Pr""\xa9""lecteur L1 Region"

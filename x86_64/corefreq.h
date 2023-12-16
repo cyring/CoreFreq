@@ -358,14 +358,15 @@ typedef struct
 				WDT		: 29-28,
 				TM1		: 31-29,
 				TM2		: 33-31,
-				L1_Scrubbing	: 34-33,
-				L2_AMP_Prefetch : 35-34,
-				L1_Stride_Pf	: 36-35,
-				L1_Region_Pf	: 37-36,
-				L1_Burst_Pf	: 38-37,
-				L2_Stream_HW_Pf : 39-38,
-				L2_UpDown_Pf	: 40-39,
-				_pad64		: 64-40;
+				L1_NLP_Prefetch : 34-33,
+				L1_Scrubbing	: 35-34,
+				L2_AMP_Prefetch : 36-35,
+				L1_Stride_Pf	: 37-36,
+				L1_Region_Pf	: 38-37,
+				L1_Burst_Pf	: 39-38,
+				L2_Stream_HW_Pf : 40-39,
+				L2_UpDown_Pf	: 41-40,
+				_pad64		: 64-41;
 	} Technology;
 
 	struct {

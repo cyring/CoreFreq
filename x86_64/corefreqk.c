@@ -199,6 +199,10 @@ static signed short L1_HW_IP_PREFETCH_Disable = -1;
 module_param(L1_HW_IP_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L1_HW_IP_PREFETCH_Disable, "Disable L1 HW IP Prefetcher");
 
+static signed short L1_NLP_PREFETCH_Disable = -1;
+module_param(L1_NLP_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(L1_NLP_PREFETCH_Disable, "Disable L1 NLP Prefetcher");
+
 static signed short L1_Scrubbing_Enable = -1;
 module_param(L1_Scrubbing_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L1_Scrubbing_Enable, "Enable L1 Scrubbing");
@@ -9041,6 +9045,13 @@ void Intel_DCU_Technology(CORE_RO *Core)			/*Per Core */
 		ToggleFeature = 1;
 		break;
 	}
+	switch (L1_NLP_PREFETCH_Disable) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		MiscFeatCtrl.L1_NLP_Prefetch = L1_NLP_PREFETCH_Disable;
+		ToggleFeature = 1;
+		break;
+	}
     if (ToggleFeature == 1)
     {
 	WRMSR(MiscFeatCtrl, MSR_MISC_FEATURE_CONTROL);
@@ -9065,6 +9076,11 @@ void Intel_DCU_Technology(CORE_RO *Core)			/*Per Core */
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch, Core->Bind);
     } else {
 	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch, Core->Bind);
+    }
+    if (MiscFeatCtrl.L1_NLP_Prefetch == 1) {
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_NLP_Prefetch, Core->Bind);
+    } else {
+	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_NLP_Prefetch, Core->Bind);
     }
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->DCU_Mask, Core->Bind);
   }
@@ -12242,6 +12258,7 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->ODCM	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_Prefetch	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch , Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_NLP_Prefetch	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Scrubbing	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_Prefetch	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_CL_Prefetch , Core->Bind);
@@ -21966,6 +21983,19 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			L1_HW_IP_PREFETCH_Disable = !prm.dl.lo;
 			Controller_Start(1);
 			L1_HW_IP_PREFETCH_Disable = -1;
+			rc = RC_SUCCESS;
+			break;
+		}
+		break;
+
+	case TECHNOLOGY_L1_NLP_PREFETCH:
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			L1_NLP_PREFETCH_Disable = !prm.dl.lo;
+			Controller_Start(1);
+			L1_NLP_PREFETCH_Disable = -1;
 			rc = RC_SUCCESS;
 			break;
 		}

@@ -434,6 +434,12 @@
 #define MSR_FLEX_RATIO				0x00000194
 #define MSR_IA32_MISC_PACKAGE_CTLS		0x000000bc
 
+/*	Whitepaper: Hardware Prefetch Controls for Intel Atom Cores	*/
+#define MSR_ATOM_L2_PREFETCH_0X1320		0x00001320
+#define MSR_ATOM_L2_PREFETCH_0X1321		0x00001321
+#define MSR_ATOM_L2_PREFETCH_0X1322		0x00001322
+#define MSR_ATOM_L2_PREFETCH_0X1323		0x00001323
+
 typedef union
 {
 	unsigned long long value;
@@ -760,7 +766,7 @@ typedef union
 		L2_HW_CL_Prefetch	:  2-1,  /* NHM, SNB		*/
 		L1_HW_Prefetch		:  3-2,  /* Avoton, Goldmont, NHM, SNB*/
 		L1_HW_IP_Prefetch	:  4-3,  /* NHM, SNB		*/
-		ReservedBits1		:  5-4,
+		L1_NLP_Prefetch		:  5-4,  /* DCU Next Page Prefetcher */
 		L2_AMP_Prefetch 	:  6-5,  /* 12th, 13th Gen; Xeon 4th */
 		ReservedBits2		: 11-6,
 		DISABLE_THREE_STRIKE_CNT: 12-11, /* Errata [ADL021]	*/
@@ -774,6 +780,84 @@ typedef union
 		ReservedBits	: 64-2;
 	} Phi;
 } MISC_FEATURE_CONTROL;
+
+typedef union
+{	/* MSR_ATOM_L2_PREFETCH(0x00001320): Atom E-Core only		*/
+	unsigned long long	value;
+	struct {
+		unsigned long long
+		L2_STREAM_AMP_XQ_THRESHOLD	:  5-0,
+		pad0				: 20-5,
+		L2_STREAM_MAX_DISTANCE		: 25-20,
+		pad1				: 30-25,
+		L2_AMP_DISABLE_RECURSION	: 31-30,
+		pad2				: 37-31,
+		LLC_STREAM_MAX_DISTANCE		: 43-37,
+		LLC_STREAM_DISABLE		: 44-43,
+		pad3				: 58-44,
+		LLC_STREAM_XQ_THRESHOLD 	: 63-58,
+		pad4				: 64-63;
+	};
+} ATOM_L2_PREFETCH_0X1320;
+
+typedef union
+{	/* MSR_ATOM_L2_PREFETCH(0x00001321): Atom E-Core only		*/
+	unsigned long long	value;
+	struct {
+		unsigned long long
+		L2_STREAM_AMP_CREATE_IL1	:  1-0,
+		pad0				: 21-1,
+		L2_STREAM_DEMAND_DENSITY	: 29-21,
+		L2_STREAM_DEMAND_DENSITY_OVR	: 33-29,
+		pad1				: 40-33,
+		L2_DISABLE_NEXT_LINE_PREFETCH	: 41-40,
+		L2_LLC_STREAM_AMP_XQ_THRESHOLD	: 47-41,
+		pad2				: 64-47;
+	};
+} ATOM_L2_PREFETCH_0X1321;
+
+typedef union
+{	/* MSR_ATOM_L2_PREFETCH(0x00001322): Atom E-Core only		*/
+	unsigned long long	value;
+	struct {
+		unsigned long long
+		pad0				: 14-0,
+		LLC_STREAM_DEMAND_DENSITY	: 23-14,
+		LLC_STREAM_DEMAND_DENSITY_OVR	: 27-23,
+		L2_AMP_CONFIDENCE_DPT0		: 33-27,
+		L2_AMP_CONFIDENCE_DPT1		: 39-33,
+		L2_AMP_CONFIDENCE_DPT2		: 45-39,
+		L2_AMP_CONFIDENCE_DPT3		: 51-45,
+		pad1				: 59-51,
+		L2_LLC_STREAM_DEMAND_DENSITY_XQ : 62-59,
+		pad2				: 64-62;
+	};
+} ATOM_L2_PREFETCH_0X1322;
+
+typedef union
+{	/* MSR_ATOM_L2_PREFETCH(0x00001323): Atom E-Core only		*/
+		unsigned long long	value;
+	struct {
+		unsigned long long
+		pad0				: 34-0,
+		L2_STREAM_AMP_CREATE_SWPFRFO	: 35-34,
+		L2_STREAM_AMP_CREATE_SWPFRD	: 36-35,
+		pad1				: 37-36,
+		L2_STREAM_AMP_CREATE_HWPFD	: 38-37,
+		L2_STREAM_AMP_CREATE_DRFO	: 39-38,
+		STABILIZE_PREF_ON_SWPFRFO	: 40-39,
+		STABILIZE_PREF_ON_SWPFRD	: 41-40,
+		STABILIZE_PREF_ON_IL1		: 42-41,
+		pad2				: 43-42,
+		STABILIZE_PREF_ON_HWPFD		: 44-43,
+		STABILIZE_PREF_ON_DRFO		: 45-44,
+		L2_STREAM_AMP_CREATE_PFNPP	: 46-45,
+		L2_STREAM_AMP_CREATE_PFIPP	: 47-46,
+		STABILIZE_PREF_ON_PFNPP		: 48-47,
+		STABILIZE_PREF_ON_PFIPP 	: 49-48,
+		pad3				: 64-48;
+	};
+} ATOM_L2_PREFETCH_0X1323;
 
 typedef union
 {

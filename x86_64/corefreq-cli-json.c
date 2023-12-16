@@ -1507,6 +1507,10 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.L1_HW_Prefetch);
 			json_key(&s, "L1_HW_IP_Prefetch");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.L1_HW_IP_Prefetch);
+			json_key(&s, "L1_NLP_Prefetch");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.L1_NLP_Prefetch);
+			json_key(&s, "L1_Scrubbing");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.L1_Scrubbing);
 			json_key(&s, "L2_HW_Prefetch");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.L2_HW_Prefetch);
 			json_key(&s, "L2_HW_CL_Prefetch");

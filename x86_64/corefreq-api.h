@@ -1034,10 +1034,11 @@ typedef struct
 	BitCC			TM1		__attribute__ ((aligned (16)));
 	BitCC			TM2		__attribute__ ((aligned (16)));
 	BitCC			ODCM		__attribute__ ((aligned (16)));
-	BitCC			L1_HW_Prefetch __attribute__ ((aligned (16)));
+	BitCC			L1_HW_Prefetch	__attribute__ ((aligned (16)));
 	BitCC			L1_HW_IP_Prefetch __attribute__((aligned (16)));
+	BitCC	/* Intel */	L1_NLP_Prefetch __attribute__ ((aligned (16)));
 	BitCC	/* Intel */	L1_Scrubbing	__attribute__ ((aligned (16)));
-	BitCC			L2_HW_Prefetch __attribute__ ((aligned (16)));
+	BitCC			L2_HW_Prefetch	__attribute__ ((aligned (16)));
 	BitCC			L2_HW_CL_Prefetch __attribute__((aligned (16)));
 	BitCC	/* Intel */	L2_AMP_Prefetch __attribute__ ((aligned (16)));
 	BitCC	/* AMD */	L1_Stride_Pf	__attribute__ ((aligned (16)));

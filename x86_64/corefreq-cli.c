@@ -3778,6 +3778,15 @@ void L1_HW_IP_Prefetch_Update(TGrid *grid, DATA_TYPE data[])
 	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
+void L1_NLP_Prefetch_Update(TGrid *grid, DATA_TYPE data[])
+{
+	const unsigned int bix = RO(Shm)->Proc.Technology.L1_NLP_Prefetch == 1;
+	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
+
+	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
+}
+
 void L1_Scrubbing_Update(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Technology.L1_Scrubbing == 1;
@@ -3995,6 +4004,16 @@ REASON_CODE SysInfoTech(Window *win,
 		NULL,
 		BOXKEY_L1_HW_IP_PREFETCH,
 		L1_HW_IP_Prefetch_Update
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Technology.L1_NLP_Prefetch,
+		3, "%s%.*sL1 NLP   <%3s>",
+		RSC(TECH_L1_NLP_PREFETCH).CODE(), NULL,
+		width - (OutFunc ? 18 : 20) - RSZ(TECH_L1_NLP_PREFETCH),
+		NULL,
+		BOXKEY_L1_NLP_PREFETCH,
+		L1_NLP_Prefetch_Update
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
@@ -9380,9 +9399,9 @@ Window *CreateSysInfo(unsigned long long id)
 		break;
 	case SCANKEY_t:
 		{
-		winOrigin.col = 23;
-		matrixSize.hth = 16;
-		winOrigin.row = TOP_HEADER_ROW + 5;
+		winOrigin.col = 14;
+		matrixSize.hth = 17;
+		winOrigin.row = TOP_HEADER_ROW + 3;
 		winWidth = 60;
 		SysInfoFunc = SysInfoTech;
 		title = RSC(TECHNOLOGIES_TITLE).CODE();
@@ -9398,7 +9417,7 @@ Window *CreateSysInfo(unsigned long long id)
 		break;
 	case SCANKEY_w:
 		{
-		winOrigin.col = 25;
+		winOrigin.col = 18;
 		matrixSize.hth = 28;
 		winOrigin.row = TOP_HEADER_ROW + 2;
 		winWidth = 60;
@@ -13672,6 +13691,54 @@ int Shortcut(SCANKEY *scan)
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_L1_HW_IP_PREFETCH );
+	}
+    break;
+
+    case BOXKEY_L1_NLP_PREFETCH:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	const Coordinate origin = {
+		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.row = TOP_HEADER_ROW + 3
+	}, select = {
+		.col = 0,
+		.row = RO(Shm)->Proc.Technology.L1_NLP_Prefetch ? 2 : 1
+	};
+	AppendWindow(
+		CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_CU_L1_NLP_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][RO(Shm)->Proc.Technology.L1_NLP_Prefetch],
+			stateAttr[RO(Shm)->Proc.Technology.L1_NLP_Prefetch],
+						BOXKEY_L1_NLP_PREFETCH_ON,
+		       stateStr[0][!RO(Shm)->Proc.Technology.L1_NLP_Prefetch],
+			stateAttr[!RO(Shm)->Proc.Technology.L1_NLP_Prefetch],
+						BOXKEY_L1_NLP_PREFETCH_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+		&winList);
+      } else {
+	SetHead(&winList, win);
+      }
+    }
+    break;
+
+    case BOXKEY_L1_NLP_PREFETCH_OFF:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_L1_NLP_PREFETCH );
+	}
+    break;
+
+    case BOXKEY_L1_NLP_PREFETCH_ON:
+	if (!RING_FULL(RW(Shm)->Ring[0])) {
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_L1_NLP_PREFETCH );
 	}
     break;
 
