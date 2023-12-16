@@ -1638,9 +1638,9 @@ void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 						RW(Proc)->L2_AMP_Prefetch,
 						RO(Proc)->PCORE_Mask) != 0;
 
-	RO(Shm)->Proc.Technology.L2_NLP_Prefetch = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.L2_NLP_Prefetch = BITWISEAND_CC(LOCKLESS,
 						RW(Proc)->L2_NLP_Prefetch,
-						RO(Proc)->ECORE_Mask);
+						RO(Proc)->ECORE_Mask) != 0;
 
 	RO(Shm)->Proc.Technology.L1_Stride_Pf	= BITCMP_CC(LOCKLESS,
 						RW(Proc)->L1_Stride_Pf,
@@ -1662,9 +1662,9 @@ void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 						RW(Proc)->L2_UpDown_Pf,
 						RO(Proc)->DCU_Mask);
 
-	RO(Shm)->Proc.Technology.LLC_Streamer = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.LLC_Streamer = BITWISEAND_CC(LOCKLESS,
 						RW(Proc)->LLC_Streamer,
-						RO(Proc)->ECORE_Mask);
+						RO(Proc)->ECORE_Mask) != 0;
 
 	RO(Shm)->Proc.Technology.PowerMgmt = BITCMP_CC(LOCKLESS,
 						RW(Proc)->PowerMgmt,
