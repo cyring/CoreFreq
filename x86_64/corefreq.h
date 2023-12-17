@@ -358,7 +358,7 @@ typedef struct
 				WDT		: 29-28,
 				TM1		: 31-29,
 				TM2		: 33-31,
-				L1_NLP_Prefetch : 34-33,
+				L1_NPP_Prefetch : 34-33,
 				L1_Scrubbing	: 35-34,
 				L2_AMP_Prefetch : 36-35,
 				L2_NLP_Prefetch : 37-36,

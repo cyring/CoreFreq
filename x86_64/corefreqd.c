@@ -1618,8 +1618,8 @@ void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 						RW(Proc)->L1_HW_IP_Prefetch,
 						RO(Proc)->DCU_Mask);
 
-	RO(Shm)->Proc.Technology.L1_NLP_Prefetch = BITCMP_CC(LOCKLESS,
-						RW(Proc)->L1_NLP_Prefetch,
+	RO(Shm)->Proc.Technology.L1_NPP_Prefetch = BITCMP_CC(LOCKLESS,
+						RW(Proc)->L1_NPP_Prefetch,
 						RO(Proc)->DCU_Mask);
 
 	RO(Shm)->Proc.Technology.L1_Scrubbing = BITWISEAND_CC(LOCKLESS,

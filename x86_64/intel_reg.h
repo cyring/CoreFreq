@@ -439,6 +439,7 @@
 #define MSR_ATOM_L2_PREFETCH_0X1321		0x00001321
 #define MSR_ATOM_L2_PREFETCH_0X1322		0x00001322
 #define MSR_ATOM_L2_PREFETCH_0X1323		0x00001323
+#define MSR_ATOM_L2_PREFETCH_0X1324		0x00001324
 
 typedef union
 {
@@ -766,7 +767,7 @@ typedef union
 		L2_HW_CL_Prefetch	:  2-1,  /* NHM, SNB		*/
 		L1_HW_Prefetch		:  3-2,  /* Avoton, Goldmont, NHM, SNB*/
 		L1_HW_IP_Prefetch	:  4-3,  /* NHM, SNB		*/
-		L1_NLP_Prefetch		:  5-4,  /* DCU Next Page Prefetcher */
+		L1_NPP_Prefetch		:  5-4,  /* DCU Next Page Prefetcher */
 		L2_AMP_Prefetch 	:  6-5,  /* 12th, 13th Gen; Xeon 4th */
 		ReservedBits2		: 11-6,
 		DISABLE_THREE_STRIKE_CNT: 12-11, /* Errata [ADL021]	*/
@@ -858,6 +859,17 @@ typedef union
 		pad3				: 64-48;
 	};
 } ATOM_L2_PREFETCH_0X1323;
+
+typedef union
+{	/* MSR_ATOM_L2_PREFETCH(0x00001324): Atom E-Core only		*/
+		unsigned long long	value;
+	struct {
+		unsigned long long
+		pad0				: 54-0,
+		L1_HOMELESS_THRESHOLD		: 62-54,
+		pad1				: 64-62;
+	};
+} ATOM_L2_PREFETCH_0X1324;
 
 typedef union
 {
