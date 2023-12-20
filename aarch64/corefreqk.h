@@ -1177,6 +1177,12 @@ typedef struct
 			ZEN_L3_PERF_CTL 	Zen_L3_Cache_PerfControl;
 			HWCR			Core_HardwareConfiguration;
 		    };*/
+		    struct
+		    {
+			unsigned long long	PMSELR;
+			unsigned long long	PMTYPER;
+			unsigned long long	PMCNTEN;
+		    };
 		} SaveArea;
 	} *Core[];
 } KPRIVATE;

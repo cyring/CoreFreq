@@ -13752,6 +13752,61 @@ void Controller_Exit(void)
 		BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, CREATED);
 	}
 }
+
+void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
+{
+	__asm__ __volatile__
+	(
+		"# Save PMU configuration registers"	"\n\t"
+		"mrs	x2	,	pmselr_el0"	"\n\t"
+		"str	x2	,	%[PMSELR]"	"\n\t"
+		"mrs	x2	,	pmxevtyper_el0" "\n\t"
+		"str	x2	,	%[PMTYPER]"	"\n\t"
+		"mrs	x2	,	pmcntenset_el0" "\n\t"
+		"str	x2	,	%[PMCNTEN]"	"\n\t"
+		"# All counters are enabled"		"\n\t"
+		"mrs	x2	,	pmcr_el0"	"\n\t"
+		"orr	x2	,	x2, #0b11"	"\n\t"
+		"msr	pmcr_el0,	x2"		"\n\t"
+		"# Select event counter number [SELR]"	"\n\t"
+		"mov	x2	,	%[SELR]"	"\n\t"
+		"msr	pmselr_el0,	x2"		"\n\t"
+		"# Choosen [EVENT] number to collect"	"\n\t"
+		"mov	x2	,	%[EVENT]"	"\n\t"
+		"msr	pmxevtyper_el0, x2"		"\n\t"
+		"# Enable counter at position [ENSET]"	"\n\t"
+		"mov	x2	,	%[ENSET]"	"\n\t"
+		"msr	pmcntenset_el0, x2"		"\n\t"
+		"isb"
+		: [PMSELR]	"+m" (Save->PMSELR),
+		  [PMTYPER]	"+m" (Save->PMTYPER),
+		  [PMCNTEN]	"+m" (Save->PMCNTEN)
+		: [EVENT]	"i" (0x0008),
+		  [ENSET]	"i" (1 << 3),
+		  [SELR]	"i" (3)
+		: "memory", "%x2"
+	);
+}
+
+void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
+{
+	__asm__ __volatile__(
+		"# Restore PMU configuration registers" "\n\t"
+		"ldr	x2	,	%[PMSELR]"	"\n\t"
+		"msr	pmselr_el0,	x2"		"\n\t"
+		"ldr	x2	,	%[PMTYPER]"	"\n\t"
+		"msr	pmxevtyper_el0, x2"		"\n\t"
+		"ldr	x2	,	%[PMCNTEN]"	"\n\t"
+		"msr	pmcntenset_el0, x2"		"\n\t"
+		"isb"
+		:
+		: [PMSELR]	"m" (Save->PMSELR),
+		  [PMTYPER]	"m" (Save->PMTYPER),
+		  [PMCNTEN]	"m" (Save->PMCNTEN)
+		: "memory", "%x2"
+	);
+}
+
 /*TODO(CleanUp)
 void Intel_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 {
@@ -14052,6 +14107,16 @@ void AMD_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 */
 #define Counters_Generic(Core, T)					\
 ({									\
+	__asm__ __volatile__						\
+	(								\
+		"# Read from counter number [SELR]"	"\n\t"		\
+		"mrs	x2	,	pmevcntr3_el0"	"\n\t"		\
+		"str	x2	,	%[INST]"	"\n\t"		\
+		"isb"							\
+		: [INST]	"=m" (Core->Counter[T].INST)		\
+		:							\
+		: "memory", "%x2"					\
+	);								\
 	RDTSC_COUNTERx2(Core->Counter[T].TSC,				\
 			0x0, Core->Counter[T].C0.UCC,			\
 			0x0, Core->Counter[T].C0.URC);			\
@@ -19474,11 +19539,15 @@ static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
 			Sys_Tick(PUBLIC(RO(Proc)));
 		}
 
+		Delta_INST(Core);
+
 		Delta_C0(Core);
 
 		Delta_TSC_OVH(Core);
 
 		Delta_C1(Core);
+
+		Save_INST(Core);
 
 		Save_TSC(Core);
 
@@ -19502,11 +19571,14 @@ static void Start_GenericMachine(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
 	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
 		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
 	}
+
+	Generic_Core_Counters_Set(Save, Core);
 
 	Counters_Generic(Core, 0);
 
@@ -19530,11 +19602,14 @@ static void Stop_GenericMachine(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
 	UNUSED(arg);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
 
 	hrtimer_cancel(&PRIVATE(OF(Core, AT(cpu)))->Join.Timer);
+
+	Generic_Core_Counters_Clear(Save, Core);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
