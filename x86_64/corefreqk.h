@@ -6864,7 +6864,19 @@ static PROCESSOR_SPECIFIC AMD_Zen3_CZN_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD Ryzen 3 5425U",	\
+	.Brand = ZLIST("AMD Ryzen 3 5125C"),
+	.Boost = {+0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_BARCELO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 3 5425C",	\
+			"AMD Ryzen 3 5425U",	\
 			"AMD Ryzen 3 PRO 5475U" ),
 	.Boost = {+14, 0},
 	.Param.Offset = {0, 0, 0},
