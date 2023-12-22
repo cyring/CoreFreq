@@ -6840,7 +6840,8 @@ static PROCESSOR_SPECIFIC AMD_Zen3_CZN_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 7 5700G"),
+	.Brand = ZLIST( "AMD Ryzen 7 5700G"	\
+			"AMD Ryzen 7 5700"	),
 	.Boost = {+8, +1},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_CEZANNE,
