@@ -7029,7 +7029,8 @@ static PROCESSOR_SPECIFIC AMD_Zen3_CZN_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD Ryzen 3 7330U",	\
+	.Brand = ZLIST( "AMD Ryzen 5 7430U",	\
+			"AMD Ryzen 3 7330U",	\
 			"AMD Ryzen 3 PRO 7330U" ),
 	.Boost = {+20, 0},
 	.Param.Offset = {0, 0, 0},
