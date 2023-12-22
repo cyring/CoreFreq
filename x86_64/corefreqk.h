@@ -8057,7 +8057,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 5 8540U"),
+	.Brand = ZLIST( "AMD Ryzen 5 8540U",		\
+			"AMD Ryzen 3 8440U"		),
 	.Boost = {+17, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PHOENIX_R,
