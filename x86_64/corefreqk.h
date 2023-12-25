@@ -6474,9 +6474,10 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	{0}
 };
 static PROCESSOR_SPECIFIC AMD_Zen2_Jupiter_Specific[] = {
-/*	[Zen2/VanGogh]		Valve Jupiter				*/
+/*	[Zen2/VanGogh]	 7 nm Valve Jupiter.	6 nm Sephiroth		*/
 	{
-	.Brand = ZLIST("AMD Custom APU 0405"),
+	.Brand = ZLIST( "AMD Custom APU 0405",	\
+			"AMD Custom APU 0932"	),
 	.Boost = {+7, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_VANGOGH,
