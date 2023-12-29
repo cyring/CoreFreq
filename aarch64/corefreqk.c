@@ -844,8 +844,8 @@ static void Query_Features(void *pArg)
 	iArg->SMT_Count = 1;
 
 	__asm__ __volatile__(
-		"isb"			"\n\t"
-		"mrs %0, CNTFRQ_EL0"
+		"mrs %0, CNTFRQ_EL0"			"\n\t"
+		"isb"
 		: "=r" (iArg->Features->Factory.Freq)
 		:
 		: "memory"
@@ -13757,21 +13757,38 @@ void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 {
 	__asm__ __volatile__
 	(
-		"# Select event counter number [SELR]"	"\n\t"
+		"# Assign an event number per counter"	"\n\t"
 		"mrs	x2	,	pmselr_el0"	"\n\t"
 		"str	x2	,	%[PMSELR]"	"\n\t"
-		"orr	x2	,	x2, %[SELR]"	"\n\t"
+		"orr	x2	,	x2, #3" 	"\n\t"
 		"msr	pmselr_el0,	x2"		"\n\t"
-		"# Choosen [EVENT] number to collect"	"\n\t"
+
+		"# Choosen [EVENT#] to collect from"	"\n\t"
 		"mrs	x2	,	pmxevtyper_el0" "\n\t"
 		"str	x2	,	%[PMTYPER]"	"\n\t"
-		"orr	x2	,	x2, %[EVENT]"	"\n\t"
+		"orr	x2	,	x2, %[EVENT3]"	"\n\t"
 		"msr	pmxevtyper_el0, x2"		"\n\t"
-		"# Enable counter at position [ENSET]"	"\n\t"
+
+		"ldr	x2	,	%[PMSELR]"	"\n\t"
+		"orr	x2	,	x2, #2" 	"\n\t"
+		"msr	pmselr_el0,	x2"		"\n\t"
+		"ldr	x2	,	%[PMTYPER]"	"\n\t"
+		"orr	x2	,	x2, %[EVENT2]"	"\n\t"
+		"msr	pmxevtyper_el0, x2"		"\n\t"
+
+		"ldr	x2	,	%[PMSELR]"	"\n\t"
+		"orr	x2	,	x2, #0b11111"	"\n\t"
+		"msr	pmselr_el0,	x2"		"\n\t"
+		"mrs	x2	,	pmxevtyper_el0" "\n\t"
+		"orr	x2	,	x2, %[FILTR1]"	"\n\t"
+		"msr	pmxevtyper_el0, x2"		"\n\t"
+
+		"# Enable counters at position [ENSET]" "\n\t"
 		"mrs	x2	,	pmcntenset_el0" "\n\t"
 		"str	x2	,	%[PMCNTEN]"	"\n\t"
 		"orr	x2	,	x2, %[ENSET]"	"\n\t"
 		"msr	pmcntenset_el0, x2"		"\n\t"
+
 		"# Enable all PMU counters"		"\n\t"
 		"mrs	x2	,	pmcr_el0"	"\n\t"
 		"str	x2	,	%[PMCR]"	"\n\t"
@@ -13782,9 +13799,10 @@ void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 		  [PMSELR]	"+m" (Save->PMSELR),
 		  [PMTYPER]	"+m" (Save->PMTYPER),
 		  [PMCNTEN]	"+m" (Save->PMCNTEN)
-		: [EVENT]	"i" (0x0008),
-		  [ENSET]	"i" (1 << 3),
-		  [SELR]	"i" (3),
+		: [EVENT3]	"r" (0x0008),
+		  [EVENT2]	"r" (0x0011),
+		  [FILTR1]	"r" (0x0),
+		  [ENSET]	"r" (0b10000000000000000000000000001100),
 		  [CTRL]	"i" (0b11)
 		: "memory", "%x2"
 	);
@@ -14112,10 +14130,13 @@ void AMD_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 */
 #define Counters_Generic(Core, T)					\
 ({									\
+	volatile unsigned long long UCC;				\
 	RDTSC_COUNTERx3(Core->Counter[T].TSC,				\
-			cntvct_el0, Core->Counter[T].C0.UCC,		\
-			cntvct_el0, Core->Counter[T].C0.URC,		\
-			pmevcntr3_el0, Core->Counter[T].INST);		\
+			pmccntr_el0,	UCC,				\
+			pmevcntr2_el0,	Core->Counter[T].C0.URC,	\
+			pmevcntr3_el0,	Core->Counter[T].INST );	\
+	/* Normalize Frequency */					\
+	Core->Counter[T].C0.UCC = DIV_ROUND_CLOSEST(UCC, PRECISION);	\
 	/* Derive C1: */						\
 	Core->Counter[T].C1 =						\
 	  (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?		\
@@ -14282,27 +14303,22 @@ void AMD_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 
 #define Delta_C0(Core)							\
 ({	/* Absolute Delta of Unhalted (Core & Ref) C0 Counter. */	\
-	Core->Delta.C0.UCC =						\
-		(Core->Counter[0].C0.UCC >				\
-		Core->Counter[1].C0.UCC) ?				\
-			Core->Counter[0].C0.UCC				\
-			- Core->Counter[1].C0.UCC			\
-			: Core->Counter[1].C0.UCC			\
-			- Core->Counter[0].C0.UCC;			\
+	Core->Delta.C0.UCC = (						\
+		Core->Counter[0].C0.UCC > Core->Counter[1].C0.UCC	\
+	)	? Core->Counter[0].C0.UCC - Core->Counter[1].C0.UCC	\
+		: Core->Counter[1].C0.UCC - Core->Counter[0].C0.UCC;	\
 									\
-	Core->Delta.C0.URC = Core->Counter[1].C0.URC			\
-			   - Core->Counter[0].C0.URC;			\
+	Core->Delta.C0.URC = (						\
+		Core->Counter[0].C0.URC > Core->Counter[1].C0.URC	\
+	)	? Core->Counter[0].C0.URC - Core->Counter[1].C0.URC	\
+		: Core->Counter[1].C0.URC - Core->Counter[0].C0.URC;	\
 })
 
 #define Delta_C1(Core)							\
 ({									\
-	Core->Delta.C1 =						\
-		(Core->Counter[0].C1 >					\
-		 Core->Counter[1].C1) ? 				\
-			Core->Counter[0].C1				\
-			- Core->Counter[1].C1				\
-			: Core->Counter[1].C1				\
-			- Core->Counter[0].C1;				\
+	Core->Delta.C1 = (Core->Counter[0].C1 > Core->Counter[1].C1) ? 	\
+			  Core->Counter[0].C1 - Core->Counter[1].C1	\
+			: Core->Counter[1].C1 - Core->Counter[0].C1;	\
 })
 
 #define Delta_C3(Core)							\
@@ -14325,8 +14341,10 @@ void AMD_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 
 #define Delta_INST(Core)						\
 ({	/* Delta of Retired Instructions */				\
-	Core->Delta.INST = Core->Counter[1].INST			\
-			 - Core->Counter[0].INST;			\
+	Core->Delta.INST = (						\
+		Core->Counter[0].INST > Core->Counter[1].INST		\
+	)	? Core->Counter[0].INST - Core->Counter[1].INST 	\
+		: Core->Counter[1].INST - Core->Counter[0].INST;	\
 })
 /*TODO(CleanUp)
 #define PKG_Counters_VirtualMachine(Core, T)				\
@@ -14338,8 +14356,8 @@ void AMD_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 ({									\
 	__asm__ volatile						\
 	(								\
-		"isb"					"\n\t"		\
-		"mrs	%0	,	cntpct_el0"			\
+		"mrs	%0	,	cntpct_el0"	"\n\t"		\
+		"isb"							\
 		: "=r" (PUBLIC(RO(Proc))->Counter[T].PCLK)		\
 		:							\
 		: "cc", "memory"					\
@@ -19511,11 +19529,8 @@ static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
 	cpu = smp_processor_id();
 	Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	if (!PUBLIC(RO(Proc))->Features.AdvPower.EDX.Inv_TSC) {
-		RDTSC64(Core->Overhead.TSC);
-	} else {
-		RDTSCP64(Core->Overhead.TSC);
-	}
+	RDTSC64(Core->Overhead.TSC);
+
 	if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
 	{
 		hrtimer_forward(pTimer,

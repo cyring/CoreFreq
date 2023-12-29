@@ -1,6 +1,6 @@
 # _CoreFreq_
 ## Purpose
-_CoreFreq_, a CPU monitoring software with BIOS like functionalities, is designed for the 64-bits Processors of architecture Intel Atom, Core2, Nehalem, SandyBridge and superiors; AMD Families from 0Fh ... up to 17h (Zen , Zen+ , Zen 2), 18h (Hygon Dhyana), 19h (Zen 3, Zen 3+, Zen 4, Zen 4c)  
+_CoreFreq_, a CPU monitoring software with BIOS like functionalities, is designed for the 64-bits Processors of architecture Intel Atom, Core2, Nehalem, SandyBridge and superiors; AMD Families from 0Fh ... up to 17h (Zen , Zen+ , Zen 2), 18h (Hygon Dhyana), 19h (Zen 3, Zen 3+, Zen 4, Zen 4c); Arm A64  
 
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_Top.gif "CoreFreq Top")
 
@@ -578,6 +578,12 @@ parm:           Mech_AGENPICK:Mitigation Mech. LsCfgDisAgenPick (short)
 parm:           WDT_Enable:Watchdog Hardware Timer (short)
 parm:           HSMP_Attempt:Attempt the HSMP interface (short)
 ```  
+
+## Arm [AArch64]
+
+* Q: Counters are stuck to zero  
+
+  A: Add parameter `nohlt` to the kernel boot command line.  
 
 ## Algorithm
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq-algorithm.png "CoreFreq algorithm")
