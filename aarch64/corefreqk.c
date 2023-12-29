@@ -13757,33 +13757,35 @@ void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 {
 	__asm__ __volatile__
 	(
-		"# Save PMU configuration registers"	"\n\t"
+		"# Select event counter number [SELR]"	"\n\t"
 		"mrs	x2	,	pmselr_el0"	"\n\t"
 		"str	x2	,	%[PMSELR]"	"\n\t"
-		"mrs	x2	,	pmxevtyper_el0" "\n\t"
-		"str	x2	,	%[PMTYPER]"	"\n\t"
-		"mrs	x2	,	pmcntenset_el0" "\n\t"
-		"str	x2	,	%[PMCNTEN]"	"\n\t"
-		"# All counters are enabled"		"\n\t"
-		"mrs	x2	,	pmcr_el0"	"\n\t"
-		"orr	x2	,	x2, #0b11"	"\n\t"
-		"msr	pmcr_el0,	x2"		"\n\t"
-		"# Select event counter number [SELR]"	"\n\t"
-		"mov	x2	,	%[SELR]"	"\n\t"
+		"orr	x2	,	x2, %[SELR]"	"\n\t"
 		"msr	pmselr_el0,	x2"		"\n\t"
 		"# Choosen [EVENT] number to collect"	"\n\t"
-		"mov	x2	,	%[EVENT]"	"\n\t"
+		"mrs	x2	,	pmxevtyper_el0" "\n\t"
+		"str	x2	,	%[PMTYPER]"	"\n\t"
+		"orr	x2	,	x2, %[EVENT]"	"\n\t"
 		"msr	pmxevtyper_el0, x2"		"\n\t"
 		"# Enable counter at position [ENSET]"	"\n\t"
-		"mov	x2	,	%[ENSET]"	"\n\t"
+		"mrs	x2	,	pmcntenset_el0" "\n\t"
+		"str	x2	,	%[PMCNTEN]"	"\n\t"
+		"orr	x2	,	x2, %[ENSET]"	"\n\t"
 		"msr	pmcntenset_el0, x2"		"\n\t"
+		"# Enable all PMU counters"		"\n\t"
+		"mrs	x2	,	pmcr_el0"	"\n\t"
+		"str	x2	,	%[PMCR]"	"\n\t"
+		"orr	x2	,	x2, %[CTRL]"	"\n\t"
+		"msr	pmcr_el0,	x2"		"\n\t"
 		"isb"
-		: [PMSELR]	"+m" (Save->PMSELR),
+		: [PMCR]	"+m" (Save->PMCR),
+		  [PMSELR]	"+m" (Save->PMSELR),
 		  [PMTYPER]	"+m" (Save->PMTYPER),
 		  [PMCNTEN]	"+m" (Save->PMCNTEN)
 		: [EVENT]	"i" (0x0008),
 		  [ENSET]	"i" (1 << 3),
-		  [SELR]	"i" (3)
+		  [SELR]	"i" (3),
+		  [CTRL]	"i" (0b11)
 		: "memory", "%x2"
 	);
 }
@@ -13792,6 +13794,8 @@ void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 {
 	__asm__ __volatile__(
 		"# Restore PMU configuration registers" "\n\t"
+		"ldr	x2	,	%[PMCR]"	"\n\t"
+		"msr	pmcr_el0,	x2"		"\n\t"
 		"ldr	x2	,	%[PMSELR]"	"\n\t"
 		"msr	pmselr_el0,	x2"		"\n\t"
 		"ldr	x2	,	%[PMTYPER]"	"\n\t"
@@ -13800,7 +13804,8 @@ void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 		"msr	pmcntenset_el0, x2"		"\n\t"
 		"isb"
 		:
-		: [PMSELR]	"m" (Save->PMSELR),
+		: [PMCR]	"m" (Save->PMCR),
+		  [PMSELR]	"m" (Save->PMSELR),
 		  [PMTYPER]	"m" (Save->PMTYPER),
 		  [PMCNTEN]	"m" (Save->PMCNTEN)
 		: "memory", "%x2"
@@ -14107,19 +14112,10 @@ void AMD_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 */
 #define Counters_Generic(Core, T)					\
 ({									\
-	__asm__ __volatile__						\
-	(								\
-		"# Read from counter number [SELR]"	"\n\t"		\
-		"mrs	x2	,	pmevcntr3_el0"	"\n\t"		\
-		"str	x2	,	%[INST]"	"\n\t"		\
-		"isb"							\
-		: [INST]	"=m" (Core->Counter[T].INST)		\
-		:							\
-		: "memory", "%x2"					\
-	);								\
-	RDTSC_COUNTERx2(Core->Counter[T].TSC,				\
-			0x0, Core->Counter[T].C0.UCC,			\
-			0x0, Core->Counter[T].C0.URC);			\
+	RDTSC_COUNTERx3(Core->Counter[T].TSC,				\
+			cntvct_el0, Core->Counter[T].C0.UCC,		\
+			cntvct_el0, Core->Counter[T].C0.URC,		\
+			pmevcntr3_el0, Core->Counter[T].INST);		\
 	/* Derive C1: */						\
 	Core->Counter[T].C1 =						\
 	  (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?		\

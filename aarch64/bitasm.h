@@ -92,8 +92,8 @@ __asm__ volatile							\
 #define RDTSC64(_mem64) 						\
 __asm__ volatile							\
 (									\
-	"isb"					"\n\t"			\
-	"mrs	%0	,	cntvct_el0"				\
+	"mrs	%0	,	cntvct_el0"	"\n\t"			\
+	"isb"								\
 	: "=r" (_mem64) 						\
 	:								\
 	: "cc", "memory"						\
@@ -102,22 +102,18 @@ __asm__ volatile							\
 #define RDTSCP64(_mem64)						\
 __asm__ volatile							\
 (									\
-	"isb"					"\n\t"			\
-	"mrs	%0	,	cntvct_el0"				\
+	"mrs	%0	,	cntvct_el0"	"\n\t"			\
+	"isb"								\
 	: "=r" (_mem64) 						\
 	:								\
 	: "cc", "memory"						\
 )
 
-#define ASM_RDTSCP(_reg)						\
-	"# Read invariant TSC." 		"\n\t"			\
-	"isb"					"\n\t"			\
-	"mrs	" #_reg ",	cntvct_el0"	"\n\t"
-
 #define ASM_RDTSC(_reg) 						\
 	"# Read variant TSC."			"\n\t"			\
-	"isb"					"\n\t"			\
 	"mrs	" #_reg ",	cntvct_el0"	"\n\t"
+
+#define ASM_RDTSCP(_reg)	ASM_RDTSC(_reg)
 
 #define ASM_CODE_RDPMC(_ctr, _reg)					\
 	"# Read PMC counter."			"\n\t"			\

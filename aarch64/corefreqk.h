@@ -116,7 +116,9 @@
 	"shlq	$32,	%%rdx"			"\n\t"			\
 	"orq	%%rdx,	%%rax"			"\n\t"			\
 	"# Save counter value"			"\n\t"			\
-	"movq	%%rax,	%%" #_reg		"\n\t"		*/
+	"movq	%%rax,	%%" #_reg		"\n\t"		*/	\
+	"# Read PMU counter."			"\n\t"			\
+	"mrs	" #_reg ", " #_msr		"\n\t"
 
 #define ASM_RDMSR(_msr, _reg) ASM_CODE_RDMSR(_msr, _reg)
 
@@ -173,6 +175,8 @@ __asm__ volatile							\
 __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
+	ASM_RDMSR(_msr1, _reg1) 					\
+	ASM_RDMSR(_msr2, _reg2) 					\
 	"# Store values into memory."		"\n\t"			\
 	"str	" #_reg0 ",	%0"		"\n\t"			\
 	"str	" #_reg1 ",	%1"		"\n\t"			\
@@ -204,7 +208,23 @@ __asm__ volatile							\
 	: "%rax", "%rcx", "%rdx",					\
 	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
 	  "cc", "memory"						\
-);								*/
+);								*/	\
+__asm__ volatile							\
+(									\
+	_tsc_inst(_reg0)						\
+	ASM_RDMSR(_msr1, _reg1) 					\
+	ASM_RDMSR(_msr2, _reg2) 					\
+	ASM_RDMSR(_msr3, _reg3) 					\
+	"# Store values into memory."		"\n\t"			\
+	"str	" #_reg0 ",	%0"		"\n\t"			\
+	"str	" #_reg1 ",	%1"		"\n\t"			\
+	"str	" #_reg2 ",	%2"		"\n\t"			\
+	"str	" #_reg3 ",	%3"					\
+	: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2), "=m" (_mem3)	\
+	:								\
+	: "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
+	  "cc", "memory"						\
+);
 
 
 #define ASM_COUNTERx4(	_reg0, _reg1, _reg2, _reg3, _reg4,		\
@@ -444,22 +464,22 @@ __asm__ volatile							\
 
 
 #define RDTSC_COUNTERx1(mem_tsc, ...) \
-ASM_COUNTERx1(x0, x1, ASM_RDTSC, mem_tsc, __VA_ARGS__)
+ASM_COUNTERx1(x1, x2, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define RDTSCP_COUNTERx1(mem_tsc, ...) \
-ASM_COUNTERx1(x0, x1, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
+ASM_COUNTERx1(x1, x2, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define RDTSC_COUNTERx2(mem_tsc, ...) \
-ASM_COUNTERx2(x0, x1, x2, ASM_RDTSC, mem_tsc, __VA_ARGS__)
+ASM_COUNTERx2(x1, x2, x3, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define RDTSCP_COUNTERx2(mem_tsc, ...) \
-ASM_COUNTERx2(x0, x1, x2, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
+ASM_COUNTERx2(x1, x2, x3, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define RDTSC_COUNTERx3(mem_tsc, ...) \
-ASM_COUNTERx3(r10, r11, r12, r13, ASM_RDTSC, mem_tsc, __VA_ARGS__)
+ASM_COUNTERx3(x1, x2, x3, x4, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define RDTSCP_COUNTERx3(mem_tsc, ...) \
-ASM_COUNTERx3(r10, r11, r12, r13, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
+ASM_COUNTERx3(x1, x2, x3, x4, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define RDTSC_COUNTERx4(mem_tsc, ...) \
 ASM_COUNTERx4(r10, r11, r12, r13, r14, ASM_RDTSC, mem_tsc, __VA_ARGS__)
@@ -1179,6 +1199,7 @@ typedef struct
 		    };*/
 		    struct
 		    {
+			unsigned long long	PMCR;
 			unsigned long long	PMSELR;
 			unsigned long long	PMTYPER;
 			unsigned long long	PMCNTEN;
