@@ -735,7 +735,7 @@ signed int SearchArchitectureID(void)
     }
 	return id;
 }
-
+/*TODO(CleanUp)
 void BrandCleanup(char *pBrand, char inOrder[])
 {
 	unsigned long ix, jx;
@@ -750,7 +750,7 @@ void BrandCleanup(char *pBrand, char inOrder[])
 		}
 	}
 }
-/*TODO(CleanUp)
+
 void BrandFromCPUID(char *buffer)
 {
 	BRAND Brand;
@@ -844,7 +844,7 @@ static void Query_Features(void *pArg)
 	iArg->SMT_Count = 1;
 
 	__asm__ __volatile__(
-		"mrs %0, CNTFRQ_EL0"			"\n\t"
+		"mrs	%0	,	cntfrq_el0"	"\n\t"
 		"isb"
 		: "=r" (iArg->Features->Factory.Freq)
 		:
@@ -2425,8 +2425,9 @@ static void Map_Generic_Topology(void *arg)
 
 	__asm__ volatile
 	(
-		"mrs	x0, mpidr_el1	\n\t"
-		"str	x0, %0"
+		"mrs	x0	,	mpidr_el1"	"\n\t"
+		"str	x0	,	%0"		"\n\t"
+		"isb"
 		: "=m" (mpid)
 		:
 		: "memory", "x0"
@@ -4079,7 +4080,7 @@ signed int Read_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 
 	return rc;
 }
-
+/*TODO(CleanUp)
 signed int Read_ACPI_PCT_Registers(unsigned int cpu)
 {
 #if defined(CONFIG_ACPI)
@@ -4249,7 +4250,7 @@ signed int Read_ACPI_CST_Registers(unsigned int cpu)
 	return -ENODEV;
 #endif
 }
-
+*/
 void For_All_ACPI_CPPC(signed int(*CPPC_Func)(unsigned int, void*), void *arg)
 {
 	#if defined(CONFIG_ACPI_CPPC_LIB) \
@@ -4381,7 +4382,7 @@ void Probe_AMD_DataFabric(void)
     }
 #endif ** CONFIG_AMD_NB **
 }
-*/
+
 typedef void (*ROUTER)(void __iomem *mchmap, unsigned short mc);
 
 PCI_CALLBACK Router(struct pci_dev *dev, unsigned int offset,
@@ -4482,7 +4483,7 @@ void PutMemoryBAR(struct pci_dev **device, void __iomem **memmap)
 		(*device) = NULL;
 	}
 }
-/*TODO(CleanUp)
+
 void Query_P945(void __iomem *mchmap, unsigned short mc)
 {	** Source: Mobile Intel 945 Express Chipset Family.		**
 	unsigned short cha;
@@ -8272,7 +8273,7 @@ long For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
 
 	return rc;
 }
-*/
+
 long ClockSource_OC_Granted(void)
 {
 	long rc = -RC_CLOCKSOURCE;
@@ -8324,7 +8325,7 @@ long ClockSource_OC_Granted(void)
     }
 	return rc;
 }
-/*TODO(CleanUp)
+
 long For_All_AMD_Zen_BaseClock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void*))
 {
 	long rc;
@@ -13765,14 +13766,15 @@ void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 
 		"# Choosen [EVENT#] to collect from"	"\n\t"
 		"mrs	x2	,	pmxevtyper_el0" "\n\t"
-		"str	x2	,	%[PMTYPER]"	"\n\t"
+		"str	x2	,	%[PMTYPE3]"	"\n\t"
 		"orr	x2	,	x2, %[EVENT3]"	"\n\t"
 		"msr	pmxevtyper_el0, x2"		"\n\t"
 
 		"ldr	x2	,	%[PMSELR]"	"\n\t"
 		"orr	x2	,	x2, #2" 	"\n\t"
 		"msr	pmselr_el0,	x2"		"\n\t"
-		"ldr	x2	,	%[PMTYPER]"	"\n\t"
+		"mrs	x2	,	pmxevtyper_el0" "\n\t"
+		"str	x2	,	%[PMTYPE2]"	"\n\t"
 		"orr	x2	,	x2, %[EVENT2]"	"\n\t"
 		"msr	pmxevtyper_el0, x2"		"\n\t"
 
@@ -13780,6 +13782,7 @@ void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 		"orr	x2	,	x2, #0b11111"	"\n\t"
 		"msr	pmselr_el0,	x2"		"\n\t"
 		"mrs	x2	,	pmxevtyper_el0" "\n\t"
+		"str	x2	,	%[PMTYPE1]"	"\n\t"
 		"orr	x2	,	x2, %[FILTR1]"	"\n\t"
 		"msr	pmxevtyper_el0, x2"		"\n\t"
 
@@ -13797,7 +13800,9 @@ void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 		"isb"
 		: [PMCR]	"+m" (Save->PMCR),
 		  [PMSELR]	"+m" (Save->PMSELR),
-		  [PMTYPER]	"+m" (Save->PMTYPER),
+		  [PMTYPE3]	"+m" (Save->PMTYPE[2]),
+		  [PMTYPE2]	"+m" (Save->PMTYPE[1]),
+		  [PMTYPE1]	"+m" (Save->PMTYPE[0]),
 		  [PMCNTEN]	"+m" (Save->PMCNTEN)
 		: [EVENT3]	"r" (0x0008),
 		  [EVENT2]	"r" (0x0011),
@@ -13814,17 +13819,38 @@ void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 		"# Restore PMU configuration registers" "\n\t"
 		"ldr	x2	,	%[PMCR]"	"\n\t"
 		"msr	pmcr_el0,	x2"		"\n\t"
-		"ldr	x2	,	%[PMSELR]"	"\n\t"
-		"msr	pmselr_el0,	x2"		"\n\t"
-		"ldr	x2	,	%[PMTYPER]"	"\n\t"
-		"msr	pmxevtyper_el0, x2"		"\n\t"
+
 		"ldr	x2	,	%[PMCNTEN]"	"\n\t"
 		"msr	pmcntenset_el0, x2"		"\n\t"
+
+		"ldr	x2	,	%[PMSELR]"	"\n\t"
+		"orr	x2	,	x2, #0b11111"	"\n\t"
+		"msr	pmselr_el0,	x2"		"\n\t"
+		"ldr	x2	,	%[PMTYPE1]"	"\n\t"
+		"msr	pmxevtyper_el0, x2"		"\n\t"
+
+		"ldr	x2	,	%[PMSELR]"	"\n\t"
+		"orr	x2	,	x2, #2" 	"\n\t"
+		"msr	pmselr_el0,	x2"		"\n\t"
+		"ldr	x2	,	%[PMTYPE2]"	"\n\t"
+		"msr	pmxevtyper_el0, x2"		"\n\t"
+
+		"ldr	x2	,	%[PMSELR]"	"\n\t"
+		"orr	x2	,	x2, #3" 	"\n\t"
+		"msr	pmselr_el0,	x2"		"\n\t"
+		"ldr	x2	,	%[PMTYPE3]"	"\n\t"
+		"msr	pmxevtyper_el0, x2"		"\n\t"
+
+		"ldr	x2	,	%[PMSELR]"	"\n\t"
+		"msr	pmselr_el0,	x2"		"\n\t"
+
 		"isb"
 		:
 		: [PMCR]	"m" (Save->PMCR),
 		  [PMSELR]	"m" (Save->PMSELR),
-		  [PMTYPER]	"m" (Save->PMTYPER),
+		  [PMTYPE3]	"m" (Save->PMTYPE[2]),
+		  [PMTYPE2]	"m" (Save->PMTYPE[1]),
+		  [PMTYPE1]	"m" (Save->PMTYPE[0]),
 		  [PMCNTEN]	"m" (Save->PMCNTEN)
 		: "memory", "%x2"
 	);
@@ -14130,13 +14156,14 @@ void AMD_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 */
 #define Counters_Generic(Core, T)					\
 ({									\
-	volatile unsigned long long UCC;				\
+	volatile unsigned long long UCC, URC;				\
 	RDTSC_COUNTERx3(Core->Counter[T].TSC,				\
-			pmccntr_el0,	UCC,				\
-			pmevcntr2_el0,	Core->Counter[T].C0.URC,	\
+			pmevcntr2_el0,	UCC,				\
+			pmccntr_el0,	URC,				\
 			pmevcntr3_el0,	Core->Counter[T].INST );	\
-	/* Normalize Frequency */					\
+	/* Normalize Frequencies */					\
 	Core->Counter[T].C0.UCC = DIV_ROUND_CLOSEST(UCC, PRECISION);	\
+	Core->Counter[T].C0.URC = DIV_ROUND_CLOSEST(URC, PRECISION);	\
 	/* Derive C1: */						\
 	Core->Counter[T].C1 =						\
 	  (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?		\

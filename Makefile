@@ -22,7 +22,11 @@ TASK_ORDER = 5
 MAX_FREQ_HZ ?= 7125000000
 MSR_CORE_PERF_UCC ?= MSR_IA32_APERF
 MSR_CORE_PERF_URC ?= MSR_IA32_MPERF
+ifeq ($(HW), x86_64)
 DELAY_TSC ?= 1
+else
+DELAY_TSC = 0
+endif
 ARCH_PMC ?=
 
 obj-m := corefreqk.o

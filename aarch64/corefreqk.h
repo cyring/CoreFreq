@@ -1204,7 +1204,7 @@ typedef struct
 		    {
 			unsigned long long	PMCR;
 			unsigned long long	PMSELR;
-			unsigned long long	PMTYPER;
+			unsigned long long	PMTYPE[3];
 			unsigned long long	PMCNTEN;
 		    };
 		} SaveArea;
