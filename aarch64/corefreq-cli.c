@@ -4754,6 +4754,8 @@ REASON_CODE SysInfoPerfCaps(	Window *win,
 /*TODO(CleanUp)
      if  ( (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	|| (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
+*/
+     if  (RO(Shm)->Proc.Features.Power.EAX.HWP_Reg == 0)
      {
       if (RO(Shm)->Proc.Features.ACPI_CPPC == 1)
       {
@@ -4773,15 +4775,12 @@ REASON_CODE SysInfoPerfCaps(	Window *win,
 		HWP_Update);
       }
      } else {
-*/
 	GridCall( PUT(	BOXKEY_HWP, attrib[bix], width, 2,
 			"%s%.*s%s       <%3s>", RSC(PERF_MON_HWP).CODE(),
 			width - 18 - RSZ(PERF_MON_HWP), hSpace,
 			RSC(PERF_LABEL_HWP).CODE(), ENABLED(bix) ),
 		HWP_Update);
-/*
      }
-*/
 	PUT(	SCANKEY_NULL, attrib[0], width, 3,
 		"%s     %s      %s     %s        %s",
 		RSC(CAPABILITIES).CODE(),
@@ -5203,8 +5202,9 @@ REASON_CODE SysInfoPwrThermal(  Window *win,
     }
   } else if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	 || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+*/
   {
-** Row Mark **
+/* Row Mark */
 	bix = (RO(Shm)->Proc.Features.HWP_Enable == 1)
 	   || (RO(Shm)->Proc.Features.OSPM_EPP == 1);
     if (bix) {
@@ -5228,7 +5228,6 @@ REASON_CODE SysInfoPwrThermal(  Window *win,
 		RSC(POWER_LABEL_CPPC).CODE(), POWERED(bix) );
     }
   }
-*/
 /* Row Mark */
 	bix = (RO(Shm)->Proc.Features.Power.EAX.DTS == 1)
 	   || (RO(Shm)->Proc.Features.AdvPower.EDX.TS == 1);
@@ -13998,7 +13997,7 @@ int Shortcut(SCANKEY *scan)
 				TECHNOLOGY_PC6 );
 	}
     break;
-*/
+
     case BOXKEY_PKGCST:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
@@ -14029,19 +14028,19 @@ int Shortcut(SCANKEY *scan)
 	};
 	Window *wBox = CreateBox(scan->key, origin, select,
 				(char*) RSC(BOX_PKG_STATE_LIMIT_TITLE).CODE(),
-/* 0 */ RSC(BOX_STATE_UNSPECIFIED).CODE() , stateAttr[0], SCANKEY_NULL,
-/* 1 */ RSC(BOX_PKG_STATE_LIMIT_C10).CODE(),stateAttr[0], BOXKEY_PKGCST_C10,
-/* 2 */ RSC(BOX_PKG_STATE_LIMIT_C9).CODE(), stateAttr[0], BOXKEY_PKGCST_C9,
-/* 3 */ RSC(BOX_PKG_STATE_LIMIT_C8).CODE(), stateAttr[0], BOXKEY_PKGCST_C8,
-/* 4 */ RSC(BOX_PKG_STATE_LIMIT_C7S).CODE(),stateAttr[0], BOXKEY_PKGCST_C7S,
-/* 5 */ RSC(BOX_PKG_STATE_LIMIT_C7).CODE(), stateAttr[0], BOXKEY_PKGCST_C7,
-/* 6 */ RSC(BOX_PKG_STATE_LIMIT_C6R).CODE(),stateAttr[0], BOXKEY_PKGCST_C6R,
-/* 7 */ RSC(BOX_PKG_STATE_LIMIT_C6).CODE(), stateAttr[0], BOXKEY_PKGCST_C6,
-/* 8 */ RSC(BOX_PKG_STATE_LIMIT_C4).CODE(), stateAttr[0], BOXKEY_PKGCST_C4,
-/* 9 */ RSC(BOX_PKG_STATE_LIMIT_C3).CODE(), stateAttr[0], BOXKEY_PKGCST_C3,
-/*10 */ RSC(BOX_PKG_STATE_LIMIT_C2).CODE(), stateAttr[0], BOXKEY_PKGCST_C2,
-/*11 */ RSC(BOX_PKG_STATE_LIMIT_C1).CODE(), stateAttr[0], BOXKEY_PKGCST_C1,
-/*12 */ RSC(BOX_PKG_STATE_LIMIT_C0).CODE(), stateAttr[0], BOXKEY_PKGCST_C0);
+** 0 ** RSC(BOX_STATE_UNSPECIFIED).CODE() , stateAttr[0], SCANKEY_NULL,
+** 1 ** RSC(BOX_PKG_STATE_LIMIT_C10).CODE(),stateAttr[0], BOXKEY_PKGCST_C10,
+** 2 ** RSC(BOX_PKG_STATE_LIMIT_C9).CODE(), stateAttr[0], BOXKEY_PKGCST_C9,
+** 3 ** RSC(BOX_PKG_STATE_LIMIT_C8).CODE(), stateAttr[0], BOXKEY_PKGCST_C8,
+** 4 ** RSC(BOX_PKG_STATE_LIMIT_C7S).CODE(),stateAttr[0], BOXKEY_PKGCST_C7S,
+** 5 ** RSC(BOX_PKG_STATE_LIMIT_C7).CODE(), stateAttr[0], BOXKEY_PKGCST_C7,
+** 6 ** RSC(BOX_PKG_STATE_LIMIT_C6R).CODE(),stateAttr[0], BOXKEY_PKGCST_C6R,
+** 7 ** RSC(BOX_PKG_STATE_LIMIT_C6).CODE(), stateAttr[0], BOXKEY_PKGCST_C6,
+** 8 ** RSC(BOX_PKG_STATE_LIMIT_C4).CODE(), stateAttr[0], BOXKEY_PKGCST_C4,
+** 9 ** RSC(BOX_PKG_STATE_LIMIT_C3).CODE(), stateAttr[0], BOXKEY_PKGCST_C3,
+**10 ** RSC(BOX_PKG_STATE_LIMIT_C2).CODE(), stateAttr[0], BOXKEY_PKGCST_C2,
+**11 ** RSC(BOX_PKG_STATE_LIMIT_C1).CODE(), stateAttr[0], BOXKEY_PKGCST_C1,
+**12 ** RSC(BOX_PKG_STATE_LIMIT_C0).CODE(), stateAttr[0], BOXKEY_PKGCST_C0);
 
       if (wBox != NULL)
       {
@@ -14068,7 +14067,7 @@ int Shortcut(SCANKEY *scan)
      }
     }
     break;
-/*TODO(CleanUp)
+
     case BOXKEY_PKGCST_C10:
     case BOXKEY_PKGCST_C9:
     case BOXKEY_PKGCST_C8:
@@ -14091,7 +14090,7 @@ int Shortcut(SCANKEY *scan)
 	}
     }
     break;
-*/
+
     case BOXKEY_IOMWAIT:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
@@ -14124,7 +14123,7 @@ int Shortcut(SCANKEY *scan)
       }
     }
     break;
-/*TODO(CleanUp)
+
     case BOXKEY_IOMWAIT_OFF:
 	if (!RING_FULL(RW(Shm)->Ring[0])) {
 		RING_WRITE(	RW(Shm)->Ring[0],
@@ -14142,7 +14141,7 @@ int Shortcut(SCANKEY *scan)
 				TECHNOLOGY_IO_MWAIT );
 	}
     break;
-*/
+
     case BOXKEY_IORCST:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
@@ -14178,13 +14177,13 @@ int Shortcut(SCANKEY *scan)
 	};
 	Window *wBox = CreateBox(scan->key, origin, select,
 				(char*) RSC(BOX_MWAIT_MAX_STATE_TITLE).CODE(),
-	/* 0 */ RSC(BOX_STATE_UNSPECIFIED).CODE(), stateAttr[0], SCANKEY_NULL,
-	/* 1 */ RSC(BOX_STATE_C8).CODE(), stateAttr[0], BOXKEY_IORCST_C8,
-	/* 2 */ RSC(BOX_STATE_C7).CODE(), stateAttr[0], BOXKEY_IORCST_C7,
-	/* 3 */ RSC(BOX_STATE_C6).CODE(), stateAttr[0], BOXKEY_IORCST_C6,
-	/* 4 */ RSC(BOX_STATE_C4).CODE(), stateAttr[0], BOXKEY_IORCST_C4,
-	/* 5 */ RSC(BOX_STATE_C3).CODE(), stateAttr[0], BOXKEY_IORCST_C3,
-	/* 6 */ RSC(BOX_STATE_C0).CODE(), stateAttr[0], SCANKEY_NULL);
+	** 0 ** RSC(BOX_STATE_UNSPECIFIED).CODE(), stateAttr[0], SCANKEY_NULL,
+	** 1 ** RSC(BOX_STATE_C8).CODE(), stateAttr[0], BOXKEY_IORCST_C8,
+	** 2 ** RSC(BOX_STATE_C7).CODE(), stateAttr[0], BOXKEY_IORCST_C7,
+	** 3 ** RSC(BOX_STATE_C6).CODE(), stateAttr[0], BOXKEY_IORCST_C6,
+	** 4 ** RSC(BOX_STATE_C4).CODE(), stateAttr[0], BOXKEY_IORCST_C4,
+	** 5 ** RSC(BOX_STATE_C3).CODE(), stateAttr[0], BOXKEY_IORCST_C3,
+	** 6 ** RSC(BOX_STATE_C0).CODE(), stateAttr[0], SCANKEY_NULL);
 
       if (wBox != NULL)
       {
@@ -14213,7 +14212,7 @@ int Shortcut(SCANKEY *scan)
      }
     }
     break;
-/*TODO(CleanUp)
+
     case BOXKEY_IORCST_C3:
     case BOXKEY_IORCST_C4:
     case BOXKEY_IORCST_C6:
@@ -14279,7 +14278,7 @@ int Shortcut(SCANKEY *scan)
 				TECHNOLOGY_ODCM );
 	}
     break;
-*/
+
     case BOXKEY_DUTYCYCLE:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
@@ -14418,7 +14417,7 @@ int Shortcut(SCANKEY *scan)
       }
     }
     break;
-/*TODO(CleanUp)
+
     case BOXKEY_ODCM_DC00:
     case BOXKEY_ODCM_DC01:
     case BOXKEY_ODCM_DC02:
@@ -14847,7 +14846,7 @@ int Shortcut(SCANKEY *scan)
 				TECHNOLOGY_R2H );
 	}
     break;
-*/
+
     case BOXKEY_CFG_TDP_LVL:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
@@ -14893,7 +14892,7 @@ int Shortcut(SCANKEY *scan)
       }
     }
     break;
-/*TODO(CleanUp)
+
     case BOXKEY_CFG_TDP_LVL0:
 	if (!RING_FULL(RW(Shm)->Ring[0])) {
 		RING_WRITE(	RW(Shm)->Ring[0],
@@ -14970,7 +14969,7 @@ int Shortcut(SCANKEY *scan)
 				TECHNOLOGY_WDT );
 	}
     break;
-*/
+
     case BOXKEY_HSMP:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
@@ -15002,7 +15001,7 @@ int Shortcut(SCANKEY *scan)
       }
     }
     break;
-/*TODO(CleanUp)
+
     case BOXKEY_HSMP_OFF:
 	if (!RING_FULL(RW(Shm)->Ring[0])) {
 		RING_WRITE(	RW(Shm)->Ring[0],

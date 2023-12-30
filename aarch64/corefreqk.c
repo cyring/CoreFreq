@@ -183,7 +183,7 @@ MODULE_PARM_DESC(Custom_TDC_Offset, "TDC Limit Offset (amp)");
 static signed short Activate_TDC_Limit = -1;
 module_param(Activate_TDC_Limit, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Activate_TDC_Limit, "Activate TDC Limiting");
-*/
+
 static signed short L1_HW_PREFETCH_Disable = -1;
 module_param(L1_HW_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L1_HW_PREFETCH_Disable, "Disable L1 HW Prefetcher");
@@ -203,7 +203,7 @@ MODULE_PARM_DESC(L2_HW_PREFETCH_Disable, "Disable L2 HW Prefetcher");
 static signed short L2_HW_CL_PREFETCH_Disable = -1;
 module_param(L2_HW_CL_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L2_HW_CL_PREFETCH_Disable, "Disable L2 HW CL Prefetcher");
-/*
+
 static signed short SpeedStep_Enable = -1;
 module_param(SpeedStep_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(SpeedStep_Enable, "Enable SpeedStep");
@@ -261,7 +261,7 @@ MODULE_PARM_DESC(PowerPolicy, "Power Policy Preference [0-15]");
 static signed short Turbo_Activation_Ratio = -1;
 module_param(Turbo_Activation_Ratio, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Turbo_Activation_Ratio, "Turbo Activation Ratio");
-*/
+
 static signed int PState_FID = -1;
 module_param(PState_FID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PState_FID, "P-State Frequency Id");
@@ -269,7 +269,7 @@ MODULE_PARM_DESC(PState_FID, "P-State Frequency Id");
 static signed int PState_VID = -1;
 module_param(PState_VID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PState_VID, "P-State Voltage Id");
-
+*/
 static enum RATIO_BOOST Ratio_Boost_Count = 0;
 static signed int Ratio_Boost[BOOST(SIZE) - BOOST(18C)] = {
 	/*	18C		*/	-1,
@@ -21931,6 +21931,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 
 	switch (prm.dl.hi)
 	{
+/*TODO(CleanUp)
 	case TECHNOLOGY_L1_HW_PREFETCH:
 		switch (prm.dl.lo) {
 		case COREFREQ_TOGGLE_OFF:
@@ -21995,7 +21996,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			break;
 		}
 		break;
-/*TODO(CleanUp)
+
 	case TECHNOLOGY_EIST:
 		switch (prm.dl.lo) {
 		case COREFREQ_TOGGLE_OFF:
