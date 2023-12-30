@@ -23,8 +23,7 @@
 #include <pthread.h>
 
 #include "bitasm.h"
-#include "amd_reg.h"
-#include "intel_reg.h"
+#include "arm_reg.h"
 #include "coretypes.h"
 #include "corefreq.h"
 #include "corefreqm.h"
@@ -1588,9 +1587,10 @@ void PowerInterface(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
     }
 	RO(Shm)->Proc.Power.TDC = RO(Proc)->PowerThermal.TDC;
 	RO(Shm)->Proc.Power.Feature.TDC=RO(Proc)->PowerThermal.Enable_Limit.TDC;
-  } else */{
+  } else {
 	RO(Shm)->Proc.PowerNow = 0;
   }
+*/
 }
 
 void ThermalPoint(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
@@ -1602,6 +1602,7 @@ void ThermalPoint(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 			RO(PROC) *RO(Proc), RW(PROC) *RW(Proc) )
 {	/*	Technologies aggregation.				*/
+/*TODO(CleanUp)
 	RO(Shm)->Proc.Technology.PowerNow = (RO(Shm)->Proc.PowerNow == 0b11);
 
 	RO(Shm)->Proc.Technology.ODCM = BITCMP_CC(LOCKLESS,
@@ -1635,11 +1636,11 @@ void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 	RO(Shm)->Proc.Technology.EIST = BITCMP_CC(LOCKLESS,
 						RW(Proc)->SpeedStep,
 						RO(Proc)->SpeedStep_Mask);
-
+*/
 	RO(Shm)->Proc.Technology.Turbo = BITWISEAND_CC(LOCKLESS,
 						RW(Proc)->TurboBoost,
 						RO(Proc)->TurboBoost_Mask) != 0;
-
+/*TODO(CleanUp)
 	RO(Shm)->Proc.Technology.C1E = BITCMP_CC(LOCKLESS,
 						RW(Proc)->C1E,
 						RO(Proc)->C1E_Mask);
@@ -1671,30 +1672,31 @@ void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 	RO(Shm)->Proc.Technology.SMM = BITCMP_CC(LOCKLESS,
 						RW(Proc)->SMM,
 						RO(Proc)->CR_Mask);
-
+*/
 	RO(Shm)->Proc.Technology.VM = BITCMP_CC(LOCKLESS,
 						RW(Proc)->VM,
 						RO(Proc)->CR_Mask);
-
+/*
 	RO(Shm)->Proc.Technology.WDT = BITCMP_CC(LOCKLESS,
 						RW(Proc)->WDT,
 						RO(Proc)->WDT_Mask);
 
-								/* 000v */
+								** 000v **
 	RO(Shm)->Proc.Technology.TM1 = RO(Proc)->Features.Std.EDX.TM1
 					| RO(Proc)->Features.AdvPower.EDX.TTP;
-								/* 00v0 */
+								** 00v0 **
 	RO(Shm)->Proc.Technology.TM1 |= BITCMP_CC(LOCKLESS,
 						RW(Proc)->TM1,
 						RO(Proc)->TM_Mask) << 1;
 
-								/* 000v */
+								** 000v **
 	RO(Shm)->Proc.Technology.TM2 = RO(Proc)->Features.Std.ECX.TM2
 					| RO(Proc)->Features.AdvPower.EDX.TM;
-								/* 00v0 */
+								** 00v0 **
 	RO(Shm)->Proc.Technology.TM2 |= BITCMP_CC(LOCKLESS,
 						RW(Proc)->TM2,
 						RO(Proc)->TM_Mask) << 1;
+*/
 }
 
 void Mitigation_2nd_Stage(	RO(SHM_STRUCT) *RO(Shm),
@@ -1711,18 +1713,18 @@ void Mitigation_2nd_Stage(	RO(SHM_STRUCT) *RO(Shm),
 			SSBD = BITCMP_CC(	LOCKLESS,
 						RW(Proc)->SSBD,
 						RO(Proc)->SPEC_CTRL_Mask ),
-
+/*
 			AMD_LS_CFG_SSBD = BITCMP_CC(LOCKLESS,
 						RW(Proc)->AMD_LS_CFG_SSBD,
 						RO(Proc)->SPEC_CTRL_Mask ),
-
+*/
 			PSFD = BITCMP_CC(	LOCKLESS,
 						RW(Proc)->PSFD,
 						RO(Proc)->SPEC_CTRL_Mask );
 
 	RO(Shm)->Proc.Mechanisms.IBRS  += (2 * IBRS);
 	RO(Shm)->Proc.Mechanisms.STIBP += (2 * STIBP);
-	RO(Shm)->Proc.Mechanisms.SSBD  += (2 * (SSBD | AMD_LS_CFG_SSBD));
+	RO(Shm)->Proc.Mechanisms.SSBD  += (2 * (SSBD /*| AMD_LS_CFG_SSBD*/));
 	RO(Shm)->Proc.Mechanisms.PSFD  += (2 * PSFD);
 }
 /*TODO(CleanUp)

@@ -893,26 +893,31 @@ typedef struct
 	FEATURES		Features;
 
 	BitCC			CR_Mask 	__attribute__ ((aligned (16)));
+/*TODO(CleanUp)
 	BitCC			TM_Mask 	__attribute__ ((aligned (16)));
 	BitCC			ODCM_Mask	__attribute__ ((aligned (16)));
 	BitCC			DCU_Mask	__attribute__ ((aligned (16)));
 	BitCC			Scrubbing_Mask	__attribute__ ((aligned (16)));
 	BitCC			PowerMgmt_Mask	__attribute__ ((aligned (16)));
 	BitCC			SpeedStep_Mask	__attribute__ ((aligned (16)));
+*/
 	BitCC			TurboBoost_Mask __attribute__ ((aligned (16)));
 	BitCC			HWP_Mask __attribute__ ((aligned (16)));
+/*TODO(CleanUp)
 	BitCC			C1E_Mask __attribute__ ((aligned (16)));
-	BitCC	/* NHM */	C3A_Mask __attribute__ ((aligned (16)));
-	BitCC	/* NHM */	C1A_Mask __attribute__ ((aligned (16)));
-	BitCC	/* SNB */	C3U_Mask __attribute__ ((aligned (16)));
-	BitCC	/* SNB */	C1U_Mask __attribute__ ((aligned (16)));
-	BitCC	/* AMD */	CC6_Mask __attribute__ ((aligned (16)));
-	BitCC	/* AMD */	PC6_Mask __attribute__ ((aligned (16)));
+	BitCC	** NHM **	C3A_Mask __attribute__ ((aligned (16)));
+	BitCC	** NHM **	C1A_Mask __attribute__ ((aligned (16)));
+	BitCC	** SNB **	C3U_Mask __attribute__ ((aligned (16)));
+	BitCC	** SNB **	C1U_Mask __attribute__ ((aligned (16)));
+	BitCC	** AMD **	CC6_Mask __attribute__ ((aligned (16)));
+	BitCC	** AMD **	PC6_Mask __attribute__ ((aligned (16)));
+*/
 	BitCC			SPEC_CTRL_Mask	__attribute__ ((aligned (16)));
+/*
 	BitCC			ARCH_CAP_Mask	__attribute__ ((aligned (16)));
-	BitCC	/* AMD */	BTC_NOBR_Mask	__attribute__ ((aligned (16)));
+	BitCC	** AMD **	BTC_NOBR_Mask	__attribute__ ((aligned (16)));
 	BitCC			WDT_Mask	__attribute__ ((aligned (16)));
-
+*/
 	enum THERMAL_FORMULAS	thermalFormula;
 	enum VOLTAGE_FORMULAS	voltageFormula;
 	enum POWER_FORMULAS	powerFormula;
@@ -1030,19 +1035,21 @@ typedef struct
 	    unsigned long long	ACCU[PWR_DOMAIN(SIZE)];
 	  } Power;
 	} Delta __attribute__ ((aligned (8)));
-
+/*TODO(CleanUp)
 	BitCC			TM1		__attribute__ ((aligned (16)));
 	BitCC			TM2		__attribute__ ((aligned (16)));
 	BitCC			ODCM		__attribute__ ((aligned (16)));
 	BitCC			L1_HW_Prefetch __attribute__ ((aligned (16)));
 	BitCC			L1_HW_IP_Prefetch __attribute__((aligned (16)));
-	BitCC	/* Intel */	L1_Scrubbing	__attribute__ ((aligned (16)));
+	BitCC	** Intel **	L1_Scrubbing	__attribute__ ((aligned (16)));
 	BitCC			L2_HW_Prefetch __attribute__ ((aligned (16)));
 	BitCC			L2_HW_CL_Prefetch __attribute__((aligned (16)));
 	BitCC			PowerMgmt	__attribute__ ((aligned (16)));
 	BitCC			SpeedStep	__attribute__ ((aligned (16)));
+*/
 	BitCC			TurboBoost	__attribute__ ((aligned (16)));
 	BitCC			HWP		__attribute__ ((aligned (16)));
+/*TODO(CleanUp)
 	BitCC			C1E		__attribute__ ((aligned (16)));
 	BitCC			C3A		__attribute__ ((aligned (16)));
 	BitCC			C1A		__attribute__ ((aligned (16)));
@@ -1051,11 +1058,14 @@ typedef struct
 	BitCC			CC6		__attribute__ ((aligned (16)));
 	BitCC			PC6		__attribute__ ((aligned (16)));
 	BitCC			SMM		__attribute__ ((aligned (16)));
+*/
 	BitCC			VM		__attribute__ ((aligned (16)));
+
 	BitCC			IBRS		__attribute__ ((aligned (16)));
 	BitCC			STIBP		__attribute__ ((aligned (16)));
 	BitCC			SSBD		__attribute__ ((aligned (16)));
 	BitCC			PSFD		__attribute__ ((aligned (16)));
+/*
 	BitCC			RDCL_NO 	__attribute__ ((aligned (16)));
 	BitCC			IBRS_ALL	__attribute__ ((aligned (16)));
 	BitCC			RSBA		__attribute__ ((aligned (16)));
@@ -1092,8 +1102,8 @@ typedef struct
 	BitCC			RRSBA_DIS_S	__attribute__ ((aligned (16)));
 	BitCC			DDPD_U_DIS	__attribute__ ((aligned (16)));
 	BitCC			BHI_DIS_S	__attribute__ ((aligned (16)));
-	BitCC	/* AMD */	BTC_NOBR	__attribute__ ((aligned (16)));
-
+	BitCC	** AMD **	BTC_NOBR	__attribute__ ((aligned (16)));
+*/
 	struct {
 		Bit64		Signal	__attribute__ ((aligned (8)));
 	} OS;

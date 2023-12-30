@@ -1457,12 +1457,12 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 		}
 		json_key(&s, "HypervisorID");
 		json_literal(&s, "%llu", RO(Shm)->Proc.HypervisorID);
-		json_key(&s, "PowerNow");
-		json_literal(&s, "%llu", RO(Shm)->Proc.PowerNow);
+/*		json_key(&s, "PowerNow");
+		json_literal(&s, "%llu", RO(Shm)->Proc.PowerNow);*/
 		json_key(&s, "Technology");
 		{
 			json_start_object(&s);
-			json_key(&s, "PowerNow");
+/*			json_key(&s, "PowerNow");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.PowerNow);
 			json_key(&s, "TM1");
 			json_literal(&s, "%u", RO(Shm)->Proc.Technology.TM1);
@@ -1473,10 +1473,10 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_key(&s, "PowerMgmt");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.PowerMgmt);
 			json_key(&s, "EIST");
-			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.EIST);
+			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.EIST);*/
 			json_key(&s, "Turbo");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.Turbo);
-			json_key(&s, "EnergyOptimization");
+/*			json_key(&s, "EnergyOptimization");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Features.EEO_Enable);
 			json_key(&s, "RaceToHalt");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Features.R2H_Enable);
@@ -1497,7 +1497,7 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_key(&s, "SMM");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.SMM);
 			json_key(&s, "WDT");
-			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.WDT);
+			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.WDT);*/
 			json_key(&s, "VM");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.VM);
 			json_key(&s, "IOMMU");
@@ -1506,14 +1506,14 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.IOMMU_Ver_Major);
 			json_key(&s, "IOMMU_Ver_Minor");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.IOMMU_Ver_Minor);
-			json_key(&s, "L1_HW_Prefetch");
+/*			json_key(&s, "L1_HW_Prefetch");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.L1_HW_Prefetch);
 			json_key(&s, "L1_HW_IP_Prefetch");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.L1_HW_IP_Prefetch);
 			json_key(&s, "L2_HW_Prefetch");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.L2_HW_Prefetch);
 			json_key(&s, "L2_HW_CL_Prefetch");
-			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.L2_HW_CL_Prefetch);
+			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.L2_HW_CL_Prefetch);*/
 
 			json_end_object(&s);
 		}
@@ -1751,7 +1751,7 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_key(&s, "SSBD");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.SSBD);
 			json_key(&s, "L1DFL_VMENTRY_NO");
-			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.L1DFL_VMENTRY_NO);
+/*			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.L1DFL_VMENTRY_NO);
 			json_key(&s, "RDCL_NO");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.RDCL_NO);
 			json_key(&s, "IBRS_ALL");
@@ -1775,10 +1775,10 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_key(&s, "SPLA");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.SPLA);
 			json_key(&s, "SNOOP_FILTER");
-			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.SNOOP_FILTER);
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.SNOOP_FILTER);*/
 			json_key(&s, "PSFD");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.PSFD);
-			json_key(&s, "DOITM_EN");
+/*			json_key(&s, "DOITM_EN");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.DOITM_EN);
 			json_key(&s, "SBDR_SSDP_NO");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.SBDR_SSDP_NO);
@@ -1825,7 +1825,7 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_key(&s, "DRAM_Scrambler");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.DRAM_Scrambler);
 			json_key(&s, "TSME");
-			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.TSME);
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.TSME);*/
 
 			json_end_object(&s);
 		}

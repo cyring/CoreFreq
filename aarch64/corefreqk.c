@@ -53,8 +53,7 @@
 #endif
 
 #include "bitasm.h"
-#include "amd_reg.h"
-#include "intel_reg.h"
+#include "arm_reg.h"
 #include "coretypes.h"
 #include "corefreq-api.h"
 #include "corefreqk.h"
@@ -11949,13 +11948,16 @@ void AMD_Microcode(CORE_RO *Core)
 
 void PerCore_Reset(CORE_RO *Core)
 {
+/*TODO(CleanUp)
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->DCU_Mask  , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
+*/
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->HWP_Mask	, Core->Bind);
+/*TODO(CleanUp)
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask	, Core->Bind);
@@ -11967,8 +11969,9 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
-
+*/
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask	, Core->Bind);
+/*
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask	, Core->Bind);
 
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TM1	, Core->Bind);
@@ -11981,8 +11984,10 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_CL_Prefetch , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PowerMgmt , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SpeedStep , Core->Bind);
+*/
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->HWP	, Core->Bind);
+/*TODO(CleanUp)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1E	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C3A	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1A	, Core->Bind);
@@ -11990,11 +11995,12 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CC6	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PC6	, Core->Bind);
-
+*/
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IBRS	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->STIBP 	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBD	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSFD	, Core->Bind);
+/*
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RDCL_NO	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IBRS_ALL	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RSBA	, Core->Bind);
@@ -12010,7 +12016,9 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SNOOP_FILTER, Core->Bind);
 
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SMM	, Core->Bind);
+*/
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->VM	, Core->Bind);
+/*
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT	, Core->Bind);
 
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->AMD_LS_CFG_SSBD, Core->Bind);
@@ -12036,7 +12044,7 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->DDPD_U_DIS, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BHI_DIS_S	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BTC_NOBR	, Core->Bind);
-
+*/
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.Mask);
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.Kind);
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.State);
@@ -12049,15 +12057,17 @@ static void PerCore_GenericMachine(void *arg)
 	PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(MIN)] = 8;
 	PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(MAX)] = \
 				PUBLIC(RO(Proc))->Features.Factory.Ratio;
-
+/*TODO(CleanUp)
 	BITSET_CC(LOCKLESS,PUBLIC(RO(Proc))->SpeedStep_Mask,Core->Bind);
 	BITSET_CC(LOCKLESS,PUBLIC(RO(Proc))->ODCM_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS,PUBLIC(RO(Proc))->PowerMgmt_Mask,Core->Bind);
-
+*/
 	Dump_CPUID(Core);
-
+/*TODO(CleanUp)
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
+*/
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
+/*
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask	, Core->Bind);
@@ -12067,13 +12077,15 @@ static void PerCore_GenericMachine(void *arg)
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
-
+*/
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+/*
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
+*/
 }
 /*TODO(CleanUp)
 static void PerCore_VirtualMachine(void *arg)

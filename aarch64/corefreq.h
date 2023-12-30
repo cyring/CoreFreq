@@ -319,37 +319,37 @@ typedef struct
 	Bit64			Toggle __attribute__ ((aligned (8)));
 
 	FEATURES		Features;
-
+/*
 	Bit64			PowerNow	__attribute__ ((aligned (8)));
-
+*/
 	struct {
 		unsigned long long
-				PowerNow	:  1-0,
+/*				PowerNow	:  1-0,
 				ODCM		:  2-1,
 				PowerMgmt	:  3-2,
-				EIST		:  4-3,
+				EIST		:  4-3,*/
 				Turbo		:  5-4,
-				C1E		:  6-5,
+/*				C1E		:  6-5,
 				C3A		:  7-6,
 				C1A		:  8-7,
 				C3U		:  9-8,
 				C1U		: 10-9,
 				CC6		: 11-10,
 				PC6		: 12-11,
-				SMM		: 13-12,
+				SMM		: 13-12,*/
 				VM		: 14-13,
 				IOMMU		: 15-14,
-				RaceToHalt	: 16-15,
+/*				RaceToHalt	: 16-15,
 				L1_HW_Prefetch	: 17-16,
 				L1_HW_IP_Prefetch:18-17,
 				L2_HW_Prefetch	: 19-18,
-				L2_HW_CL_Prefetch:20-19,
+				L2_HW_CL_Prefetch:20-19,*/
 				IOMMU_Ver_Major : 24-20,
 				IOMMU_Ver_Minor : 28-24,
-				WDT		: 29-28,
+/*				WDT		: 29-28,
 				TM1		: 31-29,
 				TM2		: 33-31,
-				L1_Scrubbing	: 34-33,
+				L1_Scrubbing	: 34-33,*/
 				_pad64		: 64-34;
 	} Technology;
 
@@ -358,7 +358,7 @@ typedef struct
 				IBRS		:  2-0,
 				STIBP		:  4-2,
 				SSBD		:  6-4,
-				RDCL_NO 	:  8-6,
+			/*	RDCL_NO 	:  8-6,
 				IBRS_ALL	: 10-8,
 				RSBA		: 12-10,
 				L1DFL_VMENTRY_NO: 14-12,
@@ -370,9 +370,9 @@ typedef struct
 				FUSA		: 26-24,
 				RSM_CPL0	: 28-26,
 				SPLA		: 30-28,
-				SNOOP_FILTER	: 32-30,
+				SNOOP_FILTER	: 32-30,*/
 				PSFD		: 34-32,
-				DOITM_EN	: 36-34,
+			/*	DOITM_EN	: 36-34,
 				SBDR_SSDP_NO	: 38-36,
 				FBSDP_NO	: 40-38,
 				PSDP_NO 	: 42-40,
@@ -394,7 +394,7 @@ typedef struct
 				BTC_NOBR	:  8-6,
 				DRAM_Scrambler	: 10-8,
 				TSME		: 12-10,
-				DDPD_U_DIS	: 14-12,
+				DDPD_U_DIS	: 14-12,*/
 				_UnusedMechBits : 64-14;
 	} Mechanisms;
 
