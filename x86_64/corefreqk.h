@@ -1961,7 +1961,7 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 	[Zen2/Lucienne] 	8F_68h Stepping 1	 7 nm	APU
 	[Zen2/Matisse]		8F_71h Stepping 0	 7 nm
 	[Zen2/Xbox		8F_74h Stepping 0	 7 nm
-	[Zen2/VanGogh]		8F_90h Stepping 1	 7 nm	Valve Jupiter
+	[Zen2/Van Gogh] 	8F_90h Stepping 1	 7 nm	Valve Jupiter
 	[Zen2/Mendocino]	8F_A0h Stepping 0	 6 nm	[MDN]	*/
 #define _AMD_Zen	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x1}
 #define _AMD_Zen_APU	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x1, .Model=0x1}
@@ -3588,7 +3588,7 @@ static char *Arch_AMD_Zen2_MTS[] = ZLIST(
 static char *Arch_AMD_Zen2_Ariel[]	=	ZLIST("Zen2/Ariel");
 
 static char *Arch_AMD_Zen2_Jupiter[] = ZLIST(
-		[CN_VANGOGH]		=	"Zen2/VanGogh"
+		[CN_VANGOGH]		=	"Zen2/Van Gogh"
 );
 static char *Arch_AMD_Zen2_MDN[] = ZLIST(
 		[CN_MENDOCINO]		=	"Zen2/Mendocino"
@@ -6474,7 +6474,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	{0}
 };
 static PROCESSOR_SPECIFIC AMD_Zen2_Jupiter_Specific[] = {
-/*	[Zen2/VanGogh]	 7 nm Valve Jupiter.	6 nm Sephiroth		*/
+/*	[Zen2/Van Gogh] 7 nm Valve Jupiter.	6 nm Sephiroth		*/
 	{
 	.Brand = ZLIST( "AMD Custom APU 0405",	\
 			"AMD Custom APU 0932"	),
