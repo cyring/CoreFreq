@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # CoreFreq
-# Copyright (C) 2015-2023 CYRIL COURTIAT
+# Copyright (C) 2015-2024 CYRIL COURTIAT
 # Licenses: GPL2
 #
 if (( $# > 2 )); then

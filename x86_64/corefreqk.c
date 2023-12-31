@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2023 CYRIL COURTIAT
+ * Copyright (C) 2015-2024 CYRIL COURTIAT
  * Licenses: GPL2
  *
  * Infliximab [11.17.2023]

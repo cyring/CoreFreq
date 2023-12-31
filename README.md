@@ -152,10 +152,10 @@ CoreFreq: Processor [06_1A] Architecture [Nehalem/Bloomfield] CPU [8/8]
 ### Daemon
 
 ```
-CoreFreq Daemon.  Copyright (C) 2015-2023 CYRIL COURTIAT
+CoreFreq Daemon #.##.#  Copyright (C) 2015-2024 CYRIL COURTIAT
 
-  Processor [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz]
-  Architecture [Nehalem/Bloomfield] 8/8 CPU Online.
+  Processor [AMD Ryzen 9 3950X 16-Core Processor]
+  Architecture [Zen2/Matisse] 32/32 CPU Online.
 ```
 
 ### Client
@@ -591,5 +591,5 @@ parm:           HSMP_Attempt:Attempt the HSMP interface (short)
 # About
 [CyrIng](https://github.com/cyring)
 
-Copyright (C) 2015-2023 CYRIL COURTIAT  
+Copyright (C) 2015-2024 CYRIL COURTIAT  
  -------

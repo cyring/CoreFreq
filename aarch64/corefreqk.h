@@ -1,12 +1,12 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2023 CYRIL COURTIAT
+ * Copyright (C) 2015-2024 CYRIL COURTIAT
  * Licenses: GPL2
  */
-
+/*TODO(CleanUp)
 #define RDCOUNTER(_val, _cnt)						\
 ({									\
-/*	unsigned int _lo, _hi;						\
+	unsigned int _lo, _hi;						\
 									\
 	__asm__ volatile						\
 	(								\
@@ -15,12 +15,11 @@
 		  "=d" (_hi)						\
 		: "c" (_cnt)						\
 	);								\
-	_val=_lo | ((unsigned long long) _hi << 32);		*/	\
-	_val=0;								\
+	_val=_lo | ((unsigned long long) _hi << 32);			\
 })
 
 #define WRCOUNTER(_val, _cnt)						\
-/*	__asm__ volatile						\
+	__asm__ volatile						\
 	(								\
 		"wrmsr" 						\
 		:							\
@@ -28,11 +27,11 @@
 		  "a" ((unsigned int) _val & 0xFFFFFFFF),		\
 		  "d" ((_val > 0xFFFFFFFF) ?				\
 			(unsigned int) (_val >> 32) : 0)		\
-	);							*/
+	);
 
 #define RDMSR(_data, _reg)						\
 ({									\
-/*	unsigned int _lo, _hi;						\
+	unsigned int _lo, _hi;						\
 									\
 	__asm__ volatile						\
 	(								\
@@ -41,22 +40,21 @@
 		  "=d" (_hi)						\
 		: "c" (_reg)						\
 	);								\
-	_data.value=_lo | ((unsigned long long) _hi << 32);	*/	\
-	_data.value=0;							\
+	_data.value=_lo | ((unsigned long long) _hi << 32);		\
 })
 
 #define WRMSR(_data, _reg)						\
-/*	__asm__ volatile						\
+	__asm__ volatile						\
 	(								\
 		"wrmsr" 						\
 		:							\
 		: "c" (_reg),						\
 		  "a" ((unsigned int) _data.value & 0xFFFFFFFF),	\
 		  "d" ((unsigned int) (_data.value >> 32))		\
-	);							*/
+	);
 
 #define RDMSR64(_data, _reg)						\
-/*	__asm__ volatile						\
+	__asm__ volatile						\
 	(								\
 		"xorq	%%rax,	%%rax"		"\n\t"			\
 		"xorq	%%rdx,	%%rdx"		"\n\t"			\
@@ -68,10 +66,10 @@
 		: "=m" (_data)						\
 		: "i" (_reg)						\
 		: "%rax", "%rcx", "%rdx"				\
-	)							*/
+	)
 
 #define WRMSR64(_data, _reg)						\
-/*	__asm__ volatile						\
+	__asm__ volatile						\
 	(								\
 		"movq	%0,	%%rax"		"\n\t"			\
 		"movq	%%rax,	%%rdx"		"\n\t"			\
@@ -81,8 +79,8 @@
 		: "=m" (_data)						\
 		: "i" (_reg)						\
 		: "%rax", "%rcx", "%rdx"				\
-	)							*/
-
+	)
+*/
 #define Atomic_Read_VPMC(_lock, _dest, _src)				\
 {									\
 /*	__asm__ volatile						\
@@ -229,12 +227,12 @@ __asm__ volatile							\
 	  "cc", "memory"						\
 );
 
-
+/*TODO(CleanUp)
 #define ASM_COUNTERx4(	_reg0, _reg1, _reg2, _reg3, _reg4,		\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
 			_msr4, _mem4)					\
-/*TODO(CleanUp)								\
+								\
 __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
@@ -255,14 +253,14 @@ __asm__ volatile							\
 	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
 	  "%" #_reg4"",							\
 	  "cc", "memory"						\
-);								*/
+);
 
 
 #define ASM_COUNTERx5(	_reg0, _reg1, _reg2, _reg3, _reg4, _reg5,	\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
 			_msr4, _mem4, _msr5, _mem5)			\
-/*TODO(CleanUp)								\
+									\
 __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
@@ -285,13 +283,13 @@ __asm__ volatile							\
 	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
 	  "%" #_reg4"", "%" #_reg5"",					\
 	  "cc", "memory"						\
-);								*/
+);
 
 #define ASM_COUNTERx5_STACK(_reg0, _reg1, _reg2, _reg3, 		\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
 			_msr4, _mem4, _msr5, _mem5)			\
-/*TODO(CleanUp)								\
+									\
 __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
@@ -317,14 +315,14 @@ __asm__ volatile							\
 	: "%rax", "%rcx", "%rdx",					\
 	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
 	  "cc", "memory"						\
-);								*/
+);
 
 
 #define ASM_COUNTERx6(	_reg0, _reg1, _reg2, _reg3, _reg4, _reg5, _reg6,\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
 			_msr4, _mem4, _msr5, _mem5, _msr6, _mem6)	\
-/*TODO(CleanUp)								\
+									\
 __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
@@ -349,13 +347,13 @@ __asm__ volatile							\
 	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
 	  "%" #_reg4"", "%" #_reg5"", "%" #_reg6"",			\
 	  "cc", "memory"						\
-);								*/
+);
 
 #define ASM_COUNTERx6_STACK(_reg0, _reg1, _reg2, _reg3, 		\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
 			_msr4, _mem4, _msr5, _mem5, _msr6, _mem6)	\
-/*TODO(CleanUp)								\
+									\
 __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
@@ -385,7 +383,7 @@ __asm__ volatile							\
 	: "%rax", "%rcx", "%rdx",					\
 	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
 	  "cc", "memory"						\
-);								*/
+);
 
 #define ASM_COUNTERx7(	_reg0, _reg1, _reg2, _reg3,			\
 			_reg4, _reg5, _reg6, _reg7,			\
@@ -393,7 +391,7 @@ __asm__ volatile							\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
 			_msr4, _mem4, _msr5, _mem5, _msr6, _mem6,	\
 			_msr7, _mem7)					\
-/*TODO(CleanUp)								\
+									\
 __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
@@ -420,14 +418,14 @@ __asm__ volatile							\
 	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
 	  "%" #_reg4"", "%" #_reg5"", "%" #_reg6"", "%" #_reg7"",	\
 	  "cc", "memory"						\
-);								*/
+);
 
 #define ASM_COUNTERx7_STACK(_reg0, _reg1, _reg2,			\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
 			_msr4, _mem4, _msr5, _mem5, _msr6, _mem6,	\
 			_msr7, _mem7)					\
-/*TODO(CleanUp)								\
+									\
 __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
@@ -463,8 +461,8 @@ __asm__ volatile							\
 	: "%rax", "%rcx", "%rdx",					\
 	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"",			\
 	  "cc", "memory"						\
-);								*/
-
+);
+*/
 
 #define RDTSC_COUNTERx1(mem_tsc, ...) \
 ASM_COUNTERx1(x1, x2, ASM_RDTSC, mem_tsc, __VA_ARGS__)
@@ -483,7 +481,7 @@ ASM_COUNTERx3(x1, x2, x3, x4, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define RDTSCP_COUNTERx3(mem_tsc, ...) \
 ASM_COUNTERx3(x1, x2, x3, x4, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
-
+/*TODO(CleanUp)
 #define RDTSC_COUNTERx4(mem_tsc, ...) \
 ASM_COUNTERx4(r10, r11, r12, r13, r14, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
@@ -512,7 +510,7 @@ ASM_COUNTERx7_STACK(r13, r14, r15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 ASM_COUNTERx7_STACK(r13, r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #else
-/*	#warning "Optimization"						*/
+**	#warning "Optimization"						**
 
 #define RDTSC_COUNTERx5(mem_tsc, ...) \
 ASM_COUNTERx5(r10, r11, r12, r13, r14, r15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
@@ -534,7 +532,7 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 
 #endif
 
-/*TODO(CleanUp)
+
 #define PCI_CONFIG_ADDRESS(bus, dev, fn, reg) \
 	(0x80000000 | ((bus) << 16)|((dev) << 11)|((fn) << 8)|((reg) & ~3))
 
