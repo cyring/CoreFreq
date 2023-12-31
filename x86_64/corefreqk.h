@@ -1979,6 +1979,9 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 #define _AMD_Zen2_Jupiter	\
 			{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x9, .Model=0x0}
 
+#define _AMD_Zen2_Galileo	\
+			{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x9, .Model=0x1}
+
 #define _AMD_Zen2_MDN	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0xA, .Model=0x0}
 
 #define _AMD_Family_17h {.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x0}
@@ -3588,7 +3591,10 @@ static char *Arch_AMD_Zen2_MTS[] = ZLIST(
 static char *Arch_AMD_Zen2_Ariel[]	=	ZLIST("Zen2/Ariel");
 
 static char *Arch_AMD_Zen2_Jupiter[] = ZLIST(
-		[CN_VANGOGH]		=	"Zen2/Van Gogh"
+		[CN_VANGOGH]		=	"Zen2/Van Gogh/Aerith"
+);
+static char *Arch_AMD_Zen2_Galileo[] = ZLIST(
+		[CN_VANGOGH]		=	"Zen2/Van Gogh/Sephiroth"
 );
 static char *Arch_AMD_Zen2_MDN[] = ZLIST(
 		[CN_MENDOCINO]		=	"Zen2/Mendocino"
@@ -11515,7 +11521,31 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen2_Jupiter
 	},
-[AMD_Zen2_MDN] = {							/*105*/
+[AMD_Zen2_Galileo] = {							/*105*/
+	.Signature = _AMD_Zen2_Galileo,
+	.Query = Query_AMD_F17h_PerCluster,
+	.Update = PerCore_AMD_Family_17h_Query,
+	.Start = Start_AMD_Family_17h,
+	.Stop = Stop_AMD_Family_17h,
+	.Exit = Exit_AMD_F17h,
+	.Timer = InitTimer_AMD_F17h_Zen2_SP,
+	.BaseClock = BaseClock_AMD_Family_17h,
+	.ClockMod = ClockMod_AMD_Zen,
+	.TurboClock = TurboClock_AMD_Zen,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN2,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_17h,
+	.powerFormula   = POWER_FORMULA_AMD_17h,
+	.PCI_ids = PCI_AMD_17h_ids,
+	.Uncore = {
+		.Start = Start_Uncore_AMD_Family_17h,
+		.Stop = Stop_Uncore_AMD_Family_17h,
+		.ClockMod = NULL
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = AMD_Zen_Driver,
+	.Architecture = Arch_AMD_Zen2_Galileo
+	},
+[AMD_Zen2_MDN] = {							/*106*/
 	.Signature = _AMD_Zen2_MDN,
 	.Query = Query_AMD_F17h_PerCluster,
 	.Update = PerCore_AMD_Family_17h_Query,
@@ -11539,7 +11569,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen2_MDN
 	},
-[AMD_Zen3_VMR] = {							/*106*/
+[AMD_Zen3_VMR] = {							/*107*/
 	.Signature = _AMD_Zen3_VMR,
 	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -11563,7 +11593,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3_VMR
 	},
-[AMD_Zen3_CZN] = {							/*107*/
+[AMD_Zen3_CZN] = {							/*108*/
 	.Signature = _AMD_Zen3_CZN,
 	.Query = Query_AMD_F19h_PerSocket,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -11587,7 +11617,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3_CZN
 	},
-[AMD_EPYC_Milan] = {							/*108*/
+[AMD_EPYC_Milan] = {							/*109*/
 	.Signature = _AMD_EPYC_Milan,
 	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -11611,7 +11641,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_EPYC_Milan
 	},
-[AMD_Zen3_Chagall] = {							/*109*/
+[AMD_Zen3_Chagall] = {							/*110*/
 	.Signature = _AMD_Zen3_Chagall,
 	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -11635,7 +11665,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3_Chagall
 	},
-[AMD_Zen3_Badami] = {							/*110*/
+[AMD_Zen3_Badami] = {							/*111*/
 	.Signature = _AMD_Zen3_Badami,
 	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -11659,7 +11689,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3_Badami
 	},
-[AMD_Zen3Plus_RMB] = {							/*111*/
+[AMD_Zen3Plus_RMB] = {							/*112*/
 	.Signature = _AMD_Zen3Plus_RMB,
 	.Query = Query_AMD_F19h_PerSocket,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -11683,7 +11713,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3Plus_RMB
 	},
-[AMD_Zen4_Genoa] = {							/*112*/
+[AMD_Zen4_Genoa] = {							/*113*/
 	.Signature = _AMD_Zen4_Genoa,
 	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -11707,7 +11737,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen4_Genoa
 	},
-[AMD_Zen4_RPL] = {							/*113*/
+[AMD_Zen4_RPL] = {							/*114*/
 	.Signature = _AMD_Zen4_RPL,
 	.Query = Query_AMD_F19h_61h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -11731,7 +11761,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen4_RPL
 	},
-[AMD_Zen4_PHX] = {							/*114*/
+[AMD_Zen4_PHX] = {							/*115*/
 	.Signature = _AMD_Zen4_PHX,
 	.Query = Query_AMD_F19h_74h_PerSocket,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -11755,7 +11785,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen4_PHX
 	},
-[AMD_Zen4_HWK] = {							/*115*/
+[AMD_Zen4_HWK] = {							/*116*/
 	.Signature = _AMD_Zen4_HWK,
 	.Query = Query_AMD_F19h_74h_PerSocket,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -11779,7 +11809,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen4_HWK
 	},
-[AMD_Zen4_PHX2] = {							/*116*/
+[AMD_Zen4_PHX2] = {							/*117*/
 	.Signature = _AMD_Zen4_PHX2,
 	.Query = Query_AMD_F19h_74h_PerSocket,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -11803,7 +11833,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen4_PHX2
 	},
-[AMD_Zen4_Bergamo] = {							/*117*/
+[AMD_Zen4_Bergamo] = {							/*118*/
 	.Signature = _AMD_Zen4_Bergamo,
 	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -11827,7 +11857,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen4_Bergamo
 	},
-[AMD_Zen4_STP] = {							/*118*/
+[AMD_Zen4_STP] = {							/*119*/
 	.Signature = _AMD_Zen4_STP,
 	.Query = Query_AMD_F19h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,

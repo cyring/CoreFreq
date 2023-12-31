@@ -7355,6 +7355,7 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 	case AMD_Zen2_MTS:
 	case AMD_Zen2_Ariel:
 	case AMD_Zen2_Jupiter:
+	case AMD_Zen2_Galileo:
 	case AMD_Zen2_MDN:
 	case AMD_Zen3_VMR:
 	case AMD_Zen3_CZN:

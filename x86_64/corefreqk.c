@@ -2154,6 +2154,7 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Zen2_MTS:
 	case AMD_Zen2_Ariel:
 	case AMD_Zen2_Jupiter:
+	case AMD_Zen2_Galileo:
 	case AMD_Zen2_MDN:
 	case AMD_Zen3_VMR:
 	case AMD_Zen3_CZN:
@@ -12165,6 +12166,7 @@ void AMD_Mitigation_Mechanisms(CORE_RO *Core)
     case AMD_Zen2_MTS:
     case AMD_Zen2_Ariel:
     case AMD_Zen2_Jupiter:
+    case AMD_Zen2_Galileo:
     case AMD_Zen2_MDN:
       {
 	AMD_LS_CFG LS_CFG = {.value = 0};
@@ -12216,6 +12218,7 @@ void AMD_Mitigation_Mechanisms(CORE_RO *Core)
       case AMD_Zen2_MTS:
       case AMD_Zen2_Ariel:
       case AMD_Zen2_Jupiter:
+      case AMD_Zen2_Galileo:
       case AMD_Zen2_MDN:
        {
 	AMD_DE_CFG DE_CFG = {.value = 0};

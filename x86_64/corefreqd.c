@@ -2117,6 +2117,7 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 	case AMD_Zen2_MTS:
 	case AMD_Zen2_Ariel:
 	case AMD_Zen2_Jupiter:
+	case AMD_Zen2_Galileo:
 	case AMD_Zen2_MDN:
 		RO(Shm)->Proc.Mechanisms.XPROC_LEAK = \
 			BITCMP_CC(LOCKLESS,
@@ -7325,6 +7326,7 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
     case AMD_Zen2_MTS:
     case AMD_Zen2_Ariel:
     case AMD_Zen2_Jupiter:
+    case AMD_Zen2_Galileo:
     case AMD_Zen2_MDN:
     case AMD_Zen3_VMR:
     case AMD_Zen3_CZN:
