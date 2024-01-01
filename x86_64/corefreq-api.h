@@ -1497,6 +1497,8 @@ typedef struct
 #define DID_AMD_17H_ZEN2_APU_NB_IOMMU	0x1631	/*	Renoir/Cezanne	*/
 #define DID_AMD_17H_FIREFLIGHT_NB_IOMMU 0x15f9	/*	FireFlight	*/
 #define DID_AMD_17H_ARDEN_NB_IOMMU	0x1627	/*	Arden		*/
+/* Source: Steam Deck LCD						*/
+#define DID_AMD_17H_JUPITER_NB_IOMMU	0x1646	/*	Van Gogh/Jupiter*/
 /* Source: AMD Ryzen 5 6600H [ Zen3+ Rembrandt ]			*/
 #define DID_AMD_19H_ZEN3_RMB_NB_IOMMU	0x14b6	/*	Rembrandt	*/
 /* Source: AMD Ryzen 9 7950X [ Zen4/Raphael ]				*/

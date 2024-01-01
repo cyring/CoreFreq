@@ -3105,6 +3105,10 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
 	{
+		PCI_VDEVICE(AMD, DID_AMD_17H_JUPITER_NB_IOMMU),
+		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
+	},
+	{
 		PCI_VDEVICE(AMD, DID_AMD_19H_ZEN3_RMB_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
@@ -11499,7 +11503,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen2_Ariel] = {							/*103*/
 	.Signature = _AMD_Zen2_Ariel,
-	.Query = Query_AMD_F17h_PerCluster,
+	.Query = Query_AMD_F17h_PerSocket,
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
@@ -11523,7 +11527,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen2_Jupiter] = {							/*104*/
 	.Signature = _AMD_Zen2_Jupiter,
-	.Query = Query_AMD_F17h_PerCluster,
+	.Query = Query_AMD_F17h_PerSocket,
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
@@ -11547,7 +11551,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen2_Galileo] = {							/*105*/
 	.Signature = _AMD_Zen2_Galileo,
-	.Query = Query_AMD_F17h_PerCluster,
+	.Query = Query_AMD_F17h_PerSocket,
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
@@ -11571,7 +11575,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen2_MDN] = {							/*106*/
 	.Signature = _AMD_Zen2_MDN,
-	.Query = Query_AMD_F17h_PerCluster,
+	.Query = Query_AMD_F17h_PerSocket,
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
