@@ -6875,6 +6875,18 @@ static PCI_CALLBACK AMD_DataFabric_Arden(struct pci_dev *pdev)
 		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
 }
 
+static PCI_CALLBACK AMD_DataFabric_VanGogh(struct pci_dev *pdev)
+{
+	return AMD_17h_DataFabric(	pdev,
+					(const unsigned int[2][2]) {
+						{ 0x0, 0x20},
+						{0x10, 0x28}
+					},
+					0x30, 0x80,
+					1, MC_MAX_CHA,
+		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
+}
+
 static PCI_CALLBACK AMD_DataFabric_Vermeer(struct pci_dev *pdev)
 {
 	return AMD_17h_DataFabric(	pdev,

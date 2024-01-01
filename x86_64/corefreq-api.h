@@ -1513,6 +1513,7 @@ typedef struct
 #define DID_AMD_17H_RAVEN2_DF_UMC	0x15eb	/*	Raven2		*/
 #define DID_AMD_17H_FIREFLIGHT_DF_UMC	0x15f3	/*	FireFlight	*/
 #define DID_AMD_17H_ARDEN_DF_UMC	0x160b	/*	Arden		*/
+#define DID_AMD_17H_JUPITER_DF_UMC	0x1660	/*	Van Gogh/Jupiter*/
 #define DID_AMD_19H_VERMEER_DF_UMC	0x1650	/*	Vermeer 	*/
 #define DID_AMD_19H_CEZANNE_DF_UMC	0x166a	/*	Cezanne 	*/
 #define DID_AMD_19H_REMBRANDT_DF_UMC	0x1679	/*	Rembrandt 	*/

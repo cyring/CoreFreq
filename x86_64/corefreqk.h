@@ -1980,6 +1980,7 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 	[Zen2/Matisse]		8F_71h Stepping 0	 7 nm
 	[Zen2/Xbox		8F_74h Stepping 0	 7 nm
 	[Zen2/Van Gogh] 	8F_90h Stepping 1	 7 nm	Valve Jupiter
+	[Zen2/Van Gogh] 	8F_91h Stepping 0	 6 nm	Valve Galileo
 	[Zen2/Mendocino]	8F_A0h Stepping 0	 6 nm	[MDN]	*/
 #define _AMD_Zen	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x1}
 #define _AMD_Zen_APU	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x1, .Model=0x1}
@@ -2135,6 +2136,7 @@ static PCI_CALLBACK AMD_DataFabric_Ariel(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Raven2(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Fireflight(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Arden(struct pci_dev *pdev) ;
+static PCI_CALLBACK AMD_DataFabric_VanGogh(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Vermeer(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Cezanne(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Rembrandt(struct pci_dev *pdev) ;
@@ -3159,6 +3161,10 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 	{
 		PCI_VDEVICE(AMD, DID_AMD_17H_ARDEN_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_DataFabric_Arden
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_17H_JUPITER_DF_UMC),
+		.driver_data = (kernel_ulong_t) AMD_DataFabric_VanGogh
 	},
 /* AMD Family 19h							*/
 	/* Source: SMU > Data Fabric > UMC				*/
