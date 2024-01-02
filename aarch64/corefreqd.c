@@ -1427,7 +1427,26 @@ void Architecture(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 void PerformanceMonitoring(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
-	RO(Shm)->Proc.PM_version = RO(Proc)->Features.PerfMon.EAX.Version;
+	switch (RO(Proc)->Features.PerfMon.EAX.Version) {
+	case 0b0001: RO(Shm)->Proc.PM_ext = (struct PMU_ST){.v = 3, .p = 0x0};
+		break;
+	case 0b0100: RO(Shm)->Proc.PM_ext = (struct PMU_ST){.v = 3, .p = 0x1};
+		break;
+	case 0b0101: RO(Shm)->Proc.PM_ext = (struct PMU_ST){.v = 3, .p = 0x4};
+		break;
+	case 0b0110: RO(Shm)->Proc.PM_ext = (struct PMU_ST){.v = 3, .p = 0x5};
+		break;
+	case 0b0111: RO(Shm)->Proc.PM_ext = (struct PMU_ST){.v = 3, .p = 0x7};
+		break;
+	case 0b1000: RO(Shm)->Proc.PM_ext = (struct PMU_ST){.v = 3, .p = 0x8};
+		break;
+	case 0b1001: RO(Shm)->Proc.PM_ext = (struct PMU_ST){.v = 3, .p = 0x9};
+		break;
+	case 0b1010: RO(Shm)->Proc.PM_ext = (struct PMU_ST){.v = 3, .p = 0xa};
+		break;
+	default: RO(Shm)->Proc.PM_version = 0;
+		break;
+	}
 }
 
 void HyperThreading(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))

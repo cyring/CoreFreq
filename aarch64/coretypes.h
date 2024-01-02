@@ -2017,6 +2017,7 @@ typedef struct	/* BSP CPUID features.					*/
 			CLOCK		Clock;
 			unsigned int	Freq,
 					Ratio;
+/*TODO(CleanUp)
 		struct {
 			unsigned int	Interface;
 		    union {
@@ -2029,6 +2030,7 @@ typedef struct	/* BSP CPUID features.					*/
 			};
 		    };
 		} SMU;
+*/
 		struct {
 			unsigned char	LLC,
 					NB;

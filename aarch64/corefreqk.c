@@ -906,6 +906,7 @@ static void Query_Features(void *pArg)
 	INIT_ARG *iArg = (INIT_ARG *) pArg;
 /*	unsigned int eax = 0x0, ebx = 0x0, ecx = 0x0, edx = 0x0; **DWORD Only!*/
 	volatile CNTFRQ cntfrq;
+	volatile AA64DFR0 dbgfr0;
 
 	enum HYPERVISOR hypervisor = HYPERV_NONE;
 
@@ -1358,6 +1359,14 @@ static void Query_Features(void *pArg)
 	BrandCleanup(iArg->Features->Info.Brand, iArg->Brand);
     }
 */
+	__asm__ __volatile__(
+		"mrs	%[dbgfr0],	id_aa64dfr0_el1"	"\n\t"
+		"isb"
+		: [dbgfr0]	"=r" (dbgfr0)
+		:
+		: "memory"
+	);
+	iArg->Features->PerfMon.EAX.Version = dbgfr0.PMUVer;
 }
 
 void Compute_Interval(void)

@@ -1136,7 +1136,7 @@ REASON_CODE SysInfoProc(Window *win,
 		width - 5 - RSZ(VENDOR_ID)
 		- (int) strlen(RO(Shm)->Proc.Features.Info.Vendor.ID),
 		hSpace, RO(Shm)->Proc.Features.Info.Vendor.ID );
-
+/*TODO(CleanUp)
     if (RO(Shm)->Proc.Features.Factory.SMU.Version > 0)
     {
 	char version[17+1];
@@ -1151,6 +1151,7 @@ REASON_CODE SysInfoProc(Window *win,
 		"%s""%.*s%s", RSC(FIRMWARE).CODE(),
 		width - 3 - RSZ(FIRMWARE) - len , hSpace, version );
     }
+*/
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s""%.*s[0x%08x]", RSC(MICROCODE).CODE(),
 		width - 15 - RSZ(MICROCODE), hSpace,
@@ -4308,9 +4309,9 @@ REASON_CODE SysInfoPerfMon(	Window *win,
     if (RO(Shm)->Proc.PM_version > 0)
     {
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
-		"%s%.*s%s       [%3d]", RSC(VERSION).CODE(),
-		width - 17 - RSZ(VERSION), hSpace,
-		RSC(PERF_LABEL_VER).CODE(), RO(Shm)->Proc.PM_version );
+		"%s%.*s%s       [%1u.%1x]", RSC(VERSION).CODE(),
+		width - 17 - RSZ(VERSION), hSpace, RSC(PERF_LABEL_VER).CODE(),
+		RO(Shm)->Proc.PM_ext.v, RO(Shm)->Proc.PM_ext.p );
     } else {
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s%.*s%s       [%3s]", RSC(VERSION).CODE(),

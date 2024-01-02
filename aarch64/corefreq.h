@@ -409,8 +409,12 @@ typedef struct
 
 	SERVICE_PROC			Service;
 
-	unsigned int			PM_version;
-
+	union {
+		unsigned int		PM_version;
+		struct PMU_ST {
+			unsigned short	v, p;
+		} PM_ext;
+	};
 	struct {
 		unsigned int		Rel,
 					Abs;

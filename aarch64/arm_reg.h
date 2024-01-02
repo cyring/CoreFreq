@@ -64,6 +64,31 @@ typedef union
 	struct
 	{
 		unsigned long long
+		DebugVer	:  4-0,
+		TraceVer	:  8-4,
+		PMUVer		: 12-8,
+		BRPs		: 16-12,
+		PMSS		: 20-16,
+		WRPs		: 24-20,
+		SEBEP		: 28-24,
+		CTX_CMPs	: 32-28,
+		PMSVer		: 36-32,
+		DoubleLock	: 40-36,
+		TraceFilt	: 44-40,
+		TraceBuffer	: 48-40,
+		MTPMU		: 52-48,
+		BRBE		: 56-52,
+		ExtTrcBuff	: 60-56,
+		HPMN0		: 64-60;
+	};
+} AA64DFR0;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
 		Highest 	:  8-0,
 		Guaranteed	: 16-8,
 		Most_Efficient	: 24-16,
