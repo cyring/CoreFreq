@@ -10,6 +10,60 @@ typedef union
 	struct
 	{
 		unsigned long long
+		Revision	:  4-0,
+		PartNum 	: 16-4,
+		Architecture	: 20-16,
+		Variant 	: 24-20,
+		Implementer	: 32-24,
+		RES0		: 64-32;
+	};
+} MIDR;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		Aff0		:  8-0,  /*	Thread ID		*/
+		Aff1		: 16-8,  /*	Core ID: CPUID[12-8] L1 */
+		Aff2		: 24-16, /*	Cluster ID - Level2	*/
+		MT		: 25-24, /*	Multithreading		*/
+		UNK		: 30-25,
+		U		: 31-30, /*	0=Uniprocessor		*/
+		RES1		: 32-31,
+		Aff3		: 40-32, /*	Cluster ID - Level3	*/
+		RES0		: 64-40;
+	};
+} MPIDR;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		ClockFrequency	: 32-0,
+		RES0		: 64-32;
+	};
+} CNTFRQ;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		PhysicalCount	: 64-0;
+	};
+} CNTPCT;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
 		Highest 	:  8-0,
 		Guaranteed	: 16-8,
 		Most_Efficient	: 24-16,

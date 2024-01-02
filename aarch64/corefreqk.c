@@ -713,6 +713,78 @@ void VendorFromCPUID(	char *pVendorID, unsigned int *pLargestFunc,
     }
 }
 */
+void VendorFromMainID(	char *pVendorID, unsigned int *pCRC,
+			enum HYPERVISOR *pHypervisor )
+{
+    struct {
+		unsigned short		implementer;
+		char			*vendorID;
+		size_t			vendorLen;
+		enum CRC_MANUFACTURER	mfrCRC;
+		enum HYPERVISOR 	hypervisor;
+    } mfrTbl[] = {
+	{	0x00,	VENDOR_RESERVED, __builtin_strlen(VENDOR_RESERVED),
+		CRC_RESERVED,	BARE_METAL				},
+	{	0x41,	VENDOR_ARM,	__builtin_strlen(VENDOR_ARM),
+		CRC_ARM,	BARE_METAL				},
+	{	0x42,	VENDOR_BROADCOM, __builtin_strlen(VENDOR_BROADCOM),
+		CRC_BROADCOM,	BARE_METAL				},
+	{	0x43,	VENDOR_CAVIUM,	__builtin_strlen(VENDOR_CAVIUM),
+		CRC_CAVIUM,	BARE_METAL				},
+	{	0x44,	VENDOR_DEC,	__builtin_strlen(VENDOR_DEC),
+		CRC_DEC,	BARE_METAL				},
+	{	0x46,	VENDOR_FUJITSU, __builtin_strlen(VENDOR_FUJITSU),
+		CRC_FUJITSU,	BARE_METAL				},
+	{	0x49,	VENDOR_INFINEON, __builtin_strlen(VENDOR_INFINEON),
+		CRC_INFINEON,	BARE_METAL				},
+	{	0x4d,	VENDOR_MOTOROLA, __builtin_strlen(VENDOR_MOTOROLA),
+		CRC_MOTOROLA,	BARE_METAL				},
+	{	0x4e,	VENDOR_NVIDIA,	__builtin_strlen(VENDOR_NVIDIA),
+		CRC_NVIDIA,	BARE_METAL				},
+	{	0x50,	VENDOR_APM,	__builtin_strlen(VENDOR_APM),
+		CRC_APM,	BARE_METAL				},
+	{	0x51,	VENDOR_QUALCOMM, __builtin_strlen(VENDOR_QUALCOMM),
+		CRC_QUALCOMM,	BARE_METAL				},
+	{	0x56,	VENDOR_MARVELL, __builtin_strlen(VENDOR_MARVELL),
+		CRC_MARVELL,	BARE_METAL				},
+	{	0x69,	VENDOR_INTEL,	__builtin_strlen(VENDOR_INTEL),
+		CRC_INTEL,	BARE_METAL				},
+	{	0xc0,	VENDOR_AMPERE,	__builtin_strlen(VENDOR_AMPERE),
+		CRC_AMPERE,	BARE_METAL				},
+
+	{	0xff,	VENDOR_KVM,	__builtin_strlen(VENDOR_KVM),
+		CRC_KVM,	HYPERV_KVM				},
+	{	0xff,	VENDOR_VBOX,	__builtin_strlen(VENDOR_VBOX),
+		CRC_VBOX,	HYPERV_VBOX				},
+	{	0xff,	VENDOR_KBOX,	__builtin_strlen(VENDOR_KBOX),
+		CRC_KBOX,	HYPERV_KBOX				},
+	{	0xff,	VENDOR_VMWARE,	__builtin_strlen(VENDOR_VMWARE),
+		CRC_VMWARE,	HYPERV_VMWARE				},
+	{	0xff,	VENDOR_HYPERV,	__builtin_strlen(VENDOR_HYPERV),
+		CRC_HYPERV,	HYPERV_HYPERV				}
+    };
+	volatile MIDR main;
+	unsigned int idx;
+
+	__asm__ __volatile__(
+		"mrs	%[main] ,	midr_el1"	"\n\t"
+		"isb"
+		: [main]	"=r" (main) /* 0:0x412fd050 ; 4:0x414fd0b0 */
+		:
+		: "memory"
+	);
+    for (idx = 0; idx < sizeof(mfrTbl) / sizeof(mfrTbl[0]); idx++) {
+	if (main.Implementer == mfrTbl[idx].implementer)
+	{
+		memcpy(pVendorID, mfrTbl[idx].vendorID, mfrTbl[idx].vendorLen);
+		(*pCRC) = mfrTbl[idx].mfrCRC;
+		(*pHypervisor) = mfrTbl[idx].hypervisor;
+
+		return;
+	}
+    }
+}
+
 signed int SearchArchitectureID(void)
 {
 	signed int id;
@@ -833,22 +905,27 @@ static void Query_Features(void *pArg)
 {	/* Must have x86 CPUID 0x0, 0x1, and Intel CPUID 0x4 */
 	INIT_ARG *iArg = (INIT_ARG *) pArg;
 /*	unsigned int eax = 0x0, ebx = 0x0, ecx = 0x0, edx = 0x0; **DWORD Only!*/
+	volatile CNTFRQ cntfrq;
 
-	enum HYPERVISOR hypervisor = HYPERV_KVM;
+	enum HYPERVISOR hypervisor = HYPERV_NONE;
 
-	memcpy(iArg->Features->Info.Vendor.ID, VENDOR_KVM, sizeof(VENDOR_KVM));
 	iArg->Features->Info.LargestStdFunc = 0x1;
 	iArg->Features->Info.LargestExtFunc = 0x80000001;
-	iArg->Features->Info.Vendor.CRC = CRC_KVM;
+	iArg->Features->Info.Vendor.CRC = CRC_RESERVED;
 	iArg->SMT_Count = 1;
 
+	VendorFromMainID(iArg->Features->Info.Vendor.ID,
+			&iArg->Features->Info.Vendor.CRC,
+			&hypervisor);
+
 	__asm__ __volatile__(
-		"mrs	%0	,	cntfrq_el0"	"\n\t"
+		"mrs	%[cntfrq],	cntfrq_el0"	"\n\t"
 		"isb"
-		: "=r" (iArg->Features->Factory.Freq)
+		: [cntfrq]	"=r" (cntfrq)
 		:
 		: "memory"
 	);
+	iArg->Features->Factory.Freq = cntfrq.ClockFrequency;
 	iArg->Features->Factory.Freq /= 10000;
 
 /*TODO(CleanUp)
@@ -2420,22 +2497,22 @@ static void Map_Generic_Topology(void *arg)
 {
     if (arg != NULL) {
 	CORE_RO *Core = (CORE_RO *) arg;
-	Bit64 mpid;
 
+	volatile MPIDR mpid;
 	__asm__ volatile
 	(
-		"mrs	x0	,	mpidr_el1"	"\n\t"
-		"str	x0	,	%0"		"\n\t"
+		"mrs	%[mpid] ,	mpidr_el1"	"\n\t"
 		"isb"
-		: "=m" (mpid)
+		: [mpid]	"=r" (mpid)
 		:
-		: "memory", "x0"
+		: "memory"
 	);
-	Core->T.ApicID = mpid & 0xfffff;
-	Core->T.CoreID = mpid & 0x0700;
-	Core->T.CoreID = Core->T.CoreID >> 8;
-	Core->T.PackageID = mpid & 0xf0000;
-	Core->T.PackageID = Core->T.PackageID >> 16;
+	Core->T.ApicID = mpid.value & 0xfffff;
+	Core->T.CoreID = mpid.Aff1;
+	Core->T.PackageID = mpid.Aff2;
+	if (mpid.MT) {
+		Core->T.ThreadID = mpid.Aff0;
+	}
     }
 }
 
@@ -14393,14 +14470,16 @@ void AMD_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 */
 #define PKG_Counters_Generic(Core, T)					\
 ({									\
+	volatile CNTPCT cntpct; 					\
 	__asm__ volatile						\
 	(								\
-		"mrs	%0	,	cntpct_el0"	"\n\t"		\
+		"mrs	%[cntpct],	cntpct_el0"	"\n\t"		\
 		"isb"							\
-		: "=r" (PUBLIC(RO(Proc))->Counter[T].PCLK)		\
+		: [cntpct]	"=r" (cntpct) 				\
 		:							\
 		: "cc", "memory"					\
 	);								\
+	PUBLIC(RO(Proc))->Counter[T].PCLK = cntpct.PhysicalCount;	\
 })
 /*TODO(CleanUp)
 #define PKG_Counters_SLM(Core, T)					\
@@ -23606,8 +23685,8 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 	BIT_ATOM_INIT(PRIVATE(OF(Zen)).AMD_SMN_LOCK, ATOMIC_SEED);
 	BIT_ATOM_INIT(PRIVATE(OF(Zen)).AMD_FCH_LOCK, ATOMIC_SEED);
 */
-	switch (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC) {
 /*TODO(CleanUp)
+	switch (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC) {
 	case CRC_INTEL: {
 		Arch[GenuineArch].Query = Query_GenuineIntel;
 		Arch[GenuineArch].Update= PerCore_Intel_Query;
@@ -23640,15 +23719,30 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 		Arch[GenuineArch].powerFormula = POWER_FORMULA_AMD;
 		}
 		break;
-*/
+	case CRC_RESERVED:
+	case CRC_ARM:
+	case CRC_BROADCOM:
+	case CRC_CAVIUM:
+	case CRC_DEC:
+	case CRC_FUJITSU:
+	case CRC_INFINEON:
+	case CRC_MOTOROLA:
+	case CRC_NVIDIA:
+	case CRC_APM:
+	case CRC_QUALCOMM:
+	case CRC_MARVELL:
+	case CRC_INTEL:
+	case CRC_AMPERE:
+		fallthrough;
 	case CRC_KVM:
 	case CRC_VBOX:
 	case CRC_KBOX:
 	case CRC_VMWARE:
 	case CRC_HYPERV:
-		/* Unexpected */
+		** Unexpected **
 		break;
 	}
+*/
 	/*	Is an architecture identifier requested by user ?	*/
 	if ( (ArchID != -1) && (ArchID >= 0) && (ArchID < ARCHITECTURES) )
 	{

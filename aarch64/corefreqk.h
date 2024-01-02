@@ -575,6 +575,21 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 #define VENDOR_AMD	"AuthenticAMD"
 #define VENDOR_HYGON	"HygonGenuine"
 */
+#define VENDOR_RESERVED "Reserved"
+#define VENDOR_ARM	"Arm"
+#define VENDOR_BROADCOM "Broadcom"
+#define VENDOR_CAVIUM	"Cavium"
+#define VENDOR_DEC	"DEC"		/* Digital Equipment Corporation */
+#define VENDOR_FUJITSU	"Fujitsu"
+#define VENDOR_INFINEON "Infineon"
+#define VENDOR_MOTOROLA "Motorola"	/* Freescale Semiconductor Inc. */
+#define VENDOR_NVIDIA	"NVIDIA"
+#define VENDOR_APM	"APM"		/* Applied Micro Circuits Corporation */
+#define VENDOR_QUALCOMM "Qualcomm"
+#define VENDOR_MARVELL	"Marvell"
+#define VENDOR_INTEL	"Intel"
+#define VENDOR_AMPERE	"Ampere"	/* Ampere Computing		*/
+
 #define VENDOR_KVM	"TCGTGTCGCGTC"
 #define VENDOR_VBOX	"VBoxVBoxVBox"
 #define VENDOR_KBOX	"KVMKM"
