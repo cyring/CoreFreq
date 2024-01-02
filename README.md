@@ -73,26 +73,53 @@ Uncomment and set `draw_bold_text_with_bright_colors: true` in `<config-file>`
   * Optionally: `CONFIG_HOTPLUG_CPU, CONFIG_CPU_IDLE, CONFIG_CPU_FREQ, CONFIG_PM_SLEEP, CONFIG_DMI, CONFIG_HAVE_NMI, CONFIG_XEN, CONFIG_AMD_NB, CONFIG_SCHED_MUQSS, CONFIG_SCHED_BMQ, CONFIG_SCHED_PDS, CONFIG_SCHED_ALT, CONFIG_SCHED_BORE, CONFIG_CACHY, CONFIG_ACPI, CONFIG_ACPI_CPPC_LIB`
 
 2. Clone the source code into a working directory.  
- `git clone https://github.com/cyring/CoreFreq.git`  
- 
-3. Build the programs.  
-`cd CoreFreq`  
-`make`  
+```sh
+git clone https://github.com/cyring/CoreFreq.git
 ```
-cc -Wall -pthread -c corefreqd.c -o corefreqd.o
-cc -Wall -c corefreqm.c -o corefreqm.o
-cc corefreqd.c corefreqm.c -o corefreqd -lpthread -lm -lrt
-cc -Wall -c corefreq-cli.c -o corefreq-cli.o
-cc -Wall -c corefreq-ui.c -o corefreq-ui.o
-cc corefreq-cli.c corefreq-ui.c -o corefreq-cli -lm -lrt
-make -C /lib/modules/x.y.z/build M=/workdir/CoreFreq modules
+
+3. Build the programs.  
+```sh
+cd CoreFreq
+make -j
+```
+```console
+cc  -Wall -Wfatal-errors -Wno-unused-variable -pthread -c x86_64/corefreqd.c \
+  -D CORE_COUNT=256 -D TASK_ORDER=5 -D MAX_FREQ_HZ=7125000000 -D UBENCH=0 -D DELAY_TSC=1 \
+  -o build/corefreqd.o
+cc  -Wall -Wfatal-errors -Wno-unused-variable -c x86_64/corefreqm.c \
+  -D CORE_COUNT=256 -D TASK_ORDER=5 -D MAX_FREQ_HZ=7125000000 -D UBENCH=0 -D DELAY_TSC=1 \
+  -o build/corefreqm.o
+cc  -Wall -Wfatal-errors -Wno-unused-variable -c x86_64/corefreq-cli.c \
+  -D CORE_COUNT=256 -D TASK_ORDER=5 -D MAX_FREQ_HZ=7125000000 -D UBENCH=0 -D DELAY_TSC=1  \
+  -o build/corefreq-cli.o
+cc  -Wall -Wfatal-errors -Wno-unused-variable -c x86_64/corefreq-ui.c \
+  -D CORE_COUNT=256 -D TASK_ORDER=5 -D MAX_FREQ_HZ=7125000000 -D UBENCH=0 -D DELAY_TSC=1 \
+  -o build/corefreq-ui.o
+cc  -Wall -Wfatal-errors -Wno-unused-variable -c x86_64/corefreq-cli-rsc.c \
+  -D CORE_COUNT=256 -D TASK_ORDER=5 -D MAX_FREQ_HZ=7125000000 -D UBENCH=0 -D DELAY_TSC=1  \
+  -o build/corefreq-cli-rsc.o
+cc  -Wall -Wfatal-errors -Wno-unused-variable -c x86_64/corefreq-cli-json.c \
+  -D CORE_COUNT=256 -D TASK_ORDER=5 -D MAX_FREQ_HZ=7125000000 -D UBENCH=0 -D DELAY_TSC=1 \
+  -o build/corefreq-cli-json.o
+cc  -Wall -Wfatal-errors -Wno-unused-variable -c x86_64/corefreq-cli-extra.c \
+  -D CORE_COUNT=256 -D TASK_ORDER=5 -D MAX_FREQ_HZ=7125000000 -D UBENCH=0 -D DELAY_TSC=1 \
+  -o build/corefreq-cli-extra.o
+cc  -Wall -Wfatal-errors -Wno-unused-variable x86_64/corefreqd.c x86_64/corefreqm.c \
+  -D CORE_COUNT=256 -D TASK_ORDER=5 -D MAX_FREQ_HZ=7125000000 -D UBENCH=0 -D DELAY_TSC=1 \
+  -o build/corefreqd -lpthread -lm -lrt
+cc  -Wall -Wfatal-errors -Wno-unused-variable \
+  x86_64/corefreq-cli.c x86_64/corefreq-ui.c x86_64/corefreq-cli-rsc.c \
+  x86_64/corefreq-cli-json.c x86_64/corefreq-cli-extra.c \
+  -D CORE_COUNT=256 -D TASK_ORDER=5 -D MAX_FREQ_HZ=7125000000 -D UBENCH=0 -D DELAY_TSC=1  \
+  -o build/corefreq-cli -lm -lrt
 make[1]: Entering directory '/usr/lib/modules/x.y.z/build'
-  CC [M]  /workdir/CoreFreq/corefreqk.o
-  Building modules, stage 2.
-  MODPOST 1 modules
-  CC      /workdir/CoreFreq/corefreqk.mod.o
-  LD [M]  /workdir/CoreFreq/corefreqk.ko
-make[1]: Leaving directory '/usr/lib/modules/x.y.z/build'
+  CC [M]  CoreFreq/build/module/corefreqk.o
+  LD [M]  CoreFreq/build/corefreqk.o
+  MODPOST CoreFreq/build/Module.symvers
+  CC [M]  CoreFreq/build/corefreqk.mod.o
+  LD [M]  CoreFreq/build/corefreqk.ko
+  BTF [M] CoreFreq/build/corefreqk.ko
+make[1]: Leaving directory '/usr/lib/modules/x.y.z/build
 ```
 4. (Optionally) Sign the driver
 If module signature verification is enabled into Kernel, you will have to sign the `corefreqk.ko` driver.  
@@ -103,31 +130,47 @@ If module signature verification is enabled into Kernel, you will have to sign t
 
 #### Manual
 5. Copying _CoreFreq_ into the binaries directory  
-`make install`  
+```sh
+make install
+```
 
 #### Distribution package
 6. Although _CoreFreq_ is released in the ArchLinux AUR ; other sources of distribution may require to reload the systemd daemons:  
-`systemctl daemon-reload`  
+```sh
+systemctl daemon-reload
+```
 
 ### Start
 
 7. When built from source code:
 
 * Load the kernel module, from current directory, as root.  
-`insmod corefreqk.ko`  
+```sh
+insmod build/corefreqk.ko
+```
 * Start the daemon, as root.  
-`corefreqd`  
+```sh
+./build/corefreqd
+```
 * Start the client, as a user (_in another terminal or console_).  
-`corefreq-cli`  
+```sh
+./build/corefreq-cli
+```
 
 8. When manually installed or from a distribution package:  
 
 * Load the kernel module, as root.  
-`modprobe corefreqk`  
+```sh
+modprobe corefreqk
+```
 * Start the daemon, as root.  
-`systemctl start corefreqd`  
+```sh
+systemctl start corefreqd
+```
 * Start the client, as a user.  
-`corefreq-cli`  
+```sh
+corefreq-cli
+```
 
 ### Stop
 
@@ -136,7 +179,9 @@ If module signature verification is enabled into Kernel, you will have to sign t
 10. Press <kbd>Ctrl+c</kbd> to stop the daemon (in foreground) or kill its background job.
 
 11. Unload the kernel module  
-`rmmod corefreqk.ko`  
+```sh
+rmmod corefreqk.ko
+```
 
 ### Try
 Download the _CoreFreq_ Live CD from the [Wiki](http://github.com/cyring/CoreFreq/wiki/Live-CD)  
@@ -145,13 +190,13 @@ Download the _CoreFreq_ Live CD from the [Wiki](http://github.com/cyring/CoreFre
 ## Screenshots
 ### Linux kernel module
 Use `lsmod`, `dmesg` or `journalctl -k` to check if the module is started:  
-```
-CoreFreq: Processor [06_1A] Architecture [Nehalem/Bloomfield] CPU [8/8]
+```console
+CoreFreq(14:30:-1): Processor [ 8F_71] Architecture [Zen2/Matisse] SMT [32/32]
 ```
 
 ### Daemon
 
-```
+```console
 CoreFreq Daemon #.##.#  Copyright (C) 2015-2024 CYRIL COURTIAT
 
   Processor [AMD Ryzen 9 3950X 16-Core Processor]
@@ -193,16 +238,22 @@ CPU     IPS            IPC            CPI
 ## Gentoo Linux
 * In [GURU overlay](https://wiki.gentoo.org/wiki/Project:GURU/Information_for_End_Users) CoreFreq [package](https://github.com/gentoo/guru/tree/master/sys-apps/corefreq), please contact [vitaly-zdanevich](https://github.com/vitaly-zdanevich)  
 
-## Debian, Ubuntu
+## Debian, Ubuntu, TUXEDO
  * Installing the DKMS package will pull the Kernel development packages  
-`apt-get install dkms`  
- * Or, install selectively the development packages prerequisites.  
-`apt-get install libpthread-stubs0-dev`  
+```sh
+apt install dkms
+```
+ * Or install the kernel development prerequisites.  
+```sh
+apt list git build-essential gawk fakeroot linux-headers*
+```
 
 ## Red Hat, CentOS, AlmaLinux
  * Development packages prerequisites.  
-`yum install kernel-devel`  
-`yum group install "Development Tools"`  
+```sh
+yum install kernel-devel
+yum group install "Development Tools"
+```
 
 ## openSUSE
  * Packages
@@ -212,17 +263,20 @@ CPU     IPS            IPC            CPI
 ## ProxMox
 
 Install Tools
-`apt-get install build-essential dkms git libpthread-stubs0-dev`
+```sh
+apt-get install build-essential dkms git libpthread-stubs0-dev
+```
 
 Install headers related to your kernel
-```
+```sh
 apt install pve-headers-`uname -r`
 
 git clone https://github.com/cyring/CoreFreq.git
-cd CoreFreq/ && make
+cd CoreFreq && make
 ```
+
 Install the module in the system, refresh it and start it
-```
+```sh
 make install
 depmod
 modprobe corefreqk
@@ -233,6 +287,24 @@ systemctl start corefreqd
  * Plugin
 1. `corefreq.plg` from [ich777/unraid-corefreq](https://github.com/ich777/unraid-corefreq)
 2. Based on latest developments, please contact [ich777](https://github.com/ich777)  
+
+## Alpine
+```sh
+## Install the kernel development packages
+apk add alpine-sdk sed installkernel bc nawk diffutils findutils pahole openssl-dev python3 linux-virt linux-virt-dev
+```
+
+## Chimera
+```sh
+## Install the kernel development packages
+doas apk add git ckms gmake clang linux-headers linux-lts-devel
+## Add the CoreFreq directory containing the ckms.ini file
+doas ckms add CoreFreq/
+## Build the CoreFreq version M.m.r
+doas ckms build corefreqk=M.m.r
+## Or manually if using the Clang compiler
+gmake CC=clang
+```
 
 ## [Buildroot](https://github.com/cyring/CoreFreq-buildroot)
 
