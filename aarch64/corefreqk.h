@@ -1119,7 +1119,7 @@ typedef struct {
 
 typedef struct {
 	FEATURES	*Features;
-	char		*Brand;
+/*TODO	char		*Brand;		*/
 	unsigned int	SMT_Count,
 			localProcessor;
 	signed int	rc;

@@ -43,6 +43,28 @@ typedef union
 	struct
 	{
 		unsigned long long
+		EnableAll	:  1-0,
+		ResetEvent	:  2-1,
+		ResetCycle	:  3-2,
+		ClockDiv	:  4-3,  /* 1:PMCCNTR counts once / 64 cycles */
+		ExportEvent	:  5-4,
+		DisableCycle	:  6-5,  /* 1:PMCCNTR is disabled	*/
+		EnableLongCycle :  7-6,
+		RES0		: 11-7,
+		NumEvtCtrs	: 16-11,
+		IDcode		: 24-16,
+		Implementer	: 32-24,
+		Freeze_On_SPE	: 33-32,
+		RES1		: 64-33;
+	};
+} PMCR;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
 		ClockFrequency	: 32-0,
 		RES0		: 64-32;
 	};

@@ -806,6 +806,45 @@ signed int SearchArchitectureID(void)
     }
 	return id;
 }
+
+void BrandFromIDcode(char *pBrand, unsigned short IDcode)
+{
+    struct {
+		char			*brand;
+		unsigned short		code;
+    } codeTbl[] = {
+	{	"Cortex-A5"	,	0x5	},
+	{	"Cortex-A9"	,	0x9	},
+	{	"Cortex-A7"	,	0x07	},
+	{	"Cortex-A15"	,	0x0f	},
+	{	"Cortex-A17"	,	0x0e	},
+	{	"Cortex-A32"	,	0x06	},
+	{	"Cortex-A35"	,	0x0a	},
+	{	"Cortex-A53"	,	0x03	},
+	{	"Cortex-A55"	,	0x45	},
+	{	"Cortex-A72"	,	0x02	},
+	{	"Cortex-A76"	,	0x0b	},
+	{	"Cortex-A76AE"	,	0x11	},
+	{	"Cortex-A77"	,	0x10	},
+	{	"Cortex-A78"	,	0x21	},	/* Neoverse V1	*/
+	{	"Cortex‑A78AE"	,	0x22	},
+	{	"Cortex-R4"	,	0x14	},
+	{	"Cortex-R5"	,	0x15	},
+	{	"Cortex-R52"	,	0x13	},
+	{	"Cortex-X1"	,	0x23	},
+	{	"Cortex-X1C"	,	0x25	},
+	{	"DynamIQ DSU"	,	0x41	},
+	{	"Neoverse N1"	,	0x0c	}
+    };
+	unsigned int idx;
+    for (idx = 0; idx < sizeof(codeTbl) / sizeof(codeTbl[0]); idx++) {
+	if (IDcode == codeTbl[idx].code)
+	{
+		StrCopy(pBrand, codeTbl[idx].brand, BRAND_SIZE);
+		return;
+	}
+    }
+}
 /*TODO(CleanUp)
 void BrandCleanup(char *pBrand, char inOrder[])
 {
@@ -906,6 +945,7 @@ static void Query_Features(void *pArg)
 	INIT_ARG *iArg = (INIT_ARG *) pArg;
 /*	unsigned int eax = 0x0, ebx = 0x0, ecx = 0x0, edx = 0x0; **DWORD Only!*/
 	volatile CNTFRQ cntfrq;
+	volatile PMCR pmcr;
 	volatile AA64DFR0 dbgfr0;
 
 	enum HYPERVISOR hypervisor = HYPERV_NONE;
@@ -1360,13 +1400,18 @@ static void Query_Features(void *pArg)
     }
 */
 	__asm__ __volatile__(
+		"mrs	%[pmcr],	pmcr_el0" 		"\n\t"
 		"mrs	%[dbgfr0],	id_aa64dfr0_el1"	"\n\t"
 		"isb"
-		: [dbgfr0]	"=r" (dbgfr0)
+		: [pmcr]	"=r" (pmcr),
+		  [dbgfr0]	"=r" (dbgfr0)
 		:
 		: "memory"
 	);
+	iArg->Features->PerfMon.EDX.FixCtrs = 1; /* Fixed Cycle Counter */
+	iArg->Features->PerfMon.EAX.MonCtrs = pmcr.NumEvtCtrs;
 	iArg->Features->PerfMon.EAX.Version = dbgfr0.PMUVer;
+	BrandFromIDcode(iArg->Features->Info.Brand, pmcr.IDcode);
 }
 
 void Compute_Interval(void)
@@ -23264,6 +23309,7 @@ static int CoreFreqK_Alloc_Features_Level_Up(INIT_ARG *pArg)
 	} else {
 		memset(pArg->Features, 0, sizeof(FEATURES));
 	}
+/*TODO(CleanUp)
 	pArg->Brand = kmalloc(BRAND_SIZE, GFP_KERNEL);
 	if (pArg->Brand == NULL)
 	{
@@ -23271,6 +23317,7 @@ static int CoreFreqK_Alloc_Features_Level_Up(INIT_ARG *pArg)
 	} else {
 		memset(pArg->Brand, 0x20, BRAND_SIZE);
 	}
+*/
 	return 0;
 }
 
@@ -24142,7 +24189,7 @@ static int CoreFreqK_StartUp(void)
 		COREFREQ_RUN(User_Ops_Level, Up)
 	};
 	INIT_ARG iArg = {
-		.Features = NULL, .Brand = NULL,
+		.Features = NULL, /*.Brand = NULL,*/
 		.SMT_Count = 0, .localProcessor = 0, .rc = 0
 	};
 	int rc = 0;
@@ -24158,10 +24205,12 @@ static int CoreFreqK_StartUp(void)
 	{
 		kfree(iArg.Features);
 	}
+/*TODO(CleanUp)
 	if (iArg.Brand != NULL)
 	{
 		kfree(iArg.Brand);
 	}
+*/
 	return rc;
 }
 
