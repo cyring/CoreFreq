@@ -16695,6 +16695,7 @@ void Layout_Header(Layer *layer, CUINT row)
 /*TODO(CleanUp)
     if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
+*/
 	L1I_Size = \
 	RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Topology.Cache[0].Size / 1024;
 
@@ -16706,6 +16707,7 @@ void Layout_Header(Layer *layer, CUINT row)
 
 	L3U_Size = \
 	RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Topology.Cache[3].Size / 1024;
+/*TODO(CleanUp)
     }
     else if (	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	 ||	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )

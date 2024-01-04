@@ -146,7 +146,7 @@ typedef struct
 		unsigned int		Set,
 					Size;
 		unsigned short		LineSz,
-					Part,
+/*TODO(CleanUp)				Part,	*/
 					Way;
 		    struct {
 		    unsigned short	WriteBack: 1-0,

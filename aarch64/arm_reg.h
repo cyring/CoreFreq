@@ -86,6 +86,37 @@ typedef union
 	struct
 	{
 		unsigned long long
+		InD		:  1-0,
+		Level		:  4-1,
+		RES0		: 32-4,
+		RES1		: 64-32;
+	};
+} CSSELR;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		Ctype1		:  3-0,
+		Ctype2		:  6-3,
+		Ctype3		:  9-6,
+		RES0		: 21-9,
+		LoUIS		: 24-21,
+		LoC		: 27-24,
+		LoUU		: 30-27,
+		ICB		: 33-30,
+		RES1		: 64-33;
+	};
+} CLIDR;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
 		DebugVer	:  4-0,
 		TraceVer	:  8-4,
 		PMUVer		: 12-8,

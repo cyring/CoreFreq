@@ -7152,7 +7152,7 @@ unsigned int AMD_L2_L3_Way_Associativity(RO(CORE) **RO(Core),
 void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 		unsigned int cpu)
 {
-	unsigned int loop;
+	unsigned int level;
 	/*	Copy each Core topology.				*/
 	RO(Shm)->Cpu[cpu].Topology.MP.BSP= (RO(Core, AT(cpu))->T.Base.BSP)? 1:0;
 	RO(Shm)->Cpu[cpu].Topology.ApicID     = RO(Core,AT(cpu))->T.ApicID;
@@ -7193,15 +7193,37 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 					RO(Shm)->Cpu[cpu].Topology.MP.x2APIC
 					<< RO(Core, AT(cpu))->T.Base.x2APIC_EN;
 	/*	Aggregate the Caches topology.				*/
+    for (level = 0; level < CACHE_MAX_LEVEL; level++)
+    {
+	RO(Shm)->Cpu[cpu].Topology.Cache[level].LineSz = \
+			RO(Core, AT(cpu))->T.Cache[level].ccsid.LineSz + 4;
+
+	RO(Shm)->Cpu[cpu].Topology.Cache[level].Set = \
+			RO(Core, AT(cpu))->T.Cache[level].ccsid.Set + 1;
+
+	RO(Shm)->Cpu[cpu].Topology.Cache[level].Way = \
+			RO(Core, AT(cpu))->T.Cache[level].ccsid.Assoc + 1;
+
+	RO(Shm)->Cpu[cpu].Topology.Cache[level].Size = \
+			RO(Shm)->Cpu[cpu].Topology.Cache[level].Way
+			<< RO(Shm)->Cpu[cpu].Topology.Cache[level].LineSz;
+
+	RO(Shm)->Cpu[cpu].Topology.Cache[level].Size = \
+			RO(Shm)->Cpu[cpu].Topology.Cache[level].Set
+			* RO(Shm)->Cpu[cpu].Topology.Cache[level].Size;
+
+	RO(Shm)->Cpu[cpu].Topology.Cache[level].Feature.WriteBack = \
+			RO(Core, AT(cpu))->T.Cache[level].ccsid.WrBack;
+    }
+/*TODO(CleanUp)
     for (loop = 0; loop < CACHE_MAX_LEVEL; loop++)
     {
       if (RO(Core, AT(cpu))->T.Cache[loop].Type > 0)
       {
 	unsigned int level = RO(Core, AT(cpu))->T.Cache[loop].Level;
-	if (RO(Core, AT(cpu))->T.Cache[loop].Type == 2) {/* Instruction	*/
+	if (RO(Core, AT(cpu))->T.Cache[loop].Type == 2) {** Instruction	**
 		level = 0;
 	}
-	/*TODO(CleanUp)
 	if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
 	{
 		RO(Shm)->Cpu[cpu].Topology.Cache[level].Set = \
@@ -7234,7 +7256,6 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 					RO(Core, AT(cpu))->T.Cache[loop].Size;
 	    }
 	}
-	*/
 	RO(Shm)->Cpu[cpu].Topology.Cache[level].Feature.WriteBack = \
 					RO(Core, AT(cpu))->T.Cache[loop].WrBack;
 
@@ -7242,8 +7263,7 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 					RO(Core, AT(cpu))->T.Cache[loop].Inclus;
       }
     }
-	/*	Apply various architecture size unit.			*/
-/*TODO(CleanUp)
+	**	Apply various architecture size unit.			**
     switch (RO(Proc)->ArchID) {
     case AMD_Family_15h:
 	if ((RO(Shm)->Proc.Features.Std.EAX.ExtModel == 0x6)

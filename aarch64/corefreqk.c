@@ -716,7 +716,7 @@ void VendorFromCPUID(	char *pVendorID, unsigned int *pLargestFunc,
 void VendorFromMainID(	char *pVendorID, unsigned int *pCRC,
 			enum HYPERVISOR *pHypervisor )
 {
-    struct {
+    const struct {
 		unsigned short		implementer;
 		char			*vendorID;
 		size_t			vendorLen;
@@ -844,6 +844,7 @@ void BrandFromIDcode(char *pBrand, unsigned short IDcode)
 		return;
 	}
     }
+	StrFormat(pBrand, BRAND_SIZE, "IDCODE(0x%02X)", IDcode);
 }
 /*TODO(CleanUp)
 void BrandCleanup(char *pBrand, char inOrder[])
@@ -1937,6 +1938,52 @@ void Define_CPUID(CORE_RO *Core, const CPUID_STRUCT CpuIDforVendor[])
 		Core->CpuID[i].sub  = CpuIDforVendor[i].sub;
 	}
 }
+
+void Cache_Level(CORE_RO *Core, unsigned int level, unsigned int select)
+{
+	const CSSELR cssel[CACHE_MAX_LEVEL] = {
+		[0] = { .InD = 1, .Level = 0 }, /*	L1I	*/
+		[1] = { .InD = 0, .Level = 0 }, /*	L1D	*/
+		[2] = { .InD = 0, .Level = 1 }, /*	L2	*/
+		[3] = { .InD = 0, .Level = 2 }	/*	L3	*/
+	};
+	__asm__ volatile
+	(
+		"msr	csselr_el1,	%[cssel]"	"\n\t"
+		"mrs	%[ccsid],	ccsidr_el1"	"\n\t"
+		"isb"
+		: [ccsid]	"=r" (Core->T.Cache[level].ccsid)
+		: [cssel]	"r"  (cssel[select])
+		: "memory"
+	);
+}
+
+void Cache_Topology(CORE_RO *Core)
+{
+	volatile CLIDR clidr;
+	__asm__ volatile
+	(
+		"mrs	%[clidr],	clidr_el1"	"\n\t"
+		"isb"
+		: [clidr]	"=r" (clidr)
+		:
+		: "memory"
+	);
+
+	if (clidr.Ctype1 == 0b011) {
+		Cache_Level(Core, 0, 0);
+		Cache_Level(Core, 1, 1);
+	} else {
+		Cache_Level(Core, 0, 1);
+		/*	Skip L1I	*/
+	}
+	if (clidr.Ctype2 == 0b100) {
+		Cache_Level(Core, 2, 2);
+	}
+	if (clidr.Ctype3 == 0b100) {
+		Cache_Level(Core, 3, 3);
+	}
+}
 /*TODO(CleanUp)
 void Cache_Topology(CORE_RO *Core)
 {
@@ -2567,6 +2614,7 @@ static void Map_Generic_Topology(void *arg)
 	if (mpid.MT) {
 		Core->T.ThreadID = mpid.Aff0;
 	}
+	Cache_Topology(Core);
     }
 }
 

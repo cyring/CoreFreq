@@ -106,29 +106,29 @@ typedef struct
 
 	struct CACHE_INFO
 	{
-		union
+/*TODO(CleanUp)	union
 		{
 			struct
-			{	/* Intel				*/
+			{	** Intel				**
 				unsigned int
-				Type	:  5-0,  /* Cache Type* 	*/
-				Level	:  8-5,  /* Cache Level (starts at 1) */
-				Init	:  9-8,  /* Self Init. cache level    */
-				Assoc	: 10-9,  /* Fully Associative cache   */
+				Type	:  5-0,  ** Cache Type* 	**
+				Level	:  8-5,  ** Cache Level (starts at 1) **
+				Init	:  9-8,  ** Self Init. cache level    **
+				Assoc	: 10-9,  ** Fully Associative cache   **
 				Unused	: 14-10,
-				MxThrdID: 26-14, /* Max threads w/ this cache */
-				MxCoreID: 32-26; /* Max cores for this cache  */
+				MxThrdID: 26-14, ** Max threads w/ this cache **
+				MxCoreID: 32-26; ** Max cores for this cache  **
 			};
 			struct
-			{	/* AMD L1				*/
+			{	** AMD L1				**
 				unsigned int
-				ISize	:  8-0,  /* Inst. TLB number/entries  */
-				IAssoc	: 16-8,  /* Inst. TLB associativity   */
-				DSize	: 24-16, /* Data TLB number/entries   */
-				DAssoc	: 32-24; /* Data TLB associativity    */
-			} CPUID_0x80000005_L1Tlb2and4M; /* 2 MB & 4 MB pages  */
+				ISize	:  8-0,  ** Inst. TLB number/entries  **
+				IAssoc	: 16-8,  ** Inst. TLB associativity   **
+				DSize	: 24-16, ** Data TLB number/entries   **
+				DAssoc	: 32-24; ** Data TLB associativity    **
+			} CPUID_0x80000005_L1Tlb2and4M; ** 2 MB & 4 MB pages  **
 			struct
-			{	/* AMD L2				*/
+			{	** AMD L2				**
 				unsigned int
 				ISize	: 12-0,
 				IAssoc	: 16-12,
@@ -140,22 +140,22 @@ typedef struct
 		union
 		{
 			struct
-			{	/* Intel				*/
+			{	** Intel				**
 				unsigned int
-				LineSz	: 12-0,  /* L=Sys Coherency Line Size */
-				Part	: 22-12, /* P=Phys Line partitions    */
-				Way	: 32-22; /* W=Ways of associativity   */
+				LineSz	: 12-0,  ** L=Sys Coherency Line Size **
+				Part	: 22-12, ** P=Phys Line partitions    **
+				Way	: 32-22; ** W=Ways of associativity   **
 			};
 			struct
-			{	/* AMD L1				*/
+			{	** AMD L1				**
 				unsigned int
-				ISize	:  8-0,  /* Inst. TLB number/entries  */
-				IAssoc	: 16-8,  /* Inst. TLB associativity*  */
-				DSize	: 24-16, /* Data TLB number/entries   */
-				DAssoc	: 32-24; /* Data TLB associativity*   */
-			} CPUID_0x80000005_L1Tlb4K; /* for 4 KB pages	*/
+				ISize	:  8-0,  ** Inst. TLB number/entries  **
+				IAssoc	: 16-8,  ** Inst. TLB associativity*  **
+				DSize	: 24-16, ** Data TLB number/entries   **
+				DAssoc	: 32-24; ** Data TLB associativity*   **
+			} CPUID_0x80000005_L1Tlb4K; ** for 4 KB pages	**
 			struct
-			{	/* AMD L2				*/
+			{	** AMD L2				**
 				unsigned int
 				ISize	: 12-0,
 				IAssoc	: 16-12,
@@ -165,55 +165,72 @@ typedef struct
 			unsigned int BX;
 		};
 		union
-		{		/* Intel				*/
-			unsigned int Set;	/* S=Number of Sets	*/
+		{		** Intel				**
+			unsigned int Set;	** S=Number of Sets	**
 			struct
-			{	/* AMD L1-Data				*/
+			{	** AMD L1-Data				**
 				unsigned int
-				LineSz	:  8-0,  /* L1-D cache line size (B)  */
-				ClPerTag: 16-8,  /* L1-D cache lines per tag  */
-				Assoc	: 24-16, /* L1-D cache associativity* */
-				Size	: 32-24; /* L1-D cache size (KB)      */
+				LineSz	:  8-0,  ** L1-D cache line size (B)  **
+				ClPerTag: 16-8,  ** L1-D cache lines per tag  **
+				Assoc	: 24-16, ** L1-D cache associativity* **
+				Size	: 32-24; ** L1-D cache size (KB)      **
 			} CPUID_0x80000005_L1D;
 			struct
-			{	/* AMD L2				*/
+			{	** AMD L2				**
 				unsigned int
-				LineSz	:  8-0,  /* L2 cache line size (B)    */
-				ClPerTag: 12-8,  /* L2 cache lines per tag    */
-				Assoc	: 16-12, /* L2 cache associativity**  */
-				Size	: 32-16; /* L2 cache size (KB)***     */
+				LineSz	:  8-0,  ** L2 cache line size (B)    **
+				ClPerTag: 12-8,  ** L2 cache lines per tag    **
+				Assoc	: 16-12, ** L2 cache associativity**  **
+				Size	: 32-16; ** L2 cache size (KB)***     **
 			} CPUID_0x80000006_L2;
 			unsigned int CX;
 		};
 		union
 		{
 			struct
-			{	/* Intel				*/
+			{	** Intel				**
 				unsigned int
-				WrBack	: 1-0,  /* Write-Back**		*/
-				Inclus	: 2-1,  /* Cache Inclusiveness*** */
-				Direct	: 3-2,  /* Cache Indexing****	*/
+				WrBack	: 1-0,  ** Write-Back**		**
+				Inclus	: 2-1,  ** Cache Inclusiveness*** **
+				Direct	: 3-2,  ** Cache Indexing****	**
 				Resrvd	: 32-3;
 			};
 			struct
-			{	/* AMD L1-Instruction			*/
+			{	** AMD L1-Instruction			**
 				unsigned int
-				LineSz	:  8-0,  /* L1-I cache line size (B)  */
-				ClPerTag: 16-8,  /* L1-I cache lines per tag  */
-				Assoc	: 24-16, /* L1-I cache associativity  */
-				Size	: 32-24; /* L1-I cache size (KB)      */
+				LineSz	:  8-0,  ** L1-I cache line size (B)  **
+				ClPerTag: 16-8,  ** L1-I cache lines per tag  **
+				Assoc	: 24-16, ** L1-I cache associativity  **
+				Size	: 32-24; ** L1-I cache size (KB)      **
 			} CPUID_0x80000005_L1I;
 			struct
-			{	/* AMD L3				*/
+			{	** AMD L3				**
 				unsigned int
-				LineSz	:  8-0,  /* L3 cache line (B)	*/
-				ClPerTag: 12-8,  /* L3 cache lines per tag */
-				Assoc	: 16-12, /* L3 cache associativity */
+				LineSz	:  8-0,  ** L3 cache line (B)	**
+				ClPerTag: 12-8,  ** L3 cache lines per tag **
+				Assoc	: 16-12, ** L3 cache associativity **
 				Reserved: 18-16,
-				Size	: 32-18; /* L3 cache size	*/
+				Size	: 32-18; ** L3 cache size	**
 			} CPUID_0x80000006_L3;
 			unsigned int DX;
 		};
+*/
+		union CCSIDR
+		{
+			unsigned long long	value;
+			struct
+			{
+				unsigned long long
+				LineSz		:  3-0,
+				Assoc		: 13-3,
+				Set		: 28-13,
+				WrAlloc 	: 29-28,
+				RdAlloc 	: 30-29,
+				WrBack		: 31-30,
+				WrThrough	: 32-31,
+				RES0		: 64-32;
+			};
+		} ccsid;
 		unsigned int	Size;
 	} Cache[CACHE_MAX_LEVEL];
 } CACHE_TOPOLOGY;

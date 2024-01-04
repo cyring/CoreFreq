@@ -1912,8 +1912,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 				json_literal(&s, "%u", RO(Shm)->Cpu[cpu].Topology.Cache[i2].Size);
 				json_key(&s, "LineSz");
 				json_literal(&s, "%hu", RO(Shm)->Cpu[cpu].Topology.Cache[i2].LineSz);
-				json_key(&s, "Part");
-				json_literal(&s, "%hu", RO(Shm)->Cpu[cpu].Topology.Cache[i2].Part);
+/*TODO(CleanUp)			json_key(&s, "Part");
+				json_literal(&s, "%hu", RO(Shm)->Cpu[cpu].Topology.Cache[i2].Part);	*/
 				json_key(&s, "Way");
 				json_literal(&s, "%hu", RO(Shm)->Cpu[cpu].Topology.Cache[i2].Way);
 				json_key(&s, "Feature");
