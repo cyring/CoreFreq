@@ -6,13 +6,13 @@
 
 typedef union
 {
-	unsigned long long	value;
+	unsigned long long	value;	/* CPU0:0x412fd050 ; CPU4:0x414fd0b0 */
 	struct
 	{
 		unsigned long long
 		Revision	:  4-0,
 		PartNum 	: 16-4,
-		Architecture	: 20-16,
+		Architecture	: 20-16, /* 0b1111=by CPUID scheme	*/
 		Variant 	: 24-20,
 		Implementer	: 32-24,
 		RES0		: 64-32;

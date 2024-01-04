@@ -419,21 +419,21 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 				{
 					json_start_object(&s);
 					json_key(&s, "Stepping");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EAX.Stepping);
+					json_literal(&s, "0x%x", (unsigned) RO(Shm)->Proc.Features.Std.EAX.Stepping);
 					json_key(&s, "Model");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EAX.Model);
 					json_key(&s, "Family");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EAX.Family);
-					json_key(&s, "ProcType");
+/*TODO(CleanUp)				json_key(&s, "ProcType");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EAX.ProcType);
 					json_key(&s, "Reserved1");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EAX.Reserved1);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EAX.Reserved1);	*/
 					json_key(&s, "ExtModel");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EAX.ExtModel);
 					json_key(&s, "ExtFamily");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EAX.ExtFamily);
-					json_key(&s, "Reserved2");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EAX.Reserved2);
+/*TODO(CleanUp)				json_key(&s, "Reserved2");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EAX.Reserved2);	*/
 					json_end_object(&s);
 				}
 				json_key(&s, "EBX");

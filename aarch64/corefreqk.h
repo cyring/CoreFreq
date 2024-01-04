@@ -1508,6 +1508,11 @@ typedef struct {
 	void			(*SetTarget)(void *arg);
 } SYSTEM_DRIVER;
 
+typedef struct {
+	char			**Brand;
+	enum CODENAME		CN;
+} ARCH_ST;
+
 typedef struct
 {
 	struct	SIGNATURE	Signature;
@@ -1531,7 +1536,7 @@ typedef struct
 	} Uncore;
 	PROCESSOR_SPECIFIC	*Specific;
 	SYSTEM_DRIVER		SystemDriver;
-	char			**Architecture;
+	ARCH_ST			Architecture;
 } ARCH;
 /*TODO(CleanUp)
 static CLOCK BaseClock_GenuineIntel(unsigned int ratio) ;
@@ -1808,7 +1813,50 @@ static void Start_GenericMachine(void *arg) ;
 static void Stop_GenericMachine(void *arg) ;
 static void InitTimer_GenericMachine(unsigned int cpu) ;
 /*	[Void]								*/
-#define _Void_Signature {.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
+#define _Void_Signature {.ExtFamily=0x00, .Family=0x0, .ExtModel=0x0, .Model=0x0}
+#define _Cortex_A5	{.ExtFamily=0xc0, .Family=0x5, .ExtModel=0x0, .Model=0x5}
+#define _Cortex_A7	{.ExtFamily=0xc0, .Family=0x7, .ExtModel=0x0, .Model=0x7}
+#define _Cortex_A9	{.ExtFamily=0xc0, .Family=0x9, .ExtModel=0x0, .Model=0x9}
+#define _Cortex_A15	{.ExtFamily=0xc0, .Family=0xf, .ExtModel=0x0, .Model=0xf}
+#define _Cortex_A17	{.ExtFamily=0xc0, .Family=0xe, .ExtModel=0x0, .Model=0xe}
+#define _Cortex_A32	{.ExtFamily=0xd0, .Family=0x1, .ExtModel=0x0, .Model=0x6}
+#define _Cortex_A34	{.ExtFamily=0xd0, .Family=0x2, .ExtModel=0x0, .Model=0x8}
+#define _Cortex_A35	{.ExtFamily=0xd0, .Family=0x4, .ExtModel=0x0, .Model=0xa}
+#define _Cortex_A510	{.ExtFamily=0xd4, .Family=0x6, .ExtModel=0x0, .Model=0x0}
+#define _Cortex_A520	{.ExtFamily=0xd8, .Family=0x0, .ExtModel=0x0, .Model=0x0}
+#define _Cortex_A53	{.ExtFamily=0xd0, .Family=0x3, .ExtModel=0x0, .Model=0x3}
+#define _Cortex_A55	{.ExtFamily=0xd0, .Family=0x5, .ExtModel=0x4, .Model=0x5}
+#define _Cortex_A57	{.ExtFamily=0xd0, .Family=0x7, .ExtModel=0x0, .Model=0x1}
+#define _Cortex_A65	{.ExtFamily=0xd0, .Family=0x6, .ExtModel=0x4, .Model=0x6}
+#define _Cortex_A65AE	{.ExtFamily=0xd4, .Family=0x3, .ExtModel=0x4, .Model=0x7}
+#define _Cortex_A710	{.ExtFamily=0xd4, .Family=0x7, .ExtModel=0x0, .Model=0x0}
+#define _Cortex_A715	{.ExtFamily=0xd4, .Family=0xd, .ExtModel=0x0, .Model=0x0}
+#define _Cortex_A72	{.ExtFamily=0xd0, .Family=0x8, .ExtModel=0x0, .Model=0x2}
+#define _Cortex_A720	{.ExtFamily=0xd8, .Family=0x1, .ExtModel=0x0, .Model=0x0}
+#define _Cortex_A73	{.ExtFamily=0xd0, .Family=0x9, .ExtModel=0x0, .Model=0x4}
+#define _Cortex_A75	{.ExtFamily=0xd0, .Family=0xa, .ExtModel=0x4, .Model=0xa}
+#define _Cortex_A76	{.ExtFamily=0xd0, .Family=0xb, .ExtModel=0x0, .Model=0xb}
+#define _Cortex_A76AE	{.ExtFamily=0xd0, .Family=0xe, .ExtModel=0x1, .Model=0x1}
+#define _Cortex_A77	{.ExtFamily=0xd0, .Family=0xd, .ExtModel=0x1, .Model=0x0}
+#define _Cortex_A78	{.ExtFamily=0xd4, .Family=0x1, .ExtModel=0x2, .Model=0x1}
+#define _Cortex_A78AE	{.ExtFamily=0xd4, .Family=0x2, .ExtModel=0x2, .Model=0x2}
+#define _Cortex_A78C	{.ExtFamily=0xd4, .Family=0xb, .ExtModel=0x2, .Model=0x4}
+#define _Cortex_R4	{.ExtFamily=0xc1, .Family=0x4, .ExtModel=0x1, .Model=0x4}
+#define _Cortex_R5	{.ExtFamily=0xc1, .Family=0x5, .ExtModel=0x1, .Model=0x5}
+#define _Cortex_R52	{.ExtFamily=0xd1, .Family=0x3, .ExtModel=0x1, .Model=0x3}
+#define _Cortex_R52Plus {.ExtFamily=0xd1, .Family=0x6, .ExtModel=0x1, .Model=0x6}
+#define _Cortex_R82	{.ExtFamily=0xd1, .Family=0x5, .ExtModel=0x0, .Model=0x0}
+#define _Cortex_X1	{.ExtFamily=0xd4, .Family=0x4, .ExtModel=0x2, .Model=0x3}
+#define _Cortex_X1C	{.ExtFamily=0xd4, .Family=0xc, .ExtModel=0x2, .Model=0x5}
+#define _Cortex_X2	{.ExtFamily=0xd4, .Family=0x8, .ExtModel=0x0, .Model=0x0}
+#define _Cortex_X3	{.ExtFamily=0xd4, .Family=0xe, .ExtModel=0x0, .Model=0x0}
+#define _Cortex_X4	{.ExtFamily=0xd8, .Family=0x2, .ExtModel=0x0, .Model=0x0}
+#define _DynamIQ_DSU	{.ExtFamily=0x00, .Family=0x0, .ExtModel=0x4, .Model=0x1}
+#define _Neoverse_E1	{.ExtFamily=0xd4, .Family=0xa, .ExtModel=0x4, .Model=0x6}
+#define _Neoverse_N1	{.ExtFamily=0xd0, .Family=0xc, .ExtModel=0x0, .Model=0xc}
+#define _Neoverse_N2	{.ExtFamily=0xd4, .Family=0x9, .ExtModel=0x0, .Model=0x0}
+#define _Neoverse_V1	{.ExtFamily=0xd4, .Family=0x0, .ExtModel=0x2, .Model=0x1}
+#define _Neoverse_V2	{.ExtFamily=0xd4, .Family=0xf, .ExtModel=0x0, .Model=0x0}
 /*TODO(CleanUp)
 **	[Core]		06_0Eh (32 bits)				**
 #define _Core_Yonah	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x0, .Model=0xE}
@@ -3248,8 +3296,62 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 
 #define PCI_AMD_19h_ids PCI_AMD_17h_ids
 */
-	 /*	Left as empty for initialization purpose.	*/
-static char *Arch_Misc_Processor[]	=	ZLIST(NULL);
+static char *CodeName[CODENAMES] = {
+	[    ARMv1]	= "ARMv1",
+	[  ARMv7_R]	= "ARMv7-R",
+	[  ARMv7_A]	= "ARMv7-A",
+	[  ARMv8_R]	= "ARMv8-R",
+	[  ARMv8_A]	= "ARMv8-A",
+	[ARMv8_2_A]	= "ARMv8.2-A",
+	[ARMv8_3_A]	= "ARMv8.3-A",
+	[ARMv8_4_A]	= "ARMv8.4-A",
+	[  ARMv9_A]	= "ARMv9-A"
+};
+
+const ARCH_ST Arch_Misc_Processor = {.Brand = ZLIST(NULL), .CN = ARMv1},
+	Arch_Cortex_A5 = {.Brand = ZLIST("Cortex-A5"), .CN = ARMv7_A},
+	Arch_Cortex_A7 = {.Brand = ZLIST("Cortex-A7"), .CN = ARMv7_A},
+	Arch_Cortex_A9 = {.Brand = ZLIST("Cortex-A9"), .CN = ARMv7_A},
+	Arch_Cortex_A15 = {.Brand = ZLIST("Cortex-A15"), .CN = ARMv7_A},
+	Arch_Cortex_A17 = {.Brand = ZLIST("Cortex-A17"), .CN = ARMv7_A},
+	Arch_Cortex_A32 = {.Brand = ZLIST("Cortex-A32"), .CN = ARMv8_A},
+	Arch_Cortex_A34 = {.Brand = ZLIST("Cortex-A34"), .CN = ARMv8_A},
+	Arch_Cortex_A35 = {.Brand = ZLIST("Cortex-A35"), .CN = ARMv8_A},
+	Arch_Cortex_A510 = {.Brand = ZLIST("Cortex-A510"), .CN = ARMv9_A},
+	Arch_Cortex_A520 = {.Brand = ZLIST("Cortex-A520"), .CN = ARMv9_A},
+	Arch_Cortex_A53 = {.Brand = ZLIST("Cortex-A53"), .CN = ARMv8_A},
+	Arch_Cortex_A55 = {.Brand = ZLIST("Cortex-A55"), .CN = ARMv8_2_A},
+	Arch_Cortex_A57 = {.Brand = ZLIST("Cortex-A57"), .CN = ARMv8_A},
+	Arch_Cortex_A65 = {.Brand = ZLIST("Cortex-A65"), .CN = ARMv8_2_A},
+	Arch_Cortex_A65AE = {.Brand = ZLIST("Cortex-A65AE"), .CN = ARMv8_2_A},
+	Arch_Cortex_A710 = {.Brand = ZLIST("Cortex-A710"), .CN = ARMv9_A},
+	Arch_Cortex_A715 = {.Brand = ZLIST("Cortex-A715"), .CN = ARMv9_A},
+	Arch_Cortex_A72 = {.Brand = ZLIST("Cortex-A72"), .CN = ARMv8_A},
+	Arch_Cortex_A720 = {.Brand = ZLIST("Cortex-A720"), .CN = ARMv9_A},
+	Arch_Cortex_A73 = {.Brand = ZLIST("Cortex-A73"), .CN = ARMv8_A},
+	Arch_Cortex_A75 = {.Brand = ZLIST("Cortex-A75"), .CN = ARMv8_2_A},
+	Arch_Cortex_A76 = {.Brand = ZLIST("Cortex-A76"), .CN = ARMv8_2_A},
+	Arch_Cortex_A76AE = {.Brand = ZLIST("Cortex-A76AE"), .CN = ARMv8_2_A},
+	Arch_Cortex_A77 = {.Brand = ZLIST("Cortex-A77"), .CN = ARMv8_2_A},
+	Arch_Cortex_A78 = {.Brand = ZLIST("Cortex-A78"), .CN = ARMv8_2_A},
+	Arch_Cortex_A78AE = {.Brand = ZLIST("Cortex-A78AE"), .CN = ARMv8_2_A},
+	Arch_Cortex_A78C = {.Brand = ZLIST("Cortex-A78C"), .CN = ARMv8_2_A},
+	Arch_Cortex_R4 = {.Brand = ZLIST("Cortex-R4"), .CN = ARMv7_R},
+	Arch_Cortex_R5 = {.Brand = ZLIST("Cortex-R5"), .CN = ARMv7_R},
+	Arch_Cortex_R52 = {.Brand = ZLIST("Cortex-R52"), .CN = ARMv8_R},
+	Arch_Cortex_R52Plus = {.Brand = ZLIST("Cortex-R52+"), .CN = ARMv8_R},
+	Arch_Cortex_R82 = {.Brand = ZLIST("Cortex-R82"), .CN = ARMv8_R},
+	Arch_Cortex_X1 = {.Brand = ZLIST("Cortex-X1"), .CN = ARMv8_2_A},
+	Arch_Cortex_X1C = {.Brand = ZLIST("Cortex-X1C"), .CN = ARMv8_2_A},
+	Arch_Cortex_X2 = {.Brand = ZLIST("Cortex-X2"), .CN = ARMv9_A},
+	Arch_Cortex_X3 = {.Brand = ZLIST("Cortex-X3"), .CN = ARMv9_A},
+	Arch_Cortex_X4 = {.Brand = ZLIST("Cortex-X4"), .CN = ARMv9_A},
+	Arch_DynamIQ_DSU = {.Brand = ZLIST("DynamIQ DSU"), .CN = ARMv8_2_A},
+	Arch_Neoverse_E1 = {.Brand = ZLIST("Neoverse E1"), .CN = ARMv8_2_A},
+	Arch_Neoverse_N1 = {.Brand = ZLIST("Neoverse N1"), .CN = ARMv8_2_A},
+	Arch_Neoverse_N2 = {.Brand = ZLIST("Neoverse N2"), .CN = ARMv9_A},
+	Arch_Neoverse_V1 = {.Brand = ZLIST("Neoverse V1"), .CN = ARMv8_4_A},
+	Arch_Neoverse_V2 = {.Brand = ZLIST("Neoverse V2"), .CN = ARMv9_A};
 /*TODO(CleanUp)
 static char *Arch_Core_Yonah[]		=	ZLIST("Core/Yonah");
 static char *Arch_Core_Conroe[] 	=	ZLIST("Core2/Conroe/Merom");
@@ -8556,6 +8658,1038 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Misc_Processor
 	},
+[Cortex_A5] = {
+	.Signature = _Cortex_A5,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A5
+	},
+[Cortex_A7] = {
+	.Signature = _Cortex_A7,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A7
+	},
+[Cortex_A9] = {
+	.Signature = _Cortex_A9,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A9
+	},
+[Cortex_A15] = {
+	.Signature = _Cortex_A15,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A15
+	},
+[Cortex_A17] = {
+	.Signature = _Cortex_A17,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A17
+	},
+[Cortex_A32] = {
+	.Signature = _Cortex_A32,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A32
+	},
+[Cortex_A34] = {
+	.Signature = _Cortex_A34,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A34
+	},
+[Cortex_A35] = {
+	.Signature = _Cortex_A35,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A35
+	},
+[Cortex_A510] = {
+	.Signature = _Cortex_A510,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A510
+	},
+[Cortex_A520] = {
+	.Signature = _Cortex_A520,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A520
+	},
+[Cortex_A53] = {
+	.Signature = _Cortex_A53,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A53
+	},
+[Cortex_A55] = {
+	.Signature = _Cortex_A55,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A55
+	},
+[Cortex_A57] = {
+	.Signature = _Cortex_A57,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A57
+	},
+[Cortex_A65] = {
+	.Signature = _Cortex_A65,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A65
+	},
+[Cortex_A65AE] = {
+	.Signature = _Cortex_A65AE,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A65AE
+	},
+[Cortex_A710] = {
+	.Signature = _Cortex_A710,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A710
+	},
+[Cortex_A715] = {
+	.Signature = _Cortex_A715,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A715
+	},
+[Cortex_A72] = {
+	.Signature = _Cortex_A72,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A72
+	},
+[Cortex_A720] = {
+	.Signature = _Cortex_A720,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A720
+	},
+[Cortex_A73] = {
+	.Signature = _Cortex_A73,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A73
+	},
+[Cortex_A75] = {
+	.Signature = _Cortex_A75,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A75
+	},
+[Cortex_A76] = {
+	.Signature = _Cortex_A76,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A76
+	},
+[Cortex_A76AE] = {
+	.Signature = _Cortex_A76AE,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A76AE
+	},
+[Cortex_A77] = {
+	.Signature = _Cortex_A77,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A77
+	},
+[Cortex_A78] = {
+	.Signature = _Cortex_A78,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A78
+	},
+[Cortex_A78AE] = {
+	.Signature = _Cortex_A78AE,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A78AE
+	},
+[Cortex_A78C] = {
+	.Signature = _Cortex_A78C,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_A78C
+	},
+[Cortex_R4] = {
+	.Signature = _Cortex_R4,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_R4
+	},
+[Cortex_R5] = {
+	.Signature = _Cortex_R5,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_R5
+	},
+[Cortex_R52] = {
+	.Signature = _Cortex_R52,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_R52
+	},
+[Cortex_R52Plus] = {
+	.Signature = _Cortex_R52Plus,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_R52Plus
+	},
+[Cortex_R82] = {
+	.Signature = _Cortex_R82,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_R82
+	},
+[Cortex_X1] = {
+	.Signature = _Cortex_X1,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_X1
+	},
+[Cortex_X1C] = {
+	.Signature = _Cortex_X1C,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_X1C
+	},
+[Cortex_X2] = {
+	.Signature = _Cortex_X2,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_X2
+	},
+[Cortex_X3] = {
+	.Signature = _Cortex_X3,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_X3
+	},
+[Cortex_X4] = {
+	.Signature = _Cortex_X4,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Cortex_X4
+	},
+[DynamIQ_DSU] = {
+	.Signature = _DynamIQ_DSU,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_DynamIQ_DSU
+	},
+[Neoverse_E1] = {
+	.Signature = _Neoverse_E1,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Neoverse_E1
+	},
+[Neoverse_N1] = {
+	.Signature = _Neoverse_N1,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Neoverse_N1
+	},
+[Neoverse_N2] = {
+	.Signature = _Neoverse_N2,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Neoverse_N2
+	},
+[Neoverse_V1] = {
+	.Signature = _Neoverse_V1,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Neoverse_V1
+	},
+[Neoverse_V2] = {
+	.Signature = _Neoverse_V2,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Misc_Specific_Processor,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Neoverse_V2
+	}
 /*TODO(CleanUp)
 [AMD_Family_0Fh] = {							**  1**
 	.Signature = _AMD_Family_0Fh,

@@ -1166,9 +1166,10 @@ REASON_CODE SysInfoProc(Window *win,
 		RO(Shm)->Proc.Features.Std.EAX.Model );
 
 	PUT(	SCANKEY_NULL, attrib[2], width, 2,
-		"%s""%.*s[%7u]", RSC(STEPPING).CODE(),
+		"%s""%.*s[   r%xp%-x]", RSC(STEPPING).CODE(),
 		width - 12 - RSZ(STEPPING), hSpace,
-		RO(Shm)->Proc.Features.Std.EAX.Stepping );
+		(RO(Shm)->Proc.Features.Std.EAX.Stepping >> 4) & 0xf,
+		RO(Shm)->Proc.Features.Std.EAX.Stepping & 0xf);
 
 	PUT(	SCANKEY_NULL, attrib[2], width, 2,
 		"%s""%.*s[%3u/%3u]", RSC(ONLINE_CPU).CODE(),

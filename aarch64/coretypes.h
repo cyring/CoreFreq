@@ -40,7 +40,64 @@ enum CRC_MANUFACTURER
 	CRC_HYPERV	= 0x543a585e
 };
 
+enum CODENAME
+{
+	ARMv1,
+	ARMv7_R,
+	ARMv7_A,
+	ARMv8_R,
+	ARMv8_A,
+	ARMv8_2_A,
+	ARMv8_3_A,
+	ARMv8_4_A,
+	ARMv9_A,
+	CODENAMES
+};
+
 enum {	GenuineArch = 0,
+	Cortex_A5,
+	Cortex_A7,
+	Cortex_A9,
+	Cortex_A15,
+	Cortex_A17,
+	Cortex_A32,
+	Cortex_A34,
+	Cortex_A35,
+	Cortex_A510,
+	Cortex_A520,
+	Cortex_A53,
+	Cortex_A55,
+	Cortex_A57,
+	Cortex_A65,
+	Cortex_A65AE,
+	Cortex_A710,
+	Cortex_A715,
+	Cortex_A72,
+	Cortex_A720,
+	Cortex_A73,
+	Cortex_A75,
+	Cortex_A76,
+	Cortex_A76AE,
+	Cortex_A77,
+	Cortex_A78,
+	Cortex_A78AE,
+	Cortex_A78C,
+	Cortex_R4,
+	Cortex_R5,
+	Cortex_R52,
+	Cortex_R52Plus,
+	Cortex_R82,
+	Cortex_X1,
+	Cortex_X1C,
+	Cortex_X2,
+	Cortex_X3,
+	Cortex_X4,
+	DynamIQ_DSU,
+	Neoverse_E1,
+	Neoverse_N1,
+	Neoverse_N2,
+	Neoverse_V1,
+	Neoverse_V2,
 /*	AMD_Family_0Fh,
 	AMD_Family_10h,
 	AMD_Family_11h,
@@ -1088,14 +1145,12 @@ typedef struct
 	    struct SIGNATURE
 	    {
 		unsigned int
-		Stepping	:  4-0,
-		Model		:  8-4,
-		Family		: 12-8,
-		ProcType	: 14-12,
-		Reserved1	: 16-14,
+		Stepping	:  8-0,
+		Model		: 12-8,
+		Family		: 16-12,
 		ExtModel	: 20-16,
 		ExtFamily	: 28-20,
-		Reserved2	: 32-28;
+		Reserved	: 32-28;
 	    } EAX;
 		unsigned int Signature;
 	};

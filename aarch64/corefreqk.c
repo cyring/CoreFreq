@@ -713,8 +713,8 @@ void VendorFromCPUID(	char *pVendorID, unsigned int *pLargestFunc,
     }
 }
 */
-void VendorFromMainID(	char *pVendorID, unsigned int *pCRC,
-			enum HYPERVISOR *pHypervisor )
+void VendorFromMainID(	MIDR midr, char *pVendorID,
+			unsigned int *pCRC, enum HYPERVISOR *pHypervisor )
 {
     const struct {
 		unsigned short		implementer;
@@ -763,18 +763,9 @@ void VendorFromMainID(	char *pVendorID, unsigned int *pCRC,
 	{	0xff,	VENDOR_HYPERV,	__builtin_strlen(VENDOR_HYPERV),
 		CRC_HYPERV,	HYPERV_HYPERV				}
     };
-	volatile MIDR main;
 	unsigned int idx;
-
-	__asm__ __volatile__(
-		"mrs	%[main] ,	midr_el1"	"\n\t"
-		"isb"
-		: [main]	"=r" (main) /* 0:0x412fd050 ; 4:0x414fd0b0 */
-		:
-		: "memory"
-	);
     for (idx = 0; idx < sizeof(mfrTbl) / sizeof(mfrTbl[0]); idx++) {
-	if (main.Implementer == mfrTbl[idx].implementer)
+	if (midr.Implementer == mfrTbl[idx].implementer)
 	{
 		memcpy(pVendorID, mfrTbl[idx].vendorID, mfrTbl[idx].vendorLen);
 		(*pCRC) = mfrTbl[idx].mfrCRC;
@@ -807,45 +798,6 @@ signed int SearchArchitectureID(void)
 	return id;
 }
 
-void BrandFromIDcode(char *pBrand, unsigned short IDcode)
-{
-    struct {
-		char			*brand;
-		unsigned short		code;
-    } codeTbl[] = {
-	{	"Cortex-A5"	,	0x5	},
-	{	"Cortex-A9"	,	0x9	},
-	{	"Cortex-A7"	,	0x07	},
-	{	"Cortex-A15"	,	0x0f	},
-	{	"Cortex-A17"	,	0x0e	},
-	{	"Cortex-A32"	,	0x06	},
-	{	"Cortex-A35"	,	0x0a	},
-	{	"Cortex-A53"	,	0x03	},
-	{	"Cortex-A55"	,	0x45	},
-	{	"Cortex-A72"	,	0x02	},
-	{	"Cortex-A76"	,	0x0b	},
-	{	"Cortex-A76AE"	,	0x11	},
-	{	"Cortex-A77"	,	0x10	},
-	{	"Cortex-A78"	,	0x21	},	/* Neoverse V1	*/
-	{	"Cortex‑A78AE"	,	0x22	},
-	{	"Cortex-R4"	,	0x14	},
-	{	"Cortex-R5"	,	0x15	},
-	{	"Cortex-R52"	,	0x13	},
-	{	"Cortex-X1"	,	0x23	},
-	{	"Cortex-X1C"	,	0x25	},
-	{	"DynamIQ DSU"	,	0x41	},
-	{	"Neoverse N1"	,	0x0c	}
-    };
-	unsigned int idx;
-    for (idx = 0; idx < sizeof(codeTbl) / sizeof(codeTbl[0]); idx++) {
-	if (IDcode == codeTbl[idx].code)
-	{
-		StrCopy(pBrand, codeTbl[idx].brand, BRAND_SIZE);
-		return;
-	}
-    }
-	StrFormat(pBrand, BRAND_SIZE, "IDCODE(0x%02X)", IDcode);
-}
 /*TODO(CleanUp)
 void BrandCleanup(char *pBrand, char inOrder[])
 {
@@ -945,6 +897,7 @@ static void Query_Features(void *pArg)
 {	/* Must have x86 CPUID 0x0, 0x1, and Intel CPUID 0x4 */
 	INIT_ARG *iArg = (INIT_ARG *) pArg;
 /*	unsigned int eax = 0x0, ebx = 0x0, ecx = 0x0, edx = 0x0; **DWORD Only!*/
+	volatile MIDR midr;
 	volatile CNTFRQ cntfrq;
 	volatile PMCR pmcr;
 	volatile AA64DFR0 dbgfr0;
@@ -956,20 +909,34 @@ static void Query_Features(void *pArg)
 	iArg->Features->Info.Vendor.CRC = CRC_RESERVED;
 	iArg->SMT_Count = 1;
 
-	VendorFromMainID(iArg->Features->Info.Vendor.ID,
-			&iArg->Features->Info.Vendor.CRC,
-			&hypervisor);
-
 	__asm__ __volatile__(
+		"mrs	%[midr] ,	midr_el1"	"\n\t"
 		"mrs	%[cntfrq],	cntfrq_el0"	"\n\t"
+		"mrs	%[pmcr],	pmcr_el0" 		"\n\t"
+		"mrs	%[dbgfr0],	id_aa64dfr0_el1"	"\n\t"
 		"isb"
-		: [cntfrq]	"=r" (cntfrq)
+		: [midr]	"=r" (midr),
+		  [cntfrq]	"=r" (cntfrq),
+		  [pmcr]	"=r" (pmcr),
+		  [dbgfr0]	"=r" (dbgfr0)
 		:
 		: "memory"
 	);
+	iArg->Features->Std.EAX.Stepping = midr.Revision | (midr.Variant << 4);
+	iArg->Features->Std.EAX.Family = midr.PartNum & 0x00f;
+	iArg->Features->Std.EAX.ExtFamily = (midr.PartNum & 0xff0) >> 4;
+	iArg->Features->Std.EAX.Model = pmcr.IDcode & 0x0f;
+	iArg->Features->Std.EAX.ExtModel = (pmcr.IDcode & 0xf0) >> 4;
+
+	VendorFromMainID(midr, iArg->Features->Info.Vendor.ID,
+			&iArg->Features->Info.Vendor.CRC, &hypervisor);
+
 	iArg->Features->Factory.Freq = cntfrq.ClockFrequency;
 	iArg->Features->Factory.Freq /= 10000;
 
+	iArg->Features->PerfMon.EDX.FixCtrs = 1; /* Fixed Cycle Counter */
+	iArg->Features->PerfMon.EAX.MonCtrs = pmcr.NumEvtCtrs;
+	iArg->Features->PerfMon.EAX.Version = dbgfr0.PMUVer;
 /*TODO(CleanUp)
 	enum HYPERVISOR hypervisor = HYPERV_NONE;
 
@@ -1400,19 +1367,6 @@ static void Query_Features(void *pArg)
 	BrandCleanup(iArg->Features->Info.Brand, iArg->Brand);
     }
 */
-	__asm__ __volatile__(
-		"mrs	%[pmcr],	pmcr_el0" 		"\n\t"
-		"mrs	%[dbgfr0],	id_aa64dfr0_el1"	"\n\t"
-		"isb"
-		: [pmcr]	"=r" (pmcr),
-		  [dbgfr0]	"=r" (dbgfr0)
-		:
-		: "memory"
-	);
-	iArg->Features->PerfMon.EDX.FixCtrs = 1; /* Fixed Cycle Counter */
-	iArg->Features->PerfMon.EAX.MonCtrs = pmcr.NumEvtCtrs;
-	iArg->Features->PerfMon.EAX.Version = dbgfr0.PMUVer;
-	BrandFromIDcode(iArg->Features->Info.Brand, pmcr.IDcode);
 }
 
 void Compute_Interval(void)
@@ -2730,7 +2684,7 @@ void OverrideCodeNameString(PROCESSOR_SPECIFIC *pSpecific)
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
 		Arch[
 			PUBLIC(RO(Proc))->ArchID
-		].Architecture[pSpecific->CodeNameIdx], CODENAME_LEN);
+		].Architecture.Brand[pSpecific->CodeNameIdx], CODENAME_LEN);
 }
 
 void OverrideUnlockCapability(PROCESSOR_SPECIFIC *pSpecific)
@@ -23628,7 +23582,7 @@ static int CoreFreqK_Scale_And_Compute_Level_Up(INIT_ARG *pArg)
 	memcpy(&PUBLIC(RO(Proc))->Features, pArg->Features, sizeof(FEATURES));
 
 	/* Initialize default uArch's codename with the CPUID brand. */
-	Arch[GenuineArch].Architecture[0] = \
+	Arch[GenuineArch].Architecture.Brand[0] = \
 				PUBLIC(RO(Proc))->Features.Info.Vendor.ID;
 	return 0;
 }
@@ -23852,14 +23806,17 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 	{
 		PUBLIC(RO(Proc))->ArchID = ArchID;
 	} else {
-/*TODO(FixMe)	PUBLIC(RO(Proc))->ArchID = SearchArchitectureID();	*/
-		PUBLIC(RO(Proc))->ArchID = GenuineArch;
+		PUBLIC(RO(Proc))->ArchID = SearchArchitectureID();
+/*TODO(CleanUp)	PUBLIC(RO(Proc))->ArchID = GenuineArch;			*/
 	}
 	/*	Set the uArch's name with the first found codename	*/
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
-		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[0],
+		CodeName[Arch[PUBLIC(RO(Proc))->ArchID].Architecture.CN],
 		CODENAME_LEN);
 
+	StrCopy(PUBLIC(RO(Proc))->Features.Info.Brand,
+		Arch[PUBLIC(RO(Proc))->ArchID].Architecture.Brand[0],
+		BRAND_SIZE);
 	/*	Check if the Processor is actually virtualized ?	*/
 	#ifdef CONFIG_XEN
 	if (xen_pv_domain() || xen_hvm_domain())
