@@ -165,74 +165,74 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 #define _BITSET_GPR(_lock, _base, _offset)				\
 ({									\
 	const __typeof__(_base) _shl = 1LLU << _offset; 		\
-	const unsigned char _ret = (_base & _shl) != 0;			\
-	_base = _base | _shl;						\
+	const unsigned char _ret = ((_base) & (_shl)) != 0;		\
+	_base = (_base) | (_shl);					\
 	_ret;								\
 })
 
 #define _BITSET_IMM(_lock, _base, _imm6)				\
 ({									\
 	const __typeof__(_base) _shl = 1LLU << _imm6;			\
-	const unsigned char _ret = (_base & _shl) != 0; 		\
-	_base = _base | _shl;						\
+	const unsigned char _ret = ((_base) & (_shl)) != 0;		\
+	_base = (_base) | (_shl);					\
 	_ret;								\
 })
 
 #define _BITCLR_GPR(_lock, _base, _offset)				\
 ({									\
 	const __typeof__(_base) _shl = 1LLU << _offset; 		\
-	const unsigned char _ret = (_base & _shl) != 0; 		\
-	_base = _base & ~_shl;						\
+	const unsigned char _ret = ((_base) & (_shl)) != 0;		\
+	_base = (_base) & ~(_shl);					\
 	_ret;								\
 })
 
 #define _BITCLR_IMM(_lock, _base, _imm6)				\
 ({									\
 	const __typeof__(_base) _shl = 1LLU << _imm6;			\
-	const unsigned char _ret = (_base & _shl) != 0; 		\
-	_base = _base & ~_shl;						\
+	const unsigned char _ret = ((_base) & (_shl)) != 0;		\
+	_base = (_base) & ~(_shl);					\
 	_ret;								\
 })
 
 #define _BITVAL_GPR(_lock, _base, _offset)				\
 ({									\
-	const unsigned char _ret = (_base & (1LLU << _offset)) != 0;	\
+	const unsigned char _ret = ((_base) & (1LLU << _offset)) != 0;	\
 	_ret;								\
 })
 
 #define _BITVAL_IMM(_lock, _base, _imm6)				\
 ({									\
-	const unsigned char _ret = (_base & (1LLU << _imm6)) != 0;	\
+	const unsigned char _ret = ((_base) & (1LLU << _imm6)) != 0;	\
 	_ret;								\
 })
 
 #define _BIT_TEST_GPR(_base, _offset)					\
 ({									\
-	const unsigned char _ret = (_base & (1LLU << _offset)) != 0;	\
+	const unsigned char _ret = ((_base) & (1LLU << _offset)) != 0;	\
 	_ret;								\
 })
 
 #define _BIT_TEST_IMM(_base, _imm6)					\
 ({									\
-	const unsigned char _ret = (_base & (1LLU << _imm6)) != 0;	\
+	const unsigned char _ret = ((_base) & (1LLU << _imm6)) != 0;	\
 	_ret;								\
 })
 
 #define _BITWISEAND(_lock, _opl, _opr)					\
 ({									\
-	const Bit64 _dest __attribute__ ((aligned (8))) = _opl & _opr;	\
+	const Bit64 _dest __attribute__ ((aligned (8)))=(_opl) & (_opr);\
 	_dest;								\
 })
 
 #define _BITWISEOR(_lock, _opl, _opr)					\
 ({									\
-	const Bit64 _dest __attribute__ ((aligned (8))) = _opl | _opr;	\
+	const Bit64 _dest __attribute__ ((aligned (8)))=(_opl) | (_opr);\
 	_dest;								\
 })
 
 #define _BITWISEXOR(_lock, _opl, _opr)					\
 ({									\
-	const Bit64 _dest __attribute__ ((aligned (8))) = _opl ^ _opr;	\
+	const Bit64 _dest __attribute__ ((aligned (8)))=(_opl) ^ (_opr);\
 	_dest;								\
 })
 
@@ -878,17 +878,12 @@ FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
 									\
 	__asm__ volatile						\
 	(								\
-		"mov	x4	,	%[opr]"			"\n\t"	\
-		"ldr	x6	,	[x4]"			"\n\t"	\
-		"mov	x4	,	%[opl]"			"\n\t"	\
-		"ldr	x7	,	[x4]"			"\n\t"	\
-		"cmp	x6	, 	x7"			"\n\t"	\
-		"cset	x2	,	eq" 			"\n\t"	\
-		"str	x2	,	%[ret]" 			\
-		: [ ret]	"+m"	(_ret)				\
-		: [ opl]	"r"	(_opl),				\
-		  [ opr]	"r"	(_opr)				\
-		: "cc", "memory", "%x2", "%x4", "%x6", "%x7"		\
+		"cmp	%[opr]	,	%[opl]"			"\n\t"	\
+		"cset	%[ret]	,	eq"				\
+		: [ret]	"=r"	(_ret)					\
+		: [opl]	"r"	(_opl), 				\
+		  [opr]	"r"	(_opr)					\
+		: "cc", "memory"					\
 	);								\
 	_ret;								\
 })
