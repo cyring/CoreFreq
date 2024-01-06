@@ -901,6 +901,9 @@ static void Query_Features(void *pArg)
 	volatile CNTFRQ cntfrq;
 	volatile PMCR pmcr;
 	volatile AA64DFR0 dbgfr0;
+	volatile AA64ISAR0 isar0;
+	volatile AA64MMFR1 mmfr1;
+	volatile AA64PFR0 pfr0;
 
 	enum HYPERVISOR hypervisor = HYPERV_NONE;
 
@@ -912,13 +915,19 @@ static void Query_Features(void *pArg)
 	__asm__ __volatile__(
 		"mrs	%[midr] ,	midr_el1"	"\n\t"
 		"mrs	%[cntfrq],	cntfrq_el0"	"\n\t"
-		"mrs	%[pmcr],	pmcr_el0" 		"\n\t"
-		"mrs	%[dbgfr0],	id_aa64dfr0_el1"	"\n\t"
+		"mrs	%[pmcr] ,	pmcr_el0"	"\n\t"
+		"mrs	%[dbgfr0],	id_aa64dfr0_el1""\n\t"
+		"mrs	%[isar0],	id_aa64isar0_el1""\n\t"
+		"mrs	%[mmfr1],	id_aa64mmfr1_el1""\n\t"
+		"mrs	%[pfr0] ,	id_aa64pfr0_el1""\n\t"
 		"isb"
 		: [midr]	"=r" (midr),
 		  [cntfrq]	"=r" (cntfrq),
 		  [pmcr]	"=r" (pmcr),
-		  [dbgfr0]	"=r" (dbgfr0)
+		  [dbgfr0]	"=r" (dbgfr0),
+		  [isar0]	"=r" (isar0),
+		  [mmfr1]	"=r" (mmfr1),
+		  [pfr0]	"=r" (pfr0)
 		:
 		: "memory"
 	);
@@ -937,6 +946,16 @@ static void Query_Features(void *pArg)
 	iArg->Features->PerfMon.EDX.FixCtrs = 1; /* Fixed Cycle Counter */
 	iArg->Features->PerfMon.EAX.MonCtrs = pmcr.NumEvtCtrs;
 	iArg->Features->PerfMon.EAX.Version = dbgfr0.PMUVer;
+
+	iArg->Features->Std.ECX.AES = isar0.AES == 0x2;
+	iArg->Features->ExtFeature.EBX.SHA = (isar0.SHA1 == 0x1)
+					  || (isar0.SHA2 == 0x1);
+	iArg->Features->Std.EDX.CMPXCHG8 = isar0.CAS == 0x2;
+	iArg->Features->Std.ECX.VMX = mmfr1.VH == 0x1;
+	iArg->Features->Std.EDX.FPU = pfr0.FP == 0x1;
+	iArg->Features->Std.EDX.SSE = pfr0.AdvSIMD == 0x1;
+	iArg->Features->Std.EDX.APIC = pfr0.GIC == 0x1;
+
 /*TODO(CleanUp)
 	enum HYPERVISOR hypervisor = HYPERV_NONE;
 
@@ -11442,9 +11461,10 @@ void PerCore_AMD_Family_0Fh_PStates(CORE_RO *Core)
 		}
 	} while (FidVidStatus.FidVidPending == 1) ;
 }
-
+*/
 void SystemRegisters(CORE_RO *Core)
 {
+/*TODO(CleanUp)
 	__asm__ volatile
 	(
 		"# RFLAGS"		"\n\t"
@@ -11550,8 +11570,23 @@ void SystemRegisters(CORE_RO *Core)
 			: "%rax", "%rcx", "%rdx"
 		);
 	}
+*/
+	volatile unsigned long long hcr;
+	__asm__ __volatile__(
+		"mrs	%[hcr] ,	hcr_el2""\n\t"
+		"isb"
+		: [hcr] 	"=r" (hcr)
+		:
+		: "memory"
+	);
+	if (hcr & (1LLU << 34)) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);
+	}
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask, Core->Bind);
 }
-
+/*TODO(CleanUp)
 void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 {
 	SPEC_CTRL Spec_Ctrl = {.value = 0};
@@ -12195,6 +12230,8 @@ static void PerCore_GenericMachine(void *arg)
 	BITSET_CC(LOCKLESS,PUBLIC(RO(Proc))->ODCM_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS,PUBLIC(RO(Proc))->PowerMgmt_Mask,Core->Bind);
 */
+	SystemRegisters(Core);
+
 	Dump_CPUID(Core);
 /*TODO(CleanUp)
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
