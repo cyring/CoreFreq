@@ -136,7 +136,37 @@ typedef union
 	};
 } AA64DFR0;
 
-/* AA64DFR1: reserved	*/
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		SYSPMUID	:  8-0,
+		BRPs		: 16-8,
+		WRPs		: 24-16,
+		CTX_CMPs	: 32-24,
+		SPMU		: 36-32,
+		PMICNTR 	: 40-36,
+		ABLE		: 44-40,
+		ITE		: 48-44,
+		EBEP		: 52-48,
+		DPFZS		: 56-52,
+		ABL_CMPs	: 64-56;
+	};
+} AA64DFR1;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		STEP		:  4-0,
+		BWE		:  8-4,
+		RES0		: 64-8;
+	};
+} AA64DFR2;
 
 typedef union
 {
@@ -150,11 +180,16 @@ typedef union
 		SHA2		: 16-12,
 		CRC32		: 20-16,
 		CAS		: 24-20,
-		RES1		: 28-24,
+		TME		: 28-24,
 		RDM		: 32-28,
-		RES2		: 44-32,
+		SHA3		: 36-32,
+		SM3		: 40-36,
+		SM4		: 44-40,
 		DP		: 48-44,
-		RES3		: 64-48;
+		FHM		: 52-48,
+		TS		: 56-52,
+		TLB		: 60-56,
+		RNDR		: 64-60;
 	};
 } AA64ISAR0;
 
@@ -164,12 +199,62 @@ typedef union
 	struct
 	{
 		unsigned long long
-		DC_CVAP 	:  4-0,
-		RES0		: 20-4,
+		DPB		:  4-0,
+		APA		:  8-4,
+		API		: 12-8,
+		JSCVT		: 16-12,
+		FCMA		: 20-16,
 		LRCPC		: 24-20,
-		RES1		: 64-24;
+		GPA		: 28-24,
+		GPI		: 32-28,
+		FRINTTS 	: 36-32,
+		SB		: 40-36,
+		SPECRES 	: 44-40,
+		BF16		: 48-44,
+		DGH		: 52-48,
+		I8MM		: 56-52,
+		XS		: 60-56,
+		LS64		: 64-60;
 	};
 } AA64ISAR1;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		WFxT		:  4-0,
+		RPRES		:  8-4,
+		GPA3		: 12-8,
+		APA3		: 16-12,
+		MOPS		: 20-16,
+		BC		: 24-20,
+		PAC_frac	: 28-24,
+		CLRBHB		: 32-28,
+		SYSREG_128	: 36-32,
+		SYSINSTR_128	: 40-36,
+		PRFMSLC 	: 48-40,
+		RPRFM		: 52-48,
+		CSSC		: 56-52,
+		LUT		: 60-56,
+		ATS1A		: 64-60;
+	};
+} AA64ISAR2;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		CPA		:  4-0,
+		FAMINMAX	:  8-4,
+		TLBIW		: 12-8,
+		PACM		: 16-12,
+		RES0		: 64-16;
+	};
+} AA64ISAR3;
 
 typedef union
 {
@@ -183,9 +268,15 @@ typedef union
 		SNSMem		: 16-12,
 		BigEnd_EL0	: 20-16,
 		TGran16 	: 24-20,
-		TGran64		: 28-24,
+		TGran64 	: 28-24,
 		TGran4		: 32-28,
-		RES0		: 64-32;
+		TGran16_2	: 36-32,
+		TGran64_2	: 40-36,
+		TGran4_2	: 44-40,
+		ExS		: 48-44,
+		RES0		: 56-48,
+		FGT		: 60-56,
+		ECV		: 64-60;
 	};
 } AA64MMFR0;
 
@@ -203,7 +294,14 @@ typedef union
 		PAN		: 24-20,
 		SpecSEI		: 28-24,
 		XNX		: 32-28,
-		RES0		: 64-32;
+		TWED		: 36-32,
+		ETS		: 40-36,
+		HCX		: 44-40,
+		AFP		: 48-44,
+		nTLBPA		: 52-48,
+		TIDCP1		: 56-52,
+		CMOW		: 60-56,
+		ECBHB		: 64-60;
 	};
 } AA64MMFR1;
 
@@ -218,9 +316,62 @@ typedef union
 		LSM		: 12-8,
 		IESB		: 16-12,
 		VARange 	: 20-16,
-		RES0		: 64-20;
+		CCIDX		: 24-20,
+		NV		: 28-24,
+		ST		: 32-28,
+		AT		: 36-32,
+		IDS		: 40-36,
+		FWB		: 44-40,
+		RES0		: 48-44,
+		TTL		: 52-48,
+		BBM		: 56-52,
+		EVT		: 60-56,
+		E0PD		: 64-60;
 	};
 } AA64MMFR2;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		TCRX		:  4-0,
+		SCTLRX		:  8-4,
+		S1PIE		: 12-8,
+		S2PIE		: 16-12,
+		S1POE		: 20-16,
+		S2POE		: 24-20,
+		AIE		: 28-24,
+		MEC		: 32-28,
+		D128		: 36-32,
+		D128_2		: 40-36,
+		SNERR		: 44-40,
+		ANERR		: 48-44,
+		RES0		: 52-48,
+		SDERR		: 56-52,
+		ADERR		: 60-56,
+		Spec_FPACC	: 64-60;
+	};
+} AA64MMFR3;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		EIESB		:  8-4,
+		ASID2		: 12-8,
+		HACDBS		: 16-12,
+		FGWTE3		: 20-16,
+		NV_frac 	: 24-20,
+		E2H0		: 28-24,
+		RES0		: 36-28,
+		E3DSE		: 40-36,
+		RES1		: 64-40;
+	};
+} AA64MMFR4;
 
 typedef union
 {
@@ -236,7 +387,12 @@ typedef union
 		AdvSIMD 	: 24-20,
 		GIC		: 28-24,
 		RAS		: 32-28,
-		RES0		: 56-32,
+		SVE		: 36-32,
+		SEL2		: 40-36,
+		MPAM		: 44-40,
+		AMU		: 48-44,
+		DIT		: 52-48,
+		RME		: 56-52,
 		CSV2		: 60-56,
 		CSV3		: 64-60;
 	};
@@ -248,11 +404,38 @@ typedef union
 	struct
 	{
 		unsigned long long
-		RES0		:  4-0,
+		BT		:  4-0,
 		SSBS		:  8-4,
-		RES1		: 64-8;
+		MTE		: 12-8,
+		RAS_frac	: 16-12,
+		MPAM_frac	: 20-16,
+		SME		: 28-24,
+		RNDR_trap	: 32-28,
+		CSV2_frac	: 36-32,
+		NMI		: 40-36,
+		MTE_frac	: 44-40,
+		GCS		: 48-44,
+		THE		: 52-48,
+		MTEX		: 56-52,
+		DF2		: 60-56,
+		PFAR		: 64-60;
 	};
 } AA64PFR1;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		MTEPERM 	:  4-0,
+		MTESTOREONLY	:  8-4,
+		MTEFAR		: 12-8,
+		RES0		: 32-12,
+		FPMR		: 36-32,
+		RES1		: 64-36;
+	};
+} AA64PFR2;
 
 typedef union
 {

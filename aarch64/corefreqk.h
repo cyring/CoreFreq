@@ -3305,7 +3305,10 @@ static char *CodeName[CODENAMES] = {
 	[ARMv8_2_A]	= "ARMv8.2-A",
 	[ARMv8_3_A]	= "ARMv8.3-A",
 	[ARMv8_4_A]	= "ARMv8.4-A",
-	[  ARMv9_A]	= "ARMv9-A"
+	[  ARMv8_5]	= "ARMv8.5",
+	[  ARMv8_7]	= "ARMv8.7",
+	[  ARMv9_A]	= "ARMv9-A",
+	[  ARMv9_5]	= "ARMv9.5"
 };
 
 const ARCH_ST Arch_Misc_Processor = {.Brand = ZLIST(NULL), .CN = ARMv1},

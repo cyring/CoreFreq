@@ -50,7 +50,10 @@ enum CODENAME
 	ARMv8_2_A,
 	ARMv8_3_A,
 	ARMv8_4_A,
+	ARMv8_5,
+	ARMv8_7,
 	ARMv9_A,
+	ARMv9_5,
 	CODENAMES
 };
 

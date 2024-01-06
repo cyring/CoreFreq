@@ -951,6 +951,7 @@ static void Query_Features(void *pArg)
 	iArg->Features->ExtFeature.EBX.SHA = (isar0.SHA1 == 0x1)
 					  || (isar0.SHA2 == 0x1);
 	iArg->Features->Std.EDX.CMPXCHG8 = isar0.CAS == 0x2;
+	iArg->Features->Std.ECX.RDRAND = isar0.RNDR == 0x1;
 	iArg->Features->Std.ECX.VMX = mmfr1.VH == 0x1;
 	iArg->Features->Std.EDX.FPU = pfr0.FP == 0x1;
 	iArg->Features->Std.EDX.SSE = pfr0.AdvSIMD == 0x1;
@@ -11571,15 +11572,15 @@ void SystemRegisters(CORE_RO *Core)
 		);
 	}
 */
-	volatile unsigned long long hcr;
+	volatile AA64MMFR1 mmfr1;
 	__asm__ __volatile__(
-		"mrs	%[hcr] ,	hcr_el2""\n\t"
+		"mrs	%[mmfr1],	id_aa64mmfr1_el1""\n\t"
 		"isb"
-		: [hcr] 	"=r" (hcr)
+		: [mmfr1] 	"=r" (mmfr1)
 		:
 		: "memory"
 	);
-	if (hcr & (1LLU << 34)) {
+	if (mmfr1.VH) {
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);
