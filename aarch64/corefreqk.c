@@ -2583,8 +2583,9 @@ static void Map_Generic_Topology(void *arg)
 		: "memory"
 	);
 	Core->T.ApicID = mpid.value & 0xfffff;
-	Core->T.CoreID = mpid.Aff1;
+	Core->T.Cluster.CMP = mpid.Aff3;
 	Core->T.PackageID = mpid.Aff2;
+	Core->T.CoreID = mpid.Aff1;
 	if (mpid.MT) {
 		Core->T.ThreadID = mpid.Aff0;
 	}
@@ -2609,6 +2610,7 @@ int Core_Topology(unsigned int cpu)
 		&& (PUBLIC(RO(Proc))->Features.HTT_Enable == 0)
 		&& (PUBLIC(RO(Core, AT(cpu)))->T.ThreadID > 0) )
 	{
+			PUBLIC(RO(Proc))->Features.Std.EDX.HTT = 1;
 			PUBLIC(RO(Proc))->Features.HTT_Enable = 1;
 	}
 	return rc;
@@ -12224,6 +12226,7 @@ void PerCore_Reset(CORE_RO *Core)
 
 static void PerCore_GenericMachine(void *arg)
 {
+	volatile CPUPWRCTLR cpupwrctl;
 	CORE_RO *Core = (CORE_RO *) arg;
 
 	PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(MIN)] = 8;
@@ -12234,6 +12237,9 @@ static void PerCore_GenericMachine(void *arg)
 	BITSET_CC(LOCKLESS,PUBLIC(RO(Proc))->ODCM_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS,PUBLIC(RO(Proc))->PowerMgmt_Mask,Core->Bind);
 */
+	cpupwrctl.value = read_sysreg_s(CPUPWRCTLR_EL1);
+	Core->Query.CStateBaseAddr = cpupwrctl.WFI_RET_CTRL;
+
 	SystemRegisters(Core);
 
 	Dump_CPUID(Core);

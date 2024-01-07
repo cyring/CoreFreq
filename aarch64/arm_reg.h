@@ -4,6 +4,8 @@
  * Licenses: GPL2
  */
 
+#define CPUPWRCTLR_EL1 sys_reg(0b11, 0b000, 0b1111, 0b0010, 0b111)
+
 typedef union
 {
 	unsigned long long	value;	/* CPU0:0x412fd050 ; CPU4:0x414fd0b0 */
@@ -79,6 +81,21 @@ typedef union
 		PhysicalCount	: 64-0;
 	};
 } CNTPCT;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		CORE_PWRDN_EN	:  1-0,
+		RES0		:  4-1,
+		WFI_RET_CTRL	:  7-4,
+		WFE_RET_CTRL	: 10-7,
+		RES1		: 32-10,
+		RES2		: 64-32;
+	};
+} CPUPWRCTLR;
 
 typedef union
 {

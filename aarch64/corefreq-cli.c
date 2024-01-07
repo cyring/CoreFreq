@@ -3798,13 +3798,23 @@ REASON_CODE SysInfoTech(Window *win,
 		NULL,
 		SCANKEY_NULL,
 		NULL
-	},*/
-	{	/* Intel ISA */
+	},
+	{	** Intel ISA **
 		NULL,
 		RO(Shm)->Proc.Features.HyperThreading == 1,
 		2, "%s%.*sHTT   [%3s]",
 		RSC(TECHNOLOGIES_HTT).CODE(), NULL,
 		width - 14 - RSZ(TECHNOLOGIES_HTT),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},*/
+	{
+		NULL,
+		RO(Shm)->Proc.Features.HyperThreading == 1,
+		2, "%s%.*sSMT   [%3s]",
+		RSC(TECHNOLOGIES_SMT).CODE(), NULL,
+		width - 14 - RSZ(TECHNOLOGIES_SMT),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -3871,8 +3881,8 @@ REASON_CODE SysInfoTech(Window *win,
 		NULL,
 		BOXKEY_WDT,
 		WDT_Update
-	},*/
-	{	/* Intel ISA */
+	},
+	{	** Intel ISA **
 		NULL,
 		RO(Shm)->Proc.Technology.VM == 1,
 		2, "%s%.*sVMX   [%3s]",
@@ -3882,7 +3892,7 @@ REASON_CODE SysInfoTech(Window *win,
 		SCANKEY_NULL,
 		NULL
 	},
-	{	/* Intel ISA */
+	{	** Intel ISA **
 		NULL,
 		RO(Shm)->Proc.Technology.IOMMU == 1,
 		3, "%s%.*sVT-d   [%3s]",
@@ -3891,7 +3901,7 @@ REASON_CODE SysInfoTech(Window *win,
 		NULL,
 		SCANKEY_NULL,
 		NULL
-	},
+	},*/
 /* AMD ISA{
 		NULL,
 		RO(Shm)->Proc.Technology.SMM == 1,
@@ -3902,7 +3912,7 @@ REASON_CODE SysInfoTech(Window *win,
 		SCANKEY_NULL,
 		NULL
 	},*/
-	{	/* AMD ISA */
+/* AMD ISA	{
 		NULL,
 		RO(Shm)->Proc.Features.HyperThreading == 1,
 		2, "%s%.*sSMT   [%3s]",
@@ -3911,7 +3921,7 @@ REASON_CODE SysInfoTech(Window *win,
 		NULL,
 		SCANKEY_NULL,
 		NULL
-	},
+	}, */
 /* AMD ISA{
 		NULL,
 		RO(Shm)->Proc.PowerNow == 0b11, **	VID + FID	**
@@ -3932,7 +3942,7 @@ REASON_CODE SysInfoTech(Window *win,
 		SCANKEY_NULL,
 		NULL
 	},
-	{	/* AMD ISA */
+/* AMD ISA	{
 		NULL,
 		RO(Shm)->Proc.Technology.Turbo == 1,
 		2, "%s%.*sCPB   <%3s>",
@@ -3941,7 +3951,7 @@ REASON_CODE SysInfoTech(Window *win,
 		NULL,
 		BOXKEY_TURBO,
 		TurboUpdate
-	},
+	}, */
 /* AMD ISA{
 		NULL,
 		RO(Shm)->Proc.Technology.WDT == 1,
@@ -3951,21 +3961,21 @@ REASON_CODE SysInfoTech(Window *win,
 		NULL,
 		BOXKEY_WDT,
 		WDT_Update
-	},
-	{	** AMD ISA **
+	},*/
+	{
 		NULL,
 		RO(Shm)->Proc.Technology.VM == 1,
-		2, "%s%.*sSVM   [%3s]",
+		2, "%s%.*sVHE   [%3s]",
 		RSC(TECHNOLOGIES_VM).CODE(), RSC(TECH_AMD_SVM_COMM).CODE(),
 		width - 14 - RSZ(TECHNOLOGIES_VM),
 		NULL,
 		SCANKEY_NULL,
 		NULL
-	},*/
-	{	/* AMD ISA */
+	},
+	{
 		NULL,
 		RO(Shm)->Proc.Technology.IOMMU == 1,
-		3, "%s%.*sAMD-V   [%3s]",
+		3, "%s%.*sIOMMU   [%3s]",
 		RSC(TECHNOLOGIES_IOMMU).CODE(), RSC(TECH_AMD_V_COMM).CODE(),
 		width - (OutFunc? 17 : 19) - RSZ(TECHNOLOGIES_IOMMU),
 		NULL,
@@ -6981,10 +6991,12 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 	case AMD_Family_15h:
 	case AMD_Family_16h:
 	TOPOLOGY_CMP:
+*/
 		TopologyFunc = Topology_CMP;
 		OffLineItem = RSC(TOPOLOGY_OFF_1).CODE();
 		TopologySubHeader[1] = TopologyAltSubHeader[1];
 		TopologyUpdate = Topology_CMP_Update;
+/*
 		break;
 	case AMD_Family_17h:
 	case Hygon_Family_18h:
@@ -7026,7 +7038,6 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 		break;
 	}
     } else {
-*/
 	if (RO(Shm)->Proc.Features.ExtFeature.EDX.Hybrid) {
 		TopologyFunc = Topology_Hybrid;
 		OffLineItem = RSC(TOPOLOGY_OFF_3).CODE();
@@ -7035,7 +7046,6 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 	} else {
 		TopologySubHeader[1] = TopologyAltSubHeader[0];
 	}
-/*
     }
 */
 	PRT(MAP, TopologyAttr[2], TopologySubHeader[1]);
@@ -9085,7 +9095,7 @@ Window *CreateSysInfo(unsigned long long id)
 	case SCANKEY_t:
 		{
 		winOrigin.col = 23;
-		matrixSize.hth = 14;
+		matrixSize.hth = 11;
 		winOrigin.row = TOP_HEADER_ROW + 5;
 		winWidth = 60;
 		SysInfoFunc = SysInfoTech;
