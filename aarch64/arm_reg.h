@@ -443,6 +443,30 @@ typedef union
 	struct
 	{
 		unsigned long long
+		SVE_Ver 	:  4-0,
+		SVE_AES 	:  8-4,
+		RES0		: 16-8,
+		BitPermute	: 20-16,
+		SVE_BF16	: 24-20,
+		B16B16		: 28-24,
+		RES1		: 32-28,
+		SVE_SHA3	: 36-32,
+		RES2		: 40-36,
+		SVE_SM4 	: 44-40,
+		SVE_I8MM	: 48-44,
+		RES3		: 52-48,
+		SVE_F32MM	: 56-52,
+		SVE_F64MM	: 60-56,
+		RES4		: 64-60;
+	};
+} AA64ZFR0;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
 		Highest 	:  8-0,
 		Guaranteed	: 16-8,
 		Most_Efficient	: 24-16,

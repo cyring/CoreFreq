@@ -274,7 +274,8 @@ typedef struct
 	} Absolute;
 
 	struct {
-		Bit64			RFLAGS	__attribute__ ((aligned (8))),
+		Bit64			FLAGS	__attribute__ ((aligned (8)));
+/*TODO(CleanUp)
 					CR0	__attribute__ ((aligned (8))),
 					CR3	__attribute__ ((aligned (8))),
 					CR4	__attribute__ ((aligned (8))),
@@ -283,6 +284,7 @@ typedef struct
 					EFER	__attribute__ ((aligned (8))),
 					XCR0	__attribute__ ((aligned (8))),
 					SYSCFG	__attribute__ ((aligned (8)));
+*/
 	} SystemRegister;
 
 	CPUID_STRUCT			CpuID[CPUID_MAX_FUNC];

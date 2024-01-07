@@ -886,10 +886,11 @@
 #define RSC_LARGEST_EXT_FUNC_CODE_EN	"Largest Extended Function"
 
 #define RSC_SYS_REGS_TITLE_CODE_EN	" System Registers "
-#define RSC_SYS_REG_FLAGS_TF_CODE_EN	" Trap Flag "
-#define RSC_SYS_REG_FLAGS_IF_CODE_EN	" Interrupt Flag "
-#define RSC_SYS_REG_FLAGS_IOPL_CODE_EN	" I/O Privilege Level "
-#define RSC_SYS_REG_FLAGS_NT_CODE_EN	" Nested Task "
+#define RSC_SYS_REG_FLAGS_N_CODE_EN	" Negative "
+#define RSC_SYS_REG_FLAGS_Z_CODE_EN	" Zero Flag "
+#define RSC_SYS_REG_FLAGS_C_CODE_EN	" Carry Flag "
+#define RSC_SYS_REG_FLAGS_V_CODE_EN	" Overflow "
+/*TODO(CleanUp)
 #define RSC_SYS_REG_FLAGS_RF_CODE_EN	" Resume Flag "
 #define RSC_SYS_REG_FLAGS_VM_CODE_EN	" Virtual-8086 Mode "
 #define RSC_SYS_REG_FLAGS_AC_CODE_EN	" Alignment Check "
@@ -989,7 +990,7 @@
 #define RSC_SYS_REG_CFG_SNP_CODE_EN	" SecureNestedPaging Enable "
 #define RSC_SYS_REG_CFG_VMPL_CODE_EN	" Virtual Machine Privilege Levels "
 #define RSC_SYS_REG_CFG_HMK_CODE_EN	" HostMultiKeyMemEncryptionMode "
-
+*/
 #define RSC_ISA_TITLE_CODE_EN		" Instruction Set Extensions "
 
 #define RSC_ISA_3DNOW_COMM_CODE_EN	\
@@ -2509,10 +2510,11 @@
 #define RSC_SYS_REGS_NA_CODE		"  - "
 #define RSC_SYS_REGS_HDR_CPU_CODE	"CPU "
 #define RSC_SYS_REG_HDR_FLAGS_CODE	"FLAG"
-#define RSC_SYS_REG_HDR_TF_CODE 	" TF "
-#define RSC_SYS_REG_HDR_IF_CODE 	" IF "
-#define RSC_SYS_REG_HDR_IOPL_CODE	"IOPL"
-#define RSC_SYS_REG_HDR_NT_CODE 	" NT "
+#define RSC_SYS_REG_HDR_N_CODE		"  N "
+#define RSC_SYS_REG_HDR_Z_CODE		"  Z "
+#define RSC_SYS_REG_HDR_C_CODE		"  C "
+#define RSC_SYS_REG_HDR_V_CODE		"  V "
+/*TODO(CleanUp)
 #define RSC_SYS_REG_HDR_RF_CODE 	" RF "
 #define RSC_SYS_REG_HDR_VM_CODE 	" VM "
 #define RSC_SYS_REG_HDR_AC_CODE 	" AC "
@@ -2608,7 +2610,7 @@
 #define RSC_SYS_REG_HDR_CFG_SNP_CODE	" SNP"
 #define RSC_SYS_REG_HDR_CFG_VMPL_CODE	" PL "
 #define RSC_SYS_REG_HDR_CFG_HMK_CODE	" HMK"
-
+*/
 #define RSC_ISA_3DNOW_CODE		" 3DNow!/Ext [%c/%c]"
 #define RSC_ISA_ADX_CODE		"          ADX [%c]"
 #define RSC_ISA_AES_CODE		"          AES [%c]"

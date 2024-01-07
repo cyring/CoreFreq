@@ -3306,8 +3306,10 @@ static char *CodeName[CODENAMES] = {
 	[ARMv8_3_A]	= "ARMv8.3-A",
 	[ARMv8_4_A]	= "ARMv8.4-A",
 	[  ARMv8_5]	= "ARMv8.5",
+	[  ARMv8_6]	= "ARMv8.6",
 	[  ARMv8_7]	= "ARMv8.7",
 	[  ARMv9_A]	= "ARMv9-A",
+	[  ARMv9_4]	= "ARMv9.4",
 	[  ARMv9_5]	= "ARMv9.5"
 };
 

@@ -446,8 +446,9 @@ typedef struct
 
 	CACHE_TOPOLOGY			T;
 
-	struct {/*TODO(CleanUp)
-		Bit64			RFLAGS	__attribute__ ((aligned (8))),
+	struct {
+		Bit64			FLAGS	__attribute__ ((aligned (8)));
+/*TODO(CleanUp)
 					CR0	__attribute__ ((aligned (8))),
 					CR3	__attribute__ ((aligned (8))),
 					CR4	__attribute__ ((aligned (8))),

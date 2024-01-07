@@ -11575,10 +11575,13 @@ void SystemRegisters(CORE_RO *Core)
 	volatile AA64MMFR1 mmfr1;
 	__asm__ __volatile__(
 		"mrs	%[mmfr1],	id_aa64mmfr1_el1""\n\t"
+		"cmp	xzr	,	xzr, lsl #0"	"\n\t"
+		"mrs	%[flags],	nzcv"		"\n\t"
 		"isb"
-		: [mmfr1] 	"=r" (mmfr1)
+		: [mmfr1]	"=r" (mmfr1),
+		  [flags]	"=r" (Core->SystemRegister.FLAGS)
 		:
-		: "memory"
+		: "memory", "cc"
 	);
 	if (mmfr1.VH) {
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);

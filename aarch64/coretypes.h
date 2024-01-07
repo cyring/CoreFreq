@@ -51,8 +51,10 @@ enum CODENAME
 	ARMv8_3_A,
 	ARMv8_4_A,
 	ARMv8_5,
+	ARMv8_6,
 	ARMv8_7,
 	ARMv9_A,
+	ARMv9_4,
 	ARMv9_5,
 	CODENAMES
 };
@@ -237,10 +239,11 @@ enum HYPERVISOR {
 #define HYPERVISORS	( 1 + HYPERV_HYPERV )
 
 enum SYS_REG {
-	RFLAG_TF	= 8,
-	RFLAG_IF	= 9,
-	RFLAG_IOPL	= 12,	/* [13:12]				*/
-	RFLAG_NT	= 14,
+	RFLAG_N 	= 28,
+	RFLAG_Z 	= 29,
+	RFLAG_C 	= 30,
+	RFLAG_V 	= 31,
+/*TODO(CleanUp)
 	RFLAG_RF	= 16,
 	RFLAG_VM	= 17,
 	RFLAG_AC	= 18,
@@ -292,12 +295,12 @@ enum SYS_REG {
 	CR4_UINTR	= 25,
 	CR4_LAM_SUP	= 28,
 
-	CR8_TPL 	= 0,	/* [3:0]				*/
+	CR8_TPL 	= 0,
 
 	EXFCR_LOCK	= 0,
 	EXFCR_VMX_IN_SMX= 1,
 	EXFCR_VMXOUT_SMX= 2,
-	EXFCR_SENTER_LEN= 8,	/* [14:8]				*/
+	EXFCR_SENTER_LEN= 8,
 	EXFCR_SENTER_GEN= 15,
 	EXFCR_SGX_LCE	= 17,
 	EXFCR_SGX_GEN	= 18,
@@ -307,27 +310,27 @@ enum SYS_REG {
 	EXFER_LME	= 8,
 	EXFER_LMA	= 10,
 	EXFER_NXE	= 11,
-	EXFER_SVME	= 12,	/* AMD F17h				*/
-	EXFER_LMSLE	= 13,	/* AMD F17h				*/
-	EXFER_FFXSE	= 14,	/* AMD F17h				*/
-	EXFER_TCE	= 15,	/* AMD F17h				*/
-	EXFER_MCOMMIT	= 17,	/* AMD F17h				*/
-	EXFER_INT_WBINVD= 18,	/* AMD F17h				*/
-	EXFER_UAIE	= 20,	/* AMD F17h				*/
-	EXFER_AIBRSE	= 21,	/* AMD F17h				*/
+	EXFER_SVME	= 12,
+	EXFER_LMSLE	= 13,
+	EXFER_FFXSE	= 14,
+	EXFER_TCE	= 15,
+	EXFER_MCOMMIT	= 17,
+	EXFER_INT_WBINVD= 18,
+	EXFER_UAIE	= 20,
+	EXFER_AIBRSE	= 21,
 
 	XCR0_FPU	= 0,
 	XCR0_SSE	= 1,
 	XCR0_AVX	= 2,
-	XCR0_MPX	= 3,	/* [BNDCSR:4, BNDREG:3] 		*/
-	XCR0_AVX512	= 5,	/* [7:5]				*/
+	XCR0_MPX	= 3,
+	XCR0_AVX512	= 5,
 	XCR0_PKRU	= 9,
-	XCR0_CET_U	= 11,	/* AMD64, Intel 			*/
-	XCR0_CET_S	= 12,	/* AMD64, Intel 			*/
-	XCR0_AMX	= 17,	/* Sapphire Rapids [TILEDATA:18, TILECFG:17] */
-	XCR0_LWP	= 62,	/* AMD64				*/
+	XCR0_CET_U	= 11,
+	XCR0_CET_S	= 12,
+	XCR0_AMX	= 17,
+	XCR0_LWP	= 62,
 
-	SYSCFG_MFD	= 18,	/* AMD64: System Configuration Register */
+	SYSCFG_MFD	= 18,
 	SYSCFG_MFDM	= 19,
 	SYSCFG_MVDM	= 20,
 	SYSCFG_TOM2	= 21,
@@ -336,7 +339,7 @@ enum SYS_REG {
 	SYSCFG_SNP	= 24,
 	SYSCFG_VMPL	= 25,
 	SYSCFG_HMK	= 26,
-
+*/
 	UNDEF_CR	= 64
 };
 

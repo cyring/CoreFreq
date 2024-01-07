@@ -2135,9 +2135,10 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 		json_key(&s, "SystemRegister");
 		{
 			json_start_object(&s);
-			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.RFLAGS);
-			json_key(&s, "RFLAGS");
+			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.FLAGS);
+			json_key(&s, "FLAGS");
 			json_string(&s, hexStr);
+/*TODO(CleanUp)
 			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.CR0);
 			json_key(&s, "CR0");
 			json_string(&s, hexStr);
@@ -2162,6 +2163,7 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.SYSCFG);
 			json_key(&s, "SYSCFG");
 			json_string(&s, hexStr);
+*/
 			json_end_object(&s);
 		}
 		json_key(&s, "CpuID");

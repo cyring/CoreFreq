@@ -1312,7 +1312,7 @@ static void *Child_Thread(void *arg)
 	const int withTSCP = ((RO(Shm)->Proc.Features.AdvPower.EDX.Inv_TSC == 1)
 			   || (RO(Shm)->Proc.Features.ExtInfo.EDX.RDTSCP == 1)),
 		withRDPMC = ((RO(Shm)->Proc.PM_version >= 1)
-			  && (BITVAL(Cpu->SystemRegister.CR4, CR4_PCE) == 1));
+		/*	  && (BITVAL(Cpu->SystemRegister.CR4, CR4_PCE) == 1)*/);
 
 	CALL_FUNC CallSliceFunc = MatrixCallFunc[withTSCP][withRDPMC];
 
@@ -7372,10 +7372,9 @@ void PowerThermal(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 void SystemRegisters(	RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core),
 			unsigned int cpu )
 {
+	RO(Shm)->Cpu[cpu].SystemRegister.FLAGS = \
+				RO(Core, AT(cpu))->SystemRegister.FLAGS;
 /*TODO(CleanUp)
-	RO(Shm)->Cpu[cpu].SystemRegister.RFLAGS = \
-				RO(Core, AT(cpu))->SystemRegister.RFLAGS;
-
 	RO(Shm)->Cpu[cpu].SystemRegister.CR0 = \
 				RO(Core, AT(cpu))->SystemRegister.CR0;
 

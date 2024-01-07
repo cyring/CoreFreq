@@ -523,16 +523,16 @@ REASON_CODE SystemRegisters(	Window *win,
 	.header = (struct SR_HDR[]) {
 	[ 0] =	{RSC(SYS_REGS_HDR_CPU).CODE(),	NULL},
 	[ 1] =	{RSC(SYS_REG_HDR_FLAGS).CODE(), NULL},
-	[ 2] =	{RSC(SYS_REG_HDR_TF).CODE(),	RSC(SYS_REG_FLAGS_TF).CODE()},
-	[ 3] =	{RSC(SYS_REG_HDR_IF).CODE(),	RSC(SYS_REG_FLAGS_IF).CODE()},
-	[ 4] =	{RSC(SYS_REG_HDR_IOPL).CODE(),	RSC(SYS_REG_FLAGS_IOPL).CODE()},
-	[ 5] =	{RSC(SYS_REG_HDR_NT).CODE(),	RSC(SYS_REG_FLAGS_NT).CODE()},
-	[ 6] =	{RSC(SYS_REG_HDR_RF).CODE(),	RSC(SYS_REG_FLAGS_RF).CODE()},
-	[ 7] =	{RSC(SYS_REG_HDR_VM).CODE(),	RSC(SYS_REG_FLAGS_VM).CODE()},
-	[ 8] =	{RSC(SYS_REG_HDR_AC).CODE(),	RSC(SYS_REG_FLAGS_AC).CODE()},
-	[ 9] =	{RSC(SYS_REG_HDR_VIF).CODE(),	RSC(SYS_REG_FLAGS_VIF).CODE()},
-	[10] =	{RSC(SYS_REG_HDR_VIP).CODE(),	RSC(SYS_REG_FLAGS_VIP).CODE()},
-	[11] =	{RSC(SYS_REG_HDR_ID).CODE(),	RSC(SYS_REG_FLAGS_ID).CODE()},
+	[ 2] =	{RSC(SYS_REG_HDR_N).CODE(),	RSC(SYS_REG_FLAGS_N).CODE()},
+	[ 3] =	{RSC(SYS_REG_HDR_Z).CODE(),	RSC(SYS_REG_FLAGS_Z).CODE()},
+	[ 4] =	{RSC(SYS_REG_HDR_C).CODE(),	RSC(SYS_REG_FLAGS_C).CODE()},
+	[ 5] =	{RSC(SYS_REG_HDR_V).CODE(),	RSC(SYS_REG_FLAGS_V).CODE()},
+	[ 6] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[ 7] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[ 8] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[ 9] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[10] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[11] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
 	[12] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
 	[13] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
 	[14] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
@@ -543,16 +543,16 @@ REASON_CODE SystemRegisters(	Window *win,
 	.flag = (struct SR_BIT[]) {
 	[ 0] =	{DO_CPU , 1	, UNDEF_CR	, 0	},
 	[ 1] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
-	[ 2] =	{DO_FLAG, 1	, RFLAG_TF	, 1	},
-	[ 3] =	{DO_FLAG, 1	, RFLAG_IF	, 1	},
-	[ 4] =	{DO_FLAG, 1	, RFLAG_IOPL	, 2	},
-	[ 5] =	{DO_FLAG, 1	, RFLAG_NT	, 1	},
-	[ 6] =	{DO_FLAG, 1	, RFLAG_RF	, 1	},
-	[ 7] =	{DO_FLAG, 1	, RFLAG_VM	, 1	},
-	[ 8] =	{DO_FLAG, 1	, RFLAG_AC	, 1	},
-	[ 9] =	{DO_FLAG, 1	, RFLAG_VIF	, 1	},
-	[10] =	{DO_FLAG, 1	, RFLAG_VIP	, 1	},
-	[11] =	{DO_FLAG, 1	, RFLAG_ID	, 1	},
+	[ 2] =	{DO_FLAG, 1	, RFLAG_N	, 1	},
+	[ 3] =	{DO_FLAG, 1	, RFLAG_Z	, 1	},
+	[ 4] =	{DO_FLAG, 1	, RFLAG_C	, 1	},
+	[ 5] =	{DO_FLAG, 1	, RFLAG_V	, 1	},
+	[ 6] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[ 7] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[ 8] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[ 9] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[10] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[11] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
 	[12] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
 	[13] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
 	[14] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
@@ -561,6 +561,7 @@ REASON_CODE SystemRegisters(	Window *win,
 		{DO_END , 1	, UNDEF_CR	, 0	}
 	}
       },
+/*TODO(CleanUp)
       {
 	.header = (struct SR_HDR[]) {
 	[ 0] =	{RSC(SYS_REG_HDR_CR0).CODE(),	RSC(SYS_REGS_CR0).CODE()},
@@ -855,6 +856,7 @@ REASON_CODE SystemRegisters(	Window *win,
 		{DO_END , 1	, UNDEF_CR	, 0	}
 	}
       }
+*/
     };
 
 	CUINT cells_per_line = win->matrix.size.wth, *nl = &cells_per_line;
@@ -890,9 +892,10 @@ REASON_CODE SystemRegisters(	Window *win,
 		    switch (pFlag->automat) {
 		    case DO_FLAG:
 			PRT(REG, attrib[2], "%3llx ",
-			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.RFLAGS,
+			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.FLAGS,
 					pFlag->pos, pFlag->len));
 			break;
+/*TODO(CleanUp)
 		    case DO_CR0:
 			PRT(REG, attrib[2], "%3llx ",
 			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.CR0,
@@ -933,6 +936,7 @@ REASON_CODE SystemRegisters(	Window *win,
 			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.SYSCFG,
 					pFlag->pos, pFlag->len));
 			break;
+*/
 		    default:
 			PRT(REG, attrib[1], RSC(SYS_REGS_NA).CODE());
 			break;
@@ -9300,7 +9304,7 @@ Window *CreateISA(unsigned long long id)
 Window *CreateSysRegs(unsigned long long id)
 {
 	Window *wSR = CreateWindow(	wLayer, id,
-					17, (2*(1+RO(Shm)->Proc.CPU.Count)),
+					17, 1 + RO(Shm)->Proc.CPU.Count,
 					6, TOP_HEADER_ROW + 2 );
 	if (wSR != NULL)
 	{
