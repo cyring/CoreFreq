@@ -4,7 +4,8 @@
  * Licenses: GPL2
  */
 
-#define CPUPWRCTLR_EL1 sys_reg(0b11, 0b000, 0b1111, 0b0010, 0b111)
+#define CPUPWRCTLR_EL1	sys_reg(0b11, 0b000, 0b1111, 0b0010, 0b111)
+#define MRS_SSBS2	sys_reg(0b11, 0b011, 0b0100, 0b0010, 0b110)
 
 typedef union
 {
@@ -520,7 +521,7 @@ typedef union
 
 typedef union
 {
-	unsigned long long	value;
+	unsigned long long	value;	/*	0x00000010		*/
 	struct
 	{
 		unsigned long long
@@ -580,6 +581,19 @@ typedef union
 		RES4		: 64-60;
 	};
 } AA64ZFR0;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		RES0		: 12-0,
+		SSBS		: 13-12,
+		RES1		: 32-13,
+		RES2		: 64-32;
+	};
+} SSBS2;
 
 typedef union
 {

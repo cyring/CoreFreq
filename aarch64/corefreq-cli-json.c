@@ -874,8 +874,6 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.UINTR);
 					json_key(&s, "AVX512_VP2INTERSECT");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.AVX512_VP2INTER);
-					json_key(&s, "MD_CLEAR");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.MD_CLEAR_Cap);
 					json_key(&s, "SERIALIZE");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.SERIALIZE);
 					json_key(&s, "Hybrid");
@@ -898,12 +896,6 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.AMX_INT8);
 					json_key(&s, "AVX512_FP16");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.AVX512_FP16);
-					json_key(&s, "IBRS_IBPB");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap);
-					json_key(&s, "STIBP");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.STIBP_Cap);
-					json_key(&s, "L1D_FLUSH");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.L1D_FLUSH_Cap);
 					json_key(&s, "IA32_ARCH_CAPABILITIES");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP);
 					json_key(&s, "IA32_CORE_CAPABILITIES");
@@ -1153,14 +1145,6 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.HWP_Enable);
 			json_key(&s, "HDC_Enable");
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.HDC_Enable);
-			json_key(&s, "EEO_Capable");
-			json_literal(&s, "%u", RO(Shm)->Proc.Features.EEO_Capable);
-			json_key(&s, "EEO_Enable");
-			json_literal(&s, "%u", RO(Shm)->Proc.Features.EEO_Enable);
-			json_key(&s, "R2H_Capable");
-			json_literal(&s, "%u", RO(Shm)->Proc.Features.R2H_Capable);
-			json_key(&s, "R2H_Enable");
-			json_literal(&s, "%u", RO(Shm)->Proc.Features.R2H_Enable);
 			json_key(&s, "HSMP_Capable");
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.HSMP_Capable);
 			json_key(&s, "HSMP_Enable");
@@ -1169,6 +1153,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.SpecTurboRatio);
 			json_key(&s, "XtraCOF");
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.XtraCOF);
+			json_key(&s, "SSBS");
+			json_literal(&s, "%u", RO(Shm)->Proc.Features.SSBS);
 
 			json_end_object(&s);
 		}
@@ -1412,14 +1398,10 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 		json_key(&s, "Mechanisms");
 		{
 			json_start_object(&s);
-			json_key(&s, "IBRS");
-			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.IBRS);
-			json_key(&s, "STIBP");
-			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.STIBP);
 			json_key(&s, "SSBD");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.SSBD);
-			json_key(&s, "PSFD");
-			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.PSFD);
+			json_key(&s, "SSBS");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.SSBS);
 			json_end_object(&s);
 		}
 		json_end_object(&s);

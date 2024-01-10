@@ -710,29 +710,22 @@ void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 						RO(Proc)->CR_Mask);
 }
 
-void Mitigation_2nd_Stage(	RO(SHM_STRUCT) *RO(Shm),
-				RO(PROC) *RO(Proc), RW(PROC) *RW(Proc) )
+void Mitigation_Stage(	RO(SHM_STRUCT) *RO(Shm),
+			RO(PROC) *RO(Proc), RW(PROC) *RW(Proc) )
 {
-	unsigned short	IBRS = BITCMP_CC(	LOCKLESS,
-						RW(Proc)->IBRS,
-						RO(Proc)->SPEC_CTRL_Mask ),
-
-			STIBP = BITCMP_CC(	LOCKLESS,
-						RW(Proc)->STIBP,
-						RO(Proc)->SPEC_CTRL_Mask ),
-
-			SSBD = BITCMP_CC(	LOCKLESS,
+	unsigned short	SSBD = BITCMP_CC(	LOCKLESS,
 						RW(Proc)->SSBD,
 						RO(Proc)->SPEC_CTRL_Mask ),
 
-			PSFD = BITCMP_CC(	LOCKLESS,
-						RW(Proc)->PSFD,
+			SSBS = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->SSBS,
 						RO(Proc)->SPEC_CTRL_Mask );
 
-	RO(Shm)->Proc.Mechanisms.IBRS  += (2 * IBRS);
-	RO(Shm)->Proc.Mechanisms.STIBP += (2 * STIBP);
-	RO(Shm)->Proc.Mechanisms.SSBD  += (2 * SSBD);
-	RO(Shm)->Proc.Mechanisms.PSFD  += (2 * PSFD);
+	RO(Shm)->Proc.Mechanisms.SSBD = RO(Shm)->Proc.Features.CSV2 != 0;
+	RO(Shm)->Proc.Mechanisms.SSBS = RO(Shm)->Proc.Features.SSBS != 0;
+
+	RO(Shm)->Proc.Mechanisms.SSBD += (2 * SSBD);
+	RO(Shm)->Proc.Mechanisms.SSBS += (2 * SSBS);
 }
 
 static char *Chipset[CHIPSETS] = {
@@ -1129,6 +1122,8 @@ void Package_Update(	RO(SHM_STRUCT) *RO(Shm),
 	PowerInterface(RO(Shm), RO(Proc));
 
 	ThermalPoint(RO(Shm), RO(Proc));
+
+	Mitigation_Stage(RO(Shm), RO(Proc), RW(Proc));
 	/*	Aggregate OS idle driver data and Clock Source		*/
 	SysGate_OS_Driver(RO(Shm), RO(Proc));
 	ClockSource_Update(RO(Shm));

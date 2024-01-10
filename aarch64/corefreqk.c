@@ -518,6 +518,7 @@ static void Query_Features(void *pArg)
 	volatile AA64ISAR0 isar0;
 	volatile AA64MMFR1 mmfr1;
 	volatile AA64PFR0 pfr0;
+	volatile AA64PFR1 pfr1;
 
 	enum HYPERVISOR hypervisor = HYPERV_NONE;
 
@@ -534,6 +535,7 @@ static void Query_Features(void *pArg)
 		"mrs	%[isar0],	id_aa64isar0_el1""\n\t"
 		"mrs	%[mmfr1],	id_aa64mmfr1_el1""\n\t"
 		"mrs	%[pfr0] ,	id_aa64pfr0_el1""\n\t"
+		"mrs	%[pfr1] ,	id_aa64pfr1_el1""\n\t"
 		"isb"
 		: [midr]	"=r" (midr),
 		  [cntfrq]	"=r" (cntfrq),
@@ -541,7 +543,8 @@ static void Query_Features(void *pArg)
 		  [dbgfr0]	"=r" (dbgfr0),
 		  [isar0]	"=r" (isar0),
 		  [mmfr1]	"=r" (mmfr1),
-		  [pfr0]	"=r" (pfr0)
+		  [pfr0]	"=r" (pfr0),
+		  [pfr1]	"=r" (pfr1)
 		:
 		: "memory"
 	);
@@ -582,6 +585,8 @@ static void Query_Features(void *pArg)
 	iArg->Features->Std.EDX.FPU = pfr0.FP == 0x1;
 	iArg->Features->Std.EDX.SSE = pfr0.AdvSIMD == 0x1;
 	iArg->Features->Std.EDX.APIC = pfr0.GIC == 0x1;
+	iArg->Features->CSV2 = pfr0.CSV2;
+	iArg->Features->SSBS = pfr1.SSBS;
 
 	/* Reset the performance features bits (present is zero) */
 	iArg->Features->PerfMon.EBX.CoreCycles    = 1;
@@ -1316,6 +1321,16 @@ void SystemRegisters(CORE_RO *Core)
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);
 	}
+	if (PUBLIC(RO(Proc))->Features.SSBS == 0b0010)
+	{
+		SSBS2 mrs_ssbs = {.value = read_sysreg_s(MRS_SSBS2)};
+
+	    if (mrs_ssbs.SSBS) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBS, Core->Bind);
+	    } else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBS, Core->Bind);
+	    }
+	}
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask, Core->Bind);
 }
 
@@ -1330,17 +1345,12 @@ void PerCore_Reset(CORE_RO *Core)
 {
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->HWP_Mask	, Core->Bind);
-
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask	, Core->Bind);
 
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->HWP	, Core->Bind);
-
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IBRS	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->STIBP 	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBD	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSFD	, Core->Bind);
-
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBS	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->VM	, Core->Bind);
 
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.Mask);

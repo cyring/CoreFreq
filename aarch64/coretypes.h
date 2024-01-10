@@ -1379,10 +1379,7 @@ typedef struct	/* BSP CPUID features.					*/
 			HWP_Enable	: 23-22,
 			HDC_Enable	: 24-23,
 			SpecTurboRatio	: 32-24,
-			EEO_Capable	: 33-32,
-			EEO_Enable	: 34-33,
-			R2H_Capable	: 35-34,
-			R2H_Enable	: 36-35,
+			CSV2		: 36-32,
 			HSMP_Capable	: 37-36,
 			HSMP_Enable	: 38-37,
 			XtraCOF 	: 40-38, /* 1:CPB ; 2:{CPB and XFR} */
@@ -1397,7 +1394,7 @@ typedef struct	/* BSP CPUID features.					*/
 			OSPM_EPP	: 55-54,
 			ACPI_CST_CAP	: 56-55,
 			ACPI_CST	: 60-56, /* 15 CState sub-packages */
-			_pad64		: 64-60;
+			SSBS		: 64-60;
 	};
 } FEATURES;
 
