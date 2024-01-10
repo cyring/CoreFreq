@@ -53,11 +53,6 @@ typedef unsigned int		Bit32;
 #define InitCC(_val)		{[0 ... CORE_WORD_TOP(CORE_COUNT) - 1] = _val}
 #endif
 
-#define ATOMIC_SEED 0x436f726546726571LLU
-
-#define BIT_IO_RETRIES_COUNT	80
-#define BIT_IO_DELAY_INTERVAL	150	/*	in udelay() unit	*/
-
 #define LOCKLESS " "
 #define BUS_LOCK "lock "
 
@@ -194,18 +189,6 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	_ret;								\
 })
 
-#define _BITVAL_GPR(_lock, _base, _offset)				\
-({									\
-	const unsigned char _ret = ((_base) & (1LLU << _offset)) != 0;	\
-	_ret;								\
-})
-
-#define _BITVAL_IMM(_lock, _base, _imm6)				\
-({									\
-	const unsigned char _ret = ((_base) & (1LLU << _imm6)) != 0;	\
-	_ret;								\
-})
-
 #define _BIT_TEST_GPR(_base, _offset)					\
 ({									\
 	const unsigned char _ret = ((_base) & (1LLU << _offset)) != 0;	\
@@ -334,50 +317,6 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	_ret;								\
 })
 
-#define _BITVAL_GPR(_lock, _base, _offset)				\
-({									\
-	const __typeof__(_base) *_adr = &_base; 			\
-	volatile unsigned char _ret;					\
-									\
-	__asm__ volatile						\
-	(								\
-		"mov	x2, #1" 		"\n\t"			\
-		"lsl	x2, x2, %[offset]"	"\n\t"			\
-		"ldr	x3, %[base]"		"\n\t"			\
-		"ldr	x1, [x3]"		"\n\t"			\
-		"tst	x1, x2" 		"\n\t"			\
-		"cset	w0, ne" 		"\n\t"			\
-		"strb	w0, %[ret]"					\
-		: [ret] "=m" (_ret)					\
-		: [base] "m" (_adr),					\
-		  [offset] "r" (_offset)				\
-		: "cc", "memory", "%w0", "%x1", "%x2", "%x3"		\
-	);								\
-	_ret;								\
-})
-
-#define _BITVAL_IMM(_lock, _base, _imm6)				\
-({									\
-	const __typeof__(_base) *_adr = &_base; 			\
-	volatile unsigned char _ret;					\
-									\
-	__asm__ volatile						\
-	(								\
-		"mov	x2, #1" 		"\n\t"			\
-		"lsl	x2, x2, %[imm6]"	"\n\t"			\
-		"ldr	x3, %[base]"		"\n\t"			\
-		"ldr	x1, [x3]"		"\n\t"			\
-		"tst	x1, x2" 		"\n\t"			\
-		"cset	w0, ne" 		"\n\t"			\
-		"strb	w0, %[ret]"					\
-		: [ret] "=m" (_ret)					\
-		: [base] "m" (_adr),					\
-		  [imm6] "i" (_imm6)					\
-		: "cc", "memory", "%w0", "%x1", "%x2", "%x3"		\
-	);								\
-	_ret;								\
-})
-
 #define _BIT_TEST_GPR(_base, _offset)					\
 ({									\
 	const __typeof__(_base) *_adr = &_base; 			\
@@ -424,15 +363,15 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define _BITWISEAND(_lock, _opl, _opr)					\
 ({									\
-	volatile Bit64 _dest __attribute__ ((aligned (8))) = _opl;	\
+	volatile Bit64 _dest __attribute__ ((aligned (8)));		\
 									\
 	__asm__ volatile						\
 	(								\
-		"ldr	x0, %[dest]"		"\n\t"			\
-		"and	x0, x0, %[opr]" 	"\n\t"			\
+		"and	x0, %[opl], %[opr]" 	"\n\t"			\
 		"str	x0, %[dest]"					\
 		: [dest] "=m" (_dest)					\
-		: [opr]  "Jr" (_opr)					\
+		: [opl]  "Jr" (_opl),					\
+		  [opr]  "Jr" (_opr)					\
 		: "cc", "memory", "%x0" 				\
 	);								\
 	_dest;								\
@@ -440,15 +379,15 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define _BITWISEOR(_lock, _opl, _opr)					\
 ({									\
-	volatile Bit64 _dest __attribute__ ((aligned (8))) = _opl;	\
+	volatile Bit64 _dest __attribute__ ((aligned (8)));		\
 									\
 	__asm__ volatile						\
 	(								\
-		"ldr	x0, %[dest]"		"\n\t"			\
-		"orr	x0, x0, %[opr]" 	"\n\t"			\
+		"orr	x0, %[opl], %[opr]" 	"\n\t"			\
 		"str	x0, %[dest]"					\
 		: [dest] "=m" (_dest)					\
-		: [opr]  "Jr" (_opr)					\
+		: [opl]  "Jr" (_opl),					\
+		  [opr]  "Jr" (_opr)					\
 		: "cc", "memory", "%x0" 				\
 	);								\
 	_dest;								\
@@ -456,15 +395,15 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define _BITWISEXOR(_lock, _opl, _opr)					\
 ({									\
-	volatile Bit64 _dest __attribute__ ((aligned (8))) = _opl;	\
+	volatile Bit64 _dest __attribute__ ((aligned (8)));		\
 									\
 	__asm__ volatile						\
 	(								\
-		"ldr	x0, %[dest]"		"\n\t"			\
-		"eor	x0, x0, %[opr]" 	"\n\t"			\
+		"eor	x0, %[opl], %[opr]" 	"\n\t"			\
 		"str	x0, %[dest]"					\
 		: [dest] "=m" (_dest)					\
-		: [opr]  "Jr" (_opr)					\
+		: [opl]  "Jr" (_opl),					\
+		  [opr]  "Jr" (_opr)					\
 		: "cc", "memory", "%x0" 				\
 	);								\
 	_dest;								\
@@ -485,14 +424,7 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		_BITCLR_IMM(_lock, _base, _offset)			\
 	:	_BITCLR_GPR(_lock, _base, _offset)			\
 )
-/*TODO(CleanUp)
-#define BITBTC(_lock, _base, _offset)					\
-(									\
-	__builtin_constant_p(_offset) ? 				\
-		_BITBTC_IMM(_lock, _base, _offset)			\
-	:	_BITBTC_GPR(_lock, _base, _offset)			\
-)
-*/
+
 #define BITVAL_2xPARAM(_base, _offset)					\
 (									\
 	__builtin_constant_p(_offset) ? 				\
@@ -500,20 +432,7 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	:	_BIT_TEST_GPR(_base, _offset)				\
 )
 
-#define BITVAL_3xPARAM(_lock, _base, _offset)				\
-(									\
-	__builtin_constant_p(_offset) ? 				\
-		_BITVAL_IMM(_lock, _base, _offset)			\
-	:	_BITVAL_GPR(_lock, _base, _offset)			\
-)
-
-#define BITVAL_DISPATCH(_1,_2,_3,BITVAL_CURSOR, ...)			\
-	BITVAL_CURSOR
-
-#define BITVAL(...)							\
-	BITVAL_DISPATCH( __VA_ARGS__ ,	BITVAL_3xPARAM ,		\
-					BITVAL_2xPARAM ,		\
-					NULL)( __VA_ARGS__ )
+#define BITVAL(...)	BITVAL_2xPARAM( __VA_ARGS__ )
 
 #define BITCPL(_src)							\
 ({									\
@@ -532,36 +451,7 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 #define BITWISEAND(_lock, _opl, _opr)	_BITWISEAND(_lock, _opl, _opr)
 #define BITWISEOR(_lock, _opl, _opr)	_BITWISEOR(_lock, _opl, _opr)
 #define BITWISEXOR(_lock, _opl, _opr)	_BITWISEXOR(_lock, _opl, _opr)
-/*TODO(CleanUp)
-#define _BITADD_GPR(_lock, _dest, _src) 				\
-({									\
-	__asm__ volatile						\
-	(								\
-	_lock	"addq	%%rax, %[dest]" 				\
-		: [dest] "=m" (_dest)					\
-		: "a" (_src)						\
-		: "cc", "memory"					\
-	);								\
-})
 
-#define _BITADD_IMM(_lock, _dest, _imm32)				\
-({									\
-	__asm__ volatile						\
-	(								\
-	_lock	"addq	%[imm32], %[dest]"				\
-		: [dest] "=m" (_dest)					\
-		: [imm32] "i" (_imm32)					\
-		: "cc", "memory"					\
-	);								\
-})
-
-#define BITADD(_lock, _dest, _src)					\
-(									\
-	__builtin_constant_p(_src) ?					\
-		_BITADD_IMM(_lock , _dest , _src)			\
-	:	_BITADD_GPR(_lock , _dest , _src)			\
-)
-*/
 #define BITSTOR(_lock, _dest, _src)					\
 ({									\
 	__asm__ volatile						\
@@ -590,18 +480,7 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 })
 
 #define BITBSF(_base, _index)						\
-({/*TODO(CleanUp)							\
-	volatile unsigned char _ret = 0;				\
-									\
-	__asm__ volatile						\
-	(								\
-		"bsf	%[base], %[index]"	"\n\t"			\
-		"setz	%[ret]" 					\
-		: [ret]   "+m" (_ret),					\
-		  [index] "=r" (_index) 				\
-		: [base]  "rm" (_base)					\
-		: "cc", "memory"					\
-	);							*/	\
+({									\
 	unsigned char _ret = 0;						\
 	if (_base) {							\
 		_index = 0;						\
@@ -617,18 +496,7 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 })
 
 #define BITBSR(_base, _index)						\
-({/*TODO(CleanUp)							\
-	volatile unsigned char _ret = 0;				\
-									\
-	__asm__ volatile						\
-	(								\
-		"bsr	%[base], %[index]"	"\n\t"			\
-		"setz	%[ret]" 					\
-		: [ret]   "+m" (_ret),					\
-		  [index] "=r" (_index) 				\
-		: [base]  "rm" (_base)					\
-		: "cc", "memory"					\
-	);							*/	\
+({									\
 	unsigned char _ret = 0;						\
 	if (_base) {							\
 		_index = (8 * sizeof(_base)) - 1;			\
@@ -644,98 +512,12 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 })
 
 #define BITEXTRZ(_src, _offset, _length)				\
-({/*TODO(CleanUp)							\
-	volatile unsigned long long _dest;				\
-									\
-	__asm__ volatile						\
-	(								\
-		"movq	$1	,	%%rdx"		"\n\t"		\
-		"mov	%[len]	,	%%ecx"		"\n\t"		\
-		"shlq	%%cl	,	%%rdx"		"\n\t"		\
-		"decq	%%rdx"				"\n\t"		\
-		"mov	%[ofs]	,	%%ecx"		"\n\t"		\
-		"shlq	%%cl	,	%%rdx"		"\n\t"		\
-		"andq	%[src]	,	%%rdx"		"\n\t"		\
-		"shrq	%%cl	,	%%rdx"		"\n\t"		\
-		"movq	%%rdx	,	%[dest]" 			\
-		: [dest]	"=m"	(_dest) 			\
-		: [src] 	"irm"	(_src) ,			\
-		  [ofs] 	"irm"	(_offset),			\
-		  [len] 	"irm"	(_length) 			\
-		: "%ecx", "%rdx", "cc", "memory"			\
-	);							*/	\
+({									\
 	unsigned long long 						\
 		_dest = ((1 << _length) - 1) & (_src >> (_offset - 1)); \
 	_dest;								\
 })
-/*TODO(CleanUp)
-#define BIT_ATOM_INIT(atom, seed)					\
-({									\
-	__asm__ volatile						\
-	(								\
-		"leaq	%[_atom],	%%rdx"		"\n\t"		\
-		"movq	%[_seed],	%%rax"		"\n\t"		\
-		"movq	%%rax	,	(%%rdx)" 			\
-		:							\
-		: [_atom]	"m"	(atom) ,			\
-		  [_seed]	"i"	(seed)				\
-		: "%rax", "%rdx", "memory"				\
-	);								\
-})
 
-#define BIT_ATOM_TRYLOCK(_lock, atom, seed)				\
-({									\
-	volatile unsigned char _ret;					\
-									\
-	__asm__ volatile						\
-	(								\
-		"movq	%[_seed],	%%rdx"		"\n\t"		\
-		"movl	%%edx	,	%%eax"		"\n\t"		\
-		"movq	$0xffffffff,	%%rbx"		"\n\t"		\
-		"andq	%%rbx	,	%%rax"		"\n\t"		\
-		"shrq	$32	,	%%rdx"		"\n\t"		\
-		"xorq	%%rcx	,	%%rcx"		"\n\t"		\
-		"xorq	%%rbx	,	%%rbx"		"\n\t"		\
-		_lock	"cmpxchg8b	%[_atom]"	"\n\t"		\
-		"setz	%[_ret]"					\
-		: [_ret]	"+m"	(_ret)				\
-		: [_atom]	"m"	(atom) ,			\
-		  [_seed]	"i"	(seed)				\
-		: "%rax", "%rbx", "%rcx", "%rdx", "cc", "memory"	\
-	);								\
-	_ret;								\
-})
-
-#define BIT_ATOM_UNLOCK(_lock, atom, seed)				\
-({									\
-	volatile unsigned long long tries;				\
-									\
-	__asm__ volatile						\
-	(								\
-		"movq	%[count],	%%r12"		"\n\t"		\
-	"1:"						"\n\t"		\
-		"subq	$1	,	%%r12"		"\n\t"		\
-		"jz	2f"				"\n\t"		\
-		"movq	%[_seed],	%%rcx"		"\n\t"		\
-		"movl	%%ecx	,	%%ebx"		"\n\t"		\
-		"movq	$0xffffffff,	%%rax"		"\n\t"		\
-		"andq	%%rax	,	%%rbx"		"\n\t"		\
-		"shrq	$32	,	%%rcx"		"\n\t"		\
-		"xorq	%%rdx	,	%%rdx"		"\n\t"		\
-		"xorq	%%rax	,	%%rax"		"\n\t"		\
-		_lock	"cmpxchg8b	%[_atom]"	"\n\t"		\
-		"jnz	1b"				"\n\t"		\
-	"2:"						"\n\t"		\
-		"movq	%%r12	,	%[tries]"			\
-		: [tries]	"+m"	(tries) 			\
-		: [_atom]	"m"	(atom) ,			\
-		  [_seed]	"i"	(seed) ,			\
-		  [count]	"i"	(BIT_IO_RETRIES_COUNT)		\
-		: "%rax", "%rbx", "%rcx", "%rdx", "%r12", "cc", "memory"\
-	);								\
-	tries;								\
-})
-*/
 #define BITWISESET(_lock, _opl, _opr)					\
 ({									\
 	__asm__ volatile						\
@@ -854,14 +636,11 @@ FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
 									\
 		__asm__ volatile					\
 		(							\
-			"ldr	x6	,	%[opr]"		"\n\t"	\
-			"ldr	x7	,	%[opl]"		"\n\t"	\
-			"cmp	x6	, 	x7"		"\n\t"	\
-			"cset	x2	,	eq"		"\n\t"	\
-			"str	x2	,	%[ret]" 		\
-			: [ret]	"+m"	(_ret)				\
-			: [opl] "Q"	(_opl[cw]),			\
-			  [opr] "Q"	(_opr[cw])			\
+			"cmp	%[opr]	,	%[opl]" 	"\n\t"	\
+			"cset	%[ret]	,	eq"			\
+			: [ret]	"=r"	(_ret)				\
+			: [opl] "r"	(_opl[cw]),			\
+			  [opr] "r"	(_opr[cw])			\
 			: "cc", "memory", "%x2", "%x6", "%x7"		\
 		);							\
 		ret &= _ret;						\
@@ -878,12 +657,14 @@ FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
 									\
 	__asm__ volatile						\
 	(								\
-		"cmp	%[opr]	,	%[opl]"			"\n\t"	\
+		"ldr	x4	,	%[opr]" 		"\n\t"	\
+		"ldr	x5	,	%[opl]" 		"\n\t"	\
+		"cmp	x4	,	x5"			"\n\t"	\
 		"cset	%[ret]	,	eq"				\
 		: [ret]	"=r"	(_ret)					\
-		: [opl]	"r"	(_opl), 				\
-		  [opr]	"r"	(_opr)					\
-		: "cc", "memory"					\
+		: [opl]	"m"	(_opl), 				\
+		  [opr]	"m"	(_opr)					\
+		: "cc", "memory", "%x4", "%x5"				\
 	);								\
 	_ret;								\
 })
@@ -896,12 +677,12 @@ FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
 									\
 	__asm__ volatile						\
 	(								\
-		"mov	x4	,	%[opr]"			"\n\t"	\
-		"mov	x5	,	%[opl]"			"\n\t"	\
+		"mov	x4	,	%[opr]" 		"\n\t"	\
+		"mov	x5	,	%[opl]" 		"\n\t"	\
 		ASM_CMPXCHG16B(_lock, x2,x1,x6,x7,x4,x5, 0, 8)	"\n\t"	\
 		"str	x2	,	%[ret]" 			\
 		: [ ret]	"+m"	(_ret)				\
-		: [ opl]	"r"	(_opl),				\
+		: [ opl]	"r"	(_opl), 			\
 		  [ opr]	"r"	(_opr)				\
 		: "cc", "memory", "%x1", "%x2", 			\
 		  "%x4", "%x5", "%x6", "%x7"				\
@@ -917,14 +698,14 @@ FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
 									\
 	__asm__ volatile						\
 	(								\
-		"mov	x4	,	%[opr]"			"\n\t"	\
-		"mov	x5	,	%[opl]"			"\n\t"	\
+		"mov	x4	,	%[opr]" 		"\n\t"	\
+		"mov	x5	,	%[opl]" 		"\n\t"	\
 		ASM_CMPXCHG16B(_lock, x3,x1,x6,x7,x4,x5,16,24)	"\n\t"	\
 		ASM_CMPXCHG16B(_lock, x2,x1,x6,x7,x4,x5, 0, 8)	"\n\t"	\
 		"and	x2	,	x2	,	x3"	"\n\t"	\
 		"str	x2	,	%[ret]" 			\
 		: [ ret]	"+m"	(_ret)				\
-		: [ opl]	"r"	(_opl),				\
+		: [ opl]	"r"	(_opl), 			\
 		  [ opr]	"r"	(_opr)				\
 		: "cc", "memory",					\
 		  "%x1", "%x2", "%x3",					\
@@ -941,8 +722,8 @@ FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
 									\
 	__asm__ volatile						\
 	(								\
-		"mov	x4	,	%[opr]"			"\n\t"	\
-		"mov	x5	,	%[opl]"			"\n\t"	\
+		"mov	x4	,	%[opr]" 		"\n\t"	\
+		"mov	x5	,	%[opl]" 		"\n\t"	\
 		ASM_CMPXCHG16B(_lock, x3,x1,x6,x7,x4,x5,48,56)	"\n\t"	\
 		ASM_CMPXCHG16B(_lock, x2,x1,x6,x7,x4,x5,32,40)	"\n\t"	\
 		"and	x2	,	x2	,	x3"	"\n\t"	\
@@ -952,7 +733,7 @@ FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
 		"and	x2	,	x2	,	x3"	"\n\t"	\
 		"str	x2	,	%[ret]" 			\
 		: [ ret]	"+m"	(_ret)				\
-		: [ opl]	"r"	(_opl),				\
+		: [ opl]	"r"	(_opl), 			\
 		  [ opr]	"r"	(_opr)				\
 		: "cc", "memory",					\
 		  "%x1", "%x2", "%x3",					\
@@ -988,7 +769,7 @@ FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
 		"and	x2	,	x2	,	x3"	"\n\t"	\
 		"str	x2	,	%[ret]" 			\
 		: [ ret]	"+m"	(_ret)				\
-		: [ opl]	"r"	(_opl),				\
+		: [ opl]	"r"	(_opl), 			\
 		  [ opr]	"r"	(_opr)				\
 		: "cc", "memory",					\
 		  "%x1", "%x2", "%x3",					\

@@ -67,6 +67,109 @@ typedef union
 	struct
 	{
 		unsigned long long
+		SEL		:  5-0,
+		RES0		: 64-5;
+	};
+} PMSELR;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		CFILTR_EVTYPER	: 64-0;
+	};
+} PMXEVTYPER;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		RES0		: 20-0,
+		RLH		: 21-20,
+		RLU		: 22-21,
+		RLK		: 23-22,
+		T		: 24-23,
+		SH		: 25-24,
+		RES1		: 26-25,
+		M		: 27-26,
+		NSH		: 28-27,
+		NSU		: 29-28,
+		NSK		: 30-29,
+		U		: 31-30,
+		P		: 32-31,
+		RES2		: 56-32,
+		VS		: 58-56,
+		RES3		: 64-58;
+	};
+} PMCCFILTR;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		EvtCount	: 16-0,
+		RES0		: 20-16,
+		RLH		: 21-20,
+		RLU		: 22-21,
+		RLK		: 23-22,
+		T		: 24-23,
+		SH		: 25-24,
+		MT		: 26-25,
+		M		: 27-26,
+		NSH		: 28-27,
+		NSU		: 29-28,
+		NSK		: 30-29,
+		U		: 31-30,
+		P		: 32-31,
+		TH		: 44-32,
+		RES1		: 54-44,
+		TLC		: 56-54,
+		VS		: 58-56,
+		SYNC		: 59-58,
+		RES2		: 60-59,
+		TE		: 61-60,
+		TC		: 64-61;
+	};
+} PMEVTYPER;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		Pm		: 31-0,
+		C		: 32-31,
+		F0		: 33-32,
+		RES0		: 64-33;
+	};
+} PMCNTENSET;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		Pm		: 31-0,
+		C		: 32-31,
+		F0		: 33-32,
+		RES0		: 64-33;
+	};
+} PMCNTENCLR;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
 		ClockFrequency	: 32-0,
 		RES0		: 64-32;
 	};
@@ -526,7 +629,3 @@ typedef union
 		Minimum_Valid	: 64-63; /* -> Minimum_Perf		*/
 	};
 } HWP_REQUEST;
-/*TODO(CleanUp)
-#define PKG_POWER_LIMIT_LOCK_MASK	0x8000000000000000
-#define PPn_POWER_LIMIT_LOCK_MASK	0x0000000080000000
-*/

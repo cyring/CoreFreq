@@ -146,7 +146,6 @@ typedef struct
 		unsigned int		Set,
 					Size;
 		unsigned short		LineSz,
-/*TODO(CleanUp)				Part,	*/
 					Way;
 		    struct {
 		    unsigned short	WriteBack: 1-0,
@@ -275,19 +274,7 @@ typedef struct
 
 	struct {
 		Bit64			FLAGS	__attribute__ ((aligned (8)));
-/*TODO(CleanUp)
-					CR0	__attribute__ ((aligned (8))),
-					CR3	__attribute__ ((aligned (8))),
-					CR4	__attribute__ ((aligned (8))),
-					CR8	__attribute__ ((aligned (8))),
-					EFCR	__attribute__ ((aligned (8))),
-					EFER	__attribute__ ((aligned (8))),
-					XCR0	__attribute__ ((aligned (8))),
-					SYSCFG	__attribute__ ((aligned (8)));
-*/
 	} SystemRegister;
-
-	CPUID_STRUCT			CpuID[CPUID_MAX_FUNC];
 
 	struct SLICE_STRUCT {
 		struct
@@ -321,37 +308,14 @@ typedef struct
 	Bit64			Toggle __attribute__ ((aligned (8)));
 
 	FEATURES		Features;
-/*
-	Bit64			PowerNow	__attribute__ ((aligned (8)));
-*/
+
 	struct {
 		unsigned long long
-/*				PowerNow	:  1-0,
-				ODCM		:  2-1,
-				PowerMgmt	:  3-2,
-				EIST		:  4-3,*/
 				Turbo		:  5-4,
-/*				C1E		:  6-5,
-				C3A		:  7-6,
-				C1A		:  8-7,
-				C3U		:  9-8,
-				C1U		: 10-9,
-				CC6		: 11-10,
-				PC6		: 12-11,
-				SMM		: 13-12,*/
 				VM		: 14-13,
 				IOMMU		: 15-14,
-/*				RaceToHalt	: 16-15,
-				L1_HW_Prefetch	: 17-16,
-				L1_HW_IP_Prefetch:18-17,
-				L2_HW_Prefetch	: 19-18,
-				L2_HW_CL_Prefetch:20-19,*/
 				IOMMU_Ver_Major : 24-20,
 				IOMMU_Ver_Minor : 28-24,
-/*				WDT		: 29-28,
-				TM1		: 31-29,
-				TM2		: 33-31,
-				L1_Scrubbing	: 34-33,*/
 				_pad64		: 64-34;
 	} Technology;
 
@@ -360,43 +324,7 @@ typedef struct
 				IBRS		:  2-0,
 				STIBP		:  4-2,
 				SSBD		:  6-4,
-			/*	RDCL_NO 	:  8-6,
-				IBRS_ALL	: 10-8,
-				RSBA		: 12-10,
-				L1DFL_VMENTRY_NO: 14-12,
-				SSB_NO		: 16-14,
-				MDS_NO		: 18-16,
-				PSCHANGE_MC_NO	: 20-18,
-				TAA_NO		: 22-20,
-				STLB		: 24-22,
-				FUSA		: 26-24,
-				RSM_CPL0	: 28-26,
-				SPLA		: 30-28,
-				SNOOP_FILTER	: 32-30,*/
 				PSFD		: 34-32,
-			/*	DOITM_EN	: 36-34,
-				SBDR_SSDP_NO	: 38-36,
-				FBSDP_NO	: 40-38,
-				PSDP_NO 	: 42-40,
-				FB_CLEAR	: 44-42,
-				SRBDS		: 45-44,
-				RNGDS		: 47-45,
-				RTM		: 49-47,
-				VERW		: 51-49,
-				RRSBA		: 53-51,
-				BHI_NO		: 55-53,
-				XAPIC_DIS	: 57-55,
-				PBRSB_NO	: 59-57,
-				IPRED_DIS_U	: 61-59,
-				IPRED_DIS_S	: 63-61,
-				MCDT_NO 	: 64-63,
-				RRSBA_DIS_U	:  2-0,
-				RRSBA_DIS_S	:  4-2,
-				BHI_DIS_S	:  6-4,
-				BTC_NOBR	:  8-6,
-				DRAM_Scrambler	: 10-8,
-				TSME		: 12-10,
-				DDPD_U_DIS	: 14-12,*/
 				_UnusedMechBits : 64-14;
 	} Mechanisms;
 
