@@ -513,8 +513,8 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define BITEXTRZ(_src, _offset, _length)				\
 ({									\
-	unsigned long long 						\
-		_dest = ((1 << _length) - 1) & (_src >> (_offset - 1)); \
+	unsigned long long _dest = ((1 << _length) - 1) 		\
+				 & (_src >> _offset);			\
 	_dest;								\
 })
 
