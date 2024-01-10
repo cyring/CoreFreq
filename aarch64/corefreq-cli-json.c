@@ -417,9 +417,15 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 				json_start_object(&s);
 				json_key(&s, "EAX");
 				{
+				    json_start_object(&s);
+				    json_key(&s, "Stepping");
+				    {
 					json_start_object(&s);
-					json_key(&s, "Stepping");
-					json_literal(&s, "0x%x", (unsigned) RO(Shm)->Proc.Features.Std.EAX.Stepping);
+					snprintf(hexStr, 32, "0x%x", RO(Shm)->Proc.Features.Std.EAX.Stepping);
+					json_key(&s, "Revision");
+					json_string(&s, hexStr);
+					json_end_object(&s);
+				    }
 					json_key(&s, "Model");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EAX.Model);
 					json_key(&s, "Family");
@@ -1412,7 +1418,6 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.STIBP);
 			json_key(&s, "SSBD");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.SSBD);
-			json_key(&s, "L1DFL_VMENTRY_NO");
 			json_key(&s, "PSFD");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.PSFD);
 			json_end_object(&s);
