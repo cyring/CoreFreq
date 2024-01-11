@@ -585,8 +585,8 @@ static void Query_Features(void *pArg)
 	iArg->Features->Std.EDX.FPU = pfr0.FP == 0x1;
 	iArg->Features->Std.EDX.SSE = pfr0.AdvSIMD == 0x1;
 	iArg->Features->Std.EDX.APIC = pfr0.GIC == 0x1;
-	iArg->Features->CSV2 = pfr0.CSV2;
 	iArg->Features->SSBS = pfr1.SSBS;
+	iArg->Features->CSV2 = pfr1.CSV2_frac;
 
 	/* Reset the performance features bits (present is zero) */
 	iArg->Features->PerfMon.EBX.CoreCycles    = 1;
@@ -1299,10 +1299,14 @@ static void Query_GenericMachine(unsigned int cpu)
 
 void SystemRegisters(CORE_RO *Core)
 {
+	volatile AA64ISAR2 isar2;
 	volatile AA64MMFR1 mmfr1;
+	volatile AA64PFR0 pfr0;
 
 	__asm__ __volatile__(
+		"mrs	%[isar2],	id_aa64isar2_el1""\n\t"
 		"mrs	%[mmfr1],	id_aa64mmfr1_el1""\n\t"
+		"mrs	%[pfr0] ,	id_aa64pfr0_el1""\n\t"
 		"cmp	xzr	,	xzr, lsl #0"	"\n\t"
 		"mrs	x4	,	nzcv"		"\n\t"
 		"mrs	x3	,	daif"		"\n\t"
@@ -1311,7 +1315,9 @@ void SystemRegisters(CORE_RO *Core)
 		"mov	%[flags],	xzr"		"\n\t"
 		"orr	%[flags],	x4, x3" 	"\n\t"
 		"orr	%[flags],	%[flags], x2"
-		: [mmfr1]	"=r" (mmfr1),
+		: [isar2]	"=r" (isar2),
+		  [mmfr1]	"=r" (mmfr1),
+		  [pfr0]	"=r" (pfr0),
 		  [flags]	"=r" (Core->SystemRegister.FLAGS)
 		:
 		: "cc", "memory", "%x2", "%x3", "%x4"
@@ -1320,6 +1326,32 @@ void SystemRegisters(CORE_RO *Core)
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);
+	}
+	switch (pfr0.CSV2) {
+	case 0b0001:
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_1, Core->Bind);
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_2, Core->Bind);
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_3, Core->Bind);
+		break;
+	case 0b0010:
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_1, Core->Bind);
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_2, Core->Bind);
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_3, Core->Bind);
+		break;
+	case 0b0011:
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_1, Core->Bind);
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_2, Core->Bind);
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_3, Core->Bind);
+		break;
+	default:
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_1, Core->Bind);
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_2, Core->Bind);
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_3, Core->Bind);
+	}
+	if (pfr0.CSV3) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV3, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV3, Core->Bind);
 	}
 	if (PUBLIC(RO(Proc))->Features.SSBS == 0b0010)
 	{
@@ -1349,7 +1381,10 @@ void PerCore_Reset(CORE_RO *Core)
 
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->HWP	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBD	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_1	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_2	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_3	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV3	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBS	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->VM	, Core->Bind);
 

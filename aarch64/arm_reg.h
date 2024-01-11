@@ -341,7 +341,7 @@ typedef union
 
 typedef union
 {
-	unsigned long long	value;
+	unsigned long long	value;	/* CPU0:0x00000000 ; CPU4:0x00000000 */
 	struct
 	{
 		unsigned long long
@@ -495,7 +495,7 @@ typedef union
 } AA64MMFR4;
 
 typedef union
-{
+{				/* CPU0:0x11112222 ; CPU4:0x1100000011111112 */
 	unsigned long long	value;
 	struct
 	{
@@ -521,7 +521,7 @@ typedef union
 
 typedef union
 {
-	unsigned long long	value;	/*	0x00000010		*/
+	unsigned long long	value;	/*	Pkg:0x00000010		*/
 	struct
 	{
 		unsigned long long

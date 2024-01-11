@@ -105,6 +105,15 @@ enum {	GenuineArch = 0,
 	ARCHITECTURES
 };
 
+enum MECH_CSV2 {
+	CSV_NONE,
+	CSV2_1p0,
+	CSV2_1p1,
+	CSV2_1p2,
+	CSV2_2p0,
+	CSV2_3p0
+};
+
 enum HYBRID_ARCH {
 	Hybrid_RSVD1	= 0x10,
 	Hybrid_Atom	= 0x20,

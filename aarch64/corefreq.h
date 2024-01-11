@@ -321,9 +321,9 @@ typedef struct
 
 	struct {
 		unsigned long long
-				SSBD		:  2-0,
-				SSBS		:  4-2,
-				_UnusedMechBits : 64-4;
+				CSV		:  4-0,
+				SSBS		:  6-4,
+				_UnusedMechBits : 64-6;
 	} Mechanisms;
 
 	enum THERMAL_FORMULAS	thermalFormula;

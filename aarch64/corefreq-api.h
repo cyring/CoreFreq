@@ -482,7 +482,10 @@ typedef struct
 	BitCC			TurboBoost	__attribute__ ((aligned (16)));
 	BitCC			HWP		__attribute__ ((aligned (16)));
 	BitCC			VM		__attribute__ ((aligned (16)));
-	BitCC			SSBD		__attribute__ ((aligned (16)));
+	BitCC			CSV2_1		__attribute__ ((aligned (16)));
+	BitCC			CSV2_2		__attribute__ ((aligned (16)));
+	BitCC			CSV2_3		__attribute__ ((aligned (16)));
+	BitCC			CSV3		__attribute__ ((aligned (16)));
 	BitCC			SSBS		__attribute__ ((aligned (16)));
 	struct {
 		Bit64		Signal	__attribute__ ((aligned (8)));

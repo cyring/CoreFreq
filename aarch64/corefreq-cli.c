@@ -2651,10 +2651,28 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
-		RO(Shm)->Proc.Mechanisms.SSBD,
+		RO(Shm)->Proc.Mechanisms.CSV == CSV_NONE ? 0b00
+		: RO(Shm)->Proc.Mechanisms.CSV == CSV2_1p0 ? 0b11
+		: RO(Shm)->Proc.Mechanisms.CSV == CSV2_1p1 ? 0b11
+		: RO(Shm)->Proc.Mechanisms.CSV == CSV2_1p2 ? 0b11
+		: RO(Shm)->Proc.Mechanisms.CSV == CSV2_2p0 ? 0b11
+		: RO(Shm)->Proc.Mechanisms.CSV == CSV2_3p0 ? 0b11 : 0b10,
 		attr_Feat,
-		2, "%s%.*sSSBD   [%7s]", RSC(MECH_SSBD).CODE(),
-		width - 19 - RSZ(MECH_SSBD),
+		2, RO(Shm)->Proc.Mechanisms.CSV == CSV_NONE ?
+			"%s%.*s    NONE   [%7s]"
+		: RO(Shm)->Proc.Mechanisms.CSV == CSV2_1p0 ?
+			"%s%.*sCSV2_1p0   [%7s]"
+		: RO(Shm)->Proc.Mechanisms.CSV == CSV2_1p1 ?
+			"%s%.*sCSV2_1p1   [%7s]"
+		: RO(Shm)->Proc.Mechanisms.CSV == CSV2_1p2 ?
+			"%s%.*sCSV2_1p2   [%7s]"
+		: RO(Shm)->Proc.Mechanisms.CSV == CSV2_2p0 ?
+			"%s%.*sCSV2_2p0   [%7s]"
+		: RO(Shm)->Proc.Mechanisms.CSV == CSV2_3p0 ?
+			"%s%.*sCSV2_3p0   [%7s]"
+		/* default: */
+		:	"%s%.*s UNKNOWN   [%7s]",
+		RSC(MECH_SSBD).CODE(), width - 23 - RSZ(MECH_SSBD),
 		MECH
 	},
 	{
