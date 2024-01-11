@@ -713,40 +713,48 @@ void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 void Mitigation_Stage(	RO(SHM_STRUCT) *RO(Shm),
 			RO(PROC) *RO(Proc), RW(PROC) *RW(Proc) )
 {
-	unsigned short	CSV2_1 = BITWISEAND_CC(	LOCKLESS,
-						RW(Proc)->CSV2_1,
-						RO(Proc)->SPEC_CTRL_Mask) != 0,
+	const unsigned short
+		CLRBHB = BITWISEAND_CC( LOCKLESS,
+					RW(Proc)->CLRBHB,
+					RO(Proc)->SPEC_CTRL_Mask) != 0,
 
-			CSV2_2 = BITWISEAND_CC(	LOCKLESS,
-						RW(Proc)->CSV2_2,
-						RO(Proc)->SPEC_CTRL_Mask) != 0,
+		CSV2_1 = BITWISEAND_CC( LOCKLESS,
+					RW(Proc)->CSV2_1,
+					RO(Proc)->SPEC_CTRL_Mask) != 0,
 
-			CSV2_3 = BITWISEAND_CC(	LOCKLESS,
-						RW(Proc)->CSV2_3,
-						RO(Proc)->SPEC_CTRL_Mask) != 0,
+		CSV2_2 = BITWISEAND_CC( LOCKLESS,
+					RW(Proc)->CSV2_2,
+					RO(Proc)->SPEC_CTRL_Mask) != 0,
 
-			CSV3 = BITWISEAND_CC(	LOCKLESS,
-						RW(Proc)->CSV3,
-						RO(Proc)->SPEC_CTRL_Mask) != 0,
+		CSV2_3 = BITWISEAND_CC( LOCKLESS,
+					RW(Proc)->CSV2_3,
+					RO(Proc)->SPEC_CTRL_Mask) != 0,
 
-			SSBS = BITCMP_CC(	LOCKLESS,
-						RW(Proc)->SSBS,
-						RO(Proc)->SPEC_CTRL_Mask );
+		CSV3 = BITWISEAND_CC(	LOCKLESS,
+					RW(Proc)->CSV3,
+					RO(Proc)->SPEC_CTRL_Mask) != 0,
 
-	RO(Shm)->Proc.Mechanisms.CSV = CSV_NONE;
+		SSBS = BITCMP_CC(	LOCKLESS,
+					RW(Proc)->SSBS,
+					RO(Proc)->SPEC_CTRL_Mask );
+
+	RO(Shm)->Proc.Mechanisms.CLRBHB = CLRBHB ? 0b11 : 0b00;
+
+	RO(Shm)->Proc.Mechanisms.CSV2 = CSV_NONE;
     if (CSV2_1) {
 	if (RO(Shm)->Proc.Features.CSV2 == 0b0001) {
-		RO(Shm)->Proc.Mechanisms.CSV = CSV2_1p1;
+		RO(Shm)->Proc.Mechanisms.CSV2 = CSV2_1p1;
 	} else if (RO(Shm)->Proc.Features.CSV2 == 0b0010) {
-		RO(Shm)->Proc.Mechanisms.CSV = CSV2_1p2;
+		RO(Shm)->Proc.Mechanisms.CSV2 = CSV2_1p2;
 	} else if (RO(Shm)->Proc.Features.CSV2 == 0b0000) {
-		RO(Shm)->Proc.Mechanisms.CSV = CSV2_1p0;
+		RO(Shm)->Proc.Mechanisms.CSV2 = CSV2_1p0;
 	}
     } else if (CSV2_2) {
-	RO(Shm)->Proc.Mechanisms.CSV = CSV2_2p0;
+	RO(Shm)->Proc.Mechanisms.CSV2 = CSV2_2p0;
     } else if (CSV2_3) {
-	RO(Shm)->Proc.Mechanisms.CSV = CSV2_3p0;
+	RO(Shm)->Proc.Mechanisms.CSV2 = CSV2_3p0;
     }
+	RO(Shm)->Proc.Mechanisms.CSV3 = CSV3 ? 0b11 : 0b00;
 	RO(Shm)->Proc.Mechanisms.SSBS = RO(Shm)->Proc.Features.SSBS != 0;
 	RO(Shm)->Proc.Mechanisms.SSBS += (2 * SSBS);
 }

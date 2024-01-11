@@ -465,10 +465,13 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_PRESENT_CODE_FR		"Capable"
 #define RSC_VARIANT_CODE_FR		"Variant"
 #define RSC_INVARIANT_CODE_FR		"Invariant"
+/*TODO(CleanUp)
 #define RSC_FEATURES_1GB_PAGES_CODE_FR	"1 GB Pages Support"
 #define RSC_FEATURES_100MHZ_CODE_FR	"100 MHz multiplier Control"
+*/
 #define RSC_FEATURES_ACPI_CODE_FR   "Advanced Configuration & Power Interface"
-#define RSC_FEATURES_APIC_CODE_FR   "Advanced Programmable Interrupt Controller"
+#define RSC_FEATURES_APIC_CODE_FR	"Generic Interrupt Controller"
+/*
 #define RSC_FEATURES_AVIC_CODE_FR	"Advanced Virtual Interrupt Controller"
 #define RSC_FEATURES_ARAT_CODE_FR	"APIC Timer Invariance"
 #define RSC_FEATURES_ALTMOV_CODE_FR	"LOCK prefix to read CR8"
@@ -536,13 +539,17 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_ITD_CODE_FR	"Thread Director"
 #define RSC_FEATURES_TBM_CODE_FR	"Trailing Bit Manipulation"
 #define RSC_FEATURES_TCE_CODE_FR	"Translation Cache Extension"
+*/
 #define RSC_FEATURES_TSC_CODE_FR	"Time Stamp Counter"
+/*
 #define RSC_FEATURES_TSC_DEADLN_CODE_FR "Time Stamp Counter Deadline"
 #define RSC_FEATURES_TSXABORT_CODE_FR	"TSX Force Abort MSR Register"
 #define RSC_FEATURES_TSXLDTRK_CODE_FR	"TSX Suspend Load Address Tracking"
 #define RSC_FEATURES_UMIP_CODE_FR	"User-Mode Instruction Prevention"
 #define RSC_FEATURES_VME_CODE_FR	"Virtual Mode Extension"
+*/
 #define RSC_FEATURES_VMX_CODE_FR	"Virtual Machine Extensions"
+/*
 #define RSC_FEATURES_WBNOINVD_CODE_FR	"Write Back & Do Not Invalidate Cache"
 #define RSC_FEATURES_X2APIC_CODE_FR	"Extended xAPIC Support"
 #define RSC_FEATURES_X2AVIC_CODE_FR	"AVIC controller for x2APIC"
@@ -550,6 +557,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_XSAVE_CODE_FR	"XSAVE/XSTOR States"
 #define RSC_FEATURES_XTPR_CODE_FR	"xTPR Update Control"
 #define RSC_FEATURES_XOP_CODE_FR	"Extended Operation Support"
+*/
 #define RSC_FEAT_SECTION_MECH_CODE_FR	"M""\xa9""canismes d'att""\xa9""nuation"
 #define RSC_FEAT_SECTION_SEC_CODE_FR	"Fonctions de s""\xa9""curit""\xa9"
 
@@ -1366,9 +1374,10 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_SMBIOS_TITLE_CODE_FR	" SMBIOS "
 
+#define RSC_MECH_CLRBHB_CODE_FR 	RSC_MECH_CLRBHB_CODE_EN
 #define RSC_MECH_SSBD_CODE_FR		RSC_MECH_SSBD_CODE_EN
 #define RSC_MECH_SSBS_CODE_FR		RSC_MECH_SSBS_CODE_EN
-
+/*TODO(CleanUp)
 #define RSC_SECURITY_CPUID_KL_CODE_FR	RSC_SECURITY_CPUID_KL_CODE_EN
 #define RSC_SECURITY_AESKLE_CODE_FR	RSC_SECURITY_AESKLE_CODE_EN
 #define RSC_SECURITY_WIDE_KL_CODE_FR	RSC_SECURITY_WIDE_KL_CODE_EN
@@ -1386,7 +1395,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_SECURITY_SME_MK_CODE_FR	RSC_SECURITY_SME_MK_CODE_EN
 #define RSC_SECURITY_SCRAMBLER_CODE_FR	RSC_SECURITY_SCRAMBLER_CODE_EN
 #define RSC_SECURITY_TSME_CODE_FR	RSC_SECURITY_TSME_CODE_EN
-
+*/
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_FR	"  %3s       Processeur    " \
 						"   %s     %c%4u %c "
 

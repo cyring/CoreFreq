@@ -513,6 +513,7 @@ static void Query_Features(void *pArg)
 
 	volatile MIDR midr;
 	volatile CNTFRQ cntfrq;
+	volatile CNTPCT cntpct;
 	volatile PMCR pmcr;
 	volatile AA64DFR0 dbgfr0;
 	volatile AA64ISAR0 isar0;
@@ -530,6 +531,7 @@ static void Query_Features(void *pArg)
 	__asm__ __volatile__(
 		"mrs	%[midr] ,	midr_el1"	"\n\t"
 		"mrs	%[cntfrq],	cntfrq_el0"	"\n\t"
+		"mrs	%[cntpct],	cntpct_el0"	"\n\t"
 		"mrs	%[pmcr] ,	pmcr_el0"	"\n\t"
 		"mrs	%[dbgfr0],	id_aa64dfr0_el1""\n\t"
 		"mrs	%[isar0],	id_aa64isar0_el1""\n\t"
@@ -539,6 +541,7 @@ static void Query_Features(void *pArg)
 		"isb"
 		: [midr]	"=r" (midr),
 		  [cntfrq]	"=r" (cntfrq),
+		  [cntpct]	"=r" (cntpct),
 		  [pmcr]	"=r" (pmcr),
 		  [dbgfr0]	"=r" (dbgfr0),
 		  [isar0]	"=r" (isar0),
@@ -559,6 +562,15 @@ static void Query_Features(void *pArg)
 
 	iArg->Features->Factory.Freq = cntfrq.ClockFrequency;
 	iArg->Features->Factory.Freq /= 10000;
+
+#if defined(CONFIG_ACPI)
+	iArg->Features->Std.EDX.ACPI = acpi_disabled == 0;
+#else
+	iArg->Features->Std.EDX.ACPI = 0;
+#endif
+	iArg->Features->Std.EDX.TSC = \
+	iArg->Features->AdvPower.EDX.Inv_TSC = \
+	iArg->Features->ExtInfo.EDX.RDTSCP = cntpct.PhysicalCount != 0;
 
 	iArg->Features->PerfMon.EDX.FixCtrs = 1; /* Fixed Cycle Counter */
 	iArg->Features->PerfMon.EAX.MonCtrs = pmcr.NumEvtCtrs;
@@ -1326,6 +1338,11 @@ void SystemRegisters(CORE_RO *Core)
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);
+	}
+	if (isar2.CLRBHB == 0b0001) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CLRBHB, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CLRBHB, Core->Bind);
 	}
 	switch (pfr0.CSV2) {
 	case 0b0001:

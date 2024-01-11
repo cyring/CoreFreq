@@ -987,10 +987,13 @@
 #define RSC_PRESENT_CODE_EN		"Capable"
 #define RSC_VARIANT_CODE_EN		"Variant"
 #define RSC_INVARIANT_CODE_EN		"Invariant"
+/*TODO(CleanUp)
 #define RSC_FEATURES_1GB_PAGES_CODE_EN	"1 GB Pages Support"
 #define RSC_FEATURES_100MHZ_CODE_EN	"100 MHz multiplier Control"
+*/
 #define RSC_FEATURES_ACPI_CODE_EN   "Advanced Configuration & Power Interface"
-#define RSC_FEATURES_APIC_CODE_EN   "Advanced Programmable Interrupt Controller"
+#define RSC_FEATURES_APIC_CODE_EN	"Generic Interrupt Controller"
+/*
 #define RSC_FEATURES_AVIC_CODE_EN	"Advanced Virtual Interrupt Controller"
 #define RSC_FEATURES_ARAT_CODE_EN	"APIC Timer Invariance"
 #define RSC_FEATURES_ALTMOV_CODE_EN	"LOCK prefix to read CR8"
@@ -1058,13 +1061,17 @@
 #define RSC_FEATURES_ITD_CODE_EN	"Thread Director"
 #define RSC_FEATURES_TBM_CODE_EN	"Trailing Bit Manipulation"
 #define RSC_FEATURES_TCE_CODE_EN	"Translation Cache Extension"
+*/
 #define RSC_FEATURES_TSC_CODE_EN	"Time Stamp Counter"
+/*
 #define RSC_FEATURES_TSC_DEADLN_CODE_EN "Time Stamp Counter Deadline"
 #define RSC_FEATURES_TSXABORT_CODE_EN	"TSX Force Abort MSR Register"
 #define RSC_FEATURES_TSXLDTRK_CODE_EN	"TSX Suspend Load Address Tracking"
 #define RSC_FEATURES_UMIP_CODE_EN	"User-Mode Instruction Prevention"
 #define RSC_FEATURES_VME_CODE_EN	"Virtual Mode Extension"
+*/
 #define RSC_FEATURES_VMX_CODE_EN	"Virtual Machine Extensions"
+/*
 #define RSC_FEATURES_WBNOINVD_CODE_EN	"Write Back & Do Not Invalidate Cache"
 #define RSC_FEATURES_X2APIC_CODE_EN	"Extended xAPIC Support"
 #define RSC_FEATURES_X2AVIC_CODE_EN	"AVIC controller for x2APIC"
@@ -1072,6 +1079,7 @@
 #define RSC_FEATURES_XSAVE_CODE_EN	"XSAVE/XSTOR States"
 #define RSC_FEATURES_XTPR_CODE_EN	"xTPR Update Control"
 #define RSC_FEATURES_XOP_CODE_EN	"Extended Operation Support"
+*/
 #define RSC_FEAT_SECTION_MECH_CODE_EN	"Mitigation mechanisms"
 #define RSC_FEAT_SECTION_SEC_CODE_EN	"Security Features"
 
@@ -1893,9 +1901,10 @@
 
 #define RSC_SMBIOS_TITLE_CODE_EN	" SMBIOS "
 
+#define RSC_MECH_CLRBHB_CODE_EN		"Clear Branch History instruction"
 #define RSC_MECH_SSBD_CODE_EN		"Speculative Store Bypass Disable"
 #define RSC_MECH_SSBS_CODE_EN		"Speculative Store Bypass Safe"
-
+/*TODO(CleanUp)
 #define RSC_SECURITY_CPUID_KL_CODE_EN	"CPUID Key Locker"
 #define RSC_SECURITY_AESKLE_CODE_EN	"AES Key Locker instructions"
 #define RSC_SECURITY_WIDE_KL_CODE_EN	"AES Wide Key Locker instructions"
@@ -1913,7 +1922,7 @@
 #define RSC_SECURITY_SME_MK_CODE_EN	"Secure Multi-Key Memory Encryption"
 #define RSC_SECURITY_SCRAMBLER_CODE_EN	"DRAM Data Scrambling"
 #define RSC_SECURITY_TSME_CODE_EN	"Transparent SME"
-
+*/
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_EN	"  %3s       Processor     " \
 						"   %s     %c%4u %c "
 

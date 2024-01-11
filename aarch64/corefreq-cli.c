@@ -1984,7 +1984,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	} FEAT[] = \
     {
 /* Section Mark */
-	{
+/*TODO(cleanUp)	{
 		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.EDX.PG_1GB == 1,
 		attr_Feat,
@@ -1992,7 +1992,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 24 - RSZ(FEATURES_1GB_PAGES),
 		NULL
 	},
-	{	/* AMD ISA */
+	{	** AMD ISA **
 		NULL,
 		RO(Shm)->Proc.Features.AdvPower.EDX._100MHz == 1,
 		attr_Feat,
@@ -2008,13 +2008,13 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		2, "%s%.*sACPI   [%7s]", RSC(FEATURES_ACPI).CODE(),
 		width - 19 - RSZ(FEATURES_ACPI),
 		NULL
-	},
+	},*/
 	{
 		NULL,
 		RO(Shm)->Proc.Features.Std.EDX.APIC == 1,
 		attr_Feat,
-		2, "%s%.*sAPIC   [%7s]", RSC(FEATURES_APIC).CODE(),
-		width - 19 - RSZ(FEATURES_APIC),
+		2, "%s%.*sGIC   [%7s]", RSC(FEATURES_APIC).CODE(),
+		width - 18 - RSZ(FEATURES_APIC),
 		NULL
 	},
 /*TODO(cleanUp)	{
@@ -2026,7 +2026,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		2, "%s%.*sAVIC   [%7s]", RSC(FEATURES_AVIC).CODE(),
 		width - 19 - RSZ(FEATURES_AVIC),
 		NULL
-	},*/
+	},
 	{
 		NULL,
 		RO(Shm)->Proc.Features.Power.EAX.ARAT == 1,
@@ -2035,7 +2035,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(FEATURES_ARAT),
 		NULL
 	},
-	{	/* AMD ISA */
+	{	** AMD ISA **
 		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.ECX.AltMov == 1,
 		attr_Feat,
@@ -2043,14 +2043,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 21 - RSZ(FEATURES_ALTMOV),
 		NULL
 	},
-/*TODO(CleanUp)	{
+	{
 		NULL,
 		RO(Shm)->Proc.Features.leaf80000008.EBX.CLZERO,
 		attr_Feat,
 		2, "%s%.*sCLZERO   [%7s]", RSC(FEATURES_CLZERO).CODE(),
 		width - 21 - RSZ(FEATURES_CLZERO),
 		NULL
-	},*/
+	},
 	{
 		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.ECX.MP_Mode == 1,
@@ -2067,7 +2067,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 22 - RSZ(FEATURES_CNXT_ID),
 		NULL
 	},
-/*TODO(CleanUp)	{
+	{
 		NULL,
 		(RO(Shm)->Proc.Features.leaf80000008.EBX.CPPC == 1)
 		|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1),
@@ -2075,7 +2075,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		2, "%s%.*sCPPC   [%7s]", RSC(FEATURES_CPPC).CODE(),
 		width - 19 - RSZ(FEATURES_CPPC),
 		NULL
-	},*/
+	},
 	{
 		NULL,
 		RO(Shm)->Proc.Features.Std.ECX.DCA == 1,
@@ -2116,7 +2116,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 21 - RSZ(FEATURES_DTES_64),
 		NULL
 	},
-	{	/* Intel ISA */
+	{	** Intel ISA **
 		NULL,
 		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FSRC == 1,
 		attr_Feat,
@@ -2132,7 +2132,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(FEATURES_FSRM),
 		NULL
 	},
-	{	/* Intel ISA */
+	{	** Intel ISA **
 		NULL,
 		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FSRS == 1,
 		attr_Feat,
@@ -2140,7 +2140,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(FEATURES_FSRS),
 		NULL
 	},
-	{	/* Intel ISA */
+	{	** Intel ISA **
 		NULL,
 		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FZRM == 1,
 		attr_Feat,
@@ -2156,7 +2156,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(FEATURES_ERMS),
 		NULL
 	},
-	{	/* AMD ISA */
+	{	** AMD ISA **
 		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.ECX.FMA4 == 1,
 		attr_Feat,
@@ -2172,7 +2172,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(FEATURES_FMA),
 		NULL
 	},
-	{	/* Intel ISA */
+	{	** Intel ISA **
 		NULL,
 		RO(Shm)->Proc.Features.Power.EAX.HWFB_Cap == 1,
 		attr_Feat,
@@ -2188,7 +2188,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(FEATURES_HLE),
 		NULL
 	},
-	{	/* AMD ISA */
+	{	** AMD ISA **
 		NULL,
 		RO(Shm)->Proc.Features.AdvPower.EDX.HwPstate == 1,
 		attr_Feat,
@@ -2196,7 +2196,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(FEATURES_HwP),
 		NULL
 	},
-	{	/* Intel ISA */
+	{	** Intel ISA **
 		NULL,
 		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.HRESET == 1,
 		attr_Feat,
@@ -2204,7 +2204,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 21 - RSZ(FEATURES_HRESET),
 		NULL
 	},
-	{	/* Intel ISA */
+	{	** Intel ISA **
 		NULL,
 		RO(Shm)->Proc.Features.ExtFeature.EDX.Hybrid == 1,
 		attr_Feat,
@@ -2220,14 +2220,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(FEATURES_IBS),
 		NULL
 	},
-/*TODO(CleanUp)	{
+	{
 		NULL,
 		RO(Shm)->Proc.Features.leaf80000008.EBX.INVLPGB == 1,
 		attr_Feat,
 		2, "%s%.*sINVLPGB   [%7s]", RSC(FEATURES_INVLPGB).CODE(),
 		width - 22 - RSZ(FEATURES_INVLPGB),
 		NULL
-	},*/
+	},
 	{
 		NULL,
 		RO(Shm)->Proc.Features.ExtFeature.EBX.INVPCID == 1,
@@ -2244,7 +2244,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 24 - RSZ(FEATURES_LM),
 		NULL
 	},
-	{	/* Intel ISA */
+	{	** Intel ISA **
 		NULL,
 		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.LASS == 1,
 		attr_Feat,
@@ -2252,7 +2252,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(FEATURES_LASS),
 		NULL
 	},
-	{	/* Intel ISA */
+	{	** Intel ISA **
 		NULL,
 		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.LAM == 1,
 		attr_Feat,
@@ -2268,14 +2268,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(FEATURES_LWP),
 		NULL
 	},
-/*TODO(CleanUp)	{
+	{
 		NULL,
 		RO(Shm)->Proc.Features.leaf80000008.EBX.MBE == 1,
 		attr_Feat,
 		2, "%s%.*sMBE   [%7s]", RSC(FEATURES_MBE).CODE(),
 		width - 18 - RSZ(FEATURES_MBE),
 		NULL
-	},*/
+	},
 	{
 		NULL,
 		RO(Shm)->Proc.Features.Std.EDX.MCA == 1,
@@ -2284,14 +2284,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(FEATURES_MCA),
 		NULL
 	},
-/*TODO(CleanUp)	{
+	{
 		NULL,
 		RO(Shm)->Proc.Features.leaf80000008.EBX.MCOMMIT == 1,
 		attr_Feat,
 		2, "%s%.*sMCOMMIT   [%7s]", RSC(FEATURES_MCOMMIT).CODE(),
 		width - 22 - RSZ(FEATURES_MCOMMIT),
 		NULL
-	},*/
+	},
 	{
 		NULL,
 		RO(Shm)->Proc.Features.ExtFeature.EBX.MPX == 1,
@@ -2316,7 +2316,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(FEATURES_MTRR),
 		NULL
 	},
-	{	/* AMD ISA */
+	{	** AMD ISA **
 		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.EDX.NX == 1,
 		attr_Feat,
@@ -2332,7 +2332,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 22 - RSZ(FEATURES_OSXSAVE),
 		NULL
 	},
-	{	/* AMD ISA */
+	{	** AMD ISA **
 		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.ECX.OSVW == 1,
 		attr_Feat,
@@ -2364,7 +2364,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(FEATURES_PBE),
 		NULL
 	},
-	{	/* Intel ISA */
+	{	** Intel ISA **
 		NULL,
 		RO(Shm)->Proc.Features.ExtFeature.EDX.PCONFIG == 1,
 		attr_Feat,
@@ -2420,7 +2420,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(FEATURES_PSN),
 		NULL
 	},
-/*TODO(CleanUp)	{
+	{
 		NULL,
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_00000014_00000000_PROCESSOR_TRACE
@@ -2429,8 +2429,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		2, "%s%.*sPTWRITE   [%7s]", RSC(FEATURES_PTWRITE).CODE(),
 		width - 22 - RSZ(FEATURES_PTWRITE),
 		NULL
-	},*/
-	{	/* Intel ISA */
+	},
+	{	** Intel ISA **
 		NULL,
 		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.PREFETCHI == 1,
 		attr_Feat,
@@ -2454,14 +2454,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 20 - RSZ(FEATURES_RDT_PQM),
 		NULL
 	},
-/*TODO(CleanUp)	{
+	{
 		NULL,
 		RO(Shm)->Proc.Features.leaf80000008.EBX.RDPRU == 1,
 		attr_Feat,
 		2, "%s%.*sRDPRU   [%7s]", RSC(FEATURES_RDPRU).CODE(),
 		width - 20 - RSZ(FEATURES_RDPRU),
 		NULL
-	},*/
+	},
 	{
 		NULL,
 		RO(Shm)->Proc.Features.ExtFeature.EBX.RTM == 1,
@@ -2502,7 +2502,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(FEATURES_SMEP),
 		NULL
 	},
-	{	/* Intel ISA */
+	{	** Intel ISA **
 		NULL,
 		RO(Shm)->Proc.Features.Power.EAX.ITD_MSR == 1,
 		attr_Feat,
@@ -2510,7 +2510,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 17 - RSZ(FEATURES_ITD),
 		NULL
 	},
-	{	/* AMD ISA */
+	{	** AMD ISA **
 		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.ECX.TBM == 1,
 		attr_Feat,
@@ -2518,14 +2518,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(FEATURES_TBM),
 		NULL
 	},
-	{	/* AMD ISA */
+	{	** AMD ISA **
 		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.ECX.TCE == 1,
 		attr_Feat,
 		2, "%s%.*sTCE   [%7s]", RSC(FEATURES_TCE).CODE(),
 		width - 18 - RSZ(FEATURES_TCE),
 		NULL
-	},
+	},*/
 	{
 		NULL,
 		RO(Shm)->Proc.Features.InvariantTSC,
@@ -2534,7 +2534,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(FEATURES_TSC),
 		code_TSC
 	},
-	{
+/*TODO(CleanUp)	{
 		NULL,
 		RO(Shm)->Proc.Features.Std.ECX.TSC_DEADLINE == 1,
 		attr_Feat,
@@ -2573,7 +2573,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		2, "%s%.*sVME   [%7s]", RSC(FEATURES_VME).CODE(),
 		width - 18 - RSZ(FEATURES_VME),
 		NULL
-	},
+	},*/
 	{
 		NULL,
 		RO(Shm)->Proc.Features.Std.ECX.VMX == 1,
@@ -2589,7 +2589,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		2, "%s%.*sWBNOINVD   [%7s]", RSC(FEATURES_WBNOINVD).CODE(),
 		width - 23 - RSZ(FEATURES_WBNOINVD),
 		NULL
-	},*/
+	},
 	{
 		NULL,
 		RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Topology.MP.x2APIC,
@@ -2598,7 +2598,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 21 - RSZ(FEATURES_X2APIC),
 		x2APIC
 	},
-/*TODO(CleanUp)	{
+	{
 		NULL,
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_8000000A_00000000_SVM_REVISION
@@ -2607,8 +2607,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		2, "%s%.*sx2AVIC   [%7s]", RSC(FEATURES_X2AVIC).CODE(),
 		width - 21 - RSZ(FEATURES_X2AVIC),
 		NULL
-	},*/
-	{	/* Intel ISA */
+	},
+	{	** Intel ISA **
 		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.EDX.XD_Bit == 1,
 		attr_Feat,
@@ -2632,7 +2632,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 19 - RSZ(FEATURES_XTPR),
 		NULL
 	},
-	{	/* AMD ISA */
+	{	** AMD ISA **
 		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.ECX.XOP == 1,
 		attr_Feat,
@@ -2640,6 +2640,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(FEATURES_XOP),
 		NULL
 	},
+*/
 /* Section Mark */
 	{
 		NULL,
@@ -2651,28 +2652,44 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
-		RO(Shm)->Proc.Mechanisms.CSV == CSV_NONE ? 0b00
-		: RO(Shm)->Proc.Mechanisms.CSV == CSV2_1p0 ? 0b11
-		: RO(Shm)->Proc.Mechanisms.CSV == CSV2_1p1 ? 0b11
-		: RO(Shm)->Proc.Mechanisms.CSV == CSV2_1p2 ? 0b11
-		: RO(Shm)->Proc.Mechanisms.CSV == CSV2_2p0 ? 0b11
-		: RO(Shm)->Proc.Mechanisms.CSV == CSV2_3p0 ? 0b11 : 0b10,
+		RO(Shm)->Proc.Mechanisms.CLRBHB,
 		attr_Feat,
-		2, RO(Shm)->Proc.Mechanisms.CSV == CSV_NONE ?
+		2, "%s%.*sCLRBHB   [%7s]", RSC(MECH_CLRBHB).CODE(),
+		width - 21 - RSZ(MECH_CLRBHB),
+		MECH
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Mechanisms.CSV2 == CSV_NONE ? 0b00
+		: RO(Shm)->Proc.Mechanisms.CSV2 == CSV2_1p0 ? 0b11
+		: RO(Shm)->Proc.Mechanisms.CSV2 == CSV2_1p1 ? 0b11
+		: RO(Shm)->Proc.Mechanisms.CSV2 == CSV2_1p2 ? 0b11
+		: RO(Shm)->Proc.Mechanisms.CSV2 == CSV2_2p0 ? 0b11
+		: RO(Shm)->Proc.Mechanisms.CSV2 == CSV2_3p0 ? 0b11 : 0b10,
+		attr_Feat,
+		2, RO(Shm)->Proc.Mechanisms.CSV2 == CSV_NONE ?
 			"%s%.*s    NONE   [%7s]"
-		: RO(Shm)->Proc.Mechanisms.CSV == CSV2_1p0 ?
+		: RO(Shm)->Proc.Mechanisms.CSV2 == CSV2_1p0 ?
 			"%s%.*sCSV2_1p0   [%7s]"
-		: RO(Shm)->Proc.Mechanisms.CSV == CSV2_1p1 ?
+		: RO(Shm)->Proc.Mechanisms.CSV2 == CSV2_1p1 ?
 			"%s%.*sCSV2_1p1   [%7s]"
-		: RO(Shm)->Proc.Mechanisms.CSV == CSV2_1p2 ?
+		: RO(Shm)->Proc.Mechanisms.CSV2 == CSV2_1p2 ?
 			"%s%.*sCSV2_1p2   [%7s]"
-		: RO(Shm)->Proc.Mechanisms.CSV == CSV2_2p0 ?
+		: RO(Shm)->Proc.Mechanisms.CSV2 == CSV2_2p0 ?
 			"%s%.*sCSV2_2p0   [%7s]"
-		: RO(Shm)->Proc.Mechanisms.CSV == CSV2_3p0 ?
+		: RO(Shm)->Proc.Mechanisms.CSV2 == CSV2_3p0 ?
 			"%s%.*sCSV2_3p0   [%7s]"
 		/* default: */
 		:	"%s%.*s UNKNOWN   [%7s]",
 		RSC(MECH_SSBD).CODE(), width - 23 - RSZ(MECH_SSBD),
+		MECH
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Mechanisms.CSV3,
+		attr_Feat,
+		2, "%s%.*sCSV3   [%7s]", RSC(MECH_SSBD).CODE(),
+		width - 19 - RSZ(MECH_SSBD),
 		MECH
 	},
 	{
@@ -2692,7 +2709,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		0,
 		NULL
 	},
-	{	/* Intel ISA */
+/* Intel ISA **{
 		NULL,
 		RO(Shm)->Proc.Features.ExtFeature.ECX.KL,
 		attr_Feat,
@@ -2700,7 +2717,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 17 - RSZ(SECURITY_CPUID_KL),
 		NULL
 	},
-/*	{
+	{
 		NULL,
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_00000019_00000000_KEY_LOCKER
@@ -2739,8 +2756,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		2, "%s%.*sSGX2   [%7s]", RSC(SECURITY_SGX2).CODE(),
 		width - 19 - RSZ(SECURITY_SGX2),
 		NULL
-	},*/
-	{	/* AMD ISA */
+	},
+	{	** AMD ISA **
 		NULL,
 		RO(Shm)->Proc.Features.ExtInfo.ECX.SKINIT,
 		attr_Feat,
@@ -2748,7 +2765,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 21 - RSZ(SECURITY_SKINIT),
 		NULL
 	},
-/*	{
+	{
 		NULL,
 		BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].CpuID[
 			CPUID_8000001F_00000000_SECURE_ENCRYPTION
@@ -8404,7 +8421,7 @@ Window *CreateSysInfo(unsigned long long id)
 		{
 		winOrigin.row = TOP_HEADER_ROW + 1;
 		winOrigin.col = 4;
-		matrixSize.hth = 24;
+		matrixSize.hth = 9;
 		winWidth = 72;
 		SysInfoFunc = SysInfoFeatures;
 		title = RSC(FEATURES_TITLE).CODE();

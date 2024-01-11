@@ -1398,8 +1398,12 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 		json_key(&s, "Mechanisms");
 		{
 			json_start_object(&s);
-			json_key(&s, "CSV");
-			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.CSV);
+			json_key(&s, "CLRBHB");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.CLRBHB);
+			json_key(&s, "CSV2");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.CSV2);
+			json_key(&s, "CSV3");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.CSV3);
 			json_key(&s, "SSBS");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.SSBS);
 			json_end_object(&s);
