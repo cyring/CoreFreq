@@ -1999,7 +1999,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		2, "%s%.*s100MHzSteps   [%7s]", RSC(FEATURES_100MHZ).CODE(),
 		width - 26 - RSZ(FEATURES_100MHZ),
 		NULL
-	},
+	},*/
 	{
 		NULL,
 		(RO(Shm)->Proc.Features.Std.EDX.ACPI == 1)
@@ -2008,7 +2008,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		2, "%s%.*sACPI   [%7s]", RSC(FEATURES_ACPI).CODE(),
 		width - 19 - RSZ(FEATURES_ACPI),
 		NULL
-	},*/
+	},
 	{
 		NULL,
 		RO(Shm)->Proc.Features.Std.EDX.APIC == 1,
@@ -8421,7 +8421,7 @@ Window *CreateSysInfo(unsigned long long id)
 		{
 		winOrigin.row = TOP_HEADER_ROW + 1;
 		winOrigin.col = 4;
-		matrixSize.hth = 9;
+		matrixSize.hth = 10;
 		winWidth = 72;
 		SysInfoFunc = SysInfoFeatures;
 		title = RSC(FEATURES_TITLE).CODE();
