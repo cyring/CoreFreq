@@ -31,18 +31,10 @@
 }
 
 #define ASM_CODE_RDMSR(_msr, _reg)					\
-/*	"# Read MSR counter."			"\n\t"			\
-	"movq	$" #_msr ", %%rcx"		"\n\t"			\
-	"rdmsr" 				"\n\t"			\
-	"shlq	$32,	%%rdx"			"\n\t"			\
-	"orq	%%rdx,	%%rax"			"\n\t"			\
-	"# Save counter value"			"\n\t"			\
-	"movq	%%rax,	%%" #_reg		"\n\t"		*/	\
 	"# Read PMU counter."			"\n\t"			\
 	"mrs	" #_reg ", " #_msr		"\n\t"
 
 #define ASM_RDMSR(_msr, _reg) ASM_CODE_RDMSR(_msr, _reg)
-
 
 #define ASM_COUNTERx1(	_reg0, _reg1,					\
 			_tsc_inst, mem_tsc,				\

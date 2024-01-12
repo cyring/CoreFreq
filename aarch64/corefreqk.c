@@ -32,9 +32,7 @@
 #ifdef CONFIG_XEN
 #include <xen/xen.h>
 #endif /* CONFIG_XEN */
-#ifdef CONFIG_AMD_NB
-#include <asm/amd_nb.h>
-#endif
+#include <asm/sysreg.h>
 #ifdef CONFIG_ACPI
 #include <linux/acpi.h>
 #include <acpi/processor.h>
@@ -578,6 +576,7 @@ static void Query_Features(void *pArg)
 
     if (iArg->Features->PerfMon.EAX.Version) {
 	volatile unsigned long long pmcfgr;
+	/*TODO(Memory-mapped PMU register at offset 0xe00)		*/
 	__asm__ __volatile__(
 		"" 	"\n\t"
 		"isb"
@@ -1315,8 +1314,9 @@ void SystemRegisters(CORE_RO *Core)
 	volatile AA64MMFR1 mmfr1;
 	volatile AA64PFR0 pfr0;
 
+	isar2.value = read_sysreg_s(ID_AA64ISAR2_EL1);
+
 	__asm__ __volatile__(
-		"mrs	%[isar2],	id_aa64isar2_el1""\n\t"
 		"mrs	%[mmfr1],	id_aa64mmfr1_el1""\n\t"
 		"mrs	%[pfr0] ,	id_aa64pfr0_el1""\n\t"
 		"cmp	xzr	,	xzr, lsl #0"	"\n\t"
@@ -1327,8 +1327,7 @@ void SystemRegisters(CORE_RO *Core)
 		"mov	%[flags],	xzr"		"\n\t"
 		"orr	%[flags],	x4, x3" 	"\n\t"
 		"orr	%[flags],	%[flags], x2"
-		: [isar2]	"=r" (isar2),
-		  [mmfr1]	"=r" (mmfr1),
+		: [mmfr1]	"=r" (mmfr1),
 		  [pfr0]	"=r" (pfr0),
 		  [flags]	"=r" (Core->SystemRegister.FLAGS)
 		:
@@ -1696,7 +1695,7 @@ void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 		"# Enable all PMU counters"		"\n\t"
 		"mrs	x2	,	pmcr_el0"	"\n\t"
 		"str	x2	,	%[PMCR]"	"\n\t"
-		"orr	x2	,	x2, %[CTRL]"	"\n\t"
+		"mov	x2	,	%[CTRL]"	"\n\t"
 		"msr	pmcr_el0,	x2"		"\n\t"
 		"isb"
 		: [PMCR]	"+m" (Save->PMCR),
@@ -1710,7 +1709,7 @@ void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 		  [EVENT2]	"r" (0x0011),
 		  [FILTR1]	"r" (0x0),
 		  [ENSET]	"r" (0b10000000000000000000000000001100),
-		  [CTRL]	"i" (0b11)
+		  [CTRL]	"i" (0b0000000010000111)
 		: "memory", "%x2"
 	);
 }

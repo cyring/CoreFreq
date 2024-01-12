@@ -4,8 +4,9 @@
  * Licenses: GPL2
  */
 
-#define CPUPWRCTLR_EL1	sys_reg(0b11, 0b000, 0b1111, 0b0010, 0b111)
-#define MRS_SSBS2	sys_reg(0b11, 0b011, 0b0100, 0b0010, 0b110)
+#define CPUPWRCTLR_EL1		sys_reg(0b11, 0b000, 0b1111, 0b0010, 0b111)
+#define ID_AA64ISAR2_EL1	sys_reg(0b11, 0b000, 0b0000, 0b0110, 0b010)
+#define MRS_SSBS2		sys_reg(0b11, 0b011, 0b0100, 0b0010, 0b110)
 
 typedef union
 {
