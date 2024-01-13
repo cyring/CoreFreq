@@ -108,7 +108,8 @@ typedef struct
 		struct {
 		unsigned short int	CfgLock :  1-0,
 					IORedir :  2-1,
-					Unused	: 16-2;
+					SCTLRX	:  3-2,
+					Unused	: 16-3;
 		};
 		unsigned short int	CStateLimit;
 		struct {
@@ -274,6 +275,8 @@ typedef struct
 
 	struct {
 		Bit64			FLAGS	__attribute__ ((aligned (8)));
+		Bit64			SCTLR	__attribute__ ((aligned (8)));
+		Bit64			SCTLR2	__attribute__ ((aligned (8)));
 	} SystemRegister;
 
 	struct SLICE_STRUCT {

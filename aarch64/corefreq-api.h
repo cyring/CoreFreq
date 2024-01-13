@@ -264,6 +264,7 @@ typedef struct
 		unsigned long long
 					CfgLock :  1-0,  /* Core	*/
 					IORedir :  2-1,  /* Core	*/
+					SCTLRX	:  3-2,  /* Thread	*/
 					Unused	: 32-3,
 					Microcode:64-32; /* Thread	*/
 		};
@@ -278,6 +279,8 @@ typedef struct
 
 	struct {
 		Bit64			FLAGS	__attribute__ ((aligned (8)));
+		Bit64			SCTLR	__attribute__ ((aligned (8)));
+		Bit64			SCTLR2	__attribute__ ((aligned (8)));
 	} SystemRegister;
 
 	unsigned int			Bind;

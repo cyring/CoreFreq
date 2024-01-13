@@ -884,6 +884,14 @@ void SystemRegisters(	RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core),
 {
 	RO(Shm)->Cpu[cpu].SystemRegister.FLAGS = \
 				RO(Core, AT(cpu))->SystemRegister.FLAGS;
+
+	RO(Shm)->Cpu[cpu].SystemRegister.SCTLR = \
+				RO(Core, AT(cpu))->SystemRegister.SCTLR;
+
+	RO(Shm)->Cpu[cpu].SystemRegister.SCTLR2 = \
+				RO(Core, AT(cpu))->SystemRegister.SCTLR2;
+
+	RO(Shm)->Cpu[cpu].Query.SCTLRX = RO(Core, AT(cpu))->Query.SCTLRX;
 }
 
 void SysGate_OS_Driver(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))

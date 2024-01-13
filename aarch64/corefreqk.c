@@ -1324,6 +1324,7 @@ void SystemRegisters(CORE_RO *Core)
 	isar2.value = read_sysreg_s(ID_AA64ISAR2_EL1);
 
 	__asm__ __volatile__(
+		"mrs	%[sctlr],	sctlr_el1"	"\n\t"
 		"mrs	%[mmfr1],	id_aa64mmfr1_el1""\n\t"
 		"mrs	%[pfr0] ,	id_aa64pfr0_el1""\n\t"
 		"cmp	xzr	,	xzr, lsl #0"	"\n\t"
@@ -1334,7 +1335,8 @@ void SystemRegisters(CORE_RO *Core)
 		"mov	%[flags],	xzr"		"\n\t"
 		"orr	%[flags],	x14, x13"	"\n\t"
 		"orr	%[flags],	%[flags], x12"
-		: [mmfr1]	"=r" (mmfr1),
+		: [sctlr]	"=r" (Core->SystemRegister.SCTLR),
+		  [mmfr1]	"=r" (mmfr1),
 		  [pfr0]	"=r" (pfr0),
 		  [flags]	"=r" (Core->SystemRegister.FLAGS)
 		:
@@ -1345,6 +1347,13 @@ void SystemRegisters(CORE_RO *Core)
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);
 	}
+	Core->Query.SCTLRX = 0;
+    if (Experimental) {
+	volatile AA64MMFR3 mmfr3 = {.value = read_sysreg_s(ID_AA64MMFR3_EL1)};
+	if ((Core->Query.SCTLRX = mmfr3.SCTLRX) == 0b0001) {
+		Core->SystemRegister.SCTLR2 = read_sysreg_s(SCTLR2_EL1);
+	}
+    }
 	if (isar2.CLRBHB == 0b0001) {
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CLRBHB, Core->Bind);
 	} else {

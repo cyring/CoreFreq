@@ -398,6 +398,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_SYS_REG_FLAGS_F_CODE_FR	RSC_SYS_REG_FLAGS_F_CODE_EN
 #define RSC_SYS_REG_FLAGS_L_CODE_FR	RSC_SYS_REG_FLAGS_L_CODE_EN
 #define RSC_SYS_REG_FLAGS_M_CODE_FR	RSC_SYS_REG_FLAGS_M_CODE_EN
+#define RSC_SYS_REG_SCTL_CODE_FR	RSC_SYS_REG_SCTL_CODE_EN
+#define RSC_SYS_REG_SCTL2_CODE_FR	RSC_SYS_REG_SCTL2_CODE_EN
 
 #define RSC_ISA_TITLE_CODE_FR		" Jeu d'instructions ""\xa9""tendu "
 

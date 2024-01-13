@@ -1705,6 +1705,14 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.FLAGS);
 			json_key(&s, "FLAGS");
 			json_string(&s, hexStr);
+
+			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.SCTLR);
+			json_key(&s, "SCTLR");
+			json_string(&s, hexStr);
+
+			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.SCTLR2);
+			json_key(&s, "SCTLR2");
+			json_string(&s, hexStr);
 			json_end_object(&s);
 		}
 		json_key(&s, "Slice");

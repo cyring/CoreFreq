@@ -896,6 +896,8 @@
 #define RSC_SYS_REG_FLAGS_F_CODE_EN	" FIQ "
 #define RSC_SYS_REG_FLAGS_L_CODE_EN	" Current EL "
 #define RSC_SYS_REG_FLAGS_M_CODE_EN	" Reserved "
+#define RSC_SYS_REG_SCTL_CODE_EN	" System Control Register (SCTLR_EL1) "
+#define RSC_SYS_REG_SCTL2_CODE_EN	" System Control Register (SCTLR2_EL1) "
 
 #define RSC_ISA_TITLE_CODE_EN		" Instruction Set Extensions "
 
@@ -2387,6 +2389,8 @@
 #define RSC_SYS_REG_HDR_F_CODE		"  F "
 #define RSC_SYS_REG_HDR_L_CODE		" EL "
 #define RSC_SYS_REG_HDR_M_CODE		"  M "
+#define RSC_SYS_REG_HDR_SCTL_CODE	"SCTL"
+#define RSC_SYS_REG_HDR_SCTL2_CODE	"SCT2"
 
 #define RSC_ISA_3DNOW_CODE		" 3DNow!/Ext [%c/%c]"
 #define RSC_ISA_ADX_CODE		"          ADX [%c]"

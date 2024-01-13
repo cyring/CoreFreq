@@ -6,6 +6,8 @@
 
 #define CPUPWRCTLR_EL1		sys_reg(0b11, 0b000, 0b1111, 0b0010, 0b111)
 #define ID_AA64ISAR2_EL1	sys_reg(0b11, 0b000, 0b0000, 0b0110, 0b010)
+#define ID_AA64MMFR3_EL1	sys_reg(0b11, 0b000, 0b0000, 0b0111, 0b011)
+#define SCTLR2_EL1		sys_reg(0b11, 0b000, 0b0001, 0b0000, 0b011)
 #define MRS_SSBS2		sys_reg(0b11, 0b011, 0b0100, 0b0010, 0b110)
 #define CLUSTERCFR_EL1		sys_reg(0b11, 0b000, 0b1111, 0b0011, 0b000)
 
