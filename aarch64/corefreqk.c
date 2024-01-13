@@ -1327,18 +1327,18 @@ void SystemRegisters(CORE_RO *Core)
 		"mrs	%[mmfr1],	id_aa64mmfr1_el1""\n\t"
 		"mrs	%[pfr0] ,	id_aa64pfr0_el1""\n\t"
 		"cmp	xzr	,	xzr, lsl #0"	"\n\t"
-		"mrs	x4	,	nzcv"		"\n\t"
-		"mrs	x3	,	daif"		"\n\t"
-		"mrs	x2	,	currentel"	"\n\t"
+		"mrs	x14	,	nzcv"		"\n\t"
+		"mrs	x13	,	daif"		"\n\t"
+		"mrs	x12	,	currentel"	"\n\t"
 		"isb"					"\n\t"
 		"mov	%[flags],	xzr"		"\n\t"
-		"orr	%[flags],	x4, x3" 	"\n\t"
-		"orr	%[flags],	%[flags], x2"
+		"orr	%[flags],	x14, x13"	"\n\t"
+		"orr	%[flags],	%[flags], x12"
 		: [mmfr1]	"=r" (mmfr1),
 		  [pfr0]	"=r" (pfr0),
 		  [flags]	"=r" (Core->SystemRegister.FLAGS)
 		:
-		: "cc", "memory", "%x2", "%x3", "%x4"
+		: "cc", "memory", "%x12", "%x13", "%x14"
 	);
 	if (mmfr1.VH) {
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);
@@ -1663,49 +1663,49 @@ void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 	__asm__ __volatile__
 	(
 		"# Assign an event number per counter"	"\n\t"
-		"mrs	x2	,	pmselr_el0"	"\n\t"
-		"str	x2	,	%[PMSELR]"	"\n\t"
-		"orr	x2	,	x2, #3" 	"\n\t"
-		"msr	pmselr_el0,	x2"		"\n\t"
+		"mrs	x12	,	pmselr_el0"	"\n\t"
+		"str	x12	,	%[PMSELR]"	"\n\t"
+		"orr	x12	,	x12, #3"	"\n\t"
+		"msr	pmselr_el0,	x12"		"\n\t"
 
 		"# Choosen [EVENT#] to collect from"	"\n\t"
-		"mrs	x2	,	pmxevtyper_el0" "\n\t"
-		"str	x2	,	%[PMTYPE3]"	"\n\t"
-		"orr	x2	,	x2, %[EVENT3]"	"\n\t"
-		"msr	pmxevtyper_el0, x2"		"\n\t"
+		"mrs	x12	,	pmxevtyper_el0" "\n\t"
+		"str	x12	,	%[PMTYPE3]"	"\n\t"
+		"orr	x12	,	x12, %[EVENT3]" "\n\t"
+		"msr	pmxevtyper_el0, x12"		"\n\t"
 
-		"ldr	x2	,	%[PMSELR]"	"\n\t"
-		"orr	x2	,	x2, #2" 	"\n\t"
-		"msr	pmselr_el0,	x2"		"\n\t"
-		"mrs	x2	,	pmxevtyper_el0" "\n\t"
-		"str	x2	,	%[PMTYPE2]"	"\n\t"
-		"orr	x2	,	x2, %[EVENT2]"	"\n\t"
-		"msr	pmxevtyper_el0, x2"		"\n\t"
+		"ldr	x12	,	%[PMSELR]"	"\n\t"
+		"orr	x12	,	x12, #2"	"\n\t"
+		"msr	pmselr_el0,	x12"		"\n\t"
+		"mrs	x12	,	pmxevtyper_el0" "\n\t"
+		"str	x12	,	%[PMTYPE2]"	"\n\t"
+		"orr	x12	,	x12, %[EVENT2]" "\n\t"
+		"msr	pmxevtyper_el0, x12"		"\n\t"
 
-		"ldr	x2	,	%[PMSELR]"	"\n\t"
-		"orr	x2	,	x2, #0b11111"	"\n\t"
-		"msr	pmselr_el0,	x2"		"\n\t"
-		"mrs	x2	,	pmxevtyper_el0" "\n\t"
-		"str	x2	,	%[PMTYPE1]"	"\n\t"
-		"orr	x2	,	x2, %[FILTR1]"	"\n\t"
-		"msr	pmxevtyper_el0, x2"		"\n\t"
+		"ldr	x12	,	%[PMSELR]"	"\n\t"
+		"orr	x12	,	x12, #0b11111"	"\n\t"
+		"msr	pmselr_el0,	x12"		"\n\t"
+		"mrs	x12	,	pmxevtyper_el0" "\n\t"
+		"str	x12	,	%[PMTYPE1]"	"\n\t"
+		"orr	x12	,	x12, %[FILTR1]" "\n\t"
+		"msr	pmxevtyper_el0, x12"		"\n\t"
 
 		"# No filtered EL within Cycle counter" "\n\t"
-		"mrs	x2	,	pmccfiltr_el0"	"\n\t"
-		"str	x2	,	%[PMCCFILTR]"	"\n\t"
+		"mrs	x12	,	pmccfiltr_el0"	"\n\t"
+		"str	x12	,	%[PMCCFILTR]"	"\n\t"
 		"msr	pmccfiltr_el0,	xzr"		"\n\t"
 
 		"# Enable counters at position [ENSET]" "\n\t"
-		"mrs	x2	,	pmcntenset_el0" "\n\t"
-		"str	x2	,	%[PMCNTEN]"	"\n\t"
-		"orr	x2	,	x2, %[ENSET]"	"\n\t"
-		"msr	pmcntenset_el0, x2"		"\n\t"
+		"mrs	x12	,	pmcntenset_el0" "\n\t"
+		"str	x12	,	%[PMCNTEN]"	"\n\t"
+		"orr	x12	,	x12, %[ENSET]"	"\n\t"
+		"msr	pmcntenset_el0, x12"		"\n\t"
 
 		"# Enable all PMU counters"		"\n\t"
-		"mrs	x2	,	pmcr_el0"	"\n\t"
-		"str	x2	,	%[PMCR]"	"\n\t"
-		"mov	x2	,	%[CTRL]"	"\n\t"
-		"msr	pmcr_el0,	x2"		"\n\t"
+		"mrs	x12	,	pmcr_el0"	"\n\t"
+		"str	x12	,	%[PMCR]"	"\n\t"
+		"mov	x12	,	%[CTRL]"	"\n\t"
+		"msr	pmcr_el0,	x12"		"\n\t"
 		"isb"
 		: [PMCR]	"+m" (Save->PMCR),
 		  [PMSELR]	"+m" (Save->PMSELR),
@@ -1719,7 +1719,7 @@ void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 		  [FILTR1]	"r" (0x0),
 		  [ENSET]	"r" (0b10000000000000000000000000001100),
 		  [CTRL]	"i" (0b0000000010000111)
-		: "memory", "%x2"
+		: "memory", "%x12"
 	);
 }
 
@@ -1727,35 +1727,35 @@ void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 {
 	__asm__ __volatile__(
 		"# Restore PMU configuration registers" "\n\t"
-		"ldr	x2	,	%[PMCR]"	"\n\t"
-		"msr	pmcr_el0,	x2"		"\n\t"
+		"ldr	x12	,	%[PMCR]"	"\n\t"
+		"msr	pmcr_el0,	x12"		"\n\t"
 
-		"ldr	x2	,	%[PMCNTEN]"	"\n\t"
-		"msr	pmcntenset_el0, x2"		"\n\t"
+		"ldr	x12	,	%[PMCNTEN]"	"\n\t"
+		"msr	pmcntenset_el0, x12"		"\n\t"
 
-		"ldr	x2	,	%[PMCCFILTR]"	"\n\t"
-		"msr	pmccfiltr_el0,	x2"		"\n\t"
+		"ldr	x12	,	%[PMCCFILTR]"	"\n\t"
+		"msr	pmccfiltr_el0,	x12"		"\n\t"
 
-		"ldr	x2	,	%[PMSELR]"	"\n\t"
-		"orr	x2	,	x2, #0b11111"	"\n\t"
-		"msr	pmselr_el0,	x2"		"\n\t"
-		"ldr	x2	,	%[PMTYPE1]"	"\n\t"
-		"msr	pmxevtyper_el0, x2"		"\n\t"
+		"ldr	x12	,	%[PMSELR]"	"\n\t"
+		"orr	x12	,	x12, #0b11111"	"\n\t"
+		"msr	pmselr_el0,	x12"		"\n\t"
+		"ldr	x12	,	%[PMTYPE1]"	"\n\t"
+		"msr	pmxevtyper_el0, x12"		"\n\t"
 
-		"ldr	x2	,	%[PMSELR]"	"\n\t"
-		"orr	x2	,	x2, #2" 	"\n\t"
-		"msr	pmselr_el0,	x2"		"\n\t"
-		"ldr	x2	,	%[PMTYPE2]"	"\n\t"
-		"msr	pmxevtyper_el0, x2"		"\n\t"
+		"ldr	x12	,	%[PMSELR]"	"\n\t"
+		"orr	x12	,	x12, #2"	"\n\t"
+		"msr	pmselr_el0,	x12"		"\n\t"
+		"ldr	x12	,	%[PMTYPE2]"	"\n\t"
+		"msr	pmxevtyper_el0, x12"		"\n\t"
 
-		"ldr	x2	,	%[PMSELR]"	"\n\t"
-		"orr	x2	,	x2, #3" 	"\n\t"
-		"msr	pmselr_el0,	x2"		"\n\t"
-		"ldr	x2	,	%[PMTYPE3]"	"\n\t"
-		"msr	pmxevtyper_el0, x2"		"\n\t"
+		"ldr	x12	,	%[PMSELR]"	"\n\t"
+		"orr	x12	,	x12, #3"	"\n\t"
+		"msr	pmselr_el0,	x12"		"\n\t"
+		"ldr	x12	,	%[PMTYPE3]"	"\n\t"
+		"msr	pmxevtyper_el0, x12"		"\n\t"
 
-		"ldr	x2	,	%[PMSELR]"	"\n\t"
-		"msr	pmselr_el0,	x2"		"\n\t"
+		"ldr	x12	,	%[PMSELR]"	"\n\t"
+		"msr	pmselr_el0,	x12"		"\n\t"
 
 		"isb"
 		:
@@ -1766,7 +1766,7 @@ void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 		  [PMTYPE1]	"m" (Save->PMTYPE[0]),
 		  [PMCCFILTR]	"m" (Save->PMCCFILTR),
 		  [PMCNTEN]	"m" (Save->PMCNTEN)
-		: "memory", "%x2"
+		: "memory", "%x12"
 	);
 }
 

@@ -95,22 +95,22 @@ __asm__ volatile							\
 );
 
 #define RDTSC_COUNTERx1(mem_tsc, ...) \
-ASM_COUNTERx1(x1, x2, ASM_RDTSC, mem_tsc, __VA_ARGS__)
+ASM_COUNTERx1(x11, x12, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define RDTSCP_COUNTERx1(mem_tsc, ...) \
-ASM_COUNTERx1(x1, x2, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
+ASM_COUNTERx1(x11, x12, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define RDTSC_COUNTERx2(mem_tsc, ...) \
-ASM_COUNTERx2(x1, x2, x3, ASM_RDTSC, mem_tsc, __VA_ARGS__)
+ASM_COUNTERx2(x11, x12, x13, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define RDTSCP_COUNTERx2(mem_tsc, ...) \
-ASM_COUNTERx2(x1, x2, x3, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
+ASM_COUNTERx2(x11, x12, x13, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define RDTSC_COUNTERx3(mem_tsc, ...) \
-ASM_COUNTERx3(x1, x2, x3, x4, ASM_RDTSC, mem_tsc, __VA_ARGS__)
+ASM_COUNTERx3(x11, x12, x13, x14, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define RDTSCP_COUNTERx3(mem_tsc, ...) \
-ASM_COUNTERx3(x1, x2, x3, x4, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
+ASM_COUNTERx3(x11, x12, x13, x14, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 /* Manufacturers Identifier Strings.					*/
 #define VENDOR_RESERVED "Reserved"

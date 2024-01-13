@@ -150,10 +150,10 @@ __asm__ volatile							\
 )
 
 #define RDTSC_PMCx1(mem_tsc, ...)					\
-ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSC, mem_tsc, __VA_ARGS__)
+ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define RDTSCP_PMCx1(mem_tsc, ...)					\
-ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
+ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #if defined(LEGACY) && LEGACY > 0
 
@@ -228,19 +228,19 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 									\
 	__asm__ volatile						\
 	(								\
-		"mov	x2, #1" 		"\n\t"			\
-		"lsl	x2, x2, %[offset]"	"\n\t"			\
-		"ldr	x3, %[base]"		"\n\t"			\
-		"ldr	x1, [x3]"		"\n\t"			\
-		"tst	x1, x2" 		"\n\t"			\
-		"cset	w0, ne" 		"\n\t"			\
-		"orr	x1, x1, x2"		"\n\t"			\
-		"str	x1, [x3]"		"\n\t"			\
-		"strb	w0, %[ret]"					\
+		"mov	x12, #1"		"\n\t"			\
+		"lsl	x12, x12, %[offset]"	"\n\t"			\
+		"ldr	x13, %[base]"		"\n\t"			\
+		"ldr	x11, [x13]"		"\n\t"			\
+		"tst	x11, x12"		"\n\t"			\
+		"cset	w10, ne"		"\n\t"			\
+		"orr	x11, x11, x12"		"\n\t"			\
+		"str	x11, [x13]"		"\n\t"			\
+		"strb	w10, %[ret]"					\
 		: [ret] "=m" (_ret)					\
 		: [base] "m" (_adr),					\
 		  [offset] "r" (_offset)				\
-		: "cc", "memory", "%w0", "%x1", "%x2", "%x3"		\
+		: "cc", "memory", "%w10", "%x11", "%x12", "%x13"	\
 	);								\
 	_ret;								\
 })
@@ -252,19 +252,19 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 									\
 	__asm__ volatile						\
 	(								\
-		"mov	x2, #1" 		"\n\t"			\
-		"lsl	x2, x2, %[imm6]"	"\n\t"			\
-		"ldr	x3, %[base]"		"\n\t"			\
-		"ldr	x1, [x3]"		"\n\t"			\
-		"tst	x1, x2" 		"\n\t"			\
-		"cset	w0, ne" 		"\n\t"			\
-		"orr	x1, x1, x2"		"\n\t"			\
-		"str	x1, [x3]"		"\n\t"			\
-		"strb	w0, %[ret]"					\
+		"mov	x12, #1"		"\n\t"			\
+		"lsl	x12, x12, %[imm6]"	"\n\t"			\
+		"ldr	x13, %[base]"		"\n\t"			\
+		"ldr	x11, [x13]"		"\n\t"			\
+		"tst	x11, x12"		"\n\t"			\
+		"cset	w10, ne"		"\n\t"			\
+		"orr	x11, x11, x12"		"\n\t"			\
+		"str	x11, [x13]"		"\n\t"			\
+		"strb	w10, %[ret]"					\
 		: [ret] "=m" (_ret)					\
 		: [base] "m" (_adr),					\
 		  [imm6] "i" (_imm6)					\
-		: "cc", "memory", "%w0", "%x1", "%x2", "%x3"		\
+		: "cc", "memory", "%w10", "%x11", "%x12", "%x13"	\
 	);								\
 	_ret;								\
 })
@@ -276,19 +276,19 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 									\
 	__asm__ volatile						\
 	(								\
-		"mov	x2, #1" 		"\n\t"			\
-		"lsl	x2, x2, %[offset]"	"\n\t"			\
-		"ldr	x3, %[base]"		"\n\t"			\
-		"ldr	x1, [x3]"		"\n\t"			\
-		"tst	x1, x2" 		"\n\t"			\
-		"cset	w0, ne" 		"\n\t"			\
-		"bic	x1, x1, x2"		"\n\t"			\
-		"str	x1, [x3]"		"\n\t"			\
-		"strb	w0, %[ret]"					\
+		"mov	x12, #1"		"\n\t"			\
+		"lsl	x12, x12, %[offset]"	"\n\t"			\
+		"ldr	x13, %[base]"		"\n\t"			\
+		"ldr	x11, [x13]"		"\n\t"			\
+		"tst	x11, x12"		"\n\t"			\
+		"cset	w10, ne"		"\n\t"			\
+		"bic	x11, x11, x12"		"\n\t"			\
+		"str	x11, [x13]"		"\n\t"			\
+		"strb	w10, %[ret]"					\
 		: [ret] "=m" (_ret)					\
 		: [base] "m" (_adr),					\
 		  [offset] "r" (_offset)				\
-		: "cc", "memory", "%w0", "%x1", "%x2", "%x3"		\
+		: "cc", "memory", "%w10", "%x11", "%x12", "%x13"	\
 	);								\
 	_ret;								\
 })
@@ -300,19 +300,19 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 									\
 	__asm__ volatile						\
 	(								\
-		"mov	x2, #1" 		"\n\t"			\
-		"lsl	x2, x2, %[imm6]"	"\n\t"			\
-		"ldr	x3, %[base]"		"\n\t"			\
-		"ldr	x1, [x3]"		"\n\t"			\
-		"tst	x1, x2" 		"\n\t"			\
-		"cset	w0, ne" 		"\n\t"			\
-		"bic	x1, x1, x2"		"\n\t"			\
-		"str	x1, [x3]"		"\n\t"			\
-		"strb	w0, %[ret]"					\
+		"mov	x12, #1"		"\n\t"			\
+		"lsl	x12, x12, %[imm6]"	"\n\t"			\
+		"ldr	x13, %[base]"		"\n\t"			\
+		"ldr	x11, [x13]"		"\n\t"			\
+		"tst	x11, x12"		"\n\t"			\
+		"cset	w10, ne"		"\n\t"			\
+		"bic	x11, x11, x12"		"\n\t"			\
+		"str	x11, [x13]"		"\n\t"			\
+		"strb	w10, %[ret]"					\
 		: [ret] "=m" (_ret)					\
 		: [base] "m" (_adr),					\
 		  [imm6] "i" (_imm6)					\
-		: "cc", "memory", "%w0", "%x1", "%x2", "%x3"		\
+		: "cc", "memory", "%w10", "%x11", "%x12", "%x13"	\
 	);								\
 	_ret;								\
 })
@@ -324,17 +324,17 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 									\
 	__asm__ volatile						\
 	(								\
-		"mov	x2, #1" 		"\n\t"			\
-		"lsl	x2, x2, %[offset]"	"\n\t"			\
-		"ldr	x3, %[base]"		"\n\t"			\
-		"ldr	x1, [x3]"		"\n\t"			\
-		"tst	x1, x2" 		"\n\t"			\
-		"cset	w0, ne" 		"\n\t"			\
-		"strb	w0, %[ret]"					\
+		"mov	x12, #1"		"\n\t"			\
+		"lsl	x12, x12, %[offset]"	"\n\t"			\
+		"ldr	x13, %[base]"		"\n\t"			\
+		"ldr	x11, [x13]"		"\n\t"			\
+		"tst	x11, x12"		"\n\t"			\
+		"cset	w10, ne"		"\n\t"			\
+		"strb	w10, %[ret]"					\
 		: [ret] "=m" (_ret)					\
 		: [base] "m" (_adr),					\
 		  [offset] "r" (_offset)				\
-		: "cc", "memory", "%w0", "%x1", "%x2", "%x3"		\
+		: "cc", "memory", "%w10", "%x11", "%x12", "%x13"	\
 	);								\
 	_ret;								\
 })
@@ -346,17 +346,17 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 									\
 	__asm__ volatile						\
 	(								\
-		"mov	x2, #1" 		"\n\t"			\
-		"lsl	x2, x2, %[imm6]"	"\n\t"			\
-		"ldr	x3, %[base]"		"\n\t"			\
-		"ldr	x1, [x3]"		"\n\t"			\
-		"tst	x1, x2" 		"\n\t"			\
-		"cset	w0, ne" 		"\n\t"			\
-		"strb	w0, %[ret]"					\
+		"mov	x12, #1"		"\n\t"			\
+		"lsl	x12, x12, %[imm6]"	"\n\t"			\
+		"ldr	x13, %[base]"		"\n\t"			\
+		"ldr	x11, [x13]"		"\n\t"			\
+		"tst	x11, x12"		"\n\t"			\
+		"cset	w10, ne"		"\n\t"			\
+		"strb	w10, %[ret]"					\
 		: [ret] "=m" (_ret)					\
 		: [base] "m" (_adr),					\
 		  [imm6] "i" (_imm6)					\
-		: "cc", "memory", "%w0", "%x1", "%x2", "%x3"		\
+		: "cc", "memory", "%w10", "%x11", "%x12", "%x13"	\
 	);								\
 	_ret;								\
 })
@@ -367,12 +367,12 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 									\
 	__asm__ volatile						\
 	(								\
-		"and	x0, %[opl], %[opr]" 	"\n\t"			\
-		"str	x0, %[dest]"					\
+		"and	x10, %[opl], %[opr]"	"\n\t"			\
+		"str	x10, %[dest]"					\
 		: [dest] "=m" (_dest)					\
 		: [opl]  "Jr" (_opl),					\
 		  [opr]  "Jr" (_opr)					\
-		: "cc", "memory", "%x0" 				\
+		: "cc", "memory", "%x10"				\
 	);								\
 	_dest;								\
 })
@@ -383,12 +383,12 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 									\
 	__asm__ volatile						\
 	(								\
-		"orr	x0, %[opl], %[opr]" 	"\n\t"			\
-		"str	x0, %[dest]"					\
+		"orr	x10, %[opl], %[opr]"	"\n\t"			\
+		"str	x10, %[dest]"					\
 		: [dest] "=m" (_dest)					\
 		: [opl]  "Jr" (_opl),					\
 		  [opr]  "Jr" (_opr)					\
-		: "cc", "memory", "%x0" 				\
+		: "cc", "memory", "%x10"				\
 	);								\
 	_dest;								\
 })
@@ -399,12 +399,12 @@ ASM_RDTSC_PMCx1(x4, x5, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 									\
 	__asm__ volatile						\
 	(								\
-		"eor	x0, %[opl], %[opr]" 	"\n\t"			\
-		"str	x0, %[dest]"					\
+		"eor	x10, %[opl], %[opr]"	"\n\t"			\
+		"str	x10, %[dest]"					\
 		: [dest] "=m" (_dest)					\
 		: [opl]  "Jr" (_opl),					\
 		  [opr]  "Jr" (_opr)					\
-		: "cc", "memory", "%x0" 				\
+		: "cc", "memory", "%x10"				\
 	);								\
 	_dest;								\
 })
@@ -641,7 +641,7 @@ FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
 			: [ret]	"=r"	(_ret)				\
 			: [opl] "r"	(_opl[cw]),			\
 			  [opr] "r"	(_opr[cw])			\
-			: "cc", "memory", "%x2", "%x6", "%x7"		\
+			: "cc", "memory"				\
 		);							\
 		ret &= _ret;						\
 	} while (++cw <= CORE_WORD_TOP(CORE_COUNT));			\
@@ -657,14 +657,14 @@ FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
 									\
 	__asm__ volatile						\
 	(								\
-		"ldr	x4	,	%[opr]" 		"\n\t"	\
-		"ldr	x5	,	%[opl]" 		"\n\t"	\
-		"cmp	x4	,	x5"			"\n\t"	\
+		"ldr	x14	,	%[opr]" 		"\n\t"	\
+		"ldr	x15	,	%[opl]" 		"\n\t"	\
+		"cmp	x14	,	x15"			"\n\t"	\
 		"cset	%[ret]	,	eq"				\
 		: [ret]	"=r"	(_ret)					\
 		: [opl]	"m"	(_opl), 				\
 		  [opr]	"m"	(_opr)					\
-		: "cc", "memory", "%x4", "%x5"				\
+		: "cc", "memory", "%x14", "%x15"			\
 	);								\
 	_ret;								\
 })
@@ -677,15 +677,15 @@ FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
 									\
 	__asm__ volatile						\
 	(								\
-		"mov	x4	,	%[opr]" 		"\n\t"	\
-		"mov	x5	,	%[opl]" 		"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x2,x1,x6,x7,x4,x5, 0, 8)	"\n\t"	\
-		"str	x2	,	%[ret]" 			\
+		"mov	x14	,	%[opr]" 		"\n\t"	\
+		"mov	x15	,	%[opl]" 		"\n\t"	\
+		ASM_CMPXCHG16B(_lock, x12,x11,x9,x10,x14,x15, 0, 8)"\n\t"\
+		"str	x12	,	%[ret]" 			\
 		: [ ret]	"+m"	(_ret)				\
 		: [ opl]	"r"	(_opl), 			\
 		  [ opr]	"r"	(_opr)				\
-		: "cc", "memory", "%x1", "%x2", 			\
-		  "%x4", "%x5", "%x6", "%x7"				\
+		: "cc", "memory",					\
+		  "%x9", "%x10", "%x11", "%x12", "%x14", "%x15"		\
 	);								\
 	_ret;								\
 })
@@ -698,18 +698,17 @@ FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
 									\
 	__asm__ volatile						\
 	(								\
-		"mov	x4	,	%[opr]" 		"\n\t"	\
-		"mov	x5	,	%[opl]" 		"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x3,x1,x6,x7,x4,x5,16,24)	"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x2,x1,x6,x7,x4,x5, 0, 8)	"\n\t"	\
-		"and	x2	,	x2	,	x3"	"\n\t"	\
-		"str	x2	,	%[ret]" 			\
+		"mov	x14	,	%[opr]" 		"\n\t"	\
+		"mov	x15	,	%[opl]" 		"\n\t"	\
+		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15,16,24)"\n\t"\
+		ASM_CMPXCHG16B(_lock, x12,x11,x9,x10,x14,x15, 0, 8)"\n\t"\
+		"and	x12	,	x12	,	x13"	"\n\t"	\
+		"str	x12	,	%[ret]" 			\
 		: [ ret]	"+m"	(_ret)				\
 		: [ opl]	"r"	(_opl), 			\
 		  [ opr]	"r"	(_opr)				\
 		: "cc", "memory",					\
-		  "%x1", "%x2", "%x3",					\
-		  "%x4", "%x5", "%x6", "%x7"				\
+		  "%x9", "%x10", "%x11", "%x12", "%x13", "%x14", "%x15" \
 	);								\
 	_ret;								\
 })
@@ -722,22 +721,21 @@ FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
 									\
 	__asm__ volatile						\
 	(								\
-		"mov	x4	,	%[opr]" 		"\n\t"	\
-		"mov	x5	,	%[opl]" 		"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x3,x1,x6,x7,x4,x5,48,56)	"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x2,x1,x6,x7,x4,x5,32,40)	"\n\t"	\
-		"and	x2	,	x2	,	x3"	"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x3,x1,x6,x7,x4,x5,16,24)	"\n\t"	\
-		"and	x2	,	x2	,	x3"	"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x3,x1,x6,x7,x4,x5, 0, 8)	"\n\t"	\
-		"and	x2	,	x2	,	x3"	"\n\t"	\
-		"str	x2	,	%[ret]" 			\
+		"mov	x14	,	%[opr]" 		"\n\t"	\
+		"mov	x15	,	%[opl]" 		"\n\t"	\
+		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15,48,56)"\n\t"\
+		ASM_CMPXCHG16B(_lock, x12,x11,x9,x10,x14,x15,32,40)"\n\t"\
+		"and	x12	,	x12	,	x13"	"\n\t"	\
+		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15,16,24)"\n\t"\
+		"and	x12	,	x12	,	x13"	"\n\t"	\
+		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15, 0, 8)"\n\t"\
+		"and	x12	,	x12	,	x13"	"\n\t"	\
+		"str	x12	,	%[ret]" 			\
 		: [ ret]	"+m"	(_ret)				\
 		: [ opl]	"r"	(_opl), 			\
 		  [ opr]	"r"	(_opr)				\
 		: "cc", "memory",					\
-		  "%x1", "%x2", "%x3",					\
-		  "%x4", "%x5", "%x6", "%x7"				\
+		  "%x9", "%x10", "%x11", "%x12", "%x13", "%x14", "%x15" \
 	);								\
 	_ret;								\
 })
@@ -750,30 +748,29 @@ FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
 									\
 	__asm__ volatile						\
 	(								\
-		"mov	x4	,	%[opr]"			"\n\t"	\
-		"mov	x5	,	%[opl]"			"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x3,x1,x6,x7,x4,x5,112,120)"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x2,x1,x6,x7,x4,x5,96,104) "\n\t"	\
-		"and	x2	,	x2	,	x3"	"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x3,x1,x6,x7,x4,x5,80,88)	"\n\t"	\
-		"and	x2	,	x2	,	x3"	"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x3,x1,x6,x7,x4,x5,64,72)	"\n\t"	\
-		"and	x2	,	x2	,	x3"	"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x3,x1,x6,x7,x4,x5,48,56)	"\n\t"	\
-		"and	x2	,	x2	,	x3"	"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x3,x1,x6,x7,x4,x5,32,40)	"\n\t"	\
-		"and	x2	,	x2	,	x3"	"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x3,x1,x6,x7,x4,x5,16,24)	"\n\t"	\
-		"and	x2	,	x2	,	x3"	"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x3,x1,x6,x7,x4,x5, 0, 8)	"\n\t"	\
-		"and	x2	,	x2	,	x3"	"\n\t"	\
-		"str	x2	,	%[ret]" 			\
+		"mov	x14	,	%[opr]" 		"\n\t"	\
+		"mov	x15	,	%[opl]" 		"\n\t"	\
+		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15,112,120)"\n\t"\
+		ASM_CMPXCHG16B(_lock, x12,x11,x9,x10,x14,x15,96,104) "\n\t"\
+		"and	x12	,	x12	,	x13"	"\n\t"	\
+		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15,80,88)"\n\t"\
+		"and	x12	,	x12	,	x13"	"\n\t"	\
+		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15,64,72)"\n\t"\
+		"and	x12	,	x12	,	x13"	"\n\t"	\
+		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15,48,56)"\n\t"\
+		"and	x12	,	x12	,	x13"	"\n\t"	\
+		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15,32,40)"\n\t"\
+		"and	x12	,	x12	,	x13"	"\n\t"	\
+		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15,16,24)"\n\t"\
+		"and	x12	,	x12	,	x13"	"\n\t"	\
+		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15, 0, 8)"\n\t"\
+		"and	x12	,	x12	,	x13"	"\n\t"	\
+		"str	x12	,	%[ret]" 			\
 		: [ ret]	"+m"	(_ret)				\
 		: [ opl]	"r"	(_opl), 			\
 		  [ opr]	"r"	(_opr)				\
 		: "cc", "memory",					\
-		  "%x1", "%x2", "%x3",					\
-		  "%x4", "%x5", "%x6", "%x7"				\
+		  "%x9", "%x10", "%x11", "%x12", "%x13", "%x14", "%x15" \
 	);								\
 	_ret;								\
 })
