@@ -160,6 +160,7 @@ typedef struct {
 	FEATURES	*Features;
 	unsigned int	SMT_Count,
 			localProcessor;
+	enum HYPERVISOR HypervisorID;
 	signed int	rc;
 } INIT_ARG;
 

@@ -7,6 +7,7 @@
 #define CPUPWRCTLR_EL1		sys_reg(0b11, 0b000, 0b1111, 0b0010, 0b111)
 #define ID_AA64ISAR2_EL1	sys_reg(0b11, 0b000, 0b0000, 0b0110, 0b010)
 #define MRS_SSBS2		sys_reg(0b11, 0b011, 0b0100, 0b0010, 0b110)
+#define CLUSTERCFR_EL1		sys_reg(0b11, 0b000, 0b1111, 0b0011, 0b000)
 
 typedef union
 {
@@ -595,6 +596,39 @@ typedef union
 		RES2		: 64-32;
 	};
 } SSBS2;
+
+typedef union
+{
+	unsigned long long	value;	/*	Pkg:0x0000000007bfda77	*/
+	struct
+	{
+		unsigned long long
+		NUMCORE 	:  4-0,
+		NUMPE		:  9-4,
+		L3		: 10-9,
+		WRLAT		: 12-10,
+		RDLAT		: 13-12,
+		RDSLC		: 14-13,
+		ECC		: 15-14,
+		NUMMAS		: 17-15,
+		MAS		: 18-17,
+		RAZ1		: 19-18,
+		ACPW		: 20-19,
+		ACP		: 21-20,
+		RAZ2		: 22-21,
+		PPW		: 23-22,
+		PP		: 24-23,
+		RAZ3		: 25-24,
+		TRSH		: 29-25,
+		TRSV		: 33-29,
+		RAZ4		: 51-33,
+		L3SLC		: 54-51,
+		RAZ5		: 55-24,
+		SFIDX		: 59-55,
+		SFWAY		: 61-59,
+		NODES		: 64-61;
+	};
+} CLUSTERCFR;
 
 typedef union
 {

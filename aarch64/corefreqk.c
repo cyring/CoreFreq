@@ -518,13 +518,13 @@ static void Query_Features(void *pArg)
 	volatile AA64MMFR1 mmfr1;
 	volatile AA64PFR0 pfr0;
 	volatile AA64PFR1 pfr1;
-
-	enum HYPERVISOR hypervisor = HYPERV_NONE;
+	volatile CLUSTERCFR clustercfg;
 
 	iArg->Features->Info.LargestStdFunc = 0x1;
 	iArg->Features->Info.LargestExtFunc = 0x80000001;
 	iArg->Features->Info.Vendor.CRC = CRC_RESERVED;
 	iArg->SMT_Count = 1;
+	iArg->HypervisorID = HYPERV_NONE;
 
 	__asm__ __volatile__(
 		"mrs	%[midr] ,	midr_el1"	"\n\t"
@@ -556,7 +556,7 @@ static void Query_Features(void *pArg)
 	iArg->Features->Std.EAX.ExtModel = (pmcr.IDcode & 0xf0) >> 4;
 
 	VendorFromMainID(midr, iArg->Features->Info.Vendor.ID,
-			&iArg->Features->Info.Vendor.CRC, &hypervisor);
+			&iArg->Features->Info.Vendor.CRC, &iArg->HypervisorID);
 
 	iArg->Features->Factory.Freq = cntfrq.ClockFrequency;
 	iArg->Features->Factory.Freq /= 10000;
@@ -599,7 +599,14 @@ static void Query_Features(void *pArg)
 	iArg->Features->SSBS = pfr1.SSBS;
 	iArg->Features->CSV2 = pfr1.CSV2_frac;
 
-	/* Reset the performance features bits (present is zero) */
+    if (Experimental && (iArg->HypervisorID == HYPERV_NONE)) {
+	/* Query the Cluster Configuration				*/
+	clustercfg.value = read_sysreg_s(CLUSTERCFR_EL1);
+	if (clustercfg.NUMCORE) {
+		iArg->SMT_Count = iArg->SMT_Count + clustercfg.NUMCORE;
+	}
+    }
+	/* Reset the performance features bits (present is zero)	*/
 	iArg->Features->PerfMon.EBX.CoreCycles    = 1;
 	iArg->Features->PerfMon.EBX.InstrRetired  = 1;
 	iArg->Features->PerfMon.EBX.RefCycles     = 1;
@@ -1418,8 +1425,10 @@ static void PerCore_GenericMachine(void *arg)
 	PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(MAX)] = \
 				PUBLIC(RO(Proc))->Features.Factory.Ratio;
 
+    if (Experimental && (PUBLIC(RO(Proc))->HypervisorID == HYPERV_NONE)) {
 	cpupwrctl.value = read_sysreg_s(CPUPWRCTLR_EL1);
 	Core->Query.CStateBaseAddr = cpupwrctl.WFI_RET_CTRL;
+    }
 
 	SystemRegisters(Core);
 
@@ -4524,9 +4533,11 @@ static int CoreFreqK_Scale_And_Compute_Level_Up(INIT_ARG *pArg)
 
 	memcpy(&PUBLIC(RO(Proc))->Features, pArg->Features, sizeof(FEATURES));
 
-	/* Initialize default uArch's codename with the CPUID brand. */
+	/* Initialize default uArch's codename with the CPUID brand.	*/
 	Arch[GenuineArch].Architecture.Brand[0] = \
 				PUBLIC(RO(Proc))->Features.Info.Vendor.ID;
+	/* Initialize with any hypervisor found so far.			*/
+	PUBLIC(RO(Proc))->HypervisorID = pArg->HypervisorID;
 	return 0;
 }
 
