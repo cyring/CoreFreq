@@ -372,7 +372,7 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: [dest] "=m" (_dest)					\
 		: [opl]  "Jr" (_opl),					\
 		  [opr]  "Jr" (_opr)					\
-		: "cc", "memory", "%x10"				\
+		: "memory", "%x10"					\
 	);								\
 	_dest;								\
 })
@@ -388,7 +388,7 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: [dest] "=m" (_dest)					\
 		: [opl]  "Jr" (_opl),					\
 		  [opr]  "Jr" (_opr)					\
-		: "cc", "memory", "%x10"				\
+		: "memory", "%x10"					\
 	);								\
 	_dest;								\
 })
@@ -404,7 +404,7 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: [dest] "=m" (_dest)					\
 		: [opl]  "Jr" (_opl),					\
 		  [opr]  "Jr" (_opr)					\
-		: "cc", "memory", "%x10"				\
+		: "memory", "%x10"					\
 	);								\
 	_dest;								\
 })
@@ -522,10 +522,12 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 ({									\
 	__asm__ volatile						\
 	(								\
-		"orr	%[opl], %[opl], %[opr]" 			\
-		: [opl] "=r" (_opl)					\
-		: [opr]  "Jr" (_opr)					\
-		: "cc", "memory"					\
+		"ldr	x10,	%[opl]" 		"\n\t"		\
+		"orr	x10,	x10, %[opr]"		"\n\t"		\
+		"str	x10,	%[opl]" 		"\n\t"		\
+		: [opl] "+m"	(_opl)					\
+		: [opr] "Jr"	(_opr)					\
+		: "memory", "%x10"					\
 	);								\
 })
 
@@ -533,10 +535,10 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 ({									\
 	__asm__ volatile						\
 	(								\
-		"mov	%[dest], xzr"					\
-		: [dest] "=r" (_dest)					\
+		"str	xzr,	%[dest]"				\
+		: [dest] "=m"	(_dest) 				\
 		:							\
-		: "cc", "memory"					\
+		: "memory"						\
 	);								\
 })
 
