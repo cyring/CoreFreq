@@ -192,59 +192,6 @@ static void (*ComputePower_None_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_CORE] = ComputePower_None_PerCore,
 	[FORMULA_SCOPE_PKG ] = ComputePower_None_PerPkg
 };
-/*
-#define ComputePower_Intel_Matrix	ComputePower_None_Matrix
-
-#define ComputePower_Intel_Atom_Matrix	ComputePower_None_Matrix
-
-#define ComputePower_AMD_Matrix 	ComputePower_None_Matrix
-
-static void ComputePower_AMD_17h( struct FLIP_FLOP *CFlip,
-					RO(SHM_STRUCT) *RO(Shm),
-					unsigned int cpu)
-{
-	CFlip->State.Energy	= (double)CFlip->Delta.Power.ACCU
-				* RO(Shm)->Proc.Power.Unit.Joules;
-
-	CFlip->State.Power	= 1000.0 * CFlip->State.Energy;
-	CFlip->State.Power	/= RO(Shm)->Sleep.Interval;
-
-	Core_ComputePowerLimits(&RO(Shm)->Cpu[cpu], CFlip);
-}
-
-#define ComputePower_AMD_17h_PerSMT	ComputePower_AMD_17h
-
-static void ComputePower_AMD_17h_PerCore( struct FLIP_FLOP *CFlip,
-						RO(SHM_STRUCT) *RO(Shm),
-						unsigned int cpu )
-{
-	if ((RO(Shm)->Cpu[cpu].Topology.ThreadID == 0)
-	 || (RO(Shm)->Cpu[cpu].Topology.ThreadID == -1))
-	{
-		ComputePower_AMD_17h(CFlip, RO(Shm), cpu);
-	}
-}
-
-static void ComputePower_AMD_17h_PerPkg( struct FLIP_FLOP *CFlip,
-						RO(SHM_STRUCT) *RO(Shm),
-						unsigned int cpu )
-{
-	if (cpu == RO(Shm)->Proc.Service.Core)
-	{
-		ComputePower_AMD_17h(CFlip, RO(Shm), cpu);
-	}
-}
-
-static void (*ComputePower_AMD_17h_Matrix[4])(	struct FLIP_FLOP*,
-						RO(SHM_STRUCT)*,
-						unsigned int ) = \
-{
-	[FORMULA_SCOPE_NONE] = ComputePower_None,
-	[FORMULA_SCOPE_SMT ] = ComputePower_AMD_17h_PerSMT,
-	[FORMULA_SCOPE_CORE] = ComputePower_AMD_17h_PerCore,
-	[FORMULA_SCOPE_PKG ] = ComputePower_AMD_17h_PerPkg
-};
-*/
 
 typedef struct {
 	REF		*Ref;
@@ -532,8 +479,8 @@ static void *Child_Thread(void *arg)
 		{ CallWith_RDTSC_No_RDPMC,  CallWith_RDTSC_RDPMC  },
 		{ CallWith_RDTSCP_No_RDPMC, CallWith_RDTSCP_RDPMC }
 	};
-	const int withTSCP = ((RO(Shm)->Proc.Features.AdvPower.EDX.Inv_TSC == 1)
-			   || (RO(Shm)->Proc.Features.ExtInfo.EDX.RDTSCP == 1)),
+	const int withTSCP = ((RO(Shm)->Proc.Features.Inv_TSC == 1)
+			   || (RO(Shm)->Proc.Features.RDTSCP == 1)),
 		withRDPMC = ((RO(Shm)->Proc.PM_version >= 1));
 
 	CALL_FUNC CallSliceFunc = MatrixCallFunc[withTSCP][withRDPMC];
@@ -611,8 +558,8 @@ EXIT:
 void Architecture(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	signed long ix;
-	Bit32	fTSC = RO(Proc)->Features.Std.EDX.TSC,
-		aTSC = RO(Proc)->Features.AdvPower.EDX.Inv_TSC;
+	Bit32	fTSC = RO(Proc)->Features.TSC,
+		aTSC = RO(Proc)->Features.Inv_TSC;
 
 	/*	Copy all initial CPUID features.			*/
 	memcpy(&RO(Shm)->Proc.Features, &RO(Proc)->Features, sizeof(FEATURES));
@@ -649,7 +596,7 @@ void Architecture(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 void PerformanceMonitoring(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
-	switch (RO(Proc)->Features.PerfMon.EAX.Version) {
+	switch (RO(Proc)->Features.PerfMon.Version) {
 	case 0b0001: RO(Shm)->Proc.PM_ext = (struct PMU_ST){.v = 3, .p = 0x0};
 		break;
 	case 0b0100: RO(Shm)->Proc.PM_ext = (struct PMU_ST){.v = 3, .p = 0x1};
@@ -796,7 +743,7 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 	RO(Shm)->Cpu[cpu].Topology.PackageID  = RO(Core,AT(cpu))->T.PackageID;
 	RO(Shm)->Cpu[cpu].Topology.Cluster.ID = RO(Core,AT(cpu))->T.Cluster.ID;
 	/*	x2APIC capability.					*/
-	RO(Shm)->Cpu[cpu].Topology.MP.x2APIC= RO(Proc)->Features.Std.ECX.x2APIC;
+	RO(Shm)->Cpu[cpu].Topology.MP.x2APIC= RO(Proc)->Features.x2APIC;
 	/*	Is local APIC enabled in xAPIC mode ?			*/
 	RO(Shm)->Cpu[cpu].Topology.MP.x2APIC &= \
 					RO(Core, AT(cpu))->T.Base.APIC_EN;
@@ -1682,11 +1629,11 @@ REASON_CODE Core_Manager(REF *Ref)
 	BITCMP_CC(BUS_LOCK, _room_##Ready, _room_##Seed)
 
     #define CONDITION_RDTSCP()						\
-	(  (RO(Proc)->Features.AdvPower.EDX.Inv_TSC == 1)		\
-	|| (RO(Proc)->Features.ExtInfo.EDX.RDTSCP == 1) )
+	(  (RO(Proc)->Features.Inv_TSC == 1)				\
+	|| (RO(Proc)->Features.RDTSCP == 1) )
 
     #define CONDITION_RDPMC()						\
-	(  (RO(Proc)->Features.PerfMon.EAX.Version >= 1)		\
+	(  (RO(Proc)->Features.PerfMon.Version >= 1)		\
 	&& (BITVAL(RO(Core, AT(RO(Proc)->Service.Core))->SystemRegister.CR4, \
 							CR4_PCE) == 1) )
 
@@ -1799,7 +1746,7 @@ REASON_CODE Core_Manager(REF *Ref)
 	}
 
 	/*	Workaround to Package Thermal Management: the hottest Core */
-	if (!RO(Shm)->Proc.Features.Power.EAX.PTM) {
+	if (!RO(Shm)->Proc.Features.Power.PTM) {
 		if (CFlop->Thermal.Temp > PFlip->Thermal.Temp)
 			PFlip->Thermal.Temp = CFlop->Thermal.Temp;
 	}
@@ -1906,7 +1853,7 @@ REASON_CODE Core_Manager(REF *Ref)
 	memcpy( PFlip->Thermal.Events, RO(Proc)->PowerThermal.Events,
 		sizeof(PFlip->Thermal.Events) );
 	/*	Package thermal formulas				*/
-      if (RO(Shm)->Proc.Features.Power.EAX.PTM)
+      if (RO(Shm)->Proc.Features.Power.PTM)
       {
 	PFlip->Thermal.Sensor = RO(Proc)->PowerThermal.Sensor;
 	Pkg_ComputeThermalFormula(PFlip, SProc);

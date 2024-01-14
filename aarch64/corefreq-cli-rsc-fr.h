@@ -233,24 +233,11 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 	"------------------------------------------------------------"	\
 	"--------------------"
 
-#define RSC_LAYOUT_RULER_PWR_UNCORE_CODE_FR RSC_LAYOUT_RULER_PWR_UNCORE_CODE_EN
-
 #define RSC_LAYOUT_RULER_PWR_SOC_CODE_FR RSC_LAYOUT_RULER_PWR_SOC_CODE_EN
-
-#define RSC_LAYOUT_RULER_PWR_PLATFORM_CODE_FR	\
-					RSC_LAYOUT_RULER_PWR_PLATFORM_CODE_EN
 
 #define RSC_LAYOUT_RULER_VOLTAGE_CODE_FR				\
 	"--- Fr""\xa9""q(MHz) - VID --- Min(V)-- Vcore -- Max(V) -----------" \
 	"------------------------------------------------------------"	\
-	"------------------------------------------------------------"	\
-	"------------------------------------------------------------"	\
-	"------------------------------------------------------------"	\
-	"--------------------"
-
-#define RSC_LAYOUT_RULER_VPKG_SAV_CODE_FR				\
-	"-Processeur[                                    ] ------ SA "	\
-	"[       ] [      V]-----------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
@@ -291,9 +278,6 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_LAYOUT_RULER_CUSTOM_CODE_FR RSC_LAYOUT_RULER_CUSTOM_CODE_EN
 
 #define RSC_LAYOUT_FOOTER_TECH_X86_CODE_FR RSC_LAYOUT_FOOTER_TECH_X86_CODE_EN
-
-#define RSC_LAYOUT_FOOTER_TECH_INTEL_CODE_FR \
-					RSC_LAYOUT_FOOTER_TECH_INTEL_CODE_EN
 
 #define RSC_LAYOUT_FOOTER_TECH_AMD_CODE_FR RSC_LAYOUT_FOOTER_TECH_AMD_CODE_EN
 
@@ -359,11 +343,6 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FACTORY_CODE_FR		"Usine"
 #define RSC_PERFORMANCE_CODE_FR 	"Performance"
 #define RSC_TARGET_CODE_FR		"Cible"
-#define RSC_LEVEL_CODE_FR		"Niveau"
-#define RSC_PROGRAMMABLE_CODE_FR	"Programmable"
-#define RSC_CONFIGURATION_CODE_FR	"Configuration"
-#define RSC_TURBO_ACTIVATION_CODE_FR	"Activation Turbo"
-#define RSC_NOMINAL_CODE_FR		"Nominal"
 #define RSC_UNLOCK_CODE_FR		"OUVERT"
 #define RSC_LOCK_CODE_FR		"BLOQU""\x89"
 #define RSC_ENABLE_CODE_FR		"  Actif"
@@ -381,12 +360,6 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_SCOPE_CORE_CODE_FR		"Core"
 #define RSC_SCOPE_PACKAGE_CODE_FR	" Pkg"
 
-#define RSC_CPUID_TITLE_CODE_FR 	\
-	" fonction           EAX          EBX          ECX          EDX "
-
-#define RSC_LARGEST_STD_FUNC_CODE_FR	"Fonction standard maximum"
-#define RSC_LARGEST_EXT_FUNC_CODE_FR	"Fonction ""\xa9""tendue  maximum"
-
 #define RSC_SYS_REGS_TITLE_CODE_FR	" Registres Syst""\xa8""me "
 #define RSC_SYS_REG_FLAGS_N_CODE_FR	RSC_SYS_REG_FLAGS_N_CODE_EN
 #define RSC_SYS_REG_FLAGS_Z_CODE_FR	RSC_SYS_REG_FLAGS_Z_CODE_EN
@@ -403,58 +376,24 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_ISA_TITLE_CODE_FR		" Jeu d'instructions ""\xa9""tendu "
 
-#define RSC_ISA_3DNOW_COMM_CODE_FR	RSC_ISA_3DNOW_COMM_CODE_EN
-#define RSC_ISA_ADX_COMM_CODE_FR	RSC_ISA_ADX_COMM_CODE_EN
 #define RSC_ISA_AES_COMM_CODE_FR	RSC_ISA_AES_COMM_CODE_EN
-#define RSC_ISA_AMX_BF16_COMM_CODE_FR	RSC_ISA_AMX_BF16_COMM_CODE_EN
-#define RSC_ISA_AMX_TILE_COMM_CODE_FR	RSC_ISA_AMX_TILE_COMM_CODE_EN
-#define RSC_ISA_AMX_INT8_COMM_CODE_FR	RSC_ISA_AMX_INT8_COMM_CODE_EN
-#define RSC_ISA_AMX_FP16_COMM_CODE_FR	RSC_ISA_AMX_FP16_COMM_CODE_EN
-#define RSC_ISA_AVX_COMM_CODE_FR	RSC_ISA_AVX_COMM_CODE_EN
-#define RSC_ISA_CMPCCXADD_COMM_CODE_FR	RSC_ISA_CMPCCXADD_COMM_CODE_EN
-#define RSC_ISA_BMI_COMM_CODE_FR	RSC_ISA_BMI_COMM_CODE_EN
-#define RSC_ISA_CLWB_COMM_CODE_FR	RSC_ISA_CLWB_COMM_CODE_EN
 #define RSC_ISA_CLFLUSH_COMM_CODE_FR	RSC_ISA_CLFLUSH_COMM_CODE_EN
-#define RSC_ISA_CLFLUSHOPT_COMM_CODE_FR RSC_ISA_CLFLUSHOPT_COMM_CODE_EN
-#define RSC_ISA_AC_FLAG_COMM_CODE_FR	RSC_ISA_AC_FLAG_COMM_CODE_EN
 #define RSC_ISA_CMOV_COMM_CODE_FR	RSC_ISA_CMOV_COMM_CODE_EN
 #define RSC_ISA_XCHG8B_COMM_CODE_FR	RSC_ISA_XCHG8B_COMM_CODE_EN
 #define RSC_ISA_XCHG16B_COMM_CODE_FR	RSC_ISA_XCHG16B_COMM_CODE_EN
 #define RSC_ISA_F16C_COMM_CODE_FR	RSC_ISA_F16C_COMM_CODE_EN
 #define RSC_ISA_FPU_COMM_CODE_FR	RSC_ISA_FPU_COMM_CODE_EN
 #define RSC_ISA_FXSR_COMM_CODE_FR	RSC_ISA_FXSR_COMM_CODE_EN
-#define RSC_ISA_LSHF_COMM_CODE_FR	RSC_ISA_LSHF_COMM_CODE_EN
-#define RSC_ISA_MMX_COMM_CODE_FR	RSC_ISA_MMX_COMM_CODE_EN
-#define RSC_ISA_MWAITX_COMM_CODE_FR	RSC_ISA_MWAITX_COMM_CODE_EN
 #define RSC_ISA_MOVBE_COMM_CODE_FR	RSC_ISA_MOVBE_COMM_CODE_EN
 #define RSC_ISA_PCLMULDQ_COMM_CODE_FR	RSC_ISA_PCLMULDQ_COMM_CODE_EN
 #define RSC_ISA_POPCNT_COMM_CODE_FR	RSC_ISA_POPCNT_COMM_CODE_EN
 #define RSC_ISA_RDRAND_COMM_CODE_FR	RSC_ISA_RDRAND_COMM_CODE_EN
-#define RSC_ISA_RDSEED_COMM_CODE_FR	RSC_ISA_RDSEED_COMM_CODE_EN
-#define RSC_ISA_RDTSCP_COMM_CODE_FR	RSC_ISA_RDTSCP_COMM_CODE_EN
 #define RSC_ISA_SEP_COMM_CODE_FR	RSC_ISA_SEP_COMM_CODE_EN
 #define RSC_ISA_SHA_COMM_CODE_FR	RSC_ISA_SHA_COMM_CODE_EN
 #define RSC_ISA_SSE_COMM_CODE_FR	RSC_ISA_SSE_COMM_CODE_EN
 #define RSC_ISA_SSE2_COMM_CODE_FR	RSC_ISA_SSE2_COMM_CODE_EN
-#define RSC_ISA_SSE3_COMM_CODE_FR	RSC_ISA_SSE3_COMM_CODE_EN
-#define RSC_ISA_SSSE3_COMM_CODE_FR	RSC_ISA_SSSE3_COMM_CODE_EN
-#define RSC_ISA_SSE4_1_COMM_CODE_FR	RSC_ISA_SSE4_1_COMM_CODE_EN
-#define RSC_ISA_SSE4_2_COMM_CODE_FR	RSC_ISA_SSE4_2_COMM_CODE_EN
-#define RSC_ISA_SERIALIZE_COMM_CODE_FR	RSC_ISA_SERIALIZE_COMM_CODE_EN
-#define RSC_ISA_SYSCALL_COMM_CODE_FR	RSC_ISA_SYSCALL_COMM_CODE_EN
-#define RSC_ISA_RDPID_COMM_CODE_FR	RSC_ISA_RDPID_COMM_CODE_EN
-#define RSC_ISA_UMIP_COMM_CODE_FR	RSC_ISA_UMIP_COMM_CODE_EN
-#define RSC_ISA_SGX_COMM_CODE_FR	RSC_ISA_SGX_COMM_CODE_EN
 #define RSC_ISA_MOVDIRI_COMM_CODE_FR	RSC_ISA_MOVDIRI_COMM_CODE_EN
 #define RSC_ISA_MOVDIR64B_COMM_CODE_FR	RSC_ISA_MOVDIR64B_COMM_CODE_EN
-#define RSC_ISA_VAES_COMM_CODE_FR	RSC_ISA_VAES_COMM_CODE_EN
-#define RSC_ISA_VPCLMULQDQ_COMM_CODE_FR RSC_ISA_VPCLMULQDQ_COMM_CODE_EN
-#define RSC_ISA_PREFETCH_COMM_CODE_FR	RSC_ISA_PREFETCH_COMM_CODE_EN
-#define RSC_ISA_LZCNT_COMM_CODE_FR	RSC_ISA_LZCNT_COMM_CODE_EN
-#define RSC_ISA_ENQCMD_COMM_CODE_FR 	RSC_ISA_ENQCMD_COMM_CODE_EN
-#define RSC_ISA_GFNI_COMM_CODE_FR	RSC_ISA_GFNI_COMM_CODE_EN
-#define RSC_ISA_OSPKE_COMM_CODE_FR	RSC_ISA_OSPKE_COMM_CODE_EN
-#define RSC_ISA_WAITPKG_COMM_CODE_FR	RSC_ISA_WAITPKG_COMM_CODE_EN
 
 #define RSC_FEATURES_TITLE_CODE_FR	" Caract""\xa9""ristiques "
 #define RSC_ON_CODE_FR			" ON"
@@ -467,136 +406,27 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_PRESENT_CODE_FR		"Capable"
 #define RSC_VARIANT_CODE_FR		"Variant"
 #define RSC_INVARIANT_CODE_FR		"Invariant"
-/*TODO(CleanUp)
-#define RSC_FEATURES_1GB_PAGES_CODE_FR	"1 GB Pages Support"
-#define RSC_FEATURES_100MHZ_CODE_FR	"100 MHz multiplier Control"
-*/
+
 #define RSC_FEATURES_ACPI_CODE_FR   "Advanced Configuration & Power Interface"
 #define RSC_FEATURES_APIC_CODE_FR	"Generic Interrupt Controller"
-/*
-#define RSC_FEATURES_AVIC_CODE_FR	"Advanced Virtual Interrupt Controller"
-#define RSC_FEATURES_ARAT_CODE_FR	"APIC Timer Invariance"
-#define RSC_FEATURES_ALTMOV_CODE_FR	"LOCK prefix to read CR8"
-#define RSC_FEATURES_CLZERO_CODE_FR	"Clear Zero Instruction"
-#define RSC_FEATURES_CORE_MP_CODE_FR	"Core Multi-Processing"
-#define RSC_FEATURES_CNXT_ID_CODE_FR	"L1 Data Cache Context ID"
-#define RSC_FEATURES_CPPC_CODE_FR	\
-			"Contr""\xb4""le collaboratif des performances CPU"
-
-#define RSC_FEATURES_DCA_CODE_FR	"Direct Cache Access"
-#define RSC_FEATURES_DE_CODE_FR 	"Debugging Extension"
-
-#define RSC_FEATURES_DS_PEBS_CODE_FR	\
-				"Debug Store & Precise Event Based Sampling"
-
-#define RSC_FEATURES_DS_CPL_CODE_FR	"CPL Qualified Debug Store"
-#define RSC_FEATURES_DTES_64_CODE_FR	"64-Bit Debug Store"
-#define RSC_FEATURES_FSRC_CODE_FR	"Fast Short REP CMPSB"
-#define RSC_FEATURES_FSRM_CODE_FR	"Fast Short REP MOVSB"
-#define RSC_FEATURES_FSRS_CODE_FR	"Fast Short REP STOSB"
-#define RSC_FEATURES_FZRM_CODE_FR	"Fast Zero-length REP MOVSB"
-#define RSC_FEATURES_ERMS_CODE_FR	"Fast-String Operation"
-#define RSC_FEATURES_FMA_CODE_FR	"Fused Multiply Add"
-#define RSC_FEATURES_HFI_CODE_FR	"Hardware Feedback Interface"
-#define RSC_FEATURES_HLE_CODE_FR	"Hardware Lock Elision"
-#define RSC_FEATURES_HwP_CODE_FR	"Hardware P-state control"
-#define RSC_FEATURES_HRESET_CODE_FR	"History Reset"
-#define RSC_FEATURES_HYBRID_CODE_FR	"Hybrid part processor"
-#define RSC_FEATURES_IBS_CODE_FR	"Instruction Based Sampling"
-#define RSC_FEATURES_INVLPGB_CODE_FR	"Instruction INVLPGB"
-#define RSC_FEATURES_INVPCID_CODE_FR	"Instruction INVPCID"
-#define RSC_FEATURES_LM_CODE_FR 	"Long Mode 64 bits"
-#define RSC_FEATURES_LASS_CODE_FR	"Linear Address Space Separation"
-#define RSC_FEATURES_LAM_CODE_FR	"Linear Address Masking"
-#define RSC_FEATURES_LWP_CODE_FR	"LightWeight Profiling"
-#define RSC_FEATURES_MBE_CODE_FR	"Memory Bandwidth Enforcement"
-#define RSC_FEATURES_MCA_CODE_FR	"Machine-Check Architecture"
-#define RSC_FEATURES_MCOMMIT_CODE_FR	"Instruction MCOMMIT"
-#define RSC_FEATURES_MPX_CODE_FR	"Memory Protection Extensions"
-#define RSC_FEATURES_MSR_CODE_FR	"Model Specific Registers"
-#define RSC_FEATURES_MTRR_CODE_FR	"Memory Type Range Registers"
-#define RSC_FEATURES_NX_CODE_FR 	"No-Execute Page Protection"
-#define RSC_FEATURES_OSXSAVE_CODE_FR	"OS-Enabled Ext. State Management"
-#define RSC_FEATURES_OSVW_CODE_FR	"OS Visible Work-around"
-#define RSC_FEATURES_PAE_CODE_FR	"Physical Address Extension"
-#define RSC_FEATURES_PAT_CODE_FR	"Page Attribute Table"
-#define RSC_FEATURES_PBE_CODE_FR	"Pending Break Enable"
-#define RSC_FEATURES_PCONFIG_CODE_FR	"Platform Configuration"
-#define RSC_FEATURES_PCID_CODE_FR	"Process Context Identifiers"
-#define RSC_FEATURES_PDCM_CODE_FR	"Perfmon and Debug Capability"
-#define RSC_FEATURES_PGE_CODE_FR	"Page Global Enable"
-#define RSC_FEATURES_PSE_CODE_FR	"Page Size Extension"
-#define RSC_FEATURES_PSE36_CODE_FR	"36-bit Page Size Extension"
-#define RSC_FEATURES_PSN_CODE_FR	"Processor Serial Number"
-#define RSC_FEATURES_PTWRITE_CODE_FR	"Write Data to a Processor Trace Packet"
-#define RSC_FEATURES_PREFETCHI_CODE_FR	"Instructions PREFETCHIT0/1"
-#define RSC_FEATURES_RDT_PQE_CODE_FR	"Resource Director Technology/PQE"
-#define RSC_FEATURES_RDT_PQM_CODE_FR	"Resource Director Technology/PQM"
-#define RSC_FEATURES_RDPRU_CODE_FR	"Read Processor Register at User level"
-#define RSC_FEATURES_RTM_CODE_FR	"Restricted Transactional Memory"
-#define RSC_FEATURES_SMX_CODE_FR	"Safer Mode Extensions"
-#define RSC_FEATURES_SELF_SNOOP_CODE_FR "Self-Snoop"
-#define RSC_FEATURES_SMAP_CODE_FR	"Supervisor-Mode Access Prevention"
-#define RSC_FEATURES_SMEP_CODE_FR	"Supervisor-Mode Execution Prevention"
-#define RSC_FEATURES_ITD_CODE_FR	"Thread Director"
-#define RSC_FEATURES_TBM_CODE_FR	"Trailing Bit Manipulation"
-#define RSC_FEATURES_TCE_CODE_FR	"Translation Cache Extension"
-*/
 #define RSC_FEATURES_TSC_CODE_FR	"Time Stamp Counter"
-/*
-#define RSC_FEATURES_TSC_DEADLN_CODE_FR "Time Stamp Counter Deadline"
-#define RSC_FEATURES_TSXABORT_CODE_FR	"TSX Force Abort MSR Register"
-#define RSC_FEATURES_TSXLDTRK_CODE_FR	"TSX Suspend Load Address Tracking"
-#define RSC_FEATURES_UMIP_CODE_FR	"User-Mode Instruction Prevention"
-#define RSC_FEATURES_VME_CODE_FR	"Virtual Mode Extension"
-*/
 #define RSC_FEATURES_VMX_CODE_FR	"Virtual Machine Extensions"
-/*
-#define RSC_FEATURES_WBNOINVD_CODE_FR	"Write Back & Do Not Invalidate Cache"
-#define RSC_FEATURES_X2APIC_CODE_FR	"Extended xAPIC Support"
-#define RSC_FEATURES_X2AVIC_CODE_FR	"AVIC controller for x2APIC"
-#define RSC_FEATURES_XD_BIT_CODE_FR	"Execution Disable Bit Support"
-#define RSC_FEATURES_XSAVE_CODE_FR	"XSAVE/XSTOR States"
-#define RSC_FEATURES_XTPR_CODE_FR	"xTPR Update Control"
-#define RSC_FEATURES_XOP_CODE_FR	"Extended Operation Support"
-*/
 #define RSC_FEAT_SECTION_MECH_CODE_FR	"M""\xa9""canismes d'att""\xa9""nuation"
 #define RSC_FEAT_SECTION_SEC_CODE_FR	"Fonctions de s""\xa9""curit""\xa9"
 
 #define RSC_TECHNOLOGIES_TITLE_CODE_FR	" Technologies "
 #define RSC_TECHNOLOGIES_DCU_CODE_FR  "Unit""\xa9"" de cache de donn""\xa9""es"
 #define RSC_TECHNOLOGIES_ICU_CODE_FR  "Unit""\xa9"" de cache d'instructions"
-#define RSC_TECH_L1_HW_PREFETCH_CODE_FR "Pr""\xa9""lecteur L1"
-#define RSC_TECH_L1_HW_IP_PREFETCH_CODE_FR "Pr""\xa9""lecteur L1 IP"
-#define RSC_TECH_L1_SCRUBBING_CODE_FR	"L1 Scrubbing"
-#define RSC_TECH_L2_HW_PREFETCH_CODE_FR  "Pr""\xa9""lecteur L2"
-#define RSC_TECH_L2_HW_CL_PREFETCH_CODE_FR  "Pr""\xa9""lecteur L2 ligne"
-#define RSC_TECHNOLOGIES_SMM_CODE_FR	"Mode de Gestion Syst""\xa8""me"
-#define RSC_TECHNOLOGIES_HTT_CODE_FR	"Hyper-Threading"
-#define RSC_TECHNOLOGIES_EIST_CODE_FR	"SpeedStep"
 #define RSC_TECHNOLOGIES_IDA_CODE_FR	"Acc""\xa9""l""\xa9""ration dynamique"
 #define RSC_TECHNOLOGIES_TURBO_CODE_FR	"Turbo Boost"
 #define RSC_TECHNOLOGIES_TBMT3_CODE_FR	"Turbo Boost Max 3.0"
 #define RSC_TECHNOLOGIES_VM_CODE_FR	"Virtualisation"
 #define RSC_TECHNOLOGIES_IOMMU_CODE_FR	"MMU E/S"
 #define RSC_TECHNOLOGIES_SMT_CODE_FR	"Multithreading simultan""\xa9"
-#define RSC_TECHNOLOGIES_CNQ_CODE_FR	"PowerNow!"
-#define RSC_TECHNOLOGIES_CPB_CODE_FR	"Core Performance Boost"
-#define RSC_TECHNOLOGIES_EEO_CODE_FR	"Optimisation ""\xa9""nerg""\xa9""tique"
-#define RSC_TECHNOLOGIES_R2H_CODE_FR	"Optimisation Race To Halt"
 #define RSC_TECHNOLOGIES_HYPERV_CODE_FR "Hyperviseur"
-#define RSC_TECHNOLOGIES_WDT_CODE_FR	"Compteur Watchdog"
 
-#define RSC_TECH_AMD_CPB_COMM_CODE_FR	RSC_TECH_AMD_CPB_COMM_CODE_EN
-#define RSC_TECH_INTEL_EEO_COMM_CODE_FR RSC_TECH_INTEL_EEO_COMM_CODE_EN
-#define RSC_TECH_INTEL_R2H_COMM_CODE_FR RSC_TECH_INTEL_R2H_COMM_CODE_EN
-#define RSC_TECH_INTEL_SMM_COMM_CODE_FR RSC_TECH_INTEL_SMM_COMM_CODE_EN
-#define RSC_TECH_AMD_SMM_COMM_CODE_FR	RSC_TECH_AMD_SMM_COMM_CODE_EN
-#define RSC_TECH_INTEL_WDT_COMM_CODE_FR RSC_TECH_INTEL_WDT_COMM_CODE_EN
 #define RSC_TECH_AMD_WDT_COMM_CODE_FR	RSC_TECH_AMD_WDT_COMM_CODE_EN
-#define RSC_TECH_INTEL_VMX_COMM_CODE_FR RSC_TECH_INTEL_VMX_COMM_CODE_EN
 #define RSC_TECH_AMD_SVM_COMM_CODE_FR	RSC_TECH_AMD_SVM_COMM_CODE_EN
-#define RSC_TECH_INTEL_VTD_COMM_CODE_FR RSC_TECH_INTEL_VTD_COMM_CODE_EN
 #define RSC_TECH_AMD_V_COMM_CODE_FR	RSC_TECH_AMD_V_COMM_CODE_EN
 
 #define RSC_PERF_MON_TITLE_CODE_FR	" Gestion de la performance "
@@ -606,18 +436,6 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_GENERAL_CTRS_CODE_FR	"G""\xa9""n""\xa9""raux"
 #define RSC_FIXED_CTRS_CODE_FR		"Fixes"
 #define RSC_PERF_MON_UNIT_BIT_CODE_FR	"bits"
-#define RSC_PERF_MON_C1E_CODE_FR	"Enhanced Halt State"
-#define RSC_PERF_MON_C1A_CODE_FR	"C1 Auto Demotion"
-#define RSC_PERF_MON_C3A_CODE_FR	"C3 Auto Demotion"
-#define RSC_PERF_MON_C1U_CODE_FR	"C1 UnDemotion"
-#define RSC_PERF_MON_C2U_CODE_FR	"C2 UnDemotion"
-#define RSC_PERF_MON_C3U_CODE_FR	"C3 UnDemotion"
-#define RSC_PERF_MON_C6D_CODE_FR	"C6 Core Demotion"
-#define RSC_PERF_MON_MC6_CODE_FR	"C6 Module Demotion"
-#define RSC_PERF_MON_CC6_CODE_FR	"Core C6 State"
-#define RSC_PERF_MON_PC6_CODE_FR	"Package C6 State"
-#define RSC_PERF_MON_FID_CODE_FR	"Legacy Frequency ID control"
-#define RSC_PERF_MON_VID_CODE_FR	"Legacy Voltage ID control"
 #define RSC_PERF_MON_HWCF_CODE_FR	"P-State Hardware Coordination Feedback"
 #define RSC_PERF_MON_CPPC_CODE_FR	\
 		"Contr""\xb4""le collaboratif des performances du processeur"
@@ -628,13 +446,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_PERF_MON_CPC_CODE_FR	RSC_PERF_MON_CPC_CODE_EN
 #define RSC_PERF_MON_CST_CODE_FR	RSC_PERF_MON_CST_CODE_EN
 #define RSC_PERF_MON_HWP_CODE_FR	"Hardware-Controlled Performance States"
-#define RSC_PERF_MON_HDC_CODE_FR	"Hardware Duty Cycling"
-#define RSC_PERF_MON_PKG_CSTATE_CODE_FR "Package C-States"
 #define RSC_PERF_MON_CORE_CSTATE_CODE_FR "Core C-States"
-#define RSC_PERF_MON_CFG_CTRL_CODE_FR	"Configuration Control"
-#define RSC_PERF_MON_LOW_CSTATE_CODE_FR "Lowest C-State"
-#define RSC_PERF_MON_IOMWAIT_CODE_FR	"I/O MWAIT Redirection"
-#define RSC_PERF_MON_MAX_CSTATE_CODE_FR "Max C-State Inclusion"
 #define RSC_PERF_MON_CSTATE_BAR_CODE_FR "Adresse Base C-States"
 
 #define RSC_PERF_MON_MONITOR_MWAIT_CODE_FR	"MONITOR/MWAIT"
@@ -645,13 +457,6 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_PERF_MON_INST_RET_CODE_FR	"Instructions Retired"
 #define RSC_PERF_MON_REF_CYCLE_CODE_FR	"Reference Cycles"
 #define RSC_PERF_MON_REF_LLC_CODE_FR	"Last Level Cache References"
-#define RSC_PERF_MON_MISS_LLC_CODE_FR	"Last Level Cache Misses"
-#define RSC_PERF_MON_BRANCH_RET_CODE_FR "Branch Instructions Retired"
-#define RSC_PERF_MON_BRANCH_MIS_CODE_FR "Branch Mispredicts Retired"
-#define RSC_PERF_MON_TOPDOWN_SLOTS_CODE_FR "Top-down slots Counter"
-#define RSC_PERF_MON_TSC_CODE_FR	"Global Time Stamp Counter"
-#define RSC_PERF_MON_NB_DF_CODE_FR	"Data Fabric Performance Counter"
-#define RSC_PERF_MON_CORE_CODE_FR	"Core Performance Counter"
 
 #define RSC_PERF_MON_PMC_COMM_CODE_FR	\
 		" { Core performance monitoring, Cache LLC, Northbridge } "
@@ -659,10 +464,6 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_PERF_MON_CPPC_COMM_CODE_FR	" Micrologiciel "
 
 #define RSC_POWER_THERMAL_TITLE_CODE_FR " Puissance, courant et thermique "
-#define RSC_POWER_THERMAL_ODCM_CODE_FR	"Modulation d'horloge"
-#define RSC_POWER_THERMAL_DUTY_CODE_FR	"Cycle de service"
-#define RSC_POWER_THERMAL_MGMT_CODE_FR	"Gestion de la puissance"
-#define RSC_POWER_THERMAL_BIAS_CODE_FR	"R""\xa8""gle ""\xa9""nerg""\xa9""tique"
 #define RSC_POWER_THERMAL_CPPC_CODE_FR	"CPPC Pr""\xa9""f""\xa9""rence " \
 					"\xa9""nerg""\xa9""tique"
 
@@ -670,8 +471,6 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_POWER_THERMAL_DTS_CODE_FR	"Capteur thermique num""\xa9""rique"
 #define RSC_POWER_THERMAL_PLN_CODE_FR	"Notification de puissance"
 #define RSC_POWER_THERMAL_PTM_CODE_FR	"Gestion thermique du Package"
-#define RSC_POWER_THERMAL_TM1_CODE_FR	"Contr""\xb4""le Temp""\xa9""rature 1"
-#define RSC_POWER_THERMAL_TM2_CODE_FR	"Contr""\xb4""le Temp""\xa9""rature 2"
 #define RSC_POWER_THERMAL_UNITS_CODE_FR "Unit""\xa9""s"
 #define RSC_POWER_THERMAL_POWER_CODE_FR "Puissance"
 #define RSC_POWER_THERMAL_ENERGY_CODE_FR "\x89""nergie"
@@ -682,7 +481,6 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_POWER_THERMAL_TDP_CODE_FR	"Dissipation thermique"
 #define RSC_POWER_THERMAL_MIN_CODE_FR	"Puissance minimale"
 #define RSC_POWER_THERMAL_MAX_CODE_FR	"Puissance maximale"
-#define RSC_POWER_THERMAL_PPT_CODE_FR	"Consommation maximale"
 #define RSC_POWER_THERMAL_TPL_CODE_FR	"Limite de puissance"
 #define RSC_POWER_THERMAL_TW_CODE_FR	"Fen""\xaa""tre temporelle"
 #define RSC_POWER_THERMAL_EDC_CODE_FR	"Limite de courant sup""\xa9""rieure"
@@ -924,7 +722,6 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_MENU_ITEM_PERF_MON_CODE_FR    " Gestion de Perf.   [o] "
 #define RSC_MENU_ITEM_PERF_CAPS_CODE_FR   " Capacit""\xa9""s de Perf. [z] "
 #define RSC_MENU_ITEM_POW_THERM_CODE_FR   " Puissance-Therm.   [w] "
-#define RSC_MENU_ITEM_CPUID_CODE_FR       " Extraction CPUID   [u] "
 #define RSC_MENU_ITEM_SYS_REGS_CODE_FR    " Registres Syst""\xa8""me  [R] "
 #define RSC_MENU_ITEM_MEM_CTRL_CODE_FR    " Contr""\xb4""leur " 	\
 					  "M""\xa9""moire [M] "
@@ -951,7 +748,6 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_SETTINGS_CPU_HOTPLUG_CODE_FR    " Hot-Plug CPU             [   ] "
 #define RSC_SETTINGS_PCI_ENABLED_CODE_FR    " Activation PCI           [   ] "
-#define RSC_SETTINGS_HSMP_ENABLED_CODE_FR   " Activation HSMP          <   > "
 #define RSC_SETTINGS_NMI_REGISTERED_CODE_FR " Activation NMI           <   > "
 #define RSC_SETTINGS_CPUIDLE_REGISTERED_CODE_FR \
 					    " Pilote CPU-IDLE          <   > "
@@ -1100,11 +896,6 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_MODE_DESC_CODE_FR	"     CoreFreq mode "	\
 					"op""\xa9""rationnel     "
 
-#define RSC_BOX_EIST_DESC_CODE_FR	"             SpeedStep              "
-
-#define RSC_BOX_C1E_DESC_CODE_FR	"        ""\x89""tat de "	\
-					"Pause ""\xa9""tendu        "
-
 #define RSC_BOX_TURBO_DESC_CODE_FR	" Turbo Boost/Core Performance Boost "
 
 #define RSC_BOX_C1A_DESC_CODE_FR	"       Auto r""\xa9""trogradation" \
@@ -1136,16 +927,6 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_BOX_FMW_DESC_CODE_FR	" Contr""\xb4""le Firmware"	\
 					" de la Performance"
-
-#define RSC_BOX_HDC_DESC_CODE_FR	" Contr""\xb4""le Mat""\xa9""riel" \
-					" Cycles de Service"
-
-#define RSC_BOX_EEO_DESC_CODE_FR	" Optimisation efficacit" "\xa9" \
-					" " "\xa9" "nerg" "\xa9" "tique"
-
-#define RSC_BOX_R2H_DESC_CODE_FR	"      Optimisation Race To Halt     "
-
-#define RSC_BOX_WDT_DESC_CODE_FR	"         Compteur Watchdog          "
 
 #define RSC_BOX_HSMP_DESC_CODE_FR	"     Host System Management Port    "
 
@@ -1206,25 +987,6 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_EVENT_TURBO_ATTEN_CODE_FR	" Turbo Atten.    "
 #define RSC_BOX_EVENT_THERMAL_TVB_CODE_FR	" TVB thermique   "
 #define RSC_BOX_EVENT_ALL_OF_THEM_CODE_FR	"<  Tout effacer >"
-
-#define RSC_BOX_STATE_UNSPECIFIED_CODE_FR	"        "		\
-						"IND""\x89""TERMIN""\x89"\
-						"        "
-
-#define RSC_BOX_PKG_STATE_LIMIT_TITLE_CODE_FR	" Limite ""\x89""tats Package "
-
-#define RSC_BOX_IO_MWAIT_TITLE_CODE_FR		" E/S MWAIT "
-#define RSC_BOX_IO_MWAIT_DESC_CODE_FR	"        Redirection E/S MWAIT       "
-
-#define RSC_BOX_MWAIT_MAX_STATE_TITLE_CODE_FR	" E/S MWAIT ""\x89""tat Max "
-
-#define RSC_BOX_ODCM_TITLE_CODE_FR		" ODCM "
-#define RSC_BOX_ODCM_DESC_CODE_FR	"        Modulation d'horloge        "
-
-#define RSC_BOX_EXT_DUTY_CYCLE_TITLE_CODE_FR	" Cycle de service "	\
-						"\xa9""tendu "
-
-#define RSC_BOX_DUTY_CYCLE_TITLE_CODE_FR	" Cycle de service "
 
 #define RSC_BOX_DUTY_CYCLE_RESERVED_CODE_FR	"           "		\
 						"R""\xa9""serv""\xa9""         "
@@ -1333,7 +1095,6 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 		"\t-R\tImprimer les Registres du système\n"		\
 		"\t-m\tImprimer la Topologie\n" 			\
 		"\t-B\tImprimer SMBIOS\n"				\
-		"\t-u\tImprimer CPUID\n"				\
 		"\t-k\tImprimer le Kernel\n"				\
 		"\t-n\tNouvelle ligne\n"				\
 		"\t-h\tAfficher ce message\n"				\
@@ -1379,25 +1140,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_MECH_CLRBHB_CODE_FR 	RSC_MECH_CLRBHB_CODE_EN
 #define RSC_MECH_SSBD_CODE_FR		RSC_MECH_SSBD_CODE_EN
 #define RSC_MECH_SSBS_CODE_FR		RSC_MECH_SSBS_CODE_EN
-/*TODO(CleanUp)
-#define RSC_SECURITY_CPUID_KL_CODE_FR	RSC_SECURITY_CPUID_KL_CODE_EN
-#define RSC_SECURITY_AESKLE_CODE_FR	RSC_SECURITY_AESKLE_CODE_EN
-#define RSC_SECURITY_WIDE_KL_CODE_FR	RSC_SECURITY_WIDE_KL_CODE_EN
-#define RSC_SECURITY_SGX1_CODE_FR	RSC_SECURITY_SGX1_CODE_EN
-#define RSC_SECURITY_SGX2_CODE_FR	RSC_SECURITY_SGX2_CODE_EN
-#define RSC_SECURITY_SKINIT_CODE_FR	RSC_SECURITY_SKINIT_CODE_EN
-#define RSC_SECURITY_SEV_CODE_FR	RSC_SECURITY_SEV_CODE_EN
-#define RSC_SECURITY_SEV_ES_CODE_FR	RSC_SECURITY_SEV_ES_CODE_EN
-#define RSC_SECURITY_SEV_SNP_CODE_FR	RSC_SECURITY_SEV_SNP_CODE_EN
-#define RSC_SECURITY_GMET_CODE_FR	RSC_SECURITY_GMET_CODE_EN
-#define RSC_SECURITY_SSS_CODE_FR	RSC_SECURITY_SSS_CODE_EN
-#define RSC_SECURITY_VMPL_CODE_FR	RSC_SECURITY_VMPL_CODE_EN
-#define RSC_SECURITY_VMPL_SSS_CODE_FR	RSC_SECURITY_VMPL_SSS_CODE_EN
-#define RSC_SECURITY_SME_CODE_FR	RSC_SECURITY_SME_CODE_EN
-#define RSC_SECURITY_SME_MK_CODE_FR	RSC_SECURITY_SME_MK_CODE_EN
-#define RSC_SECURITY_SCRAMBLER_CODE_FR	RSC_SECURITY_SCRAMBLER_CODE_EN
-#define RSC_SECURITY_TSME_CODE_FR	RSC_SECURITY_TSME_CODE_EN
-*/
+
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_FR	"  %3s       Processeur    " \
 						"   %s     %c%4u %c "
 

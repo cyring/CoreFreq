@@ -727,55 +727,43 @@ typedef union
 
 #define RESET_SERVICE	{.Core = -1U, .Thread = -1, .Hybrid = -1}
 
+struct SIGNATURE {
+	unsigned int
+	Stepping	:  8-0,
+	Model		: 12-8,
+	Family		: 16-12,
+	ExtModel	: 20-16,
+	ExtFamily	: 28-20,
+	Reserved	: 32-28;
+};
+
 #define BRAND_PART	12
 #define BRAND_LENGTH	(4 * BRAND_PART)
 #define BRAND_SIZE	(BRAND_LENGTH + 4)
 
 typedef struct
-{		/* Common x86						*/
-	unsigned int		LargestStdFunc, /* Largest Standard CPUID */
-				LargestExtFunc, /* Largest Extended CPUID */
-				LargestHypFunc; /* Largest Hypervisor CPUID */
+{
+	struct SIGNATURE	Signature;
 	struct {
 	enum CRC_MANUFACTURER	CRC;
 		char		ID[12 + 4];
 	} Vendor, Hypervisor;
 	char			Brand[BRAND_SIZE];
-} CPUID_FUNCTION;
+} PROCESSOR_ID;
 
-typedef struct	/* Basic CPUID Function.				*/
+typedef struct	/* Intel Hybrid Information Enumeration Leaf		*/
 {
-		unsigned int LargestStdFunc, BX, CX, DX;
-} CPUID_0x00000000;
+		unsigned int
+		Model_ID	: 24-0,
+		CoreType	: 32-24; /* 0x20: Atom; 0x40: Core	*/
+} CPUID_0x0000001a;
 
-typedef struct
+typedef struct	/* BSP features.					*/
 {
-	union
-	{
-	    struct SIGNATURE
-	    {
+	PROCESSOR_ID		Info;
+	struct {
 		unsigned int
-		Stepping	:  8-0,
-		Model		: 12-8,
-		Family		: 16-12,
-		ExtModel	: 20-16,
-		ExtFamily	: 28-20,
-		Reserved	: 32-28;
-	    } EAX;
-		unsigned int Signature;
-	};
-	struct CPUID_0x00000001_EBX
-	{
-		unsigned int
-		Brand_ID	:  8-0,
-		CLFSH_Size	: 16-8,
-		Max_SMT_ID	: 24-16,
-		Init_APIC_ID	: 32-24;
-	} EBX;
-	struct
-	{
-		unsigned int
-		SSE3		:  1-0,  /* AMD Family 0Fh		*/
+		SSE3		:  1-0,
 		PCLMULDQ	:  2-1,
 		DTES64		:  3-2,
 		MONITOR 	:  4-3,
@@ -784,9 +772,9 @@ typedef struct
 		SMX		:  7-6,
 		EIST		:  8-7,
 		TM2		:  9-8,
-		SSSE3		: 10-9,  /* AMD Family 0Fh		*/
+		SSSE3		: 10-9,
 		CNXT_ID 	: 11-10,
-		SDBG		: 12-11, /* IA32_DEBUG_INTERFACE MSR support */
+		SDBG		: 12-11,
 		FMA		: 13-12,
 		CMPXCHG16	: 14-13,
 		xTPR		: 15-14,
@@ -796,7 +784,7 @@ typedef struct
 		DCA		: 19-18,
 		SSE41		: 20-19,
 		SSE42		: 21-20,
-		x2APIC		: 22-21, /* x2APIC capability		*/
+		x2APIC		: 22-21,
 		MOVBE		: 23-22,
 		POPCNT		: 24-23,
 		TSC_DEADLINE	: 25-24,
@@ -806,69 +794,50 @@ typedef struct
 		AVX		: 29-28,
 		F16C		: 30-29,
 		RDRAND		: 31-30,
-		Hyperv		: 32-31; /* This bit is set by the Hypervisor */
-	} ECX;
+		Hyperv		: 32-31;
+	};
 	struct
-	{	/* Most common x86					*/
+	{
 		unsigned int
 		FPU		:  1-0,
-		VME		:  2-1,
-		DE		:  3-2,
-		PSE		:  4-3,
+/*		VME		:  2-1,*/
+/*		DE		:  3-2,*/
+/*		PSE		:  4-3,*/
 		TSC		:  5-4,
-		MSR		:  6-5,
-		PAE		:  7-6,
+		Inv_TSC 	:  6-5,
+		RDTSCP		:  7-6,
+/*		MSR		:  6-5,*/
+/*		PAE		:  7-6,*/
 		MCE		:  8-7,
 		CMPXCHG8	:  9-8,
 		APIC		: 10-9,
-		Reserved1	: 11-10,
+/*		Reserved1	: 11-10,*/
 		SEP		: 12-11,
-		MTRR		: 13-12,
-		PGE		: 14-13,
-		MCA		: 15-14,
+/*		MTRR		: 13-12,*/
+/*		PGE		: 14-13,*/
+/*		MCA		: 15-14,*/
+		Hybrid		: 15-14,
 		CMOV		: 16-15,
-		PAT		: 17-16,
-		PSE36		: 18-17,
-		PSN		: 19-18, /* Intel Processor Serial Number */
+/*		PAT		: 17-16,*/
+/*		PSE36		: 18-17,*/
+/*		PSN		: 19-18,*/
 		CLFLUSH 	: 20-19,
-		Reserved2	: 21-20,
-		DS_PEBS 	: 22-21,
+/*		Reserved2	: 21-20,*/
+/*		DS_PEBS 	: 22-21,*/
 		ACPI		: 23-22,
 		MMX		: 24-23,
-		FXSR		: 25-24, /* FXSAVE and FXRSTOR instructions. */
+		FXSR		: 25-24,
 		SSE		: 26-25,
 		SSE2		: 27-26,
-		SS		: 28-27, /* Intel			*/
+/*		SS		: 28-27,*/
 		HTT		: 29-28,
-		TM1		: 30-29, /* Intel			*/
-		Reserved3	: 31-30,
-		PBE		: 32-31; /* Intel			*/
-	} EDX;
-} CPUID_0x00000001;
-
-typedef struct	/* MONITOR & MWAIT Leaf.				*/
-{		/* Common x86						*/
+		TM1		: 30-29,
+		SHA		: 31-30;
+/*		Reserved3	: 31-30,*/
+/*		PBE		: 32-31;*/
+	};
 	struct
 	{
-		unsigned int
-		SmallestSize	: 16-0,
-		ReservedBits	: 32-16;
-	} EAX;
-	struct
-	{
-		unsigned int
-		LargestSize	: 16-0,
-		ReservedBits	: 32-16;
-	} EBX;
-	struct
-	{
-		unsigned int
-		EMX_MWAIT	:  1-0,
-		IBE_MWAIT	:  2-1,
-		ReservedBits	: 32-2;
-	} ECX;
-	struct
-	{	/* Intel reseved.					*/
 		unsigned int
 		SubCstate_MWAIT0:  4-0,
 		SubCstate_MWAIT1:  8-4,
@@ -878,273 +847,18 @@ typedef struct	/* MONITOR & MWAIT Leaf.				*/
 		SubCstate_MWAIT5: 24-20,
 		SubCstate_MWAIT6: 28-24,
 		SubCstate_MWAIT7: 32-28;
-	} EDX;
-} CPUID_0x00000005;
-
-
-typedef struct THERMAL_POWER_LEAF
-{	/* Thermal and Power Management Leaf.				*/
-	struct
-	{	/* Mostly Intel reserved.				*/
-		unsigned int
-		DTS		:  1-0, /* Digital temperature sensor avail. */
-		TurboIDA	:  2-1, /* Reports bit 38 of MSR 0x1a0	*/
-		ARAT		:  3-2, /* Common x86			*/
-		Reserved1	:  4-3,
-		PLN		:  5-4, /* Power limit notification controls */
-		ECMD		:  6-5, /* Clock modulation duty cycle ext. */
-		PTM		:  7-6, /* Package thermal management support */
-		HWP_Reg 	:  8-7, /* Hardware Performance registers */
-		HWP_Int 	:  9-8, /* IA32_HWP_INTERRUPT HWP_Notification*/
-		HWP_Act 	: 10-9, /* IA32_HWP_REQUEST Activity_Window */
-		HWP_EPP 	: 11-10,/* IA32_HWP_REQUEST Energy Perf. pref.*/
-		HWP_Pkg 	: 12-11,/* IA32_HWP_REQUEST_PKG 	*/
-		Reserved2	: 13-12,
-		HDC_Reg 	: 14-13,/* Hardware Duty Cycling registers */
-		Turbo_V3	: 15-14,/* Intel Turbo Boost Max Technology 3 */
-		HWP_HPrf	: 16-15,/* Highest Performance change support */
-		HWP_PECI	: 17-16,/* HWP PECI override support state. */
-		HWP_Flex	: 18-17,/* Flexible HWP is support state. */
-		HWP_Fast	: 19-18,/* IA32_HWP_REQUEST MSR fast access */
-		HWFB_Cap	: 20-19,/* IA32 HW_FEEDBACK* MSR support */
-		HWP_Idle	: 21-20,/* Ignore (or not) Idle SMT Processor */
-		Reserved3	: 23-21,
-		ITD_MSR 	: 24-23, /* HW_FEEDBACK_{CHAR,THREAD_CONFIG} */
-		THERM_INT_MSR	: 25-24, /* IA32_THERM_INTERRUPT MSR	*/
-		Reserved4	: 32-25;
-	} EAX;
-	struct
-	{	/* Intel reserved.					*/
-		unsigned int
-		DTS_INT_Threshld:  4-0, /* # of Interrupt Thresholds in DTS */
-		Reserved	: 32-4;
-	} EBX;
-    union
-    {
-	struct
-	{	/* Intel reserved.					*/
-		unsigned int
-		HCF_Cap 	:  1-0, /* IA32_MPERF(E7h) & IA32_APERF(E8h) */
-		ACNT_Cap	:  2-1,
-		Reserved1	:  3-2,
-		SETBH		:  4-3, /* MSR: IA32_ENERGY_PERF_BIAS (1B0H) */
-		Reserved2	:  8-4,
-		ITD_CLS 	: 16-8, /* Thread Director classes	*/
-		Reserved3	: 32-16;
-	};
-	struct
-	{	/* AMD reserved.					*/
-		unsigned int
-		EffFreq 	:  1-0, /* MPERF(0000_00E7) & APERF(0000_00E8)*/
-		Reserved	: 32-1;
-	};
-    } ECX;
-	struct
-	{	/* Intel reserved.					*/
-		unsigned int
-		HWFB_Cap	:  8-7, /*Hardware Feedback Interface bitmap */
-		HWFB_pSz	: 12-8, /*HW Feedback structure size (4K page)*/
-		Reserved	: 16-12,
-		HWFB_Idx	: 32-16; /*HW Feedback structure base 0 index */
-	} EDX;
-} CPUID_0x00000006;
-
-typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
-{
-	struct
-	{	/* Common x86						*/
-		unsigned int
-		MaxSubLeaf	: 32-0;
-	} EAX;
-	struct
-	{
-		unsigned int
-		FSGSBASE	:  1-0, /* Common x86			*/
-		TSC_ADJUST	:  2-1, /* IA32_TSC_ADJUST		*/
-		SGX		:  3-2, /* Intel SGX			*/
-		BMI1		:  4-3, /* Common x86			*/
-		HLE		:  5-4, /* Hardware Lock Elision	*/
-		AVX2		:  6-5, /* Common x86			*/
-		FDP_EXCPTN_x87	:  7-6, /* FPU Data Pointer exceptions	*/
-		SMEP		:  8-7, /* x86: Supervisor-Mode exec.	*/
-		BMI2		:  9-8, /* Common x86			*/
-		ERMS		: 10-9, /* Enhanced REP MOVSB/STOSB	*/
-		INVPCID 	: 11-10, /* Invalidate TLB in Specified PCID*/
-		RTM		: 12-11, /* Restricted Transactional Memory */
-		PQM		: 13-12, /* Intel RDT-M capability ?	*/
-		FPU_CS_DS	: 14-13,
-		MPX		: 15-14, /* Memory Protection Extensions */
-		PQE		: 16-15, /* Intel RDT-A capability ?	*/
-		AVX_512F	: 17-16, /* AVX-512 Foundation Instructions */
-		AVX_512DQ	: 18-17,
-		RDSEED		: 19-18, /* RDSEED Instruction		*/
-		ADX		: 20-19, /* Arbitrary-Precision Arithmetic */
-		SMAP_CLAC_STAC	: 21-20, /*Supervisor-Mode Access & CLAC/STAC*/
-		AVX512_IFMA	: 22-21,
-		Reserved	: 23-22,
-		CLFLUSHOPT	: 24-23, /* Flush Cache Line Optimized	*/
-		CLWB		: 25-24, /* Cache Line Write Back	*/
-		ProcessorTrace	: 26-25, /* CPUID.(EAX=14H, ECX=0)	*/
-		AVX512PF	: 27-26, /* Intel Xeon Phi		*/
-		AVX512ER	: 28-27, /* Intel Xeon Phi		*/
-		AVX512CD	: 29-28,
-		SHA		: 30-29, /* Intel/AMD Secure Hash Algorithm */
-		AVX512BW	: 31-30,
-		AVX512VL	: 32-31;
-	} EBX;
-	struct
-	{	/* Intel reserved.					*/
-		unsigned int
-		PREFETCHWT1	:  1-0, /* Intel Xeon Phi		*/
-		AVX512_VBMI	:  2-1,
-		UMIP		:  3-2, /* User-Mode Instruction Prevention */
-		PKU		:  4-3, /* Protection Keys User-Mode pages */
-		OSPKE		:  5-4, /* RDPKRU/WRPKRU instructions	*/
-		WAITPKG 	:  6-5, /* TPAUSE, UMONITOR, UMWAIT	*/
-		AVX512_VBMI2	:  7-6,
-		CET_SS		:  8-7, /* IA32_U_CET and IA32_S_CET	*/
-		GFNI		:  9-8, /* Galois Field SSE instructions*/
-		VAES		: 10-9,
-		VPCLMULQDQ	: 11-10,
-		AVX512_VNNI	: 12-11,
-		AVX512_BITALG	: 13-12,
-		TME_EN		: 14-13, /* IA32_TME_{CAP,ACTIVATE,EXCLUDE} */
-		AVX512_VPOPCNTDQ: 15-14, /* Intel Xeon Phi		*/
-		Reserved1	: 16-15,
-		LA57		: 17-16,
-		MAWAU		: 22-17, /* for BNDLDX & BNDSTX instructions*/
-		RDPID		: 23-22, /* Intel RDPID inst. & IA32_TSC_AUX */
-		KL		: 24-23, /* Key Locker			*/
-		BUS_LOCK_DETECT : 25-24,
-		CLDEMOTE	: 26-25, /* Support of cache line demote */
-		Reserved2	: 27-26,
-		MOVDIRI 	: 28-27, /* Move Doubleword as Direct Store*/
-		MOVDIR64B	: 29-28, /* Move 64 Bytes as Direct Store*/
-		ENQCMD		: 30-29, /* Support of Enqueue Stores	*/
-		SGX_LC		: 31-30, /* SGX Launch Configuration support*/
-		PKS		: 32-31; /* Protection Keys Supervisor-mode PG*/
-	} ECX;
-	struct
-	{	/* Intel reserved.					*/
-		unsigned int
-		Reserved1	:  1-0,
-		SGX_KEYS	:  2-1,
-		AVX512_4VNNIW	:  3-2,  /* Intel Xeon Phi		*/
-		AVX512_4FMAPS	:  4-3,  /* Intel Xeon Phi		*/
-		FSRM		:  5-4,  /* Fast Short REP MOVSB 	*/
-		UINTR		:  6-5,  /* CLUI,SENDUIPI,STUI,TESTUI,UIRET */
-		Reserved2	:  8-6,
-		AVX512_VP2INTER :  9-8,  /* TGL: AVX512_VP2INTERSECT	*/
-		SRBDS_CTRL	: 10-9,  /* IA32_MCU_OPT_CTRL		*/
-		MD_CLEAR_Cap	: 11-10,
-		RTM_ALWAYS_ABORT: 12-11,
-		Reserved3	: 13-12,
-		TSX_FORCE_ABORT : 14-13, /* MSR TSX_FORCE_ABORT capable	*/
-		SERIALIZE	: 15-14, /* SERIALIZE instruction	*/
-		Hybrid		: 16-15, /* Hybrid part processor	*/
-		TSXLDTRK	: 17-16, /* TSX suspend load address tracking*/
-		Reserved4	: 18-17,
-		PCONFIG 	: 19-18,
-		ArchitecturalLBRs:20-19,
-		CET_IBT 	: 21-20, /* CET Indirect Branch Tracking */
-		Reserved5	: 22-21,
-		AMX_BF16	: 23-22,
-		AVX512_FP16	: 24-23,
-		AMX_TILE	: 25-24,
-		AMX_INT8	: 26-25,
-		IBRS_IBPB_Cap	: 27-26, /* IA32_SPEC_CTRL,IA32_PRED_CMD */
-		STIBP_Cap	: 28-27, /* IA32_SPEC_CTRL[1]		*/
-		L1D_FLUSH_Cap	: 29-28, /* IA32_FLUSH_CMD		*/
-		IA32_ARCH_CAP	: 30-29, /* IA32_ARCH_CAPABILITIES	*/
-		IA32_CORE_CAP	: 31-30, /* IA32_CORE_CAPABILITIES	*/
-		SSBD_Cap	: 32-31; /* IA32_SPEC_CTRL[2]		*/
-	} EDX;
-} CPUID_0x00000007;
-
-typedef struct	/* Extended Feature Flags Enumeration Leaf 1		*/
-{		/* Intel reserved.					*/
-	struct CPUID_0x00000007_1_EAX
-	{
-		unsigned int
-		Reserved1	:  3-0,
-		RAO_INT 	:  4-3,  /* Grand Ridge			*/
-		AVX_VNNI_VEX	:  5-4,  /* Vector Neural Network Instructions*/
-		AVX512_BF16	:  6-5,  /* BFLOAT16 support in AVX512	*/
-		LASS		:  7-6,
-		CMPCCXADD	:  8-7,  /* Sierra Forest, Grand Ridge	*/
-		ArchPerfmonExt	:  9-8,
-		Reserved2	: 10-9,
-		FZRM		: 11-10, /* Fast Zero-length REP MOVSB	*/
-		FSRS		: 12-11, /* Fast Short REP STOSB:Store String */
-		FSRC		: 13-12, /* Fast Short REP CMPSB, REP SCASB */
-		Reserved3	: 19-13,
-		WRMSRNS 	: 20-19, /* Sierra Forest, Grand Ridge	*/
-		Reserved4	: 21-20,
-		AMX_FP16	: 22-21, /* Granite Rapids		*/
-		HRESET		: 23-22, /* History Reset instruction	*/
-		AVX_IFMA	: 24-23, /* Sierra Forest, Grand Ridge	*/
-		Reserved5	: 26-24,
-		LAM		: 27-26, /* Linear Address Masking	*/
-		RDMSRLIST	: 28-27, /* Sierra Forest, Grand Ridge	*/
-		Reserved6	: 32-28;
-	} EAX;
-	struct
-	{
-		unsigned int
-		MSR_PPIN_CAP	:  1-0,  /* MSR IA32_PPIN and IA32_PPIN_CTL */
-		Reserved	: 32-1;
-	} EBX;
-	struct
-	{
-		unsigned int
-		Reserved	: 32-0;
-	} ECX;
-	struct CPUID_0x00000007_1_EDX
-	{
-		unsigned int
-		Reserved1	:  4-0,
-		AVX_VNNI_INT8	:  5-4,  /* Sierra Forest, Grand Ridge	*/
-		AVX_NE_CONVERT	:  6-5,  /* Sierra Forest, Grand Ridge	*/
-		Reserved2	: 14-6,
-		PREFETCHI	: 15-14, /* Granite Rapids: IA32_UINTR	*/
-		Reserved3	: 18-15,
-		CET_SSS 	: 19-18,
-		Reserved4	: 32-19;
-	} EDX;
-} CPUID_0x00000007_1;
-
-typedef struct	/* Extended Feature Flags Leaf equal or greater than 2	*/
-{
-	struct
-	{	/* Intel reserved.					*/
-		unsigned int
-		Reserved	: 32-0;
-	} EAX, EBX, ECX;
-	struct CPUID_0x00000007_2_EDX
-	{	/* Intel reserved.					*/
-		unsigned int
-		PSFD_SPEC_CTRL	:  1-0,
-		IPRED_SPEC_CTRL :  2-1,
-		RRSBA_SPEC_CTRL :  3-2,
-		DDPD_U_SPEC_CTRL:  4-3,
-		BHI_SPEC_CTRL	:  5-4,
-		MCDT_NO 	:  6-5,
-		Reserved	: 32-6;
-	} EDX;
-} CPUID_0x00000007_2;
-
-typedef struct	/* Architectural Performance Monitoring Leaf.		*/
-{	/* Intel reserved.						*/
-	struct
-	{
+	} MWait;
+	struct {
+	    struct
+	    {
 		unsigned int
 		Version 	:  8-0,
 		MonCtrs 	: 16-8,
 		MonWidth	: 24-16,
 		VectorSz	: 32-24;
-	} EAX;
-	struct
-	{
+	    };
+	    struct
+	    {
 		unsigned int
 		CoreCycles	:  1-0,
 		InstrRetired	:  2-1,
@@ -1155,283 +869,53 @@ typedef struct	/* Architectural Performance Monitoring Leaf.		*/
 		BranchMispred	:  7-6,
 		TopdownSlots	:  8-7,
 		ReservedBits	: 32-8;
-	} EBX;
-	struct
-	{
+	    };
+	    struct
+	    {
 		unsigned int
-		FixCtrs_Mask	: 32-0; /* Counter# supported at ECX[Bit#] */
-	} ECX;
-	struct
-	{
+		FixCtrs_Mask	: 32-0;
+	    };
+	    struct
+	    {
 		unsigned int
 		FixCtrs 	:  5-0,
 		FixWidth	: 13-5,
 		Reserved1	: 15-13,
 		AnyThread_Dprec : 16-15, /* AnyThread deprecation.	*/
 		Reserved2	: 32-16;
-	} EDX;
-} CPUID_0x0000000a;
-
-typedef struct	/* Intel Hybrid Information Enumeration Leaf		*/
-{
-		unsigned int
-		Model_ID	: 24-0,
-		CoreType	: 32-24; /* 0x20: Atom; 0x40: Core	*/
-} CPUID_0x0000001a;
-
-typedef struct	/* Extended CPUID Function.				*/
-{
-		unsigned int LargestExtFunc, EBX, ECX, EDX;
-} CPUID_0x80000000;
-
-typedef struct
-{
-	struct { /* AMD reserved, compatible with CPUID(0x00000001)	*/
-		unsigned int
-		Stepping	:  4-0,
-		Model		:  8-4,
-		Family		: 12-8,
-		Reserved1	: 16-12,
-		ExtModel	: 20-16,
-		ExtFamily	: 28-20,
-		Reserved2	: 32-28;
-	} EAX;
-	union { /* AMD reserved, same as CPUID(0x00000001)		*/
-	    struct {
-		unsigned int
-		Brand_ID	:  8-0,
-		CLFSH_Size	: 16-8,
-		Max_SMT_ID	: 24-16,
-		Init_APIC_ID	: 32-24;
 	    };
-	    struct {			/*	AMD Zen families	*/
-		unsigned int
-		Reserved	: 28-0,
-		PackageType	: 32-28; /* [31-28] PkgType:0=FP6,2=AM4 */
-	    };
-	} EBX;
-    union
-    {
-	struct { /* Intel reserved.					*/
-		unsigned int
-		LAHFSAHF	:  1-0, /* LAHF and SAHF instruction support */
-		Reserved1	:  5-1,
-		LZCNT		:  6-5,
-		Reserved2	:  8-6,
-		PREFETCHW	:  9-8,
-		Reserved3	: 32-9;
-	};
-	struct { /* AMD reserved.					*/
-		unsigned int
-		/* Family 0Fh :						*/
-		LahfSahf:  1-0,
-		MP_Mode :  2-1,  /* Core multi-processing legacy mode.	*/
-		SVM	:  3-2,  /* Secure virtual machine.		*/
-		xApicSpace:4-3,  /* Extended APIC space.		*/
-		AltMov	:  5-4,  /* AltMovCr8				*/
-		ABM	:  6-5,  /* LZCNT instruction support.		*/
-		SSE4A	:  7-6,
-		AlignSSE:  8-7,  /* Misaligned SSE mode.		*/
-		PREFETCH:  9-8,  /* 3DNow PREFETCH, PREFETCHW instruction. */
-		/* Families [10h, 15h - 17h]:				*/
-		OSVW	: 10-9,  /* OS-visible workaround support.	*/
-		IBS	: 11-10, /* Instruction based sampling.		*/
-		XOP	: 12-11, /* Extended operation support.		*/
-		SKINIT	: 13-12, /* SKINIT and STGI support.		*/
-		WDT	: 14-13, /* Watchdog timer support.		*/
-		NotUsed1: 15-14,
-		LWP	: 16-15, /* Lightweight profiling support.	*/
-		FMA4	: 17-16, /* Four-operand FMA instruction.	*/
-		TCE	: 18-17, /* Translation Cache Extension.	*/
-		NotUsed2: 19-18,
-		NodeId	: 20-19, /* Family 10h				*/
-		NotUsed3: 21-20,
-		TBM	: 22-21, /* Trailing bit manipulation.		*/
-		ExtApicId:23-22, /* Topology extensions in CPUID_0x8000001e */
-		PerfCore: 24-23, /* PerfCtrExtCore MSR.			*/
-		PerfNB	: 25-24, /* PerfCtrExtNB MSR.			*/
-		NotUsed4: 26-25,
-		Data_BP : 27-26, /* Data access breakpoint extension.	*/
-		CU_PTSC : 28-27, /* Global TSC (CU_PTSC)		*/
-		PerfLLC : 29-28, /* Last level Cache perf. counter extensions*/
-		MWaitExt: 30-29, /* MWAITX/MONITORX support.		*/
-		AdMskExt: 31-30, /* Addr Mask Ext support for Inst Breakpoint*/
-		NotUsed5: 32-31;
-	};
-    } ECX;
-    union
-    {
-	struct { /* Intel reserved.					*/
-		unsigned int
-		Reserved1	: 11-0,
-		SYSCALL 	: 12-11,
-		Reserved2	: 20-12,
-		XD_Bit		: 21-20,
-		Reserved3	: 26-21,
-		PG_1GB		: 27-26,
-		RdTSCP		: 28-27,
-		Reserved4	: 29-28,
-		IA64		: 30-29,
-		Reserved5	: 32-30;
-	};
-	struct { /* AMD reserved.					*/
-		unsigned int	 /* Most bits equal to CPUID 0x01	*/
-		FPU	:  1-0,
-		VME	:  2-1,  /* Virtual-mode enhancements.		*/
-		DE	:  3-2,  /* Debugging extensions.		*/
-		PSE	:  4-3,  /* Page-size extensions.		*/
-		TSC	:  5-4,
-		MSR	:  6-5,  /* AMD MSR.				*/
-		PAE	:  7-6,
-		MCE	:  8-7,
-		CMPXCH8 :  9-8,
-		APIC	: 10-9,
-		NotUsed1: 11-10,
-		SEP	: 12-11,
-		MTRR	: 13-12,
-		PGE	: 14-13,
-		MCA	: 15-14,
-		CMOV	: 16-15,
-		PAT	: 17-16,
-		PSE36	: 18-17,
-		NotUsed2: 20-18,
-		NX	: 21-20, /* No-Execute Page Protection.		*/
-		NotUsed3: 22-21,
-		MMX_Ext : 23-22, /* MMX extensions.			*/
-		MMX	: 24-23,
-		FXSR	: 25-24,
-		FFXSR	: 26-25, /* FXSAVE and FXRSTOR optimizations.	*/
-		Page1GB : 27-26,
-		RDTSCP	: 28-27,
-		NotUsed4: 29-28,
-		LM	: 30-29, /* Long mode.				*/
-		_3DNowEx: 31-30, /* Extensions to 3DNow!		*/
-		_3DNow	: 32-31; /* 3DNow! instructions.		*/
-	};
-    } EDX;
-} CPUID_0x80000001;
-
-typedef struct	/* Architectural Performance Monitoring Leaf.		*/
-{
+	} PerfMon;
 	struct
 	{
 		unsigned int
-		Reserved	: 32-0;
-	} EAX;
-    union
-    {
-	struct { /* Intel reserved.					*/
-		unsigned int
-		Reserved	: 32-0;
-	};
-	struct { /* AMD as April 2020					*/
-		unsigned int
-		MCA_Ovf 	:  1-0,/* MCA overflow recovery support */
-		SUCCOR		:  2-1,/*SW uncorrectable error & recovery cap*/
-		HWA		:  3-2,/* Hardware Assert MSR 0xc00110[df:c0].*/
-		Scal_MCA	:  4-3,/* ScalableMca w/ 1 is supported */
-		Rsvd_AMD	: 32-4;
-	};
-    } EBX;
-    union
-    {
-	struct { /* Intel reserved.					*/
-		unsigned int
-		Reserved	: 32-0;
-	};
-	struct { /* AMD as April 2020					*/
-		unsigned int		/* Ratio of the compute unit power */
-		CpuPwrSampleTimeRatio;  /* accumulator sample period to */
-	};				/* the TSC counter period.	*/
-    } ECX;
-    union
-    {
-	struct { /* Intel reserved.					*/
-		unsigned int
-		Reserved1	:  8-0,
-		Inv_TSC 	:  9-8,  /* Invariant TSC available if 1 */
-		Reserved2	: 32-9;
-	};
-      union
-      { 	/* AMD Family 0Fh					*/
-	struct {
-		unsigned int
-		TS	:  1-0,  /* Temperature sensor			*/
-		FID	:  2-1,  /* Frequency ID control is supported.	*/
-		VID	:  3-2,  /* Voltage ID control is supported.	*/
-		TTP	:  4-3,  /* THERMTRIP is supported = 1.		*/
-		TM	:  5-4,  /* Hardware thermal control (HTC).	*/
-		STC	:  6-5,  /* K7-K8: Software thermal control (STC) */
-		_100MHz :  7-6,  /* 100 MHz multiplier Control. 	*/
-		NotUsed : 32-7;
-	};
-	struct { /* AMD starting at family 15h				*/
-		unsigned int
-		Fam_0Fh :  7-0,  /* Family 0Fh features.		*/
-		HwPstate:  8-7,  /* Hardware P-state control MSR 0xc0010061-63*/
-		TscInv	:  9-8,  /* Invariant TSC ?			*/
-		CPB	: 10-9,  /* Core performance boost.		*/
-		EffFrqRO: 11-10, /* Read-only effective freq. interf. msr ?   */
-		ProcFb	: 12-11, /* Processor feedback interf. available if 1 */
-		ProcPwr : 13-12, /* Core power reporting interface supported. */
-		ConStdBy: 14-13, /* ConnectedStandby			*/
-		RAPL	: 15-14, /* F17h and afterward: RAPL support	*/
-		FastCPPC: 16-15, /* F19h Model 61h: Fast CPPC support	*/
-		Reserved: 32-16;
-	};
-      };
-    } EDX;
-} CPUID_0x80000007;
-
-typedef struct	/* AMD Extended ID Leaf.				*/
-{ /* Remark: all registers valid if CPUID(0x80000001).ECX.TopoEx == 1	*/
-	struct {
-		unsigned int
-		ExtApicId	: 32-0;/* iff MSR(APIC_BAR[APIC_EN]) == 1 */
-	} EAX;
-    union
-	{
-	struct {	/* Family 15h					*/
-		unsigned int
-		CompUnitId	:  8-0,
-		CoresPerCU	: 16-8, /* CoresPerComputeUnit + 1	*/
-		Reserved_F15h	: 32-16;
-		};
-	struct {	/* Family 17h					*/
-		unsigned int
-		CoreId		:  8-0,
-		ThreadsPerCore	: 16-8,
-		Reserved_F17h	: 32-16;
-		};
-	} EBX;
-	struct {
-		unsigned int
-		NodeId		:  8-0,
-		NodesPerProc	: 11-8,  /* 000b=1,001b=2,011b=4 nodes	*/
-		Reserved	: 32-11;
-	} ECX;
-	struct
-	{
-		unsigned int
-		Reserved	: 32-0;
-	} EDX;
-} CPUID_0x8000001e;
-
-typedef struct	/* BSP CPUID features.					*/
-{
-	CPUID_FUNCTION		Info;
-
-	CPUID_0x00000001	Std;
-	CPUID_0x00000005	MWait;
-	CPUID_0x00000006	Power;
-	CPUID_0x00000007	ExtFeature;
- struct CPUID_0x00000007_1_EAX	ExtFeature_Leaf1_EAX;
- struct CPUID_0x00000007_1_EDX	ExtFeature_Leaf1_EDX;
- struct CPUID_0x00000007_2_EDX	ExtFeature_Leaf2_EDX;
-	CPUID_0x0000000a	PerfMon;
-	CPUID_0x80000001	ExtInfo;
-	CPUID_0x80000007	AdvPower;
-
+		DTS		:  1-0,
+		TurboIDA	:  2-1,
+/*		ARAT		:  3-2,
+		Reserved1	:  4-3,*/
+		PLN		:  5-4,
+/*		ECMD		:  6-5,*/
+		PTM		:  7-6,
+		HWP_Reg 	:  8-7,
+/*		HWP_Int 	:  9-8,
+		HWP_Act 	: 10-9,
+		HWP_EPP 	: 11-10,
+		HWP_Pkg 	: 12-11,
+		Reserved2	: 13-12,
+		HDC_Reg 	: 14-13,*/
+		Turbo_V3	: 15-14,
+/*		HWP_HPrf	: 16-15,
+		HWP_PECI	: 17-16,
+		HWP_Flex	: 18-17,
+		HWP_Fast	: 19-18,
+		HWFB_Cap	: 20-19,
+		HWP_Idle	: 21-20,
+		Reserved3	: 23-21,
+		ITD_MSR 	: 24-23,
+		THERM_INT_MSR	: 25-24,
+		Reserved4	: 32-25;*/
+		HCF_Cap 	:  1-0;
+	} Power;
+/*TODO*/
 	struct {
 		unsigned long long	PPIN;
 			CLOCK		Clock;

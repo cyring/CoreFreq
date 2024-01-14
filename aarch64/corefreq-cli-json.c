@@ -385,10 +385,6 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_key(&s, "Info");
 			{
 				json_start_object(&s);
-				json_key(&s, "LargestStdFunc");
-				json_literal(&s, "%u", RO(Shm)->Proc.Features.Info.LargestStdFunc);
-				json_key(&s, "LargestExtFunc");
-				json_literal(&s, "%u", RO(Shm)->Proc.Features.Info.LargestExtFunc);
 				json_key(&s, "Vendor");
 				{
 					json_start_object(&s);
@@ -401,8 +397,6 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 				json_key(&s, "Hypervisor");
 				{
 					json_start_object(&s);
-					json_key(&s, "LargestHypFunc");
-					json_literal(&s, "%u", RO(Shm)->Proc.Features.Info.LargestHypFunc);
 					json_key(&s, "CRC");
 					json_literal(&s, "%u", RO(Shm)->Proc.Features.Info.Hypervisor.CRC);
 					json_key(&s, "ID");
@@ -421,169 +415,121 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 				    json_key(&s, "Stepping");
 				    {
 					json_start_object(&s);
-					snprintf(hexStr, 32, "0x%x", RO(Shm)->Proc.Features.Std.EAX.Stepping);
+					snprintf(hexStr, 32, "0x%x", RO(Shm)->Proc.Features.Info.Signature.Stepping);
 					json_key(&s, "Revision");
 					json_string(&s, hexStr);
 					json_end_object(&s);
 				    }
 					json_key(&s, "Model");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EAX.Model);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Info.Signature.Model);
 					json_key(&s, "Family");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EAX.Family);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Info.Signature.Family);
 					json_key(&s, "ExtModel");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EAX.ExtModel);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Info.Signature.ExtModel);
 					json_key(&s, "ExtFamily");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EAX.ExtFamily);
-					json_end_object(&s);
-				}
-				json_key(&s, "EBX");
-				{
-					json_start_object(&s);
-					json_key(&s, "Brand_ID");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EBX.Brand_ID);
-					json_key(&s, "CLFSH_Size");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EBX.CLFSH_Size);
-					json_key(&s, "Max_SMT_ID");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EBX.Max_SMT_ID);
-					json_key(&s, "Init_APIC_ID");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EBX.Init_APIC_ID);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Info.Signature.ExtFamily);
 					json_end_object(&s);
 				}
 				json_key(&s, "EСX");
 				{
 					json_start_object(&s);
 					json_key(&s, "SSE3");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.SSE3);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SSE3);
 					json_key(&s, "PCLMULQDQ");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.PCLMULDQ);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PCLMULDQ);
 					json_key(&s, "DTES64");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.DTES64);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.DTES64);
 					json_key(&s, "MONITOR");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.MONITOR);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MONITOR);
 					json_key(&s, "DS_CPL");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.DS_CPL);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.DS_CPL);
 					json_key(&s, "VMX");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.VMX);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.VMX);
 					json_key(&s, "SMX");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.SMX);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SMX);
 					json_key(&s, "EIST");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.EIST);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.EIST);
 					json_key(&s, "TM2");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.TM2);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.TM2);
 					json_key(&s, "SSSE3");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.SSSE3);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SSSE3);
 					json_key(&s, "CNXT_ID");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.CNXT_ID);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.CNXT_ID);
 					json_key(&s, "SDBG");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.SDBG);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SDBG);
 					json_key(&s, "FMA");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.FMA);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FMA);
 					json_key(&s, "CMPXCHG16B");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.CMPXCHG16);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.CMPXCHG16);
 					json_key(&s, "xTPR");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.xTPR);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.xTPR);
 					json_key(&s, "PDCM");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.PDCM);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PDCM);
 					json_key(&s, "Reserved");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.Reserved);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Reserved);
 					json_key(&s, "PCID");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.PCID);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PCID);
 					json_key(&s, "DCA");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.DCA);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.DCA);
 					json_key(&s, "SSE41");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.SSE41);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SSE41);
 					json_key(&s, "SSE42");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.SSE42);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SSE42);
 					json_key(&s, "x2APIC");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.x2APIC);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.x2APIC);
 					json_key(&s, "MOVBE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.MOVBE);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MOVBE);
 					json_key(&s, "POPCNT");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.POPCNT);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.POPCNT);
 					json_key(&s, "TSC_DEADLINE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.TSC_DEADLINE);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.TSC_DEADLINE);
 					json_key(&s, "XSAVE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.XSAVE);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.XSAVE);
 					json_key(&s, "OSXSAVE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.OSXSAVE);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.OSXSAVE);
 					json_key(&s, "AVX");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.AVX);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AVX);
 					json_key(&s, "F16C");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.F16C);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.F16C);
 					json_key(&s, "RDRAND");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.RDRAND);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RDRAND);
 					json_key(&s, "Hyperv");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.ECX.Hyperv);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Hyperv);
 					json_end_object(&s);
 				}
 				json_key(&s, "EDX");
 				{
 					json_start_object(&s);
 					json_key(&s, "FPU");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.FPU);
-					json_key(&s, "VME");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.VME);
-					json_key(&s, "DE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.DE);
-					json_key(&s, "PSE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.PSE);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FPU);
 					json_key(&s, "TSC");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.TSC);
-					json_key(&s, "MSR");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.MSR);
-					json_key(&s, "PAE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.PAE);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.TSC);
 					json_key(&s, "MCE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.MCE);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MCE);
 					json_key(&s, "CMPXCHG8B");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.CMPXCHG8);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.CMPXCHG8);
 					json_key(&s, "APIC");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.APIC);
-					json_key(&s, "Reserved1");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.Reserved1);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.APIC);
 					json_key(&s, "SEP");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.SEP);
-					json_key(&s, "MTRR");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.MTRR);
-					json_key(&s, "PGE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.PGE);
-					json_key(&s, "MCA");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.MCA);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SEP);
 					json_key(&s, "CMOV");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.CMOV);
-					json_key(&s, "PAT");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.PAT);
-					json_key(&s, "PSE36");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.PSE36);
-					json_key(&s, "PSN");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.PSN);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.CMOV);
 					json_key(&s, "CLFLUSH");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.CLFLUSH);
-					json_key(&s, "Reserved2");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.Reserved2);
-					json_key(&s, "DS_PEBS");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.DS_PEBS);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.CLFLUSH);
 					json_key(&s, "ACPI");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.ACPI);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ACPI);
 					json_key(&s, "MMX");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.MMX);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MMX);
 					json_key(&s, "FXSR");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.FXSR);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FXSR);
 					json_key(&s, "SSE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.SSE);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SSE);
 					json_key(&s, "SSE2");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.SSE2);
-					json_key(&s, "SS");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.SS);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SSE2);
 					json_key(&s, "HTT");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.HTT);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.HTT);
 					json_key(&s, "TM1");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.TM1);
-					json_key(&s, "Reserved3");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.Reserved3);
-					json_key(&s, "PBE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EDX.PBE);
-
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.TM1);
 					json_end_object(&s);
 				}
 				json_end_object(&s);
@@ -591,54 +537,25 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_key(&s, "MWait");
 			{
 				json_start_object(&s);
-				json_key(&s, "EAX");
-				{
-					json_start_object(&s);
-					json_key(&s, "SmallestSize");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.EAX.SmallestSize);
-					json_key(&s, "ReservedBits");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.EAX.ReservedBits);
-					json_end_object(&s);
-				}
-				json_key(&s, "EBX");
-				{
-					json_start_object(&s);
-					json_key(&s, "LargestSize");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.EBX.LargestSize);
-					json_key(&s, "ReservedBits");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.EBX.ReservedBits);
-					json_end_object(&s);
-				}
-				json_key(&s, "ECX");
-				{
-					json_start_object(&s);
-					json_key(&s, "EMX_MWAIT");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.ECX.EMX_MWAIT);
-					json_key(&s, "IBE_MWAIT");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.ECX.IBE_MWAIT);
-					json_key(&s, "ReservedBits");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.ECX.ReservedBits);
-					json_end_object(&s);
-				}
 				json_key(&s, "EDX");
 				{
 					json_start_object(&s);
 					json_key(&s, "SubCstate_C0_MWAIT");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.EDX.SubCstate_MWAIT0);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.SubCstate_MWAIT0);
 					json_key(&s, "SubCstate_C1_MWAIT");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.EDX.SubCstate_MWAIT1);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.SubCstate_MWAIT1);
 					json_key(&s, "SubCstate_C2_MWAIT");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.EDX.SubCstate_MWAIT2);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.SubCstate_MWAIT2);
 					json_key(&s, "SubCstate_C3_MWAIT");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.EDX.SubCstate_MWAIT3);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.SubCstate_MWAIT3);
 					json_key(&s, "SubCstate_C4_MWAIT");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.EDX.SubCstate_MWAIT4);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.SubCstate_MWAIT4);
 					json_key(&s, "SubCstate_C5_MWAIT");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.EDX.SubCstate_MWAIT5);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.SubCstate_MWAIT5);
 					json_key(&s, "SubCstate_C6_MWAIT");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.EDX.SubCstate_MWAIT6);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.SubCstate_MWAIT6);
 					json_key(&s, "SubCstate_C7_MWAIT");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.EDX.SubCstate_MWAIT7);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.SubCstate_MWAIT7);
 
 					json_end_object(&s);
 				}
@@ -652,317 +569,24 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 		{
 			json_start_object(&s);
 			json_key(&s, "DTS");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EAX.DTS);
+			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.DTS);
 			json_key(&s, "TurboIDA");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EAX.TurboIDA);
-			json_key(&s, "ARAT");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EAX.ARAT);
+			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.TurboIDA);
 			json_key(&s, "PLN");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EAX.PLN);
-			json_key(&s, "ECMD");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EAX.ECMD);
+			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.PLN);
 			json_key(&s, "PTM");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EAX.PTM);
+			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.PTM);
 			json_key(&s, "HWP_Registers");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EAX.HWP_Reg);
-			json_key(&s, "HWP_Interrupt");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EAX.HWP_Int);
-			json_key(&s, "HWP_Activity");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EAX.HWP_Act);
-			json_key(&s, "HWP_EPP");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EAX.HWP_EPP);
-			json_key(&s, "HWP_Package");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EAX.HWP_Pkg);
-			json_key(&s, "HDC_Registers");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EAX.HDC_Reg);
+			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.HWP_Reg);
 			json_key(&s, "Turbo_V3");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EAX.Turbo_V3);
-			json_key(&s, "HWP_Highest_Pref_Cap");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EAX.HWP_HPrf);
-			json_key(&s, "HWP_PECI");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EAX.HWP_PECI);
-			json_key(&s, "HWP_Flex");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EAX.HWP_Flex);
-			json_key(&s, "HWP_Fast");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EAX.HWP_Fast);
-			json_key(&s, "HWFB_Cap");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EAX.HWFB_Cap);
-			json_key(&s, "HWP_Idle_SMT");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EAX.HWP_Idle);
-			json_key(&s, "ITD_MSR");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EAX.ITD_MSR);
-			json_key(&s, "THERM_INT_MSR");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EAX.THERM_INT_MSR);
-			json_end_object(&s);
-		}
-		json_key(&s, "EBX");
-		{
-			json_start_object(&s);
-			json_key(&s, "DTS_INT_Threshld");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EBX.DTS_INT_Threshld);
-			json_end_object(&s);
-		}
-		json_key(&s, "ECX");
-		{
-			json_start_object(&s);
+			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.Turbo_V3);
 			json_key(&s, "HCF_Cap");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.ECX.HCF_Cap);
-			json_key(&s, "ACNT_Cap");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.ECX.ACNT_Cap);
-			json_key(&s, "SETBH");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.ECX.SETBH);
-			json_key(&s, "ITD_CLS");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.ECX.ITD_CLS);
-			json_end_object(&s);
-		}
-		json_key(&s, "EDX");
-		{
-			json_start_object(&s);
-			json_key(&s, "HWFB_Cap");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EDX.HWFB_Cap);
-			json_key(&s, "HWFB_pSz");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EDX.HWFB_pSz);
-			json_key(&s, "HWFB_Idx");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.EDX.HWFB_Idx);
+			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.HCF_Cap);
 			json_end_object(&s);
 		}
 		json_end_object(&s);
 			}
-			json_key(&s, "ExtFeature");
-			{
-				json_start_object(&s);
 
-				json_key(&s, "EAX");
-				{
-					json_start_object(&s);
-					json_key(&s, "MaxSubLeaf");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EAX.MaxSubLeaf);
-					json_end_object(&s);
-				}
-				json_key(&s, "EBX");
-				{
-					json_start_object(&s);
-					json_key(&s, "FSGSBASE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.FSGSBASE);
-					json_key(&s, "TSC_ADJUST");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.TSC_ADJUST);
-					json_key(&s, "SGX");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.SGX);
-					json_key(&s, "BMI1");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.BMI1);
-					json_key(&s, "HLE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.HLE);
-					json_key(&s, "AVX2");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.AVX2);
-					json_key(&s, "FDP_EXCPTN_x87");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.FDP_EXCPTN_x87);
-					json_key(&s, "SMEP");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.SMEP);
-					json_key(&s, "BMI2");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.BMI2);
-					json_key(&s, "FastStrings");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.ERMS);
-					json_key(&s, "INVPCID");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.INVPCID);
-					json_key(&s, "RTM");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.RTM);
-					json_key(&s, "PQM");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.PQM);
-					json_key(&s, "FPU_CS_DS");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.FPU_CS_DS);
-					json_key(&s, "MPX");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.MPX);
-					json_key(&s, "PQE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.PQE);
-					json_key(&s, "AVX_512F");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.AVX_512F);
-					json_key(&s, "AVX_512DQ");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.AVX_512DQ);
-					json_key(&s, "RDSEED");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.RDSEED);
-					json_key(&s, "ADX");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.ADX);
-					json_key(&s, "SMAP_CLAC_STAC");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.SMAP_CLAC_STAC);
-					json_key(&s, "AVX512_IFMA");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.AVX512_IFMA);
-					json_key(&s, "CLFLUSHOPT");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.CLFLUSHOPT);
-					json_key(&s, "CLWB");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.CLWB);
-					json_key(&s, "ProcessorTrace");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.ProcessorTrace);
-					json_key(&s, "AVX512PF");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.AVX512PF);
-					json_key(&s, "AVX512ER");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.AVX512ER);
-					json_key(&s, "AVX512CD");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.AVX512CD);
-					json_key(&s, "SHA");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.SHA);
-					json_key(&s, "AVX512BW");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.AVX512BW);
-					json_key(&s, "AVX512VL");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EBX.AVX512VL);
-
-					json_end_object(&s);
-				}
-				json_key(&s, "ECX");
-				{
-					json_start_object(&s);
-					json_key(&s, "PREFETCHWT1");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.PREFETCHWT1);
-					json_key(&s, "AVX512_VBMI");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.AVX512_VBMI);
-					json_key(&s, "UMIP");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.UMIP);
-					json_key(&s, "PKU");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.PKU);
-					json_key(&s, "OSPKE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.OSPKE);
-					json_key(&s, "WAITPKG");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.WAITPKG);
-					json_key(&s, "AVX512_VBMI2");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.AVX512_VBMI2);
-					json_key(&s, "CET_SS");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.CET_SS);
-					json_key(&s, "GFNI");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.GFNI);
-					json_key(&s, "VAES");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.VAES);
-					json_key(&s, "VPCLMULQDQ");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.VPCLMULQDQ);
-					json_key(&s, "AVX512_VNNI");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.AVX512_VNNI);
-					json_key(&s, "AVX512_BITALG");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.AVX512_BITALG);
-					json_key(&s, "AVX512_VPOPCNTDQ");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.AVX512_VPOPCNTDQ);
-					json_key(&s, "LA57");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.LA57);
-					json_key(&s, "MAWAU");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.MAWAU);
-					json_key(&s, "RDPID");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.RDPID);
-					json_key(&s, "KL");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.KL);
-					json_key(&s, "CLDEMOTE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.CLDEMOTE);
-					json_key(&s, "MOVDIRI");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.MOVDIRI);
-					json_key(&s, "MOVDIR64B");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.MOVDIR64B);
-					json_key(&s, "ENQCMD");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.ENQCMD);
-					json_key(&s, "SGX_LC");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.ECX.SGX_LC);
-
-					json_end_object(&s);
-				}
-				json_key(&s, "EDX");
-				{
-					json_start_object(&s);
-					json_key(&s, "SGX_KEYS");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.SGX_KEYS);
-					json_key(&s, "AVX512_4VNNIW");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.AVX512_4VNNIW);
-					json_key(&s, "AVX512_4FMAPS");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.AVX512_4FMAPS);
-					json_key(&s, "Fast_Short_REP_MOVSB");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.FSRM);
-					json_key(&s, "UINTR");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.UINTR);
-					json_key(&s, "AVX512_VP2INTERSECT");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.AVX512_VP2INTER);
-					json_key(&s, "SERIALIZE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.SERIALIZE);
-					json_key(&s, "Hybrid");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.Hybrid);
-					json_key(&s, "TSX_FORCE_ABORT");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.TSX_FORCE_ABORT);
-					json_key(&s, "TSXLDTRK");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.TSXLDTRK);
-					json_key(&s, "PCONFIG");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.PCONFIG);
-					json_key(&s, "Architectural_LBRs");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.ArchitecturalLBRs);
-					json_key(&s, "CET_IBT");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.CET_IBT);
-					json_key(&s, "AMX_BF16");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.AMX_BF16);
-					json_key(&s, "AMX_TILE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.AMX_TILE);
-					json_key(&s, "AMX_INT8");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.AMX_INT8);
-					json_key(&s, "AVX512_FP16");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.AVX512_FP16);
-					json_key(&s, "IA32_ARCH_CAPABILITIES");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP);
-					json_key(&s, "IA32_CORE_CAPABILITIES");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_CORE_CAP);
-					json_key(&s, "SSBD");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature.EDX.SSBD_Cap);
-
-					json_end_object(&s);
-				}
-
-				json_end_object(&s);
-			}
-			json_key(&s, "ExtFeature_Leaf1");
-			{
-				json_start_object(&s);
-
-				json_key(&s, "EAX");
-				{
-					json_start_object(&s);
-					json_key(&s, "RAO_INT");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.RAO_INT);
-					json_key(&s, "AVX_VNNI_VEX");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX_VNNI_VEX);
-					json_key(&s, "AVX512_BF16");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX512_BF16);
-					json_key(&s, "LASS");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.LASS);
-					json_key(&s, "CMPCCXADD");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.CMPCCXADD);
-					json_key(&s, "Fast_Zero_length_REP_MOVSB");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FZRM);
-					json_key(&s, "Fast_Short_REP_STOSB");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FSRS);
-					json_key(&s, "Fast_Short_REP_CMPSB");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FSRC);
-					json_key(&s, "WRMSRNS");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.WRMSRNS);
-					json_key(&s, "AMX_FP16");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AMX_FP16);
-					json_key(&s, "HRESET");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.HRESET);
-					json_key(&s, "AVX_IFMA");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX_IFMA);
-					json_key(&s, "LAM");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.LAM);
-					json_key(&s, "RDMSRLIST");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.RDMSRLIST);
-
-					json_end_object(&s);
-				}
-				json_key(&s, "EDX");
-				{
-					json_start_object(&s);
-					json_key(&s, "AVX_VNNI_INT8");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_VNNI_INT8);
-					json_key(&s, "AVX_NE_CONVERT");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_NE_CONVERT);
-					json_key(&s, "PREFETCHI");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.PREFETCHI);
-					json_key(&s, "CET_SSS");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.CET_SSS);
-
-					json_end_object(&s);
-				}
-
-				json_end_object(&s);
-			}
 			json_key(&s, "PerfMon");
 			{
 				json_start_object(&s);
@@ -971,142 +595,58 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 				{
 					json_start_object(&s);
 					json_key(&s, "Version");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.EAX.Version);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.Version);
 					json_key(&s, "MonCtrs");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.EAX.MonCtrs);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.MonCtrs);
 					json_key(&s, "PMC_LLC");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Factory.PMC.LLC);
 					json_key(&s, "PMC_NB");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Factory.PMC.NB);
 					json_key(&s, "MonWidth");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.EAX.MonWidth);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.MonWidth);
 					json_key(&s, "VectorSz");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.EAX.VectorSz);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.VectorSz);
 					json_end_object(&s);
 				}
 				json_key(&s, "EBX");
 				{
 					json_start_object(&s);
 					json_key(&s, "CoreCycles");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.EBX.CoreCycles);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.CoreCycles);
 					json_key(&s, "InstrRetired");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.EBX.InstrRetired);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.InstrRetired);
 					json_key(&s, "RefCycles");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.EBX.RefCycles);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.RefCycles);
 					json_key(&s, "LLC_Ref");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.EBX.LLC_Ref);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.LLC_Ref);
 					json_key(&s, "LLC_Misses");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.EBX.LLC_Misses);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.LLC_Misses);
 					json_key(&s, "BranchRetired");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.EBX.BranchRetired);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.BranchRetired);
 					json_key(&s, "BranchMispred");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.EBX.BranchMispred);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.BranchMispred);
 					json_key(&s, "TopdownSlots");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.EBX.TopdownSlots);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.TopdownSlots);
 					json_key(&s, "ReservedBits");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.EBX.ReservedBits);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.ReservedBits);
 					json_end_object(&s);
 				}
 				json_key(&s, "ECX");
 				{
 					json_start_object(&s);
 					json_key(&s, "FixCtrs_Mask");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.ECX.FixCtrs_Mask);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.FixCtrs_Mask);
 					json_end_object(&s);
 				}
 				json_key(&s, "EDX");
 				{
 					json_start_object(&s);
 					json_key(&s, "FixCtrs");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.EDX.FixCtrs);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.FixCtrs);
 					json_key(&s, "FixWidth");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.EDX.FixWidth);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.FixWidth);
 					json_key(&s, "AnyThread_Deprecation");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.EDX.AnyThread_Dprec);
-					json_end_object(&s);
-				}
-
-				json_end_object(&s);
-			}
-			json_key(&s, "ExtInfo");
-			{
-				json_start_object(&s);
-
-				json_key(&s, "ECX");
-				{
-					json_start_object(&s);
-					json_key(&s, "LahfSahf");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.ECX.LAHFSAHF);
-					json_key(&s, "LZCNT");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.ECX.LZCNT);
-					json_key(&s, "PREFETCHW");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.ECX.PREFETCHW);
-					json_end_object(&s);
-				}
-				json_key(&s, "EDX");
-				{
-					json_start_object(&s);
-					json_key(&s, "Reserved1");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.EDX.Reserved1);
-					json_key(&s, "SYSCALL");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.EDX.SYSCALL);
-					json_key(&s, "Reserved2");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.EDX.Reserved2);
-					json_key(&s, "XD_Bit");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.EDX.XD_Bit);
-					json_key(&s, "Reserved3");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.EDX.Reserved3);
-					json_key(&s, "PG_1GB");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.EDX.PG_1GB);
-					json_key(&s, "RdTSCP");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.EDX.RdTSCP);
-					json_key(&s, "Reserved4");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.EDX.Reserved4);
-					json_key(&s, "IA64");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.EDX.IA64);
-					json_key(&s, "Reserved5");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtInfo.EDX.Reserved5);
-					json_end_object(&s);
-				}
-
-				json_end_object(&s);
-			}
-			json_key(&s, "AdvPower");
-			{
-				json_start_object(&s);
-
-				json_key(&s, "EAX");
-				{
-					json_start_object(&s);
-					json_key(&s, "Reserved");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AdvPower.EAX.Reserved);
-					json_end_object(&s);
-				}
-				json_key(&s, "EBX");
-				{
-					json_start_object(&s);
-					json_key(&s, "MCA_Ovf");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AdvPower.EBX.MCA_Ovf);
-					json_key(&s, "SUCCOR");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AdvPower.EBX.SUCCOR);
-					json_key(&s, "HWA");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AdvPower.EBX.HWA);
-					json_key(&s, "Rsvd_AMD");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AdvPower.EBX.Rsvd_AMD);
-					json_end_object(&s);
-				}
-				json_key(&s, "ECX");
-				{
-					json_start_object(&s);
-					json_key(&s, "CpuPwrSampleTimeRatio");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AdvPower.ECX.CpuPwrSampleTimeRatio);
-					json_end_object(&s);
-				}
-				json_key(&s, "EDX");
-				{
-					json_start_object(&s);
-					json_key(&s, "Inv_TSC");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AdvPower.EDX.Inv_TSC);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.AnyThread_Dprec);
 					json_end_object(&s);
 				}
 

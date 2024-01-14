@@ -384,8 +384,8 @@ static long CoreFreqK_Register_ClockSource(unsigned int cpu)
 	unsigned long long Freq_Hz;
 	unsigned int Freq_KHz;
 
-	if ((PUBLIC(RO(Proc))->Features.AdvPower.EDX.Inv_TSC == 1)
-	||  (PUBLIC(RO(Proc))->Features.ExtInfo.EDX.RDTSCP == 1))
+	if ((PUBLIC(RO(Proc))->Features.Inv_TSC == 1)
+	||  (PUBLIC(RO(Proc))->Features.RDTSCP == 1))
 	{
 		CoreFreqK_CS.read = CoreFreqK_Read_CS_From_Invariant_TSC;
 	}
@@ -487,13 +487,13 @@ signed int SearchArchitectureID(void)
 	signed int id;
     for (id = ARCHITECTURES - 1; id > 0; id--)
     {	/* Search for an architecture signature. */
-	if ( (PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily \
+	if ( (PUBLIC(RO(Proc))->Features.Info.Signature.ExtFamily \
 		== Arch[id].Signature.ExtFamily)
-	&& (PUBLIC(RO(Proc))->Features.Std.EAX.Family \
+	&& (PUBLIC(RO(Proc))->Features.Info.Signature.Family \
 		== Arch[id].Signature.Family)
-	&& ( ( (PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel \
+	&& ( ( (PUBLIC(RO(Proc))->Features.Info.Signature.ExtModel \
 			==  Arch[id].Signature.ExtModel)
-		&& (PUBLIC(RO(Proc))->Features.Std.EAX.Model \
+		&& (PUBLIC(RO(Proc))->Features.Info.Signature.Model \
 			==  Arch[id].Signature.Model) )
 		|| (!Arch[id].Signature.ExtModel \
 		&& !Arch[id].Signature.Model) ) )
@@ -520,8 +520,6 @@ static void Query_Features(void *pArg)
 	volatile AA64PFR1 pfr1;
 	volatile CLUSTERCFR clustercfg;
 
-	iArg->Features->Info.LargestStdFunc = 0x1;
-	iArg->Features->Info.LargestExtFunc = 0x80000001;
 	iArg->Features->Info.Vendor.CRC = CRC_RESERVED;
 	iArg->SMT_Count = 1;
 	iArg->HypervisorID = HYPERV_NONE;
@@ -549,11 +547,12 @@ static void Query_Features(void *pArg)
 		:
 		: "memory"
 	);
-	iArg->Features->Std.EAX.Stepping = midr.Revision | (midr.Variant << 4);
-	iArg->Features->Std.EAX.Family = midr.PartNum & 0x00f;
-	iArg->Features->Std.EAX.ExtFamily = (midr.PartNum & 0xff0) >> 4;
-	iArg->Features->Std.EAX.Model = pmcr.IDcode & 0x0f;
-	iArg->Features->Std.EAX.ExtModel = (pmcr.IDcode & 0xf0) >> 4;
+	iArg->Features->Info.Signature.Stepping = midr.Revision
+						| (midr.Variant << 4);
+	iArg->Features->Info.Signature.Family = midr.PartNum & 0x00f;
+	iArg->Features->Info.Signature.ExtFamily = (midr.PartNum & 0xff0) >> 4;
+	iArg->Features->Info.Signature.Model = pmcr.IDcode & 0x0f;
+	iArg->Features->Info.Signature.ExtModel = (pmcr.IDcode & 0xf0) >> 4;
 
 	VendorFromMainID(midr, iArg->Features->Info.Vendor.ID,
 			&iArg->Features->Info.Vendor.CRC, &iArg->HypervisorID);
@@ -562,19 +561,19 @@ static void Query_Features(void *pArg)
 	iArg->Features->Factory.Freq /= 10000;
 
 #if defined(CONFIG_ACPI)
-	iArg->Features->Std.EDX.ACPI = acpi_disabled == 0;
+	iArg->Features->ACPI = acpi_disabled == 0;
 #else
-	iArg->Features->Std.EDX.ACPI = 0;
+	iArg->Features->ACPI = 0;
 #endif
-	iArg->Features->Std.EDX.TSC = \
-	iArg->Features->AdvPower.EDX.Inv_TSC = \
-	iArg->Features->ExtInfo.EDX.RDTSCP = cntpct.PhysicalCount != 0;
+	iArg->Features->TSC = \
+	iArg->Features->Inv_TSC = \
+	iArg->Features->RDTSCP = cntpct.PhysicalCount != 0;
 
-	iArg->Features->PerfMon.EDX.FixCtrs = 1; /* Fixed Cycle Counter */
-	iArg->Features->PerfMon.EAX.MonCtrs = pmcr.NumEvtCtrs;
-	iArg->Features->PerfMon.EAX.Version = dbgfr0.PMUVer;
+	iArg->Features->PerfMon.FixCtrs = 1; /* Fixed Cycle Counter */
+	iArg->Features->PerfMon.MonCtrs = pmcr.NumEvtCtrs;
+	iArg->Features->PerfMon.Version = dbgfr0.PMUVer;
 
-    if (iArg->Features->PerfMon.EAX.Version) {
+    if (iArg->Features->PerfMon.Version) {
 	volatile unsigned long long pmcfgr;
 	/*TODO(Memory-mapped PMU register at offset 0xe00)		*/
 	__asm__ __volatile__(
@@ -584,18 +583,17 @@ static void Query_Features(void *pArg)
 		:
 		: "memory"
 	);
-	iArg->Features->PerfMon.EAX.MonWidth = \
-	iArg->Features->PerfMon.EDX.FixWidth = 0b111111 == 0b111111 ? 64 : 0;
+	iArg->Features->PerfMon.MonWidth = \
+	iArg->Features->PerfMon.FixWidth = 0b111111 == 0b111111 ? 64 : 0;
     }
-	iArg->Features->Std.ECX.AES = isar0.AES == 0x2;
-	iArg->Features->ExtFeature.EBX.SHA = (isar0.SHA1 == 0x1)
-					  || (isar0.SHA2 == 0x1);
-	iArg->Features->Std.EDX.CMPXCHG8 = isar0.CAS == 0x2;
-	iArg->Features->Std.ECX.RDRAND = isar0.RNDR == 0x1;
-	iArg->Features->Std.ECX.VMX = mmfr1.VH == 0x1;
-	iArg->Features->Std.EDX.FPU = pfr0.FP == 0x1;
-	iArg->Features->Std.EDX.SSE = pfr0.AdvSIMD == 0x1;
-	iArg->Features->Std.EDX.APIC = pfr0.GIC == 0x1;
+	iArg->Features->AES = isar0.AES == 0x2;
+	iArg->Features->SHA = (isar0.SHA1 == 0x1) || (isar0.SHA2 == 0x1);
+	iArg->Features->CMPXCHG8 = isar0.CAS == 0x2;
+	iArg->Features->RDRAND = isar0.RNDR == 0x1;
+	iArg->Features->VMX = mmfr1.VH == 0x1;
+	iArg->Features->FPU = pfr0.FP == 0x1;
+	iArg->Features->SSE = pfr0.AdvSIMD == 0x1;
+	iArg->Features->APIC = pfr0.GIC == 0x1;
 	iArg->Features->SSBS = pfr1.SSBS;
 	iArg->Features->CSV2 = pfr1.CSV2_frac;
 
@@ -607,14 +605,14 @@ static void Query_Features(void *pArg)
 	}
     }
 	/* Reset the performance features bits (present is zero)	*/
-	iArg->Features->PerfMon.EBX.CoreCycles    = 1;
-	iArg->Features->PerfMon.EBX.InstrRetired  = 1;
-	iArg->Features->PerfMon.EBX.RefCycles     = 1;
-	iArg->Features->PerfMon.EBX.LLC_Ref       = 1;
-	iArg->Features->PerfMon.EBX.LLC_Misses    = 1;
-	iArg->Features->PerfMon.EBX.BranchRetired = 1;
-	iArg->Features->PerfMon.EBX.BranchMispred = 1;
-	iArg->Features->PerfMon.EBX.TopdownSlots  = 1;
+	iArg->Features->PerfMon.CoreCycles    = 1;
+	iArg->Features->PerfMon.InstrRetired  = 1;
+	iArg->Features->PerfMon.RefCycles     = 1;
+	iArg->Features->PerfMon.LLC_Ref       = 1;
+	iArg->Features->PerfMon.LLC_Misses    = 1;
+	iArg->Features->PerfMon.BranchRetired = 1;
+	iArg->Features->PerfMon.BranchMispred = 1;
+	iArg->Features->PerfMon.TopdownSlots  = 1;
 }
 
 void Compute_Interval(void)
@@ -740,8 +738,8 @@ static void Compute_TSC(void *arg)
 	TSC[1] stores the estimation
 */
 	/*	Is the TSC invariant or can serialize  ?		*/
-	if ((PUBLIC(RO(Proc))->Features.AdvPower.EDX.Inv_TSC == 1)
-	||  (PUBLIC(RO(Proc))->Features.ExtInfo.EDX.RDTSCP == 1))
+	if ((PUBLIC(RO(Proc))->Features.Inv_TSC == 1)
+	||  (PUBLIC(RO(Proc))->Features.RDTSCP == 1))
 	{
 		ComputeWithSerializedTSC(pCompute);
 	} else {
@@ -885,7 +883,7 @@ int Core_Topology(unsigned int cpu)
 		&& (PUBLIC(RO(Proc))->Features.HTT_Enable == 0)
 		&& (PUBLIC(RO(Core, AT(cpu)))->T.ThreadID > 0) )
 	{
-			PUBLIC(RO(Proc))->Features.Std.EDX.HTT = 1;
+			PUBLIC(RO(Proc))->Features.HTT = 1;
 			PUBLIC(RO(Proc))->Features.HTT_Enable = 1;
 	}
 	return rc;
@@ -1546,7 +1544,7 @@ void Controller_Init(void)
     }
 	ratio = FixMissingRatioAndFrequency(ratio, &sClock);
 
-  if ((AutoClock & 0b01) || PUBLIC(RO(Proc))->Features.Std.ECX.Hyperv)
+  if ((AutoClock & 0b01) || PUBLIC(RO(Proc))->Features.Hyperv)
   {
 	CLOCK vClock = {.Q = 0, .R =0, .Hz = 0};
 	COMPUTE_ARG Compute;
@@ -2345,7 +2343,7 @@ static int CoreFreqK_IdleDriver_Init(void)
   {
 	IDLE_STATE *pIdleState;
 	pIdleState = Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.IdleState;
-   if ((pIdleState != NULL) && PUBLIC(RO(Proc))->Features.Std.ECX.MONITOR)
+   if ((pIdleState != NULL) && PUBLIC(RO(Proc))->Features.MONITOR)
    {
     if ((CoreFreqK.IdleDevice=alloc_percpu(struct cpuidle_device)) == NULL)
     {
@@ -2908,7 +2906,7 @@ void MatchPeerForDefaultService(SERVICE_PROC *pService, unsigned int cpu)
 		pService->Core = cpu;
 		pService->Thread = -1;
 	}
-	if (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.Hybrid) {
+	if (PUBLIC(RO(Proc))->Features.Hybrid) {
 		pService->Hybrid = Seek_Topology_Hybrid_Core(cpu);
 	} else {
 		pService->Hybrid = -1;
@@ -2960,7 +2958,7 @@ void MatchPeerForUpService(SERVICE_PROC *pService, unsigned int cpu)
 			}
 		}
 	}
-	if (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.Hybrid) {
+	if (PUBLIC(RO(Proc))->Features.Hybrid) {
 		pService->Hybrid = Seek_Topology_Hybrid_Core(cpu);
 	}
 }
@@ -4088,7 +4086,7 @@ static int CoreFreqK_HotPlug_CPU_Offline(unsigned int cpu)
       }
      }
     } else if ((cpu == PUBLIC(RO(Proc))->Service.Hybrid)
-	&& (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.Hybrid))
+	&& (PUBLIC(RO(Proc))->Features.Hybrid))
     {
 	PUBLIC(RO(Proc))->Service.Hybrid = Seek_Topology_Hybrid_Core(cpu);
     }
@@ -4719,8 +4717,8 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 	#ifdef CONFIG_XEN
 	if (xen_pv_domain() || xen_hvm_domain())
 	{
-		if (PUBLIC(RO(Proc))->Features.Std.ECX.Hyperv == 0) {
-			PUBLIC(RO(Proc))->Features.Std.ECX.Hyperv = 1;
+		if (PUBLIC(RO(Proc))->Features.Hyperv == 0) {
+			PUBLIC(RO(Proc))->Features.Hyperv = 1;
 		}
 		PUBLIC(RO(Proc))->HypervisorID = HYPERV_XEN;
 	}
@@ -4764,10 +4762,10 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 		PUBLIC(RO(Proc))->Service.Core,
 		PUBLIC(RO(Proc))->Service.Thread,
 		PUBLIC(RO(Proc))->Service.Hybrid,
-		PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily,
-		PUBLIC(RO(Proc))->Features.Std.EAX.Family,
-		PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel,
-		PUBLIC(RO(Proc))->Features.Std.EAX.Model,
+		PUBLIC(RO(Proc))->Features.Info.Signature.ExtFamily,
+		PUBLIC(RO(Proc))->Features.Info.Signature.Family,
+		PUBLIC(RO(Proc))->Features.Info.Signature.ExtModel,
+		PUBLIC(RO(Proc))->Features.Info.Signature.Model,
 		PUBLIC(RO(Proc))->Architecture,
 		PUBLIC(RO(Proc))->Features.HTT_Enable ? "SMT" : "CPU",
 		PUBLIC(RO(Proc))->CPU.OnLine,

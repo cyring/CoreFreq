@@ -257,9 +257,6 @@ typedef struct
 
 	struct
 	{
-		CPUID_0x00000000	StdFunc;
-		CPUID_0x80000000	ExtFunc;
-
 		struct {
 		unsigned long long
 					CfgLock :  1-0,  /* Core	*/
