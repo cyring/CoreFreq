@@ -1986,19 +1986,38 @@
 #define RSC_SYS_REGS_SPACE_CODE 	"    "
 #define RSC_SYS_REGS_NA_CODE		"  - "
 #define RSC_SYS_REGS_HDR_CPU_CODE	"CPU "
-#define RSC_SYS_REG_HDR_FLAGS_CODE	"FLAG"
-#define RSC_SYS_REG_HDR_N_CODE		"  N "
-#define RSC_SYS_REG_HDR_Z_CODE		"  Z "
-#define RSC_SYS_REG_HDR_C_CODE		"  C "
-#define RSC_SYS_REG_HDR_V_CODE		"  V "
-#define RSC_SYS_REG_HDR_D_CODE		"  D "
-#define RSC_SYS_REG_HDR_A_CODE		"  A "
-#define RSC_SYS_REG_HDR_I_CODE		"  I "
-#define RSC_SYS_REG_HDR_F_CODE		"  F "
-#define RSC_SYS_REG_HDR_L_CODE		" EL "
-#define RSC_SYS_REG_HDR_M_CODE		"  M "
-#define RSC_SYS_REG_HDR_SCTL_CODE	"SCTL"
-#define RSC_SYS_REG_HDR_SCTL2_CODE	"SCT2"
+
+#define RSC_SYS_REG_HDR_FLAGS_CODE	\
+	"FLAG\0  N \0  Z \0  C \0  V \0  D \0  A \0  I \0  F \0 EL \0  M "
+
+#define RSC_SYS_REG_HDR11_SCTL_CODE	\
+	"    \0 TID\0  SP\0 NMI\0 TPI\0  TC\0SO  \0 PAN\0" \
+	" ALS\0 AS0\0 ASR\0 TME\0 TME\0 TMT\0 TMT\0 TWE\0 TWE"
+
+#define RSC_SYS_REG_HDR12_SCTL_CODE	\
+	"SCTL\0  CP\0 INT\0    \0 DR2\0 EL1\0 EL0\0    \0" \
+	"    \0    \0    \0    \0 EL0\0    \0 EL0\0 DLY\0  En"
+
+#define RSC_SYS_REG_HDR21_SCTL_CODE	\
+	"    \0SSBS\0 ATA\0 ATA\0 TCF\0 TCF\0  IT\0 BTI\0" \
+	" BTI\0 FPM\0 MC \0CMOW\0 IA \0 IB \0 LSM\0 LSM\0 DA "
+
+#define RSC_SYS_REG_HDR22_SCTL_CODE	\
+	"SCTL\0    \0 EL1\0 EL0\0 EL1\0 EL0\0 FSB\0 EL1\0" \
+	" EL0\0    \0 MS \0    \0    \0    \0 AOE\0 DnT\0    "
+
+#define RSC_SYS_REG_HDR31_SCTL_CODE	\
+	"SCTL\0 UCI\0 EE \0E0E \0SPAN\0 EIS\0 IES\0 SCN\0" \
+	" WXN\0 TWE\0 TWI\0 UCT\0 DZE\0 DB \0  I \0EOS \0RCTX"
+
+#define RSC_SYS_REG_HDR41_SCTL_CODE	\
+	"SCTL\0 UMA\0 SED\0 ITD\0 AA \0CP15\0 SA0\0 SA1\0  C \0  A \0  M "
+
+#define RSC_SYS_REG_HDR11_SCTL2_CODE	\
+	"    \0  CP\0TM  \0  CP\0TA  \0  PA\0CM  \0IDCP\0 EAS\0 AN \0 AD \0NMEA"
+
+#define RSC_SYS_REG_HDR12_SCTL2_CODE	\
+	"SCT2\0 EL0\0 EL1\0 EL0\0 EL1\0 EL0\0 EL1\0 128\0    \0ERR \0ERR \0    "
 
 #define RSC_ISA_AES_CODE		"          AES [%c]"
 #define RSC_ISA_CLFLUSH_CODE		"      CLFLUSH [%c]"
