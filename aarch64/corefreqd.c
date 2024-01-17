@@ -338,7 +338,7 @@ static void *Core_Cycle(void *arg)
 			/ (double)CFlip->Delta.TSC;
 
 	/* Relative Frequency = Relative Ratio x Bus Clock Frequency	*/
-	CFlip->Relative.Ratio	= (double)(CFlip->Delta.C0.UCC
+	CFlip->Relative.Ratio	= (double)(CFlip->Delta.C0.URC
 					* Cpu->Boost[BOOST(MAX)])
 				/ (double)CFlip->Delta.TSC;
 
