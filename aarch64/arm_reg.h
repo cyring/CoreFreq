@@ -237,6 +237,25 @@ typedef union
 } CLIDR;
 
 typedef union
+{	/*	CPU0:0x00000000003033ff ; CPU4:0x0000000000300000	*/
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		RES0		: 16-0,
+		ZEN		: 18-16,
+		RES1		: 20-18,
+		FPEN		: 22-20,
+		RES2		: 24-22,
+		SMEN		: 26-24,
+		RES3		: 28-26,
+		TTA		: 29-28,
+		E0POE		: 30-29,
+		RES4		: 64-30;
+	};
+} CPACR;
+
+typedef union
 {
 	unsigned long long	value;
 	struct
