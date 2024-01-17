@@ -22,88 +22,12 @@
 
 typedef struct
 {
-	struct
-	{
-		unsigned char Chr[4];
-	} AX, BX, CX, DX;
-} BRAND;
-
-#define LEVEL_INVALID	0
-#define LEVEL_THREAD	1
-#define LEVEL_CORE	2
-
-typedef struct {
-	union {
-		struct
-		{
-			unsigned int
-			SHRbits :  5-0,
-			Unused1 : 32-5;
-		};
-		unsigned int Register;
-	} AX;
-	union {
-		struct
-		{
-			unsigned int
-			Threads : 16-0,
-			Unused1 : 32-16;
-		};
-		unsigned int Register;
-	} BX;
-	union {
-		struct
-		{
-			unsigned int
-			Level	:  8-0,
-			Type	: 16-8,
-			Unused1 : 32-16;
-		};
-		unsigned int Register;
-	} CX;
-	union {
-		struct
-		{
-			unsigned int
-			x2ApicID: 32-0;
-		};
-		unsigned int Register;
-	} DX;
-} CPUID_TOPOLOGY_LEAF;
-
-typedef union
-{
-	unsigned long long	value;
-	struct
-	{
-		unsigned long long
-		ReservedBits1	:  8-0,
-		BSP		:  9-8,
-		ReservedBits2	: 10-9,
-		x2APIC_EN	: 11-10,
-		APIC_EN 	: 12-11,
-		Addr		: 64-12;
-	};
-} LOCAL_APIC;
-
-typedef struct
-{
-	LOCAL_APIC		Base;
-	signed int		ApicID,
+	unsigned int		BSP;
+	signed int		MPID,
 				CoreID,
 				ThreadID,
 				PackageID;
-	union {
-		unsigned int	ID;
-	    struct {
-		unsigned int	Node:  8-0,
-				CCX : 16-8,
-				CCD : 24-16,
-				CMP : 32-24;
-	    };
-	    CPUID_0x0000001a	Hybrid;
-	} Cluster;
-
+	struct CLUSTER_ST	Cluster;
 	struct CACHE_INFO
 	{
 		union CCSIDR
@@ -266,10 +190,7 @@ typedef struct
 					Microcode:64-32; /* Thread	*/
 		};
 		unsigned short int	CStateLimit;
-		struct {
-		unsigned short int	CStateInclude;	/* Intel	*/
 		unsigned short int	CStateBaseAddr; /* Any I/O BAR	*/
-		};
 	} Query;
 
 	CACHE_TOPOLOGY			T;

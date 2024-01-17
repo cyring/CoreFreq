@@ -736,21 +736,14 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 {
 	unsigned int level;
 	/*	Copy each Core topology.				*/
-	RO(Shm)->Cpu[cpu].Topology.MP.BSP= (RO(Core, AT(cpu))->T.Base.BSP)? 1:0;
-	RO(Shm)->Cpu[cpu].Topology.ApicID     = RO(Core,AT(cpu))->T.ApicID;
-	RO(Shm)->Cpu[cpu].Topology.CoreID     = RO(Core,AT(cpu))->T.CoreID;
-	RO(Shm)->Cpu[cpu].Topology.ThreadID   = RO(Core,AT(cpu))->T.ThreadID;
-	RO(Shm)->Cpu[cpu].Topology.PackageID  = RO(Core,AT(cpu))->T.PackageID;
-	RO(Shm)->Cpu[cpu].Topology.Cluster.ID = RO(Core,AT(cpu))->T.Cluster.ID;
-	/*	x2APIC capability.					*/
-	RO(Shm)->Cpu[cpu].Topology.MP.x2APIC= RO(Proc)->Features.x2APIC;
-	/*	Is local APIC enabled in xAPIC mode ?			*/
-	RO(Shm)->Cpu[cpu].Topology.MP.x2APIC &= \
-					RO(Core, AT(cpu))->T.Base.APIC_EN;
-	/*	Is xAPIC enabled in x2APIC mode ?			*/
-	RO(Shm)->Cpu[cpu].Topology.MP.x2APIC = \
-					RO(Shm)->Cpu[cpu].Topology.MP.x2APIC
-					<< RO(Core, AT(cpu))->T.Base.x2APIC_EN;
+	RO(Shm)->Cpu[cpu].Topology.BSP = RO(Core, AT(cpu))->T.BSP ? 1:0;
+	RO(Shm)->Cpu[cpu].Topology.MPID = RO(Core, AT(cpu))->T.MPID;
+	RO(Shm)->Cpu[cpu].Topology.CoreID = RO(Core, AT(cpu))->T.CoreID;
+	RO(Shm)->Cpu[cpu].Topology.ThreadID = RO(Core, AT(cpu))->T.ThreadID;
+	RO(Shm)->Cpu[cpu].Topology.PackageID = RO(Core, AT(cpu))->T.PackageID;
+	RO(Shm)->Cpu[cpu].Topology.Cluster.ID = RO(Core, AT(cpu))->T.Cluster.ID;
+	RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID = \
+					RO(Core, AT(cpu))->T.Cluster.Hybrid_ID;
 	/*	Aggregate the Caches topology.				*/
     for (level = 0; level < CACHE_MAX_LEVEL; level++)
     {
@@ -784,9 +777,6 @@ void CStates(RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core), unsigned int cpu)
 					RO(Core, AT(cpu))->Query.CStateLimit;
 	/*	Copy Intel Max C-State Inclusion			*/
 	RO(Shm)->Cpu[cpu].Query.IORedir = RO(Core, AT(cpu))->Query.IORedir;
-
-	RO(Shm)->Cpu[cpu].Query.CStateInclude = \
-					RO(Core, AT(cpu))->Query.CStateInclude;
 	/*	Copy any architectural C-States I/O Base Address	*/
 	RO(Shm)->Cpu[cpu].Query.CStateBaseAddr = \
 					RO(Core, AT(cpu))->Query.CStateBaseAddr;

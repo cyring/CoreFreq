@@ -105,6 +105,11 @@ enum {	GenuineArch = 0,
 	ARCHITECTURES
 };
 
+enum HYBRID_ARCH {
+	Hybrid_Primary ,	/*	Big	*/
+	Hybrid_Secondary	/*	Little	*/
+};
+
 enum MECH_CSV2 {
 	CSV_NONE,
 	CSV2_1p0,
@@ -112,13 +117,6 @@ enum MECH_CSV2 {
 	CSV2_1p2,
 	CSV2_2p0,
 	CSV2_3p0
-};
-
-enum HYBRID_ARCH {
-	Hybrid_RSVD1	= 0x10,
-	Hybrid_Atom	= 0x20,
-	Hybrid_RSVD2	= 0x30,
-	Hybrid_Core	= 0x40
 };
 
 enum HYPERVISOR {
@@ -751,90 +749,43 @@ typedef struct
 	char			Brand[BRAND_SIZE];
 } PROCESSOR_ID;
 
-typedef struct	/* Intel Hybrid Information Enumeration Leaf		*/
-{
-		unsigned int
-		Model_ID	: 24-0,
-		CoreType	: 32-24; /* 0x20: Atom; 0x40: Core	*/
-} CPUID_0x0000001a;
+struct CLUSTER_ST {
+	union {
+		unsigned int	ID;
+		struct {
+		unsigned int	Node	:  8-0,
+				CCX	: 16-8,
+				CCD	: 24-16,
+				CMP	: 32-24;
+		};
+	};
+	enum HYBRID_ARCH	Hybrid_ID;
+};
 
 typedef struct	/* BSP features.					*/
 {
 	PROCESSOR_ID		Info;
 	struct {
 		unsigned int
-		SSE3		:  1-0,
-		PCLMULDQ	:  2-1,
-		DTES64		:  3-2,
-		MONITOR 	:  4-3,
-		DS_CPL		:  5-4,
-		VMX		:  6-5,
-		SMX		:  7-6,
-		EIST		:  8-7,
-		TM2		:  9-8,
-		SSSE3		: 10-9,
-		CNXT_ID 	: 11-10,
-		SDBG		: 12-11,
-		FMA		: 13-12,
-		CMPXCHG16	: 14-13,
-		xTPR		: 15-14,
-		PDCM		: 16-15,
-		Reserved	: 17-16,
-		PCID		: 18-17,
-		DCA		: 19-18,
-		SSE41		: 20-19,
-		SSE42		: 21-20,
-		x2APIC		: 22-21,
-		MOVBE		: 23-22,
-		POPCNT		: 24-23,
-		TSC_DEADLINE	: 25-24,
-		AES		: 26-25,
-		XSAVE		: 27-26,
-		OSXSAVE 	: 28-27,
-		AVX		: 29-28,
-		F16C		: 30-29,
-		RDRAND		: 31-30,
+		AES		:  1-0,
+		RAND		:  2-1,
+		FPU		:  3-2,
+		SIMD		:  4-3,
+		GIC		:  5-4,
+		CAS		:  6-5,
+		SHA		:  7-6,
+		ACPI		:  8-7,
+		VMX		:  9-8,
+		AMX		: 10-9,
+		HTT		: 11-10,
+		TSC		: 12-11,
+		CMOV		: 13-12,
+		MONITOR 	: 14-13,
+		Inv_TSC 	: 15-14,
+		RDTSCP		: 16-15,
+		Hybrid		: 17-16,
+		_Unused_	: 31-17,
 		Hyperv		: 32-31;
-	};
-	struct
-	{
-		unsigned int
-		FPU		:  1-0,
-/*		VME		:  2-1,*/
-/*		DE		:  3-2,*/
-/*		PSE		:  4-3,*/
-		TSC		:  5-4,
-		Inv_TSC 	:  6-5,
-		RDTSCP		:  7-6,
-/*		MSR		:  6-5,*/
-/*		PAE		:  7-6,*/
-		MCE		:  8-7,
-		CMPXCHG8	:  9-8,
-		APIC		: 10-9,
-/*		Reserved1	: 11-10,*/
-		SEP		: 12-11,
-/*		MTRR		: 13-12,*/
-/*		PGE		: 14-13,*/
-/*		MCA		: 15-14,*/
-		Hybrid		: 15-14,
-		CMOV		: 16-15,
-/*		PAT		: 17-16,*/
-/*		PSE36		: 18-17,*/
-/*		PSN		: 19-18,*/
-		CLFLUSH 	: 20-19,
-/*		Reserved2	: 21-20,*/
-/*		DS_PEBS 	: 22-21,*/
-		ACPI		: 23-22,
-		MMX		: 24-23,
-		FXSR		: 25-24,
-		SSE		: 26-25,
-		SSE2		: 27-26,
-/*		SS		: 28-27,*/
-		HTT		: 29-28,
-		TM1		: 30-29,
-		SHA		: 31-30;
-/*		Reserved3	: 31-30,*/
-/*		PBE		: 32-31;*/
 	};
 	struct
 	{
@@ -890,32 +841,24 @@ typedef struct	/* BSP features.					*/
 		unsigned int
 		DTS		:  1-0,
 		TurboIDA	:  2-1,
-/*		ARAT		:  3-2,
-		Reserved1	:  4-3,*/
-		PLN		:  5-4,
-/*		ECMD		:  6-5,*/
-		PTM		:  7-6,
-		HWP_Reg 	:  8-7,
-/*		HWP_Int 	:  9-8,
-		HWP_Act 	: 10-9,
-		HWP_EPP 	: 11-10,
-		HWP_Pkg 	: 12-11,
-		Reserved2	: 13-12,
-		HDC_Reg 	: 14-13,*/
-		Turbo_V3	: 15-14,
-/*		HWP_HPrf	: 16-15,
-		HWP_PECI	: 17-16,
-		HWP_Flex	: 18-17,
-		HWP_Fast	: 19-18,
-		HWFB_Cap	: 20-19,
-		HWP_Idle	: 21-20,
-		Reserved3	: 23-21,
-		ITD_MSR 	: 24-23,
-		THERM_INT_MSR	: 25-24,
-		Reserved4	: 32-25;*/
-		HCF_Cap 	:  1-0;
+		Turbo_V3	:  3-2,
+		PLN		:  4-3,
+		PTM		:  5-4,
+		HWP_Reg 	:  6-5,
+		HCF_Cap 	:  7-6,
+/*		HWP_Int 	:  1
+		HWP_Act 	:  1
+		HWP_EPP 	:  1
+		HWP_Pkg 	:  1
+		HWP_HPrf	:  1
+		HWP_PECI	:  1
+		HWP_Flex	:  1
+		HWP_Fast	:  1
+		HWFB_Cap	:  1
+		HWP_Idle	:  1	*/
+		_Unused_	: 32-7;
 	} Power;
-/*TODO*/
+
 	struct {
 		unsigned long long	PPIN;
 			CLOCK		Clock;

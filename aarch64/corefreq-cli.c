@@ -1322,13 +1322,6 @@ REASON_CODE SysInfoISA( Window *win,
 	},
 	{
 		NULL,
-		RSC(ISA_CLFLUSH).CODE(), RSC(ISA_CLFLUSH_COMM).CODE(),
-		{ 0, RO(Shm)->Proc.Features.CLFLUSH },
-		(unsigned short[])
-		{ RO(Shm)->Proc.Features.CLFLUSH },
-	},
-	{
-		NULL,
 		RSC(ISA_CMOV).CODE(), RSC(ISA_CMOV_COMM).CODE(),
 		{ 0, RO(Shm)->Proc.Features.CMOV },
 		(unsigned short[])
@@ -1336,25 +1329,10 @@ REASON_CODE SysInfoISA( Window *win,
 	},
 	{
 		NULL,
-		RSC(ISA_XCHG8B).CODE(), RSC(ISA_XCHG8B_COMM).CODE(),
-		{ 0, RO(Shm)->Proc.Features.CMPXCHG8 },
+		RSC(ISA_CAS).CODE(), RSC(ISA_CAS_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.CAS },
 		(unsigned short[])
-		{ RO(Shm)->Proc.Features.CMPXCHG8 },
-	},
-/* Row Mark */
-	{
-		NULL,
-		RSC(ISA_XCHG16B).CODE(), RSC(ISA_XCHG16B_COMM).CODE(),
-		{ 1, RO(Shm)->Proc.Features.CMPXCHG16 },
-		(unsigned short[])
-		{ RO(Shm)->Proc.Features.CMPXCHG16 },
-	},
-	{
-		NULL,
-		RSC(ISA_F16C).CODE(), RSC(ISA_F16C_COMM).CODE(),
-		{ 0, RO(Shm)->Proc.Features.F16C },
-		(unsigned short[])
-		{ RO(Shm)->Proc.Features.F16C },
+		{ RO(Shm)->Proc.Features.CAS },
 	},
 	{
 		NULL,
@@ -1363,49 +1341,13 @@ REASON_CODE SysInfoISA( Window *win,
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.FPU },
 	},
-	{
-		NULL,
-		RSC(ISA_FXSR).CODE(), RSC(ISA_FXSR_COMM).CODE(),
-		{ 0, RO(Shm)->Proc.Features.FXSR },
-		(unsigned short[])
-		{ RO(Shm)->Proc.Features.FXSR },
-	},
 /* Row Mark */
 	{
 		NULL,
-		RSC(ISA_MOVBE).CODE(), RSC(ISA_MOVBE_COMM).CODE(),
-		{ 0, RO(Shm)->Proc.Features.MOVBE },
+		RSC(ISA_RAND).CODE(), RSC(ISA_RAND_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.RAND },
 		(unsigned short[])
-		{ RO(Shm)->Proc.Features.MOVBE },
-	},
-	{
-		NULL,
-		RSC(ISA_PCLMULDQ).CODE(), RSC(ISA_PCLMULDQ_COMM).CODE(),
-		{ 1, RO(Shm)->Proc.Features.PCLMULDQ },
-		(unsigned short[])
-		{ RO(Shm)->Proc.Features.PCLMULDQ },
-	},
-	{
-		NULL,
-		RSC(ISA_POPCNT).CODE(), RSC(ISA_POPCNT_COMM).CODE(),
-		{ 0, RO(Shm)->Proc.Features.POPCNT },
-		(unsigned short[])
-		{ RO(Shm)->Proc.Features.POPCNT },
-	},
-	{
-		NULL,
-		RSC(ISA_RDRAND).CODE(), RSC(ISA_RDRAND_COMM).CODE(),
-		{ 0, RO(Shm)->Proc.Features.RDRAND },
-		(unsigned short[])
-		{ RO(Shm)->Proc.Features.RDRAND },
-	},
-/* Row Mark */
-	{
-		NULL,
-		RSC(ISA_SEP).CODE(), RSC(ISA_SEP_COMM).CODE(),
-		{ 0, RO(Shm)->Proc.Features.SEP },
-		(unsigned short[])
-		{ RO(Shm)->Proc.Features.SEP },
+		{ RO(Shm)->Proc.Features.RAND },
 	},
 	{
 		NULL,
@@ -1416,17 +1358,17 @@ REASON_CODE SysInfoISA( Window *win,
 	},
 	{
 		NULL,
-		RSC(ISA_SSE).CODE(), RSC(ISA_SSE_COMM).CODE(),
-		{ 0, RO(Shm)->Proc.Features.SSE },
+		RSC(ISA_SIMD).CODE(), RSC(ISA_SIMD_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.SIMD },
 		(unsigned short[])
-		{ RO(Shm)->Proc.Features.SSE },
+		{ RO(Shm)->Proc.Features.SIMD },
 	},
 	{
 		NULL,
-		RSC(ISA_SSE2).CODE(), RSC(ISA_SSE2_COMM).CODE(),
-		{ 1, RO(Shm)->Proc.Features.SSE2 },
+		RSC(ISA_AMX).CODE(), RSC(ISA_AMX_COMM).CODE(),
+		{ 1, RO(Shm)->Proc.Features.AMX },
 		(unsigned short[])
-		{ RO(Shm)->Proc.Features.SSE2 },
+		{ RO(Shm)->Proc.Features.AMX },
 	},
     };
 
@@ -1487,11 +1429,6 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		RSC(VARIANT).CODE(),
 		RSC(INVARIANT).CODE()
 	};
-	const ASCII *x2APIC[] = {
-		RSC(MISSING).CODE(),
-		RSC(XAPIC).CODE(),
-		RSC(X2APIC).CODE()
-	};
 	const ASCII *MECH[] = {
 		RSC(UNABLE).CODE(),
 		RSC(PRESENT).CODE(),
@@ -1520,10 +1457,10 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
-		RO(Shm)->Proc.Features.APIC == 1,
+		RO(Shm)->Proc.Features.GIC == 1,
 		attr_Feat,
-		2, "%s%.*sGIC   [%7s]", RSC(FEATURES_APIC).CODE(),
-		width - 18 - RSZ(FEATURES_APIC),
+		2, "%s%.*sGIC   [%7s]", RSC(FEATURES_GIC).CODE(),
+		width - 18 - RSZ(FEATURES_GIC),
 		NULL
 	},
 	{
@@ -3921,16 +3858,16 @@ void Instructions(unsigned int iter)
 
 ASCII* Topology_Std(char *pStr, unsigned int cpu)
 {
-    if (RO(Shm)->Cpu[cpu].Topology.MP.BSP) {
+    if (RO(Shm)->Cpu[cpu].Topology.BSP) {
 	StrFormat(&pStr[ 0], 4+(2*11)+1, "%03u:BSP%5d\x20",
 			cpu,
-			RO(Shm)->Cpu[cpu].Topology.ApicID);
+			RO(Shm)->Cpu[cpu].Topology.MPID);
 	return RSC(TOPOLOGY_BSP_COMM).CODE();
     } else {
 	StrFormat(&pStr[ 0], 1+(3*11)+1, "%03u:%3d%5d\x20",
 			cpu,
 			RO(Shm)->Cpu[cpu].Topology.PackageID,
-			RO(Shm)->Cpu[cpu].Topology.ApicID);
+			RO(Shm)->Cpu[cpu].Topology.MPID);
 	return NULL;
     }
 }
@@ -3965,12 +3902,12 @@ ASCII* Topology_CCD(char *pStr, unsigned int cpu)
 ASCII* Topology_Hybrid(char *pStr, unsigned int cpu)
 {
 	StrFormat(pStr, 3+(3*11)+1, "\x20%c%4u%4d%3d",
-			RO(Shm)->Cpu[cpu].Topology.MP.Ecore ?
-			'E' : RO(Shm)->Cpu[cpu].Topology.MP.Pcore ?
-			'P' : '?',
-			RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID,
-			RO(Shm)->Cpu[cpu].Topology.CoreID,
-			RO(Shm)->Cpu[cpu].Topology.ThreadID);
+		RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID==Hybrid_Secondary ?
+	'E' :	RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID==Hybrid_Primary ?
+	'P' : '?',
+		RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID,
+		RO(Shm)->Cpu[cpu].Topology.CoreID,
+		RO(Shm)->Cpu[cpu].Topology.ThreadID);
 	return NULL;
 }
 
@@ -6397,7 +6334,7 @@ Window *CreateTopology(unsigned long long id)
 
 Window *CreateISA(unsigned long long id)
 {
-	Window *wISA = CreateWindow(wLayer, id, 4, 4, 6, TOP_HEADER_ROW+2);
+	Window *wISA = CreateWindow(wLayer, id, 4, 2, 6, TOP_HEADER_ROW + 2);
 
 	if (wISA != NULL)
 	{

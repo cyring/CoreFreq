@@ -1,6 +1,6 @@
 /*
  * CoreFreq (C) 2015-2024 CYRIL COURTIAT
- * Contributors: Andrew Gurinovich ; CyrIng
+ * Contributors: CyrIng
  * Licenses: GPL2
  */
 
@@ -433,66 +433,12 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 				json_key(&s, "EСX");
 				{
 					json_start_object(&s);
-					json_key(&s, "SSE3");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SSE3);
-					json_key(&s, "PCLMULQDQ");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PCLMULDQ);
-					json_key(&s, "DTES64");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.DTES64);
 					json_key(&s, "MONITOR");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MONITOR);
-					json_key(&s, "DS_CPL");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.DS_CPL);
 					json_key(&s, "VMX");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.VMX);
-					json_key(&s, "SMX");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SMX);
-					json_key(&s, "EIST");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.EIST);
-					json_key(&s, "TM2");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.TM2);
-					json_key(&s, "SSSE3");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SSSE3);
-					json_key(&s, "CNXT_ID");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.CNXT_ID);
-					json_key(&s, "SDBG");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SDBG);
-					json_key(&s, "FMA");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FMA);
-					json_key(&s, "CMPXCHG16B");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.CMPXCHG16);
-					json_key(&s, "xTPR");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.xTPR);
-					json_key(&s, "PDCM");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PDCM);
-					json_key(&s, "Reserved");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Reserved);
-					json_key(&s, "PCID");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PCID);
-					json_key(&s, "DCA");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.DCA);
-					json_key(&s, "SSE41");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SSE41);
-					json_key(&s, "SSE42");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SSE42);
-					json_key(&s, "x2APIC");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.x2APIC);
-					json_key(&s, "MOVBE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MOVBE);
-					json_key(&s, "POPCNT");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.POPCNT);
-					json_key(&s, "TSC_DEADLINE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.TSC_DEADLINE);
-					json_key(&s, "XSAVE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.XSAVE);
-					json_key(&s, "OSXSAVE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.OSXSAVE);
-					json_key(&s, "AVX");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AVX);
-					json_key(&s, "F16C");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.F16C);
-					json_key(&s, "RDRAND");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RDRAND);
+					json_key(&s, "RAND");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RAND);
 					json_key(&s, "Hyperv");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Hyperv);
 					json_end_object(&s);
@@ -504,32 +450,20 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FPU);
 					json_key(&s, "TSC");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.TSC);
-					json_key(&s, "MCE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MCE);
-					json_key(&s, "CMPXCHG8B");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.CMPXCHG8);
-					json_key(&s, "APIC");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.APIC);
-					json_key(&s, "SEP");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SEP);
+					json_key(&s, "CAS");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.CAS);
+					json_key(&s, "GIC");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.GIC);
 					json_key(&s, "CMOV");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.CMOV);
-					json_key(&s, "CLFLUSH");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.CLFLUSH);
 					json_key(&s, "ACPI");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ACPI);
-					json_key(&s, "MMX");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MMX);
-					json_key(&s, "FXSR");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FXSR);
-					json_key(&s, "SSE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SSE);
-					json_key(&s, "SSE2");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SSE2);
+					json_key(&s, "SIMD");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SIMD);
+					json_key(&s, "AMX");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AMX);
 					json_key(&s, "HTT");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.HTT);
-					json_key(&s, "TM1");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.TM1);
 					json_end_object(&s);
 				}
 				json_end_object(&s);
@@ -986,27 +920,14 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 		json_key(&s, "Topology");
 		{
 			json_start_object(&s);
-			json_key(&s, "ApicID");
-			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.ApicID);
-			json_key(&s, "MP");
-			{
-				json_start_object(&s);
-				json_key(&s, "BSP");
-				json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.MP.BSP);
-				json_key(&s, "Pcore");
-				json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.MP.Pcore);
-				json_key(&s, "Ecore");
-				json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.MP.Ecore);
-				json_key(&s, "x2APIC");
-				json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.MP.x2APIC);
-				json_end_object(&s);
-			}
+			json_key(&s, "BSP");
+			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.BSP);
+			json_key(&s, "MPID");
+			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.MPID);
 			json_key(&s, "PackageID");
 			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.PackageID);
-		    {
 			json_key(&s, "Hybrid_ID");
 			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID);
-		    }
 			json_key(&s, "CoreID");
 			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.CoreID);
 			json_key(&s, "ThreadID");

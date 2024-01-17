@@ -42,37 +42,16 @@ typedef struct
 					Unused	: 16-3;
 		};
 		unsigned short int	CStateLimit;
-		struct {
-		unsigned short int	CStateInclude;	/* Intel	*/
 		unsigned short int	CStateBaseAddr; /* Any I/O BAR	*/
-		};
 	} Query;
 
 	struct {
-		signed int		ApicID,
+		unsigned int		BSP;
+		signed int		MPID,
 					CoreID,
 					ThreadID,
 					PackageID;
-		union {
-			unsigned int	ID;
-		    struct {
-			unsigned int	Node	:  8-0,
-					CCX	: 16-8,
-					CCD	: 24-16,
-					CMP	: 32-24;
-		    };
-			unsigned int	Hybrid_ID;
-		} Cluster;
-
-		struct {
-			unsigned short	x2APIC	:  8-0,
-					_pad	: 12-8,
-					Ecore	: 13-12,
-					Pcore	: 14-13,
-					BSC	: 15-14,
-					BSP	: 16-15;
-		} MP;
-
+		struct CLUSTER_ST	Cluster;
 		struct {
 		unsigned int		Set,
 					Size;
