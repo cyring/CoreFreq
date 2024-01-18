@@ -213,34 +213,6 @@
 	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-' \
 }
 
-#if defined(ARCH_PMC) && (ARCH_PMC == UMC)
-
-#define RSC_LAYOUT_RULER_FREQUENCY_PKG_CODE_EN				\
-{									\
-	'%',' ','U','M','C',' ','[',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',']',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-' \
-}
-
-#else
-
 #define RSC_LAYOUT_RULER_FREQUENCY_PKG_CODE_EN				\
 {									\
 	'%',' ','P','k','g',' ','[',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
@@ -264,7 +236,6 @@
 	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
 	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-' \
 }
-#endif /* ARCH_PMC */
 
 #define RSC_LAYOUT_RULER_INST_CODE_EN					\
 {									\
@@ -412,91 +383,6 @@
 #define RSC_LAYOUT_PACKAGE_PC10_CODE_EN {'P', 'C', '1', '0'}
 #define RSC_LAYOUT_PACKAGE_MC06_CODE_EN {'M', 'C', '0', '6'}
 
-#define RSC_LAYOUT_PACKAGE_CTR0_UMC_CODE_EN {'C', 'H', 'A', '0'}
-#define RSC_LAYOUT_PACKAGE_CTR1_UMC_CODE_EN {'C', 'H', 'A', '1'}
-#define RSC_LAYOUT_PACKAGE_CTR2_UMC_CODE_EN {'C', 'H', 'A', '2'}
-#define RSC_LAYOUT_PACKAGE_CTR3_UMC_CODE_EN {'C', 'H', 'A', '3'}
-#define RSC_LAYOUT_PACKAGE_CTR4_UMC_CODE_EN {'C', 'H', 'A', '4'}
-#define RSC_LAYOUT_PACKAGE_CTR5_UMC_CODE_EN {'C', 'H', 'A', '5'}
-#define RSC_LAYOUT_PACKAGE_CTR6_UMC_CODE_EN {'C', 'H', 'A', '6'}
-#define RSC_LAYOUT_PACKAGE_CTR7_UMC_CODE_EN {'C', 'H', 'A', '7'}
-
-#define RSC_LAYOUT_PACKAGE_CTR0_L3_CODE_EN {'C', 'C', 'X', '0'}
-#define RSC_LAYOUT_PACKAGE_CTR1_L3_CODE_EN {'C', 'C', 'X', '1'}
-#define RSC_LAYOUT_PACKAGE_CTR2_L3_CODE_EN {'C', 'C', 'X', '2'}
-#define RSC_LAYOUT_PACKAGE_CTR3_L3_CODE_EN {'C', 'C', 'X', '3'}
-#define RSC_LAYOUT_PACKAGE_CTR4_L3_CODE_EN {'C', 'C', 'X', '4'}
-#define RSC_LAYOUT_PACKAGE_CTR5_L3_CODE_EN {'C', 'C', 'X', '5'}
-#define RSC_LAYOUT_PACKAGE_CTR6_L3_CODE_EN {'C', 'C', 'X', '6'}
-#define RSC_LAYOUT_PACKAGE_CTR7_L3_CODE_EN {'C', 'C', 'X', '7'}
-
-#define RSC_LAYOUT_PACKAGE_CTR0_PERF_CODE_EN {'C', 'T', 'R', '0'}
-#define RSC_LAYOUT_PACKAGE_CTR1_PERF_CODE_EN {'C', 'T', 'R', '1'}
-#define RSC_LAYOUT_PACKAGE_CTR2_PERF_CODE_EN {'C', 'T', 'R', '2'}
-#define RSC_LAYOUT_PACKAGE_CTR3_PERF_CODE_EN {'C', 'T', 'R', '3'}
-#define RSC_LAYOUT_PACKAGE_CTR4_PERF_CODE_EN {'C', 'T', 'R', '4'}
-#define RSC_LAYOUT_PACKAGE_CTR5_PERF_CODE_EN {'C', 'T', 'R', '5'}
-#define RSC_LAYOUT_PACKAGE_CTR6_PERF_CODE_EN {'C', 'T', 'R', '6'}
-#define RSC_LAYOUT_PACKAGE_CTR7_PERF_CODE_EN {'C', 'T', 'R', '7'}
-
-#define RSC_LAYOUT_PACKAGE_CTR0_PCU_CODE_EN	RSC_LAYOUT_PACKAGE_PC02_CODE_EN
-#define RSC_LAYOUT_PACKAGE_CTR1_PCU_CODE_EN	RSC_LAYOUT_PACKAGE_PC03_CODE_EN
-#define RSC_LAYOUT_PACKAGE_CTR2_PCU_CODE_EN	RSC_LAYOUT_PACKAGE_PC04_CODE_EN
-#define RSC_LAYOUT_PACKAGE_CTR3_PCU_CODE_EN	RSC_LAYOUT_PACKAGE_PC06_CODE_EN
-#define RSC_LAYOUT_PACKAGE_CTR4_PCU_CODE_EN	RSC_LAYOUT_PACKAGE_PC07_CODE_EN
-#define RSC_LAYOUT_PACKAGE_CTR5_PCU_CODE_EN	RSC_LAYOUT_PACKAGE_PC08_CODE_EN
-#define RSC_LAYOUT_PACKAGE_CTR6_PCU_CODE_EN	RSC_LAYOUT_PACKAGE_PC09_CODE_EN
-#define RSC_LAYOUT_PACKAGE_CTR7_PCU_CODE_EN	RSC_LAYOUT_PACKAGE_PC10_CODE_EN
-
-#define RSC_LAYOUT_PACKAGE_CTR0_ARCH_PMC_CODE_EN			\
-	RSC_LAYOUT_PACKAGE_PC02_CODE_EN
-
-#define RSC_LAYOUT_PACKAGE_CTR1_ARCH_PMC_CODE_EN			\
-	RSC_LAYOUT_PACKAGE_PC03_CODE_EN
-
-#define RSC_LAYOUT_PACKAGE_CTR2_ARCH_PMC_CODE_EN			\
-	RSC_LAYOUT_PACKAGE_PC04_CODE_EN
-
-#define RSC_LAYOUT_PACKAGE_CTR3_ARCH_PMC_CODE_EN			\
-	RSC_LAYOUT_PACKAGE_PC06_CODE_EN
-
-#define RSC_LAYOUT_PACKAGE_CTR4_ARCH_PMC_CODE_EN			\
-	RSC_LAYOUT_PACKAGE_PC07_CODE_EN
-
-#define RSC_LAYOUT_PACKAGE_CTR5_ARCH_PMC_CODE_EN			\
-	RSC_LAYOUT_PACKAGE_PC08_CODE_EN
-
-#define RSC_LAYOUT_PACKAGE_CTR6_ARCH_PMC_CODE_EN			\
-	RSC_LAYOUT_PACKAGE_PC09_CODE_EN
-
-#define RSC_LAYOUT_PACKAGE_CTR7_ARCH_PMC_CODE_EN			\
-	RSC_LAYOUT_PACKAGE_PC10_CODE_EN
-
-#define _RSC_LAYOUT_PACKAGE_CTR_PMC_CODE_EN_(_CHA_, _PMC_)	\
-	RSC_LAYOUT_PACKAGE_CTR##_CHA_##_##_PMC_##_CODE_EN
-
-#define RSC_LAYOUT_PACKAGE_CTR_PMC_CODE_EN(_CHA_, _PMC_)	\
-	_RSC_LAYOUT_PACKAGE_CTR_PMC_CODE_EN_(_CHA_, _PMC_)
-
-#define RSC_LAYOUT_PACKAGE_CTR0_CODE_EN 				\
-	RSC_LAYOUT_PACKAGE_CTR_PMC_CODE_EN(0, ARCH_PMC)
-#define RSC_LAYOUT_PACKAGE_CTR1_CODE_EN 				\
-	RSC_LAYOUT_PACKAGE_CTR_PMC_CODE_EN(1, ARCH_PMC)
-#define RSC_LAYOUT_PACKAGE_CTR2_CODE_EN 				\
-	RSC_LAYOUT_PACKAGE_CTR_PMC_CODE_EN(2, ARCH_PMC)
-#define RSC_LAYOUT_PACKAGE_CTR3_CODE_EN 				\
-	RSC_LAYOUT_PACKAGE_CTR_PMC_CODE_EN(3, ARCH_PMC)
-#define RSC_LAYOUT_PACKAGE_CTR4_CODE_EN 				\
-	RSC_LAYOUT_PACKAGE_CTR_PMC_CODE_EN(4, ARCH_PMC)
-#define RSC_LAYOUT_PACKAGE_CTR5_CODE_EN 				\
-	RSC_LAYOUT_PACKAGE_CTR_PMC_CODE_EN(5, ARCH_PMC)
-#define RSC_LAYOUT_PACKAGE_CTR6_CODE_EN 				\
-	RSC_LAYOUT_PACKAGE_CTR_PMC_CODE_EN(6, ARCH_PMC)
-#define RSC_LAYOUT_PACKAGE_CTR7_CODE_EN 				\
-	RSC_LAYOUT_PACKAGE_CTR_PMC_CODE_EN(7, ARCH_PMC)
-
-#define RSC_LAYOUT_PACKAGE_FCLK_CODE_EN {'F', 'C', 'L', 'K'}
-
 #define RSC_LAYOUT_PACKAGE_UNCORE_CODE_EN				\
 {									\
 	' ','T','S','C',':',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
@@ -520,72 +406,6 @@
 	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
 	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' \
 }
-
-#define RSC_LAYOUT_PACKAGE_FABRIC_UMC_CODE_EN				\
-{									\
-	'M','C','L','K',':',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ','F','A','B','R','I','C',':',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' \
-}
-
-#define RSC_LAYOUT_PACKAGE_FABRIC_L3_CODE_EN				\
-{									\
-	' ','T','S','C',':',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ','F','A','B','R','I','C',':',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' \
-}
-
-#define RSC_LAYOUT_PACKAGE_FABRIC_PERF_CODE_EN				\
-	RSC_LAYOUT_PACKAGE_FABRIC_L3_CODE_EN
-
-#define RSC_LAYOUT_PACKAGE_FABRIC_PCU_CODE_EN				\
-	RSC_LAYOUT_PACKAGE_UNCORE_CODE_EN
-
-#define RSC_LAYOUT_PACKAGE_FABRIC_ARCH_PMC_CODE_EN			\
-	RSC_LAYOUT_PACKAGE_UNCORE_CODE_EN
-
-#define _RSC_LAYOUT_PACKAGE_FABRIC_PMC_CODE_EN_(_PMC_)			\
-	RSC_LAYOUT_PACKAGE_FABRIC_##_PMC_##_CODE_EN
-
-#define RSC_LAYOUT_PACKAGE_FABRIC_PMC_CODE_EN(_PMC_)			\
-	_RSC_LAYOUT_PACKAGE_FABRIC_PMC_CODE_EN_(_PMC_)
-
-#define RSC_LAYOUT_PACKAGE_FABRIC_CODE_EN				\
-	RSC_LAYOUT_PACKAGE_FABRIC_PMC_CODE_EN(ARCH_PMC)
 
 #define RSC_LAYOUT_TASKS_STATE_SORTED_CODE_EN				\
 {									\
@@ -718,17 +538,9 @@
 	"------------------------------------------------------------"	\
 	"--------------------"
 
-#define RSC_LAYOUT_FOOTER_TECH_X86_CODE_EN				\
+#define RSC_LAYOUT_FOOTER_TECH_TSC_CODE_EN				\
 {									\
 	'T','e','c','h',' ','[',' ',' ','T','S','C',' ',' ',',' 	\
-}
-
-#define RSC_LAYOUT_FOOTER_TECH_AMD_CODE_EN				\
-{									\
-	'S','M','T',',','C','n','Q',',','C','P','P','C',',',		\
-	'B','O','O','S','T',',','C','1','E',',','C','C','6',		\
-	',','P','C','6',',','C','C','x',',','D','T','S',',',		\
-	'T','M',',','H','O','T',']',' ',' ',' ',' ',' ',' '		\
 }
 
 #define RSC_LAYOUT_FOOTER_VOLT_TEMP_CODE_EN				\
@@ -977,10 +789,8 @@
 #define RSC_TECHNOLOGIES_IOMMU_CODE_EN	"I/O MMU"
 #define RSC_TECHNOLOGIES_SMT_CODE_EN	"Simultaneous Multithreading"
 #define RSC_TECHNOLOGIES_HYPERV_CODE_EN "Hypervisor"
-
-#define RSC_TECH_AMD_WDT_COMM_CODE_EN	" AMD APM Watchdog Timer "
-#define RSC_TECH_AMD_SVM_COMM_CODE_EN	" AMD Secure Virtual Machine "
-#define RSC_TECH_AMD_V_COMM_CODE_EN	" I/O MMU virtualization (AMD-Vi) "
+#define RSC_TECHNOLOGIES_VM_COMM_CODE_EN " Virtual Machine Hypervisor "
+#define RSC_TECHNOLOGIES_IOMMU_COMM_CODE_EN " I/O MMU virtualization  "
 
 #define RSC_PERF_MON_TITLE_CODE_EN	" Performance Monitoring "
 #define RSC_PERF_CAPS_TITLE_CODE_EN	" Performance Capabilities "

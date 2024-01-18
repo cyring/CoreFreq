@@ -257,8 +257,7 @@ typedef struct
 	struct
 	{
 	    unsigned long long	PCLK; /* Contextual Clock [TSC|UCLK|MCLK] */
-	  union {
-	    struct {
+	  struct {
 	    unsigned long long	PC02,
 				PC03,
 				PC04,
@@ -267,16 +266,9 @@ typedef struct
 				PC08,
 				PC09,
 				PC10;
-	    };
-	    #if defined(ARCH_PMC)
-		unsigned long long
-			CTR[MC_VECTOR_TO_SCALAR(MC_MAX_CTRL, MC_MAX_CHA)];
-	    #endif
 	  };
-	  union {
 	    unsigned long long	MC6;
-	    unsigned long long	FCLK;
-	  };
+
 	  struct {
 	    unsigned long long	FC0; /* Uncore fixed counter #0 	*/
 	  } Uncore;
@@ -289,8 +281,7 @@ typedef struct
 	struct
 	{
 	    unsigned long long	PCLK;
-	  union {
-	    struct {
+	  struct {
 	    unsigned long long	PC02,
 				PC03,
 				PC04,
@@ -299,16 +290,9 @@ typedef struct
 				PC08,
 				PC09,
 				PC10;
-	    };
-	    #if defined(ARCH_PMC)
-		unsigned long long
-			CTR[MC_VECTOR_TO_SCALAR(MC_MAX_CTRL, MC_MAX_CHA)];
-	    #endif
 	  };
-	  union {
 	    unsigned long long	MC6;
-	    unsigned long long	FCLK;
-	  };
+
 	  struct {
 	    unsigned long long	FC0;
 	  } Uncore;

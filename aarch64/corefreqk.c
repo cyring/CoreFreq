@@ -41,6 +41,25 @@
 #include <acpi/cppc_acpi.h>
 #endif
 
+#ifdef CONFIG_HAVE_NMI
+enum {
+	NMI_LOCAL=0,
+	NMI_UNKNOWN,
+	NMI_SERR,
+	NMI_IO_CHECK,
+	NMI_MAX
+};
+#define NMI_DONE	0
+#define NMI_HANDLED	1
+
+#define register_nmi_handler(t, fn, fg, n, init...)	\
+({							\
+	UNUSED(fn);					\
+	0;						\
+})
+#define unregister_nmi_handler(type, name)	({})
+#endif /* CONFIG_HAVE_NMI */
+
 #include "bitasm.h"
 #include "arm_reg.h"
 #include "coretypes.h"
@@ -50,7 +69,7 @@
 MODULE_AUTHOR ("CYRIL COURTIAT <labs[at]cyring[dot]fr>");
 MODULE_DESCRIPTION ("CoreFreq Processor Driver");
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 12, 0)
-MODULE_SUPPORTED_DEVICE ("Intel,AMD,HYGON");
+MODULE_SUPPORTED_DEVICE ("ARM");
 #endif
 MODULE_LICENSE ("GPL");
 MODULE_VERSION (COREFREQ_VERSION);
@@ -988,8 +1007,8 @@ void OverrideUnlockCapability(PROCESSOR_SPECIFIC *pSpecific)
     if (pSpecific->Latch & LATCH_UNCORE_UNLOCK) {
 	PUBLIC(RO(Proc))->Features.Uncore_Unlock = pSpecific->UncoreUnlocked;
     }
-    if (pSpecific->Latch & LATCH_HSMP_CAPABLE) {
-	PUBLIC(RO(Proc))->Features.HSMP_Capable = pSpecific->HSMP_Capable;
+    if (pSpecific->Latch & LATCH_OTHER_CAPABLE) {
+	PUBLIC(RO(Proc))->Features.Other_Capable = pSpecific->Other_Capable;
     }
 }
 
@@ -2979,7 +2998,7 @@ void MatchPeerForDownService(SERVICE_PROC *pService, unsigned int cpu)
 }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
-#if defined(CONFIG_HAVE_NMI) && defined(CONFIG_X86_64)
+#if defined(CONFIG_HAVE_NMI)
 static int CoreFreqK_NMI_Handler(unsigned int type, struct pt_regs *pRegs)
 {
 	unsigned int cpu = smp_processor_id();
@@ -3130,7 +3149,7 @@ static long CoreFreqK_Register_Governor(void)
 
 static void CoreFreqK_Register_NMI(void)
 {
-#if defined(CONFIG_HAVE_NMI) && defined(CONFIG_X86_64)
+#if defined(CONFIG_HAVE_NMI)
   if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_LOCAL) == 0)
   {
     if(register_nmi_handler(NMI_LOCAL,
@@ -3184,7 +3203,7 @@ static void CoreFreqK_Register_NMI(void)
 
 static void CoreFreqK_UnRegister_NMI(void)
 {
-#if defined(CONFIG_HAVE_NMI) && defined(CONFIG_X86_64)
+#if defined(CONFIG_HAVE_NMI)
     if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_LOCAL) == 1)
     {
 	unregister_nmi_handler(NMI_LOCAL, "corefreqk");
@@ -3210,7 +3229,7 @@ static void CoreFreqK_UnRegister_NMI(void)
 #else
 static void CoreFreqK_Register_NMI(void) {}
 static void CoreFreqK_UnRegister_NMI(void) {}
-#endif
+#endif /* KERNEL_VERSION(3, 5, 0) */
 
 
 static void For_All_CPU_Compute_Clock(void)

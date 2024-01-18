@@ -32,7 +32,6 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 	char hexStr[32];
 	signed int i = 0, i2 = 0, i3 = 0;
 	unsigned int cpu;
-	enum CRC_MANUFACTURER vendor = RO(Shm)->Proc.Features.Info.Vendor.CRC;
 	struct json_state s = { .depth = 0, .nested_state = {0},
 				.write = json_writer_stdout };
 	json_start_object(&s);
@@ -47,8 +46,6 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 		json_literal(&s, "%d", !(RO(Shm)->Registration.HotPlug < 0));
 		json_key(&s, "PCI");
 		json_literal(&s, "%d", RO(Shm)->Registration.PCI);
-		json_key(&s, "HSMP");
-		json_literal(&s, "%d", RO(Shm)->Registration.HSMP);
 		json_key(&s, "Interrupt");
 		{
 			json_start_object(&s);
@@ -617,16 +614,10 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.ACPI_CPPC);
 			json_key(&s, "HWP_Enable");
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.HWP_Enable);
-			json_key(&s, "HDC_Enable");
-			json_literal(&s, "%u", RO(Shm)->Proc.Features.HDC_Enable);
-			json_key(&s, "HSMP_Capable");
-			json_literal(&s, "%u", RO(Shm)->Proc.Features.HSMP_Capable);
-			json_key(&s, "HSMP_Enable");
-			json_literal(&s, "%u", RO(Shm)->Proc.Features.HSMP_Enable);
+			json_key(&s, "Other_Capable");
+			json_literal(&s, "%u", RO(Shm)->Proc.Features.Other_Capable);
 			json_key(&s, "SpecTurboRatio");
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.SpecTurboRatio);
-			json_key(&s, "XtraCOF");
-			json_literal(&s, "%u", RO(Shm)->Proc.Features.XtraCOF);
 			json_key(&s, "SSBS");
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.SSBS);
 

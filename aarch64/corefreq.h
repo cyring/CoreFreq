@@ -263,11 +263,10 @@ typedef struct
 	} Top;
 
 	struct PKG_FLIP_FLOP {
-		struct {
+	    struct {
 		unsigned long long	PCLK;
-		  union {
-		    struct {
-		    unsigned long long	PC02,
+	      struct {
+		unsigned long long	PC02,
 					PC03,
 					PC04,
 					PC06,
@@ -275,32 +274,27 @@ typedef struct
 					PC08,
 					PC09,
 					PC10;
-		    };
-		    #if defined(ARCH_PMC)
-			unsigned long long
-			CTR[MC_VECTOR_TO_SCALAR(MC_MAX_CTRL, MC_MAX_CHA)];
-		    #endif
-		  };
+	      };
 		unsigned long long	MC6,
 					ACCU[PWR_DOMAIN(SIZE)];
-		} Delta;
+	    } Delta;
 
-		struct {
+	    struct {
 		unsigned long long	FC0;
-		} Uncore;
+	    } Uncore;
 
-		struct {
+	    struct {
 		unsigned int		Sensor,
 					Temp;
 		enum THERM_PWR_EVENTS	Events[eDIM];
-		} Thermal;
+	    } Thermal;
 
+	    struct {
 		struct {
-		    struct {
 			int		CPU, SOC;
-		    } VID;
+		} VID;
 			double		CPU, SOC;
-		} Voltage;
+	    } Voltage;
 	} FlipFlop[2] __attribute__ ((aligned (8)));
 
 	struct {
@@ -392,10 +386,6 @@ typedef struct
 				Experimental,/* 0: Disable, 1: Enable	*/
 				HotPlug, /* < 0: Disable, Other: Enable */
 				PCI;	/*  < 0: Disable, other: Enable */
-	    struct {			/*  = 0: Disable, 1: Enable	*/
-		unsigned int	HSMP	:  1-0,
-				_pad32	: 32-1;
-	    };
 		KERNEL_DRIVER	Driver; /*0:Disable, 1:Enable, 2:Full-control*/
 	} Registration;
 

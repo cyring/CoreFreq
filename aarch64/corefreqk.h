@@ -139,7 +139,7 @@ ASM_COUNTERx3(x11, x12, x13, x14, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 #define LATCH_CLK_RATIO_UNLOCK	0b000000000010	/* <X>	ClkRatioUnlocked */
 #define LATCH_TURBO_UNLOCK	0b000000000100	/* <B>	TurboUnlocked	 */
 #define LATCH_UNCORE_UNLOCK	0b000000001000	/* <U>	UncoreUnlocked	 */
-#define LATCH_HSMP_CAPABLE	0b000000010000	/* <H>	HSMP Capability  */
+#define LATCH_OTHER_CAPABLE	0b000000010000	/* <H>	Other Capability */
 
 typedef struct {
 	char			**Brand;
@@ -150,7 +150,7 @@ typedef struct {
 				ClkRatioUnlocked: 11-9,  /*	<X:2>	*/
 				TurboUnlocked	: 12-11, /*	<B:1>	*/
 				UncoreUnlocked	: 13-12, /*	<U:1>	*/
-				HSMP_Capable	: 14-13, /*	<H:1>	*/
+				Other_Capable	: 14-13, /*	<H:1>	*/
 				_UnusedLatchBits: 20-14,
 				/* <R>-<H>-<U>-<B>-<X>-<T> */
 				Latch		: 32-20;

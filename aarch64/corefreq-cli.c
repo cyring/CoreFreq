@@ -1420,9 +1420,6 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	const ASCII *powered[] = {
 		RSC(MISSING).CODE(),
 		RSC(PRESENT).CODE()
-	}, *capability[] = {
-		RSC(UNABLE).CODE(),
-		RSC(PRESENT).CODE()
 	};
 	const ASCII *code_TSC[] = {
 		RSC(MISSING).CODE(),
@@ -1692,7 +1689,7 @@ REASON_CODE SysInfoTech(Window *win,
 		BOXKEY_TURBO,
 		TurboUpdate
 	},
-	{	/* AMD ISA */
+	{
 		NULL,
 	     RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Query.CStateBaseAddr != 0,
 		2, "%s%.*sCCx   [%3s]",
@@ -1706,7 +1703,7 @@ REASON_CODE SysInfoTech(Window *win,
 		NULL,
 		RO(Shm)->Proc.Technology.VM == 1,
 		2, "%s%.*sVHE   [%3s]",
-		RSC(TECHNOLOGIES_VM).CODE(), RSC(TECH_AMD_SVM_COMM).CODE(),
+		RSC(TECHNOLOGIES_VM).CODE(), RSC(TECHNOLOGIES_VM_COMM).CODE(),
 		width - 14 - RSZ(TECHNOLOGIES_VM),
 		NULL,
 		SCANKEY_NULL,
@@ -1716,7 +1713,8 @@ REASON_CODE SysInfoTech(Window *win,
 		NULL,
 		RO(Shm)->Proc.Technology.IOMMU == 1,
 		3, "%s%.*sIOMMU   [%3s]",
-		RSC(TECHNOLOGIES_IOMMU).CODE(), RSC(TECH_AMD_V_COMM).CODE(),
+		RSC(TECHNOLOGIES_IOMMU).CODE(),
+		RSC(TECHNOLOGIES_IOMMU_COMM).CODE(),
 		width - (OutFunc? 17 : 19) - RSZ(TECHNOLOGIES_IOMMU),
 		NULL,
 		SCANKEY_NULL,
@@ -1901,21 +1899,6 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 				unsigned int *cellPadding )
 {
 	REASON_INIT(reason);
-	const ASCII *CST_Encoding[] = {
-		[ _C0]	= RSC(PERF_ENCODING_C0).CODE(),
-		[ _C1]	= RSC(PERF_ENCODING_C1).CODE(),
-		[ _C2]	= RSC(PERF_ENCODING_C2).CODE(),
-		[ _C3]	= RSC(PERF_ENCODING_C3).CODE(),
-		[ _C4]	= RSC(PERF_ENCODING_C4).CODE(),
-		[ _C6]	= RSC(PERF_ENCODING_C6).CODE(),
-		[_C6R]	= RSC(PERF_ENCODING_C6R).CODE(),
-		[ _C7]	= RSC(PERF_ENCODING_C7).CODE(),
-		[_C7S]	= RSC(PERF_ENCODING_C7S).CODE(),
-		[ _C8]	= RSC(PERF_ENCODING_C8).CODE(),
-		[ _C9]	= RSC(PERF_ENCODING_C9).CODE(),
-		[_C10]	= RSC(PERF_ENCODING_C10).CODE(),
-		[_UNSPEC]=RSC(PERF_ENCODING_UNS).CODE()
-	};
 	ATTRIBUTE *attrib[5] = {
 		RSC(SYSINFO_PERFMON_COND0).ATTR(),
 		RSC(SYSINFO_PERFMON_COND1).ATTR(),
@@ -2404,15 +2387,6 @@ REASON_CODE SysInfoPwrThermal(  Window *win,
 		RSC(SYSINFO_PWR_THERMAL_COND4).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND5).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND6).ATTR()
-	};
-	const ASCII *TM[] = {
-		RSC(MISSING).CODE(),
-		RSC(PRESENT).CODE(),
-		RSC(DISABLE).CODE(),
-		RSC(ENABLE).CODE()
-	}, *Unlock[] = {
-		RSC(LOCK).CODE(),
-		RSC(UNLOCK).CODE()
 	};
 	struct FLIP_FLOP *SFlop = &RO(Shm)->Cpu[
 		RO(Shm)->Proc.Service.Core
@@ -12416,7 +12390,7 @@ CUINT Layout_Ruler_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	const ASCII *Intel_CState[9] = {
+	const ASCII *Pkg_CState[9] = {
 		RSC(LAYOUT_PACKAGE_PC02).CODE(),
 		RSC(LAYOUT_PACKAGE_PC03).CODE(),
 		RSC(LAYOUT_PACKAGE_PC04).CODE(),
@@ -12426,17 +12400,7 @@ CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 		RSC(LAYOUT_PACKAGE_PC09).CODE(),
 		RSC(LAYOUT_PACKAGE_PC10).CODE(),
 		RSC(LAYOUT_PACKAGE_MC06).CODE()
-	}, *AMD_CState[9] = {
-		RSC(LAYOUT_PACKAGE_CTR0).CODE(),
-		RSC(LAYOUT_PACKAGE_CTR1).CODE(),
-		RSC(LAYOUT_PACKAGE_CTR2).CODE(),
-		RSC(LAYOUT_PACKAGE_CTR3).CODE(),
-		RSC(LAYOUT_PACKAGE_CTR4).CODE(),
-		RSC(LAYOUT_PACKAGE_CTR5).CODE(),
-		RSC(LAYOUT_PACKAGE_CTR6).CODE(),
-		RSC(LAYOUT_PACKAGE_CTR7).CODE(),
-		RSC(LAYOUT_PACKAGE_FCLK).CODE()
-	}, **hCState = Intel_CState;
+	}, **hCState = Pkg_CState;
 
 	LayerFillAt(	layer, 0, row, Draw.Size.width,
 			RSC(LAYOUT_RULER_PACKAGE).CODE(),
@@ -12459,12 +12423,9 @@ CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	}
 
 	LayerDeclare(	LAYOUT_PACKAGE_UNCORE, Draw.Size.width,
-			0, (row + 10), Intel_Uncore);
+			0, (row + 10), Pkg_Uncore);
 
-	LayerDeclare(	LAYOUT_PACKAGE_FABRIC, Draw.Size.width,
-			0, (row + 10), AMD_Fabric);
-
-	const LAYER_DECL_ST *hUncore = &Intel_Uncore;
+	const LAYER_DECL_ST *hUncore = &Pkg_Uncore;
 
 	LayerCopyAt(	layer, hUncore->origin.col, hUncore->origin.row,
 			hUncore->length, hUncore->attr, hUncore->code);
@@ -12752,7 +12713,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 	size_t len;
 	CUINT col = 0;
 
-	LayerDeclare(	LAYOUT_FOOTER_TECH_X86, RSZ(LAYOUT_FOOTER_TECH_X86),
+	LayerDeclare(	LAYOUT_FOOTER_TECH_TSC, RSZ(LAYOUT_FOOTER_TECH_TSC),
 			0, row, hTech0 );
 
 	LayerDeclare(	LAYOUT_FOOTER_VOLT_TEMP, RSZ(LAYOUT_FOOTER_VOLT_TEMP),
@@ -12760,17 +12721,6 @@ void Layout_Footer(Layer *layer, CUINT row)
 	/* Pre-compute right-aligned position of Voltage & Temperature items */
 	Draw.Area.Footer.VoltTemp.Hot[0] = hVoltTemp0.origin.col + 2;
 
-	const ATTRIBUTE EN[] = {
-		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_ENABLE_0],
-		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_ENABLE_1],
-		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_ENABLE_2]
-	};
-	const ATTRIBUTE TM[] = {
-		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TM_0],
-		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TM_1],
-		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TM_2],
-		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TM_3]
-	};
 	const struct { ASCII *code; ATTRIBUTE attr; } TSC[] = {
 		{RSC(LAYOUT_FOOTER_TSC_NONE).CODE(),
 				RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TSC_NONE]},
@@ -14910,24 +14860,6 @@ CUINT Draw_AltMonitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 	return row;
 }
 
-#if defined(ARCH_PMC) && (ARCH_PMC == UMC)
-
-#define CUST_CTR_FMT	" -- UMC [ "					\
-			"%4llu "	"%4llu "	"%4llu "	\
-			"%4llu "	"%4llu "	"%4llu "	\
-			"%4llu "	"%4llu "	"MHz]"
-
-#define CUST_CTR_VAR0	PFlop->Delta.PC02 / (1000LLU * 1000LLU)
-#define CUST_CTR_VAR1	PFlop->Delta.PC03 / (1000LLU * 1000LLU)
-#define CUST_CTR_VAR2	PFlop->Delta.PC04 / (1000LLU * 1000LLU)
-#define CUST_CTR_VAR3	PFlop->Delta.PC06 / (1000LLU * 1000LLU)
-#define CUST_CTR_VAR4	PFlop->Delta.PC07 / (1000LLU * 1000LLU)
-#define CUST_CTR_VAR5	PFlop->Delta.PC08 / (1000LLU * 1000LLU)
-#define CUST_CTR_VAR6	PFlop->Delta.PC09 / (1000LLU * 1000LLU)
-#define CUST_CTR_VAR7	PFlop->Delta.PC10 / (1000LLU * 1000LLU)
-
-#else
-
 #define CUST_CTR_FMT	" c2:%-5.1f"	" c3:%-5.1f"	" c4:%-5.1f"	\
 			" c6:%-5.1f"	" c7:%-5.1f"	" c8:%-5.1f"	\
 			" c9:%-5.1f"	" c10:%-5.1f"
@@ -14941,17 +14873,12 @@ CUINT Draw_AltMonitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 #define CUST_CTR_VAR6	100.f * RO(Shm)->Proc.State.PC09
 #define CUST_CTR_VAR7	100.f * RO(Shm)->Proc.State.PC10
 
-#endif /* ARCH_PMC */
+/*#endif  ARCH_PMC */
 
-#define CUST_INTEL(unit) " RAM:%8.4f(" COREFREQ_STRINGIFY(unit) ") -"	\
+#define CUST_PMC(unit)	" RAM:%8.4f(" COREFREQ_STRINGIFY(unit) ") -"	\
 			"- SA:%8.4f(" COREFREQ_STRINGIFY(unit) ")/%5.4f(V)" \
 			" - Pkg[%c]:%8.4f(" COREFREQ_STRINGIFY(unit) ") - " \
 			"%5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f -"
-
-#define CUST_AMD(unit)	" RAM:%8.4f(" COREFREQ_STRINGIFY(unit) ") -"	\
-			" SoC:%8.4f(" COREFREQ_STRINGIFY(unit) ")/%5.4f(V)" \
-			" - Pkg[%c]:%8.4f(" COREFREQ_STRINGIFY(unit) ") - " \
-			"%5.4f  %5.4f  %5.4f  %8.4f %8.4f %8.4f"
 
 size_t Draw_AltMonitor_Custom_Energy_Joule(void)
 {
@@ -14960,7 +14887,7 @@ size_t Draw_AltMonitor_Custom_Energy_Joule(void)
 
 	size_t len;
 	StrLenFormat(len, Buffer, MAX_WIDTH,
-			CUST_INTEL(J) CUST_CTR_FMT,
+			CUST_PMC(J) CUST_CTR_FMT,
 
 			RO(Shm)->Proc.State.Energy[PWR_DOMAIN(RAM)].Current,
 			RO(Shm)->Proc.State.Energy[PWR_DOMAIN(UNCORE)].Current,
@@ -14995,7 +14922,7 @@ size_t Draw_AltMonitor_Custom_Power_Watt(void)
 
 	size_t len;
 	StrLenFormat(len, Buffer, MAX_WIDTH,
-			CUST_INTEL(W) CUST_CTR_FMT,
+			CUST_PMC(W) CUST_CTR_FMT,
 
 			RO(Shm)->Proc.State.Power[PWR_DOMAIN(RAM)].Current,
 			RO(Shm)->Proc.State.Power[PWR_DOMAIN(UNCORE)].Current,
@@ -15032,8 +14959,7 @@ size_t Draw_AltMonitor_Custom_Power_Watt(void)
 #undef CUST_CTR_VAR5
 #undef CUST_CTR_VAR6
 #undef CUST_CTR_VAR7
-#undef CUST_INTEL
-#undef CUST_AMD
+#undef CUST_PMC
 
 size_t (*Draw_AltMonitor_Custom_Matrix[])(void) = {
 	Draw_AltMonitor_Custom_Energy_Joule,

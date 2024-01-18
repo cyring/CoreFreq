@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2021 CYRIL COURTIAT
+ * Copyright (C) 2015-2024 CYRIL COURTIAT
  * Licenses: GPL2
  */
 
@@ -632,7 +632,9 @@ void PowerInterface(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short pwrUnits = 0, pwrVal;
 	enum PWR_DOMAIN pw;
-
+	UNUSED(pwrUnits);
+	UNUSED(pwrVal);
+	UNUSED(pw);
     switch (KIND_OF_FORMULA(RO(Proc)->powerFormula)) {
     case POWER_KIND_NONE:
 	break;
@@ -714,7 +716,6 @@ static char *Chipset[CHIPSETS] = {
 void Uncore_Update(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 			RO(CORE) *RO(Core) )
 {
-	unsigned int idx;
 	/*	Copy the # of controllers.				*/
 	RO(Shm)->Uncore.CtrlCount = RO(Proc)->Uncore.CtrlCount;
 	/*	Decode the Memory Controller for each found vendor:device */
@@ -775,7 +776,7 @@ void CStates(RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core), unsigned int cpu)
 
 	RO(Shm)->Cpu[cpu].Query.CStateLimit = \
 					RO(Core, AT(cpu))->Query.CStateLimit;
-	/*	Copy Intel Max C-State Inclusion			*/
+	/*	Copy the Max C-State Inclusion				*/
 	RO(Shm)->Cpu[cpu].Query.IORedir = RO(Core, AT(cpu))->Query.IORedir;
 	/*	Copy any architectural C-States I/O Base Address	*/
 	RO(Shm)->Cpu[cpu].Query.CStateBaseAddr = \
@@ -1077,7 +1078,6 @@ void Package_Update(	RO(SHM_STRUCT) *RO(Shm),
 	RO(Shm)->Registration.Experimental= RO(Proc)->Registration.Experimental;
 	RO(Shm)->Registration.HotPlug = RO(Proc)->Registration.HotPlug;
 	RO(Shm)->Registration.PCI = RO(Proc)->Registration.PCI;
-	RO(Shm)->Registration.HSMP= RO(Proc)->Features.HSMP_Enable;
 	BITSTOR(LOCKLESS,RO(Shm)->Registration.NMI, RO(Proc)->Registration.NMI);
 	RO(Shm)->Registration.Driver = RO(Proc)->Registration.Driver;
 	/*	Copy the timer interval delay.				*/
