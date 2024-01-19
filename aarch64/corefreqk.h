@@ -409,50 +409,50 @@ static char *CodeName[CODENAMES] = {
 	[  ARMv9_5]	= "ARMv9.5"
 };
 
-const ARCH_ST Arch_Misc_Processor = {.Brand = ZLIST(NULL), .CN = ARMv1},
-	Arch_Cortex_A5 = {.Brand = ZLIST("Cortex-A5"), .CN = ARMv7_A},
-	Arch_Cortex_A7 = {.Brand = ZLIST("Cortex-A7"), .CN = ARMv7_A},
-	Arch_Cortex_A9 = {.Brand = ZLIST("Cortex-A9"), .CN = ARMv7_A},
-	Arch_Cortex_A15 = {.Brand = ZLIST("Cortex-A15"), .CN = ARMv7_A},
-	Arch_Cortex_A17 = {.Brand = ZLIST("Cortex-A17"), .CN = ARMv7_A},
-	Arch_Cortex_A32 = {.Brand = ZLIST("Cortex-A32"), .CN = ARMv8_A},
-	Arch_Cortex_A34 = {.Brand = ZLIST("Cortex-A34"), .CN = ARMv8_A},
-	Arch_Cortex_A35 = {.Brand = ZLIST("Cortex-A35"), .CN = ARMv8_A},
-	Arch_Cortex_A510 = {.Brand = ZLIST("Cortex-A510"), .CN = ARMv9_A},
-	Arch_Cortex_A520 = {.Brand = ZLIST("Cortex-A520"), .CN = ARMv9_A},
-	Arch_Cortex_A53 = {.Brand = ZLIST("Cortex-A53"), .CN = ARMv8_A},
-	Arch_Cortex_A55 = {.Brand = ZLIST("Cortex-A55"), .CN = ARMv8_2_A},
-	Arch_Cortex_A57 = {.Brand = ZLIST("Cortex-A57"), .CN = ARMv8_A},
-	Arch_Cortex_A65 = {.Brand = ZLIST("Cortex-A65"), .CN = ARMv8_2_A},
-	Arch_Cortex_A65AE = {.Brand = ZLIST("Cortex-A65AE"), .CN = ARMv8_2_A},
-	Arch_Cortex_A710 = {.Brand = ZLIST("Cortex-A710"), .CN = ARMv9_A},
-	Arch_Cortex_A715 = {.Brand = ZLIST("Cortex-A715"), .CN = ARMv9_A},
-	Arch_Cortex_A72 = {.Brand = ZLIST("Cortex-A72"), .CN = ARMv8_A},
-	Arch_Cortex_A720 = {.Brand = ZLIST("Cortex-A720"), .CN = ARMv9_A},
-	Arch_Cortex_A73 = {.Brand = ZLIST("Cortex-A73"), .CN = ARMv8_A},
-	Arch_Cortex_A75 = {.Brand = ZLIST("Cortex-A75"), .CN = ARMv8_2_A},
-	Arch_Cortex_A76 = {.Brand = ZLIST("Cortex-A76"), .CN = ARMv8_2_A},
-	Arch_Cortex_A76AE = {.Brand = ZLIST("Cortex-A76AE"), .CN = ARMv8_2_A},
-	Arch_Cortex_A77 = {.Brand = ZLIST("Cortex-A77"), .CN = ARMv8_2_A},
-	Arch_Cortex_A78 = {.Brand = ZLIST("Cortex-A78"), .CN = ARMv8_2_A},
-	Arch_Cortex_A78AE = {.Brand = ZLIST("Cortex-A78AE"), .CN = ARMv8_2_A},
-	Arch_Cortex_A78C = {.Brand = ZLIST("Cortex-A78C"), .CN = ARMv8_2_A},
-	Arch_Cortex_R4 = {.Brand = ZLIST("Cortex-R4"), .CN = ARMv7_R},
-	Arch_Cortex_R5 = {.Brand = ZLIST("Cortex-R5"), .CN = ARMv7_R},
-	Arch_Cortex_R52 = {.Brand = ZLIST("Cortex-R52"), .CN = ARMv8_R},
-	Arch_Cortex_R52Plus = {.Brand = ZLIST("Cortex-R52+"), .CN = ARMv8_R},
-	Arch_Cortex_R82 = {.Brand = ZLIST("Cortex-R82"), .CN = ARMv8_R},
-	Arch_Cortex_X1 = {.Brand = ZLIST("Cortex-X1"), .CN = ARMv8_2_A},
-	Arch_Cortex_X1C = {.Brand = ZLIST("Cortex-X1C"), .CN = ARMv8_2_A},
-	Arch_Cortex_X2 = {.Brand = ZLIST("Cortex-X2"), .CN = ARMv9_A},
-	Arch_Cortex_X3 = {.Brand = ZLIST("Cortex-X3"), .CN = ARMv9_A},
-	Arch_Cortex_X4 = {.Brand = ZLIST("Cortex-X4"), .CN = ARMv9_A},
-	Arch_DynamIQ_DSU = {.Brand = ZLIST("DynamIQ DSU"), .CN = ARMv8_2_A},
-	Arch_Neoverse_E1 = {.Brand = ZLIST("Neoverse E1"), .CN = ARMv8_2_A},
-	Arch_Neoverse_N1 = {.Brand = ZLIST("Neoverse N1"), .CN = ARMv8_2_A},
-	Arch_Neoverse_N2 = {.Brand = ZLIST("Neoverse N2"), .CN = ARMv9_A},
-	Arch_Neoverse_V1 = {.Brand = ZLIST("Neoverse V1"), .CN = ARMv8_4_A},
-	Arch_Neoverse_V2 = {.Brand = ZLIST("Neoverse V2"), .CN = ARMv9_A};
+#define Arch_Misc_Processor {.Brand = ZLIST(NULL), .CN = ARMv1}
+#define Arch_Cortex_A5 {.Brand = ZLIST("Cortex-A5"), .CN = ARMv7_A}
+#define Arch_Cortex_A7 {.Brand = ZLIST("Cortex-A7"), .CN = ARMv7_A}
+#define Arch_Cortex_A9 {.Brand = ZLIST("Cortex-A9"), .CN = ARMv7_A}
+#define Arch_Cortex_A15 {.Brand = ZLIST("Cortex-A15"), .CN = ARMv7_A}
+#define Arch_Cortex_A17 {.Brand = ZLIST("Cortex-A17"), .CN = ARMv7_A}
+#define Arch_Cortex_A32 {.Brand = ZLIST("Cortex-A32"), .CN = ARMv8_A}
+#define Arch_Cortex_A34 {.Brand = ZLIST("Cortex-A34"), .CN = ARMv8_A}
+#define Arch_Cortex_A35 {.Brand = ZLIST("Cortex-A35"), .CN = ARMv8_A}
+#define Arch_Cortex_A510 {.Brand = ZLIST("Cortex-A510"), .CN = ARMv9_A}
+#define Arch_Cortex_A520 {.Brand = ZLIST("Cortex-A520"), .CN = ARMv9_A}
+#define Arch_Cortex_A53 {.Brand = ZLIST("Cortex-A53"), .CN = ARMv8_A}
+#define Arch_Cortex_A55 {.Brand = ZLIST("Cortex-A55"), .CN = ARMv8_2_A}
+#define Arch_Cortex_A57 {.Brand = ZLIST("Cortex-A57"), .CN = ARMv8_A}
+#define Arch_Cortex_A65 {.Brand = ZLIST("Cortex-A65"), .CN = ARMv8_2_A}
+#define Arch_Cortex_A65AE {.Brand = ZLIST("Cortex-A65AE"), .CN = ARMv8_2_A}
+#define Arch_Cortex_A710 {.Brand = ZLIST("Cortex-A710"), .CN = ARMv9_A}
+#define Arch_Cortex_A715 {.Brand = ZLIST("Cortex-A715"), .CN = ARMv9_A}
+#define Arch_Cortex_A72 {.Brand = ZLIST("Cortex-A72"), .CN = ARMv8_A}
+#define Arch_Cortex_A720 {.Brand = ZLIST("Cortex-A720"), .CN = ARMv9_A}
+#define Arch_Cortex_A73 {.Brand = ZLIST("Cortex-A73"), .CN = ARMv8_A}
+#define Arch_Cortex_A75 {.Brand = ZLIST("Cortex-A75"), .CN = ARMv8_2_A}
+#define Arch_Cortex_A76 {.Brand = ZLIST("Cortex-A76"), .CN = ARMv8_2_A}
+#define Arch_Cortex_A76AE {.Brand = ZLIST("Cortex-A76AE"), .CN = ARMv8_2_A}
+#define Arch_Cortex_A77 {.Brand = ZLIST("Cortex-A77"), .CN = ARMv8_2_A}
+#define Arch_Cortex_A78 {.Brand = ZLIST("Cortex-A78"), .CN = ARMv8_2_A}
+#define Arch_Cortex_A78AE {.Brand = ZLIST("Cortex-A78AE"), .CN = ARMv8_2_A}
+#define Arch_Cortex_A78C {.Brand = ZLIST("Cortex-A78C"), .CN = ARMv8_2_A}
+#define Arch_Cortex_R4 {.Brand = ZLIST("Cortex-R4"), .CN = ARMv7_R}
+#define Arch_Cortex_R5 {.Brand = ZLIST("Cortex-R5"), .CN = ARMv7_R}
+#define Arch_Cortex_R52 {.Brand = ZLIST("Cortex-R52"), .CN = ARMv8_R}
+#define Arch_Cortex_R52Plus {.Brand = ZLIST("Cortex-R52+"), .CN = ARMv8_R}
+#define Arch_Cortex_R82 {.Brand = ZLIST("Cortex-R82"), .CN = ARMv8_R}
+#define Arch_Cortex_X1 {.Brand = ZLIST("Cortex-X1"), .CN = ARMv8_2_A}
+#define Arch_Cortex_X1C {.Brand = ZLIST("Cortex-X1C"), .CN = ARMv8_2_A}
+#define Arch_Cortex_X2 {.Brand = ZLIST("Cortex-X2"), .CN = ARMv9_A}
+#define Arch_Cortex_X3 {.Brand = ZLIST("Cortex-X3"), .CN = ARMv9_A}
+#define Arch_Cortex_X4 {.Brand = ZLIST("Cortex-X4"), .CN = ARMv9_A}
+#define Arch_DynamIQ_DSU {.Brand = ZLIST("DynamIQ DSU"), .CN = ARMv8_2_A}
+#define Arch_Neoverse_E1 {.Brand = ZLIST("Neoverse E1"), .CN = ARMv8_2_A}
+#define Arch_Neoverse_N1 {.Brand = ZLIST("Neoverse N1"), .CN = ARMv8_2_A}
+#define Arch_Neoverse_N2 {.Brand = ZLIST("Neoverse N2"), .CN = ARMv9_A}
+#define Arch_Neoverse_V1 {.Brand = ZLIST("Neoverse V1"), .CN = ARMv8_4_A}
+#define Arch_Neoverse_V2 {.Brand = ZLIST("Neoverse V2"), .CN = ARMv9_A}
 
 static PROCESSOR_SPECIFIC Misc_Specific_Processor[] = {
 	{0}

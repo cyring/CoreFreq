@@ -574,22 +574,9 @@ void Architecture(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	/*	Architecture and Hypervisor identifiers.		*/
 	RO(Shm)->Proc.ArchID = RO(Proc)->ArchID;
 	RO(Shm)->Proc.HypervisorID = RO(Proc)->HypervisorID;
-	/*	Copy the Architecture name.				*/
+	/*	Copy the Architecture name and Brand string.		*/
 	StrCopy(RO(Shm)->Proc.Architecture,RO(Proc)->Architecture,CODENAME_LEN);
-	/*	Make the processor's brand string with no trailing spaces */
-	ix = BRAND_LENGTH;
-	do {
-		if ((RO(Proc)->Features.Info.Brand[ix] == 0x20)
-		 || (RO(Proc)->Features.Info.Brand[ix] == 0x0)) {
-			ix--;
-		} else {
-			break;
-		}
-	} while (ix != 0);
-	RO(Shm)->Proc.Brand[1 + ix] = '\0';
-	for (; ix >= 0; ix--) {
-		RO(Shm)->Proc.Brand[ix] = RO(Proc)->Features.Info.Brand[ix];
-	}
+	StrCopy(RO(Shm)->Proc.Brand, RO(Proc)->Features.Info.Brand, BRAND_SIZE);
 	/*	Compute the TSC mode: None, Variant, Invariant		*/
 	RO(Shm)->Proc.Features.InvariantTSC = fTSC << aTSC;
 }
