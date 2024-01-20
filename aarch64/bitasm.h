@@ -481,32 +481,40 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define BITBSF(_base, _index)						\
 ({									\
-	unsigned char _ret = 0;						\
+	register unsigned char _ret;					\
 	if (_base) {							\
 		_index = 0;						\
-		while ((_ret = BITVAL(_base, _index)) == 0) {		\
+		while (BITVAL(_base, _index) == 0) {			\
 			if (_index < (8 * sizeof(_base)) - 1) {		\
 				_index = _index + 1;			\
 			} else {					\
 				break;					\
 			}						\
 		}							\
+		_ret = 0;						\
+	} else {							\
+		_index = 0;						\
+		_ret = 1;						\
 	}								\
 	_ret;								\
 })
 
 #define BITBSR(_base, _index)						\
 ({									\
-	unsigned char _ret = 0;						\
+	register unsigned char _ret;					\
 	if (_base) {							\
 		_index = (8 * sizeof(_base)) - 1;			\
-		while ((_ret = BITVAL(_base, _index)) == 0) {		\
+		while (BITVAL(_base, _index) == 0) {			\
 			if (_index > 0) {				\
 				_index = _index - 1;			\
 			} else {					\
 				break;					\
 			}						\
 		}							\
+		_ret = 0;						\
+	} else {							\
+		_index = 0;						\
+		_ret = 1;						\
 	}								\
 	_ret;								\
 })
