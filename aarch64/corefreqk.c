@@ -616,6 +616,16 @@ static void Query_Features(void *pArg)
 	iArg->Features->SSBS = pfr1.SSBS;
 	iArg->Features->CSV2 = pfr1.CSV2_frac;
 
+	switch (pfr0.DIT) {
+	case 0b0001:
+	case 0b0010:
+		iArg->Features->DIT = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->DIT = 0;
+		break;
+	}
     if (Experimental && (iArg->HypervisorID == HYPERV_NONE)) {
 	/* Query the Cluster Configuration				*/
 	clustercfg.value = read_sysreg_s(CLUSTERCFR_EL1);
@@ -1374,6 +1384,11 @@ void SystemRegisters(CORE_RO *Core)
 		Core->SystemRegister.SCTLR2 = read_sysreg_s(SCTLR2_EL1);
 	}
     }
+	if (PUBLIC(RO(Proc))->Features.DIT) {
+		Core->SystemRegister.FLAGS |= (
+			read_sysreg_s(MRS_DIT) & (1LLU << FLAG_DIT)
+		);
+	}
 	if (isar2.CLRBHB == 0b0001) {
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CLRBHB, Core->Bind);
 	} else {

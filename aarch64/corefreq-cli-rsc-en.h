@@ -664,6 +664,7 @@
 #define RSC_SYS_REG_FLAGS_F_CODE_EN	" FIQ "
 #define RSC_SYS_REG_FLAGS_L_CODE_EN	" Current EL "
 #define RSC_SYS_REG_FLAGS_M_CODE_EN	" Reserved "
+#define RSC_SYS_REG_FLAGS_DIT_CODE_EN	" Data Independent Timing "
 
 #define RSC_SYS_REG_SCTL_CODE_EN	" System Control Register (SCTLR_EL1) "
 #define RSC_SYS_REG_TIDCP_CODE_EN " Implementation Defined System instructions "
@@ -1863,7 +1864,7 @@
 #define RSC_SYS_REGS_HDR_CPU_CODE	"CPU "
 
 #define RSC_SYS_REG_HDR_FLAGS_CODE	\
-	"FLAG\0  N \0  Z \0  C \0  V \0  D \0  A \0  I \0  F \0 EL \0  M "
+	"FLAG\0  N \0  Z \0  C \0  V \0  D \0 DIT\0  A \0  I \0  F \0 EL \0  M "
 
 #define RSC_SYS_REG_HDR11_SCTL_CODE	\
 	"    \0 TID\0  SP\0 NMI\0 TPI\0  TC\0SO  \0 PAN\0" \
