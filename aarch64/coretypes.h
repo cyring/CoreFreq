@@ -216,6 +216,18 @@ enum SYS_REG {
 	SCTLR2_EnADERR	= 3,
 	SCTLR2_NMEA	= 2,
 
+	FPSR_N		= 31,
+	FPSR_Z		= 30,
+	FPSR_C		= 29,
+	FPSR_V		= 28,
+	FPSR_QC 	= 27,
+	FPSR_IDC	= 7,
+	FPSR_IXC	= 4,
+	FPSR_UFC	= 3,
+	FPSR_OFC	= 2,
+	FPSR_DZC	= 1,
+	FPSR_IOC	= 0,
+
 	UNDEF_CR	= 64
 };
 

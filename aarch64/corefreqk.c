@@ -1356,6 +1356,7 @@ void SystemRegisters(CORE_RO *Core)
 		"mrs	%[sctlr],	sctlr_el1"	"\n\t"
 		"mrs	%[mmfr1],	id_aa64mmfr1_el1""\n\t"
 		"mrs	%[pfr0] ,	id_aa64pfr0_el1""\n\t"
+		"mrs	%[fpsr] ,	fpsr"		"\n\t"
 		"cmp	xzr	,	xzr, lsl #0"	"\n\t"
 		"mrs	x14	,	nzcv"		"\n\t"
 		"mrs	x13	,	daif"		"\n\t"
@@ -1368,6 +1369,7 @@ void SystemRegisters(CORE_RO *Core)
 		  [sctlr]	"=r" (Core->SystemRegister.SCTLR),
 		  [mmfr1]	"=r" (mmfr1),
 		  [pfr0]	"=r" (pfr0),
+		  [fpsr]	"=r" (Core->SystemRegister.FPSR),
 		  [flags]	"=r" (Core->SystemRegister.FLAGS)
 		:
 		: "cc", "memory", "%x12", "%x13", "%x14"

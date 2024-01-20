@@ -750,6 +750,15 @@
 #define RSC_SYS_REG_ADERR_CODE_EN	" Asynchronous Device Read Error "
 #define RSC_SYS_REG_NMEA_CODE_EN	" Non-Maskable External Aborts "
 
+#define RSC_SYS_REG_FPSR_CODE_EN	" Floating-point Status Register "
+#define RSC_SYS_REG_FPSR_QC_CODE_EN	" Cumulative Saturation "
+#define RSC_SYS_REG_FPSR_IDC_CODE_EN	" Input Denormal Cumulative "
+#define RSC_SYS_REG_FPSR_IXC_CODE_EN	" Inexact Cumulative "
+#define RSC_SYS_REG_FPSR_UFC_CODE_EN	" Underflow Cumulative "
+#define RSC_SYS_REG_FPSR_OFC_CODE_EN	" Overflow Cumulative "
+#define RSC_SYS_REG_FPSR_DZC_CODE_EN	" Divide by Zero Cumulative "
+#define RSC_SYS_REG_FPSR_IOC_CODE_EN	" Invalid Operation Cumulative "
+
 #define RSC_ISA_TITLE_CODE_EN		" Instruction Set Extensions "
 
 #define RSC_ISA_AES_COMM_CODE_EN	" Advanced Encryption Standard "
@@ -1894,6 +1903,9 @@
 
 #define RSC_SYS_REG_HDR12_SCTL2_CODE	\
 	"SCT2\0 EL0\0 EL1\0 EL0\0 EL1\0 EL0\0 EL1\0 128\0    \0ERR \0ERR \0    "
+
+#define RSC_SYS_REG_HDR_FPSR_CODE	\
+	"FPSR\0  N \0  Z \0  C \0  V \0 QC \0 IDC\0 IXC\0 UFC\0 OFC\0 DZC\0 IOC"
 
 #define RSC_ISA_AES_CODE		"          AES [%c]"
 #define RSC_ISA_CMOV_CODE		"         CMOV [%c]"

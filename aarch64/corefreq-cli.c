@@ -429,7 +429,7 @@ REASON_CODE SystemRegisters(	Window *win,
 	};
 	enum AUTOMAT {
 		DO_END, DO_SPC, DO_CPU, DO_FLAG,
-		DO_SCTLR, DO_SCTLR2
+		DO_SCTLR, DO_SCTLR2, DO_FPSR
 	};
 	const struct SR_ST {
 		struct SR_HDR {
@@ -749,6 +749,48 @@ REASON_CODE SystemRegisters(	Window *win,
 	[16] =	{DO_SPC ,  1	, UNDEF_CR	, 0	},
 		{DO_END ,  1	, UNDEF_CR	, 0	}
 	}
+      },
+      {
+	.header = (struct SR_HDR[]) {
+	[ 0] = {&RSC(SYS_REG_HDR_FPSR).CODE()[ 0],RSC(SYS_REG_FPSR).CODE()},
+	[ 1] = {&RSC(SYS_REG_HDR_FPSR).CODE()[ 5],RSC(SYS_REG_FLAGS_N).CODE()},
+	[ 2] = {&RSC(SYS_REG_HDR_FPSR).CODE()[10],RSC(SYS_REG_FLAGS_Z).CODE()},
+	[ 3] = {&RSC(SYS_REG_HDR_FPSR).CODE()[15],RSC(SYS_REG_FLAGS_C).CODE()},
+	[ 4] = {&RSC(SYS_REG_HDR_FPSR).CODE()[20],RSC(SYS_REG_FLAGS_V).CODE()},
+	[ 5] = {&RSC(SYS_REG_HDR_FPSR).CODE()[25],RSC(SYS_REG_FPSR_QC).CODE()},
+	[ 6] = {&RSC(SYS_REG_HDR_FPSR).CODE()[30],RSC(SYS_REG_FPSR_IDC).CODE()},
+	[ 7] = {&RSC(SYS_REG_HDR_FPSR).CODE()[35],RSC(SYS_REG_FPSR_IXC).CODE()},
+	[ 8] = {&RSC(SYS_REG_HDR_FPSR).CODE()[40],RSC(SYS_REG_FPSR_UFC).CODE()},
+	[ 9] = {&RSC(SYS_REG_HDR_FPSR).CODE()[45],RSC(SYS_REG_FPSR_OFC).CODE()},
+	[10] = {&RSC(SYS_REG_HDR_FPSR).CODE()[50],RSC(SYS_REG_FPSR_DZC).CODE()},
+	[11] = {&RSC(SYS_REG_HDR_FPSR).CODE()[55],RSC(SYS_REG_FPSR_IOC).CODE()},
+	[12] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[13] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[14] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[15] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[16] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+		{NULL, NULL}
+	},
+	.flag = (struct SR_BIT[]) {
+	[ 0] =	{DO_CPU , 1	, UNDEF_CR	, 0	},
+	[ 1] =	{DO_FPSR, 1	, FPSR_N	, 1	},
+	[ 2] =	{DO_FPSR, 1	, FPSR_Z	, 1	},
+	[ 3] =	{DO_FPSR, 1	, FPSR_C	, 1	},
+	[ 4] =	{DO_FPSR, 1	, FPSR_V	, 1	},
+	[ 5] =	{DO_FPSR, 1	, FPSR_QC	, 1	},
+	[ 6] =	{DO_FPSR, 1	, FPSR_IDC	, 1	},
+	[ 7] =	{DO_FPSR, 1	, FPSR_IXC	, 1	},
+	[ 8] =	{DO_FPSR, 1	, FPSR_UFC	, 1	},
+	[ 9] =	{DO_FPSR, 1	, FPSR_OFC	, 1	},
+	[10] =	{DO_FPSR, 1	, FPSR_DZC	, 1	},
+	[11] =	{DO_FPSR, 1	, FPSR_IOC	, 1	},
+	[12] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[13] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[14] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[15] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[16] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+		{DO_END , 1	, UNDEF_CR	, 0	}
+	}
       }
     };
 	CUINT cells_per_line = win->matrix.size.wth, *nl = &cells_per_line;
@@ -801,6 +843,11 @@ REASON_CODE SystemRegisters(	Window *win,
 		      } else {
 			PRT(REG, attrib[1], RSC(SYS_REGS_NA).CODE());
 		      }
+			break;
+		    case DO_FPSR:
+			PRT(REG, attrib[2], "%3llx ",
+			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.FPSR,
+					pFlag->pos, pFlag->len));
 			break;
 		    default:
 			PRT(REG, attrib[1], RSC(SYS_REGS_NA).CODE());

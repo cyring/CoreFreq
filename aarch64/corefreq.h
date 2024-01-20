@@ -186,6 +186,7 @@ typedef struct
 		Bit64			FLAGS	__attribute__ ((aligned (8)));
 		Bit64			SCTLR	__attribute__ ((aligned (8)));
 		Bit64			SCTLR2	__attribute__ ((aligned (8)));
+		Bit64			FPSR	__attribute__ ((aligned (8)));
 	} SystemRegister;
 
 	struct SLICE_STRUCT {
