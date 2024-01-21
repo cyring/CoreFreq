@@ -4,6 +4,8 @@
  * Licenses: GPL2
  */
 
+#define KDIV(_opl, _opr)	DIV_ROUND_CLOSEST((_opl), (_opr))
+
 #define Atomic_Read_VPMC(_lock, _dest, _src)				\
 {									\
 /*	__asm__ volatile						\

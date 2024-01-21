@@ -585,7 +585,7 @@ unsigned int FixMissingRatioAndFrequency(unsigned int r32, CLOCK *pClock)
   {
    if ((r32 == 0) && (pClock->Q > 0))
    {	/*	Fix missing ratio.					*/
-      r64=DIV_ROUND_CLOSEST(PUBLIC(RO(Proc))->Features.Factory.Freq, pClock->Q);
+      r64 = KDIV(PUBLIC(RO(Proc))->Features.Factory.Freq, pClock->Q);
       PUBLIC(RO(Core,AT(PUBLIC(RO(Proc))->Service.Core)))->Boost[BOOST(MAX)]=\
 		(unsigned int) r64;
    }
@@ -593,7 +593,7 @@ unsigned int FixMissingRatioAndFrequency(unsigned int r32, CLOCK *pClock)
   else if (r32 > 0)
   {	/*	Fix the Factory frequency (unit: MHz)			*/
 	r64 = pClock->Hz * r32;
-	r64 = r64 / 1000000LLU;
+	r64 = KDIV(r64, 1000000LLU);
 	PUBLIC(RO(Proc))->Features.Factory.Freq = (unsigned int) r64;
   }
 	PUBLIC(RO(Proc))->Features.Factory.Clock.Q  = pClock->Q;
@@ -603,7 +603,7 @@ unsigned int FixMissingRatioAndFrequency(unsigned int r32, CLOCK *pClock)
   if (PUBLIC(RO(Proc))->Features.Factory.Clock.Hz > 0)
   {
     r64 = PUBLIC(RO(Proc))->Features.Factory.Freq * 1000000LLU;
-    r64 = DIV_ROUND_CLOSEST(r64, PUBLIC(RO(Proc))->Features.Factory.Clock.Hz);
+    r64 = KDIV(r64, PUBLIC(RO(Proc))->Features.Factory.Clock.Hz);
     PUBLIC(RO(Proc))->Features.Factory.Ratio = (unsigned int) r64;
   }
 	return (unsigned int) r64;
@@ -674,7 +674,7 @@ static long CoreFreqK_Register_ClockSource(unsigned int cpu)
 
 	Freq_Hz = PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)]
 		* PUBLIC(RO(Core, AT(cpu)))->Clock.Hz;
-	Freq_KHz = Freq_Hz / 1000U;
+	Freq_KHz = KDIV(Freq_Hz, 1000U);
 	if (Freq_KHz != 0)
 	{
 		int rx = clocksource_register_khz(&CoreFreqK_CS, Freq_KHz);
@@ -722,6 +722,7 @@ void VendorFromCPUID(	char *pVendorID, unsigned int *pLargestFunc,
       {VENDOR_VMWARE ,__builtin_strlen(VENDOR_VMWARE),CRC_VMWARE,HYPERV_VMWARE},
       {VENDOR_HYPERV ,__builtin_strlen(VENDOR_HYPERV),CRC_HYPERV,HYPERV_HYPERV}
     };
+	const unsigned int mfrSize = sizeof(mfrTbl) / sizeof(mfrTbl[0]);
 	unsigned int eax = 0x0, ebx = 0x0, ecx = 0x0, edx = 0x0; /*DWORD Only!*/
 
 	__asm__ volatile
@@ -759,7 +760,7 @@ void VendorFromCPUID(	char *pVendorID, unsigned int *pLargestFunc,
 
 	(*pLargestFunc) = eax;
 
-    for (eax = 0; eax < sizeof(mfrTbl) / sizeof(mfrTbl[0]); eax++) {
+    for (eax = 0; eax < mfrSize; eax++) {
 	if (!strncmp(pVendorID, mfrTbl[eax].vendorID, mfrTbl[eax].vendorLen))
 	{
 		(*pCRC) = mfrTbl[eax].mfrCRC;
@@ -868,14 +869,14 @@ unsigned int Intel_Brand(char *pBrand, char buffer[])
 	if (multiplier > 0)
 	{
 	    if (buffer[ix - 3] == '.') {
-		frequency  = (int) (buffer[ix - 4] - '0') * multiplier;
-		frequency += (int) (buffer[ix - 2] - '0') * (multiplier / 10);
-		frequency += (int) (buffer[ix - 1] - '0') * (multiplier / 100);
+		frequency  = (int) (buffer[ix-4] - '0') * multiplier;
+		frequency += (int) (buffer[ix-2] - '0') * KDIV(multiplier, 10);
+		frequency += (int) (buffer[ix-1] - '0') * KDIV(multiplier, 100);
 	    } else {
-		frequency  = (int) (buffer[ix - 4] - '0') * 1000;
-		frequency += (int) (buffer[ix - 3] - '0') * 100;
-		frequency += (int) (buffer[ix - 2] - '0') * 10;
-		frequency += (int) (buffer[ix - 1] - '0');
+		frequency  = (int) (buffer[ix-4] - '0') * 1000;
+		frequency += (int) (buffer[ix-3] - '0') * 100;
+		frequency += (int) (buffer[ix-2] - '0') * 10;
+		frequency += (int) (buffer[ix-1] - '0');
 		frequency *= frequency;
 	    }
 	}
@@ -1396,7 +1397,8 @@ void Compute_Interval(void)
 			TickInterval
 		:	KMAX(TICK_DEF_MS, PUBLIC(RO(Proc))->SleepInterval);
 
-	PUBLIC(RO(Proc))->tickReset /= PUBLIC(RO(Proc))->SleepInterval;
+	PUBLIC(RO(Proc))->tickReset=KDIV(PUBLIC(RO(Proc))->tickReset,
+					PUBLIC(RO(Proc))->SleepInterval);
 	PUBLIC(RO(Proc))->tickStep = PUBLIC(RO(Proc))->tickReset;
 
 	RearmTheTimer = ktime_set( 0,	PUBLIC(RO(Proc))->SleepInterval
@@ -1409,7 +1411,7 @@ void Compute_Interval(void)
 	#define THIS_LPJ	loops_per_jiffy
 #endif
 
-#define COMPUTE_LPJ(BCLK_Hz, COF)	( (BCLK_Hz * COF) / HZ )
+#define COMPUTE_LPJ(BCLK_Hz, COF)	(KDIV(BCLK_Hz * COF, HZ ))
 
 #if defined(DELAY_TSC) && (DELAY_TSC == 1)
 /*			udelay() built with TSC implementation		*/
@@ -1435,7 +1437,7 @@ void Compute_Interval(void)
 	);								\
 })
 
-#define CLOCK2CYCLE(INTERVAL_NS) ((INTERVAL_NS * THIS_LPJ * HZ) / 1000000LLU)
+#define CLOCK2CYCLE(INTERVAL_NS) (KDIV(INTERVAL_NS * THIS_LPJ * HZ, 1000000LLU))
 
 #define CLOCK_DELAY(INTERVAL_NS, _TIMER, CTR)				\
 ({									\
@@ -1568,10 +1570,10 @@ static CLOCK BaseClock_GenuineIntel(unsigned int ratio)
 
 	if ((PUBLIC(RO(Proc))->Features.Factory.Freq > 0) && (ratio > 0))
 	{
-		clock.Hz=(PUBLIC(RO(Proc))->Features.Factory.Freq * 1000000L)
-			/ ratio;
+		clock.Hz = KDIV(PUBLIC(RO(Proc))->Features.Factory.Freq
+				* 1000000L, ratio);
 
-		clock.Q = PUBLIC(RO(Proc))->Features.Factory.Freq / ratio;
+		clock.Q = KDIV(PUBLIC(RO(Proc))->Features.Factory.Freq, ratio);
 
 		clock.R = (PUBLIC(RO(Proc))->Features.Factory.Freq % ratio)
 			* PRECISION;
@@ -2389,9 +2391,9 @@ static void Map_Intel_Topology(void *arg)
 		CORE_Mask_Width = 1;
 	}
 
-	if (CORE_Mask_Width != 0)
-	   SMT_Mask_Width = FindMaskWidth(SMT_Mask_Width) / CORE_Mask_Width;
-
+	if (CORE_Mask_Width != 0) {
+	   SMT_Mask_Width = KDIV(FindMaskWidth(SMT_Mask_Width),CORE_Mask_Width);
+	}
 	SMT_Select_Mask   = ~((-1) << SMT_Mask_Width);
 
 	CORE_Select_Mask  = (~((-1) << (CORE_Mask_Width + SMT_Mask_Width)))
@@ -2675,7 +2677,8 @@ int Intel_MaxBusRatio(PLATFORM_ID *PfID)
 		_Atom_Bonnell,		/* 06_1C */
 		_Atom_Airmont		/* 06_4C */
 	};
-	int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
+	const int ids = sizeof(whiteList) / sizeof(whiteList[0]);
+	int id;
 	for (id = 0; id < ids; id++) {
 		if ((whiteList[id].ExtFamily \
 			== PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
@@ -3725,7 +3728,8 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 	if (Custom_TDP_Count > lt) {
 	    if (Custom_TDP_Offset[lt] != 0)
 	    {
-		signed short	TDP_Limit = PowerLimit.Domain_Limit1 / pwrUnits;
+		signed short	TDP_Limit = PowerLimit.Domain_Limit1;
+				TDP_Limit = KDIV(TDP_Limit, pwrUnits);
 				TDP_Limit = TDP_Limit + Custom_TDP_Offset[lt];
 		if (TDP_Limit >= 0) {
 			PowerLimit.Domain_Limit1 = pwrUnits * TDP_Limit;
@@ -3737,7 +3741,8 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 	  if (Custom_TDP_Count > rt) {
 	    if (Custom_TDP_Offset[rt] != 0)
 	    {
-		signed short	TDP_Limit = PowerLimit.Domain_Limit2 / pwrUnits;
+		signed short	TDP_Limit = PowerLimit.Domain_Limit2;
+				TDP_Limit = KDIV(TDP_Limit, pwrUnits);
 				TDP_Limit = TDP_Limit + Custom_TDP_Offset[rt];
 		if (TDP_Limit >= 0) {
 			PowerLimit.Domain_Limit2 = pwrUnits * TDP_Limit;
@@ -6481,7 +6486,7 @@ void AMD_Zen_UMC_Aggregate(	unsigned short mc, unsigned short cha,
 	Mem_Clock = PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h\
 			.MISC.DDR5.MEMCLK;
 
-	Mem_Clock = DIV_ROUND_CLOSEST(Mem_Clock, 100U);
+	Mem_Clock = KDIV(Mem_Clock, 100U);
 
 	(*Got_Mem_Clock) = true;
       }
@@ -6520,10 +6525,7 @@ void AMD_Zen_UMC_Aggregate(	unsigned short mc, unsigned short cha,
     }
     if ((*Got_Div_Clock) == true) {
 	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] = \
-		DIV_ROUND_CLOSEST(
-			PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)],
-			Div_Clock
-		);
+	    KDIV(PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)], Div_Clock);
     }
   }
 }
@@ -7479,12 +7481,14 @@ void Compute_AMD_Family_10h_Boost(unsigned int cpu)
 	};
 	for (pstate = 0; pstate <= 4; pstate++)
 	{
+		unsigned int fid, did;
 		PSTATEDEF PstateDef = {.value = 0};
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 
-		PUBLIC(RO(Core, AT(cpu)))->Boost[sort[pstate]] = \
-					(PstateDef.Family_10h.CpuFid + 0x10)
-					/ (1 << PstateDef.Family_10h.CpuDid);
+		fid = PstateDef.Family_10h.CpuFid + 0x10;
+		did = 1 << PstateDef.Family_10h.CpuDid;
+
+		PUBLIC(RO(Core, AT(cpu)))->Boost[sort[pstate]]=KDIV(fid, did);
 	}
 }
 
@@ -7515,12 +7519,14 @@ void Compute_AMD_Family_11h_Boost(unsigned int cpu)
 	};
 	for (pstate = 0; pstate <= 7; pstate++)
 	{
+		unsigned int fid, did;
 		PSTATEDEF PstateDef = {.value = 0};
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 
-		PUBLIC(RO(Core, AT(cpu)))->Boost[sort[pstate]] = \
-					(PstateDef.Family_10h.CpuFid + 0x8)
-					/ (1 << PstateDef.Family_10h.CpuDid);
+		fid = PstateDef.Family_10h.CpuFid + 0x8;
+		did = 1 << PstateDef.Family_10h.CpuDid;
+
+		PUBLIC(RO(Core, AT(cpu)))->Boost[sort[pstate]]=KDIV(fid, did);
 	}
 }
 
@@ -7551,12 +7557,14 @@ void Compute_AMD_Family_12h_Boost(unsigned int cpu)
 	};
 	for (pstate = 0; pstate <= 7; pstate++)
 	{
+		unsigned int fid, did;
 		PSTATEDEF PstateDef = {.value = 0};
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 
-		PUBLIC(RO(Core, AT(cpu)))->Boost[sort[pstate]] = \
-					(PstateDef.Family_12h.CpuFid + 0x10)
-					/  PstateDef.Family_12h.CpuDid;
+		fid = PstateDef.Family_12h.CpuFid + 0x10;
+		did = PstateDef.Family_12h.CpuDid;
+
+		PUBLIC(RO(Core, AT(cpu)))->Boost[sort[pstate]]=KDIV(fid, did);
 	}
 }
 
@@ -7600,8 +7608,8 @@ void Compute_AMD_Family_14h_Boost(unsigned int cpu)
 		ClockDiv = (PstateDef.Family_14h.CpuDidMSD + 1) * 4;
 		ClockDiv += PstateDef.Family_14h.CpuDidLSD;
 
-		PUBLIC(RO(Core, AT(cpu)))->Boost[sort[pstate]] = (MaxFreq * 4)
-							/ ClockDiv;
+		PUBLIC(RO(Core, AT(cpu)))->Boost[sort[pstate]] = \
+			KDIV(MaxFreq * 4, ClockDiv);
 	}	/*	Frequency @ MainPllOpFidMax (MHz)		*/
 }
 
@@ -7626,7 +7634,7 @@ static void Query_AMD_Family_14h(unsigned int cpu)
 
 inline unsigned int AMD_F15h_CoreCOF(unsigned int FID, unsigned int DID)
 {/*	CoreCOF (MHz) = 100 * (CpuFid[5:0] + 10h) / (2 ^ CpuDid)	*/
-	unsigned int COF = (FID + 0x10) / (1 << DID);
+	unsigned int COF = KDIV(FID + 0x10, 1 << DID);
 
 	return COF;
 }
@@ -7728,7 +7736,7 @@ inline COF_ST AMD_Zen_CoreCOF(unsigned int FID, unsigned int DID)
     CoreCOF = (PStateDef[CpuFid[7:0]] / PStateDef[CpuDfsId]) * 200	*/
 	COF_ST COF;
 	if (DID != 0) {
-		COF.Q = (FID << 1) / DID;
+		COF.Q = KDIV(FID << 1, DID);
 		COF.R = (UNIT_KHz(1) * (FID - ((COF.Q * DID) >> 1))) >> 2;
 	} else {
 		COF.Q = FID >> 2;
@@ -8060,7 +8068,7 @@ inline unsigned short CPPC_AMD_Zen_ScaleRatio(	CORE_RO *Core,
 		max_1C = Core->Boost[BOOST(MAX)] * hint;
 	}
 	if (scale > 0) {
-		scaled = DIV_ROUND_CLOSEST(max_1C, scale);
+		scaled = KDIV(max_1C, scale);
 		scaled = scaled & 0xff;
 	} else {
 		scaled = 0;
@@ -8084,7 +8092,7 @@ inline unsigned int CPPC_AMD_Zen_ScaleHint(	CORE_RO *Core,
 	if ((ratio >= 0) && Core->Boost[boost] && (ratio <= Core->Boost[boost]))
 	{
 		unsigned short hint;
-		hint = DIV_ROUND_CLOSEST(scale * ratio, Core->Boost[boost]);
+		hint = KDIV(scale * ratio, Core->Boost[boost]);
 		flag = flag ^ (1 << 31);
 		flag = flag | hint;
 	}
@@ -8115,7 +8123,7 @@ signed int Put_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 		.min_perf = CPPC_AMD_Zen_ScaleHint(
 				Core,
 				Core->PowerThermal.ACPI_CPPC.Highest,
-				CPPC_Caps.lowest_freq / PRECISION,
+				KDIV(CPPC_Caps.lowest_freq, PRECISION),
 				!Core->SystemRegister.HWCR.Family_17h.CpbDis
 			),
 	    #else
@@ -8181,7 +8189,7 @@ signed int Put_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 			CPPC_AMD_Zen_ScaleHint(
 				Core,
 				Core->PowerThermal.ACPI_CPPC.Highest,
-				CPPC_Caps.lowest_freq / PRECISION,
+				KDIV(CPPC_Caps.lowest_freq, PRECISION),
 				!Core->SystemRegister.HWCR.Family_17h.CpbDis
 			);
 		Core->PowerThermal.ACPI_CPPC.Minimum = CPPC_Caps.lowest_freq;
@@ -8447,7 +8455,7 @@ long For_All_AMD_Zen_BaseClock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void*))
 
 	loops_per_jiffy = cpu_data(cpu).loops_per_jiffy;
 
-	cpu_khz = tsc_khz = (unsigned int) ((loops_per_jiffy * HZ) / 1000LU);
+	cpu_khz = tsc_khz = (unsigned int) (KDIV(loops_per_jiffy * HZ, 1000LU));
     }
   }
 	return rc;
@@ -8616,7 +8624,7 @@ unsigned int Query_AMD_HSMP_Interface(void)
 	    {
 		PUBLIC(RO(Proc))->PowerThermal.Domain[
 			PWR_DOMAIN(PKG)
-		].PowerLimit.Domain_Limit1 = arg[0].value / 1000;
+		].PowerLimit.Domain_Limit1 = KDIV(arg[0].value, 1000);
 
 		PUBLIC(RO(Proc))->PowerThermal.Domain[
 			PWR_DOMAIN(PKG)
@@ -8659,7 +8667,7 @@ unsigned int Query_AMD_HSMP_Interface(void)
 	    {
 		PUBLIC(RO(Proc))->PowerThermal.Domain[
 			PWR_DOMAIN(PKG)
-		].PowerLimit.Domain_Limit2 = arg[0].value / 1000;
+		].PowerLimit.Domain_Limit2 = KDIV(arg[0].value, 1000);
 
 		PUBLIC(RO(Proc))->PowerThermal.Domain[
 			PWR_DOMAIN(PKG)
@@ -10094,7 +10102,8 @@ void ThermalMonitor2_Set(CORE_RO *Core, MISC_PROC_FEATURES MiscFeatures)
 		_Tigerlake_U	,	/* 06_8C */
 		_Alderlake_S		/* 06_97 */
 	};
-	int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
+	const int ids = sizeof(whiteList) / sizeof(whiteList[0]);
+	int id;
   for (id = 0; id < ids; id++)
   {
     if((whiteList[id].ExtFamily == PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
@@ -10814,7 +10823,8 @@ void PowerThermal(CORE_RO *Core)
 		{_Pantherlake,		1, 1, 1, 0},	/* 06_CC */
 		{_Clearwater_Forest,	1, 1, 1, 0}	/* 06_DD */
 	};
-	unsigned int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
+	const unsigned int ids = sizeof(whiteList) / sizeof(whiteList[0]);
+	unsigned int id;
  for (id = 0; id < ids; id++)
  {
  if((whiteList[id].Arch.ExtFamily==PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
@@ -13641,7 +13651,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 		    {
 			PUBLIC(RO(Proc))->PowerThermal.Domain[
 				PWR_DOMAIN(PKG)
-			].PowerLimit.Domain_Limit1 = arg[0].value / 1000;
+			].PowerLimit.Domain_Limit1 = KDIV(arg[0].value, 1000);
 
 			PUBLIC(RO(Proc))->PowerThermal.Domain[
 				PWR_DOMAIN(PKG)
@@ -13824,13 +13834,13 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 		);
 	#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0)
 	Core->PowerThermal.HWP_Capabilities.Most_Efficient = \
-			Core->PowerThermal.ACPI_CPPC.Efficient / PRECISION;
+			KDIV(Core->PowerThermal.ACPI_CPPC.Efficient, PRECISION);
 
 	Core->PowerThermal.HWP_Capabilities.Lowest = \
-			Core->PowerThermal.ACPI_CPPC.Lowest / PRECISION;
+			KDIV(Core->PowerThermal.ACPI_CPPC.Lowest, PRECISION);
 
 	Core->PowerThermal.HWP_Request.Minimum_Perf = \
-			Core->PowerThermal.ACPI_CPPC.Minimum / PRECISION;
+			KDIV(Core->PowerThermal.ACPI_CPPC.Minimum, PRECISION);
 	#else
 	Core->PowerThermal.HWP_Capabilities.Most_Efficient = \
 		CPPC_AMD_Zen_ScaleRatio(Core,
@@ -15416,7 +15426,7 @@ static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T)
 	Pkg->Counter[_T].PCLK = Core->Clock.Hz				\
 		* Pkg->Uncore.MC[umc].Channel[cha].AMD17h.MISC.DDR4.MEMCLK;\
 									\
-	Pkg->Counter[_T].PCLK = DIV_ROUND_CLOSEST(Pkg->Counter[_T].PCLK, 3);\
+	Pkg->Counter[_T].PCLK = KDIV(Pkg->Counter[_T].PCLK, 3); 	\
 	/*		Apply the memory clock divisor		*/	\
 	Pkg->Counter[_T].PCLK >>= 					\
 	  !Pkg->Uncore.MC[umc].Channel[cha].AMD17h.DbgMisc.UCLK_Divisor;\
@@ -19497,8 +19507,8 @@ inline void SoC_RAPL(AMD_17_SVI SVI, const unsigned long long factor)
 	ICC = SVI.IDD * factor;
 	ACCU = VCC * ICC;
 	ACCU = ACCU << PUBLIC(RO(Proc))->PowerThermal.Unit.ESU;
-	ACCU = ACCU / (100000LLU * 1000000LLU);
-	ACCU = (PUBLIC(RO(Proc))->SleepInterval * ACCU) / 1000LLU;
+	ACCU = KDIV(ACCU, 100000LLU * 1000000LLU);
+	ACCU = KDIV(PUBLIC(RO(Proc))->SleepInterval * ACCU, 1000LLU);
 	PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(UNCORE)] = ACCU;
 }
 
@@ -20849,11 +20859,11 @@ static int CoreFreqK_Policy_Init(struct cpufreq_policy *policy)
 	{
 		CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(policy->cpu)));
 
-		policy->cpuinfo.min_freq =(Core->Boost[BOOST(MIN)]
-					 * Core->Clock.Hz) / 1000LLU;
+		policy->cpuinfo.min_freq = KDIV(Core->Boost[BOOST(MIN)]
+						* Core->Clock.Hz, 1000LLU);
 
-		policy->cpuinfo.max_freq =(Core->Boost[BOOST(MAX)]
-					 * Core->Clock.Hz) / 1000LLU;
+		policy->cpuinfo.max_freq = KDIV(Core->Boost[BOOST(MAX)]
+						* Core->Clock.Hz, 1000LLU);
 
 		/*		MANDATORY Per-CPU Initialization	*/
 		policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
@@ -20898,7 +20908,7 @@ static int CoreFreqK_Bios_Limit(int cpu, unsigned int *limit)
     {
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	(*limit) = (Core->Boost[BOOST(MAX)] * Core->Clock.Hz) / 1000LLU;
+	(*limit) = KDIV(Core->Boost[BOOST(MAX)] * Core->Clock.Hz, 1000LLU);
     }
 	return 0;
 }
@@ -20952,7 +20962,7 @@ static ssize_t CoreFreqK_Show_SetSpeed(struct cpufreq_policy *policy,char *buf)
 	boost = BOOST(TGT);
     }
 	return sprintf( buf, "%7llu\n",
-			(Core->Boost[boost] * Core->Clock.Hz) / 1000LLU );
+			KDIV(Core->Boost[boost] * Core->Clock.Hz, 1000LLU) );
   }
 	return 0;
 }
@@ -20975,7 +20985,7 @@ static int CoreFreqK_Store_SetSpeed(struct cpufreq_policy *policy,
     if ((policy->cpu < PUBLIC(RO(Proc))->CPU.Count) && (SetTarget != NULL))
     {
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(policy->cpu)));
-	unsigned int ratio = (freq * 1000LLU) / Core->Clock.Hz;
+	unsigned int ratio = KDIV(freq * 1000LLU, Core->Clock.Hz);
 
 	if (ratio > 0) {
 		if (smp_call_function_single(	policy->cpu,
@@ -21000,8 +21010,8 @@ static unsigned int Policy_GetFreq(unsigned int cpu)
     {
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	unsigned int Freq_MHz	= Core->Delta.C0.UCC
-				/ PUBLIC(RO(Proc))->SleepInterval;
+	unsigned int Freq_MHz = KDIV(	Core->Delta.C0.UCC,
+					PUBLIC(RO(Proc))->SleepInterval );
 
 	if (Freq_MHz > 0) {	/* at least 1 interval must have been elapsed */
 		CPU_Freq = Freq_MHz;
@@ -23285,8 +23295,8 @@ void SMBIOS_Collect(void)
 		{ DMI_BOARD_VERSION,	PUBLIC(RO(Proc))->SMB.Board.Version  },
 		{ DMI_BOARD_SERIAL,	PUBLIC(RO(Proc))->SMB.Board.Serial   }
 	};
-	size_t count = sizeof(dmi_collect) / sizeof(dmi_collect[0]), idx;
-
+	const size_t count = sizeof(dmi_collect) / sizeof(dmi_collect[0]);
+	size_t idx;
 	for (idx = 0; idx < count; idx++) {
 		const char *pInfo = dmi_get_system_info(dmi_collect[idx].field);
 		if ((pInfo != NULL) && (strlen(pInfo) > 0)) {
@@ -23346,8 +23356,8 @@ void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
 		}, prop = (len[0] + len[1]) > 0 ? (len[0] + len[1]) : 1;
 
 		const int ratio[2] = {
-			DIV_ROUND_CLOSEST(len[0] * (MAX_UTS_LEN - (1+1)), prop),
-			DIV_ROUND_CLOSEST(len[1] * (MAX_UTS_LEN - (1+1)), prop)
+			KDIV(len[0] * (MAX_UTS_LEN - (1+1)), prop),
+			KDIV(len[1] * (MAX_UTS_LEN - (1+1)), prop)
 		};
 		StrFormat(PUBLIC(RO(Proc))->SMB.Memory.Locator[(*count)],
 			MAX_UTS_LEN, "%.*s\\%.*s",
