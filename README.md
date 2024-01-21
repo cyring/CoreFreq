@@ -207,15 +207,22 @@ CoreFreq Daemon #.##.#  Copyright (C) 2015-2024 CYRIL COURTIAT
 
 Without arguments, the corefreq-cli program displays Top Monitoring  
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_Tour_2017-12-06.gif "CoreFreq UI")  
-  _Remark_: Drawing will stall if the terminal width is lower than 80 columns, or its height is less than required.
+  _Remark_: Drawing will stall if the terminal width is lower than 80 columns, or its height is less than required.  
 
-* With the option '-c', the client traces counters.
+* Memory Controller  
+
+![alt text](http://blog.cyring.free.fr/images/CoreFreq_MC.png "IMC")
+
+* With the option `-c`, the client traces counters  
+
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_Counters.gif "CoreFreq Counters")
 
-* Using option '-m' corefreq-cli shows the CPU topology
+* Using option `-m` corefreq-cli shows the CPU topology  
+
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_Topology.png "CoreFreq CPU & caches topology")
 
-* With the option '-i' corefreq-cli traces the number of instructions per second / cycle  
+* With the option `-i` corefreq-cli traces the number of instructions per second / cycle  
+
 ```
 CPU     IPS            IPC            CPI
 #00     0.000579/s     0.059728/c    16.742698/i
@@ -228,7 +235,7 @@ CPU     IPS            IPC            CPI
 #07     0.000088/s     0.150406/c     6.648674/i
 ```
 
-* Use the option '-s' to show the Processor information (BSP)  
+* Use the option `-s` to show the Processor information (BSP)  
 
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_SysInfo.png "CoreFreq System Info")
 
@@ -652,10 +659,17 @@ parm:           HSMP_Attempt:Attempt the HSMP interface (short)
 ```  
 
 ## Arm [AArch64]
+### Screenshots
+
+![alt text](http://blog.cyring.free.fr/images/CoreFreq_RK3588.png "RK3588 OPi 5 Plus")
+
+### Q&A
 
 * Q: Counters are stuck to zero  
 
   A: Add parameter `nohlt` to the kernel boot command line.  
+
+----
 
 ## Algorithm
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq-algorithm.png "CoreFreq algorithm")
