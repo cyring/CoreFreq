@@ -691,7 +691,17 @@ void Mitigation_Stage(	RO(SHM_STRUCT) *RO(Shm),
 	RO(Shm)->Proc.Mechanisms.CSV2 = CSV2_3p0;
     }
 	RO(Shm)->Proc.Mechanisms.CSV3 = CSV3 ? 0b11 : 0b00;
-	RO(Shm)->Proc.Mechanisms.SSBS = RO(Shm)->Proc.Features.SSBS != 0;
+
+	switch (RO(Shm)->Proc.Features.SSBS) {
+	case 0b0001:
+	case 0b0010:
+		RO(Shm)->Proc.Mechanisms.SSBS = 1;
+		break;
+	case 0b0000:
+	default:
+		RO(Shm)->Proc.Mechanisms.SSBS = 0;
+		break;
+	}
 	RO(Shm)->Proc.Mechanisms.SSBS += (2 * SSBS);
 }
 
@@ -733,8 +743,8 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 	RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID = \
 					RO(Core, AT(cpu))->T.Cluster.Hybrid_ID;
 	/*	Aggregate the Caches topology.				*/
-    for (level = 0; level < CACHE_MAX_LEVEL; level++)
-    {
+  for (level = 0; level < CACHE_MAX_LEVEL; level++)
+    if (RO(Core, AT(cpu))->T.Cache[level].ccsid.value != 0) {
 	RO(Shm)->Cpu[cpu].Topology.Cache[level].LineSz = \
 			RO(Core, AT(cpu))->T.Cache[level].ccsid.LineSz + 4;
 

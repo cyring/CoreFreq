@@ -605,14 +605,67 @@ static void Query_Features(void *pArg)
 	iArg->Features->PerfMon.MonWidth = \
 	iArg->Features->PerfMon.FixWidth = 0b111111 == 0b111111 ? 64 : 0;
     }
-	iArg->Features->AES = isar0.AES == 0x2;
-	iArg->Features->SHA = (isar0.SHA1 == 0x1) || (isar0.SHA2 == 0x1);
-	iArg->Features->CAS = isar0.CAS == 0x2;
-	iArg->Features->RAND = isar0.RNDR == 0x1;
-	iArg->Features->VMX = mmfr1.VH == 0x1;
-	iArg->Features->FPU = pfr0.FP == 0x1;
-	iArg->Features->SIMD = pfr0.AdvSIMD == 0x1;
-	iArg->Features->GIC = pfr0.GIC == 0x1;
+	iArg->Features->RAND = isar0.RNDR == 0b0001;
+
+	switch (isar0.AES) {
+	case 0b0001:
+	case 0b0010:
+		iArg->Features->AES = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->AES = 0;
+		break;
+	}
+
+	iArg->Features->SHA = (isar0.SHA1 == 0b0001)
+			   || (isar0.SHA2 == 0b0001)
+			   || (isar0.SHA2 == 0b0010)
+			   || (isar0.SHA3 == 0b0001);
+
+	switch (isar0.CAS) {
+	case 0b0010:
+	case 0b0011:
+		iArg->Features->CAS = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->CAS = 0;
+		break;
+	}
+
+	iArg->Features->VMX = mmfr1.VH == 0b0001;
+
+	switch (pfr0.FP) {
+	case 0b0000:
+	case 0b0001:
+		iArg->Features->FPU = 1;
+		break;
+	case 0b1111:
+	default:
+		iArg->Features->FPU = 0;
+		break;
+	}
+	switch (pfr0.AdvSIMD) {
+	case 0b0000:
+	case 0b0001:
+		iArg->Features->SIMD = 1;
+		break;
+	case 0b1111:
+	default:
+		iArg->Features->SIMD = 0;
+		break;
+	}
+	switch (pfr0.GIC) {
+	case 0b0001:
+	case 0b0011:
+		iArg->Features->GIC = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->GIC = 0;
+		break;
+	}
 	iArg->Features->SSBS = pfr1.SSBS;
 	iArg->Features->CSV2 = pfr1.CSV2_frac;
 
@@ -866,16 +919,19 @@ void Cache_Topology(CORE_RO *Core)
 	);
 
 	if (clidr.Ctype1 == 0b011) {
-		Cache_Level(Core, 0, 0);
-		Cache_Level(Core, 1, 1);
-	} else {
-		Cache_Level(Core, 0, 1);
-		/*	Skip L1I	*/
+		Cache_Level(Core, 0, 0);	/*	L1I		*/
+		Cache_Level(Core, 1, 1);	/*	L1D		*/
+	} else if (clidr.Ctype1 == 0b010) {
+						/*	Skip L1I	*/
+		Cache_Level(Core, 1, 1);	/*	L1D		*/
+	} else if (clidr.Ctype1 == 0b001) {
+		Cache_Level(Core, 0, 0);	/*	L1I		*/
+						/*	Skip L1D	*/
 	}
-	if (clidr.Ctype2 == 0b100) {
+	if (clidr.Ctype2 == 0b100) {		/*	L2		*/
 		Cache_Level(Core, 2, 2);
 	}
-	if (clidr.Ctype3 == 0b100) {
+	if (clidr.Ctype3 == 0b100) {		/*	L3		*/
 		Cache_Level(Core, 3, 3);
 	}
 }
