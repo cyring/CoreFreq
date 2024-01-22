@@ -576,8 +576,8 @@ static void Query_Features(void *pArg)
 	VendorFromMainID(midr, iArg->Features->Info.Vendor.ID,
 			&iArg->Features->Info.Vendor.CRC, &iArg->HypervisorID);
 
-	iArg->Features->Factory.Freq=cntfrq.ClockFrequency;
-	iArg->Features->Factory.Freq=KDIV(iArg->Features->Factory.Freq, 10000);
+	iArg->Features->Factory.Freq = cntfrq.ClockFreq_Hz;
+	iArg->Features->Factory.Freq = KDIV(iArg->Features->Factory.Freq,10000);
 
 #if defined(CONFIG_ACPI)
 	iArg->Features->ACPI = acpi_disabled == 0;
@@ -1465,17 +1465,29 @@ void PerCore_Reset(CORE_RO *Core)
 
 static void PerCore_GenericMachine(void *arg)
 {
+	volatile CNTFRQ cntfrq;
 	volatile CPUPWRCTLR cpupwrctl;
+	volatile REVIDR revid;
 	CORE_RO *Core = (CORE_RO *) arg;
 
-	PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(MIN)] = 8;
-	PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(MAX)] = \
-				PUBLIC(RO(Proc))->Features.Factory.Ratio;
+	__asm__ __volatile__(
+		"mrs	%[cntfrq],	cntfrq_el0"	"\n\t"
+		"mrs	%[revid],	revidr_el1"	"\n\t"
+		"isb"
+		: [cntfrq]	"=r" (cntfrq),
+		  [revid]	"=r" (revid)
+		:
+		: "memory"
+	);
+	cntfrq.value = KDIV(cntfrq.value, 1000000U);
+	Core->Boost[BOOST(MAX)] = cntfrq.ClockFreq_Hz;
+	Core->Boost[BOOST(MIN)] = 8;
 
     if (Experimental && (PUBLIC(RO(Proc))->HypervisorID == HYPERV_NONE)) {
 	cpupwrctl.value = read_sysreg_s(CPUPWRCTLR_EL1);
 	Core->Query.CStateBaseAddr = cpupwrctl.WFI_RET_CTRL;
     }
+	Core->Query.Microcode = revid.Revision;
 
 	SystemRegisters(Core);
 

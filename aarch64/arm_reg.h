@@ -62,6 +62,17 @@ typedef union
 	struct
 	{
 		unsigned long long
+		Revision	: 32-0,
+		RES0		: 64-32;
+	};
+} REVIDR;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
 		EnableAll	:  1-0,
 		ResetEvent	:  2-1,
 		ResetCycle	:  3-2,
@@ -187,7 +198,7 @@ typedef union
 	struct
 	{
 		unsigned long long
-		ClockFrequency	: 32-0,
+		ClockFreq_Hz	: 32-0,
 		RES0		: 64-32;
 	};
 } CNTFRQ;
