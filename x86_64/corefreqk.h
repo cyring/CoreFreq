@@ -435,7 +435,7 @@ ASM_COUNTERx4(r10, r11, r12, r13, r14, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 ASM_COUNTERx4(r10, r11, r12, r13, r14, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 
-#if defined(OPTIM_LVL) && OPTIM_LVL == 0
+#if defined(OPTIM_LVL) && (OPTIM_LVL == 0 || OPTIM_LVL == 1)
 
 #define RDTSC_COUNTERx5(mem_tsc, ...) \
 ASM_COUNTERx5_STACK(r12, r13, r14, r15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
@@ -456,7 +456,7 @@ ASM_COUNTERx7_STACK(r13, r14, r15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 ASM_COUNTERx7_STACK(r13, r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #else
-/*	#warning "Optimization"						*/
+/*	#warning "Optimization" 					*/
 
 #define RDTSC_COUNTERx5(mem_tsc, ...) \
 ASM_COUNTERx5(r10, r11, r12, r13, r14, r15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
