@@ -480,7 +480,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_ACPI_CODE_FR   "Advanced Configuration & Power Interface"
 #define RSC_FEATURES_GIC_CODE_FR	"Generic Interrupt Controller"
 #define RSC_FEATURES_TSC_CODE_FR	"Time Stamp Counter"
-#define RSC_FEATURES_VMX_CODE_FR	"Virtual Machine Extensions"
+#define RSC_FEATURES_VHE_CODE_FR    "Extensions d'H""\xb4""te de Virtualisation"
 #define RSC_FEAT_SECTION_MECH_CODE_FR	"M""\xa9""canismes d'att""\xa9""nuation"
 #define RSC_FEAT_SECTION_SEC_CODE_FR	"Fonctions de s""\xa9""curit""\xa9"
 

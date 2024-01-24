@@ -1517,10 +1517,10 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
-		RO(Shm)->Proc.Features.VMX == 1,
+		RO(Shm)->Proc.Features.VHE == 1,
 		attr_Feat,
-		2, "%s%.*sVMX   [%7s]", RSC(FEATURES_VMX).CODE(),
-		width - 18 - RSZ(FEATURES_VMX),
+		2, "%s%.*sVHE   [%7s]", RSC(FEATURES_VHE).CODE(),
+		width - 18 - RSZ(FEATURES_VHE),
 		NULL
 	},
 /* Section Mark */

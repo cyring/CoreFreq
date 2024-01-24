@@ -788,7 +788,7 @@ typedef struct	/* BSP features.					*/
 		CAS		:  6-5,
 		SHA		:  7-6,
 		ACPI		:  8-7,
-		VMX		:  9-8,
+		VHE		:  9-8,
 		AMX		: 10-9,
 		HTT		: 11-10,
 		TSC		: 12-11,

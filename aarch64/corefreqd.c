@@ -557,7 +557,6 @@ EXIT:
 
 void Architecture(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
-	signed long ix;
 	Bit32	fTSC = RO(Proc)->Features.TSC,
 		aTSC = RO(Proc)->Features.Inv_TSC;
 
@@ -641,9 +640,9 @@ void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 						RW(Proc)->TurboBoost,
 						RO(Proc)->TurboBoost_Mask) != 0;
 
-	RO(Shm)->Proc.Technology.VM = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.VM = BITWISEAND_CC(LOCKLESS,
 						RW(Proc)->VM,
-						RO(Proc)->CR_Mask);
+						RO(Proc)->CR_Mask) != 0;
 }
 
 void Mitigation_Stage(	RO(SHM_STRUCT) *RO(Shm),

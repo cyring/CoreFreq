@@ -432,8 +432,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_start_object(&s);
 					json_key(&s, "MONITOR");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MONITOR);
-					json_key(&s, "VMX");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.VMX);
+					json_key(&s, "VHE");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.VHE);
 					json_key(&s, "RAND");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RAND);
 					json_key(&s, "Hyperv");

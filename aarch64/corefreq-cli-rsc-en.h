@@ -785,7 +785,7 @@
 #define RSC_FEATURES_ACPI_CODE_EN   "Advanced Configuration & Power Interface"
 #define RSC_FEATURES_GIC_CODE_EN	"Generic Interrupt Controller"
 #define RSC_FEATURES_TSC_CODE_EN	"Time Stamp Counter"
-#define RSC_FEATURES_VMX_CODE_EN	"Virtual Machine Extensions"
+#define RSC_FEATURES_VHE_CODE_EN	"Virtualization Host Extensions"
 #define RSC_FEAT_SECTION_MECH_CODE_EN	"Mitigation mechanisms"
 #define RSC_FEAT_SECTION_SEC_CODE_EN	"Security Features"
 

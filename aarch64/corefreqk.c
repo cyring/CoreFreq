@@ -634,7 +634,7 @@ static void Query_Features(void *pArg)
 		break;
 	}
 
-	iArg->Features->VMX = mmfr1.VH == 0b0001;
+	iArg->Features->VHE = mmfr1.VH == 0b0001;
 
 	switch (pfr0.FP) {
 	case 0b0000:
