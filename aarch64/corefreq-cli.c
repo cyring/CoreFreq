@@ -1369,13 +1369,6 @@ REASON_CODE SysInfoISA( Window *win,
 	},
 	{
 		NULL,
-		RSC(ISA_CMOV).CODE(), RSC(ISA_CMOV_COMM).CODE(),
-		{ 0, RO(Shm)->Proc.Features.CMOV },
-		(unsigned short[])
-		{ RO(Shm)->Proc.Features.CMOV },
-	},
-	{
-		NULL,
 		RSC(ISA_CAS).CODE(), RSC(ISA_CAS_COMM).CODE(),
 		{ 0, RO(Shm)->Proc.Features.CAS },
 		(unsigned short[])
@@ -1383,10 +1376,17 @@ REASON_CODE SysInfoISA( Window *win,
 	},
 	{
 		NULL,
-		RSC(ISA_FPU).CODE(), RSC(ISA_FPU_COMM).CODE(),
-		{ 0, RO(Shm)->Proc.Features.FPU },
+		RSC(ISA_CRC32).CODE(), RSC(ISA_CRC32_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.CRC32 },
 		(unsigned short[])
-		{ RO(Shm)->Proc.Features.FPU },
+		{ RO(Shm)->Proc.Features.CRC32 },
+	},
+	{
+		NULL,
+		RSC(ISA_FP).CODE(), RSC(ISA_FP_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.FP },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.FP },
 	},
 /* Row Mark */
 	{
@@ -1398,10 +1398,32 @@ REASON_CODE SysInfoISA( Window *win,
 	},
 	{
 		NULL,
-		RSC(ISA_SHA).CODE(), RSC(ISA_SHA_COMM).CODE(),
-		{ 0, RO(Shm)->Proc.Features.SHA },
+		RSC(ISA_SHA1).CODE(), RSC(ISA_SHA_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.SHA1 },
 		(unsigned short[])
-		{ RO(Shm)->Proc.Features.SHA },
+		{ RO(Shm)->Proc.Features.SHA1 },
+	},
+	{
+		NULL,
+		RSC(ISA_SHA256).CODE(), RSC(ISA_SHA_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.SHA256 },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.SHA256 },
+	},
+	{
+		NULL,
+		RSC(ISA_SHA512).CODE(), RSC(ISA_SHA_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.SHA512 },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.SHA512 },
+	},
+/* Row Mark */
+	{
+		NULL,
+		RSC(ISA_SHA3).CODE(), RSC(ISA_SHA_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.SHA3 },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.SHA3 },
 	},
 	{
 		NULL,
@@ -1412,13 +1434,19 @@ REASON_CODE SysInfoISA( Window *win,
 	},
 	{
 		NULL,
-		RSC(ISA_AMX).CODE(), RSC(ISA_AMX_COMM).CODE(),
-		{ 1, RO(Shm)->Proc.Features.AMX },
+		RSC(ISA_SME).CODE(), RSC(ISA_SME_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.SME },
 		(unsigned short[])
-		{ RO(Shm)->Proc.Features.AMX },
+		{ RO(Shm)->Proc.Features.SME },
+	},
+	{
+		NULL,
+		RSC(ISA_SVE).CODE(), RSC(ISA_SVE_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.SVE },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.SVE },
 	},
     };
-
 	CUINT cells_per_line = win->matrix.size.wth, *nl = &cells_per_line;
 
 	size_t idx;
@@ -1632,15 +1660,6 @@ void TechUpdate(TGrid *grid,	const int unsigned bix, const signed int pos,
 	memcpy(&grid->cell.item[pos], item, len);
 }
 
-void IDA_Update(TGrid *grid, DATA_TYPE data[])
-{
-	const unsigned int bix = RO(Shm)->Proc.Features.Power.TurboIDA == 1;
-	const signed int pos = grid->cell.length - 5;
-	UNUSED(data);
-
-	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
-}
-
 void TurboUpdate(TGrid *grid, DATA_TYPE data[])
 {
 	const unsigned int bix = RO(Shm)->Proc.Technology.Turbo == 1;
@@ -1712,16 +1731,6 @@ REASON_CODE SysInfoTech(Window *win,
 		NULL,
 		SCANKEY_NULL,
 		NULL
-	},
-	{
-		NULL,
-		RO(Shm)->Proc.Features.Power.TurboIDA == 1,
-		2, "%s%.*sIDA   [%3s]",
-		RSC(TECHNOLOGIES_IDA).CODE(), NULL,
-		width - 14 - RSZ(TECHNOLOGIES_IDA),
-		NULL,
-		SCANKEY_NULL,
-		IDA_Update
 	},
 	{
 		NULL,
@@ -6182,7 +6191,7 @@ Window *CreateSysInfo(unsigned long long id)
 	case SCANKEY_t:
 		{
 		winOrigin.col = 23;
-		matrixSize.hth = 11;
+		matrixSize.hth = 10;
 		winOrigin.row = TOP_HEADER_ROW + 5;
 		winWidth = 60;
 		SysInfoFunc = SysInfoTech;
@@ -6355,7 +6364,7 @@ Window *CreateTopology(unsigned long long id)
 
 Window *CreateISA(unsigned long long id)
 {
-	Window *wISA = CreateWindow(wLayer, id, 4, 2, 6, TOP_HEADER_ROW + 2);
+	Window *wISA = CreateWindow(wLayer, id, 4, 3, 6, TOP_HEADER_ROW + 2);
 
 	if (wISA != NULL)
 	{

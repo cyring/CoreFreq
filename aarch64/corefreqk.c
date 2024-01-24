@@ -605,8 +605,6 @@ static void Query_Features(void *pArg)
 	iArg->Features->PerfMon.MonWidth = \
 	iArg->Features->PerfMon.FixWidth = 0b111111 == 0b111111 ? 64 : 0;
     }
-	iArg->Features->RAND = isar0.RNDR == 0b0001;
-
 	switch (isar0.AES) {
 	case 0b0001:
 	case 0b0010:
@@ -617,12 +615,46 @@ static void Query_Features(void *pArg)
 		iArg->Features->AES = 0;
 		break;
 	}
-
-	iArg->Features->SHA = (isar0.SHA1 == 0b0001)
-			   || (isar0.SHA2 == 0b0001)
-			   || (isar0.SHA2 == 0b0010)
-			   || (isar0.SHA3 == 0b0001);
-
+	switch (isar0.SHA1) {
+	case 0b0001:
+		iArg->Features->SHA1 = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SHA1 = 0;
+		break;
+	}
+	switch (isar0.SHA2) {
+	case 0b0010:
+		iArg->Features->SHA512 = 1;
+		fallthrough;
+	case 0b0001:
+		iArg->Features->SHA256 = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SHA512 = 0;
+		iArg->Features->SHA256 = 0;
+		break;
+	}
+	switch (isar0.SHA3) {
+	case 0b0001:
+		iArg->Features->SHA3 = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SHA3 = 0;
+		break;
+	}
+	switch (isar0.CRC32) {
+	case 0b0001:
+		iArg->Features->CRC32 = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->CRC32 = 0;
+		break;
+	}
 	switch (isar0.CAS) {
 	case 0b0010:
 	case 0b0011:
@@ -633,17 +665,32 @@ static void Query_Features(void *pArg)
 		iArg->Features->CAS = 0;
 		break;
 	}
-
-	iArg->Features->VHE = mmfr1.VH == 0b0001;
-
+	switch (isar0.RNDR) {
+	case 0b0001:
+		iArg->Features->RAND = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->RAND = 0;
+		break;
+	}
+	switch (mmfr1.VH) {
+	case 0b0001:
+		iArg->Features->VHE = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->VHE = 0;
+		break;
+	}
 	switch (pfr0.FP) {
 	case 0b0000:
 	case 0b0001:
-		iArg->Features->FPU = 1;
+		iArg->Features->FP = 1;
 		break;
 	case 0b1111:
 	default:
-		iArg->Features->FPU = 0;
+		iArg->Features->FP = 0;
 		break;
 	}
 	switch (pfr0.AdvSIMD) {
@@ -666,9 +713,15 @@ static void Query_Features(void *pArg)
 		iArg->Features->GIC = 0;
 		break;
 	}
-	iArg->Features->SSBS = pfr1.SSBS;
-	iArg->Features->CSV2 = pfr1.CSV2_frac;
-
+	switch (pfr0.SVE) {
+	case 0b0001:
+		iArg->Features->SVE = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SVE = 0;
+		break;
+	}
 	switch (pfr0.DIT) {
 	case 0b0001:
 	case 0b0010:
@@ -679,6 +732,22 @@ static void Query_Features(void *pArg)
 		iArg->Features->DIT = 0;
 		break;
 	}
+
+	iArg->Features->SSBS = pfr1.SSBS;
+
+	switch (pfr1.SME) {
+	case 0b0001:
+	case 0b0010:
+		iArg->Features->SME = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SME = 0;
+		break;
+	}
+
+	iArg->Features->CSV2 = pfr1.CSV2_frac;
+
     if (Experimental && (iArg->HypervisorID == HYPERV_NONE)) {
 	/* Query the Cluster Configuration				*/
 	clustercfg.value = read_sysreg_s(CLUSTERCFR_EL1);

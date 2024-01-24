@@ -781,23 +781,27 @@ typedef struct	/* BSP features.					*/
 	struct {
 		unsigned int
 		AES		:  1-0,
-		RAND		:  2-1,
-		FPU		:  3-2,
-		SIMD		:  4-3,
-		GIC		:  5-4,
+		SHA1		:  2-1,
+		SHA256		:  3-2,
+		SHA512		:  4-3,
+		CRC32		:  5-4,
 		CAS		:  6-5,
-		SHA		:  7-6,
-		ACPI		:  8-7,
-		VHE		:  9-8,
-		AMX		: 10-9,
-		HTT		: 11-10,
-		TSC		: 12-11,
-		CMOV		: 13-12,
-		MONITOR 	: 14-13,
-		Inv_TSC 	: 15-14,
-		RDTSCP		: 16-15,
-		Hybrid		: 17-16,
-		_Unused_	: 31-17,
+		SHA3		:  7-6,
+		RAND		:  8-7,
+		FP		:  9-8,
+		SIMD		: 10-9,
+		GIC		: 11-10,
+		SVE		: 12-11,
+		VHE		: 13-12,
+		SME		: 14-13,
+		_Unused_	: 24-14,
+		HTT		: 25-24,
+		TSC		: 26-25,
+		MONITOR 	: 27-26,
+		Inv_TSC 	: 28-27,
+		RDTSCP		: 29-28,
+		Hybrid		: 30-29,
+		ACPI		: 31-30,
 		Hyperv		: 32-31;
 	};
 	struct
@@ -853,7 +857,7 @@ typedef struct	/* BSP features.					*/
 	{
 		unsigned int
 		DTS		:  1-0,
-		TurboIDA	:  2-1,
+		_Unused1_	:  2-1,
 		Turbo_V3	:  3-2,
 		PLN		:  4-3,
 		PTM		:  5-4,
@@ -869,7 +873,7 @@ typedef struct	/* BSP features.					*/
 		HWP_Fast	:  1
 		HWFB_Cap	:  1
 		HWP_Idle	:  1	*/
-		_Unused_	: 32-7;
+		_Unused2_	: 32-7;
 	} Power;
 
 	struct {

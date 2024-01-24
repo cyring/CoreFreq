@@ -406,7 +406,7 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_key(&s, "Std");
 			{
 				json_start_object(&s);
-				json_key(&s, "EAX");
+				json_key(&s, "MIDR");
 				{
 				    json_start_object(&s);
 				    json_key(&s, "Stepping");
@@ -427,40 +427,71 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Info.Signature.ExtFamily);
 					json_end_object(&s);
 				}
-				json_key(&s, "EСX");
+				json_key(&s, "ISAR0");
 				{
 					json_start_object(&s);
-					json_key(&s, "MONITOR");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MONITOR);
-					json_key(&s, "VHE");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.VHE);
-					json_key(&s, "RAND");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RAND);
-					json_key(&s, "Hyperv");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Hyperv);
-					json_end_object(&s);
-				}
-				json_key(&s, "EDX");
-				{
-					json_start_object(&s);
-					json_key(&s, "FPU");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FPU);
-					json_key(&s, "TSC");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.TSC);
+					json_key(&s, "AES");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AES);
+					json_key(&s, "SHA1");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SHA1);
+					json_key(&s, "SHA256");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SHA256);
+					json_key(&s, "SHA512");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SHA512);
+					json_key(&s, "SHA3");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SHA3);
+					json_key(&s, "CRC32");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.CRC32);
 					json_key(&s, "CAS");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.CAS);
-					json_key(&s, "GIC");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.GIC);
-					json_key(&s, "CMOV");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.CMOV);
-					json_key(&s, "ACPI");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ACPI);
+					json_key(&s, "RAND");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RAND);
+					json_end_object(&s);
+				}
+				json_key(&s, "MMFR1");
+				{
+					json_start_object(&s);
+					json_key(&s, "VHE");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.VHE);
+					json_end_object(&s);
+				}
+				json_key(&s, "PFR0");
+				{
+					json_start_object(&s);
+					json_key(&s, "FP");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FP);
 					json_key(&s, "SIMD");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SIMD);
-					json_key(&s, "AMX");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AMX);
+					json_key(&s, "GIC");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.GIC);
+					json_key(&s, "SVE");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SVE);
+					json_key(&s, "DIT");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.DIT);
+					json_end_object(&s);
+				}
+				json_key(&s, "PFR1");
+				{
+					json_start_object(&s);
+					json_key(&s, "SME");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME);
+					json_end_object(&s);
+				}
+				json_key(&s, "MISC");
+				{
+					json_start_object(&s);
 					json_key(&s, "HTT");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.HTT);
+					json_key(&s, "TSC");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.TSC);
+					json_key(&s, "MONITOR");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MONITOR);
+					json_key(&s, "Hybrid");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Hybrid);
+					json_key(&s, "ACPI");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ACPI);
+					json_key(&s, "Hyperv");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Hyperv);
 					json_end_object(&s);
 				}
 				json_end_object(&s);
@@ -501,8 +532,6 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_start_object(&s);
 			json_key(&s, "DTS");
 			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.DTS);
-			json_key(&s, "TurboIDA");
-			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.TurboIDA);
 			json_key(&s, "PLN");
 			json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.PLN);
 			json_key(&s, "PTM");

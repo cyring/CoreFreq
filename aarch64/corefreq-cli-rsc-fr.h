@@ -457,13 +457,14 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_ISA_TITLE_CODE_FR		" Jeu d'instructions ""\xa9""tendu "
 
 #define RSC_ISA_AES_COMM_CODE_FR	RSC_ISA_AES_COMM_CODE_EN
-#define RSC_ISA_CMOV_COMM_CODE_FR	RSC_ISA_CMOV_COMM_CODE_EN
 #define RSC_ISA_CAS_COMM_CODE_FR	RSC_ISA_CAS_COMM_CODE_EN
-#define RSC_ISA_FPU_COMM_CODE_FR	RSC_ISA_FPU_COMM_CODE_EN
+#define RSC_ISA_CRC32_COMM_CODE_FR	RSC_ISA_CRC32_COMM_CODE_EN
+#define RSC_ISA_FP_COMM_CODE_FR 	RSC_ISA_FP_COMM_CODE_EN
 #define RSC_ISA_RAND_COMM_CODE_FR	RSC_ISA_RAND_COMM_CODE_EN
 #define RSC_ISA_SHA_COMM_CODE_FR	RSC_ISA_SHA_COMM_CODE_EN
 #define RSC_ISA_SIMD_COMM_CODE_FR	RSC_ISA_SIMD_COMM_CODE_EN
-#define RSC_ISA_AMX_COMM_CODE_FR	RSC_ISA_AMX_COMM_CODE_EN
+#define RSC_ISA_SME_COMM_CODE_FR	RSC_ISA_SME_COMM_CODE_EN
+#define RSC_ISA_SVE_COMM_CODE_FR	RSC_ISA_SVE_COMM_CODE_EN
 
 #define RSC_FEATURES_TITLE_CODE_FR	" Caract""\xa9""ristiques "
 #define RSC_ON_CODE_FR			" ON"
@@ -487,7 +488,6 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_TECHNOLOGIES_TITLE_CODE_FR	" Technologies "
 #define RSC_TECHNOLOGIES_DCU_CODE_FR  "Unit""\xa9"" de cache de donn""\xa9""es"
 #define RSC_TECHNOLOGIES_ICU_CODE_FR  "Unit""\xa9"" de cache d'instructions"
-#define RSC_TECHNOLOGIES_IDA_CODE_FR	"Acc""\xa9""l""\xa9""ration dynamique"
 #define RSC_TECHNOLOGIES_TURBO_CODE_FR	"Turbo Boost"
 #define RSC_TECHNOLOGIES_TBMT3_CODE_FR	"Turbo Boost Max 3.0"
 #define RSC_TECHNOLOGIES_VM_CODE_FR	"Virtualisation"
