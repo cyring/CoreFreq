@@ -5449,7 +5449,9 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
 /* Row  7 */
 	StoreTCell(wMenu, SCANKEY_SHIFT_o, RSC(MENU_ITEM_TOOLS).CODE(),
-					   RSC(CREATE_MENU_SHORTKEY).ATTR());
+				RO(Shm)->Registration.Experimental ?
+					RSC(CREATE_MENU_SHORTKEY).ATTR()
+					: RSC(CREATE_MENU_DISABLE).ATTR());
 
 #ifndef NO_LOWER
 	StoreTCell(wMenu, SCANKEY_x,	RSC(MENU_ITEM_TASKS_MON).CODE(),
@@ -11272,6 +11274,7 @@ int Shortcut(SCANKEY *scan)
     break;
 
     case SCANKEY_SHIFT_o:
+    if (RO(Shm)->Registration.Experimental)
     {
 	Window *win = SearchWinListById(scan->key, &winList);
       if (win == NULL)
