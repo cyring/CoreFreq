@@ -459,6 +459,14 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SM4);
 					json_key(&s, "RAND");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RAND);
+					json_key(&s, "TME");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.TME);
+					json_key(&s, "FHM");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FHM);
+					json_key(&s, "TS");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.TS);
+					json_key(&s, "TLB");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.TLB);
 					json_key(&s, "RDMA");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RDMA);
 					json_end_object(&s);

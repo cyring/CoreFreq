@@ -680,6 +680,15 @@ static void Query_Features(void *pArg)
 		iArg->Features->CAS = 0;
 		break;
 	}
+	switch (isar0.TME) {
+	case 0b0001:
+		iArg->Features->TME = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->TME = 0;
+		break;
+	}
 	switch (isar0.RDM) {
 	case 0b0001:
 		iArg->Features->RDMA = 1;
@@ -714,6 +723,35 @@ static void Query_Features(void *pArg)
 	case 0b0000:
 	default:
 		iArg->Features->SM4 = 0;
+		break;
+	}
+	switch (isar0.FHM) {
+	case 0b0001:
+		iArg->Features->FHM = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->FHM = 0;
+		break;
+	}
+	switch (isar0.TS) {
+	case 0b0001:
+	case 0b0010:
+		iArg->Features->TS = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->TS = 0;
+		break;
+	}
+	switch (isar0.TLB) {
+	case 0b0001:
+	case 0b0010:
+		iArg->Features->TLB = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->TLB = 0;
 		break;
 	}
 	switch (isar0.RNDR) {
