@@ -1,0 +1,42 @@
+name: Build-ubuntu
+
+on:
+  push:
+  # Allows you to run this workflow manually from the Actions tab    
+  workflow_dispatch:
+
+jobs:
+  ubuntu2204-build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Add dependencies
+        run: |
+          sudo apt install -y build-essential gawk fakeroot linux-headers-$(uname -r)
+
+      - name: Build 
+        run: |
+          make
+
+      # - name: Export artifacts
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     path: |
+      #       dist
+
+
+  ubuntu2204-dkms:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Add dependencies
+        run: |
+          sudo apt install -y dkms
+
+      - name: Build 
+        run: |
+          make
