@@ -654,7 +654,7 @@
 #define RSC_SCOPE_PACKAGE_CODE_EN	" Pkg"
 
 #define RSC_SYS_REGS_TITLE_CODE_EN	" System Registers "
-#define RSC_SYS_REG_PSTATE_CODE_EN	" Process State "
+#define RSC_SYS_REG_PSTATE_CODE_EN	" Process State (PSTATE) "
 #define RSC_SYS_REG_FLAG_N_CODE_EN	" Negative "
 #define RSC_SYS_REG_FLAG_Z_CODE_EN	" Zero Flag "
 #define RSC_SYS_REG_FLAG_C_CODE_EN	" Carry Flag "
@@ -775,8 +775,11 @@
 #define RSC_ISA_CAS_COMM_CODE_EN	" Atomic instructions "
 #define RSC_ISA_CRC32_COMM_CODE_EN	" Cyclic Redundancy Check "
 #define RSC_ISA_FP_COMM_CODE_EN 	" Floating Point "
+#define RSC_ISA_DP_COMM_CODE_EN 	" Dot Product instructions "
 #define RSC_ISA_RAND_COMM_CODE_EN	" Read Random Number "
+#define RSC_ISA_RDMA_COMM_CODE_EN	" Rounding Double Multiply Accumulate "
 #define RSC_ISA_SHA_COMM_CODE_EN	" Secure Hash Algorithms extensions "
+#define RSC_ISA_SM_COMM_CODE_EN 	" Chinese cryptography algorithm "
 #define RSC_ISA_SIMD_COMM_CODE_EN	" Advanced SIMD Extensions "
 #define RSC_ISA_SME_COMM_CODE_EN	" Scalable Matrix Extension "
 #define RSC_ISA_SVE_COMM_CODE_EN	" Scalable Vector Extension "
@@ -793,9 +796,15 @@
 #define RSC_VARIANT_CODE_EN		"Variant"
 #define RSC_INVARIANT_CODE_EN		"Invariant"
 
-#define RSC_FEATURES_ACPI_CODE_EN   "Advanced Configuration & Power Interface"
+#define RSC_FEATURES_ACPI_CODE_EN    "Advanced Configuration & Power Interface"
+#define RSC_FEATURES_EBEP_CODE_EN	"Exception-based event profiling"
+#define RSC_FEATURES_DIT_CODE_EN	"Data Independent Timing"
 #define RSC_FEATURES_GIC_CODE_EN	"Generic Interrupt Controller"
+#define RSC_FEATURES_MTE_CODE_EN	"Memory Tagging Extension"
+#define RSC_FEATURES_NMI_CODE_EN	"Non Maskable Interrupt"
+#define RSC_FEATURES_PAN_CODE_EN	"Privileged Access Never"
 #define RSC_FEATURES_TSC_CODE_EN	"Time Stamp Counter"
+#define RSC_FEATURES_UAO_CODE_EN	"User Access Override"
 #define RSC_FEATURES_VHE_CODE_EN	"Virtualization Host Extensions"
 #define RSC_FEAT_SECTION_MECH_CODE_EN	"Mitigation mechanisms"
 #define RSC_FEAT_SECTION_SEC_CODE_EN	"Security Features"
@@ -1883,7 +1892,7 @@
 #define RSC_SYS_REGS_HDR_CPU_CODE	"CPU "
 
 #define RSC_SYS_REG_HDR_FLAGS_CODE	\
-	"PSTA\0TE P\0  N \0  Z \0  C \0  V \0 TCO\0 DIT\0" \
+	"FLAG\0  PM\0  N \0  Z \0  C \0  V \0 TCO\0 DIT\0" \
 	" UAO\0 PAN\0 NMI\0 SSB\0S D \0  A \0  I \0  F \0 EL \0  M "
 
 #define RSC_SYS_REG_HDR11_SCTL_CODE	\
@@ -1921,12 +1930,16 @@
 #define RSC_ISA_AES_CODE		"          AES [%c]"
 #define RSC_ISA_CAS_CODE		"          CAS [%c]"
 #define RSC_ISA_CRC32_CODE		"        CRC32 [%c]"
+#define RSC_ISA_DP_CODE			"           DP [%c]"
 #define RSC_ISA_FP_CODE 		"           FP [%c]"
 #define RSC_ISA_RAND_CODE		"         RAND [%c]"
+#define RSC_ISA_RDMA_CODE		"         RDMA [%c]"
 #define RSC_ISA_SHA1_CODE		"         SHA1 [%c]"
 #define RSC_ISA_SHA256_CODE		"       SHA256 [%c]"
 #define RSC_ISA_SHA512_CODE		"       SHA512 [%c]"
 #define RSC_ISA_SHA3_CODE		"         SHA3 [%c]"
 #define RSC_ISA_SIMD_CODE		"         SIMD [%c]"
+#define RSC_ISA_SM3_CODE		"          SM3 [%c]"
+#define RSC_ISA_SM4_CODE		"          SM4 [%c]"
 #define RSC_ISA_SME_CODE		"          SME [%c]"
 #define RSC_ISA_SVE_CODE		"          SVE [%c]"

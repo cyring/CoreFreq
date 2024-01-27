@@ -532,8 +532,8 @@ static void Query_Features(void *pArg)
 	volatile CNTFRQ cntfrq;
 	volatile CNTPCT cntpct;
 	volatile PMCR pmcr;
-	volatile AA64DFR0 dbgfr0;
-	volatile AA64DFR1 dbgfr1;
+	volatile AA64DFR0 dfr0;
+	volatile AA64DFR1 dfr1;
 	volatile AA64ISAR0 isar0;
 	volatile AA64MMFR1 mmfr1;
 	volatile AA64MMFR2 mmfr2;
@@ -550,8 +550,8 @@ static void Query_Features(void *pArg)
 		"mrs	%[cntfrq],	cntfrq_el0"	"\n\t"
 		"mrs	%[cntpct],	cntpct_el0"	"\n\t"
 		"mrs	%[pmcr] ,	pmcr_el0"	"\n\t"
-		"mrs	%[dbgfr0],	id_aa64dfr0_el1""\n\t"
-		"mrs	%[dbgfr1],	id_aa64dfr1_el1""\n\t"
+		"mrs	%[dfr0],	id_aa64dfr0_el1""\n\t"
+		"mrs	%[dfr1],	id_aa64dfr1_el1""\n\t"
 		"mrs	%[isar0],	id_aa64isar0_el1""\n\t"
 		"mrs	%[mmfr1],	id_aa64mmfr1_el1""\n\t"
 		"mrs	%[mmfr2],	id_aa64mmfr2_el1""\n\t"
@@ -562,8 +562,8 @@ static void Query_Features(void *pArg)
 		  [cntfrq]	"=r" (cntfrq),
 		  [cntpct]	"=r" (cntpct),
 		  [pmcr]	"=r" (pmcr),
-		  [dbgfr0]	"=r" (dbgfr0),
-		  [dbgfr1]	"=r" (dbgfr1),
+		  [dfr0]	"=r" (dfr0),
+		  [dfr1]	"=r" (dfr1),
 		  [isar0]	"=r" (isar0),
 		  [mmfr1]	"=r" (mmfr1),
 		  [mmfr2]	"=r" (mmfr2),
@@ -596,7 +596,7 @@ static void Query_Features(void *pArg)
 
 	iArg->Features->PerfMon.FixCtrs = 1; /* Fixed Cycle Counter */
 	iArg->Features->PerfMon.MonCtrs = pmcr.NumEvtCtrs;
-	iArg->Features->PerfMon.Version = dbgfr0.PMUVer;
+	iArg->Features->PerfMon.Version = dfr0.PMUVer;
 
     if (iArg->Features->PerfMon.Version) {
 	volatile unsigned long long pmcfgr;
@@ -611,7 +611,7 @@ static void Query_Features(void *pArg)
 	iArg->Features->PerfMon.MonWidth = \
 	iArg->Features->PerfMon.FixWidth = 0b111111 == 0b111111 ? 64 : 0;
     }
-	switch (dbgfr1.EBEP) {
+	switch (dfr1.EBEP) {
 	case 0b0001:
 		iArg->Features->EBEP = 1;
 		break;
@@ -678,6 +678,42 @@ static void Query_Features(void *pArg)
 	case 0b0000:
 	default:
 		iArg->Features->CAS = 0;
+		break;
+	}
+	switch (isar0.RDM) {
+	case 0b0001:
+		iArg->Features->RDMA = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->RDMA = 0;
+		break;
+	}
+	switch (isar0.DP) {
+	case 0b0001:
+		iArg->Features->DP = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->DP = 0;
+		break;
+	}
+	switch (isar0.SM3) {
+	case 0b0001:
+		iArg->Features->SM3 = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SM3 = 0;
+		break;
+	}
+	switch (isar0.SM4) {
+	case 0b0001:
+		iArg->Features->SM4 = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SM4 = 0;
 		break;
 	}
 	switch (isar0.RNDR) {
@@ -1543,10 +1579,12 @@ void SystemRegisters(CORE_RO *Core)
 		"mrs	x14	,	nzcv"		"\n\t"
 		"mrs	x13	,	daif"		"\n\t"
 		"mrs	x12	,	currentel"	"\n\t"
+		"mrs	x11	,	spsel"		"\n\t"
 		"isb"					"\n\t"
 		"mov	%[flags],	xzr"		"\n\t"
 		"orr	%[flags],	x14, x13"	"\n\t"
-		"orr	%[flags],	%[flags], x12"
+		"orr	%[flags],	%[flags], x12"	"\n\t"
+		"orr	%[flags],	%[flags], x11"
 		: [cpacr]	"=r" (cpacr),
 		  [sctlr]	"=r" (Core->SystemRegister.SCTLR),
 		  [mmfr1]	"=r" (mmfr1),
@@ -1554,7 +1592,7 @@ void SystemRegisters(CORE_RO *Core)
 		  [fpsr]	"=r" (Core->SystemRegister.FPSR),
 		  [flags]	"=r" (Core->SystemRegister.FLAGS)
 		:
-		: "cc", "memory", "%x12", "%x13", "%x14"
+		: "cc", "memory", "%x11", "%x12", "%x13", "%x14"
 	);
 	if (mmfr1.VH) {
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);
@@ -1635,15 +1673,13 @@ void SystemRegisters(CORE_RO *Core)
 			read_sysreg_s(MRS_ALLINT) & (1LLU << FLAG_NMI)
 		);
 	}
-	if (PUBLIC(RO(Proc))->Features.SME) {
-		Core->SystemRegister.FLAGS |= (
-			read_sysreg_s(MRS_SVCR) & (1LLU << FLAG_SM)
-		);
-	}
 	if (PUBLIC(RO(Proc))->Features.EBEP) {
 		Core->SystemRegister.FLAGS |= (
 			read_sysreg_s(MRS_PM) & (1LLU << FLAG_PM)
 		);
+	}
+	if (PUBLIC(RO(Proc))->Features.SME) {
+		Core->SystemRegister.SVCR = read_sysreg_s(MRS_SVCR);
 	}
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask, Core->Bind);
 }

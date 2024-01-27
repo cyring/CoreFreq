@@ -427,6 +427,13 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Info.Signature.ExtFamily);
 					json_end_object(&s);
 				}
+				json_key(&s, "DFR1");
+				{
+					json_start_object(&s);
+					json_key(&s, "EBEP");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.EBEP);
+					json_end_object(&s);
+				}
 				json_key(&s, "ISAR0");
 				{
 					json_start_object(&s);
@@ -444,15 +451,32 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.CRC32);
 					json_key(&s, "CAS");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.CAS);
+					json_key(&s, "DP");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.DP);
+					json_key(&s, "SM3");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SM3);
+					json_key(&s, "SM4");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SM4);
 					json_key(&s, "RAND");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RAND);
+					json_key(&s, "RDMA");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RDMA);
 					json_end_object(&s);
 				}
 				json_key(&s, "MMFR1");
 				{
 					json_start_object(&s);
+					json_key(&s, "PAN");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PAN);
 					json_key(&s, "VHE");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.VHE);
+					json_end_object(&s);
+				}
+				json_key(&s, "MMFR2");
+				{
+					json_start_object(&s);
+					json_key(&s, "UAO");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.UAO);
 					json_end_object(&s);
 				}
 				json_key(&s, "PFR0");
@@ -473,6 +497,10 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 				json_key(&s, "PFR1");
 				{
 					json_start_object(&s);
+					json_key(&s, "MTE");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MTE);
+					json_key(&s, "NMI");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.NMI);
 					json_key(&s, "SME");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME);
 					json_end_object(&s);

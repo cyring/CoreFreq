@@ -467,8 +467,11 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_ISA_CAS_COMM_CODE_FR	RSC_ISA_CAS_COMM_CODE_EN
 #define RSC_ISA_CRC32_COMM_CODE_FR	RSC_ISA_CRC32_COMM_CODE_EN
 #define RSC_ISA_FP_COMM_CODE_FR 	RSC_ISA_FP_COMM_CODE_EN
+#define RSC_ISA_DP_COMM_CODE_FR 	RSC_ISA_DP_COMM_CODE_EN
 #define RSC_ISA_RAND_COMM_CODE_FR	RSC_ISA_RAND_COMM_CODE_EN
+#define RSC_ISA_RDMA_COMM_CODE_FR	RSC_ISA_RDMA_COMM_CODE_EN
 #define RSC_ISA_SHA_COMM_CODE_FR	RSC_ISA_SHA_COMM_CODE_EN
+#define RSC_ISA_SM_COMM_CODE_FR 	RSC_ISA_SM_COMM_CODE_EN
 #define RSC_ISA_SIMD_COMM_CODE_FR	RSC_ISA_SIMD_COMM_CODE_EN
 #define RSC_ISA_SME_COMM_CODE_FR	RSC_ISA_SME_COMM_CODE_EN
 #define RSC_ISA_SVE_COMM_CODE_FR	RSC_ISA_SVE_COMM_CODE_EN
@@ -485,10 +488,28 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_VARIANT_CODE_FR		"Variant"
 #define RSC_INVARIANT_CODE_FR		"Invariant"
 
-#define RSC_FEATURES_ACPI_CODE_FR   "Advanced Configuration & Power Interface"
-#define RSC_FEATURES_GIC_CODE_FR	"Generic Interrupt Controller"
-#define RSC_FEATURES_TSC_CODE_FR	"Time Stamp Counter"
-#define RSC_FEATURES_VHE_CODE_FR    "Extensions d'H""\xb4""te de Virtualisation"
+#define RSC_FEATURES_ACPI_CODE_FR	\
+		"Configuration avanc""\xa9""e et interface d'alimentation"
+
+#define RSC_FEATURES_EBEP_CODE_FR	\
+	"Profilage d'""\xa9""v""\xa9""nements en fonction des exceptions"
+
+#define RSC_FEATURES_DIT_CODE_FR	RSC_FEATURES_DIT_CODE_EN
+#define RSC_FEATURES_GIC_CODE_FR	\
+		"Contr""\xb4""leur d'interruption g""\xa9""n""\xa9""rique"
+
+#define RSC_FEATURES_MTE_CODE_FR	\
+		"Extension de marquage de m""\xa9""moire"
+
+#define RSC_FEATURES_NMI_CODE_FR	"Interruption non masquable"
+#define RSC_FEATURES_PAN_CODE_FR	"Aucun privil""\xa8""ge d'acc""\xa8""s"
+#define RSC_FEATURES_TSC_CODE_FR	"Compteur d'horodatage"
+#define RSC_FEATURES_UAO_CODE_FR	\
+				"Surcharge de l'acc""\xa8""s utilisateur"
+
+#define RSC_FEATURES_VHE_CODE_FR	\
+				"Extensions d'H""\xb4""te de Virtualisation"
+
 #define RSC_FEAT_SECTION_MECH_CODE_FR	"M""\xa9""canismes d'att""\xa9""nuation"
 #define RSC_FEAT_SECTION_SEC_CODE_FR	"Fonctions de s""\xa9""curit""\xa9"
 
@@ -1212,9 +1233,13 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_SMBIOS_TITLE_CODE_FR	" SMBIOS "
 
-#define RSC_MECH_CLRBHB_CODE_FR 	RSC_MECH_CLRBHB_CODE_EN
-#define RSC_MECH_SSBD_CODE_FR		RSC_MECH_SSBD_CODE_EN
-#define RSC_MECH_SSBS_CODE_FR		RSC_MECH_SSBS_CODE_EN
+#define RSC_MECH_CLRBHB_CODE_FR 	"Effacement de l'historique de branche"
+
+#define RSC_MECH_SSBD_CODE_FR		\
+	"Contournement du rangement sp""\xa9""culatif d""\xa9""sactiv""\xa9"
+
+#define RSC_MECH_SSBS_CODE_FR		\
+		"Contournement s""\xbb""r du rangement sp""\xa9""culatif"
 
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_FR	"  %3s       Processeur    " \
 						"   %s     %c%4u %c "

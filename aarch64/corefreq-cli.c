@@ -1383,12 +1383,19 @@ REASON_CODE SysInfoISA( Window *win,
 	},
 	{
 		NULL,
+		RSC(ISA_DP).CODE(), RSC(ISA_DP_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.DP },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.DP },
+	},
+/* Row Mark */
+	{
+		NULL,
 		RSC(ISA_FP).CODE(), RSC(ISA_FP_COMM).CODE(),
 		{ 0, RO(Shm)->Proc.Features.FP },
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.FP },
 	},
-/* Row Mark */
 	{
 		NULL,
 		RSC(ISA_RAND).CODE(), RSC(ISA_RAND_COMM).CODE(),
@@ -1398,11 +1405,19 @@ REASON_CODE SysInfoISA( Window *win,
 	},
 	{
 		NULL,
+		RSC(ISA_RDMA).CODE(), RSC(ISA_RDMA_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.RDMA },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.RDMA },
+	},
+	{
+		NULL,
 		RSC(ISA_SHA1).CODE(), RSC(ISA_SHA_COMM).CODE(),
 		{ 0, RO(Shm)->Proc.Features.SHA1 },
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.SHA1 },
 	},
+/* Row Mark */
 	{
 		NULL,
 		RSC(ISA_SHA256).CODE(), RSC(ISA_SHA_COMM).CODE(),
@@ -1417,7 +1432,6 @@ REASON_CODE SysInfoISA( Window *win,
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.SHA512 },
 	},
-/* Row Mark */
 	{
 		NULL,
 		RSC(ISA_SHA3).CODE(), RSC(ISA_SHA_COMM).CODE(),
@@ -1431,6 +1445,21 @@ REASON_CODE SysInfoISA( Window *win,
 		{ 0, RO(Shm)->Proc.Features.SIMD },
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.SIMD },
+	},
+/* Row Mark */
+	{
+		NULL,
+		RSC(ISA_SM3).CODE(), RSC(ISA_SM_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.SM3 },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.SM3 },
+	},
+	{
+		NULL,
+		RSC(ISA_SM4).CODE(), RSC(ISA_SM_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.SM4 },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.SM4 },
 	},
 	{
 		NULL,
@@ -1529,10 +1558,50 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
+		RO(Shm)->Proc.Features.EBEP == 1,
+		attr_Feat,
+		2, "%s%.*sEBEP   [%7s]", RSC(FEATURES_EBEP).CODE(),
+		width - 19 - RSZ(FEATURES_EBEP),
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Features.DIT == 1,
+		attr_Feat,
+		2, "%s%.*sDIT   [%7s]", RSC(FEATURES_DIT).CODE(),
+		width - 18 - RSZ(FEATURES_DIT),
+		NULL
+	},
+	{
+		NULL,
 		RO(Shm)->Proc.Features.GIC == 1,
 		attr_Feat,
 		2, "%s%.*sGIC   [%7s]", RSC(FEATURES_GIC).CODE(),
 		width - 18 - RSZ(FEATURES_GIC),
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Features.MTE == 1,
+		attr_Feat,
+		2, "%s%.*sMTE   [%7s]", RSC(FEATURES_MTE).CODE(),
+		width - 18 - RSZ(FEATURES_MTE),
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Features.NMI == 1,
+		attr_Feat,
+		2, "%s%.*sNMI   [%7s]", RSC(FEATURES_NMI).CODE(),
+		width - 18 - RSZ(FEATURES_NMI),
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Features.PAN == 1,
+		attr_Feat,
+		2, "%s%.*sPAN   [%7s]", RSC(FEATURES_PAN).CODE(),
+		width - 18 - RSZ(FEATURES_PAN),
 		NULL
 	},
 	{
@@ -1542,6 +1611,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		2, "%s%.*sTSC [%9s]", RSC(FEATURES_TSC).CODE(),
 		width - 18 - RSZ(FEATURES_TSC),
 		code_TSC
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Features.UAO,
+		attr_Feat,
+		2, "%s%.*sUAO [%9s]", RSC(FEATURES_UAO).CODE(),
+		width - 18 - RSZ(FEATURES_UAO),
+		NULL
 	},
 	{
 		NULL,
@@ -6366,7 +6443,7 @@ Window *CreateTopology(unsigned long long id)
 
 Window *CreateISA(unsigned long long id)
 {
-	Window *wISA = CreateWindow(wLayer, id, 4, 3, 6, TOP_HEADER_ROW + 2);
+	Window *wISA = CreateWindow(wLayer, id, 4, 4, 6, TOP_HEADER_ROW + 2);
 
 	if (wISA != NULL)
 	{

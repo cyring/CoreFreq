@@ -200,6 +200,7 @@ typedef struct
 		Bit64			SCTLR	__attribute__ ((aligned (8)));
 		Bit64			SCTLR2	__attribute__ ((aligned (8)));
 		Bit64			FPSR	__attribute__ ((aligned (8)));
+		Bit64			SVCR	__attribute__ ((aligned (8)));
 	} SystemRegister;
 
 	unsigned int			Bind;

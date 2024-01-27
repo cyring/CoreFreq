@@ -133,7 +133,7 @@ enum HYPERVISOR {
 #define HYPERVISORS	( 1 + HYPERV_HYPERV )
 
 enum SYS_REG {
-	FLAG_SM 	= 0,	/* [1:0] = [ZA:SM]			*/
+	FLAG_SP 	= 0,	/* [1:0] = [ZA:SM]			*/
 	FLAG_EL 	= 2,	/* [3:2]	 			*/
 	FLAG_F		= 6,
 	FLAG_I		= 7,
@@ -800,7 +800,11 @@ typedef struct	/* BSP features.					*/
 		SVE		: 12-11,
 		VHE		: 13-12,
 		SME		: 14-13,
-		_Unused1_	: 24-14,
+		RDMA		: 15-14,
+		DP		: 16-15,
+		SM3		: 17-16,
+		SM4		: 18-17,
+		_Unused1_	: 24-18,
 		HTT		: 25-24,
 		TSC		: 26-25,
 		MONITOR 	: 27-26,
