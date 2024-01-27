@@ -41,9 +41,7 @@ enum CRC_MANUFACTURER
 
 enum CODENAME
 {
-	ARMv1,
-	ARMv7_R,
-	ARMv7_A,
+	ARM64,
 	ARMv8_R,
 	ARMv8_A,
 	ARMv8_2_A,
@@ -59,12 +57,6 @@ enum CODENAME
 };
 
 enum {	GenuineArch = 0,
-	Cortex_A5,
-	Cortex_A7,
-	Cortex_A9,
-	Cortex_A15,
-	Cortex_A17,
-	Cortex_A32,
 	Cortex_A34,
 	Cortex_A35,
 	Cortex_A510,
@@ -86,10 +78,6 @@ enum {	GenuineArch = 0,
 	Cortex_A78,
 	Cortex_A78AE,
 	Cortex_A78C,
-	Cortex_R4,
-	Cortex_R5,
-	Cortex_R52,
-	Cortex_R52Plus,
 	Cortex_R82,
 	Cortex_X1,
 	Cortex_X1C,
