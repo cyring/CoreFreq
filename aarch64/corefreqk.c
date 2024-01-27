@@ -554,7 +554,6 @@ static void Query_Features(void *pArg)
 		"mrs	%[dfr1],	id_aa64dfr1_el1""\n\t"
 		"mrs	%[isar0],	id_aa64isar0_el1""\n\t"
 		"mrs	%[mmfr1],	id_aa64mmfr1_el1""\n\t"
-		"mrs	%[mmfr2],	id_aa64mmfr2_el1""\n\t"
 		"mrs	%[pfr0] ,	id_aa64pfr0_el1""\n\t"
 		"mrs	%[pfr1] ,	id_aa64pfr1_el1""\n\t"
 		"isb"
@@ -566,12 +565,13 @@ static void Query_Features(void *pArg)
 		  [dfr1]	"=r" (dfr1),
 		  [isar0]	"=r" (isar0),
 		  [mmfr1]	"=r" (mmfr1),
-		  [mmfr2]	"=r" (mmfr2),
 		  [pfr0]	"=r" (pfr0),
 		  [pfr1]	"=r" (pfr1)
 		:
 		: "memory"
 	);
+	mmfr2.value = read_sysreg_s(ID_AA64MMFR2_EL1);
+
 	iArg->Features->Info.Signature.Stepping = midr.Revision
 						| (midr.Variant << 4);
 	iArg->Features->Info.Signature.Family = midr.PartNum & 0x00f;
