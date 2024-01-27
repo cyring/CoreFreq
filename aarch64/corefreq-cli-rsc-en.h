@@ -654,17 +654,27 @@
 #define RSC_SCOPE_PACKAGE_CODE_EN	" Pkg"
 
 #define RSC_SYS_REGS_TITLE_CODE_EN	" System Registers "
-#define RSC_SYS_REG_FLAGS_N_CODE_EN	" Negative "
-#define RSC_SYS_REG_FLAGS_Z_CODE_EN	" Zero Flag "
-#define RSC_SYS_REG_FLAGS_C_CODE_EN	" Carry Flag "
-#define RSC_SYS_REG_FLAGS_V_CODE_EN	" Overflow "
-#define RSC_SYS_REG_FLAGS_D_CODE_EN	" Endianness "
-#define RSC_SYS_REG_FLAGS_A_CODE_EN	" SError "
-#define RSC_SYS_REG_FLAGS_I_CODE_EN	" IRQ "
-#define RSC_SYS_REG_FLAGS_F_CODE_EN	" FIQ "
-#define RSC_SYS_REG_FLAGS_L_CODE_EN	" Current EL "
-#define RSC_SYS_REG_FLAGS_M_CODE_EN	" Reserved "
-#define RSC_SYS_REG_FLAGS_DIT_CODE_EN	" Data Independent Timing "
+#define RSC_SYS_REG_PSTATE_CODE_EN	" Process State "
+#define RSC_SYS_REG_FLAG_N_CODE_EN	" Negative "
+#define RSC_SYS_REG_FLAG_Z_CODE_EN	" Zero Flag "
+#define RSC_SYS_REG_FLAG_C_CODE_EN	" Carry Flag "
+#define RSC_SYS_REG_FLAG_V_CODE_EN	" Overflow "
+#define RSC_SYS_REG_FLAG_D_CODE_EN	" Endianness "
+#define RSC_SYS_REG_FLAG_A_CODE_EN	" SError "
+#define RSC_SYS_REG_FLAG_I_CODE_EN	" IRQ "
+#define RSC_SYS_REG_FLAG_F_CODE_EN	" FIQ "
+#define RSC_SYS_REG_FLAG_EL_CODE_EN	" Current EL "
+#define RSC_SYS_REG_FLAG_SM_CODE_EN	" SME ZA storage : Streaming SVE "
+
+#define RSC_SYS_REG_FLAG_SSBS_CODE_EN	\
+	" Speculative Store Bypass Safe (MSR & MRS) "
+
+#define RSC_SYS_REG_FLAG_NMI_CODE_EN	" Non-maskable Interrupt "
+#define RSC_SYS_REG_FLAG_PAN_CODE_EN	" Privileged Access Never "
+#define RSC_SYS_REG_FLAG_UAO_CODE_EN	" User Access Override "
+#define RSC_SYS_REG_FLAG_DIT_CODE_EN	" Data Independent Timing "
+#define RSC_SYS_REG_FLAG_TCO_CODE_EN	" Tag Check Override "
+#define RSC_SYS_REG_FLAG_PM_CODE_EN	" PMU Exception Mask "
 
 #define RSC_SYS_REG_SCTL_CODE_EN	" System Control Register (SCTLR_EL1) "
 #define RSC_SYS_REG_TIDCP_CODE_EN " Implementation Defined System instructions "
@@ -687,7 +697,7 @@
 #define RSC_SYS_REG_TWE_D_CODE_EN	" TWE Delay "
 #define RSC_SYS_REG_TWE_C_CODE_EN	" TWE Delay cycles "
 #define RSC_SYS_REG_TWE_E_CODE_EN	" TWE Delay enable "
-#define RSC_SYS_REG_DSSBS_CODE_EN " Speculative Store Bypass Safe instruction "
+#define RSC_SYS_REG_DSSBS_CODE_EN " Speculative Store Bypass Safe (Exception) "
 #define RSC_SYS_REG_ATA_CODE_EN 	" Allocation Tag Access "
 #define RSC_SYS_REG_ATA1_CODE_EN	" Allocation Tag Access (EL1) "
 #define RSC_SYS_REG_ATA0_CODE_EN	" Allocation Tag Access (EL0) "
@@ -1873,7 +1883,8 @@
 #define RSC_SYS_REGS_HDR_CPU_CODE	"CPU "
 
 #define RSC_SYS_REG_HDR_FLAGS_CODE	\
-	"FLAG\0  N \0  Z \0  C \0  V \0  D \0 DIT\0  A \0  I \0  F \0 EL \0  M "
+	"PSTA\0TE P\0  N \0  Z \0  C \0  V \0 TCO\0 DIT\0" \
+	" UAO\0 PAN\0 NMI\0 SSB\0S D \0  A \0  I \0  F \0 EL \0  M "
 
 #define RSC_SYS_REG_HDR11_SCTL_CODE	\
 	"    \0 TID\0  SP\0 NMI\0 TPI\0  TC\0SO  \0 PAN\0" \

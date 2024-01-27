@@ -133,17 +133,23 @@ enum HYPERVISOR {
 #define HYPERVISORS	( 1 + HYPERV_HYPERV )
 
 enum SYS_REG {
-	FLAG_M		= 0,	/* [1:0]				*/
-	FLAG_L		= 2,	/* [3:2]				*/
+	FLAG_SM 	= 0,	/* [1:0] = [ZA:SM]			*/
+	FLAG_EL 	= 2,	/* [3:2]	 			*/
 	FLAG_F		= 6,
 	FLAG_I		= 7,
 	FLAG_A		= 8,
 	FLAG_D		= 9,
+	FLAG_SSBS	= 12,
+	FLAG_NMI	= 13,
+	FLAG_PAN	= 22,
+	FLAG_UAO	= 23,
 	FLAG_DIT	= 24,
+	FLAG_TCO	= 25,
 	FLAG_V		= 28,
 	FLAG_C		= 29,
 	FLAG_Z		= 30,
 	FLAG_N		= 31,
+	FLAG_PM 	= 32,
 
 	SCTLR_TIDCP	= 63,
 	SCTLR_SPINT	= 62,
@@ -794,7 +800,7 @@ typedef struct	/* BSP features.					*/
 		SVE		: 12-11,
 		VHE		: 13-12,
 		SME		: 14-13,
-		_Unused_	: 24-14,
+		_Unused1_	: 24-14,
 		HTT		: 25-24,
 		TSC		: 26-25,
 		MONITOR 	: 27-26,
@@ -888,6 +894,16 @@ typedef struct	/* BSP features.					*/
 	} Factory;
 
 	struct {
+		Bit64	CSV2		:  4-0,
+			SSBS		:  8-4,
+			PAN		:  9-8,
+			UAO		: 10-9,
+			DIT		: 11-10,
+			MTE		: 12-11,
+			NMI		: 13-12,
+			EBEP		: 14-13,
+			_Unused2_	: 64-14;
+
 		Bit64	InvariantTSC	:  8-0,
 			HyperThreading	:  9-8,
 			HTT_Enable	: 10-9,
@@ -901,12 +917,9 @@ typedef struct	/* BSP features.					*/
 			TurboActiv_Lock : 21-20,
 			Uncore_Unlock	: 22-21,
 			HWP_Enable	: 23-22,
-			DIT		: 24-23,
+			Other_Capable	: 24-23,
 			SpecTurboRatio	: 32-24,
-			CSV2		: 36-32,
-			Other_Capable	: 37-36,
-			_Unused1	: 38-37,
-			_Unused2	: 40-38,
+			_Unused3_	: 40-32,
 			ACPI_PCT_CAP	: 41-40,
 			ACPI_PCT	: 42-41,
 			ACPI_PSS_CAP	: 43-42,
@@ -918,7 +931,7 @@ typedef struct	/* BSP features.					*/
 			OSPM_EPP	: 55-54,
 			ACPI_CST_CAP	: 56-55,
 			ACPI_CST	: 60-56, /* 15 CState sub-packages */
-			SSBS		: 64-60;
+			_Unused4_	: 64-60;
 	};
 } FEATURES;
 

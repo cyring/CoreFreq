@@ -8,8 +8,14 @@
 #define ID_AA64ISAR2_EL1	sys_reg(0b11, 0b000, 0b0000, 0b0110, 0b010)
 #define ID_AA64MMFR3_EL1	sys_reg(0b11, 0b000, 0b0000, 0b0111, 0b011)
 #define SCTLR2_EL1		sys_reg(0b11, 0b000, 0b0001, 0b0000, 0b011)
-#define MRS_DIT 		sys_reg(0b11, 0b011, 0b0100, 0b0010, 0b101)
 #define MRS_SSBS2		sys_reg(0b11, 0b011, 0b0100, 0b0010, 0b110)
+#define MRS_PAN 		sys_reg(0b11, 0b000, 0b0100, 0b0010, 0b011)
+#define MRS_UAO 		sys_reg(0b11, 0b000, 0b0100, 0b0010, 0b100)
+#define MRS_DIT 		sys_reg(0b11, 0b011, 0b0100, 0b0010, 0b101)
+#define MRS_TCO 		sys_reg(0b11, 0b011, 0b0100, 0b0010, 0b111)
+#define MRS_ALLINT		sys_reg(0b11, 0b000, 0b0100, 0b0011, 0b000)
+#define MRS_PM			sys_reg(0b11, 0b000, 0b0100, 0b0011, 0b001)
+#define MRS_SVCR		sys_reg(0b11, 0b011, 0b0100, 0b0010, 0b010)
 #define CLUSTERCFR_EL1		sys_reg(0b11, 0b000, 0b1111, 0b0011, 0b000)
 
 typedef union

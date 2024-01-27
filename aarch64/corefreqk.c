@@ -533,8 +533,10 @@ static void Query_Features(void *pArg)
 	volatile CNTPCT cntpct;
 	volatile PMCR pmcr;
 	volatile AA64DFR0 dbgfr0;
+	volatile AA64DFR1 dbgfr1;
 	volatile AA64ISAR0 isar0;
 	volatile AA64MMFR1 mmfr1;
+	volatile AA64MMFR2 mmfr2;
 	volatile AA64PFR0 pfr0;
 	volatile AA64PFR1 pfr1;
 	volatile CLUSTERCFR clustercfg;
@@ -549,8 +551,10 @@ static void Query_Features(void *pArg)
 		"mrs	%[cntpct],	cntpct_el0"	"\n\t"
 		"mrs	%[pmcr] ,	pmcr_el0"	"\n\t"
 		"mrs	%[dbgfr0],	id_aa64dfr0_el1""\n\t"
+		"mrs	%[dbgfr1],	id_aa64dfr1_el1""\n\t"
 		"mrs	%[isar0],	id_aa64isar0_el1""\n\t"
 		"mrs	%[mmfr1],	id_aa64mmfr1_el1""\n\t"
+		"mrs	%[mmfr2],	id_aa64mmfr2_el1""\n\t"
 		"mrs	%[pfr0] ,	id_aa64pfr0_el1""\n\t"
 		"mrs	%[pfr1] ,	id_aa64pfr1_el1""\n\t"
 		"isb"
@@ -559,8 +563,10 @@ static void Query_Features(void *pArg)
 		  [cntpct]	"=r" (cntpct),
 		  [pmcr]	"=r" (pmcr),
 		  [dbgfr0]	"=r" (dbgfr0),
+		  [dbgfr1]	"=r" (dbgfr1),
 		  [isar0]	"=r" (isar0),
 		  [mmfr1]	"=r" (mmfr1),
+		  [mmfr2]	"=r" (mmfr2),
 		  [pfr0]	"=r" (pfr0),
 		  [pfr1]	"=r" (pfr1)
 		:
@@ -605,6 +611,15 @@ static void Query_Features(void *pArg)
 	iArg->Features->PerfMon.MonWidth = \
 	iArg->Features->PerfMon.FixWidth = 0b111111 == 0b111111 ? 64 : 0;
     }
+	switch (dbgfr1.EBEP) {
+	case 0b0001:
+		iArg->Features->EBEP = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->EBEP = 0;
+		break;
+	}
 	switch (isar0.AES) {
 	case 0b0001:
 	case 0b0010:
@@ -683,6 +698,26 @@ static void Query_Features(void *pArg)
 		iArg->Features->VHE = 0;
 		break;
 	}
+	switch (mmfr1.PAN) {
+	case 0b0001:
+	case 0b0010:
+	case 0b0011:
+		iArg->Features->PAN = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->PAN = 0;
+		break;
+	}
+	switch (mmfr2.UAO) {
+	case 0b0001:
+		iArg->Features->UAO = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->UAO = 0;
+		break;
+	}
 	switch (pfr0.FP) {
 	case 0b0000:
 	case 0b0001:
@@ -735,6 +770,17 @@ static void Query_Features(void *pArg)
 
 	iArg->Features->SSBS = pfr1.SSBS;
 
+	switch (pfr1.MTE) {
+	case 0b0001:
+	case 0b0010:
+	case 0b0011:
+		iArg->Features->MTE = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->MTE = 0;
+		break;
+	}
 	switch (pfr1.SME) {
 	case 0b0001:
 	case 0b0010:
@@ -747,6 +793,16 @@ static void Query_Features(void *pArg)
 	}
 
 	iArg->Features->CSV2 = pfr1.CSV2_frac;
+
+	switch (pfr1.NMI) {
+	case 0b0001:
+		iArg->Features->NMI = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->NMI = 0;
+		break;
+	}
 
     if (Experimental && (iArg->HypervisorID == HYPERV_NONE)) {
 	/* Query the Cluster Configuration				*/
@@ -1557,6 +1613,37 @@ void SystemRegisters(CORE_RO *Core)
 	    } else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBS, Core->Bind);
 	    }
+		Core->SystemRegister.FLAGS |= (1LLU << FLAG_SSBS);
+	}
+	if (PUBLIC(RO(Proc))->Features.PAN) {
+		Core->SystemRegister.FLAGS |= (
+			read_sysreg_s(MRS_PAN) & (1LLU << FLAG_PAN)
+		);
+	}
+	if (PUBLIC(RO(Proc))->Features.UAO) {
+		Core->SystemRegister.FLAGS |= (
+			read_sysreg_s(MRS_UAO) & (1LLU << FLAG_UAO)
+		);
+	}
+	if (PUBLIC(RO(Proc))->Features.MTE) {
+		Core->SystemRegister.FLAGS |= (
+			read_sysreg_s(MRS_TCO) & (1LLU << FLAG_TCO)
+		);
+	}
+	if (PUBLIC(RO(Proc))->Features.NMI) {
+		Core->SystemRegister.FLAGS |= (
+			read_sysreg_s(MRS_ALLINT) & (1LLU << FLAG_NMI)
+		);
+	}
+	if (PUBLIC(RO(Proc))->Features.SME) {
+		Core->SystemRegister.FLAGS |= (
+			read_sysreg_s(MRS_SVCR) & (1LLU << FLAG_SM)
+		);
+	}
+	if (PUBLIC(RO(Proc))->Features.EBEP) {
+		Core->SystemRegister.FLAGS |= (
+			read_sysreg_s(MRS_PM) & (1LLU << FLAG_PM)
+		);
 	}
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask, Core->Bind);
 }
