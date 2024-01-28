@@ -805,6 +805,7 @@
 #define RSC_INVARIANT_CODE_EN		"Invariant"
 
 #define RSC_FEATURES_ACPI_CODE_EN    "Advanced Configuration & Power Interface"
+#define RSC_FEATURES_AMU_CODE_EN	"Activity Monitor Unit"
 #define RSC_FEATURES_EBEP_CODE_EN	"Exception-based event profiling"
 #define RSC_FEATURES_DIT_CODE_EN	"Data Independent Timing"
 #define RSC_FEATURES_GIC_CODE_EN	"Generic Interrupt Controller"
@@ -812,8 +813,7 @@
 #define RSC_FEATURES_MTE_CODE_EN	"Memory Tagging Extension"
 #define RSC_FEATURES_NMI_CODE_EN	"Non Maskable Interrupt"
 #define RSC_FEATURES_PAN_CODE_EN	"Privileged Access Never"
-#define RSC_FEATURES_RAS_CODE_EN	\
-				"Reliability, Availability, and Serviceability"
+#define RSC_FEATURES_RAS_CODE_EN     "Reliability Availability & Serviceability"
 
 #define RSC_FEATURES_TLB_CODE_EN	"TLB maintenance instructions"
 #define RSC_FEATURES_TME_CODE_EN	"Transactional Memory Extension"

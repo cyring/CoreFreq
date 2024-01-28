@@ -1587,6 +1587,19 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
+		( RO(Shm)->Proc.Features.AMU_vers
+		+ RO(Shm)->Proc.Features.AMU_frac ) > 0,
+		attr_Feat,
+		2, RO(Shm)->Proc.Features.AMU_vers ?
+			RO(Shm)->Proc.Features.AMU_frac ?
+			"%s v1p1%.*sAMU   [%7s]" : "%s v1p0%.*sAMU   [%7s]"
+		:	RO(Shm)->Proc.Features.AMU_frac ?
+			"%s v0p1%.*sAMU   [%7s]" : "%s     %.*sAMU   [%7s]",
+		RSC(FEATURES_AMU).CODE(), width - 23 - RSZ(FEATURES_AMU),
+		NULL
+	},
+	{
+		NULL,
 		RO(Shm)->Proc.Features.EBEP == 1,
 		attr_Feat,
 		2, "%s%.*sEBEP   [%7s]", RSC(FEATURES_EBEP).CODE(),
@@ -1616,9 +1629,9 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		attr_Feat,
 		2, RO(Shm)->Proc.Features.MPAM_vers ?
 			RO(Shm)->Proc.Features.MPAM_frac ?
-			"%s v1.1%.*sMPAM   [%7s]" : "%s v1.0%.*sMPAM   [%7s]"
+			"%s v1p1%.*sMPAM   [%7s]" : "%s v1p0%.*sMPAM   [%7s]"
 		:	RO(Shm)->Proc.Features.MPAM_frac ?
-			"%s v0.1%.*sMPAM   [%7s]" : "%s     %.*sMPAM   [%7s]",
+			"%s v0p1%.*sMPAM   [%7s]" : "%s     %.*sMPAM   [%7s]",
 		RSC(FEATURES_MPAM).CODE(), width - 24 - RSZ(FEATURES_MPAM),
 		NULL
 	},
@@ -1648,18 +1661,15 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
-		RO(Shm)->Proc.Features.RAS == 1,
+		( RO(Shm)->Proc.Features.RAS
+		+ RO(Shm)->Proc.Features.RAS_frac ) > 0,
 		attr_Feat,
-		2, "%s%.*sRAS   [%7s]", RSC(FEATURES_RAS).CODE(),
-		width - 18 - RSZ(FEATURES_RAS),
-		NULL
-	},
-	{
-		NULL,
-		RO(Shm)->Proc.Features.RASv1p1 == 1,
-		attr_Feat,
-		2, "%s%.*sRASv1p1   [%7s]", RSC(FEATURES_RAS).CODE(),
-		width - 22 - RSZ(FEATURES_RAS),
+		2, RO(Shm)->Proc.Features.RAS ?
+			RO(Shm)->Proc.Features.RAS_frac ?
+			"%s v1p1%.*sRAS   [%7s]" : "%s v1p0%.*sRAS   [%7s]"
+		:	RO(Shm)->Proc.Features.RAS_frac ?
+			"%s v0p1%.*sRAS   [%7s]" : "%s     %.*sRAS   [%7s]",
+		RSC(FEATURES_RAS).CODE(), width - 23 - RSZ(FEATURES_RAS),
 		NULL
 	},
 	{

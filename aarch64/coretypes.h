@@ -810,10 +810,12 @@ typedef struct	/* BSP features.					*/
 			NMI		: 13-12,
 			EBEP		: 14-13,
 			RAS		: 15-14,
-			RASv1p1 	: 16-15,
+			RAS_frac	: 16-15,
 			MPAM_vers	: 17-16,
 			MPAM_frac	: 18-17,
-			_Unused2_	: 64-18;
+			AMU_vers	: 19-18,
+			AMU_frac	: 20-19,
+			_Unused2_	: 64-20;
 
 		Bit64	InvariantTSC	:  8-0,
 			HyperThreading	:  9-8,

@@ -865,24 +865,24 @@ static void Query_Features(void *pArg)
 	}
 	switch (pfr0.RAS) {
 	case 0b0010:
-		iArg->Features->RASv1p1 = 1;
+		iArg->Features->RAS_frac = 1;
 		iArg->Features->RAS = 1;
 		break;
 	case 0b0001:
 		switch (pfr1.RAS_frac) {
 		case 0b0001:
-			iArg->Features->RASv1p1 = 1;
+			iArg->Features->RAS_frac = 1;
 			break;
 		case 0b0000:
 		default:
-			iArg->Features->RASv1p1 = 0;
+			iArg->Features->RAS_frac = 0;
 			break;
 		}
 		iArg->Features->RAS = 1;
 		break;
 	case 0b0000:
 	default:
-		iArg->Features->RASv1p1 = 0;
+		iArg->Features->RAS_frac = 0;
 		iArg->Features->RAS = 0;
 		break;
 	}
@@ -903,6 +903,21 @@ static void Query_Features(void *pArg)
 	default:
 		iArg->Features->MPAM_vers = \
 		iArg->Features->MPAM_frac = 0;
+		break;
+	}
+	switch (pfr0.AMU) {
+	case 0b0001:
+		iArg->Features->AMU_vers = 1;
+		iArg->Features->AMU_frac = 0;
+		break;
+	case 0b0010:
+		iArg->Features->AMU_vers = 1;
+		iArg->Features->AMU_frac = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->AMU_vers = 0;
+		iArg->Features->AMU_frac = 0;
 		break;
 	}
 

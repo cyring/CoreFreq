@@ -495,6 +495,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_ACPI_CODE_FR	\
 		"Configuration avanc""\xa9""e et interface d'alimentation"
 
+#define RSC_FEATURES_AMU_CODE_FR	\
+			"Unit""\xa9"" de surveillance de l'activit""\xa9"
+
 #define RSC_FEATURES_EBEP_CODE_FR	\
 	"Profilage d'""\xa9""v""\xa9""nements en fonction des exceptions"
 
@@ -509,7 +512,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_NMI_CODE_FR	"Interruption non masquable"
 #define RSC_FEATURES_PAN_CODE_FR	"Aucun privil""\xa8""ge d'acc""\xa8""s"
 #define RSC_FEATURES_RAS_CODE_FR	\
-		"Fiabilit""\xa9"", disponibilit""\xa9"" et durabilit""\xa9"
+		"Fiabilit""\xa9"" Disponibilit""\xa9"" et Durabilit""\xa9"
 
 #define RSC_FEATURES_TLB_CODE_FR	"Instructions de gestion TLB"
 #define RSC_FEATURES_TME_CODE_FR  "Extension de m""\xa9""moire transactionnelle"

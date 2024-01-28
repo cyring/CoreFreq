@@ -513,6 +513,10 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RAS);
 					json_key(&s, "MPAM_vers");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MPAM_vers);
+					json_key(&s, "AMU_vers");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AMU_vers);
+					json_key(&s, "AMU_frac");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AMU_frac);
 					json_end_object(&s);
 				}
 				json_key(&s, "PFR1");
@@ -524,8 +528,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.NMI);
 					json_key(&s, "SME");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME);
-					json_key(&s, "RASv1p1");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RASv1p1);
+					json_key(&s, "RAS_frac");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RAS_frac);
 					json_key(&s, "MPAM_frac");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MPAM_frac);
 					json_end_object(&s);
