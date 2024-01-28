@@ -517,6 +517,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AMU_vers);
 					json_key(&s, "AMU_frac");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AMU_frac);
+					json_key(&s, "RME");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RME);
 					json_end_object(&s);
 				}
 				json_key(&s, "PFR1");

@@ -815,7 +815,8 @@ typedef struct	/* BSP features.					*/
 			MPAM_frac	: 18-17,
 			AMU_vers	: 19-18,
 			AMU_frac	: 20-19,
-			_Unused2_	: 64-20;
+			RME		: 21-20,
+			_Unused2_	: 64-21;
 
 		Bit64	InvariantTSC	:  8-0,
 			HyperThreading	:  9-8,

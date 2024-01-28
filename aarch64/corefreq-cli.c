@@ -1780,6 +1780,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		0,
 		NULL
 	},
+	{
+		NULL,
+		RO(Shm)->Proc.Features.RME == 1,
+		attr_Feat,
+		2, "%s%.*sRME   [%7s]", RSC(FEATURES_RME).CODE(),
+		width - 18 - RSZ(FEATURES_RME),
+		NULL
+	},
     };
 	size_t idx;
     for (idx = 0; idx < sizeof(FEAT) / sizeof(struct FEAT_ST); idx++)

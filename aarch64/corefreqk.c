@@ -920,6 +920,15 @@ static void Query_Features(void *pArg)
 		iArg->Features->AMU_frac = 0;
 		break;
 	}
+	switch (pfr0.RME) {
+	case 0b0001:
+		iArg->Features->RME = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->RME = 0;
+		break;
+	}
 
 	iArg->Features->SSBS = pfr1.SSBS;
 
