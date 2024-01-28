@@ -509,6 +509,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SVE);
 					json_key(&s, "DIT");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.DIT);
+					json_key(&s, "RAS");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RAS);
 					json_end_object(&s);
 				}
 				json_key(&s, "PFR1");
@@ -520,6 +522,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.NMI);
 					json_key(&s, "SME");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME);
+					json_key(&s, "RASv1p1");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RASv1p1);
 					json_end_object(&s);
 				}
 				json_key(&s, "MISC");

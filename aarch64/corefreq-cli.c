@@ -1635,6 +1635,22 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
+		RO(Shm)->Proc.Features.RAS == 1,
+		attr_Feat,
+		2, "%s%.*sRAS   [%7s]", RSC(FEATURES_RAS).CODE(),
+		width - 18 - RSZ(FEATURES_RAS),
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Features.RASv1p1 == 1,
+		attr_Feat,
+		2, "%s%.*sRASv1p1   [%7s]", RSC(FEATURES_RAS).CODE(),
+		width - 22 - RSZ(FEATURES_RAS),
+		NULL
+	},
+	{
+		NULL,
 		RO(Shm)->Proc.Features.TLB == 1,
 		attr_Feat,
 		2, "%s%.*sTLB   [%7s]", RSC(FEATURES_TLB).CODE(),

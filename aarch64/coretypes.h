@@ -772,40 +772,82 @@ struct CLUSTER_ST {
 typedef struct	/* BSP features.					*/
 {
 	PROCESSOR_ID		Info;
+
 	struct {
-		unsigned int
-		AES		:  1-0,
-		SHA1		:  2-1,
-		SHA256		:  3-2,
-		SHA512		:  4-3,
-		CRC32		:  5-4,
-		CAS		:  6-5,
-		SHA3		:  7-6,
-		RAND		:  8-7,
-		FP		:  9-8,
-		SIMD		: 10-9,
-		GIC		: 11-10,
-		SVE		: 12-11,
-		VHE		: 13-12,
-		SME		: 14-13,
-		TME		: 15-14,
-		RDMA		: 16-15,
-		DP		: 17-16,
-		SM3		: 18-17,
-		SM4		: 19-18,
-		FHM		: 20-19,
-		TS		: 21-20,
-		TLB		: 22-21,
-		FCMA		: 23-22,
-		LRCPC		: 24-23,
-		HTT		: 25-24,
-		TSC		: 26-25,
-		MONITOR 	: 27-26,
-		Inv_TSC 	: 28-27,
-		RDTSCP		: 29-28,
-		Hybrid		: 30-29,
-		ACPI		: 31-30,
-		Hyperv		: 32-31;
+		Bit64
+			AES		:  1-0,
+			SHA1		:  2-1,
+			SHA256		:  3-2,
+			SHA512		:  4-3,
+			CRC32		:  5-4,
+			CAS		:  6-5,
+			SHA3		:  7-6,
+			RAND		:  8-7,
+			FP		:  9-8,
+			SIMD		: 10-9,
+			GIC		: 11-10,
+			SVE		: 12-11,
+			VHE		: 13-12,
+			SME		: 14-13,
+			TME		: 15-14,
+			RDMA		: 16-15,
+			DP		: 17-16,
+			SM3		: 18-17,
+			SM4		: 19-18,
+			FHM		: 20-19,
+			TS		: 21-20,
+			TLB		: 22-21,
+			FCMA		: 23-22,
+			LRCPC		: 24-23,
+			_Unused1_	: 64-24;
+
+		Bit64	CSV2		:  4-0,
+			SSBS		:  8-4,
+			PAN		:  9-8,
+			UAO		: 10-9,
+			DIT		: 11-10,
+			MTE		: 12-11,
+			NMI		: 13-12,
+			EBEP		: 14-13,
+			RAS		: 15-14,
+			RASv1p1 	: 16-15,
+			_Unused2_	: 64-16;
+
+		Bit64	InvariantTSC	:  8-0,
+			HyperThreading	:  9-8,
+			HTT_Enable	: 10-9,
+			TgtRatio_Unlock : 11-10,
+			ClkRatio_Unlock : 13-11, /* X.Y w/ X=Max and Y=Min */
+			Turbo_Unlock	: 14-13,
+			TDP_Unlock	: 15-14,
+			TDP_Levels	: 17-15,
+			TDP_Cfg_Lock	: 18-17,
+			TDP_Cfg_Level	: 20-18,
+			TurboActiv_Lock : 21-20,
+			Uncore_Unlock	: 22-21,
+			HWP_Enable	: 23-22,
+			Other_Capable	: 24-23,
+			SpecTurboRatio	: 32-24,
+			HTT		: 33-32,
+			TSC		: 34-33,
+			MONITOR 	: 35-34,
+			Inv_TSC 	: 36-35,
+			RDTSCP		: 37-36,
+			Hybrid		: 38-37,
+			ACPI		: 39-38,
+			Hyperv		: 40-39,
+			ACPI_PCT_CAP	: 41-40,
+			ACPI_PCT	: 42-41,
+			ACPI_PSS_CAP	: 43-42,
+			ACPI_PSS	: 47-43, /* 15 Pstate sub-packages */
+			ACPI_PPC_CAP	: 48-47,
+			ACPI_PPC	: 52-48, /* Range of states supported */
+			ACPI_CPPC	: 53-52,
+			OSPM_CPC	: 54-53,
+			OSPM_EPP	: 55-54,
+			ACPI_CST_CAP	: 56-55,
+			ACPI_CST	: 60-56, /* 15 CState sub-packages */
+			_Unused3_	: 64-60;
 	};
 	struct
 	{
@@ -819,6 +861,7 @@ typedef struct	/* BSP features.					*/
 		SubCstate_MWAIT6: 28-24,
 		SubCstate_MWAIT7: 32-28;
 	} MWait;
+
 	struct {
 	    struct
 	    {
@@ -856,6 +899,7 @@ typedef struct	/* BSP features.					*/
 		Reserved2	: 32-16;
 	    };
 	} PerfMon;
+
 	struct
 	{
 		unsigned int
@@ -889,47 +933,6 @@ typedef struct	/* BSP features.					*/
 					NB;
 		} PMC;
 	} Factory;
-
-	struct {
-		Bit64	CSV2		:  4-0,
-			SSBS		:  8-4,
-			PAN		:  9-8,
-			UAO		: 10-9,
-			DIT		: 11-10,
-			MTE		: 12-11,
-			NMI		: 13-12,
-			EBEP		: 14-13,
-			_Unused1_	: 64-14;
-
-		Bit64	InvariantTSC	:  8-0,
-			HyperThreading	:  9-8,
-			HTT_Enable	: 10-9,
-			TgtRatio_Unlock : 11-10,
-			ClkRatio_Unlock : 13-11, /* X.Y w/ X=Max and Y=Min */
-			Turbo_Unlock	: 14-13,
-			TDP_Unlock	: 15-14,
-			TDP_Levels	: 17-15,
-			TDP_Cfg_Lock	: 18-17,
-			TDP_Cfg_Level	: 20-18,
-			TurboActiv_Lock : 21-20,
-			Uncore_Unlock	: 22-21,
-			HWP_Enable	: 23-22,
-			Other_Capable	: 24-23,
-			SpecTurboRatio	: 32-24,
-			_Unused2_	: 40-32,
-			ACPI_PCT_CAP	: 41-40,
-			ACPI_PCT	: 42-41,
-			ACPI_PSS_CAP	: 43-42,
-			ACPI_PSS	: 47-43, /* 15 Pstate sub-packages */
-			ACPI_PPC_CAP	: 48-47,
-			ACPI_PPC	: 52-48, /* Range of states supported */
-			ACPI_CPPC	: 53-52,
-			OSPM_CPC	: 54-53,
-			OSPM_EPP	: 55-54,
-			ACPI_CST_CAP	: 56-55,
-			ACPI_CST	: 60-56, /* 15 CState sub-packages */
-			_Unused3_	: 64-60;
-	};
 } FEATURES;
 
 /* Memory Controller' structures dimensions.				*/

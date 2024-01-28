@@ -505,6 +505,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_MTE_CODE_FR       "Extension de marquage de m""\xa9""moire"
 #define RSC_FEATURES_NMI_CODE_FR	"Interruption non masquable"
 #define RSC_FEATURES_PAN_CODE_FR	"Aucun privil""\xa8""ge d'acc""\xa8""s"
+#define RSC_FEATURES_RAS_CODE_FR	\
+		"Fiabilit""\xa9"", disponibilit""\xa9"" et durabilit""\xa9"
+
 #define RSC_FEATURES_TLB_CODE_FR	"Instructions de gestion TLB"
 #define RSC_FEATURES_TME_CODE_FR  "Extension de m""\xa9""moire transactionnelle"
 #define RSC_FEATURES_TSC_CODE_FR	"Compteur d'horodatage"

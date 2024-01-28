@@ -811,6 +811,9 @@
 #define RSC_FEATURES_MTE_CODE_EN	"Memory Tagging Extension"
 #define RSC_FEATURES_NMI_CODE_EN	"Non Maskable Interrupt"
 #define RSC_FEATURES_PAN_CODE_EN	"Privileged Access Never"
+#define RSC_FEATURES_RAS_CODE_EN	\
+				"Reliability, Availability, and Serviceability"
+
 #define RSC_FEATURES_TLB_CODE_EN	"TLB maintenance instructions"
 #define RSC_FEATURES_TME_CODE_EN	"Transactional Memory Extension"
 #define RSC_FEATURES_TSC_CODE_EN	"Time Stamp Counter"

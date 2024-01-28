@@ -863,6 +863,29 @@ static void Query_Features(void *pArg)
 		iArg->Features->DIT = 0;
 		break;
 	}
+	switch (pfr0.RAS) {
+	case 0b0010:
+		iArg->Features->RASv1p1 = 1;
+		iArg->Features->RAS = 1;
+		break;
+	case 0b0001:
+		switch (pfr1.RAS_frac) {
+		case 0b0001:
+			iArg->Features->RASv1p1 = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->RASv1p1 = 0;
+			break;
+		}
+		iArg->Features->RAS = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->RASv1p1 = 0;
+		iArg->Features->RAS = 0;
+		break;
+	}
 
 	iArg->Features->SSBS = pfr1.SSBS;
 
