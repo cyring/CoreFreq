@@ -1611,6 +1611,19 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
+		( RO(Shm)->Proc.Features.MPAM_vers
+		+ RO(Shm)->Proc.Features.MPAM_frac ) > 0,
+		attr_Feat,
+		2, RO(Shm)->Proc.Features.MPAM_vers ?
+			RO(Shm)->Proc.Features.MPAM_frac ?
+			"%s v1.1%.*sMPAM   [%7s]" : "%s v1.0%.*sMPAM   [%7s]"
+		:	RO(Shm)->Proc.Features.MPAM_frac ?
+			"%s v0.1%.*sMPAM   [%7s]" : "%s     %.*sMPAM   [%7s]",
+		RSC(FEATURES_MPAM).CODE(), width - 24 - RSZ(FEATURES_MPAM),
+		NULL
+	},
+	{
+		NULL,
 		RO(Shm)->Proc.Features.MTE == 1,
 		attr_Feat,
 		2, "%s%.*sMTE   [%7s]", RSC(FEATURES_MTE).CODE(),

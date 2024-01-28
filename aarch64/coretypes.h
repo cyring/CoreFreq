@@ -811,7 +811,9 @@ typedef struct	/* BSP features.					*/
 			EBEP		: 14-13,
 			RAS		: 15-14,
 			RASv1p1 	: 16-15,
-			_Unused2_	: 64-16;
+			MPAM_vers	: 17-16,
+			MPAM_frac	: 18-17,
+			_Unused2_	: 64-18;
 
 		Bit64	InvariantTSC	:  8-0,
 			HyperThreading	:  9-8,

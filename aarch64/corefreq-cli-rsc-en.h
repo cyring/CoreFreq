@@ -808,6 +808,7 @@
 #define RSC_FEATURES_EBEP_CODE_EN	"Exception-based event profiling"
 #define RSC_FEATURES_DIT_CODE_EN	"Data Independent Timing"
 #define RSC_FEATURES_GIC_CODE_EN	"Generic Interrupt Controller"
+#define RSC_FEATURES_MPAM_CODE_EN	"Memory Partitioning and Monitoring"
 #define RSC_FEATURES_MTE_CODE_EN	"Memory Tagging Extension"
 #define RSC_FEATURES_NMI_CODE_EN	"Non Maskable Interrupt"
 #define RSC_FEATURES_PAN_CODE_EN	"Privileged Access Never"

@@ -503,6 +503,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 		"Contr""\xb4""leur d'interruption g""\xa9""n""\xa9""rique"
 
 #define RSC_FEATURES_MTE_CODE_FR       "Extension de marquage de m""\xa9""moire"
+#define RSC_FEATURES_MPAM_CODE_FR	\
+			"Partitionnement et supervision de la m""\xa9""moire"
+
 #define RSC_FEATURES_NMI_CODE_FR	"Interruption non masquable"
 #define RSC_FEATURES_PAN_CODE_FR	"Aucun privil""\xa8""ge d'acc""\xa8""s"
 #define RSC_FEATURES_RAS_CODE_FR	\

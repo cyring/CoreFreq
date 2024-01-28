@@ -886,6 +886,25 @@ static void Query_Features(void *pArg)
 		iArg->Features->RAS = 0;
 		break;
 	}
+	switch (pfr0.MPAM) {
+	case 0b0000:
+	case 0b0001:
+		iArg->Features->MPAM_vers = pfr0.MPAM;
+		switch (pfr1.MPAM_frac) {
+		case 0b0000:
+		case 0b0001:
+			iArg->Features->MPAM_frac = pfr1.MPAM_frac;
+			break;
+		default:
+			iArg->Features->MPAM_frac = 0;
+			break;
+		}
+		break;
+	default:
+		iArg->Features->MPAM_vers = \
+		iArg->Features->MPAM_frac = 0;
+		break;
+	}
 
 	iArg->Features->SSBS = pfr1.SSBS;
 
