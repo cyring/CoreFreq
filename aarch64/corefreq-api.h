@@ -187,7 +187,7 @@ typedef struct
 					IORedir :  2-1,  /* Core	*/
 					SCTLRX	:  3-2,  /* Thread	*/
 					Unused	: 32-3,
-					Microcode:64-32; /* Thread	*/
+					Revision: 64-32;
 		};
 		unsigned short int	CStateLimit;
 		unsigned short int	CStateBaseAddr; /* Any I/O BAR	*/

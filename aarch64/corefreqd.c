@@ -1119,7 +1119,7 @@ void PerCore_Update(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 	memcpy( RO(Shm)->Cpu[cpu].Boost, RO(Core, AT(cpu))->Boost,
 		(BOOST(SIZE)) * sizeof(unsigned int) );
 
-	RO(Shm)->Cpu[cpu].Query.Microcode = RO(Core, AT(cpu))->Query.Microcode;
+	RO(Shm)->Cpu[cpu].Query.Revision = RO(Core, AT(cpu))->Query.Revision;
 
 	Topology(RO(Shm), RO(Proc), RO(Core), cpu);
 

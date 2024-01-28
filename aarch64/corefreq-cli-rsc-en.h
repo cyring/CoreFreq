@@ -625,7 +625,7 @@
 #define RSC_PROCESSOR_CODE_EN		"Processor"
 #define RSC_ARCHITECTURE_CODE_EN	"Architecture"
 #define RSC_VENDOR_ID_CODE_EN		"Vendor ID"
-#define RSC_MICROCODE_CODE_EN		"Microcode"
+#define RSC_REVISION_CODE_EN		"Revision"
 #define RSC_SIGNATURE_CODE_EN		"Signature"
 #define RSC_STEPPING_CODE_EN		"Stepping"
 #define RSC_ONLINE_CPU_CODE_EN		"Online CPU"

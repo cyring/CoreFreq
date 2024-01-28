@@ -33,7 +33,7 @@ typedef struct
 
 	struct
 	{
-		unsigned int		Microcode;
+		unsigned int		Revision;
 
 		struct {
 		unsigned short int	CfgLock :  1-0,

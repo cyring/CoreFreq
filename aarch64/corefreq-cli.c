@@ -1054,9 +1054,9 @@ REASON_CODE SysInfoProc(Window *win,
 		hSpace, RO(Shm)->Proc.Features.Info.Vendor.ID );
 
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
-		"%s""%.*s[0x%08x]", RSC(MICROCODE).CODE(),
-		width - 15 - RSZ(MICROCODE), hSpace,
-		RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Query.Microcode );
+		"%s""%.*s[0x%08x]", RSC(REVISION).CODE(),
+		width - 15 - RSZ(REVISION), hSpace,
+		RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Query.Revision );
 
 	PUT(	SCANKEY_NULL, attrib[2], width, 2,
 		"%s""%.*s[%3X%1X_%1X%1X]", RSC(SIGNATURE).CODE(),

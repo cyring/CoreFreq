@@ -1773,7 +1773,7 @@ static void PerCore_GenericMachine(void *arg)
 	cpupwrctl.value = read_sysreg_s(CPUPWRCTLR_EL1);
 	Core->Query.CStateBaseAddr = cpupwrctl.WFI_RET_CTRL;
     }
-	Core->Query.Microcode = revid.Revision;
+	Core->Query.Revision = revid.Revision;
 
 	SystemRegisters(Core);
 

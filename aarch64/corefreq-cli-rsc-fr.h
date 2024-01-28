@@ -321,7 +321,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_PROCESSOR_CODE_FR		"Processeur"
 #define RSC_ARCHITECTURE_CODE_FR	"Architecture"
 #define RSC_VENDOR_ID_CODE_FR		"ID vendeur"
-#define RSC_MICROCODE_CODE_FR		"Microcode"
+#define RSC_REVISION_CODE_FR		"R""\xa9""vision"
 #define RSC_SIGNATURE_CODE_FR		"Signature"
 #define RSC_STEPPING_CODE_FR		"Stepping"
 #define RSC_ONLINE_CPU_CODE_FR		"CPU en ligne"
