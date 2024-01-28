@@ -1391,11 +1391,33 @@ REASON_CODE SysInfoISA( Window *win,
 /* Row Mark */
 	{
 		NULL,
+		RSC(ISA_FCMA).CODE(), RSC(ISA_FCMA_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.FCMA },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.FCMA },
+	},
+	{
+		NULL,
+		RSC(ISA_FHM).CODE(), RSC(ISA_FHM_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.FHM },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.FHM },
+	},
+	{
+		NULL,
 		RSC(ISA_FP).CODE(), RSC(ISA_FP_COMM).CODE(),
 		{ 0, RO(Shm)->Proc.Features.FP },
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.FP },
 	},
+	{
+		NULL,
+		RSC(ISA_LRCPC).CODE(), RSC(ISA_LRCPC_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.LRCPC },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.LRCPC },
+	},
+/* Row Mark */
 	{
 		NULL,
 		RSC(ISA_RAND).CODE(), RSC(ISA_RAND_COMM).CODE(),
@@ -1417,7 +1439,6 @@ REASON_CODE SysInfoISA( Window *win,
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.SHA1 },
 	},
-/* Row Mark */
 	{
 		NULL,
 		RSC(ISA_SHA256).CODE(), RSC(ISA_SHA_COMM).CODE(),
@@ -1425,6 +1446,7 @@ REASON_CODE SysInfoISA( Window *win,
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.SHA256 },
 	},
+/* Row Mark */
 	{
 		NULL,
 		RSC(ISA_SHA512).CODE(), RSC(ISA_SHA_COMM).CODE(),
@@ -1446,7 +1468,6 @@ REASON_CODE SysInfoISA( Window *win,
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.SIMD },
 	},
-/* Row Mark */
 	{
 		NULL,
 		RSC(ISA_SM3).CODE(), RSC(ISA_SM_COMM).CODE(),
@@ -1454,6 +1475,7 @@ REASON_CODE SysInfoISA( Window *win,
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.SM3 },
 	},
+/* Row Mark */
 	{
 		NULL,
 		RSC(ISA_SM4).CODE(), RSC(ISA_SM_COMM).CODE(),
@@ -1474,6 +1496,13 @@ REASON_CODE SysInfoISA( Window *win,
 		{ 0, RO(Shm)->Proc.Features.SVE },
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.SVE },
+	},
+	{
+		NULL,
+		RSC(ISA_TS).CODE(), RSC(ISA_TS_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.TS },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.TS },
 	},
     };
 	CUINT cells_per_line = win->matrix.size.wth, *nl = &cells_per_line;
@@ -1602,6 +1631,22 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		attr_Feat,
 		2, "%s%.*sPAN   [%7s]", RSC(FEATURES_PAN).CODE(),
 		width - 18 - RSZ(FEATURES_PAN),
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Features.TLB == 1,
+		attr_Feat,
+		2, "%s%.*sTLB   [%7s]", RSC(FEATURES_TLB).CODE(),
+		width - 18 - RSZ(FEATURES_TLB),
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Features.TME == 1,
+		attr_Feat,
+		2, "%s%.*sTME   [%7s]", RSC(FEATURES_TME).CODE(),
+		width - 18 - RSZ(FEATURES_TME),
 		NULL
 	},
 	{
@@ -6261,7 +6306,7 @@ Window *CreateSysInfo(unsigned long long id)
 		{
 		winOrigin.row = TOP_HEADER_ROW + 1;
 		winOrigin.col = 4;
-		matrixSize.hth = 10;
+		matrixSize.hth = 16;
 		winWidth = 72;
 		SysInfoFunc = SysInfoFeatures;
 		title = RSC(FEATURES_TITLE).CODE();
@@ -6443,7 +6488,7 @@ Window *CreateTopology(unsigned long long id)
 
 Window *CreateISA(unsigned long long id)
 {
-	Window *wISA = CreateWindow(wLayer, id, 4, 4, 6, TOP_HEADER_ROW + 2);
+	Window *wISA = CreateWindow(wLayer, id, 4, 5, 6, TOP_HEADER_ROW + 2);
 
 	if (wISA != NULL)
 	{

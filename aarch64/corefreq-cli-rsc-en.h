@@ -774,8 +774,15 @@
 #define RSC_ISA_AES_COMM_CODE_EN	" Advanced Encryption Standard "
 #define RSC_ISA_CAS_COMM_CODE_EN	" Atomic instructions "
 #define RSC_ISA_CRC32_COMM_CODE_EN	" Cyclic Redundancy Check "
-#define RSC_ISA_FP_COMM_CODE_EN 	" Floating Point "
 #define RSC_ISA_DP_COMM_CODE_EN 	" Dot Product instructions "
+#define RSC_ISA_FCMA_COMM_CODE_EN	\
+			" Floating-point Complex Multiplication & Addition "
+
+#define RSC_ISA_FHM_COMM_CODE_EN	\
+				" Floating-point Half-precision Multiplication "
+
+#define RSC_ISA_FP_COMM_CODE_EN 	" Floating Point "
+#define RSC_ISA_LRCPC_COMM_CODE_EN 	" Load-Acquire RCpc instructions "
 #define RSC_ISA_RAND_COMM_CODE_EN	" Read Random Number "
 #define RSC_ISA_RDMA_COMM_CODE_EN	" Rounding Double Multiply Accumulate "
 #define RSC_ISA_SHA_COMM_CODE_EN	" Secure Hash Algorithms extensions "
@@ -783,6 +790,7 @@
 #define RSC_ISA_SIMD_COMM_CODE_EN	" Advanced SIMD Extensions "
 #define RSC_ISA_SME_COMM_CODE_EN	" Scalable Matrix Extension "
 #define RSC_ISA_SVE_COMM_CODE_EN	" Scalable Vector Extension "
+#define RSC_ISA_TS_COMM_CODE_EN 	" Flag manipulation instructions "
 
 #define RSC_FEATURES_TITLE_CODE_EN	" Features "
 #define RSC_ON_CODE_EN			" ON"
@@ -803,6 +811,8 @@
 #define RSC_FEATURES_MTE_CODE_EN	"Memory Tagging Extension"
 #define RSC_FEATURES_NMI_CODE_EN	"Non Maskable Interrupt"
 #define RSC_FEATURES_PAN_CODE_EN	"Privileged Access Never"
+#define RSC_FEATURES_TLB_CODE_EN	"TLB maintenance instructions"
+#define RSC_FEATURES_TME_CODE_EN	"Transactional Memory Extension"
 #define RSC_FEATURES_TSC_CODE_EN	"Time Stamp Counter"
 #define RSC_FEATURES_UAO_CODE_EN	"User Access Override"
 #define RSC_FEATURES_VHE_CODE_EN	"Virtualization Host Extensions"
@@ -1930,8 +1940,11 @@
 #define RSC_ISA_AES_CODE		"          AES [%c]"
 #define RSC_ISA_CAS_CODE		"          CAS [%c]"
 #define RSC_ISA_CRC32_CODE		"        CRC32 [%c]"
-#define RSC_ISA_DP_CODE			"           DP [%c]"
+#define RSC_ISA_DP_CODE 		"           DP [%c]"
+#define RSC_ISA_FCMA_CODE		"         FCMA [%c]"
+#define RSC_ISA_FHM_CODE		"          FHM [%c]"
 #define RSC_ISA_FP_CODE 		"           FP [%c]"
+#define RSC_ISA_LRCPC_CODE 		"        LRCPC [%c]"
 #define RSC_ISA_RAND_CODE		"         RAND [%c]"
 #define RSC_ISA_RDMA_CODE		"         RDMA [%c]"
 #define RSC_ISA_SHA1_CODE		"         SHA1 [%c]"
@@ -1943,3 +1956,4 @@
 #define RSC_ISA_SM4_CODE		"          SM4 [%c]"
 #define RSC_ISA_SME_CODE		"          SME [%c]"
 #define RSC_ISA_SVE_CODE		"          SVE [%c]"
+#define RSC_ISA_TS_CODE 		"           TS [%c]"

@@ -471,6 +471,15 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RDMA);
 					json_end_object(&s);
 				}
+				json_key(&s, "ISAR1");
+				{
+					json_start_object(&s);
+					json_key(&s, "FCMA");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FCMA);
+					json_key(&s, "LRCPC");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.LRCPC);
+					json_end_object(&s);
+				}
 				json_key(&s, "MMFR1");
 				{
 					json_start_object(&s);

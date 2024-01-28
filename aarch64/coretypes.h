@@ -796,7 +796,8 @@ typedef struct	/* BSP features.					*/
 		FHM		: 20-19,
 		TS		: 21-20,
 		TLB		: 22-21,
-		_Unused1_	: 24-22,
+		FCMA		: 23-22,
+		LRCPC		: 24-23,
 		HTT		: 25-24,
 		TSC		: 26-25,
 		MONITOR 	: 27-26,
@@ -898,7 +899,7 @@ typedef struct	/* BSP features.					*/
 			MTE		: 12-11,
 			NMI		: 13-12,
 			EBEP		: 14-13,
-			_Unused2_	: 64-14;
+			_Unused1_	: 64-14;
 
 		Bit64	InvariantTSC	:  8-0,
 			HyperThreading	:  9-8,
@@ -915,7 +916,7 @@ typedef struct	/* BSP features.					*/
 			HWP_Enable	: 23-22,
 			Other_Capable	: 24-23,
 			SpecTurboRatio	: 32-24,
-			_Unused3_	: 40-32,
+			_Unused2_	: 40-32,
 			ACPI_PCT_CAP	: 41-40,
 			ACPI_PCT	: 42-41,
 			ACPI_PSS_CAP	: 43-42,
@@ -927,7 +928,7 @@ typedef struct	/* BSP features.					*/
 			OSPM_EPP	: 55-54,
 			ACPI_CST_CAP	: 56-55,
 			ACPI_CST	: 60-56, /* 15 CState sub-packages */
-			_Unused4_	: 64-60;
+			_Unused3_	: 64-60;
 	};
 } FEATURES;
 

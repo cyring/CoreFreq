@@ -466,8 +466,11 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_ISA_AES_COMM_CODE_FR	RSC_ISA_AES_COMM_CODE_EN
 #define RSC_ISA_CAS_COMM_CODE_FR	RSC_ISA_CAS_COMM_CODE_EN
 #define RSC_ISA_CRC32_COMM_CODE_FR	RSC_ISA_CRC32_COMM_CODE_EN
-#define RSC_ISA_FP_COMM_CODE_FR 	RSC_ISA_FP_COMM_CODE_EN
 #define RSC_ISA_DP_COMM_CODE_FR 	RSC_ISA_DP_COMM_CODE_EN
+#define RSC_ISA_FCMA_COMM_CODE_FR	RSC_ISA_FCMA_COMM_CODE_EN
+#define RSC_ISA_FHM_COMM_CODE_FR	RSC_ISA_FHM_COMM_CODE_EN
+#define RSC_ISA_FP_COMM_CODE_FR 	RSC_ISA_FP_COMM_CODE_EN
+#define RSC_ISA_LRCPC_COMM_CODE_FR	RSC_ISA_LRCPC_COMM_CODE_EN
 #define RSC_ISA_RAND_COMM_CODE_FR	RSC_ISA_RAND_COMM_CODE_EN
 #define RSC_ISA_RDMA_COMM_CODE_FR	RSC_ISA_RDMA_COMM_CODE_EN
 #define RSC_ISA_SHA_COMM_CODE_FR	RSC_ISA_SHA_COMM_CODE_EN
@@ -475,6 +478,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_ISA_SIMD_COMM_CODE_FR	RSC_ISA_SIMD_COMM_CODE_EN
 #define RSC_ISA_SME_COMM_CODE_FR	RSC_ISA_SME_COMM_CODE_EN
 #define RSC_ISA_SVE_COMM_CODE_FR	RSC_ISA_SVE_COMM_CODE_EN
+#define RSC_ISA_TS_COMM_CODE_FR 	RSC_ISA_TS_COMM_CODE_EN
 
 #define RSC_FEATURES_TITLE_CODE_FR	" Caract""\xa9""ristiques "
 #define RSC_ON_CODE_FR			" ON"
@@ -498,18 +502,14 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_GIC_CODE_FR	\
 		"Contr""\xb4""leur d'interruption g""\xa9""n""\xa9""rique"
 
-#define RSC_FEATURES_MTE_CODE_FR	\
-		"Extension de marquage de m""\xa9""moire"
-
+#define RSC_FEATURES_MTE_CODE_FR       "Extension de marquage de m""\xa9""moire"
 #define RSC_FEATURES_NMI_CODE_FR	"Interruption non masquable"
 #define RSC_FEATURES_PAN_CODE_FR	"Aucun privil""\xa8""ge d'acc""\xa8""s"
+#define RSC_FEATURES_TLB_CODE_FR	"Instructions de gestion TLB"
+#define RSC_FEATURES_TME_CODE_FR  "Extension de m""\xa9""moire transactionnelle"
 #define RSC_FEATURES_TSC_CODE_FR	"Compteur d'horodatage"
-#define RSC_FEATURES_UAO_CODE_FR	\
-				"Surcharge de l'acc""\xa8""s utilisateur"
-
-#define RSC_FEATURES_VHE_CODE_FR	\
-				"Extensions d'H""\xb4""te de Virtualisation"
-
+#define RSC_FEATURES_UAO_CODE_FR       "Surcharge de l'acc""\xa8""s utilisateur"
+#define RSC_FEATURES_VHE_CODE_FR    "Extensions d'H""\xb4""te de Virtualisation"
 #define RSC_FEAT_SECTION_MECH_CODE_FR	"M""\xa9""canismes d'att""\xa9""nuation"
 #define RSC_FEAT_SECTION_SEC_CODE_FR	"Fonctions de s""\xa9""curit""\xa9"
 
