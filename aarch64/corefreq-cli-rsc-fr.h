@@ -504,6 +504,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 	"Profilage d'""\xa9""v""\xa9""nements en fonction des exceptions"
 
 #define RSC_FEATURES_DIT_CODE_FR	RSC_FEATURES_DIT_CODE_EN
+#define RSC_FEATURES_GCS_CODE_FR	RSC_FEATURES_GCS_CODE_EN
 #define RSC_FEATURES_GIC_CODE_FR	\
 		"Contr""\xb4""leur d'interruption g""\xa9""n""\xa9""rique"
 

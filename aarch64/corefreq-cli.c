@@ -1600,14 +1600,6 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
-		RO(Shm)->Proc.Features.BTI == 1,
-		attr_Feat,
-		2, "%s%.*sBTI   [%7s]", RSC(FEATURES_BTI).CODE(),
-		width - 18 - RSZ(FEATURES_BTI),
-		NULL
-	},
-	{
-		NULL,
 		RO(Shm)->Proc.Features.EBEP == 1,
 		attr_Feat,
 		2, "%s%.*sEBEP   [%7s]", RSC(FEATURES_EBEP).CODE(),
@@ -1709,7 +1701,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
-		RO(Shm)->Proc.Features.UAO,
+		RO(Shm)->Proc.Features.UAO == 1,
 		attr_Feat,
 		2, "%s%.*sUAO [%9s]", RSC(FEATURES_UAO).CODE(),
 		width - 18 - RSZ(FEATURES_UAO),
@@ -1789,6 +1781,22 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		attr_Feat,
 		0, "%s", RSC(FEAT_SECTION_SEC).CODE(),
 		0,
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Features.BTI == 1,
+		attr_Feat,
+		2, "%s%.*sBTI   [%7s]", RSC(FEATURES_BTI).CODE(),
+		width - 18 - RSZ(FEATURES_BTI),
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Features.GCS == 1,
+		attr_Feat,
+		2, "%s%.*sGCS   [%7s]", RSC(FEATURES_GCS).CODE(),
+		width - 18 - RSZ(FEATURES_GCS),
 		NULL
 	},
 	{

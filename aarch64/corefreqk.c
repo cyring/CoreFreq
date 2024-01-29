@@ -989,6 +989,15 @@ static void Query_Features(void *pArg)
 		iArg->Features->NMI = 0;
 		break;
 	}
+	switch (pfr1.GCS) {
+	case 0b0001:
+		iArg->Features->GCS = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->GCS = 0;
+		break;
+	}
 
     if (Experimental && (iArg->HypervisorID == HYPERV_NONE)) {
 	/* Query the Cluster Configuration				*/

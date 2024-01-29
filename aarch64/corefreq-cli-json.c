@@ -526,6 +526,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_start_object(&s);
 					json_key(&s, "BTI");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.BTI);
+					json_key(&s, "GCS");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.GCS);
 					json_key(&s, "MTE");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MTE);
 					json_key(&s, "NMI");
