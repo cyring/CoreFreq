@@ -806,7 +806,7 @@ typedef struct	/* BSP features.					*/
 			PAN		:  9-8,
 			UAO		: 10-9,
 			DIT		: 11-10,
-			_Unused0_	: 12-11,
+			BTI		: 12-11,
 			NMI		: 13-12,
 			EBEP		: 14-13,
 			RAS		: 15-14,

@@ -930,6 +930,16 @@ static void Query_Features(void *pArg)
 		break;
 	}
 
+	switch (pfr1.BT) {
+	case 0b0001:
+		iArg->Features->BTI = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->BTI = 0;
+		break;
+	}
+
 	iArg->Features->SSBS = pfr1.SSBS;
 
 	switch (pfr1.MTE) {

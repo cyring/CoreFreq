@@ -1600,6 +1600,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
+		RO(Shm)->Proc.Features.BTI == 1,
+		attr_Feat,
+		2, "%s%.*sBTI   [%7s]", RSC(FEATURES_BTI).CODE(),
+		width - 18 - RSZ(FEATURES_BTI),
+		NULL
+	},
+	{
+		NULL,
 		RO(Shm)->Proc.Features.EBEP == 1,
 		attr_Feat,
 		2, "%s%.*sEBEP   [%7s]", RSC(FEATURES_EBEP).CODE(),
