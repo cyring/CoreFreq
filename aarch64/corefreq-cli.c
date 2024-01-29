@@ -1807,6 +1807,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		width - 18 - RSZ(FEATURES_RME),
 		NULL
 	},
+	{
+		NULL,
+		RO(Shm)->Proc.Features.THE == 1,
+		attr_Feat,
+		2, "%s%.*sTHE   [%7s]", RSC(FEATURES_THE).CODE(),
+		width - 18 - RSZ(FEATURES_THE),
+		NULL
+	},
     };
 	size_t idx;
     for (idx = 0; idx < sizeof(FEAT) / sizeof(struct FEAT_ST); idx++)

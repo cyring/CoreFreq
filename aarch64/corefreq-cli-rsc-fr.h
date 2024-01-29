@@ -518,6 +518,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 		"Fiabilit""\xa9"" Disponibilit""\xa9"" et Durabilit""\xa9"
 
 #define RSC_FEATURES_RME_CODE_FR	RSC_FEATURES_RME_CODE_EN
+#define RSC_FEATURES_THE_CODE_FR	RSC_FEATURES_THE_CODE_EN
 #define RSC_FEATURES_TLB_CODE_FR	"Instructions de gestion TLB"
 #define RSC_FEATURES_TME_CODE_FR  "Extension de m""\xa9""moire transactionnelle"
 #define RSC_FEATURES_TSC_CODE_FR	"Compteur d'horodatage"

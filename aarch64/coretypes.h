@@ -818,7 +818,8 @@ typedef struct	/* BSP features.					*/
 			RME		: 21-20,
 			MTE		: 23-21,
 			GCS		: 24-23,
-			_Unused2_	: 64-24;
+			THE		: 25-24,
+			_Unused2_	: 64-25;
 
 		Bit64	InvariantTSC	:  8-0,
 			HyperThreading	:  9-8,

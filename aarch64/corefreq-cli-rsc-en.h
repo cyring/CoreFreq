@@ -817,7 +817,7 @@
 #define RSC_FEATURES_PAN_CODE_EN	"Privileged Access Never"
 #define RSC_FEATURES_RAS_CODE_EN     "Reliability Availability & Serviceability"
 #define RSC_FEATURES_RME_CODE_EN	"Realm Management Extension"
-
+#define RSC_FEATURES_THE_CODE_EN	"Translation Hardening Extension"
 #define RSC_FEATURES_TLB_CODE_EN	"TLB maintenance instructions"
 #define RSC_FEATURES_TME_CODE_EN	"Transactional Memory Extension"
 #define RSC_FEATURES_TSC_CODE_EN	"Time Stamp Counter"

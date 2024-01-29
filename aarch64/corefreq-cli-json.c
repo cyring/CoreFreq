@@ -538,6 +538,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RAS_frac);
 					json_key(&s, "MPAM_frac");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MPAM_frac);
+					json_key(&s, "THE");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.THE);
 					json_end_object(&s);
 				}
 				json_key(&s, "MISC");
