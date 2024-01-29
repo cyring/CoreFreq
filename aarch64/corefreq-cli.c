@@ -1637,10 +1637,13 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
-		RO(Shm)->Proc.Features.MTE == 1,
+		RO(Shm)->Proc.Features.MTE > 0,
 		attr_Feat,
-		2, "%s%.*sMTE   [%7s]", RSC(FEATURES_MTE).CODE(),
-		width - 18 - RSZ(FEATURES_MTE),
+		2, RO(Shm)->Proc.Features.MTE == 3 ?
+			"%s v3%.*sMTE   [%7s]"
+		: RO(Shm)->Proc.Features.MTE == 2 ?
+			"%s v2%.*sMTE   [%7s]" : "%s   %.*sMTE   [%7s]",
+		RSC(FEATURES_MTE).CODE(), width - 21 - RSZ(FEATURES_MTE),
 		NULL
 	},
 	{

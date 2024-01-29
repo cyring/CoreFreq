@@ -933,10 +933,24 @@ static void Query_Features(void *pArg)
 	iArg->Features->SSBS = pfr1.SSBS;
 
 	switch (pfr1.MTE) {
-	case 0b0001:
 	case 0b0010:
-	case 0b0011:
+		switch (pfr1.MTE_frac) {
+		case 0b0000:
+			iArg->Features->MTE = 3;
+			break;
+		case 0b1111:
+			iArg->Features->MTE = 2;
+			break;
+		default:
+			iArg->Features->MTE = 1;
+			break;
+		}
+		break;
+	case 0b0001:
 		iArg->Features->MTE = 1;
+		break;
+	case 0b0011:
+		iArg->Features->MTE = 3;
 		break;
 	case 0b0000:
 	default:

@@ -806,7 +806,7 @@ typedef struct	/* BSP features.					*/
 			PAN		:  9-8,
 			UAO		: 10-9,
 			DIT		: 11-10,
-			MTE		: 12-11,
+			_Unused0_	: 12-11,
 			NMI		: 13-12,
 			EBEP		: 14-13,
 			RAS		: 15-14,
@@ -816,7 +816,8 @@ typedef struct	/* BSP features.					*/
 			AMU_vers	: 19-18,
 			AMU_frac	: 20-19,
 			RME		: 21-20,
-			_Unused2_	: 64-21;
+			MTE		: 23-21,
+			_Unused2_	: 64-23;
 
 		Bit64	InvariantTSC	:  8-0,
 			HyperThreading	:  9-8,
