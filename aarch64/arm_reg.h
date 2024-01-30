@@ -8,6 +8,8 @@
 #define ID_AA64ISAR2_EL1	sys_reg(0b11, 0b000, 0b0000, 0b0110, 0b010)
 #define ID_AA64MMFR2_EL1	sys_reg(0b11, 0b000, 0b0000, 0b0111, 0b010)
 #define ID_AA64MMFR3_EL1	sys_reg(0b11, 0b000, 0b0000, 0b0111, 0b011)
+#define ID_AA64SMFR0_EL1	sys_reg(0b11, 0b000, 0b0000, 0b0100, 0b101)
+#define ID_AA64ZFR0_EL1 	sys_reg(0b11, 0b000, 0b0000, 0b0100, 0b100)
 #define SCTLR2_EL1		sys_reg(0b11, 0b000, 0b0001, 0b0000, 0b011)
 #define MRS_SSBS2		sys_reg(0b11, 0b011, 0b0100, 0b0010, 0b110)
 #define MRS_PAN 		sys_reg(0b11, 0b000, 0b0100, 0b0010, 0b011)
@@ -617,10 +619,41 @@ typedef union
 	struct
 	{
 		unsigned long long
+		RES0		: 28-0,
+		SF8DP2		: 29-28,
+		SF8DP4		: 30-29,
+		SF8FMA		: 31-30,
+		RES1		: 32-31,
+		F32F32		: 33-32,
+		BI32I32 	: 34-33,
+		B16F32		: 35-34,
+		F16F32		: 36-35,
+		I8I32		: 40-36,
+		F8F32		: 41-40,
+		F8F16		: 42-41,
+		F16F16		: 43-42,
+		B16B16		: 44-43,
+		I16I32		: 48-44,
+		F64F64		: 49-48,
+		RES2		: 52-49,
+		I16I64		: 56-52,
+		SMEver		: 60-56,
+		LUTv2		: 61-60,
+		RES3		: 63-61,
+		FA64		: 64-63;
+	};
+} AA64SMFR0;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
 		SVE_Ver 	:  4-0,
 		SVE_AES 	:  8-4,
 		RES0		: 16-8,
-		BitPermute	: 20-16,
+		BitPerm 	: 20-16,
 		SVE_BF16	: 24-20,
 		B16B16		: 28-24,
 		RES1		: 32-28,

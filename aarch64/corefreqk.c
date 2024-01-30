@@ -540,7 +540,6 @@ static void Query_Features(void *pArg)
 	volatile AA64MMFR2 mmfr2;
 	volatile AA64PFR0 pfr0;
 	volatile AA64PFR1 pfr1;
-	volatile CLUSTERCFR clustercfg;
 
 	iArg->Features->Info.Vendor.CRC = CRC_RESERVED;
 	iArg->SMT_Count = 1;
@@ -785,6 +784,26 @@ static void Query_Features(void *pArg)
 		iArg->Features->LRCPC = 0;
 		break;
 	}
+	switch (isar1.JSCVT) {
+	case 0b0001:
+		iArg->Features->JSCVT = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->JSCVT = 0;
+		break;
+	}
+	switch (isar1.LS64) {
+	case 0b0001:
+	case 0b0010:
+	case 0b0011:
+		iArg->Features->LS64 = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->LS64 = 0;
+		break;
+	}
 	switch (mmfr1.VH) {
 	case 0b0001:
 		iArg->Features->VHE = 1;
@@ -1007,10 +1026,165 @@ static void Query_Features(void *pArg)
 		iArg->Features->THE = 0;
 		break;
 	}
+    if (iArg->Features->SVE | iArg->Features->SME)
+    {
+	volatile AA64ZFR0 zfr0 = {.value = read_sysreg_s(ID_AA64ZFR0_EL1)};
 
+	switch (zfr0.SVE_F64MM) {
+	case 0b0001:
+		iArg->Features->SVE_F64MM = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SVE_F64MM = 0;
+		break;
+	}
+	switch (zfr0.SVE_F32MM) {
+	case 0b0001:
+		iArg->Features->SVE_F32MM = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SVE_F32MM = 0;
+		break;
+	}
+	switch (zfr0.SVE_I8MM) {
+	case 0b0001:
+		iArg->Features->SVE_I8MM = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SVE_I8MM = 0;
+		break;
+	}
+	switch (zfr0.SVE_SM4) {
+	case 0b0001:
+		iArg->Features->SVE_SM4 = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SVE_SM4 = 0;
+		break;
+	}
+	switch (zfr0.SVE_SHA3) {
+	case 0b0001:
+		iArg->Features->SVE_SHA3 = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SVE_SHA3 = 0;
+		break;
+	}
+	switch (zfr0.SVE_BF16) {
+	case 0b0010:
+		iArg->Features->SVE_EBF16 = 1;
+		fallthrough;
+	case 0b0001:
+		iArg->Features->SVE_BF16 = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SVE_EBF16 = \
+		iArg->Features->SVE_BF16 = 0;
+		break;
+	}
+	switch (zfr0.BitPerm) {
+	case 0b0001:
+		iArg->Features->SVE_BitPerm = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SVE_BitPerm = 0;
+		break;
+	}
+	switch (zfr0.SVE_AES) {
+	case 0b0010:
+		iArg->Features->SVE_PMULL128 = 1;
+		fallthrough;
+	case 0b0001:
+		iArg->Features->SVE_AES = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SVE_PMULL128 = \
+		iArg->Features->SVE_AES = 0;
+	}
+	switch (zfr0.SVE_Ver) {
+	case 0b0001:
+		iArg->Features->SVE2 = 1;
+		break;
+	default:
+		iArg->Features->SVE2 = 0;
+		break;
+	}
+    }
+    if (iArg->Features->SME) {
+	volatile AA64SMFR0 smfr0 = {.value = read_sysreg_s(ID_AA64SMFR0_EL1)};
+
+	switch (smfr0.SMEver) {
+	case 0b0010:
+		iArg->Features->SME2p1 = 1;
+		fallthrough;
+	case 0b0001:
+		iArg->Features->SME2 = 1;
+		break;
+	default:
+		iArg->Features->SME2p1 = \
+		iArg->Features->SME2 = 0;
+		break;
+	}
+
+	iArg->Features->SME_FA64 = smfr0.FA64;
+	iArg->Features->SME_LUTv2 = smfr0.LUTv2;
+
+	switch (smfr0.I16I64) {
+	case 0b1111:
+		iArg->Features->SME_I16I64 = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SME_I16I64 = 0;
+		break;
+	}
+
+	iArg->Features->SME_F64F64 = smfr0.F64F64;
+
+	switch (smfr0.I16I32) {
+	case 0b0101:
+		iArg->Features->SME_I16I32 = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SME_I16I32 = 0;
+		break;
+	}
+
+	iArg->Features->SME_B16B16 = smfr0.B16B16;
+	iArg->Features->SME_F16F16 = smfr0.F16F16;
+	iArg->Features->SME_F8F16 = smfr0.F8F16;
+	iArg->Features->SME_F8F32 = smfr0.F8F32;
+
+	switch (smfr0.I8I32) {
+	case 0b1111:
+		iArg->Features->SME_I8I32 = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SME_I8I32 = 0;
+		break;
+	}
+
+	iArg->Features->SME_F16F32 = smfr0.F16F32;
+	iArg->Features->SME_B16F32 = smfr0.B16F32;
+	iArg->Features->SME_BI32I32 = smfr0.BI32I32;
+	iArg->Features->SME_F32F32 = smfr0.F32F32;
+	iArg->Features->SME_SF8FMA = smfr0.SF8FMA;
+	iArg->Features->SME_SF8DP4 = smfr0.SF8DP4;
+	iArg->Features->SME_SF8DP2 = smfr0.SF8DP2;
+    }
     if (Experimental && (iArg->HypervisorID == HYPERV_NONE)) {
 	/* Query the Cluster Configuration				*/
-	clustercfg.value = read_sysreg_s(CLUSTERCFR_EL1);
+	volatile CLUSTERCFR clustercfg = {.value=read_sysreg_s(CLUSTERCFR_EL1)};
 	if (clustercfg.NUMCORE) {
 		iArg->SMT_Count = iArg->SMT_Count + clustercfg.NUMCORE;
 	}

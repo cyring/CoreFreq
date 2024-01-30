@@ -478,6 +478,10 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FCMA);
 					json_key(&s, "LRCPC");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.LRCPC);
+					json_key(&s, "JSCVT");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.JSCVT);
+					json_key(&s, "LS64");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.LS64);
 					json_end_object(&s);
 				}
 				json_key(&s, "MMFR1");
@@ -540,6 +544,76 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MPAM_frac);
 					json_key(&s, "THE");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.THE);
+					json_end_object(&s);
+				}
+				json_key(&s, "ZFR0");
+				{
+					json_start_object(&s);
+					json_key(&s, "SVE_F64MM");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SVE_F64MM);
+					json_key(&s, "SVE_F32MM");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SVE_F32MM);
+					json_key(&s, "SVE_I8MM");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SVE_I8MM);
+					json_key(&s, "SVE_SM4");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SVE_SM4);
+					json_key(&s, "SVE_SHA3");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SVE_SHA3);
+					json_key(&s, "SVE_BF16");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SVE_BF16);
+					json_key(&s, "SVE_EBF16");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SVE_EBF16);
+					json_key(&s, "SVE_BitPerm");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SVE_BitPerm);
+					json_key(&s, "SVE_AES");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SVE_AES);
+					json_key(&s, "SVE_PMULL128");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SVE_PMULL128);
+					json_key(&s, "SVE2");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SVE2);
+					json_end_object(&s);
+				}
+				json_key(&s, "SMFR0");
+				{
+					json_start_object(&s);
+					json_key(&s, "SME_FA64");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME_FA64);
+					json_key(&s, "SME_LUTv2");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME_LUTv2);
+					json_key(&s, "SME2");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME2);
+					json_key(&s, "SME2p1");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME2p1);
+					json_key(&s, "SME_I16I64");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME_I16I64);
+					json_key(&s, "SME_F64F64");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME_F64F64);
+					json_key(&s, "SME_I16I32");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME_I16I32);
+					json_key(&s, "SME_B16B16");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME_B16B16);
+					json_key(&s, "SME_F16F16");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME_F16F16);
+					json_key(&s, "SME_F8F16");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME_F8F16);
+					json_key(&s, "SME_F8F32");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME_F8F32);
+					json_key(&s, "SME_I8I32");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME_I8I32);
+					json_key(&s, "SME_F16F32");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME_F16F32);
+					json_key(&s, "SME_B16F32");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME_B16F32);
+					json_key(&s, "SME_BI32I32");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME_BI32I32);
+					json_key(&s, "SME_F32F32");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME_F32F32);
+					json_key(&s, "SME_SF8FMA");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME_SF8FMA);
+					json_key(&s, "SME_SF8DP4");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME_SF8DP4);
+					json_key(&s, "SME_SF8DP2");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME_SF8DP2);
 					json_end_object(&s);
 				}
 				json_key(&s, "MISC");
