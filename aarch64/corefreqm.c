@@ -35,28 +35,6 @@
 		pSlice->Delta.INST -= overhead;				\
 })
 
-void CallWith_RDTSCP_RDPMC(	RO(SHM_STRUCT) *RO(Shm),
-				RW(SHM_STRUCT) *RW(Shm),
-				unsigned int cpu,
-				SLICE_FUNC SliceFunc,
-				unsigned long arg )
-{
-	struct SLICE_STRUCT *pSlice = &RO(Shm)->Cpu[cpu].Slice;
-
-	RDTSCP_PMCx1(pSlice->Counter[0].TSC,0x40000000,pSlice->Counter[0].INST);
-
-	RDTSCP_PMCx1(pSlice->Counter[1].TSC,0x40000000,pSlice->Counter[1].INST);
-
-	SliceFunc(RO(Shm), RW(Shm), cpu, arg);
-
-	RDTSCP_PMCx1(pSlice->Counter[2].TSC,0x40000000,pSlice->Counter[2].INST);
-
-	if (BITVAL(RW(Shm)->Proc.Sync, BURN)) {
-		DeltaTSC(pSlice);
-		DeltaINST(pSlice);
-	}
-}
-
 void CallWith_RDTSC_RDPMC(	RO(SHM_STRUCT) *RO(Shm),
 				RW(SHM_STRUCT) *RW(Shm),
 				unsigned int cpu,
@@ -76,28 +54,6 @@ void CallWith_RDTSC_RDPMC(	RO(SHM_STRUCT) *RO(Shm),
 	if (BITVAL(RW(Shm)->Proc.Sync, BURN)) {
 		DeltaTSC(pSlice);
 		DeltaINST(pSlice);
-	}
-}
-
-void CallWith_RDTSCP_No_RDPMC(	RO(SHM_STRUCT) *RO(Shm),
-				RW(SHM_STRUCT) *RW(Shm),
-				unsigned int cpu,
-				SLICE_FUNC SliceFunc,
-				unsigned long arg )
-{
-	struct SLICE_STRUCT *pSlice = &RO(Shm)->Cpu[cpu].Slice;
-
-	RDTSCP64(pSlice->Counter[0].TSC);
-
-	RDTSCP64(pSlice->Counter[1].TSC);
-
-	SliceFunc(RO(Shm), RW(Shm), cpu, arg);
-
-	RDTSCP64(pSlice->Counter[2].TSC);
-
-	if (BITVAL(RW(Shm)->Proc.Sync, BURN)) {
-		DeltaTSC(pSlice);
-		pSlice->Delta.INST = 0;
 	}
 }
 

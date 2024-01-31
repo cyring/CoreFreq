@@ -291,6 +291,7 @@ static void *Core_Cycle(void *arg)
 	CFlip->Delta.TSC	= RO(Core)->Delta.TSC;
 	CFlip->Delta.C1 	= RO(Core)->Delta.C1;
 
+	double FRQ = CFlip->Delta.TSC * PRECISION; /*	TODO(SourceMe)	*/
 	/* Update all clock ratios.					*/
 	memcpy(Cpu->Boost, RO(Core)->Boost, (BOOST(SIZE))*sizeof(unsigned int));
 
@@ -298,8 +299,7 @@ static void *Core_Cycle(void *arg)
 	CFlip->Absolute.Ratio.Perf +=(double)RO(Core)->Ratio.COF.R /UNIT_KHz(1);
 
 	/* Compute IPS=Instructions per TSC				*/
-	CFlip->State.IPS = (double)CFlip->Delta.INST
-			 / (double)CFlip->Delta.TSC;
+	CFlip->State.IPS = (double)CFlip->Delta.INST / FRQ;
 
 	/* Compute IPC=Instructions per non-halted reference cycle.
 	   ( Protect against a division by zero )			*/
@@ -318,12 +318,10 @@ static void *Core_Cycle(void *arg)
 		CFlip->State.CPI = 0.0f;
 	}
 	/* Compute the Turbo State.					*/
-	CFlip->State.Turbo	= (double)CFlip->Delta.C0.UCC
-				/ (double)CFlip->Delta.TSC;
+	CFlip->State.Turbo = (double)CFlip->Delta.C0.UCC / FRQ;
 
 	/* Compute the C-States.					*/
-	CFlip->State.C0 = (double)CFlip->Delta.C0.URC
-			/ (double)CFlip->Delta.TSC;
+	CFlip->State.C0 = (double)CFlip->Delta.C0.URC / FRQ;
 
 	CFlip->State.C3 = (double)CFlip->Delta.C3
 			/ (double)CFlip->Delta.TSC;
@@ -340,7 +338,7 @@ static void *Core_Cycle(void *arg)
 	/* Relative Frequency = Relative Ratio x Bus Clock Frequency	*/
 	CFlip->Relative.Ratio	= (double)(CFlip->Delta.C0.URC
 					* Cpu->Boost[BOOST(MAX)])
-				/ (double)CFlip->Delta.TSC;
+				/ FRQ;
 
 	CFlip->Relative.Freq	= REL_FREQ_MHz( double,
 						CFlip->Relative.Ratio,
@@ -475,15 +473,12 @@ static void *Child_Thread(void *arg)
 	RW(SHM_STRUCT) *RW(Shm) = Arg->Ref->RW(Shm);
 	CPU_STRUCT *Cpu = &RO(Shm)->Cpu[cpu];
 
-	CALL_FUNC MatrixCallFunc[2][2] = {
-		{ CallWith_RDTSC_No_RDPMC,  CallWith_RDTSC_RDPMC  },
-		{ CallWith_RDTSCP_No_RDPMC, CallWith_RDTSCP_RDPMC }
+	CALL_FUNC MatrixCallFunc[2] = {
+		CallWith_RDTSC_No_RDPMC,  CallWith_RDTSC_RDPMC
 	};
-	const int withTSCP = ((RO(Shm)->Proc.Features.Inv_TSC == 1)
-			   || (RO(Shm)->Proc.Features.RDTSCP == 1)),
-		withRDPMC = ((RO(Shm)->Proc.PM_version >= 1));
+	const int withRDPMC = ((RO(Shm)->Proc.PM_version >= 1));
 
-	CALL_FUNC CallSliceFunc = MatrixCallFunc[withTSCP][withRDPMC];
+	CALL_FUNC CallSliceFunc = MatrixCallFunc[withRDPMC];
 
 	pthread_t tid = pthread_self();
 	cpu_set_t cpuset;

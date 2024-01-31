@@ -350,17 +350,7 @@ unsigned int FixMissingRatioAndFrequency(unsigned int r32, CLOCK *pClock)
 	return (unsigned int) r64;
 }
 
-static unsigned long long
-CoreFreqK_Read_CS_From_Invariant_TSC(struct clocksource *cs)
-{
-	unsigned long long TSC __attribute__ ((aligned (8)));
-	UNUSED(cs);
-	RDTSCP64(TSC);
-	return TSC;
-}
-
-static unsigned long long
-CoreFreqK_Read_CS_From_Variant_TSC(struct clocksource *cs)
+static unsigned long long CoreFreqK_Read_CS_From_TSC(struct clocksource *cs)
 {
 	unsigned long long TSC __attribute__ ((aligned (8)));
 	UNUSED(cs);
@@ -403,15 +393,7 @@ static long CoreFreqK_Register_ClockSource(unsigned int cpu)
 	unsigned long long Freq_Hz;
 	unsigned int Freq_KHz;
 
-	if ((PUBLIC(RO(Proc))->Features.Inv_TSC == 1)
-	||  (PUBLIC(RO(Proc))->Features.RDTSCP == 1))
-	{
-		CoreFreqK_CS.read = CoreFreqK_Read_CS_From_Invariant_TSC;
-	}
-	else
-	{
-		CoreFreqK_CS.read = CoreFreqK_Read_CS_From_Variant_TSC;
-	}
+	CoreFreqK_CS.read = CoreFreqK_Read_CS_From_TSC;
 
 	Freq_Hz = PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)]
 		* PUBLIC(RO(Core, AT(cpu)))->Clock.Hz;
@@ -1279,24 +1261,7 @@ void Compute_Interval(void)
 
 #endif
 
-static void ComputeWithSerializedTSC(COMPUTE_ARG *pCompute)
-{
-	unsigned int loop;
-	/*		Writeback and Invalidate Caches.		*/
-	WBINVD();
-	/*		Warm-up & Overhead				*/
-	for (loop = 0; loop < OCCURRENCES; loop++)
-	{
-		CLOCK_OVERHEAD(TSCP, pCompute->TSC[0][loop].V);
-	}
-	/*		Estimation					*/
-	for (loop = 0; loop < OCCURRENCES; loop++)
-	{
-		CLOCK_DELAY(1000LLU, TSCP, pCompute->TSC[1][loop].V);
-	}
-}
-
-static void ComputeWithUnSerializedTSC(COMPUTE_ARG *pCompute)
+static void Measure_TSC(COMPUTE_ARG *pCompute)
 {
 	unsigned int loop;
 	/*		Writeback and Invalidate Caches.		*/
@@ -1323,14 +1288,8 @@ static void Compute_TSC(void *arg)
 	TSC[0] stores the overhead
 	TSC[1] stores the estimation
 */
-	/*	Is the TSC invariant or can serialize  ?		*/
-	if ((PUBLIC(RO(Proc))->Features.Inv_TSC == 1)
-	||  (PUBLIC(RO(Proc))->Features.RDTSCP == 1))
-	{
-		ComputeWithSerializedTSC(pCompute);
-	} else {
-		ComputeWithUnSerializedTSC(pCompute);
-	}
+	Measure_TSC(pCompute);
+
 	/*		Select the best clock.				*/
 	for (loop = 0; loop < OCCURRENCES; loop++) {
 		for (what = 0; what < 2; what++) {
@@ -2421,24 +2380,20 @@ void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 
 #define Counters_Generic(Core, T)					\
 ({									\
-	volatile unsigned long long UCC, URC;				\
 	RDTSC_COUNTERx3(Core->Counter[T].TSC,				\
-			pmevcntr2_el0,	UCC,				\
-			pmccntr_el0,	URC,				\
+			pmevcntr2_el0,	Core->Counter[T].C0.UCC,	\
+			pmccntr_el0,	Core->Counter[T].C0.URC,	\
 			pmevcntr3_el0,	Core->Counter[T].INST );	\
-	/* Normalize Frequencies */					\
-	Core->Counter[T].C0.UCC = KDIV(UCC, PRECISION); 		\
-	Core->Counter[T].C0.URC = KDIV(URC, PRECISION); 		\
-	/* Derive C1: */						\
+	/* Derive C1:						\
 	Core->Counter[T].C1 =						\
 	  (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?		\
 	    Core->Counter[T].TSC - Core->Counter[T].C0.URC		\
-	    : 0;							\
+	    : 0; TODO(FixMe)*/						\
 })
 
 #define Mark_OVH(Core)							\
 ({									\
-	RDTSCP64(Core->Overhead.TSC);					\
+	RDTSC64(Core->Overhead.TSC);					\
 })
 
 #define Core_OVH(Core)							\

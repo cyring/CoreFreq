@@ -94,21 +94,9 @@ __asm__ volatile							\
 	: "cc", "memory"						\
 )
 
-#define RDTSCP64(_mem64)						\
-__asm__ volatile							\
-(									\
-	"mrs	%0	,	cntvct_el0"	"\n\t"			\
-	"isb"								\
-	: "=r" (_mem64) 						\
-	:								\
-	: "cc", "memory"						\
-)
-
 #define ASM_RDTSC(_reg) 						\
 	"# Read variant TSC."			"\n\t"			\
 	"mrs	" #_reg ",	cntvct_el0"	"\n\t"
-
-#define ASM_RDTSCP(_reg)	ASM_RDTSC(_reg)
 
 #define ASM_CODE_RDPMC(_ctr, _reg)					\
 	"# Read PMC counter."			"\n\t"			\
@@ -151,9 +139,6 @@ __asm__ volatile							\
 
 #define RDTSC_PMCx1(mem_tsc, ...)					\
 ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
-
-#define RDTSCP_PMCx1(mem_tsc, ...)					\
-ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #if defined(LEGACY) && LEGACY > 0
 

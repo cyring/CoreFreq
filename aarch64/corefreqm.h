@@ -39,19 +39,7 @@ typedef void (*CALL_FUNC)(	RO(SHM_STRUCT)*,
 				SLICE_FUNC,
 				unsigned long );
 
-void CallWith_RDTSCP_RDPMC(	RO(SHM_STRUCT)*,
-				RW(SHM_STRUCT)*,
-				unsigned int,
-				SLICE_FUNC,
-				unsigned long );
-
 void CallWith_RDTSC_RDPMC(	RO(SHM_STRUCT)*,
-				RW(SHM_STRUCT)*,
-				unsigned int,
-				SLICE_FUNC,
-				unsigned long );
-
-void CallWith_RDTSCP_No_RDPMC(	RO(SHM_STRUCT)*,
 				RW(SHM_STRUCT)*,
 				unsigned int,
 				SLICE_FUNC,
