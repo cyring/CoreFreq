@@ -1935,7 +1935,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		NULL,
 		RO(Shm)->Proc.Features.UAO == 1,
 		attr_Feat,
-		2, "%s%.*sUAO [%9s]", RSC(FEATURES_UAO).CODE(),
+		2, "%s%.*sUAO   [%7s]", RSC(FEATURES_UAO).CODE(),
 		width - 18 - RSZ(FEATURES_UAO),
 		NULL
 	},
