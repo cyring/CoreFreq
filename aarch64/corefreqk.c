@@ -605,12 +605,15 @@ static void Query_Features(void *pArg)
 		break;
 	}
 	switch (isar0.AES) {
-	case 0b0001:
 	case 0b0010:
+		iArg->Features->PMULL = 1;
+		fallthrough;
+	case 0b0001:
 		iArg->Features->AES = 1;
 		break;
 	case 0b0000:
 	default:
+		iArg->Features->PMULL = \
 		iArg->Features->AES = 0;
 		break;
 	}
@@ -655,13 +658,16 @@ static void Query_Features(void *pArg)
 		break;
 	}
 	switch (isar0.CAS) {
-	case 0b0010:
 	case 0b0011:
-		iArg->Features->CAS = 1;
+		iArg->Features->LSE128 = 1;
+		fallthrough;
+	case 0b0010:
+		iArg->Features->LSE = 1;
 		break;
 	case 0b0000:
 	default:
-		iArg->Features->CAS = 0;
+		iArg->Features->LSE128 = \
+		iArg->Features->LSE = 0;
 		break;
 	}
 	switch (isar0.TME) {
@@ -719,13 +725,16 @@ static void Query_Features(void *pArg)
 		break;
 	}
 	switch (isar0.TS) {
-	case 0b0001:
 	case 0b0010:
-		iArg->Features->TS = 1;
+		iArg->Features->FlagM2 = 1;
+		fallthrough;
+	case 0b0001:
+		iArg->Features->FlagM = 1;
 		break;
 	case 0b0000:
 	default:
-		iArg->Features->TS = 0;
+		iArg->Features->FlagM2 = \
+		iArg->Features->FlagM = 0;
 		break;
 	}
 	switch (isar0.TLB) {
@@ -775,15 +784,105 @@ static void Query_Features(void *pArg)
 		iArg->Features->JSCVT = 0;
 		break;
 	}
-	switch (isar1.LS64) {
+	switch (isar1.FRINTTS) {
 	case 0b0001:
+		iArg->Features->FRINTTS = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->FRINTTS = 0;
+		break;
+	}
+	switch (isar1.SPECRES) {
 	case 0b0010:
+		iArg->Features->SPECRES2 = 1;
+		fallthrough;
+	case 0b0001:
+		iArg->Features->SPECRES = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SPECRES2 = \
+		iArg->Features->SPECRES = 0;
+		break;
+	}
+	switch (isar1.BF16) {
+	case 0b0010:
+		iArg->Features->EBF16 = 1;
+		fallthrough;
+	case 0b0001:
+		iArg->Features->BF16 = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->EBF16 = \
+		iArg->Features->BF16 = 0;
+		break;
+	}
+	switch (isar1.I8MM) {
+	case 0b0001:
+		iArg->Features->I8MM = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->I8MM = 0;
+		break;
+	}
+	switch (isar1.SB) {
+	case 0b0001:
+		iArg->Features->SB = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SB = 0;
+		break;
+	}
+	switch (isar1.XS) {
+	case 0b0001:
+		iArg->Features->XS = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->XS = 0;
+		break;
+	}
+	switch (isar1.LS64) {
 	case 0b0011:
+		iArg->Features->LS64_ACCDATA = 1;
+		fallthrough;
+	case 0b0010:
+		iArg->Features->LS64_V = 1;
+		fallthrough;
+	case 0b0001:
 		iArg->Features->LS64 = 1;
 		break;
 	case 0b0000:
 	default:
+		iArg->Features->LS64_ACCDATA = \
+		iArg->Features->LS64_V = \
 		iArg->Features->LS64 = 0;
+		break;
+	}
+	switch (isar1.DGH) {
+	case 0b0001:
+		iArg->Features->DGH = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->DGH = 0;
+		break;
+	}
+	switch (isar1.DPB) {
+	case 0b0010:
+		iArg->Features->DPB2 = 1;
+		fallthrough;
+	case 0b0001:
+		iArg->Features->DPB = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->DPB2 = \
+		iArg->Features->DPB = 0;
 		break;
 	}
 	switch (mmfr1.VH) {
