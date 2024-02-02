@@ -87,8 +87,7 @@ __asm__ volatile							\
 #define RDTSC64(_mem64) 						\
 __asm__ volatile							\
 (									\
-	"mrs	%0	,	cntvct_el0"	"\n\t"			\
-	"isb"								\
+	"mrs	%0	,	cntvct_el0"				\
 	: "=r" (_mem64) 						\
 	:								\
 	: "cc", "memory"						\
@@ -785,14 +784,9 @@ static unsigned long long uBenchCounter[2][4] __attribute__((aligned(8)))=\
 									\
 inline static void UBENCH_RDCOUNTER_VOID(unsigned int idx) {}		\
 									\
-inline static void UBENCH_With_RDTSCP_No_RDPMC(unsigned int idx)	\
-{									\
-	RDTSCP64(uBenchCounter[0][idx]);				\
-}									\
-									\
 inline static void UBENCH_With_RDTSC_No_RDPMC(unsigned int idx) 	\
 {									\
-	RDTSC64(uBenchCounter[0][idx]) ;				\
+	RDTSC64(uBenchCounter[0][idx]) ;	SERIALIZE();		\
 }									\
 									\
 inline static void UBENCH_With_RDTSCP_RDPMC(unsigned int idx)		\

@@ -46,8 +46,7 @@ __asm__ volatile							\
 	_tsc_inst(_reg0)						\
 	"# Store values into memory."		"\n\t"			\
 	"str	" #_reg0 ",	%0"		"\n\t"			\
-	"str	" #_reg1 ",	%1"		"\n\t"			\
-	"isb"								\
+	"str	" #_reg1 ",	%1"					\
 	: "=m" (mem_tsc), "=m" (_mem1)					\
 	:								\
 	: "%" #_reg0"", "%" #_reg1"",					\
@@ -66,8 +65,7 @@ __asm__ volatile							\
 	"# Store values into memory."		"\n\t"			\
 	"str	" #_reg0 ",	%0"		"\n\t"			\
 	"str	" #_reg1 ",	%1"		"\n\t"			\
-	"str	" #_reg2 ",	%2"		"\n\t"			\
-	"isb"								\
+	"str	" #_reg2 ",	%2"					\
 	: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2)			\
 	:								\
 	: "%" #_reg0"", "%" #_reg1"", "%" #_reg2"",			\
@@ -88,8 +86,7 @@ __asm__ volatile							\
 	"str	" #_reg0 ",	%0"		"\n\t"			\
 	"str	" #_reg1 ",	%1"		"\n\t"			\
 	"str	" #_reg2 ",	%2"		"\n\t"			\
-	"str	" #_reg3 ",	%3"		"\n\t"			\
-	"isb"								\
+	"str	" #_reg3 ",	%3"					\
 	: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2), "=m" (_mem3)	\
 	:								\
 	: "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\

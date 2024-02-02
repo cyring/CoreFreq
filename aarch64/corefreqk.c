@@ -355,6 +355,7 @@ static unsigned long long CoreFreqK_Read_CS_From_TSC(struct clocksource *cs)
 	unsigned long long TSC __attribute__ ((aligned (8)));
 	UNUSED(cs);
 	RDTSC64(TSC);
+	SERIALIZE();
 	return TSC;
 }
 
@@ -2571,8 +2572,7 @@ void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 	volatile CNTPCT cntpct; 					\
 	__asm__ volatile						\
 	(								\
-		"mrs	%[cntpct],	cntpct_el0"	"\n\t"		\
-		"isb"							\
+		"mrs	%[cntpct],	cntpct_el0"			\
 		: [cntpct]	"=r" (cntpct) 				\
 		:							\
 		: "cc", "memory"					\
