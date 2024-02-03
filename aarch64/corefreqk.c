@@ -1505,12 +1505,17 @@ static void Map_Generic_Topology(void *arg)
 		:
 		: "memory"
 	);
-	Core->T.MPID = mpid.value & 0xfffff;
-	Core->T.Cluster.CMP = mpid.Aff3;
-	Core->T.PackageID = mpid.Aff2;
-	Core->T.CoreID = mpid.Aff1;
 	if (mpid.MT) {
+		Core->T.MPID = mpid.value & 0xfffff;
+		Core->T.Cluster.CMP = mpid.Aff3;
+		Core->T.PackageID = mpid.Aff2;
+		Core->T.CoreID = mpid.Aff1;
 		Core->T.ThreadID = mpid.Aff0;
+	} else {
+		Core->T.MPID = mpid.value & 0xfffff;
+		Core->T.PackageID = mpid.Aff2;
+		Core->T.Cluster.CMP = mpid.Aff1;
+		Core->T.CoreID = mpid.Aff0;
 	}
 	Cache_Topology(Core);
     }

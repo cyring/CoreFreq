@@ -4417,12 +4417,12 @@ void Instructions(unsigned int iter)
 ASCII* Topology_Std(char *pStr, unsigned int cpu)
 {
     if (RO(Shm)->Cpu[cpu].Topology.BSP) {
-	StrFormat(&pStr[ 0], 4+(2*11)+1, "%03u:BSP%5d\x20",
+	StrFormat(&pStr[ 0], 4+(2*11)+1, "%03u:BSP%5X\x20",
 			cpu,
 			RO(Shm)->Cpu[cpu].Topology.MPID);
 	return RSC(TOPOLOGY_BSP_COMM).CODE();
     } else {
-	StrFormat(&pStr[ 0], 1+(3*11)+1, "%03u:%3d%5d\x20",
+	StrFormat(&pStr[ 0], 1+(3*11)+1, "%03u:%3d%5X\x20",
 			cpu,
 			RO(Shm)->Cpu[cpu].Topology.PackageID,
 			RO(Shm)->Cpu[cpu].Topology.MPID);
