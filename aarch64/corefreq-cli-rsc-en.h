@@ -871,10 +871,8 @@
 #define RSC_PERF_MON_MWAIT_IDX_CSTATE_CODE_EN	"State index"
 #define RSC_PERF_MON_MWAIT_SUB_CSTATE_CODE_EN	"Sub C-State"
 
-#define RSC_PERF_MON_CORE_CYCLE_CODE_EN "Core Cycles"
-#define RSC_PERF_MON_INST_RET_CODE_EN	"Instructions Retired"
-#define RSC_PERF_MON_REF_CYCLE_CODE_EN	"Reference Cycles"
-#define RSC_PERF_MON_REF_LLC_CODE_EN	"Last Level Cache References"
+#define RSC_PERF_MON_CORE_CYCLE_CODE_EN "Core Cycles Counter"
+#define RSC_PERF_MON_INST_RET_CODE_EN	"Instructions Counter"
 
 #define RSC_PERF_MON_PMC_COMM_CODE_EN	\
 		" { Core performance monitoring, LLC cache, Northbridge } "

@@ -583,19 +583,18 @@ static void Query_Features(void *pArg)
 	iArg->Features->PerfMon.MonCtrs = pmcr.NumEvtCtrs;
 	iArg->Features->PerfMon.Version = dfr0.PMUVer;
 
-    if (iArg->Features->PerfMon.Version) {
-	volatile unsigned long long pmcfgr;
-	/*TODO(Memory-mapped PMU register at offset 0xe00)		*/
-	__asm__ __volatile__(
-		"" 	"\n\t"
-		"isb"
-		: [pmcfgr]	"=r" (pmcfgr)
-		:
-		: "memory"
-	);
+	/*TODO(Memory-mapped PMU register at offset 0xe00): pmcfgr	*/
 	iArg->Features->PerfMon.MonWidth = \
 	iArg->Features->PerfMon.FixWidth = 0b111111 == 0b111111 ? 64 : 0;
-    }
+
+	switch (dfr1.PMICNTR) { /* Performance Monitors Instruction Counter */
+	case 0b0001:
+		iArg->Features->PerfMon.FixCtrs++;
+		break;
+	case 0b0000:
+	default:
+		break;
+	}
 	switch (dfr1.EBEP) {
 	case 0b0001:
 		iArg->Features->EBEP = 1;
@@ -1271,15 +1270,9 @@ static void Query_Features(void *pArg)
 		iArg->SMT_Count = iArg->SMT_Count + clustercfg.NUMCORE;
 	}
     }
-	/* Reset the performance features bits (present is zero)	*/
-	iArg->Features->PerfMon.CoreCycles    = 1;
-	iArg->Features->PerfMon.InstrRetired  = 1;
-	iArg->Features->PerfMon.RefCycles     = 1;
-	iArg->Features->PerfMon.LLC_Ref       = 1;
-	iArg->Features->PerfMon.LLC_Misses    = 1;
-	iArg->Features->PerfMon.BranchRetired = 1;
-	iArg->Features->PerfMon.BranchMispred = 1;
-	iArg->Features->PerfMon.TopdownSlots  = 1;
+	/* Reset the performance features bits: present is 0b1		*/
+	iArg->Features->PerfMon.CoreCycles    = 0b0;
+	iArg->Features->PerfMon.InstrRetired  = 0b0;
 }
 
 void Compute_Interval(void)
@@ -1959,6 +1952,20 @@ static void Query_GenericMachine(unsigned int cpu)
 	PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
     }
 	HyperThreading_Technology();
+
+    if (cpu == PUBLIC(RO(Proc))->Service.Core) {
+	volatile PMUSERENR pmuser;
+
+	__asm__ __volatile__(
+		"mrs	%[pmuser],	pmuserenr_el0"	"\n\t"
+		"isb"
+		: [pmuser]	"=r" (pmuser)
+		:
+		: "memory"
+	);
+	PUBLIC(RO(Proc))->Features.PerfMon.CoreCycles = pmuser.CR;
+	PUBLIC(RO(Proc))->Features.PerfMon.InstrRetired = pmuser.IR;
+    }
 }
 
 void SystemRegisters(CORE_RO *Core)

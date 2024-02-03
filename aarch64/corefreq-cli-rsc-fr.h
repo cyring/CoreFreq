@@ -574,10 +574,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_PERF_MON_MWAIT_IDX_CSTATE_CODE_FR	"State index"
 #define RSC_PERF_MON_MWAIT_SUB_CSTATE_CODE_FR	"Sub C-State"
 
-#define RSC_PERF_MON_CORE_CYCLE_CODE_FR "Core Cycles"
-#define RSC_PERF_MON_INST_RET_CODE_FR	"Instructions Retired"
-#define RSC_PERF_MON_REF_CYCLE_CODE_FR	"Reference Cycles"
-#define RSC_PERF_MON_REF_LLC_CODE_FR	"Last Level Cache References"
+#define RSC_PERF_MON_CORE_CYCLE_CODE_FR "Core Cycles Counter"
+#define RSC_PERF_MON_INST_RET_CODE_FR	"Instructions Counter"
 
 #define RSC_PERF_MON_PMC_COMM_CODE_FR	\
 		" { Core performance monitoring, Cache LLC, Northbridge } "

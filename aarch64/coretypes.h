@@ -919,41 +919,14 @@ typedef struct	/* BSP features.					*/
 	} MWait;
 
 	struct {
-	    struct
-	    {
 		unsigned int
-		Version 	:  8-0,
-		MonCtrs 	: 16-8,
-		MonWidth	: 24-16,
-		VectorSz	: 32-24;
-	    };
-	    struct
-	    {
-		unsigned int
-		CoreCycles	:  1-0,
-		InstrRetired	:  2-1,
-		RefCycles	:  3-2,
-		LLC_Ref 	:  4-3,
-		LLC_Misses	:  5-4,
-		BranchRetired	:  6-5,
-		BranchMispred	:  7-6,
-		TopdownSlots	:  8-7,
-		ReservedBits	: 32-8;
-	    };
-	    struct
-	    {
-		unsigned int
-		FixCtrs_Mask	: 32-0;
-	    };
-	    struct
-	    {
-		unsigned int
-		FixCtrs 	:  5-0,
-		FixWidth	: 13-5,
-		Reserved1	: 15-13,
-		AnyThread_Dprec : 16-15, /* AnyThread deprecation.	*/
-		Reserved2	: 32-16;
-	    };
+		Version 	:  4-0,
+		MonCtrs 	:  9-4,
+		MonWidth	: 17-9,
+		FixCtrs 	: 22-17,
+		FixWidth	: 30-22,
+		CoreCycles	: 31-30,
+		InstrRetired	: 32-31;
 	} PerfMon;
 
 	struct

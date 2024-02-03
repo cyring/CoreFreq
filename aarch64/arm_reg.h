@@ -89,12 +89,15 @@ typedef union
 		ExportEvent	:  5-4,
 		DisableCycle	:  6-5,  /* 1:PMCCNTR is disabled	*/
 		EnableLongCycle :  7-6,
-		RES0		: 11-7,
+		EnableLongEvent :  8-7,
+		RES0		:  9-8,
+		FZO		: 10-9,  /* 1:Freeze-on-overflow	*/
+		RES1		: 11-10,
 		NumEvtCtrs	: 16-11,
 		IDcode		: 24-16,
 		Implementer	: 32-24,
 		Freeze_On_SPE	: 33-32,
-		RES1		: 64-33;
+		RES2		: 64-33;
 	};
 } PMCR;
 
@@ -200,6 +203,24 @@ typedef union
 		RES0		: 64-33;
 	};
 } PMCNTENCLR;
+
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		EN		:  1-0,
+		SW		:  2-1,
+		CR		:  3-2,
+		ER		:  4-3,
+		UEN		:  5-4,
+		IR		:  6-5,
+		TID		:  7-6,
+		RES0		: 64-7;
+	};
+} PMUSERENR;
 
 typedef union
 {
