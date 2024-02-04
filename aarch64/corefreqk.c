@@ -177,8 +177,13 @@ module_param_array(Ratio_HWP, int, &Ratio_HWP_Count,	\
 				S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Ratio_HWP, "Hardware-Controlled Performance ratios");
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
+static unsigned long Clear_Events = 0;
+module_param(Clear_Events, ulong, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+#else
 static unsigned long long Clear_Events = 0;
 module_param(Clear_Events, ullong, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+#endif
 MODULE_PARM_DESC(Clear_Events, "Clear Thermal and Power Events");
 
 static int ThermalScope = -1;
@@ -4413,7 +4418,11 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			break;
 		case EVENT_ALL_OF_THEM:
 			Controller_Stop(1);
+		    #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
+			Clear_Events = (unsigned long)(-1);
+		    #else
 			Clear_Events = (unsigned long long)(-1);
+		    #endif
 			Controller_Start(1);
 			Clear_Events = 0;
 			rc = RC_OK_COMPUTE;

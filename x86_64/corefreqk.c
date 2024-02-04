@@ -372,8 +372,13 @@ static signed short R2H_Disable = -1;
 module_param(R2H_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(R2H_Disable, "Disable Race to Halt");
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
+static unsigned long Clear_Events = 0;
+module_param(Clear_Events, ulong, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+#else
 static unsigned long long Clear_Events = 0;
 module_param(Clear_Events, ullong, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+#endif
 MODULE_PARM_DESC(Clear_Events, "Clear Thermal and Power Events");
 
 static unsigned int ThermalPoint_Count = 0;
@@ -22847,7 +22852,11 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			break;
 		case EVENT_ALL_OF_THEM:
 			Controller_Stop(1);
+		    #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
+			Clear_Events = (unsigned long)(-1);
+		    #else
 			Clear_Events = (unsigned long long)(-1);
+		    #endif
 			Controller_Start(1);
 			Clear_Events = 0;
 			rc = RC_OK_COMPUTE;
