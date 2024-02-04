@@ -1768,7 +1768,11 @@ signed int Get_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 			.Minimum	= CPPC_Caps.lowest_perf,
 			#endif
 			.Maximum	= CPPC_Caps.highest_perf,
+			#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0)
 			.Desired	= CPPC_Perf.reference_perf,
+			#else
+			.Desired	= CPPC_Caps.reference_perf,
+			#endif
 			.Energy 	= 0
 		};
 	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
