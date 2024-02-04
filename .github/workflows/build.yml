@@ -21,7 +21,7 @@ jobs:
             packages: linux-headers-amd64
           - arch: amd64
             distro: debian-10-buster
-            base_image: amd64/debian:10  
+            base_image: amd64/debian:10
             packages: linux-headers-amd64
           - arch: amd64
             distro: ubuntu-rolling
@@ -39,10 +39,10 @@ jobs:
             distro: alpine-latest
             base_image: amd64/alpine:latest
             packages: linux-virt-dev
-          - arch: amd64
-            distro: alpine-3.10
-            base_image: amd64/alpine:3.10
-            packages: linux-virt-dev
+          #- arch: amd64
+          #  distro: alpine-3.10
+          #  base_image: amd64/alpine:3.10
+          #  packages: linux-virt-dev
           # - arch: amd64
           #   distro: centos7
           #   base_image: amd64/centos:7
@@ -80,10 +80,10 @@ jobs:
             distro: alpine-latest
             base_image: arm64v8/alpine:latest
             packages: linux-virt-dev
-          - arch: aarch64
-            distro: alpine-3.10
-            base_image: arm64v8/alpine:3.10
-            packages: linux-virt-dev
+          #- arch: aarch64
+          #  distro: alpine-3.10
+          #  base_image: arm64v8/alpine:3.10
+          #  packages: linux-virt-dev
           # - arch: aarch64
           #   distro: centos7
           #   base_image: arm64v8/centos:7
