@@ -250,8 +250,12 @@ static struct {
 	/*MANDATORY*/	.init	= CoreFreqK_Policy_Init,
 	/*MANDATORY*/	.verify = CoreFreqK_Policy_Verify,
 	/*MANDATORY*/	.setpolicy = CoreFreqK_SetPolicy,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
 			.bios_limit= CoreFreqK_Bios_Limit,
 			.set_boost = CoreFreqK_SetBoost
+#else
+			.bios_limit= CoreFreqK_Bios_Limit
+#endif
 	},
 	.FreqGovernor = {
 			.name	= "corefreq-policy",
@@ -3342,6 +3346,7 @@ static int CoreFreqK_Bios_Limit(int cpu, unsigned int *limit)
 
 void Policy_Aggregate_Turbo(void)
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
     if (PUBLIC(RO(Proc))->Registration.Driver.CPUfreq & REGISTRATION_ENABLE) {
 	CoreFreqK.FreqDriver.boost_enabled = (
 			BITWISEAND_CC(	LOCKLESS,
@@ -3349,8 +3354,10 @@ void Policy_Aggregate_Turbo(void)
 					PUBLIC(RO(Proc))->TurboBoost_Mask ) != 0
 	);
     }
+#endif
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)	\
   || ((RHEL_MAJOR == 8) && (RHEL_MINOR > 3))
 static int CoreFreqK_SetBoost(struct cpufreq_policy *policy, int state)
@@ -3368,6 +3375,7 @@ static int CoreFreqK_SetBoost(int state)
 	BITSET(BUS_LOCK, PUBLIC(RW(Proc))->OS.Signal, NTFY); /* Notify Daemon*/
 	return 0;
 }
+#endif /* 3.14.0 */
 
 static ssize_t CoreFreqK_Show_SetSpeed(struct cpufreq_policy *policy,char *buf)
 {
