@@ -1,4 +1,4 @@
-name: Build-ubuntu
+name: Build Multi Arch
 
 on:
   push:
@@ -6,37 +6,172 @@ on:
   workflow_dispatch:
 
 jobs:
-  ubuntu2204-build:
-    runs-on: ubuntu-22.04
+  build_job:
+    runs-on: ubuntu-latest
+    name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
+
+    strategy:
+      fail-fast: false
+      # base_image: https://hub.docker.com
+      matrix:
+        include:
+          - arch: amd64
+            distro: debian-testing
+            base_image: amd64/debian:testing
+            packages: linux-headers-amd64
+          - arch: amd64
+            distro: debian-10-buster
+            base_image: amd64/debian:10  
+            packages: linux-headers-amd64
+          - arch: amd64
+            distro: ubuntu-rolling
+            base_image: amd64/ubuntu:rolling
+            packages: linux-headers-generic
+          - arch: amd64
+            distro: ubuntu-16.04-xenial
+            base_image: amd64/ubuntu:16.04
+            packages: linux-headers-generic
+          - arch: amd64
+            distro: ubuntu-14.04-lucid
+            base_image: amd64/ubuntu:14.04
+            packages: linux-headers-generic
+          - arch: amd64
+            distro: alpine-latest
+            base_image: amd64/alpine:latest
+            packages: linux-virt-dev
+          - arch: amd64
+            distro: alpine-3.10
+            base_image: amd64/alpine:3.10
+            packages: linux-virt-dev
+          # - arch: amd64
+          #   distro: centos7
+          #   base_image: amd64/centos:7
+          #   packages: kernel-devel
+          # - arch: amd64
+          #   distro: fedora-latest
+          #   base_image: amd64/fedora:latest
+          #   packages: kernel-devel
+          # - arch: amd64
+          #   distro: fedora-26
+          #   base_image: amd64/fedora:26
+          #   packages: kernel-devel
+
+          - arch: aarch64
+            distro: debian-testing
+            base_image: arm64v8/debian:testing
+            packages: linux-headers-arm64
+          - arch: aarch64
+            distro: debian-10-buster
+            base_image: arm64v8/debian:10
+            packages: linux-headers-arm64
+          - arch: aarch64
+            distro: ubuntu-rolling
+            base_image: arm64v8/ubuntu:rolling
+            packages: linux-headers-generic
+          - arch: aarch64
+            distro: ubuntu-16.04-xenial
+            base_image: arm64v8/ubuntu:16.04
+            packages: linux-headers-generic
+          - arch: aarch64
+            distro: ubuntu-14.04-trusty
+            base_image: arm64v8/ubuntu:14.04
+            packages: linux-headers-generic
+          - arch: aarch64
+            distro: alpine-latest
+            base_image: arm64v8/alpine:latest
+            packages: linux-virt-dev
+          - arch: aarch64
+            distro: alpine-3.10
+            base_image: arm64v8/alpine:3.10
+            packages: linux-virt-dev
+          # - arch: aarch64
+          #   distro: centos7
+          #   base_image: arm64v8/centos:7
+          #   packages: kernel-devel
+          # - arch: aarch64
+          #   distro: fedora-latest
+          #   base_image: arm64v8/fedora:latest
+          #   packages: kernel-devel
+          # - arch: aarch64
+          #   distro: fedora-26
+          #   base_image: arm64v8/fedora:26
+          #   packages: kernel-devel
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: uraimo/run-on-arch-action@v2.7.1
+        name: Build
+        id: build
+        with:
+          arch: ${{ matrix.arch }}
+          distro: ${{ matrix.distro }}
+          base_image: ${{ matrix.base_image }}
 
-      - name: Add dependencies
-        run: |
-          sudo apt install -y build-essential gawk fakeroot linux-headers-$(uname -r)
+          # Not required, but speeds up builds
+          # githubToken: ${{ github.token }}
 
-      - name: Build 
-        run: |
-          make
+          # Create an artifacts directory
+          setup: |
+            mkdir -p "${PWD}/artifacts"
 
-      # - name: Export artifacts
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     path: |
-      #       dist
+          # Mount the artifacts directory as /artifacts in the container
+          dockerRunArgs: |
+            --volume "${PWD}/artifacts:/artifacts"
+
+          # Pass some environment variables to the container
+          env: | # YAML, but pipe character is necessary
+            artifact_name: git-${{ matrix.distro }}_${{ matrix.arch }}
+
+          # The shell to run commands with in the container
+          shell: /bin/sh
+
+          # Install some dependencies in the container. This speeds up builds if
+          # you are also using githubToken. Any dependencies installed here will
+          # be part of the container image that gets cached, so subsequent
+          # builds don't have to re-install them. The image layer is cached
+          # publicly in your project's package repository, so it is vital that
+          # no secrets are present in the container state or logs.
+          # https://command-not-found.com/lscpu
+          install: |
+            case "${{ matrix.distro }}" in
+              ubuntu*|debian*|kali*)
+                apt-get update -q -y
+                apt-get install -q -y util-linux build-essential ${{ matrix.packages }}
+                ;;
+              arch*)
+                pacman -Syu --noconfirm util-linux base-devel ${{ matrix.packages }}
+                ;;
+              centos*)
+                yum -y update
+                yum -y install util-linux ${{ matrix.packages }}
+                yum -y groupinstall "Development Tools"
+                ;;
+              fedora*)
+                dnf -y update
+                dnf -y install util-linux ${{ matrix.packages }}
+                dnf -y groupinstall "Development Tools"
+                ;;
+              alpine*)
+                apk update
+                apk add alpine-sdk util-linux ${{ matrix.packages }}
+                ;;
+            esac
 
 
-  ubuntu2204-dkms:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Add dependencies
-        run: |
-          sudo apt install -y dkms
-
-      - name: Build 
-        run: |
-          make
+          # Produce a binary artifact and place it in the mounted volume
+          run: |
+            echo "--------------------------------------------------------------------------------"
+            cat /etc/os-release
+            echo "--------------------------------------------------------------------------------"
+            uname -a
+            echo "--------------------------------------------------------------------------------"
+            lscpu
+            echo "--------------------------------------------------------------------------------"
+            gcc -E -v - </dev/null
+            echo "--------------------------------------------------------------------------------"
+            KERNELREL=$(ls -td /lib/modules/* | head -n 1)
+            echo ${KERNELREL}
+            echo "--------------------------------------------------------------------------------"
+            make "KERNELREL=${KERNELREL}"
+            # cp $(which git) "/artifacts/${artifact_name}"
+            # echo "Produced artifact at /artifacts/${artifact_name}"
