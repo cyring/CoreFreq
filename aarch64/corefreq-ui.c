@@ -2225,7 +2225,11 @@ void _LOCALE_IN(void)
 	SysLoc = newlocale(LC_MESSAGES_MASK, "", (locale_t) 0);
 
 	if (SysLoc != NULL) {
+	    #ifdef __GLIBC__
 		const char *s18n = SysLoc->__names[5];
+	    #else
+		const char *s18n = "en_US.UTF-8";
+	    #endif
 		struct LOCALE_LOOKUP *lookUp = LocaleLookUp;
 		while (lookUp->i18n != NULL) {
 			I18N *i18n = lookUp->i18n;

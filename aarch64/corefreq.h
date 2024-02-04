@@ -204,11 +204,18 @@ typedef struct
 
 		unsigned long long	Error;
 
+	    #ifdef __GLIBC__
 		struct {
 		     struct random_data data;
 			char		state[128];
 			int		value[2];
 		} Random;
+	    #else
+		struct {
+			char		state[128];
+			int		value[2];
+		} Random;
+	    #endif /* __GLIBC__ */
 
 		struct {
 		unsigned long long	inside,

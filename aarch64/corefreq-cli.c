@@ -9285,7 +9285,11 @@ Window *PopUpMessage(ASCII *title, RING_CTRL *pCtrl)
 
 	if (pCtrl->drc < RC_DRIVER_BASE)
 	{
+	    #ifdef __GLIBC__
 		sysMsg = strerror_r(pCtrl->drc, inStr, POPUP_ALLOC);
+	    #else
+		sysMsg = strerror(pCtrl->drc);
+	    #endif
 		switch ( GET_LOCALE() ) {
 		case LOC_FR:	/* Convert the System message to locale */
 			ISO_8859_To_Unicode((ASCII *) sysMsg, (ASCII *) inStr);
