@@ -32,7 +32,9 @@
 #ifdef CONFIG_XEN
 #include <xen/xen.h>
 #endif /* CONFIG_XEN */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 17, 0)
 #include <asm/sysreg.h>
+#endif
 #ifdef CONFIG_ACPI
 #include <linux/acpi.h>
 #include <acpi/processor.h>
@@ -564,7 +566,7 @@ static void Query_Features(void *pArg)
 		:
 		: "memory"
 	);
-	mmfr2.value = read_sysreg_s(ID_AA64MMFR2_EL1);
+	mmfr2.value = MOV_SR_GPR(ID_AA64MMFR2_EL1);
 
 	iArg->Features->Info.Signature.Stepping = midr.Revision
 						| (midr.Variant << 4);
@@ -1118,7 +1120,7 @@ static void Query_Features(void *pArg)
 	}
     if (iArg->Features->SVE | iArg->Features->SME)
     {
-	volatile AA64ZFR0 zfr0 = {.value = read_sysreg_s(ID_AA64ZFR0_EL1)};
+	volatile AA64ZFR0 zfr0 = {.value = MOV_SR_GPR(ID_AA64ZFR0_EL1)};
 
 	switch (zfr0.SVE_F64MM) {
 	case 0b0001:
@@ -1209,7 +1211,7 @@ static void Query_Features(void *pArg)
 	}
     }
     if (iArg->Features->SME) {
-	volatile AA64SMFR0 smfr0 = {.value = read_sysreg_s(ID_AA64SMFR0_EL1)};
+	volatile AA64SMFR0 smfr0 = {.value = MOV_SR_GPR(ID_AA64SMFR0_EL1)};
 
 	switch (smfr0.SMEver) {
 	case 0b0010:
@@ -1274,7 +1276,7 @@ static void Query_Features(void *pArg)
     }
     if (Experimental && (iArg->HypervisorID == HYPERV_NONE)) {
 	/* Query the Cluster Configuration				*/
-	volatile CLUSTERCFR clustercfg = {.value=read_sysreg_s(CLUSTERCFR_EL1)};
+	volatile CLUSTERCFR clustercfg = {.value = MOV_SR_GPR(CLUSTERCFR_EL1)};
 	if (clustercfg.NUMCORE) {
 		iArg->SMT_Count = iArg->SMT_Count + clustercfg.NUMCORE;
 	}
@@ -1989,7 +1991,7 @@ void SystemRegisters(CORE_RO *Core)
 	volatile AA64MMFR1 mmfr1;
 	volatile AA64PFR0 pfr0;
 
-	isar2.value = read_sysreg_s(ID_AA64ISAR2_EL1);
+	isar2.value = MOV_SR_GPR(ID_AA64ISAR2_EL1);
 
 	__asm__ __volatile__(
 		"mrs	%[cpacr],	cpacr_el1"	"\n\t"
@@ -2023,14 +2025,14 @@ void SystemRegisters(CORE_RO *Core)
 	}
 	Core->Query.SCTLRX = 0;
     if (Experimental) {
-	volatile AA64MMFR3 mmfr3 = {.value = read_sysreg_s(ID_AA64MMFR3_EL1)};
+	volatile AA64MMFR3 mmfr3 = {.value = MOV_SR_GPR(ID_AA64MMFR3_EL1)};
 	if ((Core->Query.SCTLRX = mmfr3.SCTLRX) == 0b0001) {
-		Core->SystemRegister.SCTLR2 = read_sysreg_s(SCTLR2_EL1);
+		Core->SystemRegister.SCTLR2 = MOV_SR_GPR(SCTLR2_EL1);
 	}
     }
 	if (PUBLIC(RO(Proc))->Features.DIT) {
 		Core->SystemRegister.FLAGS |= (
-			read_sysreg_s(MRS_DIT) & (1LLU << FLAG_DIT)
+			MOV_SR_GPR(MRS_DIT) & (1LLU << FLAG_DIT)
 		);
 	}
 	if (isar2.CLRBHB == 0b0001) {
@@ -2066,7 +2068,7 @@ void SystemRegisters(CORE_RO *Core)
 	}
 	if (PUBLIC(RO(Proc))->Features.SSBS == 0b0010)
 	{
-		SSBS2 mrs_ssbs = {.value = read_sysreg_s(MRS_SSBS2)};
+		SSBS2 mrs_ssbs = {.value = MOV_SR_GPR(MRS_SSBS2)};
 
 	    if (mrs_ssbs.SSBS) {
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBS, Core->Bind);
@@ -2077,31 +2079,31 @@ void SystemRegisters(CORE_RO *Core)
 	}
 	if (PUBLIC(RO(Proc))->Features.PAN) {
 		Core->SystemRegister.FLAGS |= (
-			read_sysreg_s(MRS_PAN) & (1LLU << FLAG_PAN)
+			MOV_SR_GPR(MRS_PAN) & (1LLU << FLAG_PAN)
 		);
 	}
 	if (PUBLIC(RO(Proc))->Features.UAO) {
 		Core->SystemRegister.FLAGS |= (
-			read_sysreg_s(MRS_UAO) & (1LLU << FLAG_UAO)
+			MOV_SR_GPR(MRS_UAO) & (1LLU << FLAG_UAO)
 		);
 	}
 	if (PUBLIC(RO(Proc))->Features.MTE) {
 		Core->SystemRegister.FLAGS |= (
-			read_sysreg_s(MRS_TCO) & (1LLU << FLAG_TCO)
+			MOV_SR_GPR(MRS_TCO) & (1LLU << FLAG_TCO)
 		);
 	}
 	if (PUBLIC(RO(Proc))->Features.NMI) {
 		Core->SystemRegister.FLAGS |= (
-			read_sysreg_s(MRS_ALLINT) & (1LLU << FLAG_NMI)
+			MOV_SR_GPR(MRS_ALLINT) & (1LLU << FLAG_NMI)
 		);
 	}
 	if (PUBLIC(RO(Proc))->Features.EBEP) {
 		Core->SystemRegister.FLAGS |= (
-			read_sysreg_s(MRS_PM) & (1LLU << FLAG_PM)
+			MOV_SR_GPR(MRS_PM) & (1LLU << FLAG_PM)
 		);
 	}
 	if (PUBLIC(RO(Proc))->Features.SME) {
-		Core->SystemRegister.SVCR = read_sysreg_s(MRS_SVCR);
+		Core->SystemRegister.SVCR = MOV_SR_GPR(MRS_SVCR);
 	}
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask, Core->Bind);
 }
@@ -2154,7 +2156,7 @@ static void PerCore_GenericMachine(void *arg)
 	Core->Boost[BOOST(MIN)] = 8;
 
     if (Experimental && (PUBLIC(RO(Proc))->HypervisorID == HYPERV_NONE)) {
-	cpupwrctl.value = read_sysreg_s(CPUPWRCTLR_EL1);
+	cpupwrctl.value = MOV_SR_GPR(CPUPWRCTLR_EL1);
 	Core->Query.CStateBaseAddr = cpupwrctl.WFI_RET_CTRL;
     }
 	Core->Query.Revision = revid.Revision;

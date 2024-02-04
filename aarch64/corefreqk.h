@@ -6,6 +6,30 @@
 
 #define KDIV(_opl, _opr)	DIV_ROUND_CLOSEST((_opl), (_opr))
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
+	#define sys_reg(op0, op1, crn, crm, op2) ({	\
+		UNUSED(op0);				\
+		UNUSED(op1);				\
+		UNUSED(crn);				\
+		UNUSED(crm);				\
+		UNUSED(op2);				\
+	})
+#endif
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0)
+	#define MOV_SR_GPR(_reg)	read_sysreg_s(_reg)
+	#define MOV_GPR_SR(_val, _reg)	write_sysreg_s(_val, _reg)
+#else
+	#define MOV_SR_GPR(_reg) ({			\
+		UNUSED(_reg);				\
+		0;					\
+	})
+	#define MOV_GPR_SR(_val, _reg) ({		\
+		UNUSED(_val);				\
+		UNUSED(_reg);				\
+	})
+#endif
+
 #define Atomic_Read_VPMC(_lock, _dest, _src)				\
 {									\
 /*	__asm__ volatile						\
