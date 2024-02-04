@@ -256,7 +256,7 @@ static void *Core_Cycle(void *arg)
 	}
 
 	if (Quiet & 0x100) {
-		printf("    Thread [%lx] Init CYCLE %03u\n", tid, cpu);
+		printf("    Thread [%lx] Init CYCLE %03u\n", (long) tid, cpu);
 		fflush(stdout);
 	}
 	BITSET_CC(BUS_LOCK, roomSeed, cpu);
@@ -408,7 +408,7 @@ static void *Core_Cycle(void *arg)
 	BITCLR_CC(BUS_LOCK, roomSeed, cpu);
 EXIT:
 	if (Quiet & 0x100) {
-		printf("    Thread [%lx] %s CYCLE %03u\n", tid,
+		printf("    Thread [%lx] %s CYCLE %03u\n", (long) tid,
 			BITVAL(RO(Core)->OffLine, OS) ? "Offline" : "Shutdown",
 			cpu);
 		fflush(stdout);
@@ -498,7 +498,7 @@ static void *Child_Thread(void *arg)
 		free(comm);
 	}
 	if (Quiet & 0x100) {
-		printf("    Thread [%lx] Init CHILD %03u\n", tid, cpu);
+		printf("    Thread [%lx] Init CHILD %03u\n", (long) tid, cpu);
 		fflush(stdout);
 	}
 
@@ -547,7 +547,7 @@ static void *Child_Thread(void *arg)
 	RESET_Slice(Cpu->Slice);
 EXIT:
 	if (Quiet & 0x100) {
-		printf("    Thread [%lx] %s CHILD %03u\n", tid,
+		printf("    Thread [%lx] %s CHILD %03u\n", (long) tid,
 			BITVAL(Cpu->OffLine, OS) ? "Offline" : "Shutdown",cpu);
 		fflush(stdout);
 	}
