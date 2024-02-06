@@ -1996,7 +1996,7 @@
 #define RSC_ISA_SHA256_CODE		"       SHA256 [%c]"
 #define RSC_ISA_SHA512_CODE		"       SHA512 [%c]"
 #define RSC_ISA_SHA3_CODE		"         SHA3 [%c]"
-#define RSC_ISA_SIMD_CODE		"         SIMD [%c]"
+#define RSC_ISA_SIMD_CODE		"        ASIMD [%c]"
 #define RSC_ISA_SM3_CODE		"          SM3 [%c]"
 #define RSC_ISA_SM4_CODE		"          SM4 [%c]"
 #define RSC_ISA_SME_CODE		"          SME [%c]"

@@ -1434,6 +1434,13 @@ REASON_CODE SysInfoISA( Window *win,
 	},
 	{
 		NULL,
+		RSC(ISA_SIMD).CODE(), RSC(ISA_SIMD_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.SIMD },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.SIMD },
+	},
+	{
+		NULL,
 		RSC(ISA_BF16).CODE(), RSC(ISA_BF16_COMM).CODE(),
 		{ 0, RO(Shm)->Proc.Features.BF16 },
 		(unsigned short[])
@@ -1504,6 +1511,7 @@ REASON_CODE SysInfoISA( Window *win,
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.FlagM },
 	},
+/* Row Mark */
 	{
 		NULL,
 		RSC(ISA_FlagM2).CODE(), RSC(ISA_FlagM_COMM).CODE(),
@@ -1518,7 +1526,6 @@ REASON_CODE SysInfoISA( Window *win,
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.FP },
 	},
-/* Row Mark */
 	{
 		NULL,
 		RSC(ISA_FRINTTS).CODE(), RSC(ISA_FRINTTS_COMM).CODE(),
@@ -1533,6 +1540,7 @@ REASON_CODE SysInfoISA( Window *win,
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.I8MM },
 	},
+/* Row Mark */
 	{
 		NULL,
 		RSC(ISA_JSCVT).CODE(), RSC(ISA_JSCVT_COMM).CODE(),
@@ -1547,7 +1555,6 @@ REASON_CODE SysInfoISA( Window *win,
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.LRCPC },
 	},
-/* Row Mark */
 	{
 		NULL,
 		RSC(ISA_LS64).CODE(), RSC(ISA_LS64_COMM).CODE(),
@@ -1562,6 +1569,7 @@ REASON_CODE SysInfoISA( Window *win,
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.LS64_V },
 	},
+/* Row Mark */
 	{
 		NULL,
 		RSC(ISA_LS64_ACCDATA).CODE(), RSC(ISA_LS64_COMM).CODE(),
@@ -1590,6 +1598,7 @@ REASON_CODE SysInfoISA( Window *win,
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.PMULL },
 	},
+/* Row Mark */
 	{
 		NULL,
 		RSC(ISA_RAND).CODE(), RSC(ISA_RAND_COMM).CODE(),
@@ -1597,7 +1606,6 @@ REASON_CODE SysInfoISA( Window *win,
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.RAND },
 	},
-/* Row Mark */
 	{
 		NULL,
 		RSC(ISA_RDMA).CODE(), RSC(ISA_RDMA_COMM).CODE(),
@@ -1619,6 +1627,7 @@ REASON_CODE SysInfoISA( Window *win,
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.SHA1 },
 	},
+/* Row Mark */
 	{
 		NULL,
 		RSC(ISA_SHA256).CODE(), RSC(ISA_SHA_COMM).CODE(),
@@ -1626,7 +1635,6 @@ REASON_CODE SysInfoISA( Window *win,
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.SHA256 },
 	},
-/* Row Mark */
 	{
 		NULL,
 		RSC(ISA_SHA512).CODE(), RSC(ISA_SHA_COMM).CODE(),
@@ -1640,13 +1648,6 @@ REASON_CODE SysInfoISA( Window *win,
 		{ 0, RO(Shm)->Proc.Features.SHA3 },
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.SHA3 },
-	},
-	{
-		NULL,
-		RSC(ISA_SIMD).CODE(), RSC(ISA_SIMD_COMM).CODE(),
-		{ 0, RO(Shm)->Proc.Features.SIMD },
-		(unsigned short[])
-		{ RO(Shm)->Proc.Features.SIMD },
 	},
 	{
 		NULL,
@@ -1909,7 +1910,6 @@ REASON_CODE SysInfoISA( Window *win,
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.SVE_PMULL128 },
 	},
-/* Row Mark */
 	{
 		NULL,
 		RSC(ISA_XS).CODE(), RSC(ISA_XS_COMM).CODE(),
@@ -6973,6 +6973,8 @@ Window *CreateISA(unsigned long long id)
 		StoreWindow(wISA,	.key.Right,	MotionRight_Win);
 		StoreWindow(wISA,	.key.Down,	MotionDown_Win);
 		StoreWindow(wISA,	.key.Up,	MotionUp_Win);
+		StoreWindow(wISA,	.key.PgUp,	MotionPgUp_Win);
+		StoreWindow(wISA,	.key.PgDw,	MotionPgDw_Win);
 		StoreWindow(wISA,	.key.Home,	MotionHome_Win);
 		StoreWindow(wISA,	.key.End,	MotionEnd_Win);
 
