@@ -210,6 +210,16 @@ enum SYS_REG {
 	SCTLR2_EnADERR	= 3,
 	SCTLR2_NMEA	= 2,
 
+	EL0_64		= 0,
+	EL0_32		= 1,
+	EL1_64		= 2,
+	EL1_32		= 3,
+	EL2_64		= 4,
+	EL2_32		= 5,
+	EL2_SEC 	= 6,
+	EL3_64		= 7,
+	EL3_32		= 8,
+
 	FPSR_N		= 31,
 	FPSR_Z		= 30,
 	FPSR_C		= 29,

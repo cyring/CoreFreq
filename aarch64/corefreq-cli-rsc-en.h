@@ -769,6 +769,10 @@
 #define RSC_SYS_REG_FPSR_DZC_CODE_EN	" Divide by Zero Cumulative "
 #define RSC_SYS_REG_FPSR_IOC_CODE_EN	" Invalid Operation Cumulative "
 
+#define RSC_SYS_REG_EL_CODE_EN		" Exception Level "
+#define RSC_SYS_REG_EL_EXEC_CODE_EN	" Executes in AArch64 or AArch32 "
+#define RSC_SYS_REG_EL_SEC_CODE_EN	" Secure Exception Level "
+
 #define RSC_ISA_TITLE_CODE_EN		" Instruction Set Extensions "
 
 #define RSC_ISA_AES_COMM_CODE_EN	" Advanced Encryption Standard "
@@ -1952,6 +1956,14 @@
 
 #define RSC_SYS_REG_HDR_FPSR_CODE	\
 	"FPSR\0  N \0  Z \0  C \0  V \0 QC \0 IDC\0 IXC\0 UFC\0 OFC\0 DZC\0 IOC"
+
+#define RSC_SYS_REG_HDR11_EL_CODE	\
+	" EL \0    \0"" Lev\0el0 \0    \0 Lev\0el1 \0    \0" \
+	"   L\0evel\0""2   \0    \0 Lev\0el3 "
+
+#define RSC_SYS_REG_HDR12_EL_CODE	\
+	"Exec\0:   \0 64 \0 32 \0    \0 64 \0 32 \0    \0" \
+	" 64 \0 32 \0 SEC\0    \0 64 \0 32 "
 
 #define RSC_ISA_AES_CODE		"          AES [%c]"
 #define RSC_ISA_PMULL_CODE		"        PMULL [%c]"

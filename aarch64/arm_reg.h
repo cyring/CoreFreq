@@ -576,7 +576,7 @@ typedef union
 	struct
 	{
 		unsigned long long
-		EL0		:  4-0,
+		EL0		:  4-0,  /*0b0001=AArch64;0b0010=AArch{32,64}*/
 		EL1		:  8-4,
 		EL2		: 12-8,
 		EL3		: 16-12,
@@ -594,7 +594,17 @@ typedef union
 		CSV3		: 64-60;
 	};
 } AA64PFR0;
-
+/*
+CPU:AA64PFR0
+ 1:0x0000000011112222
+ 0:0x0000000011112222
+ 2:0x0000000011112222
+ 3:0x0000000011112222
+ 4:0x1100000011111112
+ 5:0x1100000011111112
+ 6:0x1100000011111112
+ 7:0x1100000011111112
+*/
 typedef union
 {
 	unsigned long long	value;	/*	Pkg:0x00000010		*/

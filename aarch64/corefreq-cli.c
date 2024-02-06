@@ -429,7 +429,7 @@ REASON_CODE SystemRegisters(	Window *win,
 	};
 	enum AUTOMAT {
 		DO_END, DO_SPC, DO_CPU, DO_FLAG,
-		DO_SCTLR, DO_SCTLR2, DO_FPSR
+		DO_SCTLR, DO_SCTLR2, DO_EL, DO_FPSR
 	};
 	const struct SR_ST {
 		struct SR_HDR {
@@ -752,6 +752,66 @@ REASON_CODE SystemRegisters(	Window *win,
       },
       {
 	.header = (struct SR_HDR[]) {
+	[ 0] = {&RSC(SYS_REG_HDR11_EL).CODE()[ 0], RSC(SYS_REG_EL).CODE()},
+	[ 1] = {&RSC(SYS_REG_HDR11_EL).CODE()[ 5], NULL},
+	[ 2] = {&RSC(SYS_REG_HDR11_EL).CODE()[10], NULL},
+	[ 3] = {&RSC(SYS_REG_HDR11_EL).CODE()[15], NULL},
+	[ 4] = {&RSC(SYS_REG_HDR11_EL).CODE()[20], NULL},
+	[ 5] = {&RSC(SYS_REG_HDR11_EL).CODE()[25], NULL},
+	[ 6] = {&RSC(SYS_REG_HDR11_EL).CODE()[30], NULL},
+	[ 7] = {&RSC(SYS_REG_HDR11_EL).CODE()[35], NULL},
+	[ 8] = {&RSC(SYS_REG_HDR11_EL).CODE()[40], NULL},
+	[ 9] = {&RSC(SYS_REG_HDR11_EL).CODE()[45], NULL},
+	[10] = {&RSC(SYS_REG_HDR11_EL).CODE()[50], NULL},
+	[11] = {&RSC(SYS_REG_HDR11_EL).CODE()[55], NULL},
+	[12] = {&RSC(SYS_REG_HDR11_EL).CODE()[60], NULL},
+	[13] = {&RSC(SYS_REG_HDR11_EL).CODE()[65], NULL},
+	[14] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[15] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[16] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+
+	[17] = {&RSC(SYS_REG_HDR12_EL).CODE()[ 0], RSC(SYS_REG_EL_EXEC).CODE()},
+	[18] = {&RSC(SYS_REG_HDR12_EL).CODE()[ 5], NULL},
+	[19] = {&RSC(SYS_REG_HDR12_EL).CODE()[10], NULL},
+	[20] = {&RSC(SYS_REG_HDR12_EL).CODE()[15], NULL},
+	[21] = {&RSC(SYS_REG_HDR12_EL).CODE()[20], NULL},
+	[22] = {&RSC(SYS_REG_HDR12_EL).CODE()[25], NULL},
+	[23] = {&RSC(SYS_REG_HDR12_EL).CODE()[30], NULL},
+	[24] = {&RSC(SYS_REG_HDR12_EL).CODE()[35], NULL},
+	[25] = {&RSC(SYS_REG_HDR12_EL).CODE()[40], NULL},
+	[26] = {&RSC(SYS_REG_HDR12_EL).CODE()[45], NULL},
+	[27] = {&RSC(SYS_REG_HDR12_EL).CODE()[50], RSC(SYS_REG_EL_SEC).CODE()},
+	[28] = {&RSC(SYS_REG_HDR12_EL).CODE()[55], NULL},
+	[29] = {&RSC(SYS_REG_HDR12_EL).CODE()[60], NULL},
+	[30] = {&RSC(SYS_REG_HDR12_EL).CODE()[65], NULL},
+	[31] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[32] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[33] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+		{NULL, NULL}
+	},
+	.flag = (struct SR_BIT[]) {
+	[ 0] =	{DO_CPU ,  1	, UNDEF_CR	, 0	},
+	[ 1] =	{DO_SPC ,  1	, UNDEF_CR	, 0	},
+	[ 2] =	{DO_EL	,  1	, EL0_64	, 1	},
+	[ 3] =	{DO_EL	,  1	, EL0_32	, 1	},
+	[ 4] =	{DO_SPC ,  1	, UNDEF_CR	, 0	},
+	[ 5] =	{DO_EL	,  1	, EL1_64	, 1	},
+	[ 6] =	{DO_EL	,  1	, EL1_32	, 1	},
+	[ 7] =	{DO_SPC ,  1	, UNDEF_CR	, 0	},
+	[ 8] =	{DO_EL	,  1	, EL2_64	, 1	},
+	[ 9] =	{DO_EL	,  1	, EL2_32	, 1	},
+	[10] =	{DO_EL	,  1	, EL2_SEC	, 1	},
+	[11] =	{DO_SPC ,  1	, UNDEF_CR	, 0	},
+	[12] =	{DO_EL	,  1	, EL3_64	, 1	},
+	[13] =	{DO_EL	,  1	, EL3_32	, 1	},
+	[14] =	{DO_SPC ,  1	, UNDEF_CR	, 0	},
+	[15] =	{DO_SPC ,  1	, UNDEF_CR	, 0	},
+	[16] =	{DO_SPC ,  1	, UNDEF_CR	, 0	},
+		{DO_END ,  1	, UNDEF_CR	, 0	}
+	}
+      },
+      {
+	.header = (struct SR_HDR[]) {
 	[ 0] = {&RSC(SYS_REG_HDR_FPSR).CODE()[ 0],RSC(SYS_REG_FPSR).CODE()},
 	[ 1] = {&RSC(SYS_REG_HDR_FPSR).CODE()[ 5],RSC(SYS_REG_FLAG_N).CODE()},
 	[ 2] = {&RSC(SYS_REG_HDR_FPSR).CODE()[10],RSC(SYS_REG_FLAG_Z).CODE()},
@@ -843,6 +903,11 @@ REASON_CODE SystemRegisters(	Window *win,
 		      } else {
 			PRT(REG, attrib[1], RSC(SYS_REGS_NA).CODE());
 		      }
+			break;
+		    case DO_EL:
+			PRT(REG, attrib[2], "%3llx ",
+			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.EL,
+					pFlag->pos, pFlag->len));
 			break;
 		    case DO_FPSR:
 			PRT(REG, attrib[2], "%3llx ",

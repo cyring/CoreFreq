@@ -1990,7 +1990,6 @@ static void Query_GenericMachine(unsigned int cpu)
 
 void SystemRegisters(CORE_RO *Core)
 {
-	volatile CPACR cpacr;
 	volatile AA64ISAR2 isar2;
 	volatile AA64MMFR1 mmfr1;
 	volatile AA64PFR0 pfr0;
@@ -1998,7 +1997,6 @@ void SystemRegisters(CORE_RO *Core)
 	isar2.value = MOV_SR_GPR(ID_AA64ISAR2_EL1);
 
 	__asm__ __volatile__(
-		"mrs	%[cpacr],	cpacr_el1"	"\n\t"
 		"mrs	%[sctlr],	sctlr_el1"	"\n\t"
 		"mrs	%[mmfr1],	id_aa64mmfr1_el1""\n\t"
 		"mrs	%[pfr0] ,	id_aa64pfr0_el1""\n\t"
@@ -2013,8 +2011,7 @@ void SystemRegisters(CORE_RO *Core)
 		"orr	%[flags],	x14, x13"	"\n\t"
 		"orr	%[flags],	%[flags], x12"	"\n\t"
 		"orr	%[flags],	%[flags], x11"
-		: [cpacr]	"=r" (cpacr),
-		  [sctlr]	"=r" (Core->SystemRegister.SCTLR),
+		: [sctlr]	"=r" (Core->SystemRegister.SCTLR),
 		  [mmfr1]	"=r" (mmfr1),
 		  [pfr0]	"=r" (pfr0),
 		  [fpsr]	"=r" (Core->SystemRegister.FPSR),
@@ -2043,6 +2040,43 @@ void SystemRegisters(CORE_RO *Core)
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CLRBHB, Core->Bind);
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CLRBHB, Core->Bind);
+	}
+	switch (pfr0.EL3) {
+	case 0b0010:
+		BITSET(LOCKLESS, Core->SystemRegister.EL, EL3_32);
+		fallthrough;
+	case 0b0001:
+		BITSET(LOCKLESS, Core->SystemRegister.EL, EL3_64);
+		break;
+	}
+	switch (pfr0.EL2) {
+	case 0b0010:
+		BITSET(LOCKLESS, Core->SystemRegister.EL, EL2_32);
+		fallthrough;
+	case 0b0001:
+		BITSET(LOCKLESS, Core->SystemRegister.EL, EL2_64);
+		break;
+	}
+	switch (pfr0.SEL2) {
+	case 0b0001:
+		BITSET(LOCKLESS, Core->SystemRegister.EL, EL2_SEC);
+		break;
+	}
+	switch (pfr0.EL1) {
+	case 0b0010:
+		BITSET(LOCKLESS, Core->SystemRegister.EL, EL1_32);
+		fallthrough;
+	case 0b0001:
+		BITSET(LOCKLESS, Core->SystemRegister.EL, EL1_64);
+		break;
+	}
+	switch (pfr0.EL0) {
+	case 0b0010:
+		BITSET(LOCKLESS, Core->SystemRegister.EL, EL0_32);
+		fallthrough;
+	case 0b0001:
+		BITSET(LOCKLESS, Core->SystemRegister.EL, EL0_64);
+		break;
 	}
 	switch (pfr0.CSV2) {
 	case 0b0001:
