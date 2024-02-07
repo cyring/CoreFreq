@@ -4,8 +4,6 @@
  * Licenses: GPL2
  */
 
-#define KDIV(_opl, _opr)	DIV_ROUND_CLOSEST((_opl), (_opr))
-
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
 	#define sys_reg(op0, op1, crn, crm, op2) ({	\
 		UNUSED(op0);				\

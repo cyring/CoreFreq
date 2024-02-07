@@ -337,7 +337,7 @@ unsigned int FixMissingRatioAndFrequency(unsigned int r32, CLOCK *pClock)
   {
    if ((r32 == 0) && (pClock->Q > 0))
    {	/*	Fix missing ratio.					*/
-      r64 = KDIV(PUBLIC(RO(Proc))->Features.Factory.Freq, pClock->Q);
+      r64=DIV_ROUND_CLOSEST(PUBLIC(RO(Proc))->Features.Factory.Freq, pClock->Q);
       PUBLIC(RO(Core,AT(PUBLIC(RO(Proc))->Service.Core)))->Boost[BOOST(MAX)]=\
 		(unsigned int) r64;
    }
@@ -345,7 +345,7 @@ unsigned int FixMissingRatioAndFrequency(unsigned int r32, CLOCK *pClock)
   else if (r32 > 0)
   {	/*	Fix the Factory frequency (unit: MHz)			*/
 	r64 = pClock->Hz * r32;
-	r64 = KDIV(r64, 1000000LLU);
+	r64 = r64 / 1000000LLU;
 	PUBLIC(RO(Proc))->Features.Factory.Freq = (unsigned int) r64;
   }
 	PUBLIC(RO(Proc))->Features.Factory.Clock.Q  = pClock->Q;
@@ -355,7 +355,7 @@ unsigned int FixMissingRatioAndFrequency(unsigned int r32, CLOCK *pClock)
   if (PUBLIC(RO(Proc))->Features.Factory.Clock.Hz > 0)
   {
     r64 = PUBLIC(RO(Proc))->Features.Factory.Freq * 1000000LLU;
-    r64 = KDIV(r64, PUBLIC(RO(Proc))->Features.Factory.Clock.Hz);
+    r64 = DIV_ROUND_CLOSEST(r64, PUBLIC(RO(Proc))->Features.Factory.Clock.Hz);
     PUBLIC(RO(Proc))->Features.Factory.Ratio = (unsigned int) r64;
   }
 	return (unsigned int) r64;
@@ -409,7 +409,7 @@ static long CoreFreqK_Register_ClockSource(unsigned int cpu)
 
 	Freq_Hz = PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)]
 		* PUBLIC(RO(Core, AT(cpu)))->Clock.Hz;
-	Freq_KHz = KDIV(Freq_Hz, 1000U);
+	Freq_KHz = Freq_Hz / 1000U;
 	if (Freq_KHz != 0)
 	{
 		int rx = clocksource_register_khz(&CoreFreqK_CS, Freq_KHz);
@@ -544,8 +544,8 @@ static void Query_Features(void *pArg)
 		"mrs	%[cntfrq],	cntfrq_el0"	"\n\t"
 		"mrs	%[cntpct],	cntpct_el0"	"\n\t"
 		"mrs	%[pmcr] ,	pmcr_el0"	"\n\t"
-		"mrs	%[dfr0],	id_aa64dfr0_el1""\n\t"
-		"mrs	%[dfr1],	id_aa64dfr1_el1""\n\t"
+		"mrs	%[dfr0] ,	id_aa64dfr0_el1""\n\t"
+		"mrs	%[dfr1] ,	id_aa64dfr1_el1""\n\t"
 		"mrs	%[isar0],	id_aa64isar0_el1""\n\t"
 		"mrs	%[isar1],	id_aa64isar1_el1""\n\t"
 		"mrs	%[mmfr1],	id_aa64mmfr1_el1""\n\t"
@@ -579,7 +579,7 @@ static void Query_Features(void *pArg)
 			&iArg->Features->Info.Vendor.CRC, &iArg->HypervisorID);
 
 	iArg->Features->Factory.Freq = cntfrq.ClockFreq_Hz;
-	iArg->Features->Factory.Freq = KDIV(iArg->Features->Factory.Freq,10000);
+	iArg->Features->Factory.Freq = iArg->Features->Factory.Freq / 10000;
 
 #if defined(CONFIG_ACPI)
 	iArg->Features->ACPI = acpi_disabled == 0;
@@ -1302,8 +1302,7 @@ void Compute_Interval(void)
 			TickInterval
 		:	KMAX(TICK_DEF_MS, PUBLIC(RO(Proc))->SleepInterval);
 
-	PUBLIC(RO(Proc))->tickReset=KDIV(PUBLIC(RO(Proc))->tickReset,
-					PUBLIC(RO(Proc))->SleepInterval);
+	PUBLIC(RO(Proc))->tickReset /= PUBLIC(RO(Proc))->SleepInterval;
 	PUBLIC(RO(Proc))->tickStep = PUBLIC(RO(Proc))->tickReset;
 
 	RearmTheTimer = ktime_set( 0,	PUBLIC(RO(Proc))->SleepInterval
@@ -1317,7 +1316,7 @@ void Compute_Interval(void)
 	#define THIS_LPJ	loops_per_jiffy
 #endif
 
-#define COMPUTE_LPJ(BCLK_Hz, COF)	(KDIV(BCLK_Hz * COF, HZ))
+#define COMPUTE_LPJ(BCLK_Hz, COF)	( (BCLK_Hz * COF) / HZ )
 
 #if defined(DELAY_TSC) && (DELAY_TSC == 1)
 /*			udelay() built with TSC implementation		*/
@@ -1343,7 +1342,7 @@ void Compute_Interval(void)
 	);							*/	\
 })
 
-#define CLOCK2CYCLE(INTERVAL_NS) (KDIV(INTERVAL_NS * THIS_LPJ * HZ, 1000000LLU))
+#define CLOCK2CYCLE(INTERVAL_NS) ((INTERVAL_NS * THIS_LPJ * HZ) / 1000000LLU)
 
 #define CLOCK_DELAY(INTERVAL_NS, _TIMER, CTR)				\
 ({									\
@@ -2189,7 +2188,7 @@ static void PerCore_GenericMachine(void *arg)
 		:
 		: "memory"
 	);
-	cntfrq.value = KDIV(cntfrq.value, 1000000U);
+	cntfrq.value = cntfrq.value / 1000000U;
 	Core->Boost[BOOST(MAX)] = cntfrq.ClockFreq_Hz;
 	Core->Boost[BOOST(MIN)] = 8;
 
@@ -3330,11 +3329,11 @@ static int CoreFreqK_Policy_Init(struct cpufreq_policy *policy)
 	{
 		CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(policy->cpu)));
 
-		policy->cpuinfo.min_freq = KDIV(Core->Boost[BOOST(MIN)]
-						* Core->Clock.Hz, 1000LLU);
+		policy->cpuinfo.min_freq = (Core->Boost[BOOST(MIN)]
+					 * Core->Clock.Hz) / 1000LLU;
 
-		policy->cpuinfo.max_freq = KDIV(Core->Boost[BOOST(MAX)]
-						* Core->Clock.Hz, 1000LLU);
+		policy->cpuinfo.max_freq = (Core->Boost[BOOST(MAX)]
+					 * Core->Clock.Hz) / 1000LLU;
 
 		/*		MANDATORY Per-CPU Initialization	*/
 		policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
@@ -3379,7 +3378,7 @@ static int CoreFreqK_Bios_Limit(int cpu, unsigned int *limit)
     {
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	(*limit) = KDIV(Core->Boost[BOOST(MAX)] * Core->Clock.Hz, 1000LLU);
+	(*limit) = (Core->Boost[BOOST(MAX)] * Core->Clock.Hz) / 1000LLU;
     }
 	return 0;
 }
@@ -3436,7 +3435,7 @@ static ssize_t CoreFreqK_Show_SetSpeed(struct cpufreq_policy *policy,char *buf)
 	boost = BOOST(TGT);
     }
 	return sprintf( buf, "%7llu\n",
-			KDIV(Core->Boost[boost] * Core->Clock.Hz,1000LLU) );
+			(Core->Boost[boost] * Core->Clock.Hz) / 1000LLU );
   }
 	return 0;
 }
@@ -3453,7 +3452,7 @@ static int CoreFreqK_Store_SetSpeed(struct cpufreq_policy *policy,
     if ((policy->cpu < PUBLIC(RO(Proc))->CPU.Count) && (SetTarget != NULL))
     {
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(policy->cpu)));
-	unsigned int ratio = KDIV(freq * 1000LLU, Core->Clock.Hz);
+	unsigned int ratio = (freq * 1000LLU) / Core->Clock.Hz;
 
 	if (ratio > 0) {
 		if (smp_call_function_single(	policy->cpu,
@@ -3478,8 +3477,8 @@ static unsigned int Policy_GetFreq(unsigned int cpu)
     {
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	unsigned int Freq_MHz = KDIV(	Core->Delta.C0.UCC,
-					PUBLIC(RO(Proc))->SleepInterval );
+	unsigned int Freq_MHz	= Core->Delta.C0.UCC
+				/ PUBLIC(RO(Proc))->SleepInterval;
 
 	if (Freq_MHz > 0) {	/* at least 1 interval must have been elapsed */
 		CPU_Freq = Freq_MHz;
@@ -4979,8 +4978,8 @@ void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
 		}, prop = (len[0] + len[1]) > 0 ? (len[0] + len[1]) : 1;
 
 		const int ratio[2] = {
-			KDIV(len[0] * (MAX_UTS_LEN - (1+1)), prop),
-			KDIV(len[1] * (MAX_UTS_LEN - (1+1)), prop)
+			DIV_ROUND_CLOSEST(len[0] * (MAX_UTS_LEN - (1+1)), prop),
+			DIV_ROUND_CLOSEST(len[1] * (MAX_UTS_LEN - (1+1)), prop)
 		};
 		StrFormat(PUBLIC(RO(Proc))->SMB.Memory.Locator[(*count)],
 			MAX_UTS_LEN, "%.*s\\%.*s",

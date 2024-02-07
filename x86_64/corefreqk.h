@@ -4,8 +4,6 @@
  * Licenses: GPL2
  */
 
-#define KDIV(_opl, _opr)	DIV_ROUND_CLOSEST((_opl), (_opr))
-
 #define RDCOUNTER(_val, _cnt)						\
 ({									\
 	unsigned int _lo, _hi;						\
