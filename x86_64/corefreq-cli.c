@@ -9641,6 +9641,8 @@ Window *CreateISA(unsigned long long id)
 		StoreWindow(wISA,	.key.Right,	MotionRight_Win);
 		StoreWindow(wISA,	.key.Down,	MotionDown_Win);
 		StoreWindow(wISA,	.key.Up,	MotionUp_Win);
+		StoreWindow(wISA,	.key.PgUp,	MotionPgUp_Win);
+		StoreWindow(wISA,	.key.PgDw,	MotionPgDw_Win);
 		StoreWindow(wISA,	.key.Home,	MotionHome_Win);
 		StoreWindow(wISA,	.key.End,	MotionEnd_Win);
 
