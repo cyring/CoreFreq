@@ -1031,6 +1031,10 @@ static void Query_Features(void *pArg)
 		iArg->Features->AMU_frac = 0;
 		break;
 	}
+	if (iArg->Features->AMU_vers > 0) {
+		AMCGCR amcgc = {.value = MOV_SR_GPR(AMCGCR_EL0)};
+		iArg->Features->PerfMon.FixCtrs += amcgc.CG0NC + amcgc.CG1NC;
+	}
 	switch (pfr0.RME) {
 	case 0b0001:
 		iArg->Features->RME = 1;

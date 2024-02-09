@@ -19,6 +19,7 @@
 #define MRS_ALLINT		sys_reg(0b11, 0b000, 0b0100, 0b0011, 0b000)
 #define MRS_PM			sys_reg(0b11, 0b000, 0b0100, 0b0011, 0b001)
 #define MRS_SVCR		sys_reg(0b11, 0b011, 0b0100, 0b0010, 0b010)
+#define AMCGCR_EL0		sys_reg(0b11, 0b011, 0b1101, 0b0010, 0b010)
 #define CLUSTERCFR_EL1		sys_reg(0b11, 0b000, 0b1111, 0b0011, 0b000)
 
 typedef union
@@ -307,6 +308,18 @@ typedef union
 		RES4		: 64-30;
 	};
 } CPACR;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		CG0NC		:  8-0,
+		CG1NC		: 16-8,
+		RES0		: 64-16;
+	};
+} AMCGCR;
 
 typedef union
 {
