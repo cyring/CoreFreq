@@ -1966,7 +1966,7 @@ static void Query_GenericMachine(unsigned int cpu)
 	Query_Same_Genuine_Features();
 	/* Reset Max ratio to call the clock estimation in Controller_Init() */
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = 0;
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = 8;
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = 4;
 
     if (PRIVATE(OF(Specific)) != NULL) {
 	/*	Save the thermal parameters if specified		*/
@@ -2194,7 +2194,7 @@ static void PerCore_GenericMachine(void *arg)
 	);
 	cntfrq.value = cntfrq.value / 1000000U;
 	Core->Boost[BOOST(MAX)] = cntfrq.ClockFreq_Hz;
-	Core->Boost[BOOST(MIN)] = 8;
+	Core->Boost[BOOST(MIN)] = 4;
 
     if (Experimental && (PUBLIC(RO(Proc))->HypervisorID == HYPERV_NONE)) {
 	cpupwrctl.value = MOV_SR_GPR(CPUPWRCTLR_EL1);
@@ -2864,6 +2864,16 @@ static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
+	    if (Core->Delta.C0.URC > 1000000LLU) {
+		unsigned long long Q, R;
+		Q = Core->Delta.C0.URC / (1000000LLU * PRECISION);
+		R = Core->Delta.C0.URC - (Q * (1000000LLU * PRECISION));
+		R = R / UNIT_KHz(PRECISION);
+		Core->Ratio.COF.Q = Q;
+		Core->Ratio.COF.R = R;
+	    } else {
+		Core->Ratio.Perf = Core->Boost[BOOST(MIN)];
+	    }
 		BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
 
 		return HRTIMER_RESTART;
