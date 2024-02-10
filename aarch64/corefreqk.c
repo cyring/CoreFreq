@@ -2822,9 +2822,8 @@ void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
 {
 	CORE_RO *Core;
-	unsigned int cpu;
-
-	cpu = smp_processor_id();
+	register unsigned long long Q, D;
+	const unsigned int cpu = smp_processor_id();
 	Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
 	RDTSC64(Core->Overhead.TSC);
@@ -2864,16 +2863,16 @@ static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-	    if (Core->Delta.C0.URC > 1000000LLU) {
-		unsigned long long Q, R;
-		Q = Core->Delta.C0.URC / (1000000LLU * PRECISION);
-		R = Core->Delta.C0.URC - (Q * (1000000LLU * PRECISION));
-		R = R / UNIT_KHz(PRECISION);
-		Core->Ratio.COF.Q = Q;
-		Core->Ratio.COF.R = R;
-	    } else {
-		Core->Ratio.Perf = Core->Boost[BOOST(MIN)];
-	    }
+		Q = Core->Delta.C0.URC * Core->Clock.Q,
+		D = UNIT_MHz(10LLU * PUBLIC(RO(Proc))->SleepInterval);
+
+		Core->Ratio.COF.Q = Q / D;
+		if (Core->Ratio.COF.Q < Core->Boost[BOOST(MIN)]) {
+			Core->Ratio.Perf = Core->Boost[BOOST(MIN)];
+		} else {
+			Core->Ratio.COF.R = (Q - (Core->Ratio.COF.Q * D))
+					  / UNIT_KHz(10000LLU);
+		}
 		BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
 
 		return HRTIMER_RESTART;
