@@ -545,8 +545,6 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_TECHNOLOGIES_TITLE_CODE_FR	" Technologies "
 #define RSC_TECHNOLOGIES_DCU_CODE_FR  "Unit""\xa9"" de cache de donn""\xa9""es"
 #define RSC_TECHNOLOGIES_ICU_CODE_FR  "Unit""\xa9"" de cache d'instructions"
-#define RSC_TECHNOLOGIES_TURBO_CODE_FR	"Turbo Boost"
-#define RSC_TECHNOLOGIES_TBMT3_CODE_FR	"Turbo Boost Max 3.0"
 #define RSC_TECHNOLOGIES_VM_CODE_FR	"Virtualisation"
 #define RSC_TECHNOLOGIES_IOMMU_CODE_FR	"MMU E/S"
 #define RSC_TECHNOLOGIES_SMT_CODE_FR	"Multithreading simultan""\xa9"
@@ -561,7 +559,6 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_GENERAL_CTRS_CODE_FR	"G""\xa9""n""\xa9""raux"
 #define RSC_FIXED_CTRS_CODE_FR		"Fixes"
 #define RSC_PERF_MON_UNIT_BIT_CODE_FR	"bits"
-#define RSC_PERF_MON_HWCF_CODE_FR	"P-State Hardware Coordination Feedback"
 #define RSC_PERF_MON_CPPC_CODE_FR	\
 		"Contr""\xb4""le collaboratif des performances du processeur"
 
@@ -581,8 +578,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_PERF_MON_CORE_CYCLE_CODE_FR "Core Cycles Counter"
 #define RSC_PERF_MON_INST_RET_CODE_FR	"Instructions Counter"
 
-#define RSC_PERF_MON_PMC_COMM_CODE_FR	\
-		" { Core performance monitoring, Cache LLC, Northbridge } "
+#define RSC_PERF_MON_PMC_COMM_CODE_FR	RSC_PERF_MON_PMC_COMM_CODE_EN
 
 #define RSC_PERF_MON_CPPC_COMM_CODE_FR	" Micrologiciel "
 
@@ -1019,39 +1015,11 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_MODE_DESC_CODE_FR	"     CoreFreq mode "	\
 					"op""\xa9""rationnel     "
 
-#define RSC_BOX_TURBO_DESC_CODE_FR	" Turbo Boost/Core Performance Boost "
-
-#define RSC_BOX_C1A_DESC_CODE_FR	"       Auto r""\xa9""trogradation" \
-					" C1       "
-
-#define RSC_BOX_C3A_DESC_CODE_FR	"       Auto r""\xa9""trogradation" \
-					" C3       "
-
-#define RSC_BOX_C1U_DESC_CODE_FR	"        Non-r""\xa9""trogradation" \
-					" C1       "
-
-#define RSC_BOX_C2U_DESC_CODE_FR	"        Non-r""\xa9""trogradation" \
-					" C2       "
-
-#define RSC_BOX_C3U_DESC_CODE_FR	"        Non-r""\xa9""trogradation" \
-					" C3       "
-
-#define RSC_BOX_C6D_DESC_CODE_FR	"          C6 Core Demotion          "
-#define RSC_BOX_MC6_DESC_CODE_FR	"         C6 Module Demotion         "
-
-#define RSC_BOX_CC6_DESC_CODE_FR	"            Core ""\x89""tat"	\
-					" C6            "
-
-#define RSC_BOX_PC6_DESC_CODE_FR	"           Package ""\x89""tat" \
-					" C6          "
-
 #define RSC_BOX_HWP_DESC_CODE_FR	" Contr""\xb4""le Mat""\xa9""riel" \
 					" de la Performance"
 
 #define RSC_BOX_FMW_DESC_CODE_FR	" Contr""\xb4""le Firmware"	\
 					" de la Performance"
-
-#define RSC_BOX_HSMP_DESC_CODE_FR	"     Host System Management Port    "
 
 #define RSC_BOX_NOMINAL_MODE_COND0_CODE_FR \
 					"       Fonctionnement" \

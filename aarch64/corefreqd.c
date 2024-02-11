@@ -635,10 +635,6 @@ void ThermalPoint(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 			RO(PROC) *RO(Proc), RW(PROC) *RW(Proc) )
 {	/*	Technologies aggregation.				*/
-	RO(Shm)->Proc.Technology.Turbo = BITWISEAND_CC(LOCKLESS,
-						RW(Proc)->TurboBoost,
-						RO(Proc)->TurboBoost_Mask) != 0;
-
 	RO(Shm)->Proc.Technology.VM = BITWISEAND_CC(LOCKLESS,
 						RW(Proc)->VM,
 						RO(Proc)->CR_Mask) != 0;

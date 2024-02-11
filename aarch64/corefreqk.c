@@ -126,12 +126,6 @@ static unsigned short NMI_Disable = 1;
 module_param(NMI_Disable, ushort, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(NMI_Disable, "Disable the NMI Handler");
 
-static unsigned int TurboBoost_Enable_Count = 1;
-static signed short TurboBoost_Enable[2] = {-1, -1};
-module_param_array(TurboBoost_Enable, short, &TurboBoost_Enable_Count,	\
-					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-MODULE_PARM_DESC(TurboBoost_Enable, "Enable Turbo Boost");
-
 static enum RATIO_BOOST Ratio_Boost_Count = 0;
 static signed int Ratio_Boost[BOOST(SIZE) - BOOST(18C)] = {
 	/*	18C		*/	-1,
@@ -254,7 +248,6 @@ static struct {
 	/*MANDATORY*/	.setpolicy = CoreFreqK_SetPolicy,
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
 			.bios_limit= CoreFreqK_Bios_Limit,
-			.set_boost = CoreFreqK_SetBoost
 #else
 			.bios_limit= CoreFreqK_Bios_Limit
 #endif
@@ -1033,7 +1026,8 @@ static void Query_Features(void *pArg)
 	}
 	if (iArg->Features->AMU_vers > 0) {
 		AMCGCR amcgc = {.value = SysRegRead(AMCGCR_EL0)};
-		iArg->Features->PerfMon.FixCtrs += amcgc.CG0NC + amcgc.CG1NC;
+		iArg->Features->AMU.CG0NC = amcgc.CG0NC;
+		iArg->Features->AMU.CG1NC = amcgc.CG1NC;
 	}
 	switch (pfr0.RME) {
 	case 0b0001:
@@ -2158,11 +2152,9 @@ void SystemRegisters(CORE_RO *Core)
 
 void PerCore_Reset(CORE_RO *Core)
 {
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->HWP_Mask	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask	, Core->Bind);
 
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->HWP	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_1	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_2	, Core->Bind);
@@ -2204,7 +2196,6 @@ static void PerCore_GenericMachine(void *arg)
 
 	SystemRegisters(Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 }
 
@@ -3396,39 +3387,6 @@ static int CoreFreqK_Bios_Limit(int cpu, unsigned int *limit)
 	return 0;
 }
 
-void Policy_Aggregate_Turbo(void)
-{
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
-    if (PUBLIC(RO(Proc))->Registration.Driver.CPUfreq & REGISTRATION_ENABLE) {
-	CoreFreqK.FreqDriver.boost_enabled = (
-			BITWISEAND_CC(	LOCKLESS,
-					PUBLIC(RW(Proc))->TurboBoost,
-					PUBLIC(RO(Proc))->TurboBoost_Mask ) != 0
-	);
-    }
-#endif
-}
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)	\
-  || ((RHEL_MAJOR == 8) && (RHEL_MINOR > 3))
-static int CoreFreqK_SetBoost(struct cpufreq_policy *policy, int state)
-{
-	UNUSED(policy);
-#else
-static int CoreFreqK_SetBoost(int state)
-{
-#endif /* 5.8.0 */
-	Controller_Stop(1);
-	TurboBoost_Enable[0] = (state != 0);
-	Controller_Start(1);
-	TurboBoost_Enable[0] = -1;
-	Policy_Aggregate_Turbo();
-	BITSET(BUS_LOCK, PUBLIC(RW(Proc))->OS.Signal, NTFY); /* Notify Daemon*/
-	return 0;
-}
-#endif /* 3.14.0 */
-
 static ssize_t CoreFreqK_Show_SetSpeed(struct cpufreq_policy *policy,char *buf)
 {
   if (policy != NULL)
@@ -4063,9 +4021,6 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		break;
 	case COREFREQ_TOGGLE_ON:
 		Controller_Start(1);
-	#ifdef CONFIG_CPU_FREQ
-		Policy_Aggregate_Turbo();
-	#endif /* CONFIG_CPU_FREQ */
 		rc = RC_OK_COMPUTE;
 		break;
 	}
@@ -4284,22 +4239,6 @@ static long CoreFreqK_ioctl(	struct file *filp,
 
 	switch (prm.dl.hi)
 	{
-	case TECHNOLOGY_TURBO:
-		switch (prm.dl.lo) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				Controller_Stop(1);
-				TurboBoost_Enable[0] = prm.dl.lo;
-				Controller_Start(1);
-				TurboBoost_Enable[0] = -1;
-			#ifdef CONFIG_CPU_FREQ
-				Policy_Aggregate_Turbo();
-			#endif /* CONFIG_CPU_FREQ */
-				rc = RC_OK_COMPUTE;
-				break;
-		}
-		break;
-
 	case TECHNOLOGY_HWP:
 	    switch (prm.dl.lo) {
 	    case COREFREQ_TOGGLE_ON:
@@ -4412,9 +4351,6 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		Controller_Stop(1);
 		rc = Arch[PUBLIC(RO(Proc))->ArchID].ClockMod(&clockMod);
 		Controller_Start(1);
-	#ifdef CONFIG_CPU_FREQ
-		Policy_Aggregate_Turbo();
-	#endif /* CONFIG_CPU_FREQ */
 	} else {
 		rc = -RC_UNIMPLEMENTED;
 	}
@@ -4702,10 +4638,6 @@ static int CoreFreqK_Resume(struct device *dev)
     }
 	Controller_Start(1);
 
-#ifdef CONFIG_CPU_FREQ
-	Policy_Aggregate_Turbo();
-#endif /* CONFIG_CPU_FREQ */
-
 	BITSET(BUS_LOCK, PUBLIC(RW(Proc))->OS.Signal, NTFY); /* Notify Daemon*/
 
 	CoreFreqK.ResumeFromSuspend = false;
@@ -4809,10 +4741,6 @@ static int CoreFreqK_HotPlug_CPU_Online(unsigned int cpu)
    }
 #endif /* CONFIG_CPU_IDLE */
 
-#ifdef CONFIG_CPU_FREQ
-	Policy_Aggregate_Turbo();
-#endif /* CONFIG_CPU_FREQ */
-
 	return 0;
   } else
 	return -EINVAL;
@@ -4868,9 +4796,6 @@ static int CoreFreqK_HotPlug_CPU_Offline(unsigned int cpu)
 	PUBLIC(RO(Proc))->Service.Hybrid = Seek_Topology_Hybrid_Core(cpu);
     }
    }
-#ifdef CONFIG_CPU_FREQ
-	Policy_Aggregate_Turbo();
-#endif /* CONFIG_CPU_FREQ */
 	return 0;
   } else
 	return -EINVAL;
@@ -5568,10 +5493,6 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 	#endif /* KERNEL_VERSION(4, 6, 0) */
 #endif /* CONFIG_HOTPLUG_CPU */
 
-	#ifdef CONFIG_CPU_FREQ
-	Policy_Aggregate_Turbo();
-	#endif /* CONFIG_CPU_FREQ */
-
 	return 0;
 }
 
@@ -5606,9 +5527,6 @@ static int CoreFreqK_User_Ops_Level_Up(INIT_ARG *pArg)
 		clockMod.cpu = -1;
 		clockMod.NC = CLOCK_MOD_HWP_MIN;
 		rc = Arch[PUBLIC(RO(Proc))->ArchID].ClockMod(&clockMod);
-	    #ifdef CONFIG_CPU_FREQ
-		Policy_Aggregate_Turbo();
-	    #endif
 	    }
 		break;
 	case BOOST(HWP_MAX) - BOOST(HWP_MIN):
@@ -5617,9 +5535,6 @@ static int CoreFreqK_User_Ops_Level_Up(INIT_ARG *pArg)
 		clockMod.cpu = -1;
 		clockMod.NC = CLOCK_MOD_HWP_MAX;
 		rc = Arch[PUBLIC(RO(Proc))->ArchID].ClockMod(&clockMod);
-	    #ifdef CONFIG_CPU_FREQ
-		Policy_Aggregate_Turbo();
-	    #endif
 	    }
 		break;
 	case BOOST(HWP_TGT) - BOOST(HWP_MIN):
@@ -5628,9 +5543,6 @@ static int CoreFreqK_User_Ops_Level_Up(INIT_ARG *pArg)
 		clockMod.cpu = -1;
 		clockMod.NC = CLOCK_MOD_HWP_TGT;
 		rc = Arch[PUBLIC(RO(Proc))->ArchID].ClockMod(&clockMod);
-	    #ifdef CONFIG_CPU_FREQ
-		Policy_Aggregate_Turbo();
-	    #endif
 	    }
 		break;
 	default:
@@ -5680,9 +5592,6 @@ static int CoreFreqK_User_Ops_Level_Up(INIT_ARG *pArg)
 			boost, rc);
 	}
       }
-    }
-    if (TurboBoost_Enable_Count == 2) {
-	TurboBoost_Enable[0] = TurboBoost_Enable[1];
     }
 	Controller_Start(1);
 

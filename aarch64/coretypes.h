@@ -939,17 +939,21 @@ typedef struct	/* BSP features.					*/
 		InstrRetired	: 32-31;
 	} PerfMon;
 
+	struct {
+		unsigned short	CG0NC,
+				CG1NC;
+	} AMU;
+
 	struct
 	{
 		unsigned int
 		DTS		:  1-0,
-		_Unused1_	:  2-1,
-		Turbo_V3	:  3-2,
+		_Unused1_	:  3-1,
 		PLN		:  4-3,
 		PTM		:  5-4,
 		HWP_Reg 	:  6-5,
-		HCF_Cap 	:  7-6,
-/*		HWP_Int 	:  1
+/*		HCF_Cap 	:  7-6,
+		HWP_Int 	:  1
 		HWP_Act 	:  1
 		HWP_EPP 	:  1
 		HWP_Pkg 	:  1
@@ -959,7 +963,7 @@ typedef struct	/* BSP features.					*/
 		HWP_Fast	:  1
 		HWFB_Cap	:  1
 		HWP_Idle	:  1	*/
-		_Unused2_	: 32-7;
+		_Unused2_	: 32-6;
 	} Power;
 
 	struct {
@@ -967,10 +971,6 @@ typedef struct	/* BSP features.					*/
 			CLOCK		Clock;
 			unsigned int	Freq,
 					Ratio;
-		struct {
-			unsigned char	LLC,
-					NB;
-		} PMC;
 	} Factory;
 } FEATURES;
 
@@ -1298,7 +1298,6 @@ enum {
 };
 
 enum {
-	TECHNOLOGY_TURBO,
 	TECHNOLOGY_HWP,
 	TECHNOLOGY_HWP_EPP,
 };

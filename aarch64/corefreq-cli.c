@@ -2269,15 +2269,6 @@ void TechUpdate(TGrid *grid,	const int unsigned bix, const signed int pos,
 	memcpy(&grid->cell.item[pos], item, len);
 }
 
-void TurboUpdate(TGrid *grid, DATA_TYPE data[])
-{
-	const unsigned int bix = RO(Shm)->Proc.Technology.Turbo == 1;
-	const signed int pos = grid->cell.length - 5;
-	UNUSED(data);
-
-	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
-}
-
 REASON_CODE SysInfoTech(Window *win,
 			CUINT width,
 			CELL_FUNC OutFunc,
@@ -2340,19 +2331,6 @@ REASON_CODE SysInfoTech(Window *win,
 		NULL,
 		SCANKEY_NULL,
 		NULL
-	},
-	{
-		NULL,
-		RO(Shm)->Proc.Technology.Turbo == 1,
-		2, "%s%.*sTURBO   <%3s>",
-		RO(Shm)->Proc.Features.Power.Turbo_V3 == 1 ?
-		RSC(TECHNOLOGIES_TBMT3).CODE() : RSC(TECHNOLOGIES_TURBO).CODE(),
-		NULL,
-		width - 16 - (RO(Shm)->Proc.Features.Power.Turbo_V3 == 1 ?
-		RSZ(TECHNOLOGIES_TBMT3) : RSZ(TECHNOLOGIES_TURBO)),
-		NULL,
-		BOXKEY_TURBO,
-		TurboUpdate
 	},
 	{
 		NULL,
@@ -2596,8 +2574,8 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 	PUT(	SCANKEY_NULL, attrib[0], width, 1,
 		"%.*s{%3u,%3u,%3u } x%3u %s%.*s%3u x%3u %s",
 		11, hSpace,	RO(Shm)->Proc.Features.PerfMon.MonCtrs,
-				RO(Shm)->Proc.Features.Factory.PMC.LLC,
-				RO(Shm)->Proc.Features.Factory.PMC.NB,
+				RO(Shm)->Proc.Features.AMU.CG0NC,
+				RO(Shm)->Proc.Features.AMU.CG1NC,
 				RO(Shm)->Proc.Features.PerfMon.MonWidth,
 				RSC(PERF_MON_UNIT_BIT).CODE(),
 		10, hSpace,	RO(Shm)->Proc.Features.PerfMon.FixCtrs,
@@ -2607,8 +2585,8 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 	GridHover( PUT( SCANKEY_NULL, attrib[0], width, 0,
 		"%.*s{%3u,%3u,%3u } x%3u %s%.*s%3u x%3u %s",
 		11, hSpace,	RO(Shm)->Proc.Features.PerfMon.MonCtrs,
-				RO(Shm)->Proc.Features.Factory.PMC.LLC,
-				RO(Shm)->Proc.Features.Factory.PMC.NB,
+				RO(Shm)->Proc.Features.AMU.CG0NC,
+				RO(Shm)->Proc.Features.AMU.CG1NC,
 				RO(Shm)->Proc.Features.PerfMon.MonWidth,
 				RSC(PERF_MON_UNIT_BIT).CODE(),
 		4, hSpace,	RO(Shm)->Proc.Features.PerfMon.FixCtrs,
@@ -2616,13 +2594,6 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 				RSC(PERF_MON_UNIT_BIT).CODE() ),
 		(char *) RSC(PERF_MON_PMC_COMM).CODE() );
     }
-/* Section Mark */
-	bix = RO(Shm)->Proc.Features.Power.HCF_Cap == 1;
-
-	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*s%s       [%3s]", RSC(PERF_MON_HWCF).CODE(),
-		width - 26 - RSZ(PERF_MON_HWCF), hSpace,
-		RSC(PERF_LABEL_HWCF).CODE(), ENABLED(bix) );
 /* Section Mark */
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s", RSC(PERF_MON_CORE_CSTATE).CODE() );
@@ -6786,7 +6757,7 @@ Window *CreateSysInfo(unsigned long long id)
 	case SCANKEY_t:
 		{
 		winOrigin.col = 23;
-		matrixSize.hth = 10;
+		matrixSize.hth = 9;
 		winOrigin.row = TOP_HEADER_ROW + 5;
 		winWidth = 60;
 		SysInfoFunc = SysInfoTech;
@@ -10950,56 +10921,6 @@ int Shortcut(SCANKEY *scan)
 				COREFREQ_TASK_MONITORING,
 				F_COMM );
     }
-    break;
-
-    case BOXKEY_TURBO:
-    {
-	Window *win = SearchWinListById(scan->key, &winList);
-      if (win == NULL)
-      {
-	const Coordinate origin = {
-		.col = (Draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
-		.row = TOP_HEADER_ROW + 2
-	}, select = {
-		.col = 0,
-		.row = RO(Shm)->Proc.Technology.Turbo ? 4 : 3
-	};
-	AppendWindow(
-		CreateBox(scan->key, origin, select,
-				(char*) RSC(BOX_TURBO_TITLE).CODE(),
-			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
-			RSC(BOX_TURBO_DESC).CODE(), descAttr,	SCANKEY_NULL,
-			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
-			stateStr[1][RO(Shm)->Proc.Technology.Turbo],
-				stateAttr[RO(Shm)->Proc.Technology.Turbo],
-								BOXKEY_TURBO_ON,
-			stateStr[0][!RO(Shm)->Proc.Technology.Turbo],
-				stateAttr[!RO(Shm)->Proc.Technology.Turbo],
-							       BOXKEY_TURBO_OFF,
-			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
-		&winList);
-      } else {
-	SetHead(&winList, win);
-      }
-    }
-    break;
-
-    case BOXKEY_TURBO_OFF:
-	if (!RING_FULL(RW(Shm)->Ring[0])) {
-		RING_WRITE(	RW(Shm)->Ring[0],
-				COREFREQ_IOCTL_TECHNOLOGY,
-				COREFREQ_TOGGLE_OFF,
-				TECHNOLOGY_TURBO );
-	}
-    break;
-
-    case BOXKEY_TURBO_ON:
-	if (!RING_FULL(RW(Shm)->Ring[0])) {
-		RING_WRITE(	RW(Shm)->Ring[0],
-				COREFREQ_IOCTL_TECHNOLOGY,
-				COREFREQ_TOGGLE_ON,
-				TECHNOLOGY_TURBO );
-	}
     break;
 
     case BOXKEY_HWP_EPP:

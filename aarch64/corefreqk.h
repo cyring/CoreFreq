@@ -464,14 +464,6 @@ static int CoreFreqK_Policy_Verify(struct cpufreq_policy*) ;
 #endif
 static int CoreFreqK_SetPolicy(struct cpufreq_policy*) ;
 static int CoreFreqK_Bios_Limit(int, unsigned int*) ;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)	\
-  || ((RHEL_MAJOR == 8)  && (RHEL_MINOR > 3))
-static int CoreFreqK_SetBoost(struct cpufreq_policy*, int) ;
-#else
-static int CoreFreqK_SetBoost(int) ;
-#endif
-#endif
 static ssize_t CoreFreqK_Show_SetSpeed(struct cpufreq_policy*, char*);
 static int CoreFreqK_Store_SetSpeed(struct cpufreq_policy*, unsigned int) ;
 #endif /* CONFIG_CPU_FREQ */

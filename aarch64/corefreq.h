@@ -233,12 +233,13 @@ typedef struct
 
 	struct {
 		unsigned long long
-				Turbo		:  5-4,
+				_Unused1_	: 13-0,
 				VM		: 14-13,
 				IOMMU		: 15-14,
+				_Unused2_	: 20-15,
 				IOMMU_Ver_Major : 24-20,
 				IOMMU_Ver_Minor : 28-24,
-				_pad64		: 64-34;
+				_Unused3_	: 64-28;
 	} Technology;
 
 	struct {

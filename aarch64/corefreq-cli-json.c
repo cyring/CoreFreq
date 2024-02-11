@@ -702,10 +702,6 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 				json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.PTM);
 				json_key(&s, "HWP_Registers");
 				json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.HWP_Reg);
-				json_key(&s, "Turbo_V3");
-				json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.Turbo_V3);
-				json_key(&s, "HCF_Cap");
-				json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Power.HCF_Cap);
 
 				json_end_object(&s);
 			}
@@ -727,10 +723,10 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 				json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.CoreCycles);
 				json_key(&s, "InstrRetired");
 				json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.InstrRetired);
-				json_key(&s, "PMC_LLC");
-				json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Factory.PMC.LLC);
-				json_key(&s, "PMC_NB");
-				json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Factory.PMC.NB);
+				json_key(&s, "AMU_CG0NC");
+				json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AMU.CG0NC);
+				json_key(&s, "AMU_CG1NC");
+				json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AMU.CG1NC);
 
 				json_end_object(&s);
 			}
@@ -779,8 +775,6 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 		json_key(&s, "Technology");
 		{
 			json_start_object(&s);
-			json_key(&s, "Turbo");
-			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.Turbo);
 			json_key(&s, "VM");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.VM);
 			json_key(&s, "IOMMU");

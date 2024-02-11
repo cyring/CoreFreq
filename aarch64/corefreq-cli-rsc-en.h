@@ -844,8 +844,6 @@
 #define RSC_TECHNOLOGIES_TITLE_CODE_EN	" Technologies "
 #define RSC_TECHNOLOGIES_DCU_CODE_EN	"Data Cache Unit"
 #define RSC_TECHNOLOGIES_ICU_CODE_EN	"Instruction Cache Unit"
-#define RSC_TECHNOLOGIES_TURBO_CODE_EN	"Turbo Boost"
-#define RSC_TECHNOLOGIES_TBMT3_CODE_EN	"Turbo Boost Max 3.0"
 #define RSC_TECHNOLOGIES_VM_CODE_EN	"Virtualization"
 #define RSC_TECHNOLOGIES_IOMMU_CODE_EN	"I/O MMU"
 #define RSC_TECHNOLOGIES_SMT_CODE_EN	"Simultaneous Multithreading"
@@ -860,7 +858,6 @@
 #define RSC_GENERAL_CTRS_CODE_EN	"General"
 #define RSC_FIXED_CTRS_CODE_EN		"Fixed"
 #define RSC_PERF_MON_UNIT_BIT_CODE_EN	"bits"
-#define RSC_PERF_MON_HWCF_CODE_EN	"P-State Hardware Coordination Feedback"
 #define RSC_PERF_MON_CPPC_CODE_EN  "Collaborative Processor Performance Control"
 #define RSC_PERF_MON_PCT_CODE_EN	"Processor Performance Control"
 #define RSC_PERF_MON_PSS_CODE_EN	"Performance Supported States"
@@ -879,7 +876,7 @@
 #define RSC_PERF_MON_INST_RET_CODE_EN	"Instructions Counter"
 
 #define RSC_PERF_MON_PMC_COMM_CODE_EN	\
-		" { Core performance monitoring, LLC cache, Northbridge } "
+		" { Core performance monitoring, AMU-CG0NC, AMU-CG1NC } "
 
 #define RSC_PERF_MON_CPPC_COMM_CODE_EN	" Firmware "
 
@@ -1368,19 +1365,8 @@
 #define RSC_BOX_MODE_TITLE_CODE_EN	" Experimental "
 
 #define RSC_BOX_MODE_DESC_CODE_EN	"       CoreFreq Operation Mode       "
-#define RSC_BOX_TURBO_DESC_CODE_EN	" Turbo Boost/Core Performance Boost "
-#define RSC_BOX_C1A_DESC_CODE_EN	"          C1 Auto Demotion          "
-#define RSC_BOX_C3A_DESC_CODE_EN	"          C3 Auto Demotion          "
-#define RSC_BOX_C1U_DESC_CODE_EN	"            C1 UnDemotion           "
-#define RSC_BOX_C2U_DESC_CODE_EN	"            C2 UnDemotion           "
-#define RSC_BOX_C3U_DESC_CODE_EN	"            C3 UnDemotion           "
-#define RSC_BOX_C6D_DESC_CODE_EN	"          Core C6 Demotion          "
-#define RSC_BOX_MC6_DESC_CODE_EN	"         Module C6 Demotion         "
-#define RSC_BOX_CC6_DESC_CODE_EN	"           Core C6 State            "
-#define RSC_BOX_PC6_DESC_CODE_EN	"          Package C6 State          "
 #define RSC_BOX_HWP_DESC_CODE_EN	"   Hardware-Controlled Performance  "
 #define RSC_BOX_FMW_DESC_CODE_EN	"   Firmware Controlled Performance  "
-#define RSC_BOX_HSMP_DESC_CODE_EN	"     Host System Management Port    "
 
 #define RSC_BOX_NOMINAL_MODE_COND0_CODE_EN \
 					"       Nominal operating mode       "
@@ -1634,24 +1620,8 @@
 #define RSC_SETTINGS_ROUTE_HALT_CODE	"   HALT"
 #define RSC_SETTINGS_ROUTE_MWAIT_CODE	"  MWAIT"
 
-#define RSC_BOX_TURBO_TITLE_CODE	" Turbo "
-
-#define RSC_BOX_C1A_TITLE_CODE		" C1A "
-#define RSC_BOX_C3A_TITLE_CODE		" C3A "
-#define RSC_BOX_C1U_TITLE_CODE		" C1U "
-#define RSC_BOX_C2U_TITLE_CODE		" C2U "
-#define RSC_BOX_C3U_TITLE_CODE		" C3U "
-
-#define RSC_BOX_CC6_TITLE_CODE		" CC6 "
-#define RSC_BOX_C6D_TITLE_CODE		" C6D "
-
-#define RSC_BOX_MC6_TITLE_CODE		" MC6 "
-#define RSC_BOX_PC6_TITLE_CODE		" PC6 "
 #define RSC_BOX_CPPC_TITLE_CODE		" CPPC "
-
 #define RSC_BOX_HWP_TITLE_CODE		" HWP "
-
-#define RSC_BOX_HSMP_TITLE_CODE		" HSMP "
 
 #define RSC_BOX_CFG_TDP_BLANK_CODE	"                   "
 
