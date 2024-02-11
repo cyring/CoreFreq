@@ -15,14 +15,14 @@
 #endif
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0)
-	#define MOV_SR_GPR(_reg)	read_sysreg_s(_reg)
-	#define MOV_GPR_SR(_val, _reg)	write_sysreg_s(_val, _reg)
+	#define SysRegRead(_reg)	read_sysreg_s(_reg)
+	#define SysRegWrite(_val, _reg) write_sysreg_s(_val, _reg)
 #else
-	#define MOV_SR_GPR(_reg) ({			\
+	#define SysRegRead(_reg) ({			\
 		UNUSED(_reg);				\
 		0;					\
 	})
-	#define MOV_GPR_SR(_val, _reg) ({		\
+	#define SysRegWrite(_val, _reg) ({		\
 		UNUSED(_val);				\
 		UNUSED(_reg);				\
 	})
