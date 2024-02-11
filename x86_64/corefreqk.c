@@ -10735,9 +10735,9 @@ void RingPerfLimitReasons(CORE_RO *Core)
     }
 }
 
-void PowerThermal(CORE_RO *Core)
+static void PowerThermal(CORE_RO *Core)
 {
-	struct {
+static	struct {
 		struct SIGNATURE Arch;
 		unsigned short	grantPWR_MGMT	:  1-0,
 				grantODCM	:  2-1,
@@ -19803,44 +19803,44 @@ long Sys_OS_Driver_Query(void)
 	int rc = RC_SUCCESS;
 #ifdef CONFIG_CPU_FREQ
 	const char *pFreqDriver;
-	struct cpufreq_policy freqPolicy;
+	struct cpufreq_policy *pFreqPolicy;
 #endif /* CONFIG_CPU_FREQ */
 #ifdef CONFIG_CPU_IDLE
-	struct cpuidle_driver *idleDriver;
+	struct cpuidle_driver *pIdleDriver;
 #endif /* CONFIG_CPU_IDLE */
 	memset(&PUBLIC(RO(Proc))->OS, 0, sizeof(OS_DRIVER));
 #ifdef CONFIG_CPU_IDLE
-    if ((idleDriver = cpuidle_get_driver()) != NULL)
+    if ((pIdleDriver = cpuidle_get_driver()) != NULL)
     {
 	int idx;
 
 	StrCopy(PUBLIC(RO(Proc))->OS.IdleDriver.Name,
-		idleDriver->name,
+		pIdleDriver->name,
 		CPUIDLE_NAME_LEN);
 
-      if (idleDriver->state_count < CPUIDLE_STATE_MAX) {
-	PUBLIC(RO(Proc))->OS.IdleDriver.stateCount = idleDriver->state_count;
+      if (pIdleDriver->state_count < CPUIDLE_STATE_MAX) {
+	PUBLIC(RO(Proc))->OS.IdleDriver.stateCount = pIdleDriver->state_count;
       } else {
 	PUBLIC(RO(Proc))->OS.IdleDriver.stateCount = CPUIDLE_STATE_MAX;
       }
-	PUBLIC(RO(Proc))->OS.IdleDriver.stateLimit = idleDriver->state_count;
+	PUBLIC(RO(Proc))->OS.IdleDriver.stateLimit = pIdleDriver->state_count;
 
       for (idx = 0; idx < PUBLIC(RO(Proc))->OS.IdleDriver.stateCount; idx++)
       {
 	StrCopy(PUBLIC(RO(Proc))->OS.IdleDriver.State[idx].Name,
-		idleDriver->states[idx].name, CPUIDLE_NAME_LEN);
+		pIdleDriver->states[idx].name, CPUIDLE_NAME_LEN);
 
 	StrCopy(PUBLIC(RO(Proc))->OS.IdleDriver.State[idx].Desc,
-		idleDriver->states[idx].desc, CPUIDLE_NAME_LEN);
+		pIdleDriver->states[idx].desc, CPUIDLE_NAME_LEN);
 
 	PUBLIC(RO(Proc))->OS.IdleDriver.State[idx].exitLatency = \
-					idleDriver->states[idx].exit_latency;
+					pIdleDriver->states[idx].exit_latency;
 
 	PUBLIC(RO(Proc))->OS.IdleDriver.State[idx].powerUsage = \
-					idleDriver->states[idx].power_usage;
+					pIdleDriver->states[idx].power_usage;
 
 	PUBLIC(RO(Proc))->OS.IdleDriver.State[idx].targetResidency = \
-				idleDriver->states[idx].target_residency;
+				pIdleDriver->states[idx].target_residency;
       }
       if(PUBLIC(RO(Proc))->Registration.Driver.CPUidle == REGISTRATION_ENABLE)
       {
@@ -19860,10 +19860,10 @@ long Sys_OS_Driver_Query(void)
 		StrCopy(PUBLIC(RO(Proc))->OS.FreqDriver.Name,
 			pFreqDriver, CPUFREQ_NAME_LEN);
 	}
-	memset(&freqPolicy, 0, sizeof(freqPolicy));
-    if((rc=cpufreq_get_policy(&freqPolicy, PUBLIC(RO(Proc))->Service.Core))==0)
+  if ((pFreqPolicy=kzalloc(sizeof(struct cpufreq_policy),GFP_KERNEL)) != NULL) {
+    if((rc=cpufreq_get_policy(pFreqPolicy,PUBLIC(RO(Proc))->Service.Core)) == 0)
     {
-	struct cpufreq_governor *pGovernor = freqPolicy.governor;
+	struct cpufreq_governor *pGovernor = pFreqPolicy->governor;
 	if (pGovernor != NULL) {
 		StrCopy(PUBLIC(RO(Proc))->OS.FreqDriver.Governor,
 			pGovernor->name, CPUFREQ_NAME_LEN);
@@ -19873,6 +19873,10 @@ long Sys_OS_Driver_Query(void)
     } else {
 	PUBLIC(RO(Proc))->OS.FreqDriver.Governor[0] = '\0';
     }
+	kfree(pFreqPolicy);
+  } else {
+	rc = -ENOMEM;
+  }
 #endif /* CONFIG_CPU_FREQ */
 	return rc;
 }
