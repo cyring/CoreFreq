@@ -5447,11 +5447,12 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 	SMBIOS_Collect();
 	SMBIOS_Decoder();
 
-	/*	Initialize the CoreFreq controller			*/
-	Controller_Init();
-
+	/*	Seek for an appropriate service processor		*/
 	MatchPeerForDefaultService(	&PUBLIC(RO(Proc))->Service,
 					pArg->localProcessor );
+
+	/*	Initialize the CoreFreq controller			*/
+	Controller_Init();
 
 	/*	Register the Idle & Frequency sub-drivers		*/
 	CoreFreqK_Register_CPU_Idle();
