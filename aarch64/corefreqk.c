@@ -1696,7 +1696,9 @@ void Query_DeviceTree(unsigned int cpu)
 	);
 	cntfrq.value = cntfrq.value / 1000000U;
 #ifdef CONFIG_CPU_FREQ
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 7, 0)
 	max_freq = cpufreq_get_hw_max_freq(cpu);
+#endif
 #endif
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = \
 		max_freq > 0 ? max_freq / 100000U : cntfrq.ClockFreq_Hz;
