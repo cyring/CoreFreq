@@ -4074,8 +4074,10 @@ signed int Get_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 			.Maximum	= CPPC_Caps.highest_perf,
 			#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0)
 			.Desired	= CPPC_Perf.reference_perf,
-			#else
+			#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
 			.Desired	= CPPC_Caps.reference_perf,
+			#else
+			.Desired	= 0,
 			#endif
 			.Energy 	= 0
 		};
