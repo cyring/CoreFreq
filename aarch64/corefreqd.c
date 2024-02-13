@@ -337,8 +337,9 @@ static void *Core_Cycle(void *arg)
 
 	/* Relative Frequency = Relative Ratio x Bus Clock Frequency	*/
 	CFlip->Relative.Ratio	= (double)(CFlip->Delta.C0.URC
-					* Cpu->Boost[BOOST(MAX)])
-				/ FRQ;
+				* (RO(Shm)->Proc.Features.Hybrid == 1 ?
+					RO(Shm)->Proc.Features.Factory.Ratio
+				:	Cpu->Boost[BOOST(MAX)])) / FRQ;
 
 	CFlip->Relative.Freq	= REL_FREQ_MHz( double,
 						CFlip->Relative.Ratio,

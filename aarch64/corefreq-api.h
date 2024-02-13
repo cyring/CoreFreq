@@ -22,7 +22,10 @@
 
 typedef struct
 {
-	unsigned int		BSP;
+	struct {
+		unsigned int	PN	: 12-0,
+				BSP	: 32-12;
+	};
 	signed int		MPID,
 				CoreID,
 				ThreadID,

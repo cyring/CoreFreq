@@ -1504,15 +1504,19 @@ static void Map_Generic_Topology(void *arg)
     if (arg != NULL) {
 	CORE_RO *Core = (CORE_RO *) arg;
 
+	volatile MIDR midr;
 	volatile MPIDR mpid;
 	__asm__ volatile
 	(
+		"mrs	%[midr] ,	midr_el1"	"\n\t"
 		"mrs	%[mpid] ,	mpidr_el1"	"\n\t"
 		"isb"
-		: [mpid]	"=r" (mpid)
+		: [midr]	"=r" (midr),
+		  [mpid]	"=r" (mpid)
 		:
 		: "memory"
 	);
+	Core->T.PN = midr.PartNum;
 	if (mpid.MT) {
 		Core->T.MPID = mpid.value & 0xfffff;
 		Core->T.Cluster.CMP = mpid.Aff3;
@@ -1545,9 +1549,11 @@ int Core_Topology(unsigned int cpu)
 
 unsigned int Proc_Topology(void)
 {
-	unsigned int cpu, CountEnabledCPU = 0;
+	unsigned int cpu, PN = 0, CountEnabledCPU = 0;
+	struct SIGNATURE Sig;
 
     for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++) {
+	PUBLIC(RO(Core, AT(cpu)))->T.PN		= 0;
 	PUBLIC(RO(Core, AT(cpu)))->T.BSP	= 0;
 	PUBLIC(RO(Core, AT(cpu)))->T.MPID	= -1;
 	PUBLIC(RO(Core, AT(cpu)))->T.CoreID	= -1;
@@ -1570,7 +1576,16 @@ unsigned int Proc_Topology(void)
 		BITCLR(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine, OS);
 	    }
 	}
+	PN =	( PN ^ PUBLIC(RO(Core, AT(cpu)))->T.PN )
+		| PUBLIC(RO(Core, AT(cpu)))->T.PN;
     }
+	Sig.Family = PN & 0x00f;
+	Sig.ExtFamily = (PN & 0xff0) >> 4;
+
+	PUBLIC(RO(Proc))->Features.Hybrid = !(
+	    Sig.Family == PUBLIC(RO(Proc))->Features.Info.Signature.Family
+	 && Sig.ExtFamily == PUBLIC(RO(Proc))->Features.Info.Signature.ExtFamily
+	);
 	return CountEnabledCPU;
 }
 
@@ -1665,6 +1680,27 @@ PROCESSOR_SPECIFIC *LookupProcessor(void)
 	}
     }
 	return NULL;
+}
+
+void Query_DeviceTree(unsigned int cpu)
+{
+	volatile CNTFRQ cntfrq;
+	unsigned int max_freq = 0;
+
+	__asm__ __volatile__(
+		"mrs	%[cntfrq],	cntfrq_el0"	"\n\t"
+		"isb"
+		: [cntfrq]	"=r" (cntfrq)
+		:
+		: "memory"
+	);
+	cntfrq.value = cntfrq.value / 1000000U;
+#ifdef CONFIG_CPU_FREQ
+	max_freq = cpufreq_get_hw_max_freq(cpu);
+#endif
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = \
+		max_freq > 0 ? max_freq / 100000U : cntfrq.ClockFreq_Hz;
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = 4;
 }
 
 void Compute_ACPI_CPPC_Bounds(unsigned int cpu)
@@ -1958,9 +1994,8 @@ void Query_Same_Genuine_Features(void)
 static void Query_GenericMachine(unsigned int cpu)
 {
 	Query_Same_Genuine_Features();
-	/* Reset Max ratio to call the clock estimation in Controller_Init() */
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = 0;
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = 4;
+
+	Query_DeviceTree(cpu);
 
     if (PRIVATE(OF(Specific)) != NULL) {
 	/*	Save the thermal parameters if specified		*/
@@ -2170,28 +2205,23 @@ void PerCore_Reset(CORE_RO *Core)
 
 static void PerCore_GenericMachine(void *arg)
 {
-	volatile CNTFRQ cntfrq;
 	volatile CPUPWRCTLR cpupwrctl;
 	volatile REVIDR revid;
 	CORE_RO *Core = (CORE_RO *) arg;
 
-	__asm__ __volatile__(
-		"mrs	%[cntfrq],	cntfrq_el0"	"\n\t"
-		"mrs	%[revid],	revidr_el1"	"\n\t"
-		"isb"
-		: [cntfrq]	"=r" (cntfrq),
-		  [revid]	"=r" (revid)
-		:
-		: "memory"
-	);
-	cntfrq.value = cntfrq.value / 1000000U;
-	Core->Boost[BOOST(MAX)] = cntfrq.ClockFreq_Hz;
-	Core->Boost[BOOST(MIN)] = 4;
+	Query_DeviceTree(Core->Bind);
 
     if (Experimental && (PUBLIC(RO(Proc))->HypervisorID == HYPERV_NONE)) {
 	cpupwrctl.value = SysRegRead(CPUPWRCTLR_EL1);
 	Core->Query.CStateBaseAddr = cpupwrctl.WFI_RET_CTRL;
     }
+	__asm__ __volatile__(
+		"mrs	%[revid],	revidr_el1"	"\n\t"
+		"isb"
+		: [revid]	"=r" (revid)
+		:
+		: "memory"
+	);
 	Core->Query.Revision = revid.Revision;
 
 	SystemRegisters(Core);
@@ -2570,7 +2600,9 @@ void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 		Core_OVH(Core); 					\
 									\
 		REL_BCLK(Core->Clock,					\
-			Core->Boost[BOOST(MAX)],			\
+			(PUBLIC(RO(Proc))->Features.Hybrid == 1 ?	\
+				PUBLIC(RO(Proc))->Features.Factory.Ratio\
+			:	Core->Boost[BOOST(MAX)]),		\
 			Core->Delta.TSC,				\
 			PUBLIC(RO(Proc))->SleepInterval);		\
 	}								\
