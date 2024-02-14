@@ -775,6 +775,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 		json_key(&s, "Technology");
 		{
 			json_start_object(&s);
+			json_key(&s, "Hybrid");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Features.Hybrid);
 			json_key(&s, "VM");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.VM);
 			json_key(&s, "IOMMU");
@@ -1056,6 +1058,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 		json_key(&s, "Topology");
 		{
 			json_start_object(&s);
+			json_key(&s, "PN");
+			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.PN);
 			json_key(&s, "BSP");
 			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.BSP);
 			json_key(&s, "MPID");

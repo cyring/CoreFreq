@@ -847,6 +847,7 @@
 #define RSC_TECHNOLOGIES_VM_CODE_EN	"Virtualization"
 #define RSC_TECHNOLOGIES_IOMMU_CODE_EN	"I/O MMU"
 #define RSC_TECHNOLOGIES_SMT_CODE_EN	"Simultaneous Multithreading"
+#define RSC_TECHNOLOGIES_HYBRID_CODE_EN "big.LITTLE technology"
 #define RSC_TECHNOLOGIES_HYPERV_CODE_EN "Hypervisor"
 #define RSC_TECHNOLOGIES_VM_COMM_CODE_EN " Virtual Machine Hypervisor "
 #define RSC_TECHNOLOGIES_IOMMU_COMM_CODE_EN " I/O MMU virtualization  "

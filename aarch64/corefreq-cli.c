@@ -2334,6 +2334,16 @@ REASON_CODE SysInfoTech(Window *win,
 	},
 	{
 		NULL,
+		RO(Shm)->Proc.Features.Hybrid == 1,
+		2, "%s%.*sHYBRID   [%3s]",
+		RSC(TECHNOLOGIES_HYBRID).CODE(), NULL,
+		width - 17 - RSZ(TECHNOLOGIES_HYBRID),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		NULL,
 	     RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Query.CStateBaseAddr != 0,
 		2, "%s%.*sCCx   [%3s]",
 		RSC(PERF_MON_CORE_CSTATE).CODE(), NULL,
@@ -6757,7 +6767,7 @@ Window *CreateSysInfo(unsigned long long id)
 	case SCANKEY_t:
 		{
 		winOrigin.col = 23;
-		matrixSize.hth = 9;
+		matrixSize.hth = 10;
 		winOrigin.row = TOP_HEADER_ROW + 5;
 		winWidth = 60;
 		SysInfoFunc = SysInfoTech;

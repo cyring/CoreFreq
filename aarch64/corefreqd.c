@@ -729,6 +729,7 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 {
 	unsigned int level;
 	/*	Copy each Core topology.				*/
+	RO(Shm)->Cpu[cpu].Topology.PN = RO(Core, AT(cpu))->T.PN;
 	RO(Shm)->Cpu[cpu].Topology.BSP = RO(Core, AT(cpu))->T.BSP ? 1:0;
 	RO(Shm)->Cpu[cpu].Topology.MPID = RO(Core, AT(cpu))->T.MPID;
 	RO(Shm)->Cpu[cpu].Topology.CoreID = RO(Core, AT(cpu))->T.CoreID;
