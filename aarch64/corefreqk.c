@@ -1550,7 +1550,7 @@ int Core_Topology(unsigned int cpu)
 unsigned int Proc_Topology(void)
 {
 	unsigned int cpu, PN = 0, CountEnabledCPU = 0;
-	struct SIGNATURE Sig;
+	struct SIGNATURE SoC;
 
     for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++) {
 	PUBLIC(RO(Core, AT(cpu)))->T.PN		= 0;
@@ -1579,12 +1579,12 @@ unsigned int Proc_Topology(void)
 	PN =	( PN ^ PUBLIC(RO(Core, AT(cpu)))->T.PN )
 		| PUBLIC(RO(Core, AT(cpu)))->T.PN;
     }
-	Sig.Family = PN & 0x00f;
-	Sig.ExtFamily = (PN & 0xff0) >> 4;
+	SoC.Family = PN & 0x00f;
+	SoC.ExtFamily = (PN & 0xff0) >> 4;
 
 	PUBLIC(RO(Proc))->Features.Hybrid = !(
-	    Sig.Family == PUBLIC(RO(Proc))->Features.Info.Signature.Family
-	 && Sig.ExtFamily == PUBLIC(RO(Proc))->Features.Info.Signature.ExtFamily
+	    SoC.Family == PUBLIC(RO(Proc))->Features.Info.Signature.Family
+	 && SoC.ExtFamily == PUBLIC(RO(Proc))->Features.Info.Signature.ExtFamily
 	);
 	return CountEnabledCPU;
 }
@@ -1684,8 +1684,13 @@ PROCESSOR_SPECIFIC *LookupProcessor(void)
 
 void Query_DeviceTree(unsigned int cpu)
 {
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+#ifdef CONFIG_CPU_FREQ
+	struct cpufreq_policy *pFreqPolicy = \
+		&PRIVATE(OF(Core, AT(cpu)))->FreqPolicy;
+#endif
 	volatile CNTFRQ cntfrq;
-	unsigned int max_freq = 0;
+	unsigned int max_freq = 0, min_freq = 0, cur_freq = 0;
 
 	__asm__ __volatile__(
 		"mrs	%[cntfrq],	cntfrq_el0"	"\n\t"
@@ -1696,13 +1701,45 @@ void Query_DeviceTree(unsigned int cpu)
 	);
 	cntfrq.value = cntfrq.value / 1000000U;
 #ifdef CONFIG_CPU_FREQ
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 7, 0)
-	max_freq = cpufreq_get_hw_max_freq(cpu);
+  if (cpufreq_get_policy(pFreqPolicy,cpu) == 0)
+  {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
+	struct cpufreq_frequency_table *table;
+	enum RATIO_BOOST boost = BOOST(MIN);
 #endif
+	max_freq = pFreqPolicy->cpuinfo.max_freq;
+	min_freq = pFreqPolicy->cpuinfo.min_freq;
+	cur_freq = pFreqPolicy->cur;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
+    cpufreq_for_each_valid_entry(table, pFreqPolicy->freq_table)
+    {
+	if (table->frequency != max_freq && table->frequency != min_freq)
+	{
+		Core->Boost[BOOST(18C) + boost] = table->frequency
+						/ UNIT_KHz(PRECISION);
+		boost++;
+	}
+	if (boost == (BOOST(SIZE) - BOOST(18C)))
+		break;
+    }
+    if (boost > BOOST(MIN)) {
+	const enum RATIO_BOOST diff = BOOST(SIZE) - (BOOST(18C) + boost);
+
+	memmove(&Core->Boost[BOOST(18C) + diff], &Core->Boost[BOOST(18C)],
+		boost * sizeof(enum RATIO_BOOST));
+
+	memset(&Core->Boost[BOOST(18C)], 0, diff * sizeof(enum RATIO_BOOST));
+    }
 #endif
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = \
-		max_freq > 0 ? max_freq / 100000U : cntfrq.ClockFreq_Hz;
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = 4;
+  }
+#endif /* CONFIG_CPU_FREQ */
+	Core->Boost[BOOST(MAX)] = max_freq > 0	? max_freq / UNIT_KHz(PRECISION)
+						: cntfrq.ClockFreq_Hz;
+
+	Core->Boost[BOOST(MIN)] = min_freq > 0	? min_freq / UNIT_KHz(PRECISION)
+						: 4;
+
+	Core->Boost[BOOST(TGT)] = cur_freq / UNIT_KHz(PRECISION);
 }
 
 void Compute_ACPI_CPPC_Bounds(unsigned int cpu)
@@ -1993,6 +2030,9 @@ void Query_Same_Genuine_Features(void)
 	} else {
 		PUBLIC(RO(Proc))->Features.SpecTurboRatio = 0;
 	}
+#if defined(CONFIG_CPU_FREQ) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
+	PUBLIC(RO(Proc))->Features.SpecTurboRatio += (BOOST(SIZE) - BOOST(18C));
+#endif
 }
 
 static void Query_GenericMachine(unsigned int cpu)
@@ -2846,65 +2886,105 @@ void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 	Pkg->Counter[0].Uncore.FC0 = Pkg->Counter[1].Uncore.FC0;	\
 })
 
+COF_UNION Compute_COF_From_CPU_Freq(struct cpufreq_policy *pFreqPolicy)
+{
+	register unsigned long long	Q = pFreqPolicy->cur,
+					D = UNIT_KHz(PRECISION);
+	COF_UNION ratio = {.COF = {
+		.Q = Q / D,
+		.R = (Q - (ratio.COF.Q * D)) / PRECISION }
+	};
+	return ratio;
+}
+
+COF_UNION Compute_COF_From_PMU_Counter(	unsigned long long cnt, CLOCK clk,
+				unsigned int limit )
+{
+	register unsigned long long \
+	Q = cnt * clk.Q,
+	D = UNIT_MHz(10LLU * PUBLIC(RO(Proc))->SleepInterval);
+
+	COF_UNION ratio = {.COF = {
+		.Q = Q / D }
+	};
+	if (ratio.COF.Q < limit) {
+		ratio.Perf = limit;
+	} else {
+		ratio.COF.R = (Q - (ratio.COF.Q * D)) / UNIT_MHz(10LLU);
+	}
+	return ratio;
+}
+
 static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
 {
 	CORE_RO *Core;
-	register unsigned long long Q, D;
+    #ifdef CONFIG_CPU_FREQ
+	struct cpufreq_policy *pFreqPolicy;
+    #endif
 	const unsigned int cpu = smp_processor_id();
 	Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
 	RDTSC64(Core->Overhead.TSC);
 
-	if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
+  if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
+  {
+	hrtimer_forward(pTimer,
+			hrtimer_cb_get_time(pTimer),
+			RearmTheTimer);
+
+	Counters_Generic(Core, 1);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
-		hrtimer_forward(pTimer,
-				hrtimer_cb_get_time(pTimer),
-				RearmTheTimer);
+		PKG_Counters_Generic(Core, 1);
 
-		Counters_Generic(Core, 1);
+		Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
 
-		if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
-		{
-			PKG_Counters_Generic(Core, 1);
+		Save_PTSC(PUBLIC(RO(Proc)));
 
-			Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
+		Sys_Tick(PUBLIC(RO(Proc)));
+	}
 
-			Save_PTSC(PUBLIC(RO(Proc)));
+	Delta_INST(Core);
 
-			Sys_Tick(PUBLIC(RO(Proc)));
-		}
+	Delta_C0(Core);
 
-		Delta_INST(Core);
+	Delta_TSC_OVH(Core);
 
-		Delta_C0(Core);
+	Delta_C1(Core);
 
-		Delta_TSC_OVH(Core);
+	Save_INST(Core);
 
-		Delta_C1(Core);
+	Save_TSC(Core);
 
-		Save_INST(Core);
+	Save_C0(Core);
 
-		Save_TSC(Core);
+	Save_C1(Core);
 
-		Save_C0(Core);
+    #ifdef CONFIG_CPU_FREQ
+	pFreqPolicy = &PRIVATE(OF(Core, AT(cpu)))->FreqPolicy;
+    if (cpufreq_get_policy(pFreqPolicy, cpu) == 0)
+    {
+	Core->Ratio = Compute_COF_From_CPU_Freq(pFreqPolicy);
+    }
+    else
+    {
+	Core->Ratio = Compute_COF_From_PMU_Counter(Core->Delta.C0.URC,
+						Core->Clock,
+						Core->Boost[BOOST(MIN)]);
+    }
+    #else
+	Core->Ratio = Compute_COF_From_PMU_Counter(Core->Delta.C0.URC,
+						Core->Clock,
+						Core->Boost[BOOST(MIN)]);
+    #endif
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(TGT)] = Core->Ratio.COF.Q;
 
-		Save_C1(Core);
+	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
 
-		Q = Core->Delta.C0.URC * Core->Clock.Q,
-		D = UNIT_MHz(10LLU * PUBLIC(RO(Proc))->SleepInterval);
-
-		Core->Ratio.COF.Q = Q / D;
-		if (Core->Ratio.COF.Q < Core->Boost[BOOST(MIN)]) {
-			Core->Ratio.Perf = Core->Boost[BOOST(MIN)];
-		} else {
-			Core->Ratio.COF.R = (Q - (Core->Ratio.COF.Q * D))
-					  / UNIT_KHz(10000LLU);
-		}
-		BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
-
-		return HRTIMER_RESTART;
-	} else
-		return HRTIMER_NORESTART;
+	return HRTIMER_RESTART;
+  } else
+	return HRTIMER_NORESTART;
 }
 
 static void InitTimer_GenericMachine(unsigned int cpu)
@@ -2972,7 +3052,8 @@ long Sys_OS_Driver_Query(void)
 	int rc = RC_SUCCESS;
 #ifdef CONFIG_CPU_FREQ
 	const char *pFreqDriver;
-	struct cpufreq_policy *pFreqPolicy;
+	struct cpufreq_policy *pFreqPolicy = \
+	&PRIVATE(OF(Core, AT(PUBLIC(RO(Proc))->Service.Core)))->FreqPolicy;
 #endif /* CONFIG_CPU_FREQ */
 #ifdef CONFIG_CPU_IDLE
 	struct cpuidle_driver *pIdleDriver;
@@ -3029,9 +3110,8 @@ long Sys_OS_Driver_Query(void)
 		StrCopy(PUBLIC(RO(Proc))->OS.FreqDriver.Name,
 			pFreqDriver, CPUFREQ_NAME_LEN);
 	}
-  if ((pFreqPolicy=kzalloc(sizeof(struct cpufreq_policy),GFP_KERNEL)) != NULL) {
-    if((rc=cpufreq_get_policy(pFreqPolicy,PUBLIC(RO(Proc))->Service.Core)) == 0)
-    {
+  if ((rc=cpufreq_get_policy(pFreqPolicy,PUBLIC(RO(Proc))->Service.Core)) == 0)
+  {
 	struct cpufreq_governor *pGovernor = pFreqPolicy->governor;
 	if (pGovernor != NULL) {
 		StrCopy(PUBLIC(RO(Proc))->OS.FreqDriver.Governor,
@@ -3039,12 +3119,8 @@ long Sys_OS_Driver_Query(void)
 	} else {
 		PUBLIC(RO(Proc))->OS.FreqDriver.Governor[0] = '\0';
 	}
-    } else {
-	PUBLIC(RO(Proc))->OS.FreqDriver.Governor[0] = '\0';
-    }
-	kfree(pFreqPolicy);
   } else {
-	rc = -ENOMEM;
+	PUBLIC(RO(Proc))->OS.FreqDriver.Governor[0] = '\0';
   }
 #endif /* CONFIG_CPU_FREQ */
 	return rc;

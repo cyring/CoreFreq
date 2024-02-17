@@ -232,6 +232,9 @@ typedef struct
 			PMCNTENSET	PMCNTEN;
 		    };
 		} SaveArea;
+#ifdef CONFIG_CPU_FREQ
+	struct cpufreq_policy	FreqPolicy;
+#endif /* CONFIG_CPU_FREQ */
 	} *Core[];
 } KPRIVATE;
 
