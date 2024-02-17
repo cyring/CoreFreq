@@ -2886,6 +2886,7 @@ void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 	Pkg->Counter[0].Uncore.FC0 = Pkg->Counter[1].Uncore.FC0;	\
 })
 
+#ifdef CONFIG_CPU_FREQ
 COF_UNION Compute_COF_From_CPU_Freq(struct cpufreq_policy *pFreqPolicy)
 {
 	register unsigned long long	Q = pFreqPolicy->cur,
@@ -2896,6 +2897,7 @@ COF_UNION Compute_COF_From_CPU_Freq(struct cpufreq_policy *pFreqPolicy)
 	};
 	return ratio;
 }
+#endif /* CONFIG_CPU_FREQ */
 
 COF_UNION Compute_COF_From_PMU_Counter(	unsigned long long cnt, CLOCK clk,
 				unsigned int limit )
