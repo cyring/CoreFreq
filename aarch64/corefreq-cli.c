@@ -17035,6 +17035,7 @@ int main(int argc, char *argv[])
 		{
 		Window tty = {.matrix.size.wth = 4};
 
+		AggregateRatio();
 		reason = SysInfoProc(NULL, 80, NULL, NULL);
 		if (IS_REASON_SUCCESSFUL(reason) == 0) { break; }
 
