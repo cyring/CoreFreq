@@ -749,8 +749,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.TDP_Cfg_Lock);
 			json_key(&s, "TDP_Cfg_Level");
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.TDP_Cfg_Level);
-			json_key(&s, "TurboActivation_Lock");
-			json_literal(&s, "%u", RO(Shm)->Proc.Features.TurboActiv_Lock);
+			json_key(&s, "Turbo_OPP");
+			json_literal(&s, "%u", RO(Shm)->Proc.Features.Turbo_OPP);
 			json_key(&s, "TargetRatio_Unlock");
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.TgtRatio_Unlock);
 			json_key(&s, "ClockRatio_Unlock");

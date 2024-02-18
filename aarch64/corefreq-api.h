@@ -347,8 +347,8 @@ typedef struct
 	enum THERM_PWR_EVENTS	Events[eDIM];
 
 	    struct {
-		unsigned short		Minimum,
-					Maximum;
+		unsigned short	Minimum,
+				Maximum;
 	    } ACPI_CPPC;
 	} PowerThermal;
 

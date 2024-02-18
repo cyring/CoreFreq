@@ -1211,8 +1211,6 @@ REASON_CODE SysInfoProc(Window *win,
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2, "%s", RSC(PERFORMANCE).CODE());
 
-	PUT(SCANKEY_NULL, attrib[0], width, 3, "%s", RSC(PSTATE).CODE());
-
 	coreClock = (CLOCK_ARG) {.NC = 0, .Offset = 0};
 
 	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_TGT;
@@ -1231,7 +1229,7 @@ REASON_CODE SysInfoProc(Window *win,
 				1, coreClock.ullong,
 				width, OutFunc, cellPadding, attrib[3] ),
 		RefreshTopFreq, BOOST(TGT) );
-
+/* Section Mark */
     if ((RO(Shm)->Proc.Features.HWP_Enable == 1)
      || (RO(Shm)->Proc.Features.ACPI_CPPC == 1))
     {
@@ -1290,11 +1288,47 @@ REASON_CODE SysInfoProc(Window *win,
 				width, OutFunc, cellPadding, attrib[3] ),
 		RefreshTopFreq, BOOST(HWP_TGT) );
     }
+/* Section Mark */
+    if (RO(Shm)->Proc.Features.Turbo_OPP == 1)
+    {
 	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.Turbo_Unlock],
-		width, 2, "%s%.*s[%7.*s]", RSC(BOOST).CODE(),
-		width - 12 - RSZ(BOOST), hSpace, 6,
+		width, 2, "%s%.*s[%7.*s]", RSC(TURBO).CODE(),
+		width - 12 - RSZ(TURBO), hSpace, 6,
 		RO(Shm)->Proc.Features.Turbo_Unlock ?
 			RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
+
+	CFlop = &RO(Shm)->Cpu[
+			Ruler.Top[ BOOST(TBH) ]
+		].FlipFlop[
+			!RO(Shm)->Cpu[ Ruler.Top[ BOOST(TBH) ] ].Toggle
+		];
+
+	GridCall( PrintRatioFreq(win, CFlop,
+				0, (char*) RSC(TBH).CODE(),
+				&RO(Shm)->Cpu[
+					Ruler.Top[ BOOST(TBH) ]
+				].Boost[ BOOST(TBH) ],
+				0, SCANKEY_NULL,
+				width, OutFunc, cellPadding, attrib[3] ),
+		RefreshTopFreq, BOOST(TBH) );
+
+	CFlop = &RO(Shm)->Cpu[
+			Ruler.Top[ BOOST(TBO) ]
+		].FlipFlop[
+			!RO(Shm)->Cpu[ Ruler.Top[ BOOST(TBO) ] ].Toggle
+		];
+
+	GridCall( PrintRatioFreq(win, CFlop,
+				0, (char*) RSC(TBO).CODE(),
+				&RO(Shm)->Cpu[
+					Ruler.Top[ BOOST(TBO) ]
+				].Boost[BOOST(TBO)],
+				0, SCANKEY_NULL,
+				width, OutFunc, cellPadding, attrib[3] ),
+		RefreshTopFreq, BOOST(TBO) );
+    }
+/* Section Mark */
+	PUT(SCANKEY_NULL, attrib[0], width, 2, "%s", RSC(OPP).CODE());
 
     for(boost = BOOST(1C), activeCores = 1;
       boost > BOOST(1C)-(enum RATIO_BOOST)RO(Shm)->Proc.Features.SpecTurboRatio;
@@ -1349,7 +1383,7 @@ REASON_CODE SysInfoProc(Window *win,
 		RefreshHybridFreq, boost );
       }
     }
-
+/* Section Mark */
 	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.Uncore_Unlock],
 		width, 2, "%s%.*s[%7.*s]", RSC(UNCORE).CODE(),
 		width - 18, hSpace, 6,
@@ -7501,8 +7535,8 @@ unsigned int MultiplierIsRatio(unsigned int cpu, unsigned int multiplier)
 	for (boost = BOOST(MIN); boost < BOOST(SIZE); boost++)
 	{
 		switch (boost) {
-		case BOOST(CPB):
-		case BOOST(XFR):
+		case BOOST(TBO):
+		case BOOST(TBH):
 			fallthrough;
 		default:
 		    if (RO(Shm)->Cpu[cpu].Boost[boost] == multiplier)

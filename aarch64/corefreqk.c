@@ -1600,7 +1600,7 @@ void Package_Init_Reset(void)
 	PUBLIC(RO(Proc))->Features.ClkRatio_Unlock = 0;
 	PUBLIC(RO(Proc))->Features.TDP_Unlock = 0;
 	PUBLIC(RO(Proc))->Features.Turbo_Unlock = 0;
-	PUBLIC(RO(Proc))->Features.TurboActiv_Lock = 1;
+	PUBLIC(RO(Proc))->Features.Turbo_OPP = 0;
 	PUBLIC(RO(Proc))->Features.TDP_Cfg_Lock = 1;
 	PUBLIC(RO(Proc))->Features.Uncore_Unlock = 0;
 }
@@ -1713,14 +1713,22 @@ void Query_DeviceTree(unsigned int cpu)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
     cpufreq_for_each_valid_entry(table, pFreqPolicy->freq_table)
     {
-	if (table->frequency != max_freq && table->frequency != min_freq)
-	{
+	if (table->frequency != max_freq && table->frequency != min_freq) {
+	    if (boost < (BOOST(SIZE) - BOOST(18C)))
+	    {
 		Core->Boost[BOOST(18C) + boost] = table->frequency
 						/ UNIT_KHz(PRECISION);
 		boost++;
+	    }
 	}
-	if (boost == (BOOST(SIZE) - BOOST(18C)))
-		break;
+	if ((table->flags & CPUFREQ_BOOST_FREQ) == CPUFREQ_BOOST_FREQ) {
+		const unsigned int COF = table->frequency / UNIT_KHz(PRECISION);
+		if (COF > Core->Boost[BOOST(TBH)]) {
+			Core->Boost[BOOST(TBO)] = Core->Boost[BOOST(TBH)];
+			Core->Boost[BOOST(TBH)] = COF;
+		}
+		PUBLIC(RO(Proc))->Features.Turbo_OPP = 1;
+	}
     }
     if (boost > BOOST(MIN)) {
 	const enum RATIO_BOOST diff = BOOST(SIZE) - (BOOST(18C) + boost);

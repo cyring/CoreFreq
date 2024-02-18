@@ -1672,13 +1672,15 @@
 
 #define RSC_FREQ_UNIT_MHZ_CODE		"(MHz)"
 #define RSC_PPIN_CODE			"PPIN#"
-#define RSC_PSTATE_CODE 		"P-State"
+#define RSC_OPP_CODE			"OPP"
 #define RSC_UNCORE_CODE 		"Uncore"
-#define RSC_BOOST_CODE			"Turbo Boost"
+#define RSC_TURBO_CODE			"Turbo"
 #define RSC_CPPC_CODE			"CPPC"
 #define RSC_MAX_CODE			"Max"
 #define RSC_MIN_CODE			"Min"
 #define RSC_TGT_CODE			"TGT"
+#define RSC_TBH_CODE			"TBH"
+#define RSC_TBO_CODE			"TBO"
 #define RSC_ACT_CODE			"Activ"
 #define RSC_HYBRID_CODE 		"Hybrid"
 
