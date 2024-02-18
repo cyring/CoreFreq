@@ -1158,6 +1158,23 @@ void RefreshTopFreq(TGrid *grid, DATA_TYPE data[])
 	RefreshItemFreq(grid, ratio, ABS_FREQ_MHz(double, ratio, CFlop->Clock));
 }
 
+void RefreshPrimaryFreq(TGrid *grid, DATA_TYPE data[])
+{
+	enum RATIO_BOOST boost = data[0].uint[0];
+	unsigned int ratio = RO(Shm)->Cpu[
+					RO(Shm)->Proc.Service.Core
+				].Boost[boost];
+
+	struct FLIP_FLOP *CFlop = &RO(Shm)->Cpu[
+					RO(Shm)->Proc.Service.Core
+				].FlipFlop[
+					!RO(Shm)->Cpu[
+						RO(Shm)->Proc.Service.Core
+					].Toggle
+				];
+	RefreshItemFreq(grid, ratio, ABS_FREQ_MHz(double, ratio, CFlop->Clock));
+}
+
 void RefreshHybridFreq(TGrid *grid, DATA_TYPE data[])
 {
 	enum RATIO_BOOST boost = data[0].uint[0];
@@ -1469,22 +1486,23 @@ REASON_CODE SysInfoProc(Window *win,
 		boost--, activeCores++)
     {
 	CLOCK_ARG clockMod={.NC=BOXKEY_TURBO_CLOCK_NC | activeCores,.Offset=0};
+	const unsigned int primary = \
+		RO(Shm)->Proc.Features.ExtFeature.EDX.Hybrid == 1 ?
+			RO(Shm)->Proc.Service.Core : Ruler.Top[boost];
+
 	char pfx[10+1+1];
 	StrFormat(pfx, 10+1+1, "%2uC", activeCores);
 
-	CFlop = &RO(Shm)->Cpu[
-			Ruler.Top[boost]
-		].FlipFlop[
-			!RO(Shm)->Cpu[ Ruler.Top[boost] ].Toggle
-		];
+	CFlop = &RO(Shm)->Cpu[primary].FlipFlop[!RO(Shm)->Cpu[primary].Toggle];
 
 	GridCall( PrintRatioFreq(win, CFlop,
 				0, pfx, &RO(Shm)->Cpu[
-						Ruler.Top[boost]
+						primary
 					].Boost[boost],
 				1, clockMod.ullong,
 				width, OutFunc, cellPadding, attrib[3] ),
-		RefreshTopFreq, boost );
+		RO(Shm)->Proc.Features.ExtFeature.EDX.Hybrid == 1 ?
+			RefreshPrimaryFreq : RefreshTopFreq, boost );
     }
     if (RO(Shm)->Proc.Features.ExtFeature.EDX.Hybrid == 1)
     {
