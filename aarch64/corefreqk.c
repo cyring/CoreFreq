@@ -939,13 +939,16 @@ static void Query_Features(void *pArg)
 		break;
 	}
 	switch (pfr0.GIC) {
-	case 0b0001:
 	case 0b0011:
-		iArg->Features->GIC = 1;
+		iArg->Features->GIC_frac = 1;
+		fallthrough;
+	case 0b0001:
+		iArg->Features->GIC_vers = 1;
 		break;
 	case 0b0000:
 	default:
-		iArg->Features->GIC = 0;
+		iArg->Features->GIC_frac = \
+		iArg->Features->GIC_vers = 0;
 		break;
 	}
 	switch (pfr0.SVE) {

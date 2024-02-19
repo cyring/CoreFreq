@@ -795,7 +795,7 @@ typedef struct	/* BSP features.					*/
 			RAND		:  8-7,
 			FP		:  9-8,
 			SIMD		: 10-9,
-			GIC		: 11-10,
+			GIC_vers	: 11-10,
 			SVE		: 12-11,
 			VHE		: 13-12,
 			SME		: 14-13,
@@ -827,7 +827,8 @@ typedef struct	/* BSP features.					*/
 			FlagM		: 40-39,
 			FlagM2		: 41-40,
 			PMULL		: 42-41,
-			_Unused1_	: 64-42;
+			GIC_frac	: 43-42,
+			_Unused1_	: 64-43;
 
 		Bit64	CSV2		:  4-0,
 			SSBS		:  8-4,

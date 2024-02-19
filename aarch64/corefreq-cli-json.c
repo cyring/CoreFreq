@@ -539,8 +539,10 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FP);
 					json_key(&s, "SIMD");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SIMD);
-					json_key(&s, "GIC");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.GIC);
+					json_key(&s, "GIC_vers");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.GIC_vers);
+					json_key(&s, "GIC_frac");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.GIC_frac);
 					json_key(&s, "SVE");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SVE);
 					json_key(&s, "DIT");

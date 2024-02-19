@@ -2080,10 +2080,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
-		RO(Shm)->Proc.Features.GIC == 1,
+		( RO(Shm)->Proc.Features.GIC_vers
+		+ RO(Shm)->Proc.Features.GIC_frac ) > 0,
 		attr_Feat,
-		2, "%s%.*sGIC   [%7s]", RSC(FEATURES_GIC).CODE(),
-		width - 18 - RSZ(FEATURES_GIC),
+		2, RO(Shm)->Proc.Features.GIC_vers ?
+			RO(Shm)->Proc.Features.GIC_frac ?
+			"%s v4.1%.*sGIC   [%7s]" : "%s v3.0%.*sGIC   [%7s]"
+			"%s     %.*sGIC   [%7s]" : "%s     %.*sGIC   [%7s]",
+		RSC(FEATURES_GIC).CODE(), width - 23 - RSZ(FEATURES_GIC),
 		NULL
 	},
 	{
