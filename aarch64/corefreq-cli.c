@@ -2173,6 +2173,30 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
+		RO(Shm)->Proc.Features.PARange <= 0b0111,
+		attr_Feat,
+		2, RO(Shm)->Proc.Features.PARange == 0b0000 ?
+			"%s 32 bits, 4GB  %.*sPA   [%7s]"
+		: RO(Shm)->Proc.Features.PARange == 0b0001 ?
+			"%s 36 bits, 64GB %.*sPA   [%7s]"
+		: RO(Shm)->Proc.Features.PARange == 0b0010 ?
+			"%s 40 bits, 1TB  %.*sPA   [%7s]"
+		: RO(Shm)->Proc.Features.PARange == 0b0011 ?
+			"%s 42 bits, 4TB  %.*sPA   [%7s]"
+		: RO(Shm)->Proc.Features.PARange == 0b0100 ?
+			"%s 44 bits, 16TB %.*sPA   [%7s]"
+		: RO(Shm)->Proc.Features.PARange == 0b0101 ?
+			"%s 48 bits, 256TB%.*sPA   [%7s]"
+		: RO(Shm)->Proc.Features.PARange == 0b0110 ?
+			"%s 52 bits, 4PB  %.*sPA   [%7s]"
+		: RO(Shm)->Proc.Features.PARange == 0b0111 ?
+			"%s 56 bits, 64PB %.*sPA   [%7s]"
+		:	"%s               %.*sPA   [%7s]",
+		RSC(FEATURES_PA).CODE(), width - 32 - RSZ(FEATURES_PA),
+		NULL
+	},
+	{
+		NULL,
 		RO(Shm)->Proc.Features.PAN == 1,
 		attr_Feat,
 		2, "%s%.*sPAN   [%7s]", RSC(FEATURES_PAN).CODE(),

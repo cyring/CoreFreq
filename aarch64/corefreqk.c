@@ -941,6 +941,9 @@ static void Query_Features(void *pArg)
 		iArg->Features->BigEnd_EE = 0;
 		break;
 	}
+
+	iArg->Features->PARange = mmfr0.PARange;
+
 	switch (mmfr1.VH) {
 	case 0b0001:
 		iArg->Features->VHE = 1;

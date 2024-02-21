@@ -833,6 +833,7 @@
 #define RSC_FEATURES_MPAM_CODE_EN	"Memory Partitioning and Monitoring"
 #define RSC_FEATURES_MTE_CODE_EN	"Memory Tagging Extension"
 #define RSC_FEATURES_NMI_CODE_EN	"Non Maskable Interrupt"
+#define RSC_FEATURES_PA_CODE_EN 	"Physical Address range"
 #define RSC_FEATURES_PAN_CODE_EN	"Privileged Access Never"
 #define RSC_FEATURES_RAS_CODE_EN     "Reliability Availability & Serviceability"
 #define RSC_FEATURES_RME_CODE_EN	"Realm Management Extension"
