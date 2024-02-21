@@ -521,6 +521,10 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_start_object(&s);
 					json_key(&s, "ECV");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ECV);
+					json_key(&s, "FGT");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FGT);
+					json_key(&s, "FGT2");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FGT2);
 					json_end_object(&s);
 				}
 				json_key(&s, "MMFR1");

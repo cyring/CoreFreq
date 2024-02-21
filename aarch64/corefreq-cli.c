@@ -2088,6 +2088,22 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
+		RO(Shm)->Proc.Features.FGT == 1,
+		attr_Feat,
+		2, "%s%.*sFGT   [%7s]", RSC(FEATURES_FGT).CODE(),
+		width - 18 - RSZ(FEATURES_FGT),
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Features.FGT2 == 1,
+		attr_Feat,
+		2, "%s%.*sFGT2   [%7s]", RSC(FEATURES_FGT).CODE(),
+		width - 19 - RSZ(FEATURES_FGT),
+		NULL
+	},
+	{
+		NULL,
 		( RO(Shm)->Proc.Features.GIC_vers
 		+ RO(Shm)->Proc.Features.GIC_frac ) > 0,
 		attr_Feat,
