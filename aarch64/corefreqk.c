@@ -923,6 +923,24 @@ static void Query_Features(void *pArg)
 		iArg->Features->ExS = 0;
 		break;
 	}
+	switch (mmfr0.BigEnd_EL0) {
+	case 0b0001:
+		iArg->Features->BigEnd_EL0 = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->BigEnd_EL0 = 0;
+		break;
+	}
+	switch (mmfr0.BigEnd) {
+	case 0b0001:
+		iArg->Features->BigEnd_EE = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->BigEnd_EE = 0;
+		break;
+	}
 	switch (mmfr1.VH) {
 	case 0b0001:
 		iArg->Features->VHE = 1;

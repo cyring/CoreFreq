@@ -527,6 +527,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FGT2);
 					json_key(&s, "ExS");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExS);
+					json_key(&s, "BigEnd_EL0");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.BigEnd_EL0);
 					json_end_object(&s);
 				}
 				json_key(&s, "MMFR1");

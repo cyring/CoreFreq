@@ -513,6 +513,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_AMU_CODE_FR	\
 			"Unit""\xa9"" de surveillance de l'activit""\xa9"
 
+#define RSC_FEATURES_BIG_END_CODE_FR	RSC_FEATURES_BIG_END_CODE_EN
 #define RSC_FEATURES_BTI_CODE_FR	"Validation des cibles de branche"
 
 #define RSC_FEATURES_EBEP_CODE_FR	\

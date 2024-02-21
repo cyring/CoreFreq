@@ -821,6 +821,7 @@
 
 #define RSC_FEATURES_ACPI_CODE_EN    "Advanced Configuration & Power Interface"
 #define RSC_FEATURES_AMU_CODE_EN	"Activity Monitor Unit"
+#define RSC_FEATURES_BIG_END_CODE_EN	"Mixed-Endianness"
 #define RSC_FEATURES_BTI_CODE_EN	"Branch Target Identification"
 #define RSC_FEATURES_EBEP_CODE_EN	"Exception-based event profiling"
 #define RSC_FEATURES_ECV_CODE_EN	"Enhanced Counter Virtualization"

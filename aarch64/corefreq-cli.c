@@ -2064,6 +2064,22 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
+		RO(Shm)->Proc.Features.BigEnd_EL0 == 1,
+		attr_Feat,
+		2, "%s EL0%.*sBigEnd   [%7s]", RSC(FEATURES_BIG_END).CODE(),
+		width - 25 - RSZ(FEATURES_BIG_END),
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Features.BigEnd_EE == 1,
+		attr_Feat,
+		2, "%s EE|E0E%.*sBigEnd   [%7s]", RSC(FEATURES_BIG_END).CODE(),
+		width - 28 - RSZ(FEATURES_BIG_END),
+		NULL
+	},
+	{
+		NULL,
 		RO(Shm)->Proc.Features.EBEP == 1,
 		attr_Feat,
 		2, "%s%.*sEBEP   [%7s]", RSC(FEATURES_EBEP).CODE(),
@@ -2118,6 +2134,7 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		2, RO(Shm)->Proc.Features.GIC_vers ?
 			RO(Shm)->Proc.Features.GIC_frac ?
 			"%s v4.1%.*sGIC   [%7s]" : "%s v3.0%.*sGIC   [%7s]"
+		:	RO(Shm)->Proc.Features.GIC_frac ?
 			"%s     %.*sGIC   [%7s]" : "%s     %.*sGIC   [%7s]",
 		RSC(FEATURES_GIC).CODE(), width - 23 - RSZ(FEATURES_GIC),
 		NULL
