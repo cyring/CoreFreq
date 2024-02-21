@@ -828,7 +828,8 @@ typedef struct	/* BSP features.					*/
 			FlagM2		: 41-40,
 			PMULL		: 42-41,
 			GIC_frac	: 43-42,
-			_Unused1_	: 64-43;
+			ECV		: 44-43,
+			_Unused1_	: 64-44;
 
 		Bit64	CSV2		:  4-0,
 			SSBS		:  8-4,

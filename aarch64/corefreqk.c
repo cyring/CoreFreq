@@ -523,6 +523,7 @@ static void Query_Features(void *pArg)
 	volatile AA64DFR1 dfr1;
 	volatile AA64ISAR0 isar0;
 	volatile AA64ISAR1 isar1;
+	volatile AA64MMFR0 mmfr0;
 	volatile AA64MMFR1 mmfr1;
 	volatile AA64MMFR2 mmfr2;
 	volatile AA64PFR0 pfr0;
@@ -541,6 +542,7 @@ static void Query_Features(void *pArg)
 		"mrs	%[dfr1] ,	id_aa64dfr1_el1""\n\t"
 		"mrs	%[isar0],	id_aa64isar0_el1""\n\t"
 		"mrs	%[isar1],	id_aa64isar1_el1""\n\t"
+		"mrs	%[mmfr0],	id_aa64mmfr0_el1""\n\t"
 		"mrs	%[mmfr1],	id_aa64mmfr1_el1""\n\t"
 		"mrs	%[pfr0] ,	id_aa64pfr0_el1""\n\t"
 		"mrs	%[pfr1] ,	id_aa64pfr1_el1""\n\t"
@@ -553,6 +555,7 @@ static void Query_Features(void *pArg)
 		  [dfr1]	"=r" (dfr1),
 		  [isar0]	"=r" (isar0),
 		  [isar1]	"=r" (isar1),
+		  [mmfr0]	"=r" (mmfr0),
 		  [mmfr1]	"=r" (mmfr1),
 		  [pfr0]	"=r" (pfr0),
 		  [pfr1]	"=r" (pfr1)
@@ -887,6 +890,16 @@ static void Query_Features(void *pArg)
 	default:
 		iArg->Features->DPB2 = \
 		iArg->Features->DPB = 0;
+		break;
+	}
+	switch (mmfr0.ECV) {
+	case 0b0010:
+	case 0b0001:
+		iArg->Features->ECV = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->ECV = 0;
 		break;
 	}
 	switch (mmfr1.VH) {

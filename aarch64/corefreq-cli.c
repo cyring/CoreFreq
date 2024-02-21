@@ -2072,6 +2072,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
+		RO(Shm)->Proc.Features.ECV == 1,
+		attr_Feat,
+		2, "%s%.*sECV   [%7s]", RSC(FEATURES_ECV).CODE(),
+		width - 18 - RSZ(FEATURES_ECV),
+		NULL
+	},
+	{
+		NULL,
 		RO(Shm)->Proc.Features.DIT == 1,
 		attr_Feat,
 		2, "%s%.*sDIT   [%7s]", RSC(FEATURES_DIT).CODE(),
