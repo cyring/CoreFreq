@@ -2088,6 +2088,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
+		RO(Shm)->Proc.Features.ExS == 1,
+		attr_Feat,
+		2, "%s%.*sExS   [%7s]", RSC(FEATURES_EXS).CODE(),
+		width - 18 - RSZ(FEATURES_EXS),
+		NULL
+	},
+	{
+		NULL,
 		RO(Shm)->Proc.Features.FGT == 1,
 		attr_Feat,
 		2, "%s%.*sFGT   [%7s]", RSC(FEATURES_FGT).CODE(),

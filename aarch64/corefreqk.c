@@ -914,6 +914,15 @@ static void Query_Features(void *pArg)
 		iArg->Features->FGT2 = \
 		iArg->Features->FGT = 0;
 	}
+	switch (mmfr0.ExS) {
+	case 0b0001:
+		iArg->Features->ExS = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->ExS = 0;
+		break;
+	}
 	switch (mmfr1.VH) {
 	case 0b0001:
 		iArg->Features->VHE = 1;

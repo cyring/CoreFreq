@@ -831,7 +831,8 @@ typedef struct	/* BSP features.					*/
 			ECV		: 44-43,
 			FGT		: 45-44,
 			FGT2		: 46-45,
-			_Unused1_	: 64-46;
+			ExS		: 47-46,
+			_Unused1_	: 64-47;
 
 		Bit64	CSV2		:  4-0,
 			SSBS		:  8-4,

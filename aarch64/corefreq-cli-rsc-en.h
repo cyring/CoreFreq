@@ -825,6 +825,7 @@
 #define RSC_FEATURES_EBEP_CODE_EN	"Exception-based event profiling"
 #define RSC_FEATURES_ECV_CODE_EN	"Enhanced Counter Virtualization"
 #define RSC_FEATURES_DIT_CODE_EN	"Data Independent Timing"
+#define RSC_FEATURES_EXS_CODE_EN  "Context Synchronization & Exception Handling"
 #define RSC_FEATURES_FGT_CODE_EN	"Fine-Grained Trap controls"
 #define RSC_FEATURES_GCS_CODE_EN	"Guarded Control Stack"
 #define RSC_FEATURES_GIC_CODE_EN	"Generic Interrupt Controller"

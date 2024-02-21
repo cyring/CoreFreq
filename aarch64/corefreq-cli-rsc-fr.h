@@ -522,6 +522,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 	"Virtualisation am""\xa9""lior""\xa9""e des compteurs"
 
 #define RSC_FEATURES_DIT_CODE_FR	RSC_FEATURES_DIT_CODE_EN
+#define RSC_FEATURES_EXS_CODE_FR	\
+			"Synchronisation du contexte & gestion d'exceptions"
+
 #define RSC_FEATURES_FGT_CODE_FR	RSC_FEATURES_FGT_CODE_EN
 #define RSC_FEATURES_GCS_CODE_FR	RSC_FEATURES_GCS_CODE_EN
 #define RSC_FEATURES_GIC_CODE_FR	\
