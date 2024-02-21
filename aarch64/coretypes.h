@@ -835,7 +835,8 @@ typedef struct	/* BSP features.					*/
 			BigEnd_EL0	: 48-47,
 			BigEnd_EE	: 49-48,
 			PARange 	: 53-49,
-			_Unused1_	: 64-53;
+			VARange 	: 62-59,
+			_Unused1_	: 64-62;
 
 		Bit64	CSV2		:  4-0,
 			SSBS		:  8-4,

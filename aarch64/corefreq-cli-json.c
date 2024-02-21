@@ -545,6 +545,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 				json_key(&s, "MMFR2");
 				{
 					json_start_object(&s);
+					json_key(&s, "VARange");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.VARange);
 					json_key(&s, "UAO");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.UAO);
 					json_end_object(&s);

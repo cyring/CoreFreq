@@ -547,6 +547,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_TME_CODE_FR  "Extension de m""\xa9""moire transactionnelle"
 #define RSC_FEATURES_TSC_CODE_FR	"Compteur d'horodatage"
 #define RSC_FEATURES_UAO_CODE_FR       "Surcharge de l'acc""\xa8""s utilisateur"
+#define RSC_FEATURES_VA_CODE_FR 	"Plage d'adressage virtuel"
 #define RSC_FEATURES_VHE_CODE_FR    "Extensions d'H""\xb4""te de Virtualisation"
 #define RSC_FEAT_SECTION_MECH_CODE_FR	"M""\xa9""canismes d'att""\xa9""nuation"
 #define RSC_FEAT_SECTION_SEC_CODE_FR	"Fonctions de s""\xa9""curit""\xa9"

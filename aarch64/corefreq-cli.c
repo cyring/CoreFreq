@@ -2250,6 +2250,20 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
+		RO(Shm)->Proc.Features.VARange <= 0b10,
+		attr_Feat,
+		2, RO(Shm)->Proc.Features.VARange == 0b00 ?
+			"%s 48 bits%.*sVA   [%7s]"
+		: RO(Shm)->Proc.Features.VARange == 0b01 ?
+			"%s 52 bits%.*sVA   [%7s]"
+		: RO(Shm)->Proc.Features.VARange == 0b10 ?
+			"%s 56 bits%.*sVA   [%7s]"
+		:	"%s *RSVD* %.*sVA   [%7s]",
+		RSC(FEATURES_VA).CODE(), width - 25 - RSZ(FEATURES_VA),
+		NULL
+	},
+	{
+		NULL,
 		RO(Shm)->Proc.Features.VHE == 1,
 		attr_Feat,
 		2, "%s%.*sVHE   [%7s]", RSC(FEATURES_VHE).CODE(),

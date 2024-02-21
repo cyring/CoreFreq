@@ -842,6 +842,7 @@
 #define RSC_FEATURES_TME_CODE_EN	"Transactional Memory Extension"
 #define RSC_FEATURES_TSC_CODE_EN	"Time Stamp Counter"
 #define RSC_FEATURES_UAO_CODE_EN	"User Access Override"
+#define RSC_FEATURES_VA_CODE_EN 	"Virtual Address range"
 #define RSC_FEATURES_VHE_CODE_EN	"Virtualization Host Extensions"
 #define RSC_FEAT_SECTION_MECH_CODE_EN	"Mitigation mechanisms"
 #define RSC_FEAT_SECTION_SEC_CODE_EN	"Security Features"

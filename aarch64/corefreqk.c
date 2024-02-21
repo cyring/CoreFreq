@@ -973,6 +973,11 @@ static void Query_Features(void *pArg)
 		iArg->Features->UAO = 0;
 		break;
 	}
+	if (mmfr2.VARange < 0b0011) {
+		iArg->Features->VARange = mmfr2.VARange;
+	} else {
+		iArg->Features->VARange = 0b11;
+	}
 	switch (pfr0.FP) {
 	case 0b0000:
 	case 0b0001:
