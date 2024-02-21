@@ -12834,18 +12834,21 @@ static void PerCore_Atom_Goldmont_Query(void *arg)
 
 static void PerCore_Goldmont_Query(void *arg)
 {
-	CORE_RO *Core = (CORE_RO *) arg;
-
 	PerCore_Atom_Goldmont_Query(arg);
-
-	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA) {
-		Intel_Turbo_Activation_Ratio(Core);
-	}
 }
 
 static void PerCore_Geminilake_Query(void *arg)
 {
 	PerCore_Atom_Goldmont_Query(arg);
+}
+
+static void PerCore_Tremont_Query(void *arg)
+{
+	CORE_RO *Core = (CORE_RO *) arg;
+
+	PerCore_Atom_Goldmont_Query(arg);
+
+	Intel_Turbo_Activation_Ratio(Core);
 }
 
 static void PerCore_Nehalem_Same_Query(void *arg)

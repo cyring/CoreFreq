@@ -1544,6 +1544,7 @@ static void Query_Airmont(unsigned int cpu) ;
 static void PerCore_Airmont_Query(void *arg) ;
 
 static void PerCore_Geminilake_Query(void *arg) ;
+static void PerCore_Tremont_Query(void *arg) ;
 
 static void Query_Nehalem(unsigned int cpu) ;
 static void PerCore_Nehalem_Query(void *arg) ;
@@ -10704,7 +10705,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [Tremont_Jacobsville] = {						/* 68*/
 	.Signature = _Tremont_Jacobsville,
 	.Query = Query_Goldmont,
-	.Update = PerCore_Goldmont_Query,
+	.Update = PerCore_Tremont_Query,
 	.Start = Start_Goldmont,
 	.Stop = Stop_Goldmont,
 	.Exit = NULL,
