@@ -37,7 +37,7 @@
 	sysconf(_SC_PAGESIZE) > 0 ? sysconf(_SC_PAGESIZE) : 4096	\
 )
 
-/* §8.10.6.7 Place Locks and Semaphores in Aligned, 128-Byte Blocks of Memory */
+/*Ch:8.10.6.7 Place Locks and Semaphores in Aligned, 128-Byte Blocks of Memory*/
 static BitCC roomSeed	__attribute__ ((aligned (16))) = InitCC(0x0);
 static BitCC roomCore	__attribute__ ((aligned (16))) = InitCC(0x0);
 static BitCC roomClear	__attribute__ ((aligned (16))) = InitCC(0x0);
@@ -388,7 +388,7 @@ static void (*ComputeVoltage_None_Matrix[4])(	struct FLIP_FLOP*,
 static void ComputeVoltage_Intel_Core2( struct FLIP_FLOP *CFlip,
 						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
-{	/* Intel Core 2 Extreme Datasheet §3.3-Table 2			*/
+{	/* Intel Core 2 Extreme Datasheet Chap. 3.3-Table 2		*/
 	COMPUTE_VOLTAGE(INTEL_CORE2,
 			CFlip->Voltage.Vcore,
 			CFlip->Voltage.VID);
@@ -608,7 +608,7 @@ static void (*ComputeVoltage_AMD_Matrix[4])( struct FLIP_FLOP*,
 static void ComputeVoltage_AMD_0Fh( struct FLIP_FLOP *CFlip,
 						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
-{	/* AMD BKDG Family 0Fh §10.6 Table 70				*/
+{	/* AMD BKDG Family 0Fh Chap 10.6 Table 70			*/
 	COMPUTE_VOLTAGE(AMD_0Fh,
 			CFlip->Voltage.Vcore,
 			CFlip->Voltage.VID);
@@ -8206,7 +8206,7 @@ static void Pkg_ComputeVoltage_Intel_SoC(struct PKG_FLIP_FLOP *PFlip)
 }
 
 static void Pkg_ComputeVoltage_Intel_SNB(struct PKG_FLIP_FLOP *PFlip)
-{	/* Intel 2nd Generation Datasheet Vol-1 §7.4 Table 7-1		*/
+{	/* Intel 2nd Generation Datasheet Vol-1 Chap. 7.4 Table 7-1	*/
 	COMPUTE_VOLTAGE(INTEL_SNB,
 			PFlip->Voltage.CPU,
 			PFlip->Voltage.VID.CPU);

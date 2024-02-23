@@ -1891,7 +1891,7 @@ static CLOCK BaseClock_Skylake(unsigned int ratio)
 };
 
 static CLOCK BaseClock_AMD_Family_17h(unsigned int ratio)
-{	/* Source: AMD PPR Family 17h § 1.4/ Table 11: REFCLK = 100 MHz */
+{	/* Source: AMD PPR Family 17h Chap. 1.4/ Table 11: REFCLK = 100 MHz */
 	CLOCK clock = {.Q = 100, .R = 0, .Hz = 100000000L};
 	UNUSED(ratio);
 	return clock;
@@ -2327,7 +2327,7 @@ static void Map_AMD_Topology(void *arg)
 /*
  Enumerate the topology of Processors, Cores and Threads
  Remark: Early single-core processors are not processed.
- Sources: Intel Software Developer's Manual vol 3A §8.9 /
+ Sources: Intel Software Developer's Manual vol 3A Chap. 8.9 /
 	  Intel whitepaper: Detecting Hyper-Threading Technology /
 */
 unsigned short FindMaskWidth(unsigned short maxCount)
@@ -2717,7 +2717,7 @@ void Intel_Core_Platform_Info(unsigned int cpu)
 	}
 
 	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-	if (PerfStatus.value != 0) {				/* §18.18.3.4 */
+	if (PerfStatus.value != 0) {			/* Chap. 18.18.3.4 */
 		if (PerfStatus.CORE.XE_Enable) {
 			ratio1 = PerfStatus.CORE.MaxBusRatio;
 		} else {
@@ -4743,7 +4743,7 @@ void Query_G965(void __iomem *mchmap, unsigned short mc)
 }
 
 void Query_P35(void __iomem *mchmap, unsigned short mc)
-{	/* Source: Intel® 3 Series Express Chipset Family. */
+{	/* Source: Intel 3 Series Express Chipset Family.		*/
 	unsigned short cha;
 
 	PUBLIC(RO(Proc))->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
@@ -4944,8 +4944,8 @@ inline void BIOS_DDR(void __iomem *mchmap)
 }
 
 void Query_SNB_IMC(void __iomem *mchmap, unsigned short mc)
-{	/* Sources:	2nd & 3rd Generation Intel® Core™ Processor Family
-			Intel® Xeon Processor E3-1200 Family		*/
+{	/* Sources:	2nd & 3rd Generation Intel Core Processor Family
+			Intel Xeon Processor E3-1200 Family		*/
 	unsigned short cha, dimmCount[2];
 
 	PUBLIC(RO(Proc))->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
@@ -5073,7 +5073,7 @@ void Query_Turbo_TDP_Config(void __iomem *mchmap)
 }
 
 void Query_HSW_IMC(void __iomem *mchmap, unsigned short mc)
-{	/*Source: Desktop 4th & 5th Generation Intel® Core™ Processor Family.*/
+{	/* Source: Desktop 4th & 5th Generation Intel Core Processor Family */
 	unsigned short cha, dimmCount[2];
 
 	PUBLIC(RO(Proc))->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
@@ -5139,7 +5139,7 @@ inline void SKL_SA(void __iomem *mchmap)
 }
 
 void Query_SKL_IMC(void __iomem *mchmap, unsigned short mc)
-{	/*Source: 6th & 7th Generation Intel® Processor for S-Platforms Vol 2*/
+{	/* Source: 6th & 7th Generation Intel Processor for S-Platforms Vol 2*/
 	unsigned short cha;
 	/*		Intra channel configuration			*/
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SKL.MADCH.value = readl(mchmap+0x5000);
@@ -5207,7 +5207,7 @@ inline void RKL_SA(void __iomem *mchmap)
 }
 
 void Query_RKL_IMC(void __iomem *mchmap, unsigned short mc)
-{	/*Source: 11th Generation Intel® Core Processor Datasheet Vol 2*/
+{	/* Source: 11th Generation Intel Core Processor Datasheet Vol 2 */
 	unsigned short cha;
 	/*		Intra channel configuration			*/
 	PUBLIC(RO(Proc))->Uncore.MC[mc].RKL.MADCH.value = readl(mchmap+0x5000);
@@ -5276,7 +5276,7 @@ void Query_RKL_IMC(void __iomem *mchmap, unsigned short mc)
 #define TGL_SA	RKL_SA
 
 void Query_TGL_IMC(void __iomem *mchmap, unsigned short mc)
-{	/*Source: 11th Generation Intel® Core Processor Datasheet Vol 2 */
+{	/* Source: 11th Generation Intel Core Processor Datasheet Vol 2 */
 	unsigned short cha;
 
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 0;
@@ -5367,7 +5367,7 @@ EXIT_TGL_IMC:
 #define ADL_SA	TGL_SA
 
 void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
-{	/*Source: 12th Generation Intel® Core Processor Datasheet Vol 2 */
+{	/* Source: 12th Generation Intel Core Processor Datasheet Vol 2 */
 	unsigned short cha;
 
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 0;
@@ -5460,7 +5460,13 @@ EXIT_ADL_IMC:
 }
 
 void Query_GLK_IMC(void __iomem *mchmap, unsigned short mc)
-{ /* Source: Intel® Pentium® Silver and Intel® Celeron® Processors Vol 2 */
+{ /* Source: Intel Pentium Silver and Intel Celeron Processors Vol 2	*/
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 0;
+}
+
+void Query_GDM_IMC(void __iomem *mchmap, unsigned short mc)
+{ /* Source: Intel Pentium and Celeron Processor N- and J- Series Vol 2 */
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 0;
 }
@@ -6358,6 +6364,13 @@ static PCI_CALLBACK GLK_IMC(struct pci_dev *dev)
 	SoC_SKL_VTD();
 
 	return Router(dev, 0x48, 64, 0x8000, Query_GLK_IMC, 0);
+}
+
+static PCI_CALLBACK GDM_IMC(struct pci_dev *dev)
+{
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 0;
+
+	return Router(dev, 0x48, 64, 0x8000, Query_GDM_IMC, 0);
 }
 
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev)
@@ -7428,7 +7441,7 @@ static void Query_AuthenticAMD(unsigned int cpu)
 }
 
 unsigned short Compute_AMD_Family_0Fh_Boost(unsigned int cpu)
-{	/* Source: BKDG for AMD NPT Family 0Fh: §13.8			*/
+{	/* Source: BKDG for AMD NPT Family 0Fh: Chap. 13.8			*/
 	unsigned short SpecTurboRatio = 0;
 
     if (PUBLIC(RO(Proc))->Features.AdvPower.EDX.FID == 1)
@@ -7971,10 +7984,11 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 	PSTATEDEF PstateDef = {.value = 0};
 	COF_ST COF = {.Q = 0, .R = 0};
 	unsigned int FID, DID;
-	const unsigned int cpu = pClockZen->pClockMod->cpu;
+	const unsigned int _cpu = pClockZen->pClockMod->cpu == -1 ?
+		PUBLIC(RO(Proc))->Service.Core : pClockZen->pClockMod->cpu;
 	/*	Make sure the Core Performance Boost is disabled.	*/
-	RDMSR(PUBLIC(RO(Core, AT(cpu)))->SystemRegister.HWCR, MSR_K7_HWCR);
-  if (PUBLIC(RO(Core, AT(cpu)))->SystemRegister.HWCR.Family_17h.CpbDis)
+	RDMSR(PUBLIC(RO(Core, AT(_cpu)))->SystemRegister.HWCR, MSR_K7_HWCR);
+  if (PUBLIC(RO(Core, AT(_cpu)))->SystemRegister.HWCR.Family_17h.CpbDis)
   {
 	/*	Apply if and only if the P-State is enabled ?		*/
 	RDMSR(PstateDef, pClockZen->PstateAddr);

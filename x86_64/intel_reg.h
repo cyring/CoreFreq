@@ -1978,7 +1978,7 @@ typedef struct
 		ReservedBits2	: 64-12;
 } MTRR_DEF_TYPE;
 
-	§18.2.4 PM4
+	Chap. 18.2.4 PM4
 
 	IA32_PERF_GLOBAL_STATUS_RESET
 	IA32_PERF_GLOBAL_STATUS_SET
@@ -3555,7 +3555,7 @@ typedef union
 		ReservedBits2	: 23-15,
 		VT_d		: 24-23, /* VT-d: 0=Enable, 1=Disable	*/
 		ReservedBits3	: 32-24;
-	};	/* §2.5.33 CAPID0_A Capabilities A Register		*/
+	};	/* Chap. 2.5.33 CAPID0_A Capabilities A Register	*/
 	struct {
 		unsigned int
 		DDR3L_EN	:  1-0,  /* DDR3L (1.35V) operation allowed */
@@ -3773,7 +3773,7 @@ typedef union
 		SMTCAP		: 29-28, /* SMT Capability		*/
 		ReservedBits5	: 32-29;
 	};
-} IVB_CAPID_B;	/* §2.5.39 CAPID0_B Capabilities B Register		*/
+} IVB_CAPID_B;	/* Chap. 2.5.39 CAPID0_B Capabilities B Register	*/
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 4C00h		*/
@@ -4719,7 +4719,7 @@ typedef union
 		ReservedBits3	: 25-24,
 		ECCDIS		: 26-25, /* 0:ECC capable, 1:Not ECC capable */
 		ReservedBits4	: 32-26;
-	};	/* §3.39 CAPID0_A Capabilities A Register		*/
+	};	/* Chap. 3.39 CAPID0_A Capabilities A Register		*/
 } SKL_CAPID_A;
 
 typedef union
@@ -4753,7 +4753,7 @@ typedef union
 		PEG11D		: 30-29,
 		PEG12D		: 31-30,
 		NVME_FOD	: 32-31; /* 1: Disable NVMe at Dev 3 Func 0 */
-	};	/* RKL: §3.1.38 ; TGL: $3.1.40				*/
+	};	/* RKL: Chap. 3.1.38 ; TGL: $3.1.40			*/
 } RKL_CAPID_A;
 
 #define TGL_CAPID_A	RKL_CAPID_A
@@ -4820,7 +4820,7 @@ typedef union
 		SMTCAP		: 29-28,
 		ReservedBits8	: 31-29,
 		IMGU_DIS	: 32-31; /* Device 5 associated memory spaces */
-	};	/* §3.40 CAPID0_B Capabilities B Register		*/
+	};	/* Chap. 3.40 CAPID0_B Capabilities B Register		*/
 } SKL_CAPID_B;
 
 typedef union
@@ -4852,7 +4852,7 @@ typedef union
 		OC_ENABLED	: 30-29, /* 0: Overclocking is disabled */
 		TRACE_HUB_DIS	: 31-30, /* Trace Hub & I/O are disabled */
 		IMGU_DIS	: 32-31; /* Device 5 associated memory spaces */
-	};	/* RKL: §3.1.39 ; TGL: $3.1.41				*/
+	};	/* RKL: Chap. 3.1.39 ; TGL: $3.1.41			*/
 } RKL_CAPID_B;
 
 #define TGL_CAPID_B	RKL_CAPID_B
@@ -4899,7 +4899,7 @@ typedef union
 		DMFC_LPDDR3	: 17-14,
 		DMFC_DDR4	: 20-17,
 		ReservedBits2	: 32-20;
-	};	/* §3.41 CAPID0_C Capabilities C Register		*/
+	};	/* Chap. 3.41 CAPID0_C Capabilities C Register		*/
 } SKL_CAPID_C;
 
 typedef union
@@ -4921,7 +4921,7 @@ typedef union
 		DATA_RATE_DDR4	: 28-23, /* mult of 266 MHz iff DDR_OVERCLOCK */
 		PEGG4_DIS	: 29-28,
 		ReservedBits2	: 32-29;
-	};	/* RKL: §3.1.40 ; TGL: $3.1.42				*/
+	};	/* RKL: Chap. 3.1.40 ; TGL: $3.1.42			*/
 } RKL_CAPID_C;
 
 #define TGL_CAPID_C	RKL_CAPID_C

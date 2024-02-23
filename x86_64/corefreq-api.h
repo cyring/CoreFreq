@@ -1153,6 +1153,8 @@ typedef struct
 #define DID_INTEL_SLM_PTR		0x0f00
 /* Source: [Atom/Airmont] Pentium(R) CPU N3700				*/
 #define DID_INTEL_AIRMONT_HB		0x2280
+/* Source: Intel(R) Celeron(R) CPU J3455 @ 1.50GHz			*/
+#define DID_INTEL_GOLDMONT_HB		0x5af0
 /* Source: /include/linux/pci_ids.h					*/
 #define DID_INTEL_I7_MCR		0x2c18
 #define DID_INTEL_I7_MC_CH0_CTRL	0x2c20
@@ -1198,14 +1200,14 @@ typedef struct
 #define DID_INTEL_IIO_CORE_REG		0x3728
 /* Source: /include/linux/pci_ids.h					*/
 #define DID_INTEL_SNB_IMC_HA0		0x3ca0
-/* Source: 2nd Generation Intel® Core™ Processor Family Vol2		*/
+/* Source: 2nd Generation Intel Core Processor Family Vol2		*/
 #define DID_INTEL_SNB_IMC_SA		0x0100
 #define DID_INTEL_SNB_IMC_0104		0x0104
 /* Source: /drivers/edac/sb_edac.c					*/
 /*TODO( Harware missing )*/
 #define DID_INTEL_IVB_IMC_HA0		0x0ea0
 #define DID_INTEL_IVB_IMC_HA1		0x0e60
-/* Source: 3rd Generation Intel® Core™ Processor Family Vol2		*/
+/* Source: 3rd Generation Intel Core Processor Family Vol2		*/
 #define DID_INTEL_IVB_IMC_SA		0x0150
 #define DID_INTEL_IVB_IMC_0154		0x0154
 /* Source: Intel Xeon Processor E5 & E7 v1 Datasheet Vol 2		*/
@@ -1329,7 +1331,7 @@ typedef struct
 /*	Power Control Unit						*/
 /*	PCU: Device=30 - Function=3					*/
 #define DID_INTEL_HSW_EP_CAPABILITY	0x2fc0
-/* Source: 4th, 5th Generation Intel® Core™ Processor Family Vol2 §3.0	*/
+/* Source: 4th, 5th Generation Intel Core Processor Family Vol2 Chap. 3.0 */
 #define DID_INTEL_HASWELL_IMC_HA0	0x2fa0
 #define DID_INTEL_HASWELL_IMC_SA	0x0c00
 #define DID_INTEL_HASWELL_MH_IMC_HA0	0x0c04
@@ -1338,18 +1340,18 @@ typedef struct
 #define DID_INTEL_BROADWELL_D_IMC_HA0	0x1610
 #define DID_INTEL_BROADWELL_H_IMC_HA0	0x1614
 #define DID_INTEL_BROADWELL_U_IMC_HA0	0x1618
-/* Source: 6th Generation Intel® Processor Datasheet for U/Y-Platforms Vol2 */
+/* Source: 6th Generation Intel Processor Datasheet for U/Y-Platforms Vol2 */
 #define DID_INTEL_SKYLAKE_U_IMC_HA	0x1904
 #define DID_INTEL_SKYLAKE_Y_IMC_HA	0x190c
-/* Source: 6th Generation Intel® Processor Datasheet for S-Platforms Vol2 */
+/* Source: 6th Generation Intel Processor Datasheet for S-Platforms Vol2 */
 #define DID_INTEL_SKYLAKE_S_IMC_HAD	0x190f
 #define DID_INTEL_SKYLAKE_S_IMC_HAQ	0x191f
-/* Source: 6th Generation Intel® Processor Datasheet for H-Platforms Vol2 */
+/* Source: 6th Generation Intel Processor Datasheet for H-Platforms Vol2 */
 #define DID_INTEL_SKYLAKE_H_IMC_HAD	0x1900
 #define DID_INTEL_SKYLAKE_H_IMC_HAQ	0x1910
 /* Source: Intel Xeon Processor E3-1200 v5 Product Family		*/
 #define DID_INTEL_SKYLAKE_DT_IMC_HA	0x1918
-/* Source:7th Generation Intel® Processor for S-Platforms & Core X-Series Vol2*/
+/* Source:7th Generation Intel Processor for S-Platforms & Core X-Series Vol2*/
 #define DID_INTEL_KABYLAKE_H_IMC_HAD	0x5900
 #define DID_INTEL_KABYLAKE_U_IMC_HA	0x5904
 #define DID_INTEL_KABYLAKE_Y_IMC_HA	0x590c
@@ -1360,10 +1362,10 @@ typedef struct
 #define DID_INTEL_KABYLAKE_U_IMC_HAQ	0x5914
 #define DID_INTEL_KABYLAKE_S_IMC_HAQ	0x591f
 #define DID_INTEL_KABYLAKE_X_IMC_HAQ	0x5906
-/* Source: 8th Generation Intel® Processor for S-Platforms Datasheet Vol2 */
+/* Source: 8th Generation Intel Processor for S-Platforms Datasheet Vol2 */
 #define DID_INTEL_COFFEELAKE_S_IMC_HAQ	0x3e1f
 #define DID_INTEL_COFFEELAKE_S_IMC_HAS	0x3ec2
-/* Source: 8th and 9th Generation Intel® Core™ and Xeon™ E Processor Families */
+/* Source: 8th and 9th Generation Intel Core and Xeon E Processor Families */
 #define DID_INTEL_COFFEELAKE_R_S_IMC_HAD 0x3e0f
 #define DID_INTEL_COFFEELAKE_R_U_IMC_HAD 0x3ecc
 #define DID_INTEL_COFFEELAKE_R_U_IMC_HAQ 0x3ed0
@@ -1376,7 +1378,7 @@ typedef struct
 #define DID_INTEL_COFFEELAKE_R_S_IMC_HAQ 0x3e33
 #define DID_INTEL_COFFEELAKE_R_S_IMC_HAS 0x3eca
 #define DID_INTEL_COFFEELAKE_R_S_IMC_HAO 0x3e32
-/* Source: 8th Generation Intel® Core™ Processor Families Datasheet Vol2 */
+/* Source: 8th Generation Intel Core Processor Families Datasheet Vol2	*/
 #define DID_INTEL_WHISKEYLAKE_U_IMC_HAD 0x3e35
 #define DID_INTEL_WHISKEYLAKE_U_IMC_HAQ 0x3e34
 #define DID_INTEL_CANNONLAKE_U_IMC_HB	0x5a04
@@ -1413,7 +1415,7 @@ typedef struct
 #define DID_INTEL_TIGERLAKE_U3_IMC	0x9a12
 #define DID_INTEL_TIGERLAKE_U4_IMC	0x9a14
 #define DID_INTEL_TIGERLAKE_H_IMC	0x9a36
-/* Source: 11th Generation Intel® Core™ Processor Desktop Datasheet Vol1 */
+/* Source: 11th Generation Intel Core Processor Desktop Datasheet Vol1	*/
 #define DID_INTEL_TIGERLAKE_UP3_IMC	0xa082
 #define DID_INTEL_TIGERLAKE_UP4_IMC	0xa087
 #define DID_INTEL_ROCKETLAKE_S_8C_IMC_HB 0x4c43
