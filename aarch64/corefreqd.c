@@ -36,7 +36,7 @@
 	sysconf(_SC_PAGESIZE) > 0 ? sysconf(_SC_PAGESIZE) : 4096	\
 )
 
-/* §8.10.6.7 Place Locks and Semaphores in Aligned, 128-Byte Blocks of Memory */
+/* AArch64 LDAXP/STLXP alignment, 128-Byte Blocks of Memory */
 static BitCC roomSeed	__attribute__ ((aligned (16))) = InitCC(0x0);
 static BitCC roomCore	__attribute__ ((aligned (16))) = InitCC(0x0);
 static BitCC roomClear	__attribute__ ((aligned (16))) = InitCC(0x0);

@@ -1608,6 +1608,21 @@ REASON_CODE SysInfoISA( Window *win,
 	},
 	{
 		NULL,
+		RSC(ISA_LRCPC2).CODE(), RSC(ISA_LRCPC_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.LRCPC2 },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.LRCPC2 },
+	},
+	{
+		NULL,
+		RSC(ISA_LRCPC3).CODE(), RSC(ISA_LRCPC_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.LRCPC3 },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.LRCPC3 },
+	},
+/* Row Mark */
+	{
+		NULL,
 		RSC(ISA_LS64).CODE(), RSC(ISA_LS64_COMM).CODE(),
 		{ 0, RO(Shm)->Proc.Features.LS64 },
 		(unsigned short[])
@@ -1620,7 +1635,6 @@ REASON_CODE SysInfoISA( Window *win,
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.LS64_V },
 	},
-/* Row Mark */
 	{
 		NULL,
 		RSC(ISA_LS64_ACCDATA).CODE(), RSC(ISA_LS64_COMM).CODE(),
@@ -1635,12 +1649,27 @@ REASON_CODE SysInfoISA( Window *win,
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.LSE },
 	},
+/* Row Mark */
 	{
 		NULL,
 		RSC(ISA_LSE128).CODE(), RSC(ISA_LSE_COMM).CODE(),
 		{ 0, RO(Shm)->Proc.Features.LSE128 },
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.LSE128 },
+	},
+	{
+		NULL,
+		RSC(ISA_PACGA).CODE(), RSC(ISA_PACIMP_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.PACIMP },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.PACIMP },
+	},
+	{
+		NULL,
+		RSC(ISA_PACQARMA5).CODE(), RSC(ISA_PACQARMA5_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.PACQARMA5 },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.PACQARMA5 },
 	},
 	{
 		NULL,
@@ -2218,10 +2247,18 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
-		RO(Shm)->Proc.Features.TLB == 1,
+		RO(Shm)->Proc.Features.TLBIOS == 1,
 		attr_Feat,
-		2, "%s%.*sTLB   [%7s]", RSC(FEATURES_TLB).CODE(),
-		width - 18 - RSZ(FEATURES_TLB),
+		2, "%s%.*sTLBIOS   [%7s]", RSC(FEATURES_TLB).CODE(),
+		width - 21 - RSZ(FEATURES_TLB),
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Features.TLBIRANGE == 1,
+		attr_Feat,
+		2, "%s%.*sTLBIRANGE   [%7s]", RSC(FEATURES_TLB).CODE(),
+		width - 24 - RSZ(FEATURES_TLB),
 		NULL
 	},
 	{

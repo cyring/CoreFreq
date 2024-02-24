@@ -806,7 +806,7 @@ typedef struct	/* BSP features.					*/
 			SM4		: 19-18,
 			FHM		: 20-19,
 			LSE128		: 21-20,
-			TLB		: 22-21,
+			TLBIOS		: 22-21,
 			FCMA		: 23-22,
 			LRCPC		: 24-23,
 			JSCVT		: 25-24,
@@ -836,7 +836,8 @@ typedef struct	/* BSP features.					*/
 			BigEnd_EE	: 49-48,
 			PARange 	: 53-49,
 			VARange 	: 62-59,
-			_Unused1_	: 64-62;
+			TLBIRANGE	: 63-62,
+			PACIMP		: 64-63;
 
 		Bit64	CSV2		:  4-0,
 			SSBS		:  8-4,
@@ -886,7 +887,10 @@ typedef struct	/* BSP features.					*/
 			SME_SF8FMA	: 53-52,
 			SME_SF8DP4	: 54-53,
 			SME_SF8DP2	: 55-54,
-			_Unused2_	: 64-55;
+			PACQARMA5	: 56-55,
+			LRCPC2		: 57-56,
+			LRCPC3		: 58-57,
+			_Unused1_	: 64-58;
 
 		Bit64	InvariantTSC	:  8-0,
 			HyperThreading	:  9-8,
@@ -922,7 +926,7 @@ typedef struct	/* BSP features.					*/
 			OSPM_EPP	: 55-54,
 			ACPI_CST_CAP	: 56-55,
 			ACPI_CST	: 60-56, /* 15 CState sub-packages */
-			_Unused3_	: 64-60;
+			_Unused2_	: 64-60;
 	};
 	struct
 	{

@@ -745,13 +745,16 @@ static void Query_Features(void *pArg)
 		break;
 	}
 	switch (isar0.TLB) {
-	case 0b0001:
 	case 0b0010:
-		iArg->Features->TLB = 1;
+		iArg->Features->TLBIRANGE = 1;
+		fallthrough;
+	case 0b0001:
+		iArg->Features->TLBIOS = 1;
 		break;
 	case 0b0000:
 	default:
-		iArg->Features->TLB = 0;
+		iArg->Features->TLBIRANGE = \
+		iArg->Features->TLBIOS = 0;
 		break;
 	}
 	switch (isar0.RNDR) {
@@ -772,13 +775,36 @@ static void Query_Features(void *pArg)
 		iArg->Features->FCMA = 0;
 		break;
 	}
-	switch (isar1.LRCPC) {
+	switch (isar1.GPI) {
 	case 0b0001:
+		iArg->Features->PACIMP = 1;
+		break;
+	case 0b0000:
+		iArg->Features->PACIMP = 0;
+		break;
+	}
+	switch (isar1.GPA) {
+	case 0b0001:
+		iArg->Features->PACQARMA5 = 1;
+		break;
+	case 0b0000:
+		iArg->Features->PACQARMA5 = 0;
+		break;
+	}
+	switch (isar1.LRCPC) {
+	case 0b0011:
+		iArg->Features->LRCPC3 = 1;
+		fallthrough;
 	case 0b0010:
+		iArg->Features->LRCPC2 = 1;
+		fallthrough;
+	case 0b0001:
 		iArg->Features->LRCPC = 1;
 		break;
 	case 0b0000:
 	default:
+		iArg->Features->LRCPC3 = \
+		iArg->Features->LRCPC2 = \
 		iArg->Features->LRCPC = 0;
 		break;
 	}
