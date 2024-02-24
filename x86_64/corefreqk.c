@@ -7984,11 +7984,12 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 	PSTATEDEF PstateDef = {.value = 0};
 	COF_ST COF = {.Q = 0, .R = 0};
 	unsigned int FID, DID;
-	const unsigned int _cpu = pClockZen->pClockMod->cpu == -1 ?
-		PUBLIC(RO(Proc))->Service.Core : pClockZen->pClockMod->cpu;
+	const unsigned int smp = pClockZen->pClockMod->cpu == -1 ?
+		smp_processor_id() : pClockZen->pClockMod->cpu;
+
 	/*	Make sure the Core Performance Boost is disabled.	*/
-	RDMSR(PUBLIC(RO(Core, AT(_cpu)))->SystemRegister.HWCR, MSR_K7_HWCR);
-  if (PUBLIC(RO(Core, AT(_cpu)))->SystemRegister.HWCR.Family_17h.CpbDis)
+	RDMSR(PUBLIC(RO(Core, AT(smp)))->SystemRegister.HWCR, MSR_K7_HWCR);
+  if (PUBLIC(RO(Core, AT(smp)))->SystemRegister.HWCR.Family_17h.CpbDis)
   {
 	/*	Apply if and only if the P-State is enabled ?		*/
 	RDMSR(PstateDef, pClockZen->PstateAddr);
