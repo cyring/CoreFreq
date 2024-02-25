@@ -545,6 +545,22 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PAuth_LR);
 					json_key(&s, "WFxT");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.WFxT);
+					json_key(&s, "RPRES");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RPRES);
+					json_key(&s, "MOPS");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MOPS);
+					json_key(&s, "HBC");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.HBC);
+					json_key(&s, "SYSREG128");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SYSREG128);
+					json_key(&s, "SYSINSTR128");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SYSINSTR128);
+					json_key(&s, "PRFMSLC");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PRFMSLC);
+					json_key(&s, "RPRFM");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RPRFM);
+					json_key(&s, "CSSC");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.CSSC);
 					json_end_object(&s);
 				}
 				json_key(&s, "MMFR0");

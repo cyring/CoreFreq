@@ -958,6 +958,78 @@ static void Query_Features(void *pArg)
 		iArg->Features->WFxT = 0;
 		break;
 	}
+	switch (isar2.RPRES) {
+	case 0b0010:
+		iArg->Features->RPRES = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->RPRES = 0;
+		break;
+	}
+	switch (isar2.MOPS) {
+	case 0b0010:
+		iArg->Features->MOPS = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->MOPS = 0;
+		break;
+	}
+	switch (isar2.BC) {
+	case 0b0010:
+		iArg->Features->HBC = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->HBC = 0;
+		break;
+	}
+	switch (isar2.SYSREG_128) {
+	case 0b0010:
+		iArg->Features->SYSREG128 = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SYSREG128 = 0;
+		break;
+	}
+	switch (isar2.SYSINSTR_128) {
+	case 0b0010:
+		iArg->Features->SYSINSTR128 = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SYSINSTR128 = 0;
+		break;
+	}
+	switch (isar2.PRFMSLC) {
+	case 0b0010:
+		iArg->Features->PRFMSLC = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->PRFMSLC = 0;
+		break;
+	}
+	switch (isar2.RPRFM) {
+	case 0b0010:
+		iArg->Features->RPRFM = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->RPRFM = 0;
+		break;
+	}
+	switch (isar2.CSSC) {
+	case 0b0010:
+		iArg->Features->CSSC = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->CSSC = 0;
+		break;
+	}
 	switch (mmfr0.ECV) {
 	case 0b0010:
 	case 0b0001:

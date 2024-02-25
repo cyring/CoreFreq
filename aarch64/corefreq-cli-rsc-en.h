@@ -793,6 +793,9 @@
 
 #define RSC_ISA_JSCVT_COMM_CODE_EN	" JavaScript Conversion "
 #define RSC_ISA_LRCPC_COMM_CODE_EN	" Load-Acquire RCpc instructions "
+#define RSC_ISA_MOPS_COMM_CODE_EN	\
+				" Memory Copy and Memory Set instructions "
+
 #define RSC_ISA_PACIMP_COMM_CODE_EN	\
 			" Pointer Authentication Code, using Generic key "
 
@@ -805,12 +808,24 @@
 #define RSC_ISA_PAUTH_COMM_CODE_EN	" Pointer Authentication "
 #define RSC_ISA_PAUTH2_COMM_CODE_EN	" Enhanced Pointer Authentication "
 #define RSC_ISA_PAUTH_LR_COMM_CODE_EN	" Pointer Authentication Link Register "
+#define RSC_ISA_PRFMSLC_COMM_CODE_EN	" PRFM instructions support SLC target "
 #define RSC_ISA_FRINTTS_COMM_CODE_EN	" Floating-point to Integer "
 #define RSC_ISA_SPECRES_COMM_CODE_EN	" Prediction Invalidation "
 #define RSC_ISA_BF16_COMM_CODE_EN	" BFloat16 instructions "
 #define RSC_ISA_EBF16_COMM_CODE_EN	" Extended BFloat16 "
+#define RSC_ISA_CSSC_COMM_CODE_EN	" Common Short Sequence Compression "
+#define RSC_ISA_HBC_COMM_CODE_EN	" Hinted Conditional Branch "
 #define RSC_ISA_I8MM_COMM_CODE_EN	" Int8 Matrix Multiplication "
+#define RSC_ISA_RPRES_COMM_CODE_EN	\
+		" Reciprocal Estimate & Reciprocal Square Root Estimate "
+
 #define RSC_ISA_SB_COMM_CODE_EN 	" Speculation Barrier "
+#define RSC_ISA_SYSREG128_COMM_CODE_EN	\
+			" Instructions to access 128-bit System Registers "
+
+#define RSC_ISA_SYSINSTR128_COMM_CODE_EN \
+			" System instructions that can take 128-bit inputs "
+
 #define RSC_ISA_WFxT_COMM_CODE_EN 	" WFE & WFI instructions with timeout "
 #define RSC_ISA_XS_COMM_CODE_EN 	" XS attribute for memory "
 #define RSC_ISA_LS64_COMM_CODE_EN	" Atomic 64-byte loads and stores "
@@ -818,6 +833,7 @@
 #define RSC_ISA_DPB_COMM_CODE_EN	" Data Persistence writeback "
 #define RSC_ISA_RAND_COMM_CODE_EN	" Read Random Number "
 #define RSC_ISA_RDMA_COMM_CODE_EN	" Rounding Double Multiply Accumulate "
+#define RSC_ISA_RPRFM_COMM_CODE_EN	" RPRFM hint instruction "
 #define RSC_ISA_SHA_COMM_CODE_EN	" Secure Hash Algorithms extensions "
 #define RSC_ISA_SM_COMM_CODE_EN 	" Chinese cryptography algorithm "
 #define RSC_ISA_SIMD_COMM_CODE_EN	" Advanced SIMD Extensions "
@@ -1978,19 +1994,26 @@
 #define RSC_ISA_LRCPC_CODE		"        LRCPC [%c]"
 #define RSC_ISA_LRCPC2_CODE		"       LRCPC2 [%c]"
 #define RSC_ISA_LRCPC3_CODE		"       LRCPC3 [%c]"
+#define RSC_ISA_MOPS_CODE		"         MOPS [%c]"
 #define RSC_ISA_PACGA_CODE		"        PACGA [%c]"
 #define RSC_ISA_PACQARMA3_CODE		"    PACQARMA3 [%c]"
 #define RSC_ISA_PACQARMA5_CODE		"    PACQARMA5 [%c]"
 #define RSC_ISA_PAUTH_CODE		"        PAuth [%c]"
 #define RSC_ISA_PAUTH2_CODE		"       PAuth2 [%c]"
 #define RSC_ISA_PAUTH_LR_CODE		"     PAuth_LR [%c]"
+#define RSC_ISA_PRFMSLC_CODE		"      PRFMSLC [%c]"
 #define RSC_ISA_FRINTTS_CODE		"      FRINTTS [%c]"
 #define RSC_ISA_SPECRES_CODE		"      SPECRES [%c]"
 #define RSC_ISA_SPECRES2_CODE		"     SPECRES2 [%c]"
 #define RSC_ISA_BF16_CODE		"         BF16 [%c]"
 #define RSC_ISA_EBF16_CODE		"        EBF16 [%c]"
+#define RSC_ISA_CSSC_CODE		"         CSSC [%c]"
+#define RSC_ISA_HBC_CODE		"          HBC [%c]"
 #define RSC_ISA_I8MM_CODE		"         I8MM [%c]"
+#define RSC_ISA_RPRES_CODE		"        RPRES [%c]"
 #define RSC_ISA_SB_CODE 		"           SB [%c]"
+#define RSC_ISA_SYSREG128_CODE		"    SYSREG128 [%c]"
+#define RSC_ISA_SYSINSTR128_CODE	"  SYSINSTR128 [%c]"
 #define RSC_ISA_WFxT_CODE		"         WFxT [%c]"
 #define RSC_ISA_XS_CODE 		"           XS [%c]"
 #define RSC_ISA_LS64_CODE		"         LS64 [%c]"
@@ -2001,6 +2024,7 @@
 #define RSC_ISA_DPB2_CODE		"         DPB2 [%c]"
 #define RSC_ISA_RAND_CODE		"         RAND [%c]"
 #define RSC_ISA_RDMA_CODE		"         RDMA [%c]"
+#define RSC_ISA_RPRFM_CODE		"        RPRFM [%c]"
 #define RSC_ISA_SHA1_CODE		"         SHA1 [%c]"
 #define RSC_ISA_SHA256_CODE		"       SHA256 [%c]"
 #define RSC_ISA_SHA512_CODE		"       SHA512 [%c]"

@@ -899,7 +899,15 @@ typedef struct	/* BSP features.					*/
 
 		Bit64	PAuth_LR	:  1-0,
 			WFxT		:  2-1,
-			_Unused1_	: 64-2;
+			RPRES		:  3-2,
+			MOPS		:  4-3,
+			HBC		:  5-4,
+			SYSREG128	:  6-5,
+			SYSINSTR128	:  7-6,
+			PRFMSLC 	:  8-7,
+			RPRFM		:  9-8,
+			CSSC		: 10-9,
+			_Unused1_	: 64-10;
 
 		Bit64	InvariantTSC	:  8-0,
 			HyperThreading	:  9-8,
