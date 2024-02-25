@@ -793,6 +793,10 @@
 
 #define RSC_ISA_JSCVT_COMM_CODE_EN	" JavaScript Conversion "
 #define RSC_ISA_LRCPC_COMM_CODE_EN	" Load-Acquire RCpc instructions "
+
+#define RSC_ISA_LUT_COMM_CODE_EN	\
+				" ASIMD & SVE2 LookUp Table instructions "
+
 #define RSC_ISA_MOPS_COMM_CODE_EN	\
 				" Memory Copy and Memory Set instructions "
 
@@ -811,8 +815,12 @@
 #define RSC_ISA_PRFMSLC_COMM_CODE_EN	" PRFM instructions support SLC target "
 #define RSC_ISA_FRINTTS_COMM_CODE_EN	" Floating-point to Integer "
 #define RSC_ISA_SPECRES_COMM_CODE_EN	" Prediction Invalidation "
+#define RSC_ISA_ATS1A_COMM_CODE_EN	" Address Translation Stage 1 "
 #define RSC_ISA_BF16_COMM_CODE_EN	" BFloat16 instructions "
 #define RSC_ISA_EBF16_COMM_CODE_EN	" Extended BFloat16 "
+#define RSC_ISA_CONSTPACFLD_COMM_CODE_EN \
+					" Determine the size of the PAC Field "
+
 #define RSC_ISA_CSSC_COMM_CODE_EN	" Common Short Sequence Compression "
 #define RSC_ISA_HBC_COMM_CODE_EN	" Hinted Conditional Branch "
 #define RSC_ISA_I8MM_COMM_CODE_EN	" Int8 Matrix Multiplication "
@@ -833,6 +841,7 @@
 #define RSC_ISA_DPB_COMM_CODE_EN	" Data Persistence writeback "
 #define RSC_ISA_RAND_COMM_CODE_EN	" Read Random Number "
 #define RSC_ISA_RDMA_COMM_CODE_EN	" Rounding Double Multiply Accumulate "
+#define RSC_ISA_RNG_TRAP_COMM_CODE_EN	" Trapping support for RNDR and RNDRRS "
 #define RSC_ISA_RPRFM_COMM_CODE_EN	" RPRFM hint instruction "
 #define RSC_ISA_SHA_COMM_CODE_EN	" Secure Hash Algorithms extensions "
 #define RSC_ISA_SM_COMM_CODE_EN 	" Chinese cryptography algorithm "
@@ -1994,6 +2003,7 @@
 #define RSC_ISA_LRCPC_CODE		"        LRCPC [%c]"
 #define RSC_ISA_LRCPC2_CODE		"       LRCPC2 [%c]"
 #define RSC_ISA_LRCPC3_CODE		"       LRCPC3 [%c]"
+#define RSC_ISA_LUT_CODE		"          LUT [%c]"
 #define RSC_ISA_MOPS_CODE		"         MOPS [%c]"
 #define RSC_ISA_PACGA_CODE		"        PACGA [%c]"
 #define RSC_ISA_PACQARMA3_CODE		"    PACQARMA3 [%c]"
@@ -2005,8 +2015,10 @@
 #define RSC_ISA_FRINTTS_CODE		"      FRINTTS [%c]"
 #define RSC_ISA_SPECRES_CODE		"      SPECRES [%c]"
 #define RSC_ISA_SPECRES2_CODE		"     SPECRES2 [%c]"
+#define RSC_ISA_ATS1A_CODE		"        ATS1A [%c]"
 #define RSC_ISA_BF16_CODE		"         BF16 [%c]"
 #define RSC_ISA_EBF16_CODE		"        EBF16 [%c]"
+#define RSC_ISA_CONSTPACFLD_CODE	"  CONSTPACFLD [%c]"
 #define RSC_ISA_CSSC_CODE		"         CSSC [%c]"
 #define RSC_ISA_HBC_CODE		"          HBC [%c]"
 #define RSC_ISA_I8MM_CODE		"         I8MM [%c]"
@@ -2024,6 +2036,7 @@
 #define RSC_ISA_DPB2_CODE		"         DPB2 [%c]"
 #define RSC_ISA_RAND_CODE		"         RAND [%c]"
 #define RSC_ISA_RDMA_CODE		"         RDMA [%c]"
+#define RSC_ISA_RNG_TRAP_CODE		"     RNG-TRAP [%c]"
 #define RSC_ISA_RPRFM_CODE		"        RPRFM [%c]"
 #define RSC_ISA_SHA1_CODE		"         SHA1 [%c]"
 #define RSC_ISA_SHA256_CODE		"       SHA256 [%c]"

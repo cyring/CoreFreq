@@ -907,7 +907,11 @@ typedef struct	/* BSP features.					*/
 			PRFMSLC 	:  8-7,
 			RPRFM		:  9-8,
 			CSSC		: 10-9,
-			_Unused1_	: 64-10;
+			LUT		: 11-10,
+			ATS1A		: 12-11,
+			CONSTPACFIELD	: 13-12,
+			RNG_TRAP	: 14-13,
+			_Unused1_	: 64-14;
 
 		Bit64	InvariantTSC	:  8-0,
 			HyperThreading	:  9-8,

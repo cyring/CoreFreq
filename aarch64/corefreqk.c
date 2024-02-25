@@ -950,7 +950,7 @@ static void Query_Features(void *pArg)
 				|| (isar1.API == 0b0110)||(isar1.APA == 0b0110);
 
 	switch (isar2.WFxT) {
-	case 0b0010:
+	case 0b0001:
 		iArg->Features->WFxT = 1;
 		break;
 	case 0b0000:
@@ -959,7 +959,7 @@ static void Query_Features(void *pArg)
 		break;
 	}
 	switch (isar2.RPRES) {
-	case 0b0010:
+	case 0b0001:
 		iArg->Features->RPRES = 1;
 		break;
 	case 0b0000:
@@ -968,7 +968,7 @@ static void Query_Features(void *pArg)
 		break;
 	}
 	switch (isar2.MOPS) {
-	case 0b0010:
+	case 0b0001:
 		iArg->Features->MOPS = 1;
 		break;
 	case 0b0000:
@@ -977,7 +977,7 @@ static void Query_Features(void *pArg)
 		break;
 	}
 	switch (isar2.BC) {
-	case 0b0010:
+	case 0b0001:
 		iArg->Features->HBC = 1;
 		break;
 	case 0b0000:
@@ -986,7 +986,7 @@ static void Query_Features(void *pArg)
 		break;
 	}
 	switch (isar2.SYSREG_128) {
-	case 0b0010:
+	case 0b0001:
 		iArg->Features->SYSREG128 = 1;
 		break;
 	case 0b0000:
@@ -995,7 +995,7 @@ static void Query_Features(void *pArg)
 		break;
 	}
 	switch (isar2.SYSINSTR_128) {
-	case 0b0010:
+	case 0b0001:
 		iArg->Features->SYSINSTR128 = 1;
 		break;
 	case 0b0000:
@@ -1004,7 +1004,7 @@ static void Query_Features(void *pArg)
 		break;
 	}
 	switch (isar2.PRFMSLC) {
-	case 0b0010:
+	case 0b0001:
 		iArg->Features->PRFMSLC = 1;
 		break;
 	case 0b0000:
@@ -1013,7 +1013,7 @@ static void Query_Features(void *pArg)
 		break;
 	}
 	switch (isar2.RPRFM) {
-	case 0b0010:
+	case 0b0001:
 		iArg->Features->RPRFM = 1;
 		break;
 	case 0b0000:
@@ -1022,12 +1022,39 @@ static void Query_Features(void *pArg)
 		break;
 	}
 	switch (isar2.CSSC) {
-	case 0b0010:
+	case 0b0001:
 		iArg->Features->CSSC = 1;
 		break;
 	case 0b0000:
 	default:
 		iArg->Features->CSSC = 0;
+		break;
+	}
+	switch (isar2.LUT) {
+	case 0b0001:
+		iArg->Features->LUT = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->LUT = 0;
+		break;
+	}
+	switch (isar2.ATS1A) {
+	case 0b0001:
+		iArg->Features->ATS1A = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->ATS1A = 0;
+		break;
+	}
+	switch (isar2.PAC_frac) {
+	case 0b0001:
+		iArg->Features->CONSTPACFIELD = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->CONSTPACFIELD = 0;
 		break;
 	}
 	switch (mmfr0.ECV) {
@@ -1285,6 +1312,15 @@ static void Query_Features(void *pArg)
 	case 0b0000:
 	default:
 		iArg->Features->SME = 0;
+		break;
+	}
+	switch (pfr1.RNDR_trap) {
+	case 0b0001:
+		iArg->Features->RNG_TRAP = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->RNG_TRAP = 0;
 		break;
 	}
 

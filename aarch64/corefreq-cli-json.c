@@ -561,6 +561,12 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RPRFM);
 					json_key(&s, "CSSC");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.CSSC);
+					json_key(&s, "LUT");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.LUT);
+					json_key(&s, "ATS1A");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ATS1A);
+					json_key(&s, "CONSTPACFIELD");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.CONSTPACFIELD);
 					json_end_object(&s);
 				}
 				json_key(&s, "MMFR0");
@@ -638,6 +644,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.NMI);
 					json_key(&s, "SME");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME);
+					json_key(&s, "RNG_TRAP");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RNG_TRAP);
 					json_key(&s, "RAS_frac");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.RAS_frac);
 					json_key(&s, "MPAM_frac");
