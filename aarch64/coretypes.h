@@ -890,7 +890,16 @@ typedef struct	/* BSP features.					*/
 			PACQARMA5	: 56-55,
 			LRCPC2		: 57-56,
 			LRCPC3		: 58-57,
-			_Unused1_	: 64-58;
+			PACQARMA3	: 59-58,
+			PAuth		: 60-59,
+			EPAC		: 61-60,
+			PAuth2		: 62-61,
+			FPAC		: 63-62,
+			FPACCOMBINE	: 64-63;
+
+		Bit64	PAuth_LR	:  1-0,
+			WFxT		:  2-1,
+			_Unused1_	: 64-2;
 
 		Bit64	InvariantTSC	:  8-0,
 			HyperThreading	:  9-8,

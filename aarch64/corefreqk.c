@@ -523,6 +523,7 @@ static void Query_Features(void *pArg)
 	volatile AA64DFR1 dfr1;
 	volatile AA64ISAR0 isar0;
 	volatile AA64ISAR1 isar1;
+	volatile AA64ISAR2 isar2;
 	volatile AA64MMFR0 mmfr0;
 	volatile AA64MMFR1 mmfr1;
 	volatile AA64MMFR2 mmfr2;
@@ -562,6 +563,8 @@ static void Query_Features(void *pArg)
 		:
 		: "memory"
 	);
+
+	isar2.value = SysRegRead(ID_AA64ISAR2_EL1);
 	mmfr2.value = SysRegRead(ID_AA64MMFR2_EL1);
 
 	iArg->Features->Info.Signature.Stepping = midr.Revision
@@ -916,6 +919,43 @@ static void Query_Features(void *pArg)
 	default:
 		iArg->Features->DPB2 = \
 		iArg->Features->DPB = 0;
+		break;
+	}
+	switch (isar2.GPA3) {
+	case 0b0001:
+		iArg->Features->PACQARMA3 = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->PACQARMA3 = 0;
+		break;
+	}
+
+	iArg->Features->PAuth = (isar2.APA3 == 0b0001) || (isar1.API == 0b0001)
+				|| (isar1.APA == 0b0001);
+
+	iArg->Features->EPAC = (isar2.APA3 == 0b0010) || (isar1.API == 0b0010)
+				|| (isar1.APA == 0b0010);
+
+	iArg->Features->PAuth2 = (isar2.APA3 == 0b0011) || (isar1.API == 0b0011)
+				|| (isar1.APA == 0b0011);
+
+	iArg->Features->FPAC = (isar2.APA3 == 0b0100) || (isar1.API == 0b0100)
+				|| (isar1.APA == 0b0100);
+
+	iArg->Features->FPACCOMBINE = (isar2.APA3 == 0b0101)
+				|| (isar1.API == 0b0101)||(isar1.APA == 0b0101);
+
+	iArg->Features->PAuth_LR = (isar2.APA3 == 0b0110)
+				|| (isar1.API == 0b0110)||(isar1.APA == 0b0110);
+
+	switch (isar2.WFxT) {
+	case 0b0010:
+		iArg->Features->WFxT = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->WFxT = 0;
 		break;
 	}
 	switch (mmfr0.ECV) {

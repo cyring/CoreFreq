@@ -526,6 +526,27 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.DPB2);
 					json_end_object(&s);
 				}
+				json_key(&s, "ISAR2");
+				{
+					json_start_object(&s);
+					json_key(&s, "PACQARMA3");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PACQARMA3);
+					json_key(&s, "PAuth");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PAuth);
+					json_key(&s, "EPAC");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.EPAC);
+					json_key(&s, "PAuth2");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PAuth2);
+					json_key(&s, "FPAC");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FPAC);
+					json_key(&s, "FPACCOMBINE");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FPACCOMBINE);
+					json_key(&s, "PAuth_LR");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PAuth_LR);
+					json_key(&s, "WFxT");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.WFxT);
+					json_end_object(&s);
+				}
 				json_key(&s, "MMFR0");
 				{
 					json_start_object(&s);
