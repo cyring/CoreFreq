@@ -2121,7 +2121,6 @@ static PCI_CALLBACK TGL_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK ADL_IMC(struct pci_dev *dev) ;
 #define ADL_PCH CML_PCH
 static PCI_CALLBACK GLK_IMC(struct pci_dev *dev) ;
-static PCI_CALLBACK GDM_IMC(struct pci_dev *dev) ;
 #define RPL_IMC ADL_IMC
 #define RPL_PCH CML_PCH
 #define MTL_IMC ADL_IMC
@@ -2242,10 +2241,6 @@ static struct pci_device_id PCI_SoC_ids[] = {
 	{	/* Atom - Airmont					*/
 		PCI_VDEVICE(INTEL, DID_INTEL_AIRMONT_HB),
 		.driver_data = (kernel_ulong_t) SoC_AMT
-	},
-	{	/* Goldmont						*/
-		PCI_VDEVICE(INTEL, DID_INTEL_GOLDMONT_HB),
-		.driver_data = (kernel_ulong_t) GDM_IMC
 	},
 	{0, }
 };
@@ -9602,8 +9597,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
-	.powerFormula   = POWER_FORMULA_INTEL_ATOM,
-	.PCI_ids = PCI_SoC_ids,
+	.powerFormula   = POWER_FORMULA_INTEL,
+	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL,
@@ -10696,7 +10691,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
-	.powerFormula   = POWER_FORMULA_INTEL_ATOM,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = NULL,

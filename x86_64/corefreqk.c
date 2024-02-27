@@ -5465,12 +5465,6 @@ void Query_GLK_IMC(void __iomem *mchmap, unsigned short mc)
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 0;
 }
 
-void Query_GDM_IMC(void __iomem *mchmap, unsigned short mc)
-{ /* Source: Intel Pentium and Celeron Processor N- and J- Series Vol 2 */
-	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
-	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 0;
-}
-
 static PCI_CALLBACK P945(struct pci_dev *dev)
 {
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
@@ -6364,13 +6358,6 @@ static PCI_CALLBACK GLK_IMC(struct pci_dev *dev)
 	SoC_SKL_VTD();
 
 	return Router(dev, 0x48, 64, 0x8000, Query_GLK_IMC, 0);
-}
-
-static PCI_CALLBACK GDM_IMC(struct pci_dev *dev)
-{
-	PUBLIC(RO(Proc))->Uncore.CtrlCount = 0;
-
-	return Router(dev, 0x48, 64, 0x8000, Query_GDM_IMC, 0);
 }
 
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev)
