@@ -854,7 +854,8 @@ typedef struct	/* BSP features.					*/
 			AMU_vers	: 19-18,
 			AMU_frac	: 20-19,
 			RME		: 21-20,
-			MTE		: 23-21,
+			SEL2		: 22-21,
+			ECBHB		: 23-22,
 			GCS		: 24-23,
 			THE		: 25-24,
 			SVE_F64MM	: 26-25,
@@ -911,7 +912,10 @@ typedef struct	/* BSP features.					*/
 			ATS1A		: 12-11,
 			CONSTPACFIELD	: 13-12,
 			RNG_TRAP	: 14-13,
-			_Unused1_	: 64-14;
+			MTE		: 17-14,
+			DF2		: 18-17,
+			PFAR		: 19-18,
+			_Unused1_	: 64-19;
 
 		Bit64	InvariantTSC	:  8-0,
 			HyperThreading	:  9-8,

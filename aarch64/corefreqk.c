@@ -1057,6 +1057,7 @@ static void Query_Features(void *pArg)
 		iArg->Features->CONSTPACFIELD = 0;
 		break;
 	}
+
 	switch (mmfr0.ECV) {
 	case 0b0010:
 	case 0b0001:
@@ -1129,6 +1130,16 @@ static void Query_Features(void *pArg)
 		iArg->Features->PAN = 0;
 		break;
 	}
+	switch (mmfr1.ECBHB) {
+	case 0b0001:
+		iArg->Features->ECBHB = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->ECBHB = 0;
+		break;
+	}
+
 	switch (mmfr2.UAO) {
 	case 0b0001:
 		iArg->Features->UAO = 1;
@@ -1143,6 +1154,7 @@ static void Query_Features(void *pArg)
 	} else {
 		iArg->Features->VARange = 0b11;
 	}
+
 	switch (pfr0.FP) {
 	case 0b0000:
 	case 0b0001:
@@ -1266,6 +1278,15 @@ static void Query_Features(void *pArg)
 		iArg->Features->RME = 0;
 		break;
 	}
+	switch (pfr0.SEL2) {
+	case 0b0001:
+		iArg->Features->SEL2 = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SEL2 = 0;
+		break;
+	}
 
 	switch (pfr1.BT) {
 	case 0b0001:
@@ -1293,14 +1314,22 @@ static void Query_Features(void *pArg)
 			break;
 		}
 		break;
+	case 0b0011:
+	default:
+		switch (pfr1.MTEX) {
+		case 0b0001:
+			iArg->Features->MTE = 4;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->MTE = 3;
+			break;
+		}
+		break;
 	case 0b0001:
 		iArg->Features->MTE = 1;
 		break;
-	case 0b0011:
-		iArg->Features->MTE = 3;
-		break;
 	case 0b0000:
-	default:
 		iArg->Features->MTE = 0;
 		break;
 	}
@@ -1351,6 +1380,24 @@ static void Query_Features(void *pArg)
 	case 0b0000:
 	default:
 		iArg->Features->THE = 0;
+		break;
+	}
+	switch (pfr1.DF2) {
+	case 0b0001:
+		iArg->Features->DF2 = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->DF2 = 0;
+		break;
+	}
+	switch (pfr1.PFAR) {
+	case 0b0001:
+		iArg->Features->PFAR = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->PFAR = 0;
 		break;
 	}
     if (iArg->Features->SVE | iArg->Features->SME)

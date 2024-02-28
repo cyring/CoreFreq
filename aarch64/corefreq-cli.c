@@ -2270,6 +2270,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
+		RO(Shm)->Proc.Features.DF2 == 1,
+		attr_Feat,
+		2, "%s%.*sDF2   [%7s]", RSC(FEATURES_DF2).CODE(),
+		width - 18 - RSZ(FEATURES_DF2),
+		NULL
+	},
+	{
+		NULL,
 		RO(Shm)->Proc.Features.DIT == 1,
 		attr_Feat,
 		2, "%s%.*sDIT   [%7s]", RSC(FEATURES_DIT).CODE(),
@@ -2302,6 +2310,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
+		RO(Shm)->Proc.Features.PFAR == 1,
+		attr_Feat,
+		2, "%s%.*sPFAR   [%7s]", RSC(FEATURES_PFAR).CODE(),
+		width - 19 - RSZ(FEATURES_PFAR),
+		NULL
+	},
+	{
+		NULL,
 		( RO(Shm)->Proc.Features.GIC_vers
 		+ RO(Shm)->Proc.Features.GIC_frac ) > 0,
 		attr_Feat,
@@ -2330,10 +2346,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		NULL,
 		RO(Shm)->Proc.Features.MTE > 0,
 		attr_Feat,
-		2, RO(Shm)->Proc.Features.MTE == 3 ?
+		2, RO(Shm)->Proc.Features.MTE == 4 ?
+			"%s v4%.*sMTE   [%7s]"
+		: RO(Shm)->Proc.Features.MTE == 3 ?
 			"%s v3%.*sMTE   [%7s]"
 		: RO(Shm)->Proc.Features.MTE == 2 ?
-			"%s v2%.*sMTE   [%7s]" : "%s   %.*sMTE   [%7s]",
+			"%s v2%.*sMTE   [%7s]"
+		: RO(Shm)->Proc.Features.MTE == 1 ?
+			"%s v1%.*sMTE   [%7s]" : "%s   %.*sMTE   [%7s]",
 		RSC(FEATURES_MTE).CODE(), width - 21 - RSZ(FEATURES_MTE),
 		NULL
 	},
@@ -2505,6 +2525,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
+		RO(Shm)->Proc.Features.ECBHB == 1,
+		attr_Feat,
+		2, "%s%.*sECBHB   [%7s]", RSC(FEATURES_ECBHB).CODE(),
+		width - 20 - RSZ(FEATURES_ECBHB),
+		MECH
+	},
+	{
+		NULL,
 		RO(Shm)->Proc.Mechanisms.SSBS,
 		attr_Feat,
 		2, "%s%.*sSSBS   [%7s]", RSC(MECH_SSBS).CODE(),
@@ -2542,6 +2570,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		attr_Feat,
 		2, "%s%.*sRME   [%7s]", RSC(FEATURES_RME).CODE(),
 		width - 18 - RSZ(FEATURES_RME),
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Features.SEL2 == 1,
+		attr_Feat,
+		2, "%s%.*sSEL2   [%7s]", RSC(FEATURES_SEL2).CODE(),
+		width - 19 - RSZ(FEATURES_SEL2),
 		NULL
 	},
 	{

@@ -530,30 +530,45 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_INVARIANT_CODE_FR		"Invariant"
 
 #define RSC_FEATURES_ACPI_CODE_FR	\
-		"Configuration avanc""\xa9""e et interface d'alimentation"
+		"Configuration Avanc""\xa9""e & Interface d'Alimentation"
 
 #define RSC_FEATURES_AMU_CODE_FR	\
 			"Unit""\xa9"" de surveillance de l'activit""\xa9"
 
-#define RSC_FEATURES_BIG_END_CODE_FR	RSC_FEATURES_BIG_END_CODE_EN
+#define RSC_FEATURES_BIG_END_CODE_FR	"Endianisme Mixte"
 #define RSC_FEATURES_BTI_CODE_FR	"Validation des cibles de branche"
 
 #define RSC_FEATURES_EBEP_CODE_FR	\
-	"Profilage d'""\xa9""v""\xa9""nements en fonction des exceptions"
+	"Profilage d'""\xa9""v""\xa9""nements bas""\xa9"" sur les exceptions"
+
+#define RSC_FEATURES_ECBHB_CODE_FR	\
+				"Contr. Exploit. avec Tampon Hist. Branchement"
 
 #define RSC_FEATURES_ECV_CODE_FR	\
-	"Virtualisation am""\xa9""lior""\xa9""e des compteurs"
+			"Virtualisation am""\xa9""lior""\xa9""e des compteurs"
 
-#define RSC_FEATURES_DIT_CODE_FR	RSC_FEATURES_DIT_CODE_EN
+#define RSC_FEATURES_DF2_CODE_FR	"Extension de Double D""\xa9""faut"
+#define RSC_FEATURES_DIT_CODE_FR	\
+		"Chronom""\xa9""trage Ind""\xa9""pendant des Donn""\xa9""es"
+
 #define RSC_FEATURES_EXS_CODE_FR	\
-			"Synchronisation du contexte & gestion d'exceptions"
+				"Sync. de Contexte & Gestion d'Exceptions"
 
-#define RSC_FEATURES_FGT_CODE_FR	RSC_FEATURES_FGT_CODE_EN
-#define RSC_FEATURES_GCS_CODE_FR	RSC_FEATURES_GCS_CODE_EN
+#define RSC_FEATURES_FGT_CODE_FR	\
+	"Contr""\xb4""les de Pi""\xa8""ges ""\xa0"" Granularit""\xa9"" Fine"
+
+#define RSC_FEATURES_PFAR_CODE_FR	\
+				"Registres de D""\xa9""faut d'Adresse Physique"
+
+#define RSC_FEATURES_GCS_CODE_FR	\
+				"Pile de Contr""\xb4""le Prot""\xa9""g""\xa9""e"
+
 #define RSC_FEATURES_GIC_CODE_FR	\
 		"Contr""\xb4""leur d'interruption g""\xa9""n""\xa9""rique"
 
-#define RSC_FEATURES_MTE_CODE_FR       "Extension de marquage de m""\xa9""moire"
+#define RSC_FEATURES_MTE_CODE_FR	\
+				"Extension de marquage de m""\xa9""moire"
+
 #define RSC_FEATURES_MPAM_CODE_FR	\
 			"Partitionnement et supervision de la m""\xa9""moire"
 
@@ -563,14 +578,25 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_RAS_CODE_FR	\
 		"Fiabilit""\xa9"" Disponibilit""\xa9"" et Durabilit""\xa9"
 
-#define RSC_FEATURES_RME_CODE_FR	RSC_FEATURES_RME_CODE_EN
-#define RSC_FEATURES_THE_CODE_FR	RSC_FEATURES_THE_CODE_EN
+#define RSC_FEATURES_RME_CODE_FR	"Extension de Gestion de Domaine"
+#define RSC_FEATURES_SEL2_CODE_FR	\
+			"Impl""\xa9""mentation S""\xa9""curis""\xa9""e de l'EL2"
+
+#define RSC_FEATURES_THE_CODE_FR	\
+				"Endurcissement ""\x89""tendu de la Translation"
+
 #define RSC_FEATURES_TLB_CODE_FR	"Instructions de gestion TLB"
-#define RSC_FEATURES_TME_CODE_FR  "Extension de m""\xa9""moire transactionnelle"
+#define RSC_FEATURES_TME_CODE_FR	\
+				"Extension de m""\xa9""moire transactionnelle"
+
 #define RSC_FEATURES_TSC_CODE_FR	"Compteur d'horodatage"
-#define RSC_FEATURES_UAO_CODE_FR       "Surcharge de l'acc""\xa8""s utilisateur"
+#define RSC_FEATURES_UAO_CODE_FR	\
+				"Surcharge de l'acc""\xa8""s utilisateur"
+
 #define RSC_FEATURES_VA_CODE_FR 	"Plage d'adressage virtuel"
-#define RSC_FEATURES_VHE_CODE_FR    "Extensions d'H""\xb4""te de Virtualisation"
+#define RSC_FEATURES_VHE_CODE_FR	\
+				"Extensions d'H""\xb4""te de Virtualisation"
+
 #define RSC_FEAT_SECTION_MECH_CODE_FR	"M""\xa9""canismes d'att""\xa9""nuation"
 #define RSC_FEAT_SECTION_SEC_CODE_FR	"Fonctions de s""\xa9""curit""\xa9"
 
@@ -1264,10 +1290,10 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_MECH_CLRBHB_CODE_FR 	"Effacement de l'historique de branche"
 
 #define RSC_MECH_SSBD_CODE_FR		\
-	"Contournement du rangement sp""\xa9""culatif d""\xa9""sactiv""\xa9"
+	"Contournement Sp""\xa9""culatif de Magasin d""\xa9""sactiv""\xa9"
 
 #define RSC_MECH_SSBS_CODE_FR		\
-		"Contournement s""\xbb""r du rangement sp""\xa9""culatif"
+	"Contournement Sp""\xa9""culatif de Magasin Prot""\xa9""g""\xa9"
 
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_FR	"  %3s       Processeur    " \
 						"   %s     %c%4u %c "

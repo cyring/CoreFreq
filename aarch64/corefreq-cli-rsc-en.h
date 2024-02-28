@@ -867,10 +867,15 @@
 #define RSC_FEATURES_BIG_END_CODE_EN	"Mixed-Endianness"
 #define RSC_FEATURES_BTI_CODE_EN	"Branch Target Identification"
 #define RSC_FEATURES_EBEP_CODE_EN	"Exception-based event profiling"
+#define RSC_FEATURES_ECBHB_CODE_EN	\
+				"Exploitative Control w/ Branch History Buffer"
+
 #define RSC_FEATURES_ECV_CODE_EN	"Enhanced Counter Virtualization"
+#define RSC_FEATURES_DF2_CODE_EN	"Double Fault Extension"
 #define RSC_FEATURES_DIT_CODE_EN	"Data Independent Timing"
 #define RSC_FEATURES_EXS_CODE_EN  "Context Synchronization & Exception Handling"
 #define RSC_FEATURES_FGT_CODE_EN	"Fine-Grained Trap controls"
+#define RSC_FEATURES_PFAR_CODE_EN	"Physical Fault Address Registers"
 #define RSC_FEATURES_GCS_CODE_EN	"Guarded Control Stack"
 #define RSC_FEATURES_GIC_CODE_EN	"Generic Interrupt Controller"
 #define RSC_FEATURES_MPAM_CODE_EN	"Memory Partitioning and Monitoring"
@@ -880,6 +885,7 @@
 #define RSC_FEATURES_PAN_CODE_EN	"Privileged Access Never"
 #define RSC_FEATURES_RAS_CODE_EN     "Reliability Availability & Serviceability"
 #define RSC_FEATURES_RME_CODE_EN	"Realm Management Extension"
+#define RSC_FEATURES_SEL2_CODE_EN	"Secure EL2 Implementation"
 #define RSC_FEATURES_THE_CODE_EN	"Translation Hardening Extension"
 #define RSC_FEATURES_TLB_CODE_EN	"TLB maintenance instructions"
 #define RSC_FEATURES_TME_CODE_EN	"Transactional Memory Extension"
