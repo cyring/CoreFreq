@@ -291,7 +291,7 @@ static void *Core_Cycle(void *arg)
 	CFlip->Delta.TSC	= RO(Core)->Delta.TSC;
 	CFlip->Delta.C1 	= RO(Core)->Delta.C1;
 
-	double FRQ = CFlip->Delta.TSC * PRECISION; /*	TODO(SourceMe)	*/
+	const double FRQ = CLOCK_MHz(double,CFlip->Delta.TSC * CFlip->Clock.Hz);
 	/* Update all clock ratios.					*/
 	memcpy(Cpu->Boost, RO(Core)->Boost, (BOOST(SIZE))*sizeof(unsigned int));
 

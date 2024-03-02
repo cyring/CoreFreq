@@ -4350,45 +4350,6 @@ static void CoreFreqK_Register_NMI(void) {}
 static void CoreFreqK_UnRegister_NMI(void) {}
 #endif /* KERNEL_VERSION(3, 5, 0) */
 
-
-static void For_All_CPU_Compute_Clock(void)
-{
-	unsigned int cpu = PUBLIC(RO(Proc))->CPU.Count;
-  do {
-	CLOCK Clock = {
-		.Q  = PUBLIC(RO(Proc))->Features.Factory.Clock.Q,
-		.R  = PUBLIC(RO(Proc))->Features.Factory.Clock.R,
-		.Hz = PUBLIC(RO(Proc))->Features.Factory.Clock.Hz
-	};
-	/* from last AP to BSP */
-	cpu--;
-
-    if (!BITVAL(PUBLIC(RO(Core, AT(cpu)))->OffLine, OS))
-    {
-	COMPUTE_ARG Compute = {
-		.TSC = {NULL, NULL},
-		.Clock = {
-			.Q = PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)],
-			.R = 0, .Hz = 0
-		}
-	};
-      if ((Compute.TSC[0] = kmalloc(STRUCT_SIZE, GFP_KERNEL)) != NULL)
-      {
-	if ((Compute.TSC[1] = kmalloc(STRUCT_SIZE, GFP_KERNEL)) != NULL)
-	{
-		Clock = Compute_Clock(cpu, &Compute);
-
-		kfree(Compute.TSC[1]);
-	}
-		kfree(Compute.TSC[0]);
-      }
-    }
-	PUBLIC(RO(Core, AT(cpu)))->Clock.Q  = Clock.Q;
-	PUBLIC(RO(Core, AT(cpu)))->Clock.R  = Clock.R;
-	PUBLIC(RO(Core, AT(cpu)))->Clock.Hz = Clock.Hz;
-  } while (cpu != 0) ;
-}
-
 #define SYSGATE_UPDATE(_rc)						\
 ({									\
 	_rc = Sys_OS_Driver_Query();					\
@@ -4449,7 +4410,6 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	{
 	case COREFREQ_TOGGLE_OFF:
 		Controller_Stop(1);
-		For_All_CPU_Compute_Clock();
 		BITCLR(LOCKLESS, AutoClock, 1);
 		PUBLIC(RO(Proc))->Registration.AutoClock = AutoClock;
 		Controller_Start(1);
@@ -5090,8 +5050,11 @@ static int CoreFreqK_HotPlug_CPU_Online(unsigned int cpu)
 	COMPUTE_ARG Compute = {
 		.TSC = {NULL, NULL},
 		.Clock = {
-			.Q = PUBLIC(RO(Core, \
-			AT(PUBLIC(RO(Proc))->Service.Core)))->Boost[BOOST(MAX)],
+			.Q = PUBLIC(RO(Proc))->Features.Hybrid == 1 ?
+				PUBLIC(RO(Proc))->Features.Factory.Ratio
+			: PUBLIC(
+				RO(Core, AT(PUBLIC(RO(Proc))->Service.Core))
+			)->Boost[BOOST(MAX)],
 			.R = 0, .Hz = 0
 		}
 	};
