@@ -2353,6 +2353,8 @@ static void Query_GenericMachine(unsigned int cpu)
 	);
 	PUBLIC(RO(Proc))->Features.PerfMon.CoreCycles = pmuser.CR;
 	PUBLIC(RO(Proc))->Features.PerfMon.InstrRetired = pmuser.IR;
+
+	For_All_ACPI_CPPC(Read_ACPI_CPPC_Registers, NULL);
     }
 }
 
