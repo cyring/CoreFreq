@@ -1997,7 +1997,7 @@ void Query_DeviceTree(unsigned int cpu)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
     cpufreq_for_each_valid_entry(table, pFreqPolicy->freq_table)
     {
-	if (table->frequency != max_freq && table->frequency != min_freq) {
+	if (table->frequency != min_freq) {
 	    if (boost < (BOOST(SIZE) - BOOST(18C)))
 	    {
 		Core->Boost[BOOST(18C) + boost] = table->frequency
