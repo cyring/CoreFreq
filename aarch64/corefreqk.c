@@ -1556,13 +1556,6 @@ static void Query_Features(void *pArg)
 	iArg->Features->SME_SF8DP4 = smfr0.SF8DP4;
 	iArg->Features->SME_SF8DP2 = smfr0.SF8DP2;
     }
-    if (Experimental && (iArg->HypervisorID == HYPERV_NONE)) {
-	/* Query the Cluster Configuration				*/
-	volatile CLUSTERCFR clustercfg = {.value = SysRegRead(CLUSTERCFR_EL1)};
-	if (clustercfg.NUMCORE) {
-		iArg->SMT_Count = iArg->SMT_Count + clustercfg.NUMCORE;
-	}
-    }
 	/* Reset the performance features bits: present is 0b1		*/
 	iArg->Features->PerfMon.CoreCycles    = 0b0;
 	iArg->Features->PerfMon.InstrRetired  = 0b0;
@@ -2358,6 +2351,17 @@ static void Query_GenericMachine(unsigned int cpu)
     }
 }
 
+static void Query_DynamIQ(unsigned int cpu)
+{
+	Query_GenericMachine(cpu);
+
+    if (PUBLIC(RO(Proc))->HypervisorID == BARE_METAL) {
+	/* Query the Cluster Configuration on Bare Metal only		*/
+	volatile CLUSTERCFR clusterCfg = {.value = SysRegRead(CLUSTERCFR_EL1)};
+	UNUSED(clusterCfg);
+    }
+}
+
 void SystemRegisters(CORE_RO *Core)
 {
 	volatile AA64ISAR2 isar2;
@@ -2543,15 +2547,15 @@ void PerCore_Reset(CORE_RO *Core)
 
 static void PerCore_GenericMachine(void *arg)
 {
-	volatile CPUPWRCTLR cpupwrctl;
+	volatile CPUPWRCTLR cpuPwrCtl;
 	volatile REVIDR revid;
 	CORE_RO *Core = (CORE_RO *) arg;
 
 	Query_DeviceTree(Core->Bind);
 
-    if (Experimental && (PUBLIC(RO(Proc))->HypervisorID == HYPERV_NONE)) {
-	cpupwrctl.value = SysRegRead(CPUPWRCTLR_EL1);
-	Core->Query.CStateBaseAddr = cpupwrctl.WFI_RET_CTRL;
+    if (Experimental && (PUBLIC(RO(Proc))->HypervisorID == BARE_METAL)) {
+	cpuPwrCtl.value = SysRegRead(CPUPWRCTLR_EL1);
+	Core->Query.CStateBaseAddr = cpuPwrCtl.WFI_RET_CTRL;
     }
 	__asm__ __volatile__(
 		"mrs	%[revid],	revidr_el1"	"\n\t"

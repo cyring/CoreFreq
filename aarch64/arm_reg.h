@@ -246,7 +246,7 @@ typedef union
 
 typedef union
 {
-	unsigned long long	value;
+	unsigned long long	value;	/* SMT=0x0000000000000000	*/
 	struct
 	{
 		unsigned long long
@@ -726,7 +726,7 @@ typedef union
 } SSBS2;
 
 typedef union
-{
+{	/* R82; A55; A75; A76; A76AE; A77; A78; A78AE; A78C; X1; X1C; N3; V1 */
 	unsigned long long	value;	/*	Pkg:0x0000000007bfda77	*/
 	struct
 	{
@@ -755,7 +755,29 @@ typedef union
 		SFIDX		: 59-55,
 		SFWAY		: 61-59,
 		NODES		: 64-61;
-	};
+	} IMP;
+	struct
+	{
+		unsigned long long
+		NUMCORE 	:  3-0,
+		RAZ1		:  4-3,
+		L3		:  5-4,
+		WRLAT		:  6-5,
+		RDLAT		:  7-6,
+		RDSLC		:  8-7,
+		ECC		:  9-8,
+		MAS		: 11-9,
+		ACP		: 12-11,
+		PP		: 13-12,
+		MAS_Ext 	: 14-13,
+		CPUSLC		: 22-14,
+		RAZ2		: 23-22,
+		WRDLY		: 24-23,
+		NUMPE		: 28-24,
+		RAZ3		: 30-28,
+		SafetyMode	: 32-30,
+		RSVD		: 64-32;
+	} DSU;
 } CLUSTERCFR;
 
 typedef union

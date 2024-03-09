@@ -355,6 +355,7 @@ static void PerCore_GenericMachine(void *arg) ;
 static void Start_GenericMachine(void *arg) ;
 static void Stop_GenericMachine(void *arg) ;
 static void InitTimer_GenericMachine(unsigned int cpu) ;
+static void Query_DynamIQ(unsigned int cpu) ;
 /*	[Void]								*/
 #define _Void_Signature {.ExtFamily=0x00, .Family=0x0, .ExtModel=0x0, .Model=0x0}
 #define _Cortex_A34	{.ExtFamily=0xd0, .Family=0x2, .ExtModel=0x0, .Model=0x8}
@@ -626,7 +627,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Cortex_A55] = {
 	.Signature = _Cortex_A55,
-	.Query = Query_GenericMachine,
+	.Query = Query_DynamIQ,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -842,7 +843,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Cortex_A75] = {
 	.Signature = _Cortex_A75,
-	.Query = Query_GenericMachine,
+	.Query = Query_DynamIQ,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -866,7 +867,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Cortex_A76] = {
 	.Signature = _Cortex_A76,
-	.Query = Query_GenericMachine,
+	.Query = Query_DynamIQ,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -890,7 +891,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Cortex_A76AE] = {
 	.Signature = _Cortex_A76AE,
-	.Query = Query_GenericMachine,
+	.Query = Query_DynamIQ,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -914,7 +915,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Cortex_A77] = {
 	.Signature = _Cortex_A77,
-	.Query = Query_GenericMachine,
+	.Query = Query_DynamIQ,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -938,7 +939,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Cortex_A78] = {
 	.Signature = _Cortex_A78,
-	.Query = Query_GenericMachine,
+	.Query = Query_DynamIQ,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -962,7 +963,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Cortex_A78AE] = {
 	.Signature = _Cortex_A78AE,
-	.Query = Query_GenericMachine,
+	.Query = Query_DynamIQ,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -986,7 +987,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Cortex_A78C] = {
 	.Signature = _Cortex_A78C,
-	.Query = Query_GenericMachine,
+	.Query = Query_DynamIQ,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -1010,7 +1011,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Cortex_R82] = {
 	.Signature = _Cortex_R82,
-	.Query = Query_GenericMachine,
+	.Query = Query_DynamIQ,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -1034,7 +1035,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Cortex_X1] = {
 	.Signature = _Cortex_X1,
-	.Query = Query_GenericMachine,
+	.Query = Query_DynamIQ,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -1058,7 +1059,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Cortex_X1C] = {
 	.Signature = _Cortex_X1C,
-	.Query = Query_GenericMachine,
+	.Query = Query_DynamIQ,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -1250,7 +1251,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Neoverse_V1] = {
 	.Signature = _Neoverse_V1,
-	.Query = Query_GenericMachine,
+	.Query = Query_DynamIQ,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
