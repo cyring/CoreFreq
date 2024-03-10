@@ -464,14 +464,6 @@ static const struct {
 	{	0xc0,	VENDOR_AMPERE,	__builtin_strlen(VENDOR_AMPERE),
 		CRC_AMPERE,	BARE_METAL				},
 
-	{	0xff,	VENDOR_KVM,	__builtin_strlen(VENDOR_KVM),
-		CRC_KVM,	HYPERV_KVM				},
-	{	0xff,	VENDOR_VBOX,	__builtin_strlen(VENDOR_VBOX),
-		CRC_VBOX,	HYPERV_VBOX				},
-	{	0xff,	VENDOR_KBOX,	__builtin_strlen(VENDOR_KBOX),
-		CRC_KBOX,	HYPERV_KBOX				},
-	{	0xff,	VENDOR_VMWARE,	__builtin_strlen(VENDOR_VMWARE),
-		CRC_VMWARE,	HYPERV_VMWARE				},
 	{	0xff,	VENDOR_HYPERV,	__builtin_strlen(VENDOR_HYPERV),
 		CRC_HYPERV,	HYPERV_HYPERV				}
     };
@@ -5798,10 +5790,10 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 	#ifdef CONFIG_XEN
 	if (xen_pv_domain() || xen_hvm_domain())
 	{
-		if (PUBLIC(RO(Proc))->Features.Hyperv == 0) {
-			PUBLIC(RO(Proc))->Features.Hyperv = 1;
-		}
 		PUBLIC(RO(Proc))->HypervisorID = HYPERV_XEN;
+		PUBLIC(RO(Proc))->Features.Info.Hypervisor.CRC = CRC_KVM;
+		StrCopy(PUBLIC(RO(Proc))->Features.Info.Hypervisor.ID,
+			VENDOR_KVM, 12 + 4);
 	}
 	#endif /* CONFIG_XEN */
 
@@ -5821,7 +5813,40 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 	/*	Copy various SMBIOS data [version 3.2]			*/
 	SMBIOS_Collect();
 	SMBIOS_Decoder();
+	/*	Guess virtualization from SMBIOS strings		*/
+	if ((strncmp(	PUBLIC(RO(Proc))->SMB.System.Vendor,
+			"QEMU",
+			MAX_UTS_LEN) == 0)
 
+	|| (strncmp(	PUBLIC(RO(Proc))->SMB.Product.Name,
+			"QEMU Virtual Machine",
+			MAX_UTS_LEN) == 0))
+	{
+		PUBLIC(RO(Proc))->HypervisorID = HYPERV_KVM;
+		PUBLIC(RO(Proc))->Features.Info.Hypervisor.CRC = CRC_KVM;
+		StrCopy(PUBLIC(RO(Proc))->Features.Info.Hypervisor.ID,
+			VENDOR_KVM, 12 + 4);
+	}
+	else if ((strncmp(PUBLIC(RO(Proc))->SMB.BIOS.Version,
+			"VirtualBox",
+			MAX_UTS_LEN) == 0)
+	|| (strncmp(PUBLIC(RO(Proc))->SMB.Board.Name,
+			"VirtualBox",
+			MAX_UTS_LEN) == 0)
+	|| (strncmp(PUBLIC(RO(Proc))->SMB.Product.Family,
+			"Virtual Machine",
+			MAX_UTS_LEN) == 0))
+	{
+		PUBLIC(RO(Proc))->HypervisorID = HYPERV_VBOX;
+		PUBLIC(RO(Proc))->Features.Info.Hypervisor.CRC = CRC_VBOX;
+		StrCopy(PUBLIC(RO(Proc))->Features.Info.Hypervisor.ID,
+			VENDOR_VBOX, 12 + 4);
+	}
+	if (PUBLIC(RO(Proc))->HypervisorID != HYPERV_NONE) {
+		if (PUBLIC(RO(Proc))->Features.Hyperv == 0) {
+			PUBLIC(RO(Proc))->Features.Hyperv = 1;
+		}
+	}
 	/*	Initialize the CoreFreq controller			*/
 	Controller_Init();
 
