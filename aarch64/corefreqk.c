@@ -5842,7 +5842,8 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 		StrCopy(PUBLIC(RO(Proc))->Features.Info.Hypervisor.ID,
 			VENDOR_VBOX, 12 + 4);
 	}
-	if (PUBLIC(RO(Proc))->HypervisorID != HYPERV_NONE) {
+	if ((PUBLIC(RO(Proc))->HypervisorID != HYPERV_NONE)
+	 && (PUBLIC(RO(Proc))->HypervisorID != BARE_METAL)) {
 		if (PUBLIC(RO(Proc))->Features.Hyperv == 0) {
 			PUBLIC(RO(Proc))->Features.Hyperv = 1;
 		}
