@@ -21,6 +21,7 @@
 #define MRS_SVCR		sys_reg(0b11, 0b011, 0b0100, 0b0010, 0b010)
 #define AMCGCR_EL0		sys_reg(0b11, 0b011, 0b1101, 0b0010, 0b010)
 #define CLUSTERCFR_EL1		sys_reg(0b11, 0b000, 0b1111, 0b0011, 0b000)
+#define CLUSTERIDR_EL1		sys_reg(0b11, 0b000, 0b1111, 0b0011, 0b001)
 
 typedef union
 {
@@ -779,6 +780,19 @@ typedef union
 		RSVD		: 64-32;
 	} DSU;
 } CLUSTERCFR;
+
+typedef union
+{
+	unsigned long long	value;	/*	Pkg:0x0000000000000041	*/
+	struct
+	{
+		unsigned long long
+		Revision	:  4-0,
+		Variant 	:  8-4,
+		RAZ		: 32-8,
+		RSVD		: 64-32;
+	};
+} CLUSTERIDR;
 
 typedef union
 {

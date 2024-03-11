@@ -2349,8 +2349,8 @@ static void Query_DynamIQ(unsigned int cpu)
 
     if (PUBLIC(RO(Proc))->HypervisorID == BARE_METAL) {
 	/* Query the Cluster Configuration on Bare Metal only		*/
-	volatile CLUSTERCFR clusterCfg = {.value = SysRegRead(CLUSTERCFR_EL1)};
-	UNUSED(clusterCfg);
+	PUBLIC(RO(Proc))->Uncore.ClusterCfg.value = SysRegRead(CLUSTERCFR_EL1);
+	PUBLIC(RO(Proc))->Uncore.ClusterRev.value = SysRegRead(CLUSTERIDR_EL1);
     }
 }
 

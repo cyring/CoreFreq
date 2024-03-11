@@ -328,6 +328,9 @@ typedef struct
 	signed int		ArchID;
 
 	struct {
+		CLUSTERCFR	ClusterCfg;
+		CLUSTERIDR	ClusterRev;
+
 		unsigned int	Boost[UNCORE_BOOST(SIZE)];
 		BUS_REGISTERS	Bus;
 		MC_REGISTERS	MC[MC_MAX_CTRL];

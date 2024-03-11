@@ -712,7 +712,8 @@ void Uncore_Update(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 	RO(Shm)->Uncore.CtrlCount = RO(Proc)->Uncore.CtrlCount;
 	/*	Decode the Memory Controller for each found vendor:device */
 	Chipset[IC_CHIPSET] = RO(Proc)->Features.Info.Vendor.ID;
-	RO(Shm)->Uncore.ChipID = 0x0;
+	RO(Shm)->Uncore.ChipID	=  RO(Proc)->Uncore.ClusterRev.Revision
+				| (RO(Proc)->Uncore.ClusterRev.Variant << 4);
 	RO(Shm)->Uncore.Chipset.ArchID = IC_CHIPSET;
 	/*	Copy the chipset codename.				*/
 	StrCopy(RO(Shm)->Uncore.Chipset.CodeName,
