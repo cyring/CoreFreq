@@ -323,7 +323,7 @@ static long CoreFreqK_Power_Scope(int scope)
     }
 }
 
-unsigned int FixMissingRatioAndFrequency(unsigned int r32, CLOCK *pClock)
+static unsigned int FixMissingRatioAndFrequency(unsigned int r32, CLOCK *pClock)
 {
 	unsigned long long r64 = r32;
   if (PUBLIC(RO(Proc))->Features.Factory.Freq != 0)
@@ -480,7 +480,7 @@ static const struct {
     }
 }
 
-signed int SearchArchitectureID(void)
+static signed int SearchArchitectureID(void)
 {
 	signed int id;
     for (id = ARCHITECTURES - 1; id > 0; id--)
@@ -1553,7 +1553,7 @@ static void Query_Features(void *pArg)
 	iArg->Features->PerfMon.InstrRetired  = 0b0;
 }
 
-void Compute_Interval(void)
+static void Compute_Interval(void)
 {
 	if ( (SleepInterval >= LOOP_MIN_MS)
 	  && (SleepInterval <= LOOP_MAX_MS))
@@ -1692,7 +1692,7 @@ static void Compute_TSC(void *arg)
 	REL_BCLK(pCompute->Clock, ratio, D[1][best[1]], 1LLU);
 }
 
-CLOCK Compute_Clock(unsigned int cpu, COMPUTE_ARG *pCompute)
+static CLOCK Compute_Clock(unsigned int cpu, COMPUTE_ARG *pCompute)
 {
 /*	Synchronously call the Base Clock estimation on a pinned CPU.
  * 1/ Preemption is disabled by smp_call_function_single() > get_cpu()
@@ -1706,7 +1706,7 @@ CLOCK Compute_Clock(unsigned int cpu, COMPUTE_ARG *pCompute)
 	return pCompute->Clock;
 }
 
-void ClockToHz(CLOCK *clock)
+inline void ClockToHz(CLOCK *clock)
 {
 	clock->Hz  = clock->Q * 1000000L;
 	clock->Hz += clock->R * PRECISION;
@@ -1719,7 +1719,7 @@ static CLOCK BaseClock_GenericMachine(unsigned int ratio)
 	return clock;
 };
 
-void Cache_Level(CORE_RO *Core, unsigned int level, unsigned int select)
+static void Cache_Level(CORE_RO *Core, unsigned int level, unsigned int select)
 {
 	const CSSELR cssel[CACHE_MAX_LEVEL] = {
 		[0] = { .InD = 1, .Level = 0 }, /*	L1I	*/
@@ -1738,7 +1738,7 @@ void Cache_Level(CORE_RO *Core, unsigned int level, unsigned int select)
 	);
 }
 
-void Cache_Topology(CORE_RO *Core)
+static void Cache_Topology(CORE_RO *Core)
 {
 	volatile CLIDR clidr;
 	__asm__ volatile
@@ -1802,7 +1802,7 @@ static void Map_Generic_Topology(void *arg)
     }
 }
 
-int Core_Topology(unsigned int cpu)
+static int Core_Topology(unsigned int cpu)
 {
 	int rc = smp_call_function_single(cpu , Map_Generic_Topology,
 						PUBLIC(RO(Core, AT(cpu))), 1);
@@ -1816,7 +1816,7 @@ int Core_Topology(unsigned int cpu)
 	return rc;
 }
 
-unsigned int Proc_Topology(void)
+static unsigned int Proc_Topology(void)
 {
 	unsigned int cpu, PN = 0, CountEnabledCPU = 0;
 	struct SIGNATURE SoC;
@@ -1863,7 +1863,7 @@ unsigned int Proc_Topology(void)
 	PUBLIC(RO(Proc))->CPU.OnLine = Proc_Topology()			\
 )
 
-void Package_Init_Reset(void)
+static void Package_Init_Reset(void)
 {
 	PUBLIC(RO(Proc))->Features.TgtRatio_Unlock = 1;
 	PUBLIC(RO(Proc))->Features.ClkRatio_Unlock = 0;
@@ -1874,7 +1874,7 @@ void Package_Init_Reset(void)
 	PUBLIC(RO(Proc))->Features.Uncore_Unlock = 0;
 }
 
-void Default_Unlock_Reset(void)
+static void Default_Unlock_Reset(void)
 {
     switch (Target_Ratio_Unlock) {
     case COREFREQ_TOGGLE_OFF:
@@ -1904,7 +1904,7 @@ void Default_Unlock_Reset(void)
     }
 }
 
-void OverrideCodeNameString(PROCESSOR_SPECIFIC *pSpecific)
+static void OverrideCodeNameString(PROCESSOR_SPECIFIC *pSpecific)
 {
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
 		Arch[
@@ -1912,7 +1912,7 @@ void OverrideCodeNameString(PROCESSOR_SPECIFIC *pSpecific)
 		].Architecture.Brand[pSpecific->CodeNameIdx], CODENAME_LEN);
 }
 
-void OverrideUnlockCapability(PROCESSOR_SPECIFIC *pSpecific)
+static void OverrideUnlockCapability(PROCESSOR_SPECIFIC *pSpecific)
 {
     if (pSpecific->Latch & LATCH_TGT_RATIO_UNLOCK) {
 	PUBLIC(RO(Proc))->Features.TgtRatio_Unlock=pSpecific->TgtRatioUnlocked;
@@ -1931,7 +1931,7 @@ void OverrideUnlockCapability(PROCESSOR_SPECIFIC *pSpecific)
     }
 }
 
-PROCESSOR_SPECIFIC *LookupProcessor(void)
+static PROCESSOR_SPECIFIC *LookupProcessor(void)
 {
 	PROCESSOR_SPECIFIC *pSpecific;
     for (pSpecific = Arch[PUBLIC(RO(Proc))->ArchID].Specific;
@@ -1951,7 +1951,7 @@ PROCESSOR_SPECIFIC *LookupProcessor(void)
 	return NULL;
 }
 
-void Query_DeviceTree(unsigned int cpu)
+static void Query_DeviceTree(unsigned int cpu)
 {
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 #ifdef CONFIG_CPU_FREQ
@@ -2019,7 +2019,7 @@ void Query_DeviceTree(unsigned int cpu)
 	Core->Boost[BOOST(TGT)] = cur_freq / UNIT_KHz(PRECISION);
 }
 
-void Compute_ACPI_CPPC_Bounds(unsigned int cpu)
+static void Compute_ACPI_CPPC_Bounds(unsigned int cpu)
 {
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
@@ -2075,7 +2075,7 @@ inline signed int Enable_ACPI_CPPC(unsigned int cpu, void *arg)
 	return rc;
 }
 
-signed int Get_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
+static signed int Get_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 {
 #ifdef CONFIG_ACPI_CPPC_LIB
 	struct cppc_perf_fb_ctrs CPPC_Perf;
@@ -2148,7 +2148,7 @@ signed int Get_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 #endif /* CONFIG_ACPI_CPPC_LIB */
 }
 
-signed int Get_EPP_ACPI_CPPC(unsigned int cpu)
+static signed int Get_EPP_ACPI_CPPC(unsigned int cpu)
 {
 	signed int rc = -ENODEV;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
@@ -2166,7 +2166,7 @@ signed int Get_EPP_ACPI_CPPC(unsigned int cpu)
 	return rc;
 }
 
-signed int Put_EPP_ACPI_CPPC(unsigned int cpu, signed short epp)
+static signed int Put_EPP_ACPI_CPPC(unsigned int cpu, signed short epp)
 {
 	signed int rc = -ENODEV;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
@@ -2183,7 +2183,7 @@ signed int Put_EPP_ACPI_CPPC(unsigned int cpu, signed short epp)
 	return rc;
 }
 
-signed int Set_EPP_ACPI_CPPC(unsigned int cpu, void *arg)
+static signed int Set_EPP_ACPI_CPPC(unsigned int cpu, void *arg)
 {
 	signed int rc = 0;
 	UNUSED(arg);
@@ -2196,7 +2196,7 @@ signed int Set_EPP_ACPI_CPPC(unsigned int cpu, void *arg)
 	return rc;
 }
 
-signed int Read_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
+static signed int Read_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 {
 	signed int rc = Get_ACPI_CPPC_Registers(cpu, arg);
 
@@ -2210,7 +2210,8 @@ signed int Read_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 	return rc;
 }
 
-void For_All_ACPI_CPPC(signed int(*CPPC_Func)(unsigned int, void*), void *arg)
+static void For_All_ACPI_CPPC( signed int (*CPPC_Func)(unsigned int, void*),
+				void *arg )
 {
 	#if defined(CONFIG_ACPI_CPPC_LIB) \
 	 && LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
@@ -2292,7 +2293,7 @@ static int CoreFreqK_ProbePCI(	struct pci_device_id PCI_ids[],
 	return rc;
 }
 
-void Query_Same_Genuine_Features(void)
+static void Query_Same_Genuine_Features(void)
 {
 	if ((PRIVATE(OF(Specific)) = LookupProcessor()) != NULL)
 	{
@@ -2354,7 +2355,7 @@ static void Query_DynamIQ(unsigned int cpu)
     }
 }
 
-void SystemRegisters(CORE_RO *Core)
+static void SystemRegisters(CORE_RO *Core)
 {
 	volatile AA64ISAR2 isar2;
 	volatile AA64MMFR1 mmfr1;
@@ -2519,7 +2520,7 @@ void SystemRegisters(CORE_RO *Core)
 	BITWISECLR(LOCKLESS, Pkg->ThermalPoint.State);			\
 })
 
-void PerCore_Reset(CORE_RO *Core)
+static void PerCore_Reset(CORE_RO *Core)
 {
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->HWP_Mask	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask	, Core->Bind);
@@ -2564,12 +2565,12 @@ static void PerCore_GenericMachine(void *arg)
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 56)
-void Sys_DumpTask(SYSGATE_RO *SysGate)
+inline void Sys_DumpTask(SYSGATE_RO *SysGate)
 {
 	SysGate->taskCount = 0;
 }
 #else /* KERNEL_VERSION(3, 10, 56) */
-void Sys_DumpTask(SYSGATE_RO *SysGate)
+static void Sys_DumpTask(SYSGATE_RO *SysGate)
 {	/* Source: /include/linux/sched.h */
 	struct task_struct *process, *thread;
 	int cnt = 0;
@@ -2639,7 +2640,7 @@ static void InitTimer(void *Cycle_Function)
     }
 }
 
-void Controller_Init(void)
+static void Controller_Init(void)
 {
 	CLOCK sClock = {.Q = 0, .R = 0, .Hz = 0};
 	unsigned int cpu = PUBLIC(RO(Proc))->CPU.Count, ratio = 0;
@@ -2737,7 +2738,7 @@ void Controller_Init(void)
 	}
 }
 
-void Controller_Start(int wait)
+static void Controller_Start(int wait)
 {
     if (Arch[PUBLIC(RO(Proc))->ArchID].Start != NULL)
     {
@@ -2755,7 +2756,7 @@ void Controller_Start(int wait)
     }
 }
 
-void Controller_Stop(int wait)
+static void Controller_Stop(int wait)
 {
     if (Arch[PUBLIC(RO(Proc))->ArchID].Stop != NULL)
     {
@@ -2771,7 +2772,7 @@ void Controller_Stop(int wait)
     }
 }
 
-void Controller_Exit(void)
+static void Controller_Exit(void)
 {
 	unsigned int cpu;
 
@@ -2785,7 +2786,7 @@ void Controller_Exit(void)
 	}
 }
 
-void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
+static void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 {
 	__asm__ __volatile__
 	(
@@ -2850,7 +2851,8 @@ void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 	);
 }
 
-void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
+static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
+					CORE_RO *Core)
 {
 	__asm__ __volatile__(
 		"# Restore PMU configuration registers" "\n\t"
@@ -3177,7 +3179,7 @@ void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 })
 
 #ifdef CONFIG_CPU_FREQ
-COF_UNION Compute_COF_From_CPU_Freq(struct cpufreq_policy *pFreqPolicy)
+inline COF_UNION Compute_COF_From_CPU_Freq(struct cpufreq_policy *pFreqPolicy)
 {
 	register unsigned long long	Q = pFreqPolicy->cur,
 					D = UNIT_KHz(PRECISION);
@@ -3189,8 +3191,9 @@ COF_UNION Compute_COF_From_CPU_Freq(struct cpufreq_policy *pFreqPolicy)
 }
 #endif /* CONFIG_CPU_FREQ */
 
-COF_UNION Compute_COF_From_PMU_Counter(	unsigned long long cnt, CLOCK clk,
-				unsigned int limit )
+inline COF_UNION Compute_COF_From_PMU_Counter(	unsigned long long cnt,
+						CLOCK clk,
+						unsigned int limit )
 {
 	register unsigned long long \
 	Q = cnt * clk.Q,
@@ -3339,7 +3342,7 @@ static void Stop_GenericMachine(void *arg)
 	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
-long Sys_OS_Driver_Query(void)
+static long Sys_OS_Driver_Query(void)
 {
 	int rc = RC_SUCCESS;
 #ifdef CONFIG_CPU_FREQ
@@ -3418,7 +3421,7 @@ long Sys_OS_Driver_Query(void)
 	return rc;
 }
 
-long Sys_Kernel(SYSGATE_RO *SysGate)
+static long Sys_Kernel(SYSGATE_RO *SysGate)
 {	/* Sources:	/include/generated/uapi/linux/version.h
 			/include/uapi/linux/utsname.h			*/
 	if (SysGate != NULL) {
@@ -3434,7 +3437,7 @@ long Sys_Kernel(SYSGATE_RO *SysGate)
 	}
 }
 
-long SysGate_OnDemand(void)
+static long SysGate_OnDemand(void)
 {
 	long rc = -1;
     if (PUBLIC(OF(Gate)) == NULL)
@@ -3919,7 +3922,7 @@ static int CoreFreqK_Governor_Init(void)
 	return rc;
 }
 
-signed int Seek_Topology_Core_Peer(unsigned int cpu, signed int exclude)
+static signed int Seek_Topology_Core_Peer(unsigned int cpu, signed int exclude)
 {
 	unsigned int seek;
 
@@ -3942,7 +3945,7 @@ signed int Seek_Topology_Core_Peer(unsigned int cpu, signed int exclude)
 	return -1;
 }
 
-signed int Seek_Topology_Thread_Peer(unsigned int cpu, signed int exclude)
+static signed int Seek_Topology_Thread_Peer(unsigned int cpu,signed int exclude)
 {
 	unsigned int seek;
 
@@ -3965,7 +3968,7 @@ signed int Seek_Topology_Thread_Peer(unsigned int cpu, signed int exclude)
 	return -1;
 }
 
-signed int Seek_Topology_Hybrid_Core(unsigned int cpu)
+static signed int Seek_Topology_Hybrid_Core(unsigned int cpu)
 {
 	signed int any = (signed int) PUBLIC(RO(Proc))->CPU.Count, seek;
 
@@ -3987,7 +3990,8 @@ signed int Seek_Topology_Hybrid_Core(unsigned int cpu)
 	return any;
 }
 
-void MatchCoreForService(SERVICE_PROC *pService,unsigned int cpi,signed int cpx)
+static void MatchCoreForService(SERVICE_PROC *pService,
+				unsigned int cpi, signed int cpx)
 {
 	unsigned int cpu;
 
@@ -4004,7 +4008,8 @@ void MatchCoreForService(SERVICE_PROC *pService,unsigned int cpi,signed int cpx)
     }
 }
 
-int MatchPeerForService(SERVICE_PROC *pService, unsigned int cpi,signed int cpx)
+static int MatchPeerForService(SERVICE_PROC *pService,
+				unsigned int cpi, signed int cpx)
 {
 	unsigned int cpu = cpi, cpn = 0;
 	signed int seek;
@@ -4034,7 +4039,7 @@ MATCH:
 	return -1;
 }
 
-void MatchPeerForDefaultService(SERVICE_PROC *pService, unsigned int cpu)
+static void MatchPeerForDefaultService(SERVICE_PROC *pService, unsigned int cpu)
 {
 	if (PUBLIC(RO(Proc))->Features.HTT_Enable) {
 		if (MatchPeerForService(pService, cpu, -1) == -1)
@@ -4056,7 +4061,7 @@ void MatchPeerForDefaultService(SERVICE_PROC *pService, unsigned int cpu)
 	}
 }
 
-void MatchPeerForUpService(SERVICE_PROC *pService, unsigned int cpu)
+static void MatchPeerForUpService(SERVICE_PROC *pService, unsigned int cpu)
 {	/* Try to restore the initial Service affinity or move to SMT peer. */
 	SERVICE_PROC hService = {
 		.Core = cpu,
@@ -4102,7 +4107,7 @@ void MatchPeerForUpService(SERVICE_PROC *pService, unsigned int cpu)
 	}
 }
 
-void MatchPeerForDownService(SERVICE_PROC *pService, unsigned int cpu)
+static void MatchPeerForDownService(SERVICE_PROC *pService, unsigned int cpu)
 {
 	int rc = -1;
 
@@ -4970,7 +4975,7 @@ static struct file_operations CoreFreqK_fops = {
 };
 
 #ifdef CONFIG_PM_SLEEP
-void Print_SuspendResume(void)
+inline void Print_SuspendResume(void)
 {
 	pr_notice("CoreFreq: %s(%u:%d:%d)\n",
 		CoreFreqK.ResumeFromSuspend ? "Suspend" : "Resume",
@@ -5201,7 +5206,7 @@ static struct notifier_block CoreFreqK_notifier_block = {
 #endif /* KERNEL_VERSION(4, 10, 0) */
 #endif /* CONFIG_HOTPLUG_CPU */
 
-void SMBIOS_Collect(void)
+static void SMBIOS_Collect(void)
 {
 #ifdef CONFIG_DMI
 	struct {
@@ -5238,7 +5243,7 @@ void SMBIOS_Collect(void)
 }
 
 #ifdef CONFIG_DMI
-char *SMBIOS_String(const struct dmi_header *dh, u8 id)
+static char *SMBIOS_String(const struct dmi_header *dh, u8 id)
 {
 	char *pStr = (char *) dh;
 	pStr += dh->length;
@@ -5255,7 +5260,7 @@ char *SMBIOS_String(const struct dmi_header *dh, u8 id)
 
 #define safe_strim(pStr)	(strim(pStr == NULL ? "" : pStr))
 
-void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
+static void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
 {
 	size_t *count = (size_t*) priv;
     switch (dh->type) {
@@ -5312,7 +5317,7 @@ void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
 #undef safe_strim
 #endif /* CONFIG_DMI */
 
-void SMBIOS_Decoder(void)
+inline void SMBIOS_Decoder(void)
 {
 #ifdef CONFIG_DMI
 	size_t count = 0;

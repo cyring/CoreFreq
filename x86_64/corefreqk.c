@@ -587,7 +587,7 @@ static long CoreFreqK_Power_Scope(int scope)
     }
 }
 
-unsigned int FixMissingRatioAndFrequency(unsigned int r32, CLOCK *pClock)
+static unsigned int FixMissingRatioAndFrequency(unsigned int r32, CLOCK *pClock)
 {
 	unsigned long long r64 = r32;
   if (PUBLIC(RO(Proc))->Features.Factory.Freq != 0)
@@ -712,11 +712,11 @@ static long CoreFreqK_Register_ClockSource(unsigned int cpu)
 	return rc;
 }
 
-void VendorFromCPUID(	char *pVendorID, unsigned int *pLargestFunc,
+static void VendorFromCPUID(char *pVendorID, unsigned int *pLargestFunc,
 			unsigned int *pCRC, enum HYPERVISOR *pHypervisor,
-			unsigned long leaf, unsigned long subLeaf )
+			unsigned long leaf, unsigned long subLeaf)
 {
-    struct {
+static const struct {
 		char			*vendorID;
 		size_t			vendorLen;
 		enum CRC_MANUFACTURER	mfrCRC;
@@ -780,7 +780,7 @@ void VendorFromCPUID(	char *pVendorID, unsigned int *pLargestFunc,
     }
 }
 
-signed int SearchArchitectureID(void)
+static signed int SearchArchitectureID(void)
 {
 	signed int id;
     for (id = ARCHITECTURES - 1; id > 0; id--)
@@ -802,7 +802,7 @@ signed int SearchArchitectureID(void)
 	return id;
 }
 
-void BrandCleanup(char *pBrand, char inOrder[])
+static void BrandCleanup(char *pBrand, char inOrder[])
 {
 	unsigned long ix, jx;
 	for (jx = 0; jx < BRAND_LENGTH; jx++) {
@@ -817,7 +817,7 @@ void BrandCleanup(char *pBrand, char inOrder[])
 	}
 }
 
-void BrandFromCPUID(char *buffer)
+static void BrandFromCPUID(char *buffer)
 {
 	BRAND Brand;
 	unsigned long ix;
@@ -852,7 +852,7 @@ void BrandFromCPUID(char *buffer)
 	}
 }
 
-unsigned int Intel_Brand(char *pBrand, char buffer[])
+static unsigned int Intel_Brand(char *pBrand, char buffer[])
 {
 	unsigned int ix, frequency = 0, multiplier = 0;
 
@@ -1390,7 +1390,7 @@ static void Query_Features(void *pArg)
     }
 }
 
-void Compute_Interval(void)
+static void Compute_Interval(void)
 {
 	if ( (SleepInterval >= LOOP_MIN_MS)
 	  && (SleepInterval <= LOOP_MAX_MS))
@@ -1551,7 +1551,7 @@ static void Compute_TSC(void *arg)
 	REL_BCLK(pCompute->Clock, ratio, D[1][best[1]], 1LLU);
 }
 
-CLOCK Compute_Clock(unsigned int cpu, COMPUTE_ARG *pCompute)
+static CLOCK Compute_Clock(unsigned int cpu, COMPUTE_ARG *pCompute)
 {
 /*	Synchronously call the Base Clock estimation on a pinned CPU.
  * 1/ Preemption is disabled by smp_call_function_single() > get_cpu()
@@ -1565,7 +1565,7 @@ CLOCK Compute_Clock(unsigned int cpu, COMPUTE_ARG *pCompute)
 	return pCompute->Clock;
 }
 
-void ClockToHz(CLOCK *clock)
+inline void ClockToHz(CLOCK *clock)
 {
 	clock->Hz  = clock->Q * 1000000L;
 	clock->Hz += clock->R * PRECISION;
@@ -1897,7 +1897,7 @@ static CLOCK BaseClock_AMD_Family_17h(unsigned int ratio)
 	return clock;
 };
 
-void Define_CPUID(CORE_RO *Core, const CPUID_STRUCT CpuIDforVendor[])
+static void Define_CPUID(CORE_RO *Core, const CPUID_STRUCT CpuIDforVendor[])
 {	/*	Per vendor, define a CPUID dump table to query .	*/
 	enum CPUID_ENUM i;
 	for (i = 0; i < CPUID_MAX_FUNC; i++) {
@@ -1906,7 +1906,7 @@ void Define_CPUID(CORE_RO *Core, const CPUID_STRUCT CpuIDforVendor[])
 	}
 }
 
-void Cache_Topology(CORE_RO *Core)
+static void Cache_Topology(CORE_RO *Core)
 {
 	unsigned long level = 0x0;
 	if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL) {
@@ -2007,7 +2007,7 @@ void Cache_Topology(CORE_RO *Core)
 	}
 }
 
-unsigned int L3_SubCache_AMD_Piledriver(unsigned int bits)
+static unsigned int L3_SubCache_AMD_Piledriver(unsigned int bits)
 {	/* Return the AMD Piledriver L3 Sub-Cache size in unit of 512 KB  */
 	switch (bits) {
 	case 0xc:
@@ -2330,7 +2330,7 @@ static void Map_AMD_Topology(void *arg)
  Sources: Intel Software Developer's Manual vol 3A Chap. 8.9 /
 	  Intel whitepaper: Detecting Hyper-Threading Technology /
 */
-unsigned short FindMaskWidth(unsigned short maxCount)
+inline unsigned short FindMaskWidth(unsigned short maxCount)
 {
 	unsigned short maskWidth = 0, count = (maxCount - 1);
 
@@ -2522,7 +2522,7 @@ static void Map_Intel_Extended_Topology(void *arg)
     }
 }
 
-int Core_Topology(unsigned int cpu)
+static int Core_Topology(unsigned int cpu)
 {
 	int rc = smp_call_function_single(cpu,
 		( (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
@@ -2541,7 +2541,7 @@ int Core_Topology(unsigned int cpu)
 	return rc;
 }
 
-unsigned int Proc_Topology(void)
+static unsigned int Proc_Topology(void)
 {
 	unsigned int cpu, CountEnabledCPU = 0;
 
@@ -2577,7 +2577,7 @@ unsigned int Proc_Topology(void)
 	PUBLIC(RO(Proc))->CPU.OnLine = Proc_Topology()			\
 )
 
-void Package_Init_Reset(void)
+static void Package_Init_Reset(void)
 {
 	PUBLIC(RO(Proc))->Features.TgtRatio_Unlock = 1;
 	PUBLIC(RO(Proc))->Features.ClkRatio_Unlock = 0;
@@ -2588,7 +2588,7 @@ void Package_Init_Reset(void)
 	PUBLIC(RO(Proc))->Features.Uncore_Unlock = 0;
 }
 
-void Default_Unlock_Reset(void)
+static void Default_Unlock_Reset(void)
 {
     switch (Target_Ratio_Unlock) {
     case COREFREQ_TOGGLE_OFF:
@@ -2624,7 +2624,7 @@ void Default_Unlock_Reset(void)
     }
 }
 
-void OverrideCodeNameString(PROCESSOR_SPECIFIC *pSpecific)
+static void OverrideCodeNameString(PROCESSOR_SPECIFIC *pSpecific)
 {
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
 		Arch[
@@ -2632,7 +2632,7 @@ void OverrideCodeNameString(PROCESSOR_SPECIFIC *pSpecific)
 		].Architecture[pSpecific->CodeNameIdx], CODENAME_LEN);
 }
 
-void OverrideUnlockCapability(PROCESSOR_SPECIFIC *pSpecific)
+static void OverrideUnlockCapability(PROCESSOR_SPECIFIC *pSpecific)
 {
     if (pSpecific->Latch & LATCH_TGT_RATIO_UNLOCK) {
 	PUBLIC(RO(Proc))->Features.TgtRatio_Unlock=pSpecific->TgtRatioUnlocked;
@@ -2651,7 +2651,7 @@ void OverrideUnlockCapability(PROCESSOR_SPECIFIC *pSpecific)
     }
 }
 
-PROCESSOR_SPECIFIC *LookupProcessor(void)
+static PROCESSOR_SPECIFIC *LookupProcessor(void)
 {
 	PROCESSOR_SPECIFIC *pSpecific;
     for (pSpecific = Arch[PUBLIC(RO(Proc))->ArchID].Specific;
@@ -2671,7 +2671,7 @@ PROCESSOR_SPECIFIC *LookupProcessor(void)
 	return NULL;
 }
 
-int Intel_MaxBusRatio(PLATFORM_ID *PfID)
+static int Intel_MaxBusRatio(PLATFORM_ID *PfID)
 {
 	struct SIGNATURE whiteList[] = {
 		_Core_Conroe,		/* 06_0F */
@@ -2704,7 +2704,7 @@ int Intel_MaxBusRatio(PLATFORM_ID *PfID)
 	return -1;
 }
 
-void Intel_Core_Platform_Info(unsigned int cpu)
+static void Intel_Core_Platform_Info(unsigned int cpu)
 {
 	PLATFORM_ID PfID = {.value = 0};
 	PLATFORM_INFO PfInfo = {.value = 0};
@@ -2741,7 +2741,7 @@ void Intel_Core_Platform_Info(unsigned int cpu)
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] =	KMAX(ratio0, ratio1);
 }
 
-void Compute_Intel_Core_Burst(unsigned int cpu)
+static void Compute_Intel_Core_Burst(unsigned int cpu)
 {
 	PERF_STATUS PerfStatus = {.value = 0};
 	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
@@ -2771,7 +2771,7 @@ void Compute_Intel_Core_Burst(unsigned int cpu)
 	}
 }
 
-PLATFORM_INFO Intel_Platform_Info(unsigned int cpu)
+static PLATFORM_INFO Intel_Platform_Info(unsigned int cpu)
 {
 	PLATFORM_INFO PfInfo = {.value = 0};
 	RDMSR(PfInfo, MSR_PLATFORM_INFO);
@@ -2799,7 +2799,7 @@ typedef struct {
 	long		rc;
 } CLOCK_TURBO_ARG;
 
-void Assign_8C_Boost(unsigned int *pBoost, TURBO_CONFIG *pConfig)
+static void Assign_8C_Boost(unsigned int *pBoost, TURBO_CONFIG *pConfig)
 {
 	pBoost[BOOST(8C)] = pConfig->Cfg0.MaxRatio_8C;
 	pBoost[BOOST(7C)] = pConfig->Cfg0.MaxRatio_7C;
@@ -2811,7 +2811,7 @@ void Assign_8C_Boost(unsigned int *pBoost, TURBO_CONFIG *pConfig)
 	pBoost[BOOST(1C)] = pConfig->Cfg0.MaxRatio_1C;
 }
 
-void Assign_15C_Boost(unsigned int *pBoost, TURBO_CONFIG *pConfig)
+static void Assign_15C_Boost(unsigned int *pBoost, TURBO_CONFIG *pConfig)
 {
 	pBoost[BOOST(15C)] = pConfig->Cfg1.IVB_EP.MaxRatio_15C;
 	pBoost[BOOST(14C)] = pConfig->Cfg1.IVB_EP.MaxRatio_14C;
@@ -2822,7 +2822,7 @@ void Assign_15C_Boost(unsigned int *pBoost, TURBO_CONFIG *pConfig)
 	pBoost[BOOST(9C) ] = pConfig->Cfg1.IVB_EP.MaxRatio_9C;
 }
 
-void Assign_16C_Boost(unsigned int *pBoost, TURBO_CONFIG *pConfig)
+static void Assign_16C_Boost(unsigned int *pBoost, TURBO_CONFIG *pConfig)
 {
 	pBoost[BOOST(16C)] = pConfig->Cfg1.HSW_EP.MaxRatio_16C;
 	pBoost[BOOST(15C)] = pConfig->Cfg1.HSW_EP.MaxRatio_15C;
@@ -2834,13 +2834,13 @@ void Assign_16C_Boost(unsigned int *pBoost, TURBO_CONFIG *pConfig)
 	pBoost[BOOST(9C) ] = pConfig->Cfg1.HSW_EP.MaxRatio_9C;
 }
 
-void Assign_18C_Boost(unsigned int *pBoost, TURBO_CONFIG *pConfig)
+static void Assign_18C_Boost(unsigned int *pBoost, TURBO_CONFIG *pConfig)
 {
 	pBoost[BOOST(18C)] = pConfig->Cfg2.MaxRatio_18C;
 	pBoost[BOOST(17C)] = pConfig->Cfg2.MaxRatio_17C;
 }
 
-void Assign_SKL_X_Boost(unsigned int *pBoost, TURBO_CONFIG *pConfig)
+static void Assign_SKL_X_Boost(unsigned int *pBoost, TURBO_CONFIG *pConfig)
 {
 	pBoost[BOOST(16C)] = pConfig->Cfg1.SKL_X.NUMCORE_7;
 	pBoost[BOOST(15C)] = pConfig->Cfg1.SKL_X.NUMCORE_6;
@@ -2852,7 +2852,7 @@ void Assign_SKL_X_Boost(unsigned int *pBoost, TURBO_CONFIG *pConfig)
 	pBoost[BOOST(9C) ] = pConfig->Cfg1.SKL_X.NUMCORE_0;
 }
 
-long For_All_Turbo_Clock(CLOCK_ARG *pClockMod, void (*ConfigFunc)(void *))
+static long For_All_Turbo_Clock(CLOCK_ARG *pClockMod, void (*ConfigFunc)(void*))
 {
 	long rc = RC_SUCCESS;
 	unsigned int cpu = PUBLIC(RO(Proc))->CPU.Count;
@@ -3087,7 +3087,7 @@ static void Intel_Turbo_Cfg15C_PerCore(void *arg)
   }
 }
 
-long Intel_Turbo_Config15C(CLOCK_ARG *pClockMod)
+static long Intel_Turbo_Config15C(CLOCK_ARG *pClockMod)
 {
 	long rc = For_All_Turbo_Clock(pClockMod, Intel_Turbo_Cfg15C_PerCore);
 
@@ -3202,7 +3202,7 @@ static void Intel_Turbo_Cfg16C_PerCore(void *arg)
   }
 }
 
-long Intel_Turbo_Config16C(CLOCK_ARG *pClockMod)
+static long Intel_Turbo_Config16C(CLOCK_ARG *pClockMod)
 {
 	long rc = For_All_Turbo_Clock(pClockMod, Intel_Turbo_Cfg16C_PerCore);
 
@@ -3257,7 +3257,7 @@ static void Intel_Turbo_Cfg18C_PerCore(void *arg)
   }
 }
 
-long Intel_Turbo_Config18C(CLOCK_ARG *pClockMod)
+static long Intel_Turbo_Config18C(CLOCK_ARG *pClockMod)
 {
 	long rc = For_All_Turbo_Clock(pClockMod, Intel_Turbo_Cfg18C_PerCore);
 
@@ -3372,7 +3372,7 @@ static void Intel_Turbo_Cfg_SKL_X_PerCore(void *arg)
   }
 }
 
-long Skylake_X_Turbo_Config16C(CLOCK_ARG *pClockMod)
+static long Skylake_X_Turbo_Config16C(CLOCK_ARG *pClockMod)
 {
 	long rc = For_All_Turbo_Clock(pClockMod, Intel_Turbo_Cfg_SKL_X_PerCore);
 
@@ -3489,7 +3489,7 @@ static void PerCore_Intel_HWP_Ignition(void *arg)
     }
 }
 
-void Intel_Hardware_Performance(void)
+static void Intel_Hardware_Performance(void)
 {
 	PM_ENABLE PM_Enable = {.value = 0};
 	HDC_CONTROL HDC_Control = {.value = 0};
@@ -3557,7 +3557,7 @@ void Intel_Hardware_Performance(void)
 	PUBLIC(RO(Proc))->Features.HDC_Enable = HDC_Control.HDC_Enable;
 }
 
-void Skylake_PowerControl(void)
+static void Skylake_PowerControl(void)
 {
 	unsigned short WrRdMSR = 0;
 
@@ -3586,7 +3586,7 @@ void Skylake_PowerControl(void)
 	PUBLIC(RO(Proc))->Features.R2H_Enable = !PowerCtrl.R2H_Disable;
 }
 
-void SandyBridge_Uncore_Ratio(unsigned int cpu)
+static void SandyBridge_Uncore_Ratio(unsigned int cpu)
 {
 	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] = \
 				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)];
@@ -3642,7 +3642,7 @@ static long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod)
 	return rc;
 }
 
-void Nehalem_PowerLimit(void)
+static void Nehalem_PowerLimit(void)
 {
 	unsigned short WrRdMSR = 0;
 
@@ -3709,15 +3709,15 @@ void Nehalem_PowerLimit(void)
 	PUBLIC(RO(Proc))->PowerThermal.Enable_Limit.TDC=PowerLimit.TDC_Override;
 }
 
-void Intel_PowerInterface(void)
+static void Intel_PowerInterface(void)
 {
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.Unit, MSR_RAPL_POWER_UNIT);
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.PowerInfo, MSR_PKG_POWER_INFO);
 }
 
-void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
-				unsigned long long PowerLimitLockMask,
-				enum PWR_DOMAIN pw )
+static void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
+					unsigned long long PowerLimitLockMask,
+					enum PWR_DOMAIN pw )
 {
 	const unsigned int lt = PWR_LIMIT_SIZE * pw, rt = 1 + lt;
 	unsigned short WrRdMSR = 0;
@@ -3863,12 +3863,12 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 	PUBLIC(RO(Proc))->PowerThermal.Domain[pw].PowerLimit = PowerLimit;
 }
 
-void Intel_Pkg_CST_IRTL(const unsigned int MSR, PKGCST_IRTL *PCST)
+static void Intel_Pkg_CST_IRTL(const unsigned int MSR, PKGCST_IRTL *PCST)
 {
 	RDMSR((*PCST), MSR);
 }
 
-long Intel_ThermalOffset(bool programmableTj)
+static long Intel_ThermalOffset(bool programmableTj)
 {
 	long rc = -EINVAL;
     if (ThermalOffset != 0) {
@@ -3928,7 +3928,7 @@ long Intel_ThermalOffset(bool programmableTj)
 	return rc;
 }
 
-void Intel_Processor_PIN(bool capable)
+static void Intel_Processor_PIN(bool capable)
 {
 	if (capable) {
 		INTEL_PPIN_CTL PPinCtl = {.value = 0};
@@ -3941,7 +3941,7 @@ void Intel_Processor_PIN(bool capable)
 	}
 }
 
-void AMD_Processor_PIN(bool capable)
+static void AMD_Processor_PIN(bool capable)
 {
 	if (capable) {
 		AMD_PPIN_CTL PPinCtl = {.value = 0};
@@ -3954,7 +3954,7 @@ void AMD_Processor_PIN(bool capable)
 	}
 }
 
-long AMD_F17h_CPPC(void)
+static long AMD_F17h_CPPC(void)
 {
 	AMD_CPPC_ENABLE CPPC_Enable = {.value = 0};
 
@@ -3974,7 +3974,7 @@ long AMD_F17h_CPPC(void)
 	return -ENODEV;
 }
 
-void Compute_ACPI_CPPC_Bounds(unsigned int cpu)
+static void Compute_ACPI_CPPC_Bounds(unsigned int cpu)
 {
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
@@ -4030,7 +4030,7 @@ inline signed int Enable_ACPI_CPPC(unsigned int cpu, void *arg)
 	return rc;
 }
 
-signed int Get_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
+static signed int Get_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 {
 #ifdef CONFIG_ACPI_CPPC_LIB
 	struct cppc_perf_fb_ctrs CPPC_Perf;
@@ -4103,7 +4103,7 @@ signed int Get_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 #endif /* CONFIG_ACPI_CPPC_LIB */
 }
 
-signed int Get_EPP_ACPI_CPPC(unsigned int cpu)
+static signed int Get_EPP_ACPI_CPPC(unsigned int cpu)
 {
 	signed int rc = -ENODEV;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
@@ -4121,7 +4121,7 @@ signed int Get_EPP_ACPI_CPPC(unsigned int cpu)
 	return rc;
 }
 
-signed int Put_EPP_ACPI_CPPC(unsigned int cpu, signed short epp)
+static signed int Put_EPP_ACPI_CPPC(unsigned int cpu, signed short epp)
 {
 	signed int rc = -ENODEV;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
@@ -4138,7 +4138,7 @@ signed int Put_EPP_ACPI_CPPC(unsigned int cpu, signed short epp)
 	return rc;
 }
 
-signed int Set_EPP_ACPI_CPPC(unsigned int cpu, void *arg)
+static signed int Set_EPP_ACPI_CPPC(unsigned int cpu, void *arg)
 {
 	signed int rc = 0;
 	UNUSED(arg);
@@ -4151,7 +4151,7 @@ signed int Set_EPP_ACPI_CPPC(unsigned int cpu, void *arg)
 	return rc;
 }
 
-signed int Read_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
+static signed int Read_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 {
 	signed int rc = Get_ACPI_CPPC_Registers(cpu, arg);
 
@@ -4165,7 +4165,7 @@ signed int Read_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 	return rc;
 }
 
-signed int Read_ACPI_PCT_Registers(unsigned int cpu)
+static signed int Read_ACPI_PCT_Registers(unsigned int cpu)
 {
 #if defined(CONFIG_ACPI)
 	signed int rc = 0;
@@ -4206,7 +4206,7 @@ signed int Read_ACPI_PCT_Registers(unsigned int cpu)
 #endif
 }
 
-signed int Read_ACPI_PSS_Registers(unsigned int cpu)
+static signed int Read_ACPI_PSS_Registers(unsigned int cpu)
 {
 #if defined(CONFIG_ACPI)
 	signed int rc = 0;
@@ -4247,7 +4247,7 @@ signed int Read_ACPI_PSS_Registers(unsigned int cpu)
 #endif
 }
 
-signed int Read_ACPI_PPC_Registers(unsigned int cpu)
+static signed int Read_ACPI_PPC_Registers(unsigned int cpu)
 {
 #if defined(CONFIG_ACPI)
 	signed int rc = 0;
@@ -4293,7 +4293,7 @@ signed int Read_ACPI_PPC_Registers(unsigned int cpu)
 #endif
 }
 
-signed int Read_ACPI_CST_Registers(unsigned int cpu)
+static signed int Read_ACPI_CST_Registers(unsigned int cpu)
 {
 #if defined(CONFIG_ACPI)
 	signed int rc = 0;
@@ -4335,7 +4335,8 @@ signed int Read_ACPI_CST_Registers(unsigned int cpu)
 #endif
 }
 
-void For_All_ACPI_CPPC(signed int(*CPPC_Func)(unsigned int, void*), void *arg)
+static void For_All_ACPI_CPPC(	signed int (*CPPC_Func)(unsigned int, void*),
+				void *arg )
 {
 	#if defined(CONFIG_ACPI_CPPC_LIB) \
 	 && LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
@@ -4360,7 +4361,7 @@ void For_All_ACPI_CPPC(signed int(*CPPC_Func)(unsigned int, void*), void *arg)
 	PUBLIC(RO(Proc))->Features.ACPI_CPPC = (rc == 0);
 }
 
-void Query_Same_Platform_Features(unsigned int cpu)
+static void Query_Same_Platform_Features(unsigned int cpu)
 {
 	PLATFORM_INFO PfInfo;
 
@@ -4382,14 +4383,14 @@ void Query_Same_Platform_Features(unsigned int cpu)
 	PUBLIC(RO(Proc))->Features.SpecTurboRatio = 0;
 }
 
-void Nehalem_Platform_Info(unsigned int cpu)
+static void Nehalem_Platform_Info(unsigned int cpu)
 {
 	Query_Same_Platform_Features(cpu);
 
 	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 8; /*	8C	*/
 }
 
-void IvyBridge_EP_Platform_Info(unsigned int cpu)
+static void IvyBridge_EP_Platform_Info(unsigned int cpu)
 {
 	const unsigned int NC = \
 	PUBLIC(RO(Proc))->CPU.Count >> PUBLIC(RO(Proc))->Features.HTT_Enable;
@@ -4402,7 +4403,7 @@ void IvyBridge_EP_Platform_Info(unsigned int cpu)
     }
 }
 
-void Haswell_EP_Platform_Info(unsigned int cpu)
+static void Haswell_EP_Platform_Info(unsigned int cpu)
 {
 	const unsigned int NC = \
 	PUBLIC(RO(Proc))->CPU.Count >> PUBLIC(RO(Proc))->Features.HTT_Enable;
@@ -4418,7 +4419,7 @@ void Haswell_EP_Platform_Info(unsigned int cpu)
     }
 }
 
-void Skylake_X_Platform_Info(unsigned int cpu)
+static void Skylake_X_Platform_Info(unsigned int cpu)
 {
 	const unsigned int NC = \
 	PUBLIC(RO(Proc))->CPU.Count >> PUBLIC(RO(Proc))->Features.HTT_Enable;
@@ -4450,7 +4451,7 @@ void Skylake_X_Platform_Info(unsigned int cpu)
     }
 }
 
-void Probe_AMD_DataFabric(void)
+static void Probe_AMD_DataFabric(void)
 {
 #ifdef CONFIG_AMD_NB
     if (PUBLIC(RO(Proc))->Registration.Experimental) {
@@ -4469,9 +4470,9 @@ void Probe_AMD_DataFabric(void)
 
 typedef void (*ROUTER)(void __iomem *mchmap, unsigned short mc);
 
-PCI_CALLBACK Router(struct pci_dev *dev, unsigned int offset,
-		unsigned int bsize, unsigned long long wsize,
-		ROUTER route, unsigned short mc)
+static PCI_CALLBACK Router(	struct pci_dev *dev, unsigned int offset,
+				unsigned int bsize, unsigned long long wsize,
+				ROUTER route, unsigned short mc )
 {
 	void __iomem *mchmap;
 	union {
@@ -4511,10 +4512,10 @@ PCI_CALLBACK Router(struct pci_dev *dev, unsigned int offset,
 		return (PCI_CALLBACK) -ENOMEM;
 }
 
-PCI_CALLBACK GetMemoryBAR(int M, int B, int D, int F, unsigned int offset,
-			unsigned int bsize, unsigned long long wsize,
-			unsigned short range,
-			struct pci_dev **device, void __iomem **memmap)
+inline PCI_CALLBACK GetMemoryBAR(int M, int B, int D, int F,unsigned int offset,
+				unsigned int bsize, unsigned long long wsize,
+				unsigned short range,
+				struct pci_dev **device, void __iomem **memmap)
 {
   if ((*device) == NULL) {
     if (((*device) = pci_get_domain_bus_and_slot(M, B, PCI_DEVFN(D,F))) != NULL)
@@ -4555,7 +4556,7 @@ PCI_CALLBACK GetMemoryBAR(int M, int B, int D, int F, unsigned int offset,
 	return (PCI_CALLBACK) -EEXIST;
 }
 
-void PutMemoryBAR(struct pci_dev **device, void __iomem **memmap)
+inline void PutMemoryBAR(struct pci_dev **device, void __iomem **memmap)
 {
 	if ((*memmap) != NULL) {
 		iounmap((*memmap));
@@ -4568,7 +4569,7 @@ void PutMemoryBAR(struct pci_dev **device, void __iomem **memmap)
 	}
 }
 
-void Query_P945(void __iomem *mchmap, unsigned short mc)
+static void Query_P945(void __iomem *mchmap, unsigned short mc)
 {	/* Source: Mobile Intel 945 Express Chipset Family.		*/
 	unsigned short cha;
 
@@ -4623,7 +4624,7 @@ void Query_P945(void __iomem *mchmap, unsigned short mc)
     }
 }
 
-void Query_P955(void __iomem *mchmap, unsigned short mc)
+static void Query_P955(void __iomem *mchmap, unsigned short mc)
 {	/* Source: Intel 82955X Memory Controller Hub (MCH)		*/
 	unsigned short cha;
 
@@ -4665,7 +4666,7 @@ void Query_P955(void __iomem *mchmap, unsigned short mc)
     }
 }
 
-void Query_P965(void __iomem *mchmap, unsigned short mc)
+static void Query_P965(void __iomem *mchmap, unsigned short mc)
 {
 	unsigned short cha;
 
@@ -4704,7 +4705,7 @@ void Query_P965(void __iomem *mchmap, unsigned short mc)
 	}
 }
 
-void Query_G965(void __iomem *mchmap, unsigned short mc)
+static void Query_G965(void __iomem *mchmap, unsigned short mc)
 {	/* Source: Mobile Intel 965 Express Chipset Family.		*/
 	unsigned short cha, slot;
 
@@ -4742,7 +4743,7 @@ void Query_G965(void __iomem *mchmap, unsigned short mc)
     }
 }
 
-void Query_P35(void __iomem *mchmap, unsigned short mc)
+static void Query_P35(void __iomem *mchmap, unsigned short mc)
 {	/* Source: Intel 3 Series Express Chipset Family.		*/
 	unsigned short cha;
 
@@ -4798,9 +4799,9 @@ void Query_P35(void __iomem *mchmap, unsigned short mc)
     }
 }
 
-kernel_ulong_t Query_NHM_Timing(struct pci_dev *pdev,
-				unsigned short mc,
-				unsigned short cha)
+static kernel_ulong_t Query_NHM_Timing( struct pci_dev *pdev,
+					unsigned short mc,
+					unsigned short cha )
 {	/*Source:Micron Technical Note DDR3 Power-Up, Initialization, & Reset*/
 	struct pci_dev *dev = pci_get_domain_bus_and_slot(
 						pci_domain_nr(pdev->bus),
@@ -4842,9 +4843,9 @@ kernel_ulong_t Query_NHM_Timing(struct pci_dev *pdev,
 	return -ENODEV;
 }
 
-kernel_ulong_t Query_NHM_DIMM(struct pci_dev *pdev,
-				unsigned short mc,
-				unsigned short cha)
+static kernel_ulong_t Query_NHM_DIMM(	struct pci_dev *pdev,
+					unsigned short mc,
+					unsigned short cha )
 {
 	struct pci_dev *dev = pci_get_domain_bus_and_slot(
 						pci_domain_nr(pdev->bus),
@@ -4866,7 +4867,7 @@ kernel_ulong_t Query_NHM_DIMM(struct pci_dev *pdev,
     }
 }
 
-void Query_NHM_MaxDIMMs(struct pci_dev *dev, unsigned short mc)
+static void Query_NHM_MaxDIMMs(struct pci_dev *dev, unsigned short mc)
 {
 	pci_read_config_dword(dev, 0x64,
 		&PUBLIC(RO(Proc))->Uncore.MC[mc].MaxDIMMs.NHM.DOD.value);
@@ -4887,7 +4888,7 @@ void Query_NHM_MaxDIMMs(struct pci_dev *dev, unsigned short mc)
 	}
 }
 
-kernel_ulong_t Query_NHM_IMC(struct pci_dev *dev, unsigned short mc)
+static kernel_ulong_t Query_NHM_IMC(struct pci_dev *dev, unsigned short mc)
 {
 	kernel_ulong_t rc = 0;
 	unsigned short cha;
@@ -4913,7 +4914,7 @@ kernel_ulong_t Query_NHM_IMC(struct pci_dev *dev, unsigned short mc)
 	return rc;
 }
 
-kernel_ulong_t Query_Lynnfield_IMC(struct pci_dev *dev, unsigned short mc)
+static kernel_ulong_t Query_Lynnfield_IMC(struct pci_dev *dev,unsigned short mc)
 {
 	kernel_ulong_t rc = 0;
 	unsigned short cha;
@@ -4943,7 +4944,7 @@ inline void BIOS_DDR(void __iomem *mchmap)
 	PUBLIC(RO(Proc))->Uncore.Bus.BIOS_DDR.value = readl(mchmap + 0x5e00);
 }
 
-void Query_SNB_IMC(void __iomem *mchmap, unsigned short mc)
+static void Query_SNB_IMC(void __iomem *mchmap, unsigned short mc)
 {	/* Sources:	2nd & 3rd Generation Intel Core Processor Family
 			Intel Xeon Processor E3-1200 Family		*/
 	unsigned short cha, dimmCount[2];
@@ -4999,7 +5000,7 @@ void Query_SNB_IMC(void __iomem *mchmap, unsigned short mc)
 	BIOS_DDR(mchmap);
 }
 
-void Query_Turbo_TDP_Config(void __iomem *mchmap)
+static void Query_Turbo_TDP_Config(void __iomem *mchmap)
 {
 	TURBO_ACTIVATION TurboActivation = {.value = 0};
 	CONFIG_TDP_NOMINAL NominalTDP = {.value = 0};
@@ -5072,7 +5073,7 @@ void Query_Turbo_TDP_Config(void __iomem *mchmap)
 	}
 }
 
-void Query_HSW_IMC(void __iomem *mchmap, unsigned short mc)
+static void Query_HSW_IMC(void __iomem *mchmap, unsigned short mc)
 {	/* Source: Desktop 4th & 5th Generation Intel Core Processor Family */
 	unsigned short cha, dimmCount[2];
 
@@ -5126,7 +5127,7 @@ void Query_HSW_IMC(void __iomem *mchmap, unsigned short mc)
     }
 }
 
-void Query_HSW_CLK(void __iomem *mchmap, unsigned short mc)
+static void Query_HSW_CLK(void __iomem *mchmap, unsigned short mc)
 {
 	BIOS_DDR(mchmap);
 
@@ -5138,7 +5139,7 @@ inline void SKL_SA(void __iomem *mchmap)
 	PUBLIC(RO(Proc))->Uncore.Bus.SKL_SA_Pll.value = readl(mchmap + 0x5918);
 }
 
-void Query_SKL_IMC(void __iomem *mchmap, unsigned short mc)
+static void Query_SKL_IMC(void __iomem *mchmap, unsigned short mc)
 {	/* Source: 6th & 7th Generation Intel Processor for S-Platforms Vol 2*/
 	unsigned short cha;
 	/*		Intra channel configuration			*/
@@ -5206,7 +5207,7 @@ inline void RKL_SA(void __iomem *mchmap)
 			PUBLIC(RO(Proc))->Uncore.Bus.ADL_SA_Pll.SA_VOLTAGE;
 }
 
-void Query_RKL_IMC(void __iomem *mchmap, unsigned short mc)
+static void Query_RKL_IMC(void __iomem *mchmap, unsigned short mc)
 {	/* Source: 11th Generation Intel Core Processor Datasheet Vol 2 */
 	unsigned short cha;
 	/*		Intra channel configuration			*/
@@ -5275,7 +5276,7 @@ void Query_RKL_IMC(void __iomem *mchmap, unsigned short mc)
 
 #define TGL_SA	RKL_SA
 
-void Query_TGL_IMC(void __iomem *mchmap, unsigned short mc)
+static void Query_TGL_IMC(void __iomem *mchmap, unsigned short mc)
 {	/* Source: 11th Generation Intel Core Processor Datasheet Vol 2 */
 	unsigned short cha;
 
@@ -5366,7 +5367,7 @@ EXIT_TGL_IMC:
 
 #define ADL_SA	TGL_SA
 
-void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
+static void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
 {	/* Source: 12th Generation Intel Core Processor Datasheet Vol 2 */
 	unsigned short cha;
 
@@ -5459,7 +5460,7 @@ EXIT_ADL_IMC:
 	EMPTY_STMT();
 }
 
-void Query_GLK_IMC(void __iomem *mchmap, unsigned short mc)
+static void Query_GLK_IMC(void __iomem *mchmap, unsigned short mc)
 { /* Source: Intel Pentium Silver and Intel Celeron Processors Vol 2	*/
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 0;
@@ -5824,7 +5825,7 @@ static PCI_CALLBACK SNB_EP_CAP(struct pci_dev *dev)
 	return (PCI_CALLBACK) 0;
 }
 
-kernel_ulong_t SNB_EP_CTRL(struct pci_dev *dev, unsigned short mc)
+static kernel_ulong_t SNB_EP_CTRL(struct pci_dev *dev, unsigned short mc)
 {
 	pci_read_config_dword(dev, 0x7c,
 			&PUBLIC(RO(Proc))->Uncore.MC[mc].SNB_EP.TECH.value);
@@ -5834,7 +5835,7 @@ kernel_ulong_t SNB_EP_CTRL(struct pci_dev *dev, unsigned short mc)
 	return 0;
 }
 
-kernel_ulong_t SNB_EP_IMC(struct pci_dev *dev , unsigned short mc,
+static kernel_ulong_t SNB_EP_IMC(struct pci_dev *dev , unsigned short mc,
 						unsigned short cha)
 {
 	pci_read_config_dword(dev, 0x200,
@@ -5861,7 +5862,7 @@ kernel_ulong_t SNB_EP_IMC(struct pci_dev *dev , unsigned short mc,
 	return 0;
 }
 
-kernel_ulong_t SNB_EP_TAD(struct pci_dev *dev,	unsigned short mc,
+static kernel_ulong_t SNB_EP_TAD(struct pci_dev *dev,	unsigned short mc,
 						unsigned short cha)
 {
 	unsigned short slotCount;
@@ -6014,7 +6015,7 @@ static PCI_CALLBACK HSW_CLK(struct pci_dev *dev)
 	return HSW_HOST(dev, Query_HSW_CLK);
 }
 
-kernel_ulong_t HSW_EP_CTRL(struct pci_dev *dev, unsigned short mc)
+static kernel_ulong_t HSW_EP_CTRL(struct pci_dev *dev, unsigned short mc)
 {
 	pci_read_config_dword(dev, 0x7c,
 			&PUBLIC(RO(Proc))->Uncore.MC[mc].HSW_EP.TECH.value);
@@ -6208,7 +6209,7 @@ static PCI_CALLBACK HSW_EP_TAD_CTRL1_CHA3(struct pci_dev *dev)
 	return (PCI_CALLBACK) HSW_EP_TAD(dev, 1, 3);
 }
 
-void SoC_SKL_VTD(void)
+static void SoC_SKL_VTD(void)
 {
   if (PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_A.VT_d == 0)
   {
@@ -6472,8 +6473,8 @@ static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev)
 	return (PCI_CALLBACK) 0;
 }
 
-void AMD_Zen_UMC_Aggregate(	unsigned short mc, unsigned short cha,
-				bool *Got_Mem_Clock, bool *Got_Div_Clock )
+static void AMD_Zen_UMC_Aggregate(unsigned short mc, unsigned short cha,
+				bool *Got_Mem_Clock, bool *Got_Div_Clock)
 {
   if ((*Got_Mem_Clock) == false)
   {
@@ -7057,7 +7058,7 @@ static int CoreFreqK_ProbePCI(	struct pci_device_id PCI_ids[],
 	return rc;
 }
 
-void Query_Same_Genuine_Features(void)
+static void Query_Same_Genuine_Features(void)
 {
 	if ((PRIVATE(OF(Specific)) = LookupProcessor()) != NULL)
 	{
@@ -7326,7 +7327,7 @@ static void Query_Skylake_X(unsigned int cpu)
 	Intel_Hardware_Performance();
 }
 
-unsigned short Compute_AuthenticAMD_Boost(unsigned int cpu)
+static unsigned short Compute_AuthenticAMD_Boost(unsigned int cpu)
 {
 	unsigned short SpecTurboRatio = 0;
 	/* Lowest frequency according to BKDG				*/
@@ -7427,7 +7428,7 @@ static void Query_AuthenticAMD(unsigned int cpu)
 	HyperThreading_Technology();
 }
 
-unsigned short Compute_AMD_Family_0Fh_Boost(unsigned int cpu)
+static unsigned short Compute_AMD_Family_0Fh_Boost(unsigned int cpu)
 {	/* Source: BKDG for AMD NPT Family 0Fh: Chap. 13.8			*/
 	unsigned short SpecTurboRatio = 0;
 
@@ -7489,7 +7490,7 @@ static void Query_AMD_Family_0Fh(unsigned int cpu)
 	HyperThreading_Technology();
 }
 
-void Compute_AMD_Family_10h_Boost(unsigned int cpu)
+static void Compute_AMD_Family_10h_Boost(unsigned int cpu)
 {
 	unsigned int pstate, sort[5] = {
 		BOOST(1C), BOOST(MAX), BOOST(2C), BOOST(3C), BOOST(MIN)
@@ -7526,7 +7527,7 @@ static void Query_AMD_Family_10h(unsigned int cpu)
 	HyperThreading_Technology();
 }
 
-void Compute_AMD_Family_11h_Boost(unsigned int cpu)
+static void Compute_AMD_Family_11h_Boost(unsigned int cpu)
 {
 	unsigned int pstate, sort[8] = {
 		BOOST(1C), BOOST(MAX), BOOST(2C), BOOST(3C),
@@ -7564,7 +7565,7 @@ static void Query_AMD_Family_11h(unsigned int cpu)
 	HyperThreading_Technology();
 }
 
-void Compute_AMD_Family_12h_Boost(unsigned int cpu)
+static void Compute_AMD_Family_12h_Boost(unsigned int cpu)
 {
 	unsigned int pstate, sort[8] = {
 		BOOST(1C), BOOST(MAX), BOOST(2C), BOOST(3C),
@@ -7602,7 +7603,7 @@ static void Query_AMD_Family_12h(unsigned int cpu)
 	HyperThreading_Technology();
 }
 
-void Compute_AMD_Family_14h_Boost(unsigned int cpu)
+static void Compute_AMD_Family_14h_Boost(unsigned int cpu)
 {
 	COFVID CofVid = {.value = 0};
 	unsigned int MaxFreq = 100, ClockDiv;
@@ -7661,7 +7662,7 @@ inline unsigned int AMD_F15h_CoreFID(unsigned int COF, unsigned int DID)
 	return FID;
 }
 
-void Compute_AMD_Family_15h_Boost(unsigned int cpu)
+static void Compute_AMD_Family_15h_Boost(unsigned int cpu)
 {
     if (PUBLIC(RO(Proc))->Features.AdvPower.EDX.HwPstate)
     {
@@ -7778,7 +7779,7 @@ inline unsigned short AMD_Zen_Compute_FID_DID(	unsigned int COF,
 	}
 }
 
-unsigned short AMD_Zen_CoreFID(	unsigned int COF,
+static unsigned short AMD_Zen_CoreFID(	unsigned int COF,
 					unsigned int *FID,
 					unsigned int *DID )
 {
@@ -7791,7 +7792,7 @@ unsigned short AMD_Zen_CoreFID(	unsigned int COF,
 	return ret;
 }
 
-bool Compute_AMD_Zen_Boost(unsigned int cpu)
+static bool Compute_AMD_Zen_Boost(unsigned int cpu)
 {
 	COF_ST COF = {.Q = 0, .R = 0};
 	unsigned int pstate, sort[8] = { /* P[0..7]-States */
@@ -8116,7 +8117,7 @@ inline unsigned int CPPC_AMD_Zen_ScaleHint(	CORE_RO *Core,
 	return flag;
 }
 
-signed int Put_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
+static signed int Put_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 {
 #if defined (CONFIG_ACPI_CPPC_LIB) \
  && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
@@ -8250,7 +8251,7 @@ signed int Put_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 #endif /* CONFIG_ACPI_CPPC_LIB */
 }
 
-signed int Write_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
+static signed int Write_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 {
 	signed int rc = Put_ACPI_CPPC_Registers(cpu, arg);
 
@@ -8385,7 +8386,8 @@ static void CPPC_AMD_Zen_PerCore(void *arg)
     }
 }
 
-long For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
+static long For_All_AMD_Zen_Clock(	CLOCK_ZEN_ARG *pClockZen,
+					void (*PerCore)(void *) )
 {
 	long rc = RC_SUCCESS;
 	unsigned int cpu = PUBLIC(RO(Proc))->CPU.Count;
@@ -8404,7 +8406,7 @@ long For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
 	return rc;
 }
 
-long ClockSource_OC_Granted(void)
+static long ClockSource_OC_Granted(void)
 {
 	long rc = -RC_CLOCKSOURCE;
 
@@ -8456,7 +8458,8 @@ long ClockSource_OC_Granted(void)
 	return rc;
 }
 
-long For_All_AMD_Zen_BaseClock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void*))
+static long For_All_AMD_Zen_BaseClock( CLOCK_ZEN_ARG *pClockZen,
+					void (*PerCore)(void*) )
 {
 	long rc;
 	unsigned int cpu = PUBLIC(RO(Proc))->Service.Core;
@@ -8553,7 +8556,7 @@ static long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
   }
 }
 
-void Query_AMD_F17h_Power_Limits(PROC_RO *Pkg)
+static void Query_AMD_F17h_Power_Limits(PROC_RO *Pkg)
 {	/*		Package Power Tracking				*/
 	Core_AMD_SMN_Read( Pkg->PowerThermal.Zen.PWR,
 				SMU_AMD_F17H_ZEN2_MCM_PWR,
@@ -8571,7 +8574,7 @@ void Query_AMD_F17h_Power_Limits(PROC_RO *Pkg)
 				PRIVATE(OF(Zen)).Device.DF );
 }
 
-unsigned int Query_AMD_HSMP_Interface(void)
+static unsigned int Query_AMD_HSMP_Interface(void)
 {
 	HSMP_ARG arg[8];
 	unsigned int rx = HSMP_UNSPECIFIED;
@@ -8729,7 +8732,7 @@ unsigned int Query_AMD_HSMP_Interface(void)
 	return rx;
 }
 
-void Query_AMD_Family_17h(unsigned int cpu)
+static void Query_AMD_Family_17h(unsigned int cpu)
 {
 	PRIVATE(OF(Specific)) = LookupProcessor();
     if (PRIVATE(OF(Specific)) != NULL)
@@ -8857,7 +8860,7 @@ static void Query_Hygon_F18h(unsigned int cpu)
 	Query_AMD_F17h_PerSocket(cpu);
 }
 
-void Dump_CPUID(CORE_RO *Core)
+static void Dump_CPUID(CORE_RO *Core)
 {
 	unsigned int i;
 
@@ -8926,7 +8929,7 @@ void Dump_CPUID(CORE_RO *Core)
 	}
 }
 
-void AMD_F17h_DCU_Technology(CORE_RO *Core)			/* Per Core */
+static void AMD_F17h_DCU_Technology(CORE_RO *Core)		/* Per Core */
 {
 	AMD_DC_CFG DC_Cfg1 = {.value = 0};
 	AMD_CU_CFG3 CU_Cfg3 = {.value = 0};
@@ -9059,7 +9062,7 @@ void AMD_F17h_DCU_Technology(CORE_RO *Core)			/* Per Core */
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->DCU_Mask, Core->Bind);
 }
 
-void Intel_DCU_Technology(CORE_RO *Core)			/*Per Core */
+static void Intel_DCU_Technology(CORE_RO *Core) 		/*Per Core */
 { /* Avoton[06_4D], GDM[06_5C], NHM[06_1A, 06_1E, 06_1F, 06_2E], SNB+, Phi */
   if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
   {
@@ -9184,8 +9187,7 @@ void Intel_DCU_Technology(CORE_RO *Core)			/*Per Core */
   }
 }
 
-
-void Intel_Core_MicroArchitecture(CORE_RO *Core)	/* Per P-Core	*/
+static void Intel_Core_MicroArchitecture(CORE_RO *Core) 	/* Per P-Core */
 { /* 06_7D, 06_7E, 06_8C, 06_8D, 06_97, 06_9A, 06_B7, 06_BA, 06_BF, MTL */
   if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
   {
@@ -9242,7 +9244,7 @@ void Intel_Core_MicroArchitecture(CORE_RO *Core)	/* Per P-Core	*/
   }
 }
 
-void SpeedStep_Technology(CORE_RO *Core)			/*Per Package*/
+static void SpeedStep_Technology(CORE_RO *Core) 		/*Per Package*/
 {
   if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
     if (PUBLIC(RO(Proc))->Features.Std.ECX.EIST == 1)
@@ -9271,9 +9273,9 @@ void SpeedStep_Technology(CORE_RO *Core)			/*Per Package*/
   }
 }
 
-void Intel_Turbo_Config(CORE_RO *Core, void (*ConfigFunc)(void*),/*Per Package*/
+static void Intel_Turbo_Config(CORE_RO *Core, void (*ConfigFunc)(void*),
 			void (*AssignFunc)(unsigned int*, TURBO_CONFIG*))
-{
+{								/*Per Package*/
 	CLOCK_TURBO_ARG ClockTurbo = {
 		.pClockMod = NULL,	/*	Read-Only Operation	*/
 		.Config = {.MSR = {.value = 0}},
@@ -9355,7 +9357,7 @@ static int Cmp_Skylake_Target(CORE_RO *Core, unsigned int ratio)
 	return (Core->PowerThermal.PerfControl.SNB.TargetRatio >= ratio);
 }
 
-bool IsPerformanceControlCapable(void)
+static bool IsPerformanceControlCapable(void)
 {
 	struct SIGNATURE blackList[] = {
 		_Silvermont_Bay_Trail,	/* 06_37 */
@@ -9378,7 +9380,7 @@ bool IsPerformanceControlCapable(void)
 	return true;
 }
 
-bool WritePerformanceControl(PERF_CONTROL *pPerfControl)
+static bool WritePerformanceControl(PERF_CONTROL *pPerfControl)
 {
 	bool isCapable = IsPerformanceControlCapable();
 	if (isCapable == true)
@@ -9388,7 +9390,7 @@ bool WritePerformanceControl(PERF_CONTROL *pPerfControl)
 	return isCapable;
 }
 
-void TurboBoost_Technology(CORE_RO *Core,	SET_TARGET SetTarget,
+static void TurboBoost_Technology(CORE_RO *Core,SET_TARGET SetTarget,
 						GET_TARGET GetTarget,
 						CMP_TARGET CmpTarget,
 						unsigned int TurboRatio,
@@ -9474,7 +9476,7 @@ void TurboBoost_Technology(CORE_RO *Core,	SET_TARGET SetTarget,
   }
 }
 
-void DynamicAcceleration(CORE_RO *Core) 			/* Unique */
+static void DynamicAcceleration(CORE_RO *Core)			/* Unique */
 {
   if (IsPerformanceControlCapable() == true)
   {
@@ -9545,7 +9547,7 @@ void DynamicAcceleration(CORE_RO *Core) 			/* Unique */
   }
 }
 
-void SoC_Turbo_Override(CORE_RO *Core)
+static void SoC_Turbo_Override(CORE_RO *Core)
 {
 	int ToggleFeature;
 
@@ -9613,7 +9615,7 @@ static void ClockMod_PPC_PerCore(void *arg)
 	Core->Boost[BOOST(TGT)] = pClockPPC->GetTarget(Core);
 }
 
-long For_All_PPC_Clock(CLOCK_PPC_ARG *pClockPPC)
+static long For_All_PPC_Clock(CLOCK_PPC_ARG *pClockPPC)
 {
 	long rc = RC_SUCCESS;
 	unsigned int cpu = PUBLIC(RO(Proc))->CPU.Count;
@@ -9746,7 +9748,7 @@ static void ClockMod_HWP_PerCore(void *arg)
   }
 }
 
-long For_All_HWP_Clock(CLOCK_HWP_ARG *pClockHWP)
+static long For_All_HWP_Clock(CLOCK_HWP_ARG *pClockHWP)
 {
 	long rc = RC_SUCCESS;
 	unsigned int cpu = PUBLIC(RO(Proc))->CPU.Count;
@@ -9792,7 +9794,7 @@ static long ClockMod_Intel_HWP(CLOCK_ARG *pClockMod)
 }
 
 
-void AMD_Watchdog(CORE_RO *Core)
+static void AMD_Watchdog(CORE_RO *Core)
 {	/*		CPU Watchdog Timer.				*/
 	if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
 	{
@@ -9816,14 +9818,14 @@ void AMD_Watchdog(CORE_RO *Core)
 	}
 }
 
-void PerCore_AMD_CState_BAR(CORE_RO *Core)
+static void PerCore_AMD_CState_BAR(CORE_RO *Core)
 {	/* Families: 10h, 12h, 14h, 15h, 16h, 17h: I/O C-State Base Address. */
 	CSTATE_BASE_ADDR CStateBaseAddr = {.value = 0};
 	RDMSR(CStateBaseAddr, MSR_AMD_CSTATE_BAR);
 	Core->Query.CStateBaseAddr = CStateBaseAddr.IOaddr;
 }
 
-void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
+static void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)	/* Per SMT */
 {
 	ZEN_CSTATE_CONFIG CStateCfg = {.value = 0};
 	int ToggleFeature;
@@ -9958,7 +9960,7 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 	AMD_Watchdog(Core);
 }
 
-void Intel_Watchdog(CORE_RO *Core)
+static void Intel_Watchdog(CORE_RO *Core)
 {
 	struct pci_device_id PCI_WDT_ids[] = {
 		{
@@ -9985,7 +9987,7 @@ void Intel_Watchdog(CORE_RO *Core)
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 }
 
-void Intel_Turbo_Activation_Ratio(CORE_RO *Core)
+static void Intel_Turbo_Activation_Ratio(CORE_RO *Core)
 {
 	TURBO_ACTIVATION TurboActivation = {.value = 0};
 
@@ -10012,7 +10014,7 @@ void Intel_Turbo_Activation_Ratio(CORE_RO *Core)
     }
 }
 
-void Intel_Turbo_TDP_Config(CORE_RO *Core)
+static void Intel_Turbo_TDP_Config(CORE_RO *Core)
 {
 	CONFIG_TDP_NOMINAL NominalTDP = {.value = 0};
 	CONFIG_TDP_CONTROL ControlTDP = {.value = 0};
@@ -10068,7 +10070,7 @@ void Intel_Turbo_TDP_Config(CORE_RO *Core)
   }
 }
 
-void Query_Intel_C1E(CORE_RO *Core)				/*Per Package*/
+static void Query_Intel_C1E(CORE_RO *Core)			/*Per Package*/
 {
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
@@ -10093,7 +10095,7 @@ void Query_Intel_C1E(CORE_RO *Core)				/*Per Package*/
 	}
 }
 
-void Query_AMD_Family_0Fh_C1E(CORE_RO *Core)			/* Per Core */
+static void Query_AMD_Family_0Fh_C1E(CORE_RO *Core)		/* Per Core */
 {
 	INT_PENDING_MSG IntPendingMsg = {.value = 0};
 
@@ -10108,7 +10110,7 @@ void Query_AMD_Family_0Fh_C1E(CORE_RO *Core)			/* Per Core */
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask, Core->Bind);
 }
 
-void ThermalMonitor2_Set(CORE_RO *Core, MISC_PROC_FEATURES MiscFeatures)
+static void ThermalMonitor2_Set(CORE_RO *Core, MISC_PROC_FEATURES MiscFeatures)
 {	/* Intel Core Solo Duo. */
 	struct SIGNATURE whiteList[] = {
 		_Core_Yonah	,	/* 06_0E */
@@ -10151,7 +10153,7 @@ void ThermalMonitor2_Set(CORE_RO *Core, MISC_PROC_FEATURES MiscFeatures)
   }
 }
 
-void ThermalMonitor_IA32(CORE_RO *Core)
+static void ThermalMonitor_IA32(CORE_RO *Core)
 {
 	MISC_PROC_FEATURES MiscFeatures = {.value = 0};
 	THERM_STATUS ThermStatus = {.value = 0};
@@ -10457,7 +10459,7 @@ void ThermalMonitor_IA32(CORE_RO *Core)
     }
 }
 
-void ThermalMonitor_Atom_Bonnell(CORE_RO *Core)
+static void ThermalMonitor_Atom_Bonnell(CORE_RO *Core)
 {
 	Core->PowerThermal.Param.Offset[THERMAL_TARGET] = 100;
 	Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 0;
@@ -10465,7 +10467,7 @@ void ThermalMonitor_Atom_Bonnell(CORE_RO *Core)
 	ThermalMonitor_IA32(Core);
 }
 
-void ThermalMonitor_Set(CORE_RO *Core)
+static void ThermalMonitor_Set(CORE_RO *Core)
 {
 	TJMAX TjMax = {.value = 0};
 	PLATFORM_INFO PfInfo = {.value = 0};
@@ -10505,7 +10507,7 @@ void ThermalMonitor_Set(CORE_RO *Core)
 	ThermalMonitor_IA32(Core);
 }
 
-void CorePerfLimitReasons(CORE_RO *Core)
+static void CorePerfLimitReasons(CORE_RO *Core)
 {
     if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
     {
@@ -10597,7 +10599,7 @@ void CorePerfLimitReasons(CORE_RO *Core)
     }
 }
 
-void GraphicsPerfLimitReasons(CORE_RO *Core)
+static void GraphicsPerfLimitReasons(CORE_RO *Core)
 {
     if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
     {
@@ -10671,7 +10673,7 @@ void GraphicsPerfLimitReasons(CORE_RO *Core)
     }
 }
 
-void RingPerfLimitReasons(CORE_RO *Core)
+static void RingPerfLimitReasons(CORE_RO *Core)
 {
     if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
     {
@@ -11183,8 +11185,8 @@ MAKE_TOGGLE_CSTATE_FUNC(MC6_CONFIG, MC6demotion, PC6_Enable)
 	ret;								\
 })
 
-void Control_IO_MWAIT(	struct CSTATES_ENCODING_ST IORedir[],
-			CORE_RO *Core )
+static void Control_IO_MWAIT(	struct CSTATES_ENCODING_ST IORedir[],
+				CORE_RO *Core )
 {
 	CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
 	RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
@@ -11224,9 +11226,9 @@ void Control_IO_MWAIT(	struct CSTATES_ENCODING_ST IORedir[],
 	);
 }
 
-void Control_CSTATES_NHM(	struct CSTATES_ENCODING_ST Limit[],
+static void Control_CSTATES_NHM(struct CSTATES_ENCODING_ST Limit[],
 				struct CSTATES_ENCODING_ST IORedir[],
-				CORE_RO *Core )
+				CORE_RO *Core)
 {	/* Family: 06_1A, 06_1E, 06_1F, 06_25, 06_2C, 06_2E		*/
 	CSTATE_CONFIG CStateConfig = {.value = 0};
 	unsigned int toggleFeature = 0;
@@ -11304,11 +11306,11 @@ void Control_CSTATES_NHM(	struct CSTATES_ENCODING_ST Limit[],
 	Control_IO_MWAIT(IORedir, Core);
 }
 
-void Control_CSTATES_COMMON(	struct CSTATES_ENCODING_ST Limit[],
-				struct CSTATES_ENCODING_ST IORedir[],
-				CORE_RO *Core,
-				const unsigned short bitMask,
-				const unsigned short unMask )
+static void Control_CSTATES_COMMON(	struct CSTATES_ENCODING_ST Limit[],
+					struct CSTATES_ENCODING_ST IORedir[],
+					CORE_RO *Core,
+					const unsigned short bitMask,
+					const unsigned short unMask )
 {
 	CSTATE_CONFIG CStateConfig = {.value = 0};
 	unsigned int toggleFeature = 0;
@@ -11406,32 +11408,32 @@ void Control_CSTATES_COMMON(	struct CSTATES_ENCODING_ST Limit[],
 	Control_IO_MWAIT(IORedir, Core);
 }
 
-void Control_CSTATES_SNB(	struct CSTATES_ENCODING_ST Limit[],
+static void Control_CSTATES_SNB(struct CSTATES_ENCODING_ST Limit[],
 				struct CSTATES_ENCODING_ST IORedir[],
-				CORE_RO *Core )
+				CORE_RO *Core)
 {	/* Family: 06_2A, 06_3A, 06_3E, 06_3F, 06_4F, 06_56, 06_57, 06_85 */
 	Control_CSTATES_COMMON(Limit, IORedir, Core, 0b0111, 0b1000);
 }
 
-void Control_CSTATES_ULT(	struct CSTATES_ENCODING_ST Limit[],
+static void Control_CSTATES_ULT(struct CSTATES_ENCODING_ST Limit[],
 				struct CSTATES_ENCODING_ST IORedir[],
-				CORE_RO *Core )
+				CORE_RO *Core)
 {	/* Family: 06_3C, 06_3D, 06_45, 06_46, 06_47, 06_86		*/
 	Control_CSTATES_COMMON(Limit, IORedir, Core, 0b1111, 0b0000);
 }
 
-void Control_CSTATES_SKL(	struct CSTATES_ENCODING_ST Limit[],
+static void Control_CSTATES_SKL(struct CSTATES_ENCODING_ST Limit[],
 				struct CSTATES_ENCODING_ST IORedir[],
-				CORE_RO *Core )
+				CORE_RO *Core)
 {	/* Family: 06_4E, 06_5E, 06_55, 06_66, 06_7D, 06_7E, 06_8E, 06_9E */
 	Control_CSTATES_COMMON(Limit, IORedir, Core, 0b0111, 0b1000);
 }
 
-void Control_CSTATES_SOC_ATOM(	struct CSTATES_ENCODING_ST Limit[],
-				struct CSTATES_ENCODING_ST IORedir[],
-				CORE_RO *Core,
-				const unsigned short bitMask,
-				const unsigned short unMask )
+static void Control_CSTATES_SOC_ATOM(	struct CSTATES_ENCODING_ST Limit[],
+					struct CSTATES_ENCODING_ST IORedir[],
+					CORE_RO *Core,
+					const unsigned short bitMask,
+					const unsigned short unMask )
 {
 	CSTATE_CONFIG CStateConfig = {.value = 0};
 	unsigned int toggleFeature = 0;
@@ -11489,9 +11491,9 @@ void Control_CSTATES_SOC_ATOM(	struct CSTATES_ENCODING_ST Limit[],
 	Control_IO_MWAIT(IORedir, Core);
 }
 
-void Control_CSTATES_SOC_SLM(	struct CSTATES_ENCODING_ST Limit[],
-				struct CSTATES_ENCODING_ST IORedir[],
-				CORE_RO *Core )
+static void Control_CSTATES_SOC_SLM(	struct CSTATES_ENCODING_ST Limit[],
+					struct CSTATES_ENCODING_ST IORedir[],
+					CORE_RO *Core )
 {	/* Family: 06_37, 06_4A, 06_4C, 06_4D, 06_5A			*/
 	CC6_CONFIG CC6_Config = {.value = 0};
 	MC6_CONFIG MC6_Config = {.value = 0};
@@ -11528,9 +11530,9 @@ void Control_CSTATES_SOC_SLM(	struct CSTATES_ENCODING_ST Limit[],
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask, Core->Bind);
 }
 
-void Control_CSTATES_SOC_GDM(	struct CSTATES_ENCODING_ST Limit[],
-				struct CSTATES_ENCODING_ST IORedir[],
-				CORE_RO *Core )
+static void Control_CSTATES_SOC_GDM(	struct CSTATES_ENCODING_ST Limit[],
+					struct CSTATES_ENCODING_ST IORedir[],
+					CORE_RO *Core )
 {	/* Family: 06_5CH						*/
 	Control_CSTATES_SOC_ATOM(Limit, IORedir, Core, 0b1111, 0b0000);
 }
@@ -11544,7 +11546,7 @@ void Control_CSTATES_SOC_GDM(	struct CSTATES_ENCODING_ST Limit[],
 	Control_##_CLASS(Limit_##_CLASS, IORedir_##_CLASS, Core);	\
 })
 
-void PerCore_AMD_Family_0Fh_PStates(CORE_RO *Core)
+static void PerCore_AMD_Family_0Fh_PStates(CORE_RO *Core)
 {
 	FIDVID_STATUS FidVidStatus = {.value = 0};
 	FIDVID_CONTROL FidVidControl = {.value = 0};
@@ -11582,7 +11584,7 @@ void PerCore_AMD_Family_0Fh_PStates(CORE_RO *Core)
 	} while (FidVidStatus.FidVidPending == 1) ;
 }
 
-void SystemRegisters(CORE_RO *Core)
+static void SystemRegisters(CORE_RO *Core)
 {
 	unsigned long long mem64;
 
@@ -11726,7 +11728,7 @@ void SystemRegisters(CORE_RO *Core)
 	}
 }
 
-void Intel_Mitigation_Mechanisms(CORE_RO *Core)
+static void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 {
 	SPEC_CTRL Spec_Ctrl = {.value = 0};
 	PRED_CMD  Pred_Cmd  = {.value = 0};
@@ -12074,7 +12076,7 @@ void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask, Core->Bind);
 }
 
-void AMD_Mitigation_Mechanisms(CORE_RO *Core)
+static void AMD_Mitigation_Mechanisms(CORE_RO *Core)
 {
 	AMD_SPEC_CTRL Spec_Ctrl = {.value = 0};
 	AMD_PRED_CMD  Pred_Cmd  = {.value = 0};
@@ -12291,7 +12293,7 @@ void AMD_Mitigation_Mechanisms(CORE_RO *Core)
     }
 }
 
-void Intel_VirtualMachine(CORE_RO *Core)
+static void Intel_VirtualMachine(CORE_RO *Core)
 {
 	if (PUBLIC(RO(Proc))->Features.Std.ECX.VMX) {
 		VMX_BASIC VMX_Basic = {.value = 0};
@@ -12307,7 +12309,7 @@ void Intel_VirtualMachine(CORE_RO *Core)
 	}
 }
 
-void Intel_Microcode(CORE_RO *Core)
+static void Intel_Microcode(CORE_RO *Core)
 {
 	MICROCODE_ID Microcode = {.value = 0};
 
@@ -12315,7 +12317,7 @@ void Intel_Microcode(CORE_RO *Core)
 	Core->Query.Microcode = Microcode.Signature;
 }
 
-void AMD_Microcode(CORE_RO *Core)
+static void AMD_Microcode(CORE_RO *Core)
 {
 	unsigned long long value = 0;
 	RDMSR64(value, MSR_AMD64_PATCH_LEVEL);
@@ -12329,7 +12331,7 @@ void AMD_Microcode(CORE_RO *Core)
 	BITWISECLR(LOCKLESS, Pkg->ThermalPoint.State);			\
 })
 
-void PerCore_Reset(CORE_RO *Core)
+static void PerCore_Reset(CORE_RO *Core)
 {
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
@@ -12644,7 +12646,7 @@ static void PerCore_Atom_Bonnell_Query(void *arg)
 	ThermalMonitor_Atom_Bonnell(Core);
 }
 
-void Compute_Intel_Silvermont_Burst(CORE_RO *Core)
+static void Compute_Intel_Silvermont_Burst(CORE_RO *Core)
 {
 	enum RATIO_BOOST boost;
 	unsigned int burstRatio;
@@ -13470,7 +13472,7 @@ static void PerCore_AMD_Family_0Fh_Query(void *arg)
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 }
 
-void PerCore_AMD_Family_Same_Query(void *arg)
+static void PerCore_AMD_Family_Same_Query(void *arg)
 {
 	CORE_RO *Core = (CORE_RO *) arg;
 
@@ -13910,12 +13912,12 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 56)
-void Sys_DumpTask(SYSGATE_RO *SysGate)
+inline void Sys_DumpTask(SYSGATE_RO *SysGate)
 {
 	SysGate->taskCount = 0;
 }
 #else /* KERNEL_VERSION(3, 10, 56) */
-void Sys_DumpTask(SYSGATE_RO *SysGate)
+static void Sys_DumpTask(SYSGATE_RO *SysGate)
 {	/* Source: /include/linux/sched.h */
 	struct task_struct *process, *thread;
 	int cnt = 0;
@@ -13986,7 +13988,7 @@ static void InitTimer(void *Cycle_Function)
     }
 }
 
-void Controller_Init(void)
+static void Controller_Init(void)
 {
 	CLOCK sClock = {.Q = 0, .R = 0, .Hz = 0};
 	unsigned int cpu = PUBLIC(RO(Proc))->CPU.Count, ratio = 0;
@@ -14087,7 +14089,7 @@ void Controller_Init(void)
 	}
 }
 
-void Controller_Start(int wait)
+static void Controller_Start(int wait)
 {
     if (Arch[PUBLIC(RO(Proc))->ArchID].Start != NULL)
     {
@@ -14105,7 +14107,7 @@ void Controller_Start(int wait)
     }
 }
 
-void Controller_Stop(int wait)
+static void Controller_Stop(int wait)
 {
     if (Arch[PUBLIC(RO(Proc))->ArchID].Stop != NULL)
     {
@@ -14121,7 +14123,7 @@ void Controller_Stop(int wait)
     }
 }
 
-void Controller_Exit(void)
+static void Controller_Exit(void)
 {
 	unsigned int cpu;
 
@@ -14135,7 +14137,7 @@ void Controller_Exit(void)
 	}
 }
 
-void Intel_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
+static void Intel_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 {
 	UNUSED(Core);
 
@@ -14326,7 +14328,7 @@ void Intel_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
   }									\
 })
 
-void Intel_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
+static void Intel_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 {
 	UNUSED(Core);
 
@@ -14338,7 +14340,7 @@ void Intel_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
     }
 }
 
-void AMD_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
+static void AMD_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 {
 	UNUSED(Core);
 
@@ -15508,7 +15510,7 @@ static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T)
 	__VA_ARGS__;							\
 })
 
-void Core_Intel_Temp(CORE_RO *Core)
+static void Core_Intel_Temp(CORE_RO *Core)
 {
 	THERM_STATUS ThermStatus = {.value = 0};
 	RDMSR(ThermStatus, MSR_IA32_THERM_STATUS);	/*All Intel families.*/
@@ -15558,7 +15560,7 @@ void Core_Intel_Temp(CORE_RO *Core)
     }									\
 })
 
-void Monitor_CorePerfLimitReasons(PROC_RO *Pkg)
+static void Monitor_CorePerfLimitReasons(PROC_RO *Pkg)
 {
 	CORE_PERF_LIMIT_REASONS limit = {.value = 0};
 	RDMSR(limit, MSR_SKL_CORE_PERF_LIMIT_REASONS);
@@ -15594,7 +15596,7 @@ void Monitor_CorePerfLimitReasons(PROC_RO *Pkg)
 	);
 }
 
-void Monitor_GraphicsPerfLimitReasons(PROC_RO *Pkg)
+static void Monitor_GraphicsPerfLimitReasons(PROC_RO *Pkg)
 {
 	GRAPHICS_PERF_LIMIT_REASONS limit = {.value = 0};
 	RDMSR(limit, MSR_GRAPHICS_PERF_LIMIT_REASONS);
@@ -15624,7 +15626,7 @@ void Monitor_GraphicsPerfLimitReasons(PROC_RO *Pkg)
 	);
 }
 
-void Monitor_RingPerfLimitReasons(PROC_RO *Pkg)
+static void Monitor_RingPerfLimitReasons(PROC_RO *Pkg)
 {
 	RING_PERF_LIMIT_REASONS limit = {.value = 0};
 	RDMSR(limit, MSR_RING_PERF_LIMIT_REASONS);
@@ -15652,7 +15654,7 @@ void Monitor_RingPerfLimitReasons(PROC_RO *Pkg)
 	);
 }
 
-void Core_AMD_Family_0Fh_Temp(CORE_RO *Core)
+static void Core_AMD_Family_0Fh_Temp(CORE_RO *Core)
 {
 	if (PUBLIC(RO(Proc))->Features.AdvPower.EDX.TTP == 1) {
 		THERMTRIP_STATUS ThermTrip = {0};
@@ -15674,7 +15676,7 @@ void Core_AMD_Family_0Fh_Temp(CORE_RO *Core)
 	}
 }
 
-void Core_AMD_Family_15h_00h_Temp(CORE_RO *Core)
+static void Core_AMD_Family_15h_00h_Temp(CORE_RO *Core)
 {
 	TCTL_REGISTER TctlSensor = {.value = 0};
 
@@ -15692,7 +15694,7 @@ void Core_AMD_Family_15h_00h_Temp(CORE_RO *Core)
 }
 
 /*	Bulldozer/Excavator through SMU interface			*/
-void Core_AMD_Family_15_60h_Temp(CORE_RO *Core)
+static void Core_AMD_Family_15_60h_Temp(CORE_RO *Core)
 {
 	TCTL_REGISTER TctlSensor = {.value = 0};
 
@@ -15715,7 +15717,7 @@ void Core_AMD_Family_15_60h_Temp(CORE_RO *Core)
 	}
 }
 
-void Core_AMD_Family_15h_Temp(CORE_RO *Core)
+static void Core_AMD_Family_15h_Temp(CORE_RO *Core)
 {
 	switch (PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel) {
 	case 0x6:
@@ -19391,7 +19393,7 @@ static void Start_AMD_Family_15h(void *arg)
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
-void Cycle_AMD_Family_17h(CORE_RO *Core,
+static void Cycle_AMD_Family_17h(CORE_RO *Core,
 			void (*Call_SMU)(const unsigned int, const unsigned int,
 					const unsigned long long),
 			const unsigned int plane0, const unsigned int plane1,
@@ -19808,7 +19810,7 @@ static void Stop_Uncore_AMD_Family_17h(void *arg)
 }
 
 
-long Sys_OS_Driver_Query(void)
+static long Sys_OS_Driver_Query(void)
 {
 	int rc = RC_SUCCESS;
 #ifdef CONFIG_CPU_FREQ
@@ -19891,7 +19893,7 @@ long Sys_OS_Driver_Query(void)
 	return rc;
 }
 
-long Sys_Kernel(SYSGATE_RO *SysGate)
+static long Sys_Kernel(SYSGATE_RO *SysGate)
 {	/* Sources:	/include/generated/uapi/linux/version.h
 			/include/uapi/linux/utsname.h			*/
 	if (SysGate != NULL) {
@@ -19907,7 +19909,7 @@ long Sys_Kernel(SYSGATE_RO *SysGate)
 	}
 }
 
-long SysGate_OnDemand(void)
+static long SysGate_OnDemand(void)
 {
 	long rc = -1;
     if (PUBLIC(OF(Gate)) == NULL)
@@ -20944,7 +20946,7 @@ static int CoreFreqK_Bios_Limit(int cpu, unsigned int *limit)
 	return 0;
 }
 
-void Policy_Aggregate_Turbo(void)
+static void Policy_Aggregate_Turbo(void)
 {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
     if (PUBLIC(RO(Proc))->Registration.Driver.CPUfreq & REGISTRATION_ENABLE) {
@@ -21349,7 +21351,7 @@ static int CoreFreqK_Governor_Init(void)
 	return rc;
 }
 
-signed int Seek_Topology_Core_Peer(unsigned int cpu, signed int exclude)
+static signed int Seek_Topology_Core_Peer(unsigned int cpu, signed int exclude)
 {
 	unsigned int seek;
 
@@ -21372,7 +21374,7 @@ signed int Seek_Topology_Core_Peer(unsigned int cpu, signed int exclude)
 	return -1;
 }
 
-signed int Seek_Topology_Thread_Peer(unsigned int cpu, signed int exclude)
+static signed int Seek_Topology_Thread_Peer(unsigned int cpu,signed int exclude)
 {
 	unsigned int seek;
 
@@ -21395,7 +21397,7 @@ signed int Seek_Topology_Thread_Peer(unsigned int cpu, signed int exclude)
 	return -1;
 }
 
-signed int Seek_Topology_Hybrid_Core(unsigned int cpu)
+static signed int Seek_Topology_Hybrid_Core(unsigned int cpu)
 {
 	signed int any = (signed int) PUBLIC(RO(Proc))->CPU.Count, seek;
 
@@ -21417,7 +21419,8 @@ signed int Seek_Topology_Hybrid_Core(unsigned int cpu)
 	return any;
 }
 
-void MatchCoreForService(SERVICE_PROC *pService,unsigned int cpi,signed int cpx)
+static void MatchCoreForService(SERVICE_PROC *pService,
+				unsigned int cpi, signed int cpx)
 {
 	unsigned int cpu;
 
@@ -21434,7 +21437,8 @@ void MatchCoreForService(SERVICE_PROC *pService,unsigned int cpi,signed int cpx)
     }
 }
 
-int MatchPeerForService(SERVICE_PROC *pService, unsigned int cpi,signed int cpx)
+static int MatchPeerForService(SERVICE_PROC *pService,
+				unsigned int cpi, signed int cpx)
 {
 	unsigned int cpu = cpi, cpn = 0;
 	signed int seek;
@@ -21464,7 +21468,7 @@ MATCH:
 	return -1;
 }
 
-void MatchPeerForDefaultService(SERVICE_PROC *pService, unsigned int cpu)
+static void MatchPeerForDefaultService(SERVICE_PROC *pService, unsigned int cpu)
 {
 	if (PUBLIC(RO(Proc))->Features.HTT_Enable) {
 		if (MatchPeerForService(pService, cpu, -1) == -1)
@@ -21486,7 +21490,7 @@ void MatchPeerForDefaultService(SERVICE_PROC *pService, unsigned int cpu)
 	}
 }
 
-void MatchPeerForUpService(SERVICE_PROC *pService, unsigned int cpu)
+static void MatchPeerForUpService(SERVICE_PROC *pService, unsigned int cpu)
 {	/* Try to restore the initial Service affinity or move to SMT peer. */
 	SERVICE_PROC hService = {
 		.Core = cpu,
@@ -21532,7 +21536,7 @@ void MatchPeerForUpService(SERVICE_PROC *pService, unsigned int cpu)
 	}
 }
 
-void MatchPeerForDownService(SERVICE_PROC *pService, unsigned int cpu)
+static void MatchPeerForDownService(SERVICE_PROC *pService, unsigned int cpu)
 {
 	int rc = -1;
 
@@ -23070,7 +23074,7 @@ static struct file_operations CoreFreqK_fops = {
 };
 
 #ifdef CONFIG_PM_SLEEP
-void Print_SuspendResume(void)
+inline void Print_SuspendResume(void)
 {
 	pr_notice("CoreFreq: %s(%u:%d:%d)\n",
 		CoreFreqK.ResumeFromSuspend ? "Suspend" : "Resume",
@@ -23309,7 +23313,7 @@ static struct notifier_block CoreFreqK_notifier_block = {
 #endif /* KERNEL_VERSION(4, 10, 0) */
 #endif /* CONFIG_HOTPLUG_CPU */
 
-void SMBIOS_Collect(void)
+static void SMBIOS_Collect(void)
 {
 #ifdef CONFIG_DMI
 	struct {
@@ -23346,7 +23350,7 @@ void SMBIOS_Collect(void)
 }
 
 #ifdef CONFIG_DMI
-char *SMBIOS_String(const struct dmi_header *dh, u8 id)
+static char *SMBIOS_String(const struct dmi_header *dh, u8 id)
 {
 	char *pStr = (char *) dh;
 	pStr += dh->length;
@@ -23363,7 +23367,7 @@ char *SMBIOS_String(const struct dmi_header *dh, u8 id)
 
 #define safe_strim(pStr)	(strim(pStr == NULL ? "" : pStr))
 
-void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
+static void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
 {
 	size_t *count = (size_t*) priv;
     switch (dh->type) {
@@ -23420,7 +23424,7 @@ void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
 #undef safe_strim
 #endif /* CONFIG_DMI */
 
-void SMBIOS_Decoder(void)
+inline void SMBIOS_Decoder(void)
 {
 #ifdef CONFIG_DMI
 	size_t count = 0;
