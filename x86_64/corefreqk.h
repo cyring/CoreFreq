@@ -11794,7 +11794,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen4_Genoa] = {							/*113*/
 	.Signature = _AMD_Zen4_Genoa,
-	.Query = Query_AMD_F19h_PerCluster,
+	.Query = Query_AMD_F19h_PerSocket,
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
@@ -11866,7 +11866,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen4_HWK] = {							/*116*/
 	.Signature = _AMD_Zen4_HWK,
-	.Query = Query_AMD_F19h_74h_PerSocket,
+	.Query = Query_AMD_F19h_PerSocket,
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
@@ -11914,7 +11914,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen4_Bergamo] = {							/*118*/
 	.Signature = _AMD_Zen4_Bergamo,
-	.Query = Query_AMD_F19h_PerCluster,
+	.Query = Query_AMD_F19h_PerSocket,
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
@@ -11938,7 +11938,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen4_STP] = {							/*119*/
 	.Signature = _AMD_Zen4_STP,
-	.Query = Query_AMD_F19h_PerCluster,
+	.Query = Query_AMD_F19h_PerSocket,
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
