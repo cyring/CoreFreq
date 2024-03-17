@@ -6752,6 +6752,30 @@ static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
 	return (PCI_CALLBACK) 0;
 }
 
+static void AMD_UMC_Normalize_Channels(void)
+{
+	unsigned short umc;
+  for (umc = 0; umc < PUBLIC(RO(Proc))->Uncore.CtrlCount; umc++)
+  { /* If UMC is quad channels (in 2 x 32-bits) then unpopulate odd channels*/
+    if (PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount >= 4) {
+		unsigned short cha;
+      for (cha=0; cha < PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount; cha++)
+      {
+	if (cha & 1) {
+		unsigned short slot;
+	  for(slot=0;slot < PUBLIC(RO(Proc))->Uncore.MC[umc].SlotCount;slot++)
+	  {
+		const unsigned short chipselect_pair = slot << 1;
+
+		BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha]\
+				.AMD17h.CHIP[chipselect_pair][0].Chip.value, 0);
+	  }
+	}
+      }
+    }
+  }
+}
+
 static PCI_CALLBACK AMD_DataFabric_Zeppelin(struct pci_dev *pdev)
 {
     if (strncmp(PUBLIC(RO(Proc))->Architecture,
@@ -6940,28 +6964,9 @@ static PCI_CALLBACK AMD_DataFabric_Rembrandt(struct pci_dev *pdev)
 					1, MC_MAX_CHA,
 		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
 
-  if ((PCI_CALLBACK) 0 == ret) {
-	unsigned short umc;
-    for (umc = 0; umc < PUBLIC(RO(Proc))->Uncore.CtrlCount; umc++)
-    { /* If UMC is quad channels (in 2 x 32-bits) then unpopulate odd channels*/
-      if (PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount >= 4) {
-		unsigned short cha;
-	for (cha=0; cha < PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount; cha++)
-	{
-	  if (cha & 1) {
-		unsigned short slot;
-	    for(slot=0;slot < PUBLIC(RO(Proc))->Uncore.MC[umc].SlotCount;slot++)
-	    {
-		const unsigned short chipselect_pair = slot << 1;
-
-		BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Uncore.MC[umc].Channel[cha]\
-				.AMD17h.CHIP[chipselect_pair][0].Chip.value, 0);
-	    }
-	  }
+	if ((PCI_CALLBACK) 0 == ret) {
+		AMD_UMC_Normalize_Channels();
 	}
-      }
-    }
-  }
 	return ret;
 }
 
@@ -6991,7 +6996,7 @@ static PCI_CALLBACK AMD_DataFabric_Genoa(struct pci_dev *pdev)
 
 static PCI_CALLBACK AMD_DataFabric_Phoenix(struct pci_dev *pdev)
 {
-	return AMD_17h_DataFabric(	pdev,
+	PCI_CALLBACK ret = AMD_17h_DataFabric(	pdev,
 					(const unsigned int[2][2]) {
 						{ 0x0, 0x20},
 						{0x10, 0x30}
@@ -6999,6 +7004,11 @@ static PCI_CALLBACK AMD_DataFabric_Phoenix(struct pci_dev *pdev)
 					0x44, 0x90,
 					1, MC_MAX_CHA,
 		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
+
+	if ((PCI_CALLBACK) 0 == ret) {
+		AMD_UMC_Normalize_Channels();
+	}
+	return ret;
 }
 
 static void CoreFreqK_ResetChip(struct pci_dev *dev)
