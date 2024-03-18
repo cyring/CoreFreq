@@ -1732,7 +1732,9 @@ static void Query_Hygon_F18h(unsigned int cpu);
 #define     Start_Uncore_AMD_Family_19h Start_Uncore_AMD_Family_17h
 #define     Stop_Uncore_AMD_Family_19h Stop_Uncore_AMD_Family_17h
 
+static void CCD_AMD_Family_19h_Genoa_Temp(CORE_RO *Core) ;
 static void CCD_AMD_Family_19h_Zen4_Temp(CORE_RO *Core) ;
+static void Query_AMD_F19h_11h_PerCluster(unsigned int cpu) ;
 static void Query_AMD_F19h_61h_PerCluster(unsigned int cpu) ;
 static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 
@@ -11794,7 +11796,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen4_Genoa] = {							/*113*/
 	.Signature = _AMD_Zen4_Genoa,
-	.Query = Query_AMD_F19h_61h_PerCluster,
+	.Query = Query_AMD_F19h_11h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
