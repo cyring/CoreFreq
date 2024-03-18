@@ -11794,7 +11794,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen4_Genoa] = {							/*113*/
 	.Signature = _AMD_Zen4_Genoa,
-	.Query = Query_AMD_F19h_PerSocket,
+	.Query = Query_AMD_F19h_61h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
