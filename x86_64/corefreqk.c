@@ -15765,10 +15765,25 @@ static void Core_AMD_Family_15h_Temp(CORE_RO *Core)
 	}
 }
 
+static void Core_AMD_Family_17h_ThermTrip(CORE_RO *Core)
+{
+	TCTL_THERM_TRIP ThermTrip = {.value = 0};
+
+	Core_AMD_SMN_Read(	ThermTrip,
+				SMU_AMD_THM_TCTL_REGISTER_F17H + 0x8,
+				PRIVATE(OF(Zen)).Device.DF );
+
+	if (ThermTrip.THERM_TP_EN) {
+		Core->PowerThermal.Events[eSTS] = \
+				(Bit64)ThermTrip.THERM_TP << LSHIFT_THERMAL_STS;
+	}
+	Core->PowerThermal.Events[eSTS] = \
+			(Bit64)ThermTrip.CTF_THRESHOLD << LSHIFT_CRITIC_TMP;
+}
+
 static void CTL_AMD_Family_17h_Temp(CORE_RO *Core)
 {
 	TCTL_REGISTER TctlSensor = {.value = 0};
-	TCTL_THERM_TRIP ThermTrip = {.value = 0};
 
 	Core_AMD_SMN_Read(	TctlSensor,
 				SMU_AMD_THM_TCTL_REGISTER_F17H,
@@ -15787,22 +15802,12 @@ static void CTL_AMD_Family_17h_Temp(CORE_RO *Core)
 		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 0;
 	}
 
-	Core_AMD_SMN_Read(	ThermTrip,
-				SMU_AMD_THM_TCTL_REGISTER_F17H + 0x8,
-				PRIVATE(OF(Zen)).Device.DF );
-
-	if (ThermTrip.THERM_TP_EN) {
-		Core->PowerThermal.Events[eSTS] = \
-				(Bit64)ThermTrip.THERM_TP << LSHIFT_THERMAL_STS;
-	}
-	Core->PowerThermal.Events[eSTS] = \
-			(Bit64)ThermTrip.CTF_THRESHOLD << LSHIFT_CRITIC_TMP;
+	Core_AMD_Family_17h_ThermTrip(Core);
 }
 
 static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 {
 	TCCD_REGISTER TccdSensor = {.value = 0};
-	TCTL_THERM_TRIP ThermTrip = {.value = 0};
 
 	Core_AMD_SMN_Read(	TccdSensor,
 				(SMU_AMD_THM_TCTL_CCD_REGISTER_F17H
@@ -15818,16 +15823,7 @@ static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 0;
 	}
 
-	Core_AMD_SMN_Read(	ThermTrip,
-				SMU_AMD_THM_TCTL_REGISTER_F17H + 0x8,
-				PRIVATE(OF(Zen)).Device.DF );
-
-	if (ThermTrip.THERM_TP_EN) {
-		Core->PowerThermal.Events[eSTS] = \
-				(Bit64)ThermTrip.THERM_TP << LSHIFT_THERMAL_STS;
-	}
-	Core->PowerThermal.Events[eSTS] = \
-			(Bit64)ThermTrip.CTF_THRESHOLD << LSHIFT_CRITIC_TMP;
+	Core_AMD_Family_17h_ThermTrip(Core);
 }
 
 #define Pkg_AMD_Family_17h_Temp(Pkg, Core)				\
@@ -15840,7 +15836,6 @@ static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 static void CCD_AMD_Family_19h_Genoa_Temp(CORE_RO *Core)
 {
 	TCCD_REGISTER TccdSensor = {.value = 0};
-	TCTL_THERM_TRIP ThermTrip = {.value = 0};
 
 	Core_AMD_SMN_Read(	TccdSensor,
 				(SMU_AMD_THM_TCTL_CCD_REGISTER_F19H_11H
@@ -15856,22 +15851,12 @@ static void CCD_AMD_Family_19h_Genoa_Temp(CORE_RO *Core)
 		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 0;
 	}
 
-	Core_AMD_SMN_Read(	ThermTrip,
-				SMU_AMD_THM_TCTL_REGISTER_F17H + 0x8,
-				PRIVATE(OF(Zen)).Device.DF );
-
-	if (ThermTrip.THERM_TP_EN) {
-		Core->PowerThermal.Events[eSTS] = \
-				(Bit64)ThermTrip.THERM_TP << LSHIFT_THERMAL_STS;
-	}
-	Core->PowerThermal.Events[eSTS] = \
-			(Bit64)ThermTrip.CTF_THRESHOLD << LSHIFT_CRITIC_TMP;
+	Core_AMD_Family_17h_ThermTrip(Core);
 }
 
 static void CCD_AMD_Family_19h_Zen4_Temp(CORE_RO *Core)
 {
 	TCCD_REGISTER TccdSensor = {.value = 0};
-	TCTL_THERM_TRIP ThermTrip = {.value = 0};
 
 	Core_AMD_SMN_Read(	TccdSensor,
 				(SMU_AMD_THM_TCTL_CCD_REGISTER_F19H_61H
@@ -15887,16 +15872,7 @@ static void CCD_AMD_Family_19h_Zen4_Temp(CORE_RO *Core)
 		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 0;
 	}
 
-	Core_AMD_SMN_Read(	ThermTrip,
-				SMU_AMD_THM_TCTL_REGISTER_F17H + 0x8,
-				PRIVATE(OF(Zen)).Device.DF );
-
-	if (ThermTrip.THERM_TP_EN) {
-		Core->PowerThermal.Events[eSTS] = \
-				(Bit64)ThermTrip.THERM_TP << LSHIFT_THERMAL_STS;
-	}
-	Core->PowerThermal.Events[eSTS] = \
-			(Bit64)ThermTrip.CTF_THRESHOLD << LSHIFT_CRITIC_TMP;
+	Core_AMD_Family_17h_ThermTrip(Core);
 }
 
 
