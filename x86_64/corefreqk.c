@@ -15777,7 +15777,7 @@ static void Core_AMD_Family_17h_ThermTrip(CORE_RO *Core)
 		Core->PowerThermal.Events[eSTS] = \
 				(Bit64)ThermTrip.THERM_TP << LSHIFT_THERMAL_STS;
 	}
-	Core->PowerThermal.Events[eSTS] = \
+	Core->PowerThermal.Events[eSTS] |= \
 			(Bit64)ThermTrip.CTF_THRESHOLD << LSHIFT_CRITIC_TMP;
 }
 
