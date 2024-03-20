@@ -7875,11 +7875,12 @@ static bool Compute_AMD_Zen_Boost(unsigned int cpu)
 				PRIVATE(OF(Zen)).Device.DF);
 		break;
 	case AMD_Zen4_Bergamo:
-	case AMD_Zen4_Genoa:
 	case AMD_EPYC_Rome_CPK:
 		Core_AMD_SMN_Read(XtraCOF,
 				SMU_AMD_F17H_ZEN2_MCM_COF,
 				PRIVATE(OF(Zen)).Device.DF);
+		break;
+	case AMD_Zen4_Genoa:
 		break;
 	}
 	if (XtraCOF.value != 0)
