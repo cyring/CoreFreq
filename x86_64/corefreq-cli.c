@@ -11392,7 +11392,10 @@ Window *CreateSelectIdle(unsigned long long id)
 	}
 	StoreWindow(wIdle, .title, (char*) RSC(BOX_IDLE_LIMIT_TITLE).CODE());
 
-	wIdle->matrix.select.row  = RO(Shm)->SysGate.OS.IdleDriver.stateLimit;
+	wIdle->matrix.select.row = RO(Shm)->SysGate.OS.IdleDriver.stateLimit \
+				< RO(Shm)->SysGate.OS.IdleDriver.stateCount ?
+				RO(Shm)->SysGate.OS.IdleDriver.stateLimit : 0;
+
 	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[ 8] =		\
 	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[ 9] =		\
 	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[10] =		\
