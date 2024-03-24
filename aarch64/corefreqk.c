@@ -2905,11 +2905,16 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 			pmevcntr2_el0,	Core->Counter[T].C0.UCC,	\
 			pmccntr_el0,	Core->Counter[T].C0.URC,	\
 			pmevcntr3_el0,	Core->Counter[T].INST );	\
-	/* Derive C1:						\
+	/* Normalize frequency: */					\
+	Core->Counter[T].C1 = ( 					\
+		Core->Counter[T].TSC					\
+		* PUBLIC(RO(Proc))->Features.Factory.Clock.Q		\
+		* Core->Boost[BOOST(MAX)]				\
+	)	/ PUBLIC(RO(Proc))->Features.Factory.Ratio;		\
+	/* Derive C1: */						\
 	Core->Counter[T].C1 =						\
-	  (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?		\
-	    Core->Counter[T].TSC - Core->Counter[T].C0.URC		\
-	    : 0; TODO(FixMe)*/						\
+	  (Core->Counter[T].C1 > Core->Counter[T].C0.URC) ?		\
+	    Core->Counter[T].C1 - Core->Counter[T].C0.URC : 0;		\
 })
 
 #define Mark_OVH(Core)							\

@@ -291,14 +291,15 @@ static void *Core_Cycle(void *arg)
 	CFlip->Delta.TSC	= RO(Core)->Delta.TSC;
 	CFlip->Delta.C1 	= RO(Core)->Delta.C1;
 
-	const double FRQ = CLOCK_MHz(double,CFlip->Delta.TSC * CFlip->Clock.Hz);
 	/* Update all clock ratios.					*/
 	memcpy(Cpu->Boost, RO(Core)->Boost, (BOOST(SIZE))*sizeof(unsigned int));
+
+	const double FRQ = Cpu->Boost[BOOST(MAX)] * CFlip->Clock.Hz;
 
 	CFlip->Absolute.Ratio.Perf = (double)RO(Core)->Ratio.COF.Q;
 	CFlip->Absolute.Ratio.Perf +=(double)RO(Core)->Ratio.COF.R /UNIT_KHz(1);
 
-	/* Compute IPS=Instructions per TSC				*/
+	/* Compute IPS=Instructions per Hz				*/
 	CFlip->State.IPS = (double)CFlip->Delta.INST / FRQ;
 
 	/* Compute IPC=Instructions per non-halted reference cycle.
@@ -323,23 +324,17 @@ static void *Core_Cycle(void *arg)
 	/* Compute the C-States.					*/
 	CFlip->State.C0 = (double)CFlip->Delta.C0.URC / FRQ;
 
-	CFlip->State.C3 = (double)CFlip->Delta.C3
-			/ (double)CFlip->Delta.TSC;
+	CFlip->State.C3 = (double)CFlip->Delta.C3 / FRQ;
 
-	CFlip->State.C6 = (double)CFlip->Delta.C6
-			/ (double)CFlip->Delta.TSC;
+	CFlip->State.C6 = (double)CFlip->Delta.C6 / FRQ;
 
-	CFlip->State.C7 = (double)CFlip->Delta.C7
-			/ (double)CFlip->Delta.TSC;
+	CFlip->State.C7 = (double)CFlip->Delta.C7 / FRQ;
 
-	CFlip->State.C1 = (double)CFlip->Delta.C1
-			/ (double)CFlip->Delta.TSC;
+	CFlip->State.C1 = (double)CFlip->Delta.C1 / FRQ;
 
 	/* Relative Frequency = Relative Ratio x Bus Clock Frequency	*/
 	CFlip->Relative.Ratio	= (double)(CFlip->Delta.C0.URC
-				* (RO(Shm)->Proc.Features.Hybrid == 1 ?
-					RO(Shm)->Proc.Features.Factory.Ratio
-				:	Cpu->Boost[BOOST(MAX)])) / FRQ;
+					* Cpu->Boost[BOOST(MAX)]) / FRQ;
 
 	CFlip->Relative.Freq	= REL_FREQ_MHz( double,
 						CFlip->Relative.Ratio,
