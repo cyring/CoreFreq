@@ -1822,7 +1822,7 @@ static unsigned int Proc_Topology(void)
 	struct SIGNATURE SoC;
 
     for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++) {
-	PUBLIC(RO(Core, AT(cpu)))->T.PN		= 0;
+	PUBLIC(RO(Core, AT(cpu)))->T.PN 	= 0;
 	PUBLIC(RO(Core, AT(cpu)))->T.BSP	= 0;
 	PUBLIC(RO(Core, AT(cpu)))->T.MPID	= -1;
 	PUBLIC(RO(Core, AT(cpu)))->T.CoreID	= -1;
@@ -2327,21 +2327,7 @@ static void Query_GenericMachine(unsigned int cpu)
     }
 	HyperThreading_Technology();
 
-    if (cpu == PUBLIC(RO(Proc))->Service.Core) {
-	volatile PMUSERENR pmuser;
-
-	__asm__ __volatile__(
-		"mrs	%[pmuser],	pmuserenr_el0"	"\n\t"
-		"isb"
-		: [pmuser]	"=r" (pmuser)
-		:
-		: "memory"
-	);
-	PUBLIC(RO(Proc))->Features.PerfMon.CoreCycles = pmuser.CR;
-	PUBLIC(RO(Proc))->Features.PerfMon.InstrRetired = pmuser.IR;
-
 	For_All_ACPI_CPPC(Read_ACPI_CPPC_Registers, NULL);
-    }
 }
 
 static void Query_DynamIQ(unsigned int cpu)
@@ -2546,9 +2532,28 @@ static void PerCore_GenericMachine(void *arg)
 
 	Query_DeviceTree(Core->Bind);
 
+    if (PUBLIC(RO(Proc))->Features.Hybrid) {
+	Core->T.Cluster.Hybrid_ID = \
+	    Core->Boost[BOOST(MAX)] < PUBLIC(RO(Proc))->Features.Factory.Ratio ?
+		Hybrid_Secondary : Hybrid_Primary;
+    }
     if (Experimental && (PUBLIC(RO(Proc))->HypervisorID == BARE_METAL)) {
 	cpuPwrCtl.value = SysRegRead(CPUPWRCTLR_EL1);
 	Core->Query.CStateBaseAddr = cpuPwrCtl.WFI_RET_CTRL;
+    }
+    if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+	volatile PMUSERENR pmuser;
+
+	__asm__ __volatile__(
+		"mrs	%[pmuser],	pmuserenr_el0"	"\n\t"
+		"isb"
+		: [pmuser]	"=r" (pmuser)
+		:
+		: "memory"
+	);
+	PUBLIC(RO(Proc))->Features.PerfMon.CoreCycles = pmuser.CR;
+	PUBLIC(RO(Proc))->Features.PerfMon.InstrRetired = pmuser.IR;
+
     }
 	__asm__ __volatile__(
 		"mrs	%[revid],	revidr_el1"	"\n\t"

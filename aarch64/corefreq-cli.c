@@ -4865,11 +4865,11 @@ ASCII* Topology_CCD(char *pStr, unsigned int cpu)
 
 ASCII* Topology_Hybrid(char *pStr, unsigned int cpu)
 {
-	StrFormat(pStr, 3+(3*11)+1, "\x20%c%4u%4d%3d",
+	StrFormat(pStr, 3+(3*11)+1, "\x20%c%4X%4d%3d",
 		RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID==Hybrid_Secondary ?
 	'E' :	RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID==Hybrid_Primary ?
 	'P' : '?',
-		RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID,
+		RO(Shm)->Cpu[cpu].Topology.PN,
 		RO(Shm)->Cpu[cpu].Topology.CoreID,
 		RO(Shm)->Cpu[cpu].Topology.ThreadID);
 	return NULL;
@@ -5097,11 +5097,17 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 /* Row Mark */
 	PRT(MAP, TopologyAttr[2], TopologySubHeader[0]);
 
+    if (RO(Shm)->Proc.Features.Hybrid) {
+	TopologyFunc = Topology_Hybrid;
+	OffLineItem = RSC(TOPOLOGY_OFF_3).CODE();
+	TopologySubHeader[1] = TopologyAltSubHeader[3];
+	TopologyUpdate = Topology_Hybrid_Update;
+    } else {
 	TopologyFunc = Topology_CMP;
 	OffLineItem = RSC(TOPOLOGY_OFF_1).CODE();
 	TopologySubHeader[1] = TopologyAltSubHeader[1];
 	TopologyUpdate = Topology_CMP_Update;
-
+    }
 	PRT(MAP, TopologyAttr[2], TopologySubHeader[1]);
 	PRT(MAP, TopologyAttr[2], TopologySubHeader[2]);
 	PRT(MAP, TopologyAttr[2], TopologySubHeader[3]);
