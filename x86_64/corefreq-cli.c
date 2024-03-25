@@ -7359,33 +7359,40 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 		TopologySubHeader[1] = TopologyAltSubHeader[1];
 		TopologyUpdate = Topology_CMP_Update;
 		break;
-	case AMD_Family_17h:
-	case Hygon_Family_18h:
-	case AMD_Family_19h:
-	case AMD_Zen:
+	/* Zen APU */
 	case AMD_Zen_APU:
-	case AMD_ZenPlus:
 	case AMD_ZenPlus_APU:
 	case AMD_Zen_Dali:
-	case AMD_EPYC_Rome_CPK:
 	case AMD_Zen2_Renoir:
 	case AMD_Zen2_LCN:
-	case AMD_Zen2_MTS:
 	case AMD_Zen2_Ariel:
 	case AMD_Zen2_Jupiter:
 	case AMD_Zen2_Galileo:
 	case AMD_Zen2_MDN:
-	case AMD_Zen3_VMR:
 	case AMD_Zen3_CZN:
-	case AMD_EPYC_Milan:
-	case AMD_Zen3_Chagall:
-	case AMD_Zen3_Badami:
 	case AMD_Zen3Plus_RMB:
-	case AMD_Zen4_Genoa:
-	case AMD_Zen4_RPL:
 	case AMD_Zen4_PHX:
 	case AMD_Zen4_HWK:
 	case AMD_Zen4_PHX2:
+		TopologyFunc = Topology_SMT;
+		OffLineItem = RSC(TOPOLOGY_OFF_0).CODE();
+		TopologySubHeader[1] = TopologyAltSubHeader[0];
+		TopologyUpdate = Topology_SMT_Update;
+		break;
+	/* Zen CPU Complex */
+	case AMD_Family_17h:
+	case Hygon_Family_18h:
+	case AMD_Family_19h:
+	case AMD_Zen:
+	case AMD_ZenPlus:
+	case AMD_EPYC_Rome_CPK:
+	case AMD_Zen2_MTS:
+	case AMD_Zen3_VMR:
+	case AMD_EPYC_Milan:
+	case AMD_Zen3_Chagall:
+	case AMD_Zen3_Badami:
+	case AMD_Zen4_Genoa:
+	case AMD_Zen4_RPL:
 	case AMD_Zen4_Bergamo:
 	case AMD_Zen4_STP:
 		TopologyFunc = Topology_CCD;

@@ -2032,6 +2032,8 @@ static void Map_AMD_Topology(void *arg)
 		.EAX = {0}, .EBX = {0}, .ECX = {0}, .EDX = {0}
 	};
 
+	bool CPU_Complex = true;
+
 	Cache_Topology(Core);
 
 	RDMSR(Core->T.Base, MSR_IA32_APICBASE);
@@ -2153,30 +2155,34 @@ static void Map_AMD_Topology(void *arg)
 		Core->T.Cluster.CMP = leaf8000001e.EBX.CompUnitId;
 	    }
 	    break;
-	case AMD_Zen:
+	/* Zen APU */
 	case AMD_Zen_APU:
-	case AMD_ZenPlus:
 	case AMD_ZenPlus_APU:
 	case AMD_Zen_Dali:
-	case AMD_EPYC_Rome_CPK:
 	case AMD_Zen2_Renoir:
 	case AMD_Zen2_LCN:
-	case AMD_Zen2_MTS:
 	case AMD_Zen2_Ariel:
 	case AMD_Zen2_Jupiter:
 	case AMD_Zen2_Galileo:
 	case AMD_Zen2_MDN:
-	case AMD_Zen3_VMR:
 	case AMD_Zen3_CZN:
-	case AMD_EPYC_Milan:
-	case AMD_Zen3_Chagall:
-	case AMD_Zen3_Badami:
 	case AMD_Zen3Plus_RMB:
-	case AMD_Zen4_Genoa:
-	case AMD_Zen4_RPL:
 	case AMD_Zen4_PHX:
 	case AMD_Zen4_HWK:
 	case AMD_Zen4_PHX2:
+		CPU_Complex = false;
+		fallthrough;
+	/* Zen CPU Complex */
+	case AMD_Zen:
+	case AMD_ZenPlus:
+	case AMD_EPYC_Rome_CPK:
+	case AMD_Zen2_MTS:
+	case AMD_Zen3_VMR:
+	case AMD_EPYC_Milan:
+	case AMD_Zen3_Chagall:
+	case AMD_Zen3_Badami:
+	case AMD_Zen4_Genoa:
+	case AMD_Zen4_RPL:
 	case AMD_Zen4_Bergamo:
 	case AMD_Zen4_STP:
 	case AMD_Family_17h:
@@ -2307,9 +2313,12 @@ static void Map_AMD_Topology(void *arg)
 		/* CCD has to remain within range values from 0 to 7	*/
 		factor = factor & (Core->T.CoreID < 32);
 
-		Core->T.Cluster.Node=leaf8000001e.ECX.NodeId;
+		Core->T.Cluster.Node = leaf8000001e.ECX.NodeId;
+
+	      if (CPU_Complex == true ) {
 		Core->T.Cluster.CCD = (Core->T.CoreID >> 3) << factor;
 		Core->T.Cluster.CCX = Core->T.CoreID >> 2;
+	      }
 	    } else {	/*	Fallback algorithm.			*/
 		Core->T.ApicID    = leaf1_ebx.Init_APIC_ID;
 		Core->T.PackageID = leaf1_ebx.Init_APIC_ID
