@@ -6743,7 +6743,9 @@ void Counters(unsigned int iter)
 		ClientFollowService(&localService, &RO(Shm)->Proc.Service, 0);
 	}
 	idx = sdx;
-	for (cpu=0;(cpu < RO(Shm)->Proc.CPU.Count) && !BITVAL(Shutdown, SYNC);cpu++)
+	for (cpu = 0;
+		(cpu < RO(Shm)->Proc.CPU.Count) && !BITVAL(Shutdown, SYNC);
+			cpu++)
 	{
 	    if (!BITVAL(RO(Shm)->Cpu[cpu].OffLine, HW)) {
 		struct FLIP_FLOP *CFlop = \
