@@ -10883,6 +10883,7 @@ static	struct {
 		{_Lunarlake,		1, 1, 1, 0},	/* 06_BD */
 		{_Arrowlake,		1, 1, 1, 0},	/* 06_C6 */
 		{_Arrowlake_H,		1, 1, 1, 0},	/* 06_C5 */
+		{_Arrowlake_U,		1, 1, 1, 0},	/* 06_B5 */
 		{_Pantherlake,		1, 1, 1, 0},	/* 06_CC */
 		{_Clearwater_Forest,	1, 1, 1, 0}	/* 06_DD */
 	};
@@ -14920,10 +14921,11 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
     case Raptorlake:							\
     case Raptorlake_P:							\
     case Raptorlake_S:							\
-    case Lunarlake:							\
-    case Arrowlake:							\
-    case Arrowlake_H:							\
-    case Pantherlake:							\
+    case LunarLake:							\
+    case ArrowLake:							\
+    case ArrowLake_H:							\
+    case ArrowLake_U:							\
+    case PantherLake:							\
 	ADL_SA(PRIVATE(OF(PCU)).BAR);					\
 	break;								\
     }									\
