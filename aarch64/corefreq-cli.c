@@ -4733,8 +4733,8 @@ void Power(unsigned int iter)
 	idx += ldx;
 
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(PLATFORM); pw++) {
-		rdx = sprintf(&out[idx], "%.*s" "%6.2f%6.2f%6.2f",
-			pw == PWR_DOMAIN(PKG) ? 1 : 2, hSpace,
+		rdx = sprintf(&out[idx], "%.*s" "%6.2f %5.1f %6.2f",
+			pw == PWR_DOMAIN(PKG) ? 0 : 1, hSpace,
 			RO(Shm)->Proc.State.Energy[pw].Limit[SENSOR_LOWEST],
 			RO(Shm)->Proc.State.Energy[pw].Current,
 			RO(Shm)->Proc.State.Energy[pw].Limit[SENSOR_HIGHEST]);
@@ -4746,8 +4746,8 @@ void Power(unsigned int iter)
 	idx += 10;
 
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(PLATFORM); pw++) {
-		rdx = sprintf(&out[idx], "%.*s" "%6.2f%6.2f%6.2f",
-			pw == PWR_DOMAIN(PKG) ? 1 : 2, hSpace,
+		rdx = sprintf(&out[idx], "%.*s" "%6.2f %5.1f %6.2f",
+			pw == PWR_DOMAIN(PKG) ? 0 : 1, hSpace,
 			RO(Shm)->Proc.State.Power[pw].Limit[SENSOR_LOWEST],
 			RO(Shm)->Proc.State.Power[pw].Current,
 			RO(Shm)->Proc.State.Power[pw].Limit[SENSOR_HIGHEST]);
