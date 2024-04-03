@@ -7388,7 +7388,8 @@ static PROCESSOR_SPECIFIC AMD_Zen3Plus_RMB_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD Ryzen 3 7335U",	\
 			"AMD Ryzen 5 7535HS",	\
-			"AMD Ryzen 5 7535H"	),
+			"AMD Ryzen 5 7535H",	\
+			"AMD Ryzen 3 PRO 7335U" ),
 	.Boost = {+13, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_REMBRANDT_R,
@@ -7400,8 +7401,35 @@ static PROCESSOR_SPECIFIC AMD_Zen3Plus_RMB_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 5 7535U"),
+	.Brand = ZLIST( "AMD Ryzen 5 7235HS",	\
+			"AMD Ryzen 5 7235H"	),	/* zh-cn */
+	.Boost = {+10, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_REMBRANDT_R,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 5 7535U",	\
+			"AMD Ryzen 5 PRO 7535U" ),
 	.Boost = {+17, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_REMBRANDT_R,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 7 7435HS",	\
+			"AMD Ryzen 7 7435H"	),	/* zh-cn */
+	.Boost = {+14, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_REMBRANDT_R,
 	.TgtRatioUnlocked = 1,
@@ -7437,7 +7465,8 @@ static PROCESSOR_SPECIFIC AMD_Zen3Plus_RMB_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 7 7736U"),
+	.Brand = ZLIST( "AMD Ryzen 7 7736U",	\
+			"AMD Ryzen 7 PRO 7735U" ),
 	.Boost = {+20, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_REMBRANDT_R,
@@ -7930,7 +7959,20 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 9 7845HX"),
+	.Brand = ZLIST("AMD Ryzen 9 7940HX"),
+	.Boost = {+28, +1},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_DRAGON_RANGE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 9 7845HX",	\
+			"AMD Ryzen 9 7840HX"	),
 	.Boost = {+22, +1},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_DRAGON_RANGE,
