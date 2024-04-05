@@ -7777,7 +7777,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 };
 static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	{
-	.Brand = ZLIST("AMD Ryzen 9 PRO 7945"),
+	.Brand = ZLIST( "AMD Ryzen 9 PRO 7945", 	\
+			"AMD Ryzen Embedded 7945"	),
 	.Boost = {+17, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RAPHAEL,
@@ -7790,7 +7791,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 7 PRO 7745"),
+	.Brand = ZLIST( "AMD Ryzen 7 PRO 7745", 	\
+			"AMD Ryzen Embedded 7745"	),
 	.Boost = {+15, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RAPHAEL,
@@ -7803,7 +7805,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 5 PRO 7645"),
+	.Brand = ZLIST( "AMD Ryzen 5 PRO 7645", 	\
+			"AMD Ryzen Embedded 7645"	),
 	.Boost = {+13, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RAPHAEL,
@@ -7868,8 +7871,9 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD Ryzen 9 7900X",	\
-			"AMD Ryzen 7 7700X"	),
+	.Brand = ZLIST( "AMD Ryzen 9 7900X",		\
+			"AMD Ryzen 7 7700X",		\
+			"AMD Ryzen Embedded 7700X"	),
 	.Boost = {+9, +1},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RAPHAEL,
@@ -7882,7 +7886,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 5 7600X"),
+	.Brand = ZLIST( "AMD Ryzen 5 7600X",		\
+			"AMD Ryzen Embedded 7600X"	),
 	.Boost = {+6, +1},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RAPHAEL,
@@ -8112,7 +8117,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 7 8845HS",		\
-			"AMD Ryzen 7 8845H" /* zh-cn */ ),
+			"AMD Ryzen 7 8845H", /* zh-cn */\
+			"AMD Ryzen Embedded 8845HS" ),
 	.Boost = {+13, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PHOENIX_R,
@@ -8126,7 +8132,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD Ryzen 7 8840HS",		\
 			"AMD Ryzen 7 8840H", /* zh-cn */\
-			"AMD Ryzen 7 8840U"		),
+			"AMD Ryzen 7 8840U",		\
+			"AMD Ryzen Embedded 8840U"	),
 	.Boost = {+18, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PHOENIX_R,
@@ -8139,7 +8146,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 5 8645HS",		\
-			"AMD Ryzen 5 8645H" /* zh-cn */ ),
+			"AMD Ryzen 5 8645H", /* zh-cn */\
+			"AMD Ryzen Embedded 8645HS"	),
 	.Boost = {+7, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PHOENIX_R,
@@ -8152,7 +8160,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 5 8640HS",		\
-			"AMD Ryzen 5 8640U"		),
+			"AMD Ryzen 5 8640U",		\
+			"AMD Ryzen Embedded 8640U"	),
 	.Boost = {+14, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PHOENIX_R,
