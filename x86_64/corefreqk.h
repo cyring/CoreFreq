@@ -8102,7 +8102,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHX_Specific[] = {
 };
 static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 	{
-	.Brand = ZLIST( "AMD Ryzen 9 8945HS",		\
+	.Brand = ZLIST( "AMD Ryzen 9 PRO 8945HS",	\
+			"AMD Ryzen 9 8945HS",		\
 			"AMD Ryzen 9 8945H", /* zh-cn */\
 			"AMD Ryzen 9 8940H"		),
 	.Boost = {+12, 0},
@@ -8116,7 +8117,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD Ryzen 7 8845HS",		\
+	.Brand = ZLIST( "AMD Ryzen 7 PRO 8845HS",	\
+			"AMD Ryzen 7 8845HS",		\
 			"AMD Ryzen 7 8845H", /* zh-cn */\
 			"AMD Ryzen Embedded 8845HS" ),
 	.Boost = {+13, 0},
@@ -8130,7 +8132,9 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD Ryzen 7 8840HS",		\
+	.Brand = ZLIST( "AMD Ryzen 7 PRO 8840HS",	\
+			"AMD Ryzen 7 PRO 8840U",	\
+			"AMD Ryzen 7 8840HS",		\
 			"AMD Ryzen 7 8840H", /* zh-cn */\
 			"AMD Ryzen 7 8840U",		\
 			"AMD Ryzen Embedded 8840U"	),
@@ -8145,7 +8149,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD Ryzen 5 8645HS",		\
+	.Brand = ZLIST( "AMD Ryzen 5 PRO 8645HS",	\
+			"AMD Ryzen 5 8645HS",		\
 			"AMD Ryzen 5 8645H", /* zh-cn */\
 			"AMD Ryzen Embedded 8645HS"	),
 	.Boost = {+7, 0},
@@ -8159,7 +8164,9 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD Ryzen 5 8640HS",		\
+	.Brand = ZLIST( "AMD Ryzen 5 PRO 8640HS",	\
+			"AMD Ryzen 5 PRO 8640U",	\
+			"AMD Ryzen 5 8640HS",		\
 			"AMD Ryzen 5 8640U",		\
 			"AMD Ryzen Embedded 8640U"	),
 	.Boost = {+14, 0},
@@ -8173,7 +8180,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD Ryzen 5 8540U",		\
+	.Brand = ZLIST( "AMD Ryzen 5 PRO 8540U",	\
+			"AMD Ryzen 5 8540U",		\
 			"AMD Ryzen 3 8440U"		),
 	.Boost = {+17, 0},
 	.Param.Offset = {0, 0, 0},
