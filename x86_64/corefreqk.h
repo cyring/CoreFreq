@@ -8194,7 +8194,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 7 8700G"),
+	.Brand = ZLIST( "AMD Ryzen 7 8700F",		\
+			"AMD Ryzen 7 8700G"		),
 	.Boost = {+9, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PHOENIX_R,
@@ -8208,6 +8209,18 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 8600G"),
 	.Boost = {+7, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PHOENIX_R,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 5 8400F"),
+	.Boost = {+5, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PHOENIX_R,
 	.TgtRatioUnlocked = 1,
