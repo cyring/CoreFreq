@@ -156,6 +156,7 @@
 #define MSR_HSW_EP_UNCORE_PERF_FIXED_CTR_CTRL	0x00000703
 
 #define MSR_HSW_UNCORE_RATIO_LIMIT		0x00000620
+#define MSR_HSW_UNCORE_PERF_STATUS		0x00000621
 
 #ifndef MSR_CONFIG_TDP_NOMINAL
 	#define MSR_CONFIG_TDP_NOMINAL		0x00000648
@@ -1652,7 +1653,7 @@ typedef union
 */
 
 typedef union
-{	/* 06_3D/06_3F/06_47/06_4F/06_55/06_56/06_57/06_66/06_85/06_8E/06_9E */
+{ /*[06_3C]/06_3D/06_3F/06_47/06_4F/06_55/06_56/06_57/06_66/06_85/06_8E/06_9E */
 	unsigned long long	value;
 	struct
 	{
@@ -1663,6 +1664,24 @@ typedef union
 		ReservedBits2	: 64-15;
 	};
 } UNCORE_RATIO_LIMIT;
+
+typedef union
+{ /* 06_3C/[06_3D]/06_3F/06_45/06_46/[06_47]/06_4F/06_55/[06_56]/06_57/06_8C */
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		CurrentRatio	:  7-0,
+		ReservedBits1	: 16-7,
+		CurrentVID	: 32-16,
+		ReservedBits2	: 64-32;
+	};
+} UNCORE_PERF_STATUS;
+/* Tiger Lake/U [06_8C]		CurrentVID / 8192
+	Idle	0x182f001a	->	0.7557V
+	Stress	0x1b770023	->	0.8582V
+	Turbo	0x1bf20024	->	0.8732V
+*/
 
 typedef union
 {
