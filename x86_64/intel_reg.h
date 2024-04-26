@@ -770,9 +770,12 @@ typedef union
 		L1_HW_IP_Prefetch	:  4-3,  /* NHM, SNB		*/
 		L1_NPP_Prefetch		:  5-4,  /* DCU Next Page Prefetcher */
 		L2_AMP_Prefetch 	:  6-5,  /* 12th, 13th Gen; Xeon 4th */
-		ReservedBits2		: 11-6,
+		LLC_Page_Prefetch	:  7-6,  /* 06_AA: 1=disabled	*/
+		AOP_Prefetch		:  8-7,  /* 06_AA: 1=disabled	*/
+		Stream_Prefetch_CodeFetch: 9-8,  /* 06_AA: 1=disabled	*/
+		ReservedBits1		: 11-9,
 		DISABLE_THREE_STRIKE_CNT: 12-11, /* Errata [ADL021]	*/
-		ReservedBits3		: 64-12;
+		ReservedBits2		: 64-12;
 	};
 	struct
 	{
@@ -1215,14 +1218,23 @@ typedef union
 		unsigned long long int
 		BD_PROCHOT	:  1-0,  /* BiDirectional PROCHOT	*/
 		C1E		:  2-1,
-		ReservedBits1	: 19-2,
-		R2H_Disable	: 20-19, /* SKL,KBL,CFL:Race To Halt Disable=1*/
-		EEO_Disable	: 21-20, /* SKL,KBL,CFL: Energy opt. Disable=1*/
-		ReservedBits2	: 25-21,
-		EBP_OS_Control	: 26-25, /* SNB: 0=EBP controlled by OS */
-		ReservedBits3	: 30-26,
+		SAPM_IMC_PC2	:  3-2,  /* 06_AA: 1=Enable self-refresh PC2 */
+		FAST_BRK_SNP	:  4-3,  /* 06_AA			*/
+		ReservedBits1	: 18-4,
+		PPPO		: 19-18, /*Power Performance Platform Override*/
+		EEO_Disable	: 20-19, /* SKL,KBL,CFL: Energy opt. Disable=1*/
+		R2H_Disable	: 21-20, /* SKL,KBL,CFL:Race To Halt Disable=1*/
+		DIS_PROCHOT_OUT : 22-21, /* 06_AA: 1=Disable Prochot output */
+		PROCHOT_RESPONSE: 23-22, /* 06_AA: 1=ProcHot configurable resp*/
+		VR_THERM_ALERT_L: 24-23, /* 06_AA: 1=ProcHot bits Locked */
+		VR_THERM_ALERT_D: 25-24, /* 06_AA: 1=ProcHot Signal Disabled */
+		EBP_OS_Control	: 26-25, /* SNB:0=EBP controlled by OS|RING_EE*/
+		SA_OPTIMIZATION_D:27-26, /* 06_AA: 1=Disable SA optimization */
+		OOK_Disable	: 28-27, /* 06_AA: 1=Disable OOK	*/
+		HWP_AUTONOMOUS_D: 29-28, /* 06_AA: Disable HWP autonomous mode*/
+		ReservedBits2	: 30-29,
 		CST_PreWake_Dis : 31-30, /* 1=disable Cstate Pre-Wake [CFL/S] */
-		ReservedBits4	: 64-31;
+		ReservedBits3	: 64-31;
 	};
 } POWER_CONTROL;
 
