@@ -9138,13 +9138,6 @@ static void Intel_DCU_Technology(CORE_RO *Core) 		/*Per Core */
 		ToggleFeature = 1;
 		break;
 	}
-	switch (L1_NPP_PREFETCH_Disable) {
-	case COREFREQ_TOGGLE_OFF:
-	case COREFREQ_TOGGLE_ON:
-		MiscFeatCtrl.L1_NPP_Prefetch = L1_NPP_PREFETCH_Disable;
-		ToggleFeature = 1;
-		break;
-	}
     if (ToggleFeature == 1)
     {
 	WRMSR(MiscFeatCtrl, MSR_MISC_FEATURE_CONTROL);
@@ -9169,11 +9162,6 @@ static void Intel_DCU_Technology(CORE_RO *Core) 		/*Per Core */
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch, Core->Bind);
     } else {
 	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch, Core->Bind);
-    }
-    if (MiscFeatCtrl.L1_NPP_Prefetch == 1) {
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_NPP_Prefetch, Core->Bind);
-    } else {
-	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_NPP_Prefetch, Core->Bind);
     }
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->DCU_Mask, Core->Bind);
 
@@ -9227,18 +9215,9 @@ static void Intel_DCU_Technology(CORE_RO *Core) 		/*Per Core */
   }
 }
 
-static void Intel_Core_MicroArchitecture(CORE_RO *Core) 	/* Per P-Core */
-{ /* 06_7D, 06_7E, 06_8C, 06_8D, 06_97, 06_9A, 06_B7, 06_BA, 06_BF, MTL */
-  if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
-  {
-    switch (Core->T.Cluster.Hybrid.CoreType) {
-    case Hybrid_Atom:
-	/*	No MSR_CORE_UARCH_CTL(0x541) register with E-Core	*/
-	break;
-    case Hybrid_Core:
-      {
+static void Intel_Core_MicroArchControl(CORE_RO *Core)
+{
 	CORE_UARCH_CTL Core_Uarch_Ctl = {.value = 0};
-	MISC_FEATURE_CONTROL MiscFeatCtrl = {.value = 0};
 
 	RDMSR(Core_Uarch_Ctl, MSR_CORE_UARCH_CTL);
 
@@ -9255,6 +9234,20 @@ static void Intel_Core_MicroArchitecture(CORE_RO *Core) 	/* Per P-Core */
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Scrubbing, Core->Bind);
 	}
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->L1_Scrub_Mask, Core->Bind);
+}
+
+static void Intel_Core_MicroArchitecture(CORE_RO *Core) 	/* Per P-Core */
+{ /* 06_7D, 06_7E, 06_8C, 06_8D, 06_97, 06_9A, 06_B7, 06_BA, 06_BF, MTL */
+  if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
+  {
+    switch (Core->T.Cluster.Hybrid.CoreType) {
+    case Hybrid_Atom:
+	/*	No MSR_CORE_UARCH_CTL(0x541) register with E-Core	*/
+	break;
+    case Hybrid_Core:
+      {
+	MISC_FEATURE_CONTROL MiscFeatCtrl = {.value = 0};
 
 	RDMSR(MiscFeatCtrl, MSR_MISC_FEATURE_CONTROL);
 
@@ -9272,7 +9265,9 @@ static void Intel_Core_MicroArchitecture(CORE_RO *Core) 	/* Per P-Core */
 	    BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_AMP_Prefetch, Core->Bind);
 	}
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PCORE_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->L2_AMP_Mask, Core->Bind);
+
+	Intel_Core_MicroArchControl(Core);
       }
 	break;
     case Hybrid_RSVD1:
@@ -9282,6 +9277,27 @@ static void Intel_Core_MicroArchitecture(CORE_RO *Core) 	/* Per P-Core */
 	break;
     }
   }
+}
+
+static void Intel_Ultra7_MicroArchitecture(CORE_RO *Core)
+{	/* 06_AA, 06_AB, 06_AC						*/
+	MISC_FEATURE_CONTROL MiscFeatCtrl = {.value = 0};
+	RDMSR(MiscFeatCtrl, MSR_MISC_FEATURE_CONTROL);
+
+	switch (L1_NPP_PREFETCH_Disable) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		MiscFeatCtrl.L1_NPP_Prefetch = L1_NPP_PREFETCH_Disable;
+		WRMSR(MiscFeatCtrl, MSR_MISC_FEATURE_CONTROL);
+		RDMSR(MiscFeatCtrl, MSR_MISC_FEATURE_CONTROL);
+		break;
+	}
+	if (MiscFeatCtrl.L1_NPP_Prefetch == 1) {
+	    BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_NPP_Prefetch, Core->Bind);
+	} else {
+	    BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_NPP_Prefetch, Core->Bind);
+	}
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->DCU_Mask, Core->Bind);
 }
 
 static void SpeedStep_Technology(CORE_RO *Core) 		/*Per Package*/
@@ -12377,7 +12393,8 @@ static void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->DCU_Mask  , Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->PCORE_Mask, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->L1_Scrub_Mask, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->L2_AMP_Mask, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->ECORE_Mask, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
@@ -13468,7 +13485,7 @@ static void PerCore_Icelake_Query(void *arg)
 
 	PerCore_Skylake_Query(arg);
 
-	Intel_Core_MicroArchitecture(Core);
+	Intel_Core_MicroArchControl(Core);
 }
 
 static void PerCore_Tigerlake_Query(void *arg)
@@ -13477,7 +13494,35 @@ static void PerCore_Tigerlake_Query(void *arg)
 
 	PerCore_Kaby_Lake_Query(arg);
 
+	Intel_Core_MicroArchControl(Core);
+}
+
+static void PerCore_Alderlake_Query(void *arg)
+{
+	CORE_RO *Core = (CORE_RO *) arg;
+
+	PerCore_Kaby_Lake_Query(arg);
+
 	Intel_Core_MicroArchitecture(Core);
+}
+
+static void PerCore_Raptorlake_Query(void *arg)
+{
+	CORE_RO *Core = (CORE_RO *) arg;
+
+	PerCore_Skylake_Query(arg);
+
+	Intel_Core_MicroArchitecture(Core);
+}
+
+static void PerCore_Meteorlake_Query(void *arg)
+{
+	CORE_RO *Core = (CORE_RO *) arg;
+
+	PerCore_Kaby_Lake_Query(arg);
+
+	Intel_Core_MicroArchitecture(Core);
+	Intel_Ultra7_MicroArchitecture(Core);
 }
 
 static void PerCore_AMD_Family_0Fh_Query(void *arg)

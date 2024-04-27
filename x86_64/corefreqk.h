@@ -1652,6 +1652,12 @@ static void PerCore_Icelake_Query(void *arg) ;
 
 static void PerCore_Tigerlake_Query(void *arg) ;
 
+static void PerCore_Alderlake_Query(void *arg) ;
+
+static void PerCore_Raptorlake_Query(void *arg) ;
+
+static void PerCore_Meteorlake_Query(void *arg) ;
+
 static void Query_AMD_Family_0Fh(unsigned int cpu) ;
 static void PerCore_AMD_Family_0Fh_Query(void *arg) ;
 static void Start_AMD_Family_0Fh(void *arg) ;
@@ -11076,7 +11082,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [Alderlake_S] = {							/* 80*/
 	.Signature = _Alderlake_S,
 	.Query = Query_Skylake,
-	.Update = PerCore_Tigerlake_Query,
+	.Update = PerCore_Alderlake_Query,
 	.Start = Start_Alderlake,
 	.Stop = Stop_Alderlake,
 	.Exit = NULL,
@@ -11100,7 +11106,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [Alderlake_H] = {							/* 81*/
 	.Signature = _Alderlake_H,
 	.Query = Query_Skylake,
-	.Update = PerCore_Tigerlake_Query,
+	.Update = PerCore_Alderlake_Query,
 	.Start = Start_Alderlake,
 	.Stop = Stop_Alderlake,
 	.Exit = NULL,
@@ -11149,7 +11155,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [Meteorlake_M] = {							/* 83*/
 	.Signature = _Meteorlake_M,
 	.Query = Query_Skylake,
-	.Update = PerCore_Tigerlake_Query,
+	.Update = PerCore_Meteorlake_Query,
 	.Start = Start_Alderlake,
 	.Stop = Stop_Alderlake,
 	.Exit = NULL,
@@ -11173,7 +11179,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [Meteorlake_N] = {							/* 84*/
 	.Signature = _Meteorlake_N,
 	.Query = Query_Skylake,
-	.Update = PerCore_Tigerlake_Query,
+	.Update = PerCore_Meteorlake_Query,
 	.Start = Start_Alderlake,
 	.Stop = Stop_Alderlake,
 	.Exit = NULL,
@@ -11197,7 +11203,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [Meteorlake_S] = {							/* 85*/
 	.Signature = _Meteorlake_S,
 	.Query = Query_Skylake,
-	.Update = PerCore_Tigerlake_Query,
+	.Update = PerCore_Meteorlake_Query,
 	.Start = Start_Alderlake,
 	.Stop = Stop_Alderlake,
 	.Exit = NULL,
@@ -11222,7 +11228,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [Raptorlake] = {							/* 86*/
 	.Signature = _Raptorlake,
 	.Query = Query_Skylake,
-	.Update = PerCore_Icelake_Query,
+	.Update = PerCore_Raptorlake_Query,
 	.Start = Start_Alderlake,
 	.Stop = Stop_Alderlake,
 	.Exit = NULL,
@@ -11246,7 +11252,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [Raptorlake_P] = {							/* 87*/
 	.Signature = _Raptorlake_P,
 	.Query = Query_Skylake,
-	.Update = PerCore_Icelake_Query,
+	.Update = PerCore_Raptorlake_Query,
 	.Start = Start_Alderlake,
 	.Stop = Stop_Alderlake,
 	.Exit = NULL,
@@ -11270,7 +11276,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [Raptorlake_S] = {							/* 88*/
 	.Signature = _Raptorlake_S,
 	.Query = Query_Skylake,
-	.Update = PerCore_Icelake_Query,
+	.Update = PerCore_Raptorlake_Query,
 	.Start = Start_Alderlake,
 	.Stop = Stop_Alderlake,
 	.Exit = NULL,
@@ -11294,7 +11300,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [LunarLake] = { 							/* 89*/
 	.Signature = _Lunarlake,
 	.Query = Query_Skylake,
-	.Update = PerCore_Icelake_Query,
+	.Update = PerCore_Raptorlake_Query,
 	.Start = Start_Alderlake,
 	.Stop = Stop_Alderlake,
 	.Exit = NULL,
@@ -11318,7 +11324,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [ArrowLake] = { 							/* 90*/
 	.Signature = _Arrowlake,
 	.Query = Query_Skylake,
-	.Update = PerCore_Icelake_Query,
+	.Update = PerCore_Raptorlake_Query,
 	.Start = Start_Alderlake,
 	.Stop = Stop_Alderlake,
 	.Exit = NULL,
@@ -11342,7 +11348,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [ArrowLake_H] = {							/* 91*/
 	.Signature = _Arrowlake_H,
 	.Query = Query_Skylake,
-	.Update = PerCore_Icelake_Query,
+	.Update = PerCore_Raptorlake_Query,
 	.Start = Start_Alderlake,
 	.Stop = Stop_Alderlake,
 	.Exit = NULL,
@@ -11366,7 +11372,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [ArrowLake_U] = {							/* 92*/
 	.Signature = _Arrowlake_U,
 	.Query = Query_Skylake,
-	.Update = PerCore_Icelake_Query,
+	.Update = PerCore_Raptorlake_Query,
 	.Start = Start_Alderlake,
 	.Stop = Stop_Alderlake,
 	.Exit = NULL,
@@ -11390,7 +11396,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [PantherLake] = {							/* 93*/
 	.Signature = _Pantherlake,
 	.Query = Query_Skylake,
-	.Update = PerCore_Icelake_Query,
+	.Update = PerCore_Raptorlake_Query,
 	.Start = Start_Alderlake,
 	.Stop = Stop_Alderlake,
 	.Exit = NULL,

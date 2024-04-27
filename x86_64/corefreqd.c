@@ -1624,7 +1624,7 @@ void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 
 	RO(Shm)->Proc.Technology.L1_Scrubbing = BITWISEAND_CC(LOCKLESS,
 						RW(Proc)->L1_Scrubbing,
-						RO(Proc)->PCORE_Mask) != 0;
+						RO(Proc)->L1_Scrub_Mask) != 0;
 
 	RO(Shm)->Proc.Technology.L2_HW_Prefetch = BITCMP_CC(LOCKLESS,
 						RW(Proc)->L2_HW_Prefetch,
@@ -1636,7 +1636,7 @@ void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 
 	RO(Shm)->Proc.Technology.L2_AMP_Prefetch = BITWISEAND_CC(LOCKLESS,
 						RW(Proc)->L2_AMP_Prefetch,
-						RO(Proc)->PCORE_Mask) != 0;
+						RO(Proc)->L2_AMP_Mask) != 0;
 
 	RO(Shm)->Proc.Technology.L2_NLP_Prefetch = BITWISEAND_CC(LOCKLESS,
 						RW(Proc)->L2_NLP_Prefetch,
