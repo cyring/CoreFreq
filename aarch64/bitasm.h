@@ -53,8 +53,8 @@ typedef unsigned int		Bit32;
 #define InitCC(_val)		{[0 ... CORE_WORD_TOP(CORE_COUNT) - 1] = _val}
 #endif
 
-#define LOCKLESS " "
-#define BUS_LOCK "lock "
+#define LOCKLESS LOCK_LESS
+#define BUS_LOCK FULL_LOCK
 
 #define BARRIER(pfx)							\
 __asm__ volatile							\
@@ -205,142 +205,196 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #else /* LEGACY */
 
+#define	_BITSET_PRE_INST_FULL_LOCK					\
+	"1:"					"\n\t"			\
+		"ldxr	x11, [%[addr]]" 	"\n\t"			\
+
+#define	_BITSET_PRE_INST_LOCK_LESS					\
+		"ldr	x11, [%[addr]]" 	"\n\t"			\
+
+#define	_BITSET_COMMON_INST						\
+		"tst	x11, x12"		"\n\t"			\
+		"cset	w10, ne"		"\n\t"			\
+		"strb	w10, %[ret]"		"\n\t"			\
+		"orr	x11, x11, x12"		"\n\t"			\
+
+#define	_BITSET_POST_INST_FULL_LOCK					\
+		"stxr	w9, x11, [%[addr]]"	"\n\t"			\
+		"cbnz	w9, 1b" 		"\n\t"			\
+		"dmb	ish"
+
+#define	_BITSET_POST_INST_LOCK_LESS					\
+		"str	x11, [%[addr]]" 				\
+
+#define	_BITSET_CLOBBERS_FULL_LOCK					\
+		: "cc", "memory", "%w9", "%w10", "%x11", "%x12" 	\
+
+#define	_BITSET_CLOBBERS_LOCK_LESS					\
+		: "cc", "memory", "%w10", "%x11", "%x12"		\
+
 #define _BITSET_GPR(_lock, _base, _offset)				\
 ({									\
-	const __typeof__(_base) *_adr = &_base; 			\
 	volatile unsigned char _ret;					\
 									\
 	__asm__ volatile						\
 	(								\
 		"mov	x12, #1"		"\n\t"			\
 		"lsl	x12, x12, %[offset]"	"\n\t"			\
-		"ldr	x13, %[base]"		"\n\t"			\
-		"ldr	x11, [x13]"		"\n\t"			\
-		"tst	x11, x12"		"\n\t"			\
-		"cset	w10, ne"		"\n\t"			\
-		"orr	x11, x11, x12"		"\n\t"			\
-		"str	x11, [x13]"		"\n\t"			\
-		"strb	w10, %[ret]"					\
+		_BITSET_PRE_INST_##_lock				\
+		_BITSET_COMMON_INST					\
+		_BITSET_POST_INST_##_lock				\
 		: [ret] "=m" (_ret)					\
-		: [base] "m" (_adr),					\
+		: [addr] "r" (&_base),					\
 		  [offset] "r" (_offset)				\
-		: "cc", "memory", "%w10", "%x11", "%x12", "%x13"	\
+		_BITSET_CLOBBERS_##_lock				\
 	);								\
 	_ret;								\
 })
 
 #define _BITSET_IMM(_lock, _base, _imm6)				\
 ({									\
-	const __typeof__(_base) *_adr = &_base; 			\
 	volatile unsigned char _ret;					\
 									\
 	__asm__ volatile						\
 	(								\
 		"mov	x12, #1"		"\n\t"			\
 		"lsl	x12, x12, %[imm6]"	"\n\t"			\
-		"ldr	x13, %[base]"		"\n\t"			\
-		"ldr	x11, [x13]"		"\n\t"			\
-		"tst	x11, x12"		"\n\t"			\
-		"cset	w10, ne"		"\n\t"			\
-		"orr	x11, x11, x12"		"\n\t"			\
-		"str	x11, [x13]"		"\n\t"			\
-		"strb	w10, %[ret]"					\
+		_BITSET_PRE_INST_##_lock				\
+		_BITSET_COMMON_INST					\
+		_BITSET_POST_INST_##_lock				\
 		: [ret] "=m" (_ret)					\
-		: [base] "m" (_adr),					\
+		: [addr] "r" (&_base),					\
 		  [imm6] "i" (_imm6)					\
-		: "cc", "memory", "%w10", "%x11", "%x12", "%x13"	\
+		_BITSET_CLOBBERS_##_lock				\
 	);								\
 	_ret;								\
 })
 
+#define _BITCLR_PRE_INST_FULL_LOCK					\
+	"1:"					"\n\t"			\
+		"ldxr	x11, [%[addr]]" 	"\n\t"			\
+
+#define _BITCLR_PRE_INST_LOCK_LESS					\
+		"ldr	x11, [%[addr]]" 	"\n\t"			\
+
+#define _BITCLR_COMMON_INST						\
+		"tst	x11, x12"		"\n\t"			\
+		"cset	w10, ne"		"\n\t"			\
+		"strb	w10, %[ret]"		"\n\t"			\
+		"bic	x11, x11, x12"		"\n\t"			\
+
+#define _BITCLR_POST_INST_FULL_LOCK					\
+		"stxr	w9, x11, [%[addr]]"	"\n\t"			\
+		"cbnz	w9, 1b" 		"\n\t"			\
+		"dmb	ish"
+
+#define _BITCLR_POST_INST_LOCK_LESS					\
+		"str	x11, [%[addr]]" 				\
+
+#define _BITCLR_CLOBBERS_FULL_LOCK					\
+		: "cc", "memory", "%w9", "%w10", "%x11", "%x12" 	\
+
+#define _BITCLR_CLOBBERS_LOCK_LESS					\
+		: "cc", "memory", "%w10", "%x11", "%x12"		\
+
 #define _BITCLR_GPR(_lock, _base, _offset)				\
 ({									\
-	const __typeof__(_base) *_adr = &_base; 			\
 	volatile unsigned char _ret;					\
 									\
 	__asm__ volatile						\
 	(								\
 		"mov	x12, #1"		"\n\t"			\
 		"lsl	x12, x12, %[offset]"	"\n\t"			\
-		"ldr	x13, %[base]"		"\n\t"			\
-		"ldr	x11, [x13]"		"\n\t"			\
-		"tst	x11, x12"		"\n\t"			\
-		"cset	w10, ne"		"\n\t"			\
-		"bic	x11, x11, x12"		"\n\t"			\
-		"str	x11, [x13]"		"\n\t"			\
-		"strb	w10, %[ret]"					\
+		_BITCLR_PRE_INST_##_lock				\
+		_BITCLR_COMMON_INST					\
+		_BITCLR_POST_INST_##_lock				\
 		: [ret] "=m" (_ret)					\
-		: [base] "m" (_adr),					\
+		: [addr] "r" (&_base),					\
 		  [offset] "r" (_offset)				\
-		: "cc", "memory", "%w10", "%x11", "%x12", "%x13"	\
+		_BITCLR_CLOBBERS_##_lock				\
 	);								\
 	_ret;								\
 })
 
 #define _BITCLR_IMM(_lock, _base, _imm6)				\
 ({									\
-	const __typeof__(_base) *_adr = &_base; 			\
 	volatile unsigned char _ret;					\
 									\
 	__asm__ volatile						\
 	(								\
 		"mov	x12, #1"		"\n\t"			\
 		"lsl	x12, x12, %[imm6]"	"\n\t"			\
-		"ldr	x13, %[base]"		"\n\t"			\
-		"ldr	x11, [x13]"		"\n\t"			\
-		"tst	x11, x12"		"\n\t"			\
-		"cset	w10, ne"		"\n\t"			\
-		"bic	x11, x11, x12"		"\n\t"			\
-		"str	x11, [x13]"		"\n\t"			\
-		"strb	w10, %[ret]"					\
+		_BITCLR_PRE_INST_##_lock				\
+		_BITCLR_COMMON_INST					\
+		_BITCLR_POST_INST_##_lock				\
 		: [ret] "=m" (_ret)					\
-		: [base] "m" (_adr),					\
+		: [addr] "r" (&_base),					\
 		  [imm6] "i" (_imm6)					\
-		: "cc", "memory", "%w10", "%x11", "%x12", "%x13"	\
+		_BITCLR_CLOBBERS_##_lock				\
 	);								\
 	_ret;								\
 })
 
-#define _BIT_TEST_GPR(_base, _offset)					\
+#define _BIT_TEST_PRE_INST_FULL_LOCK					\
+	"1:"					"\n\t"			\
+		"ldxr	x11, [%[addr]]" 	"\n\t"			\
+
+#define _BIT_TEST_PRE_INST_LOCK_LESS					\
+		"ldr	x11, [%[addr]]" 	"\n\t"			\
+
+#define _BIT_TEST_COMMON_INST						\
+		"tst	x11, x12"		"\n\t"			\
+		"cset	w10, ne"		"\n\t"			\
+		"strb	w10, %[ret]"		"\n\t"			\
+
+#define _BIT_TEST_POST_INST_FULL_LOCK					\
+		"stxr	w9, x11, [%[addr]]"	"\n\t"			\
+		"cbnz	w9, 1b" 		"\n\t"			\
+		"dmb	ish"
+
+#define _BIT_TEST_POST_INST_LOCK_LESS					\
+		"#	NOP"
+
+#define _BIT_TEST_CLOBBERS_FULL_LOCK					\
+		: "cc", "memory", "%w9", "%w10", "%x11", "%x12" 	\
+
+#define _BIT_TEST_CLOBBERS_LOCK_LESS					\
+		: "cc", "memory", "%w10", "%x11", "%x12"		\
+
+#define _BIT_TEST_GPR(_lock, _base, _offset)				\
 ({									\
-	const __typeof__(_base) *_adr = &_base; 			\
 	volatile unsigned char _ret;					\
 									\
 	__asm__ volatile						\
 	(								\
 		"mov	x12, #1"		"\n\t"			\
 		"lsl	x12, x12, %[offset]"	"\n\t"			\
-		"ldr	x13, %[base]"		"\n\t"			\
-		"ldr	x11, [x13]"		"\n\t"			\
-		"tst	x11, x12"		"\n\t"			\
-		"cset	w10, ne"		"\n\t"			\
-		"strb	w10, %[ret]"					\
+		_BIT_TEST_PRE_INST_##_lock				\
+		_BIT_TEST_COMMON_INST					\
+		_BIT_TEST_POST_INST_##_lock				\
 		: [ret] "=m" (_ret)					\
-		: [base] "m" (_adr),					\
+		: [addr] "r" (&_base),					\
 		  [offset] "r" (_offset)				\
-		: "cc", "memory", "%w10", "%x11", "%x12", "%x13"	\
+		_BIT_TEST_CLOBBERS_##_lock				\
 	);								\
 	_ret;								\
 })
 
-#define _BIT_TEST_IMM(_base, _imm6)					\
+#define _BIT_TEST_IMM(_lock, _base, _imm6)				\
 ({									\
-	const __typeof__(_base) *_adr = &_base; 			\
 	volatile unsigned char _ret;					\
 									\
 	__asm__ volatile						\
 	(								\
 		"mov	x12, #1"		"\n\t"			\
 		"lsl	x12, x12, %[imm6]"	"\n\t"			\
-		"ldr	x13, %[base]"		"\n\t"			\
-		"ldr	x11, [x13]"		"\n\t"			\
-		"tst	x11, x12"		"\n\t"			\
-		"cset	w10, ne"		"\n\t"			\
-		"strb	w10, %[ret]"					\
+		_BIT_TEST_PRE_INST_##_lock				\
+		_BIT_TEST_COMMON_INST					\
+		_BIT_TEST_POST_INST_##_lock				\
 		: [ret] "=m" (_ret)					\
-		: [base] "m" (_adr),					\
+		: [addr] "r" (&_base),					\
 		  [imm6] "i" (_imm6)					\
-		: "cc", "memory", "%w10", "%x11", "%x12", "%x13"	\
+		_BIT_TEST_CLOBBERS_##_lock				\
 	);								\
 	_ret;								\
 })
@@ -409,14 +463,26 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 	:	_BITCLR_GPR(_lock, _base, _offset)			\
 )
 
-#define BITVAL_2xPARAM(_base, _offset)					\
+#define BITVAL_3xPARAM(_lock, _base, _offset)				\
 (									\
 	__builtin_constant_p(_offset) ? 				\
-		_BIT_TEST_IMM(_base, _offset)				\
-	:	_BIT_TEST_GPR(_base, _offset)				\
+		_BIT_TEST_IMM(_lock, _base, _offset)			\
+	:	_BIT_TEST_GPR(_lock, _base, _offset)			\
 )
 
-#define BITVAL(...)	BITVAL_2xPARAM( __VA_ARGS__ )
+#define BITVAL_2xPARAM(_base, _offset)					\
+(									\
+	BITVAL_3xPARAM(LOCKLESS, _base, _offset)			\
+)
+
+#define BITVAL_DISPATCH( _1, _2, _3, BITVAL_CURSOR, ... )		\
+	BITVAL_CURSOR
+
+#define BITVAL(...)							\
+	BITVAL_DISPATCH(__VA_ARGS__,	BITVAL_3xPARAM, /*3*/		\
+					BITVAL_2xPARAM, /*2*/		\
+					NULL)		/*1*/		\
+							( __VA_ARGS__ )
 
 #define BITCPL(_src)							\
 ({									\

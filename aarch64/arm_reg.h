@@ -390,7 +390,7 @@ typedef union
 		SHA1		: 12-8,
 		SHA2		: 16-12,
 		CRC32		: 20-16,
-		CAS		: 24-20,
+		Atomic		: 24-20,
 		TME		: 28-24,
 		RDM		: 32-28,
 		SHA3		: 36-32,

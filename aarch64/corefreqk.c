@@ -659,7 +659,7 @@ static void Query_Features(void *pArg)
 		iArg->Features->CRC32 = 0;
 		break;
 	}
-	switch (isar0.CAS) {
+	switch (isar0.Atomic) {
 	case 0b0011:
 		iArg->Features->LSE128 = 1;
 		fallthrough;
