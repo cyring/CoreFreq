@@ -139,72 +139,6 @@ __asm__ volatile							\
 #define RDTSC_PMCx1(mem_tsc, ...)					\
 ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
-#if defined(LEGACY) && LEGACY > 0
-
-#define _BITSET_GPR(_lock, _base, _offset)				\
-({									\
-	const __typeof__(_base) _shl = 1LLU << _offset; 		\
-	const unsigned char _ret = ((_base) & (_shl)) != 0;		\
-	_base = (_base) | (_shl);					\
-	_ret;								\
-})
-
-#define _BITSET_IMM(_lock, _base, _imm6)				\
-({									\
-	const __typeof__(_base) _shl = 1LLU << _imm6;			\
-	const unsigned char _ret = ((_base) & (_shl)) != 0;		\
-	_base = (_base) | (_shl);					\
-	_ret;								\
-})
-
-#define _BITCLR_GPR(_lock, _base, _offset)				\
-({									\
-	const __typeof__(_base) _shl = 1LLU << _offset; 		\
-	const unsigned char _ret = ((_base) & (_shl)) != 0;		\
-	_base = (_base) & ~(_shl);					\
-	_ret;								\
-})
-
-#define _BITCLR_IMM(_lock, _base, _imm6)				\
-({									\
-	const __typeof__(_base) _shl = 1LLU << _imm6;			\
-	const unsigned char _ret = ((_base) & (_shl)) != 0;		\
-	_base = (_base) & ~(_shl);					\
-	_ret;								\
-})
-
-#define _BIT_TEST_GPR(_lock, _base, _offset)				\
-({									\
-	const unsigned char _ret = ((_base) & (1LLU << _offset)) != 0;	\
-	_ret;								\
-})
-
-#define _BIT_TEST_IMM(_lock, _base, _imm6)				\
-({									\
-	const unsigned char _ret = ((_base) & (1LLU << _imm6)) != 0;	\
-	_ret;								\
-})
-
-#define _BITWISEAND(_lock, _opl, _opr)					\
-({									\
-	const Bit64 _dest __attribute__ ((aligned (8)))=(_opl) & (_opr);\
-	_dest;								\
-})
-
-#define _BITWISEOR(_lock, _opl, _opr)					\
-({									\
-	const Bit64 _dest __attribute__ ((aligned (8)))=(_opl) | (_opr);\
-	_dest;								\
-})
-
-#define _BITWISEXOR(_lock, _opl, _opr)					\
-({									\
-	const Bit64 _dest __attribute__ ((aligned (8)))=(_opl) ^ (_opr);\
-	_dest;								\
-})
-
-#else /* LEGACY */
-
 #define	_BITSET_PRE_INST_FULL_LOCK					\
 	"1:"					"\n\t"			\
 		"ldxr	x11, [%[addr]]" 	"\n\t"
@@ -516,8 +450,6 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 	_dest;								\
 })
 
-#endif /* LEGACY */
-
 #define BITSET(_lock, _base, _offset)					\
 (									\
 	__builtin_constant_p(_offset) ? 				\
@@ -607,47 +539,6 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define BITSTOR(_lock, _dest, _src)					\
 	_BITSTOR(_lock, _dest, _src)
-
-#define _BITZERO_PRE_INST_FULL_LOCK					\
-	"1:"					"\n\t"			\
-		"ldxr	x11, [%[addr]]" 	"\n\t"
-
-#define _BITZERO_PRE_INST_LOCK_LESS					\
-		"ldr	x11, [%[addr]]" 	"\n\t"
-
-#define _BITZERO_POST_INST_FULL_LOCK					\
-		"stxr	w9, x11, [%[addr]]"	"\n\t"			\
-		"cbnz	w9, 1b" 		"\n\t"			\
-		"dmb	ish"
-
-#define _BITZERO_POST_INST_LOCK_LESS					\
-		"#	NOP"			"\n\t"
-
-#define _BITZERO_CLOBBERS_FULL_LOCK					\
-		: "cc", "memory", "%w9", "%x11"				\
-
-#define _BITZERO_CLOBBERS_LOCK_LESS					\
-		: "cc", "memory", "%x11"				\
-
-#define _BITZERO(_lock, _src)						\
-({									\
-	volatile unsigned char _ret;					\
-									\
-	__asm__ volatile						\
-	(								\
-		_BITZERO_PRE_INST_##_lock				\
-		"cmp	xzr, x11"		"\n\t"			\
-		"cset	%[ret], eq" 		"\n\t"			\
-		_BITZERO_POST_INST_##_lock				\
-		: [ret] "+r" (_ret)					\
-		: [addr] "r" (&_src)					\
-		_BITZERO_CLOBBERS_##_lock				\
-	);								\
-	_ret;								\
-})
-
-#define BITZERO(_lock, _src)						\
-	_BITZERO(_lock, _src)
 
 #define BITBSF(_base, _index)						\
 ({									\
@@ -769,7 +660,7 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 #endif
 
 #if (CORE_COUNT == 64)
-#define BITWISEAND_CC(_lock, _opl, _opr) BITWISEAND(_lock, _opl, _opr)
+#define BITWISEAND_CC(_lock, _opl, _opr) _BITWISEAND(_lock, _opl, _opr)
 #else
 #define BITWISEAND_CC(_lock, _opl, _opr)				\
 ({									\
@@ -783,194 +674,73 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 #endif
 
 #if (CORE_COUNT == 64)
-#define BITSTOR_CC(_lock, _dest, _src) BITSTOR(_lock, _dest, _src)
+#define BITSTOR_CC(_lock, _dest, _src) _BITSTOR(_lock, _dest, _src)
 #else
 #define BITSTOR_CC(_lock, _dest, _src)					\
 ({									\
 	unsigned int cw = 0;						\
 	do {								\
-		BITSTOR(_lock, _dest[cw], _src[cw]);			\
+		_BITSTOR(_lock, _dest[cw], _src[cw]);			\
 	} while (++cw <= CORE_WORD_TOP(CORE_COUNT));			\
 })
 #endif
 
-#define ASM_CMPXCHG16B( _lock, _ret, _tmp,				\
-			_val0, _val1, _reg0, _reg1, _off0, _off1 )	\
-	"add " #_tmp "	,	" #_reg0 ",	#" #_off0"\n\t"		\
-	"ldr " #_val0 " ,	[" #_tmp "]"		"\n\t"		\
-									\
-	"add " #_tmp "	,	" #_reg1 ",	#" #_off0"\n\t"		\
-	"ldr " #_val1 "	,	[" #_tmp "]"		"\n\t"		\
-									\
-	"cmp " #_val0 " , 	" #_val1 		"\n\t"		\
-	"cset " #_ret "	,	eq" 			"\n\t"		\
-									\
-	"add " #_tmp "	,	" #_reg0 ",	#" #_off1"\n\t"		\
-	"ldr " #_val0 " ,	[" #_tmp "]"		"\n\t"		\
-									\
-	"add " #_tmp "	,	" #_reg1 ",	#" #_off1"\n\t"		\
-	"ldr " #_val1 " ,	[" #_tmp "]"		"\n\t"		\
-									\
-	"cmp " #_val0 " ,	" #_val1		"\n\t"		\
-	"cset " #_tmp " ,	eq" 			"\n\t"		\
-									\
-	"and " #_ret "	,	" #_ret ",	" #_tmp "\n\t"
+#define _BITCMP_PRE_INST_FULL_LOCK					\
+	"1:"						"\n\t"		\
+		"ldxr	x11,	[%[addr]]"		"\n\t"
 
-#if defined(LEGACY) && (LEGACY > 0)
-FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
+#define _BITCMP_PRE_INST_LOCK_LESS					\
+		"ldr	x11,	[%[addr]]"		"\n\t"
+
+#define _BITCMP_POST_INST_FULL_LOCK					\
+		"stxr	w9,	x11, [%[addr]]" 	"\n\t"		\
+		"cbnz	w9,	1b"			"\n\t"		\
+		"dmb	ish"
+
+#define _BITCMP_POST_INST_LOCK_LESS					\
+		"#	NOP"
+
+#define _BITCMP_CLOBBERS_FULL_LOCK					\
+		: "cc", "memory", "%w9", "%w10", "%x11"
+
+#define _BITCMP_CLOBBERS_LOCK_LESS					\
+		: "cc", "memory", "%w10", "%x11"
+
+#define _BITCMP(_lock, _opl, _opr)					\
+({									\
+	volatile unsigned char _ret;					\
+									\
+	__asm__ volatile						\
+	(								\
+		_BITCMP_PRE_INST_##_lock				\
+		"cmp	x11,	%[opr]" 		"\n\t"		\
+		"cset	w10,	eq"			"\n\t"		\
+		"strb	w10,	%[ret]" 		"\n\t"		\
+		_BITCMP_POST_INST_##_lock				\
+		: [ret] "=m"	(_ret)					\
+		: [addr] "r"	(&_opl), 				\
+		  [opr]	"Lr"	(_opr)					\
+		_BITCMP_CLOBBERS_##_lock				\
+	);								\
+	_ret;								\
+})
+
+#define BITZERO(_lock, _src)						\
+	_BITCMP(_lock, _src, 0)
 
 #if (CORE_COUNT == 64)
-#error "LEGACY Level 1: Unimplemented BITCMP_CC() and CORE_COUNT(64)"
+#define BITCMP_CC(_lock, _opl, _opr) _BITCMP(_lock, _opl, _opr)
 #else
 #define BITCMP_CC(_lock, _opl, _opr)					\
 ({									\
 	unsigned char ret = 1;						\
 	unsigned int cw = 0;						\
 	do {								\
-		volatile unsigned char _ret;				\
-									\
-		__asm__ volatile					\
-		(							\
-			"cmp	%[opr]	,	%[opl]" 	"\n\t"	\
-			"cset	%[ret]	,	eq"			\
-			: [ret]	"=r"	(_ret)				\
-			: [opl] "r"	(_opl[cw]),			\
-			  [opr] "r"	(_opr[cw])			\
-			: "cc", "memory"				\
-		);							\
-		ret &= _ret;						\
+		ret &= _BITCMP(_lock, _opl[cw], _opr[cw]);		\
 	} while (++cw <= CORE_WORD_TOP(CORE_COUNT));			\
 	ret;								\
 })
 #endif
-/*	---	---	---	cmpxchg16b	---	---	---	*/
-#elif (CORE_COUNT == 64)
-
-#define BITCMP_CC(_lock, _opl, _opr)					\
-({									\
-	volatile unsigned char _ret;					\
-									\
-	__asm__ volatile						\
-	(								\
-		"ldr	x14	,	%[opr]" 		"\n\t"	\
-		"ldr	x15	,	%[opl]" 		"\n\t"	\
-		"cmp	x14	,	x15"			"\n\t"	\
-		"cset	%[ret]	,	eq"				\
-		: [ret]	"=r"	(_ret)					\
-		: [opl]	"m"	(_opl), 				\
-		  [opr]	"m"	(_opr)					\
-		: "cc", "memory", "%x14", "%x15"			\
-	);								\
-	_ret;								\
-})
-
-#elif (CORE_COUNT == 128)
-
-#define BITCMP_CC(_lock, _opl, _opr)					\
-({									\
-	volatile unsigned char _ret;					\
-									\
-	__asm__ volatile						\
-	(								\
-		"mov	x14	,	%[opr]" 		"\n\t"	\
-		"mov	x15	,	%[opl]" 		"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x12,x11,x9,x10,x14,x15, 0, 8)"\n\t"\
-		"str	x12	,	%[ret]" 			\
-		: [ ret]	"+m"	(_ret)				\
-		: [ opl]	"r"	(_opl), 			\
-		  [ opr]	"r"	(_opr)				\
-		: "cc", "memory",					\
-		  "%x9", "%x10", "%x11", "%x12", "%x14", "%x15"		\
-	);								\
-	_ret;								\
-})
-
-#elif (CORE_COUNT == 256)
-
-#define BITCMP_CC(_lock, _opl, _opr)					\
-({									\
-	volatile unsigned char _ret;					\
-									\
-	__asm__ volatile						\
-	(								\
-		"mov	x14	,	%[opr]" 		"\n\t"	\
-		"mov	x15	,	%[opl]" 		"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15,16,24)"\n\t"\
-		ASM_CMPXCHG16B(_lock, x12,x11,x9,x10,x14,x15, 0, 8)"\n\t"\
-		"and	x12	,	x12	,	x13"	"\n\t"	\
-		"str	x12	,	%[ret]" 			\
-		: [ ret]	"+m"	(_ret)				\
-		: [ opl]	"r"	(_opl), 			\
-		  [ opr]	"r"	(_opr)				\
-		: "cc", "memory",					\
-		  "%x9", "%x10", "%x11", "%x12", "%x13", "%x14", "%x15" \
-	);								\
-	_ret;								\
-})
-
-#elif (CORE_COUNT == 512)
-
-#define BITCMP_CC(_lock, _opl, _opr)					\
-({									\
-	volatile unsigned char _ret;					\
-									\
-	__asm__ volatile						\
-	(								\
-		"mov	x14	,	%[opr]" 		"\n\t"	\
-		"mov	x15	,	%[opl]" 		"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15,48,56)"\n\t"\
-		ASM_CMPXCHG16B(_lock, x12,x11,x9,x10,x14,x15,32,40)"\n\t"\
-		"and	x12	,	x12	,	x13"	"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15,16,24)"\n\t"\
-		"and	x12	,	x12	,	x13"	"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15, 0, 8)"\n\t"\
-		"and	x12	,	x12	,	x13"	"\n\t"	\
-		"str	x12	,	%[ret]" 			\
-		: [ ret]	"+m"	(_ret)				\
-		: [ opl]	"r"	(_opl), 			\
-		  [ opr]	"r"	(_opr)				\
-		: "cc", "memory",					\
-		  "%x9", "%x10", "%x11", "%x12", "%x13", "%x14", "%x15" \
-	);								\
-	_ret;								\
-})
-
-#elif (CORE_COUNT == 1024)
-
-#define BITCMP_CC(_lock, _opl, _opr)					\
-({									\
-	volatile unsigned char _ret;					\
-									\
-	__asm__ volatile						\
-	(								\
-		"mov	x14	,	%[opr]" 		"\n\t"	\
-		"mov	x15	,	%[opl]" 		"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15,112,120)"\n\t"\
-		ASM_CMPXCHG16B(_lock, x12,x11,x9,x10,x14,x15,96,104) "\n\t"\
-		"and	x12	,	x12	,	x13"	"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15,80,88)"\n\t"\
-		"and	x12	,	x12	,	x13"	"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15,64,72)"\n\t"\
-		"and	x12	,	x12	,	x13"	"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15,48,56)"\n\t"\
-		"and	x12	,	x12	,	x13"	"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15,32,40)"\n\t"\
-		"and	x12	,	x12	,	x13"	"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15,16,24)"\n\t"\
-		"and	x12	,	x12	,	x13"	"\n\t"	\
-		ASM_CMPXCHG16B(_lock, x13,x11,x9,x10,x14,x15, 0, 8)"\n\t"\
-		"and	x12	,	x12	,	x13"	"\n\t"	\
-		"str	x12	,	%[ret]" 			\
-		: [ ret]	"+m"	(_ret)				\
-		: [ opl]	"r"	(_opl), 			\
-		  [ opr]	"r"	(_opr)				\
-		: "cc", "memory",					\
-		  "%x9", "%x10", "%x11", "%x12", "%x13", "%x14", "%x15" \
-	);								\
-	_ret;								\
-})
-
-#endif /* LEGACY */
 
 /* Micro-benchmark. Prerequisites: CPU affinity, RDTSC[P] optionnaly RDPMC */
 #if defined(UBENCH) && UBENCH == 1
