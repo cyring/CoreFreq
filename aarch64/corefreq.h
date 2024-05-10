@@ -195,6 +195,8 @@ typedef struct
 	} SystemRegister;
 
 	struct SLICE_STRUCT {
+		unsigned long long	Exclusive __attribute__ ((aligned (8)));
+
 		struct
 		{
 		unsigned long long	TSC,

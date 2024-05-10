@@ -100,69 +100,38 @@ void Slice_Atomic(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 		unsigned int cpu, unsigned long arg)
 {
 	UNUSED(RW(Shm));
-/*TODO	__asm__ volatile
+	register unsigned long loop = arg;
+    do {
+	__asm__ volatile
 	(
-		"movq %[_atom], %%r14"	"\n\t"
-		"movq %[_xchg], %%r15"	"\n\t"
-		"movq %[_loop], %%rcx"	"\n\t"
-		"movq %[i_err], %%r11"	"\n\t"
-		"1:"			"\n\t"
-		"movq	%%r14, %%r12"	"\n\t"
-		"movq	%%r15, %%r13"	"\n\t"
-		"xchg	%%r12, %%r13"	"\n\t"
-		"cmpq	%%r13, %%r14"	"\n\t"
-		"jz 2f"			"\n\t"
-		"incq	%%r11"		"\n\t"
-		"2:"			"\n\t"
-		"loop	1b"		"\n\t"
-		"movq	%%r11, %[o_err]"
-		: [o_err] "=m" (RO(Shm)->Cpu[cpu].Slice.Error)
-		: [_loop] "m" (arg),
-		  [_atom] "i" (SLICE_ATOM),
-		  [_xchg] "i" (SLICE_XCHG),
-		  [i_err] "m" (RO(Shm)->Cpu[cpu].Slice.Error)
-		: "%rcx", "%r11", "%r12", "%r13", "%r14", "%r15",
-		  "cc", "memory"
-	);*/
+		"ldr	x10,	%[_err]"		"\n\t"
+		"1:"					"\n\t"
+		"ldxr	x11,	[%[addr]]"		"\n\t"
+		"mrs	x11,	cntvct_el0"		"\n\t"
+		"stxr	w9,	x11, [%[addr]]" 	"\n\t"
+		"cbz	w9,	2f"			"\n\t"
+		"add	x10,	x10, #1"		"\n\t"
+		"b	1b"				"\n\t"
+		"2:"					"\n\t"
+		"str	x10,	%[_err]"
+		: [_err] "=m"	(RO(Shm)->Cpu[cpu].Slice.Error)
+		: [addr] "r"	(&RO(Shm)->Cpu[cpu].Slice.Exclusive)
+		: "cc", "memory", "%w9", "%x10", "%x11"
+	);
+    } while (loop-- != 0) ;
 }
 
-#define CRC32vASM(data, len)						\
-({									\
-	unsigned int rem = 0;						\
-/*TODO	__asm__ (							\
-		"	movl	%[_len], %%r8d"		"\n\t"		\
-		"	movq	%[_data], %%r10"	"\n\t"		\
-		"	addq	%%r10, %%r8"		"\n\t"		\
-		"	movl	$0, %%r12d"		"\n\t"		\
-		"	movl	$0x436f7265, %%r9d"	"\n\t"		\
-		"1:"					"\n\t"		\
-		"	cmpq	%%r8, %%r10"		"\n\t"		\
-		"	je	3f"			"\n\t"		\
-		"	addq	$1, %%r10"		"\n\t"		\
-		"	movzbl	-1(%%r10), %%edx"	"\n\t"		\
-		"	xorl	%%edx, %%r12d"		"\n\t"		\
-		"	movl	$8, %%edx"		"\n\t"		\
-		"2:"					"\n\t"		\
-		"	movl	%%r12d, %%r11d"		"\n\t"		\
-		"	shrl	%%r11d"			"\n\t"		\
-		"	andl	$1, %%r12d"		"\n\t"		\
-		"	cmovne	%%r9d, %%r12d"		"\n\t"		\
-		"	xorl	%%r11d, %%r12d"		"\n\t"		\
-		"	subl	$1, %%edx"		"\n\t"		\
-		"	jne	2b"			"\n\t"		\
-		"	jmp	1b"			"\n\t"		\
-		"3:"					"\n\t"		\
-		"	movl	%%r12d, %[_rem]"			\
-		: [_rem] "+m" (rem)					\
-		: [_data] "m" (data),					\
-		  [_len] "im" (len)					\
-		: "%rdx", "%r8", "%r9", "%r10", "%r11", "%r12" ,	\
-		  "cc", "memory"					\
-	);	*/							\
-	UNUSED(data);							\
-	UNUSED(len);							\
-	rem;								\
-})
+unsigned int CRC32vC(unsigned char *data, unsigned int len)
+{
+	unsigned int rem = 0, oloop = len, iloop;
+
+	while (oloop--) {
+		rem ^= *data++;
+		for (iloop = 0; iloop < 8; iloop++)
+			rem = (rem >> 1) ^ ((rem & 1) ? 0x436f7265 : 0);
+	}
+	return(rem);
+}
 
 void Slice_CRC32(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 		unsigned int cpu, unsigned long arg)
@@ -172,7 +141,7 @@ void Slice_CRC32(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 	UNUSED(RW(Shm));
 	UNUSED(arg);
 
-	if (CRC32vASM(data, len) != CRC32_EXP)
+	if (CRC32vC(data, len) != CRC32_EXP)
 		RO(Shm)->Cpu[cpu].Slice.Error++ ;
 }
 
