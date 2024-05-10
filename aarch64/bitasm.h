@@ -587,8 +587,43 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 	_dest;								\
 })
 
+#define _BITWISESET_PRE_INST_FULL_LOCK					\
+	"1:"					"\n\t"			\
+		"ldxr	x11, [%[addr]]" 	"\n\t"
+
+#define _BITWISESET_PRE_INST_LOCK_LESS					\
+		"ldr	x11, [%[addr]]" 	"\n\t"
+
+#define _BITWISESET_POST_INST_FULL_LOCK					\
+		"stxr	w9, x11, [%[addr]]"	"\n\t"			\
+		"cbnz	w9, 1b" 		"\n\t"			\
+		"dmb	ish"
+
+#define _BITWISESET_POST_INST_LOCK_LESS					\
+		"str	x11, [%[addr]]"
+
+#define _BITWISESET_CLOBBERS_FULL_LOCK					\
+		: "cc", "memory", "%w9", "%x11"
+
+#define _BITWISESET_CLOBBERS_LOCK_LESS					\
+		: "cc", "memory", "%x11"
+
+#define _BITWISESET(_lock, _opl, _opr)					\
+({									\
+	__asm__ volatile						\
+	(								\
+		_BITWISESET_PRE_INST_##_lock				\
+		"orr	x11, x11, %[opr]"	"\n\t"			\
+		_BITWISESET_POST_INST_##_lock				\
+		:							\
+		: [addr] "r" (&_opl),					\
+		  [opr]  "Lr" (_opr)					\
+		_BITWISESET_CLOBBERS_##_lock				\
+	);								\
+})
+
 #define BITWISESET(_lock, _opl, _opr)					\
-	_BITSTOR(_lock, _opl, _opr)
+	_BITWISESET(_lock, _opl, _opr)
 
 #define _BITWISECLR_PRE_INST_FULL_LOCK					\
 	"1:"					"\n\t"			\
