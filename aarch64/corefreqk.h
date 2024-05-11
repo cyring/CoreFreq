@@ -230,6 +230,7 @@ typedef struct
 			PMXEVTYPER	PMTYPE[3];
 			PMCCFILTR	PMCCFILTR;
 			PMCNTENSET	PMCNTEN;
+			PMUSERENR	PMUSER;
 		    };
 		} SaveArea;
 #ifdef CONFIG_CPU_FREQ

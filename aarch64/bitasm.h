@@ -56,10 +56,10 @@ typedef unsigned int		Bit32;
 #define LOCKLESS LOCK_LESS
 #define BUS_LOCK FULL_LOCK
 
-#define BARRIER(pfx)							\
+#define BARRIER(_option)						\
 __asm__ volatile							\
 (									\
-	"dsb"					"\n\t"			\
+	"dsb	" #_option			"\n\t"			\
 	"isb"								\
 	:								\
 	:								\
@@ -98,13 +98,8 @@ __asm__ volatile							\
 	"mrs	" #_reg ",	cntvct_el0"	"\n\t"
 
 #define ASM_CODE_RDPMC(_ctr, _reg)					\
-	"# Read PMC counter."			"\n\t"			\
-/*TODO	"movq	$" #_ctr ",	%%rcx"		"\n\t"			\
-	"rdpmc" 				"\n\t"			\
-	"shlq	$32	,	%%rdx"		"\n\t"			\
-	"orq	%%rdx	,	%%rax"		"\n\t"		*/	\
-	"# Save counter value." 		"\n\t"			\
-/*TODO	"movq	%%rax	,	%%" #_reg	"\n\t"		*/
+	"# Read PMU counter."			"\n\t"			\
+	"mrs	" #_reg ", " #_ctr		"\n\t"			\
 
 #define ASM_RDPMC(_ctr, _reg) ASM_CODE_RDPMC(_ctr, _reg)
 

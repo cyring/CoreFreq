@@ -581,10 +581,13 @@ static void Query_Features(void *pArg)
 	iArg->Features->Inv_TSC = \
 	iArg->Features->RDTSCP = cntpct.PhysicalCount != 0;
 
-	iArg->Features->PerfMon.FixCtrs = 1; /* Fixed Cycle Counter */
+	iArg->Features->PerfMon.FixCtrs = 0;
 	iArg->Features->PerfMon.MonCtrs = pmcr.NumEvtCtrs;
 	iArg->Features->PerfMon.Version = dfr0.PMUVer;
-
+	if (iArg->Features->PerfMon.Version > 0) {
+		iArg->Features->PerfMon.FixCtrs++; /* Fixed Cycle Counter */
+		iArg->Features->PerfMon.FixCtrs++; /* Instruction Counter */
+	}
 	/*TODO(Memory-mapped PMU register at offset 0xe00): pmcfgr	*/
 	iArg->Features->PerfMon.MonWidth = \
 	iArg->Features->PerfMon.FixWidth = 0b111111 == 0b111111 ? 64 : 0;
@@ -2510,6 +2513,7 @@ static void PerCore_Reset(CORE_RO *Core)
 {
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->HWP_Mask	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->HWP	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_1	, Core->Bind);
@@ -2527,6 +2531,7 @@ static void PerCore_Reset(CORE_RO *Core)
 static void PerCore_GenericMachine(void *arg)
 {
 	volatile CPUPWRCTLR cpuPwrCtl;
+	volatile PMUSERENR pmuser;
 	volatile REVIDR revid;
 	CORE_RO *Core = (CORE_RO *) arg;
 
@@ -2541,9 +2546,6 @@ static void PerCore_GenericMachine(void *arg)
 	cpuPwrCtl.value = SysRegRead(CPUPWRCTLR_EL1);
 	Core->Query.CStateBaseAddr = cpuPwrCtl.WFI_RET_CTRL;
     }
-    if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
-	volatile PMUSERENR pmuser;
-
 	__asm__ __volatile__(
 		"mrs	%[pmuser],	pmuserenr_el0"	"\n\t"
 		"isb"
@@ -2551,9 +2553,10 @@ static void PerCore_GenericMachine(void *arg)
 		:
 		: "memory"
 	);
+
+    if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 	PUBLIC(RO(Proc))->Features.PerfMon.CoreCycles = pmuser.CR;
 	PUBLIC(RO(Proc))->Features.PerfMon.InstrRetired = pmuser.IR;
-
     }
 	__asm__ __volatile__(
 		"mrs	%[revid],	revidr_el1"	"\n\t"
@@ -2834,6 +2837,12 @@ static void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 		"orr	x12	,	x12, %[ENSET]"	"\n\t"
 		"msr	pmcntenset_el0, x12"		"\n\t"
 
+		"# Enable User-space access to counters""\n\t"
+		"mrs	x12	,	pmuserenr_el0"	"\n\t"
+		"str	x12	,	%[PMUSER]"	"\n\t"
+		"orr	x12	,	x12, %[ENUSR]"	"\n\t"
+		"msr	pmuserenr_el0,	%12"		"\n\t"
+
 		"# Enable all PMU counters"		"\n\t"
 		"mrs	x12	,	pmcr_el0"	"\n\t"
 		"str	x12	,	%[PMCR]"	"\n\t"
@@ -2846,11 +2855,13 @@ static void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 		  [PMTYPE2]	"+m" (Save->PMTYPE[1]),
 		  [PMTYPE1]	"+m" (Save->PMTYPE[0]),
 		  [PMCCFILTR]	"+m" (Save->PMCCFILTR),
-		  [PMCNTEN]	"+m" (Save->PMCNTEN)
+		  [PMCNTEN]	"+m" (Save->PMCNTEN),
+		  [PMUSER]	"+m" (Save->PMUSER)
 		: [EVENT3]	"r" (0x0008),
 		  [EVENT2]	"r" (0x0011),
 		  [FILTR1]	"r" (0x0),
 		  [ENSET]	"r" (0b10000000000000000000000000001100),
+		  [ENUSR]	"r" (0b0000101),
 		  [CTRL]	"i" (0b0000000010000111)
 		: "memory", "%x12"
 	);
@@ -2861,14 +2872,13 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 {
 	__asm__ __volatile__(
 		"# Restore PMU configuration registers" "\n\t"
-		"ldr	x12	,	%[PMCR]"	"\n\t"
-		"msr	pmcr_el0,	x12"		"\n\t"
+		"msr	pmcr_el0,	%[PMCR]"	"\n\t"
 
-		"ldr	x12	,	%[PMCNTEN]"	"\n\t"
-		"msr	pmcntenset_el0, x12"		"\n\t"
+		"msr	pmuserenr_el0,	%[PMUSER]"	"\n\t"
 
-		"ldr	x12	,	%[PMCCFILTR]"	"\n\t"
-		"msr	pmccfiltr_el0,	x12"		"\n\t"
+		"msr	pmcntenset_el0, %[PMCNTEN]"	"\n\t"
+
+		"msr	pmccfiltr_el0,	%[PMCCFILTR]"	"\n\t"
 
 		"ldr	x12	,	%[PMSELR]"	"\n\t"
 		"orr	x12	,	x12, #0b11111"	"\n\t"
@@ -2893,13 +2903,14 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 
 		"isb"
 		:
-		: [PMCR]	"m" (Save->PMCR),
+		: [PMCR]	"r" (Save->PMCR),
 		  [PMSELR]	"m" (Save->PMSELR),
 		  [PMTYPE3]	"m" (Save->PMTYPE[2]),
 		  [PMTYPE2]	"m" (Save->PMTYPE[1]),
 		  [PMTYPE1]	"m" (Save->PMTYPE[0]),
-		  [PMCCFILTR]	"m" (Save->PMCCFILTR),
-		  [PMCNTEN]	"m" (Save->PMCNTEN)
+		  [PMCCFILTR]	"r" (Save->PMCCFILTR),
+		  [PMCNTEN]	"r" (Save->PMCNTEN),
+		  [PMUSER]	"r" (Save->PMUSER)
 		: "memory", "%x12"
 	);
 }

@@ -43,13 +43,19 @@ void CallWith_RDTSC_RDPMC(	RO(SHM_STRUCT) *RO(Shm),
 {
 	struct SLICE_STRUCT *pSlice = &RO(Shm)->Cpu[cpu].Slice;
 
-	RDTSC_PMCx1(pSlice->Counter[0].TSC,0x40000000,pSlice->Counter[0].INST);
+	RDTSC_PMCx1(	pSlice->Counter[0].TSC,
+			pmevcntr3_el0,
+			pSlice->Counter[0].INST );
 
-	RDTSC_PMCx1(pSlice->Counter[1].TSC,0x40000000,pSlice->Counter[1].INST);
+	RDTSC_PMCx1(	pSlice->Counter[1].TSC,
+			pmevcntr3_el0,
+			pSlice->Counter[1].INST );
 
 	SliceFunc(RO(Shm), RW(Shm), cpu, arg);
 
-	RDTSC_PMCx1(pSlice->Counter[2].TSC,0x40000000,pSlice->Counter[2].INST);
+	RDTSC_PMCx1(	pSlice->Counter[2].TSC,
+			pmevcntr3_el0,
+			pSlice->Counter[2].INST );
 
 	if (BITVAL(RW(Shm)->Proc.Sync, BURN)) {
 		DeltaTSC(pSlice);

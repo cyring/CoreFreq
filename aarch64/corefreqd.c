@@ -473,12 +473,9 @@ static void *Child_Thread(void *arg)
 	RW(SHM_STRUCT) *RW(Shm) = Arg->Ref->RW(Shm);
 	CPU_STRUCT *Cpu = &RO(Shm)->Cpu[cpu];
 
-	CALL_FUNC MatrixCallFunc[2] = {
+	CALL_FUNC CallSliceFunc = (CALL_FUNC[2]){
 		CallWith_RDTSC_No_RDPMC,  CallWith_RDTSC_RDPMC
-	};
-	const int withRDPMC = ((RO(Shm)->Proc.PM_version >= 1));
-
-	CALL_FUNC CallSliceFunc = MatrixCallFunc[withRDPMC];
+	}[ RO(Shm)->Proc.Features.PerfMon.FixCtrs == 2 ];
 
 	pthread_t tid = pthread_self();
 	cpu_set_t cpuset;
