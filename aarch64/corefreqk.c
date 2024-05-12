@@ -2921,6 +2921,8 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 			pmevcntr2_el0,	Core->Counter[T].C0.UCC,	\
 			pmccntr_el0,	Core->Counter[T].C0.URC,	\
 			pmevcntr3_el0,	Core->Counter[T].INST );	\
+									\
+	Core->Counter[T].INST &= INST_COUNTER_OVERFLOW;			\
 	/* Normalize frequency: */					\
 	Core->Counter[T].C1 = ( 					\
 		Core->Counter[T].TSC					\
@@ -3005,10 +3007,14 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 
 #define Delta_INST(Core)						\
 ({	/* Delta of Retired Instructions */				\
-	Core->Delta.INST = (						\
-		Core->Counter[0].INST > Core->Counter[1].INST		\
-	)	? Core->Counter[0].INST - Core->Counter[1].INST 	\
-		: Core->Counter[1].INST - Core->Counter[0].INST;	\
+	if (Core->Counter[1].INST > Core->Counter[0].INST)		\
+		Core->Delta.INST  = Core->Counter[1].INST		\
+				  - Core->Counter[0].INST;		\
+	else {								\
+		Core->Delta.INST  = INST_COUNTER_OVERFLOW		\
+				  - Core->Counter[0].INST;		\
+		Core->Delta.INST += Core->Counter[1].INST;		\
+	}								\
 })
 
 #define PKG_Counters_Generic(Core, T)					\

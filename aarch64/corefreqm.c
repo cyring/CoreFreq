@@ -29,10 +29,17 @@
 ({									\
 	unsigned long long overhead = pSlice->Counter[1].INST		\
 				    - pSlice->Counter[0].INST;		\
-	pSlice->Delta.INST = pSlice->Counter[2].INST			\
-			   - pSlice->Counter[1].INST;			\
+	/*	Test and compute if counter has overflowed	*/	\
+	if (pSlice->Counter[2].INST > pSlice->Counter[1].INST)		\
+		pSlice->Delta.INST  = pSlice->Counter[2].INST		\
+				    - pSlice->Counter[1].INST;		\
+	else {								\
+		pSlice->Delta.INST  = INST_COUNTER_OVERFLOW		\
+				    - pSlice->Counter[1].INST;		\
+		pSlice->Delta.INST += pSlice->Counter[2].INST;		\
+	}								\
 	if (overhead <= pSlice->Delta.INST)				\
-		pSlice->Delta.INST -= overhead;				\
+		pSlice->Delta.INST -= overhead; 			\
 })
 
 void CallWith_RDTSC_RDPMC(	RO(SHM_STRUCT) *RO(Shm),
@@ -47,15 +54,21 @@ void CallWith_RDTSC_RDPMC(	RO(SHM_STRUCT) *RO(Shm),
 			pmevcntr3_el0,
 			pSlice->Counter[0].INST );
 
+	pSlice->Counter[0].INST &= INST_COUNTER_OVERFLOW;
+
 	RDTSC_PMCx1(	pSlice->Counter[1].TSC,
 			pmevcntr3_el0,
 			pSlice->Counter[1].INST );
+
+	pSlice->Counter[1].INST &= INST_COUNTER_OVERFLOW;
 
 	SliceFunc(RO(Shm), RW(Shm), cpu, arg);
 
 	RDTSC_PMCx1(	pSlice->Counter[2].TSC,
 			pmevcntr3_el0,
 			pSlice->Counter[2].INST );
+
+	pSlice->Counter[2].INST &= INST_COUNTER_OVERFLOW;
 
 	if (BITVAL(RW(Shm)->Proc.Sync, BURN)) {
 		DeltaTSC(pSlice);
