@@ -586,7 +586,6 @@ static void Query_Features(void *pArg)
 	iArg->Features->PerfMon.Version = dfr0.PMUVer;
 	if (iArg->Features->PerfMon.Version > 0) {
 		iArg->Features->PerfMon.FixCtrs++; /* Fixed Cycle Counter */
-		iArg->Features->PerfMon.FixCtrs++; /* Instruction Counter */
 	}
 	/*TODO(Memory-mapped PMU register at offset 0xe00): pmcfgr	*/
 	iArg->Features->PerfMon.MonWidth = \
@@ -2532,6 +2531,8 @@ static void PerCore_GenericMachine(void *arg)
 {
 	volatile CPUPWRCTLR cpuPwrCtl;
 	volatile PMUSERENR pmuser;
+	volatile PMCNTENSET enset;
+	volatile PMCNTENCLR enclr;
 	volatile REVIDR revid;
 	CORE_RO *Core = (CORE_RO *) arg;
 
@@ -2548,15 +2549,23 @@ static void PerCore_GenericMachine(void *arg)
     }
 	__asm__ __volatile__(
 		"mrs	%[pmuser],	pmuserenr_el0"	"\n\t"
+		"mrs	%[enset],	pmcntenset_el0" "\n\t"
+		"mrs	%[enclr],	pmcntenclr_el0" "\n\t"
 		"isb"
-		: [pmuser]	"=r" (pmuser)
+		: [pmuser]	"=r" (pmuser),
+		  [enset]	"=r" (enset),
+		  [enclr]	"=r" (enclr)
 		:
 		: "memory"
 	);
 
     if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
-	PUBLIC(RO(Proc))->Features.PerfMon.CoreCycles = pmuser.CR;
-	PUBLIC(RO(Proc))->Features.PerfMon.InstrRetired = pmuser.IR;
+	PUBLIC(RO(Proc))->Features.PerfMon.CoreCycles	= pmuser.CR
+							| enset.C
+							| enclr.C;
+	PUBLIC(RO(Proc))->Features.PerfMon.InstrRetired = pmuser.IR
+							| enset.F0
+							| enclr.F0;
     }
 	__asm__ __volatile__(
 		"mrs	%[revid],	revidr_el1"	"\n\t"
