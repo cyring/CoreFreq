@@ -2947,8 +2947,7 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 
 #define Delta_TSC(Core) 						\
 ({									\
-	Core->Delta.TSC = Core->Counter[1].TSC				\
-			- Core->Counter[0].TSC; 			\
+	Core->Delta.TSC = Core->Counter[1].TSC - Core->Counter[0].TSC;	\
 })
 
 #define Delta_TSC_OVH(Core)						\
@@ -2969,22 +2968,22 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 
 #define Delta_C0(Core)							\
 ({	/* Absolute Delta of Unhalted (Core & Ref) C0 Counter. */	\
-	Core->Delta.C0.UCC = (						\
-		Core->Counter[0].C0.UCC > Core->Counter[1].C0.UCC	\
-	)	? Core->Counter[0].C0.UCC - Core->Counter[1].C0.UCC	\
-		: Core->Counter[1].C0.UCC - Core->Counter[0].C0.UCC;	\
-									\
-	Core->Delta.C0.URC = (						\
-		Core->Counter[0].C0.URC > Core->Counter[1].C0.URC	\
-	)	? Core->Counter[0].C0.URC - Core->Counter[1].C0.URC	\
-		: Core->Counter[1].C0.URC - Core->Counter[0].C0.URC;	\
+	if (Core->Counter[1].C0.UCC >= Core->Counter[0].C0.UCC) {	\
+		Core->Delta.C0.UCC  =  Core->Counter[1].C0.UCC		\
+				    -  Core->Counter[0].C0.UCC; 	\
+	}								\
+	if (Core->Counter[1].C0.URC >= Core->Counter[0].C0.URC) {	\
+		Core->Delta.C0.URC  =  Core->Counter[1].C0.URC		\
+				    -  Core->Counter[0].C0.URC; 	\
+	}								\
 })
 
 #define Delta_C1(Core)							\
 ({									\
-	Core->Delta.C1 = (Core->Counter[0].C1 > Core->Counter[1].C1) ? 	\
-			  Core->Counter[0].C1 - Core->Counter[1].C1	\
-			: Core->Counter[1].C1 - Core->Counter[0].C1;	\
+	if (Core->Counter[1].C1 >= Core->Counter[0].C1) {		\
+		Core->Delta.C1  =  Core->Counter[1].C1			\
+				-  Core->Counter[0].C1; 		\
+	}								\
 })
 
 #define Delta_C3(Core)							\
@@ -3007,11 +3006,11 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 
 #define Delta_INST(Core)						\
 ({	/* Delta of Retired Instructions */				\
-	if (Core->Counter[1].INST > Core->Counter[0].INST)		\
-		Core->Delta.INST  = Core->Counter[1].INST		\
-				  - Core->Counter[0].INST;		\
-	else {								\
-		Core->Delta.INST  = INST_COUNTER_OVERFLOW		\
+	if (Core->Counter[1].INST >= Core->Counter[0].INST) {		\
+		Core->Delta.INST  =  Core->Counter[1].INST		\
+				  -  Core->Counter[0].INST;		\
+	} else {							\
+		Core->Delta.INST  = (INST_COUNTER_OVERFLOW + 0x1)	\
 				  - Core->Counter[0].INST;		\
 		Core->Delta.INST += Core->Counter[1].INST;		\
 	}								\
@@ -3105,13 +3104,10 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 
 #define Delta_UNCORE_FC0(Pkg)						\
 ({									\
-	Pkg->Delta.Uncore.FC0 =						\
-		(Pkg->Counter[0].Uncore.FC0 >				\
-		Pkg->Counter[1].Uncore.FC0) ?				\
-			Pkg->Counter[0].Uncore.FC0			\
-			- Pkg->Counter[1].Uncore.FC0			\
-			: Pkg->Counter[1].Uncore.FC0			\
-			- Pkg->Counter[0].Uncore.FC0;			\
+	if (Pkg->Counter[1].Uncore.FC0 >= Pkg->Counter[0].Uncore.FC0) { \
+		Pkg->Delta.Uncore.FC0	= Pkg->Counter[1].Uncore.FC0	\
+					- Pkg->Counter[0].Uncore.FC0;	\
+	}								\
 })
 
 #define Save_TSC(Core)							\

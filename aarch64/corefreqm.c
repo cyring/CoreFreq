@@ -30,11 +30,11 @@
 	unsigned long long overhead = pSlice->Counter[1].INST		\
 				    - pSlice->Counter[0].INST;		\
 	/*	Test and compute if counter has overflowed	*/	\
-	if (pSlice->Counter[2].INST > pSlice->Counter[1].INST)		\
-		pSlice->Delta.INST  = pSlice->Counter[2].INST		\
-				    - pSlice->Counter[1].INST;		\
+	if (pSlice->Counter[2].INST >= pSlice->Counter[1].INST) 	\
+		pSlice->Delta.INST  =  pSlice->Counter[2].INST		\
+				    -  pSlice->Counter[1].INST; 	\
 	else {								\
-		pSlice->Delta.INST  = INST_COUNTER_OVERFLOW		\
+		pSlice->Delta.INST  = (INST_COUNTER_OVERFLOW + 0x1)	\
 				    - pSlice->Counter[1].INST;		\
 		pSlice->Delta.INST += pSlice->Counter[2].INST;		\
 	}								\
