@@ -255,11 +255,40 @@ apt install dkms
 apt list git build-essential gawk fakeroot linux-headers*
 ```
 
-## Red Hat, CentOS, AlmaLinux
+## Red Hat, CentOS
  * Development packages prerequisites.  
 ```sh
 yum install kernel-devel
 yum group install "Development Tools"
+```
+
+## AlmaLinux
+```sh
+## as root, install kernel development package and dependencies
+dnf --assumeyes install kernel-devel gcc make git bc
+```
+```sh
+## as a User, build CoreFreq
+cd CoreFreq
+make -j
+```
+```sh
+## as root, install the binaries
+make install
+## and start Driver and Daemon
+modprobe corefreqk
+corefreqd
+```
+```sh
+## as a User, start the Client
+corefreq-cli
+```
+```sh
+## Terminate Client, Daemon and unload Driver as root
+modprobe -r corefreqk
+## Proceed to uninstallation as root
+cd CoreFreq
+make uninstall
 ```
 
 ## openSUSE
