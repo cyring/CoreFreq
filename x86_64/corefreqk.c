@@ -5469,6 +5469,101 @@ EXIT_ADL_IMC:
 	EMPTY_STMT();
 }
 
+#define MTL_SA	ADL_SA
+
+static void Query_MTL_IMC(void __iomem *mchmap, unsigned short mc)
+{	/* Source: 12th Generation Intel Core Processor Datasheet Vol 2 */
+	unsigned short cha;
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 0;
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 0;
+
+	/*		Intra channel configuration			*/
+	PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADCH.value = readl(mchmap+0xd800);
+
+    if (PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADCH.value == 0xffffffff)
+    {
+		goto EXIT_MTL_IMC;
+    }
+    if (PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADCH.CH_L_MAP)
+    {
+	PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADC0.value = readl(mchmap+0xd808);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADC1.value = readl(mchmap+0xd804);
+    } else {
+	PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADC0.value = readl(mchmap+0xd804);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADC1.value = readl(mchmap+0xd808);
+    }
+    if ( (PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADC0.value == 0xffffffff)
+      || (PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADC1.value == 0xffffffff) )
+    {
+		goto EXIT_MTL_IMC;
+    }
+	/*		DIMM parameters					*/
+	PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADD0.value = readl(mchmap+0xd80c);
+	PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADD1.value = readl(mchmap+0xd810);
+
+    if ( (PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADD0.value == 0xffffffff)
+      || (PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADD1.value == 0xffffffff) )
+    {
+		goto EXIT_MTL_IMC;
+    }
+	/*	Check for 2 DIMMs Per Channel is enabled		*/
+    if (PUBLIC(RO(Proc))->Uncore.Bus.MTL_Cap_A.DDPCD == 0) {
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 2;
+    } else {
+	/*	Guessing activated channel from the populated DIMM.	*/
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
+	  ((PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADD0.Dimm_L_Size != 0)
+	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADD0.Dimm_S_Size != 0))
+	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADD1.Dimm_L_Size != 0)
+	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADD1.Dimm_S_Size != 0));
+    }
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
+
+    for (cha = 0 ; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
+    {
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].MTL.Timing.value = \
+					readq(mchmap + 0xe000 + 0x800 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].MTL.ACT.value = \
+					readq(mchmap + 0xe138 + 0x800 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].MTL.RDRD.value = \
+					readl(mchmap + 0xe00c + 0x800 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].MTL.RDWR.value = \
+					readl(mchmap + 0xe010 + 0x800 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].MTL.WRRD.value = \
+					readl(mchmap + 0xe014 + 0x800 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].MTL.WRWR.value = \
+					readl(mchmap + 0xe018 + 0x800 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].MTL.Sched.value = \
+					readq(mchmap + 0xe088 + 0x800 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].MTL.PWDEN.value = \
+					readq(mchmap + 0xe050 + 0x800 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].MTL.ODT.value = \
+					readq(mchmap + 0xe070 + 0x800 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].MTL.Refresh.value = \
+					readq(mchmap + 0xe4a0 + 0x800 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].MTL.SRExit.value = \
+					readq(mchmap + 0xe4c0 + 0x800 * cha);
+    }
+    if (mc == 0) {
+	Query_Turbo_TDP_Config(mchmap);
+	BIOS_DDR(mchmap);
+	MTL_SA(mchmap);
+    }
+EXIT_MTL_IMC:
+	EMPTY_STMT();
+}
+
 static void Query_GLK_IMC(void __iomem *mchmap, unsigned short mc)
 { /* Source: Intel Pentium Silver and Intel Celeron Processors Vol 2	*/
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
@@ -6341,6 +6436,65 @@ static PCI_CALLBACK ADL_IMC(struct pci_dev *dev)
        for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
        {
 	 PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].ADL.Sched.ReservedBits1=0;
+       }
+      }
+	break;
+     }
+    }
+    if (PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount > 0)
+    {
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = mc + 1;
+    }
+   }
+  }
+	return rc;
+}
+
+static PCI_CALLBACK MTL_HOST(	struct pci_dev *dev,
+				ROUTER Query,
+				unsigned long long wsize,
+				unsigned short mc )
+{
+	pci_read_config_dword(dev, 0xe4,
+				&PUBLIC(RO(Proc))->Uncore.Bus.MTL_Cap_A.value);
+
+	pci_read_config_dword(dev, 0xe8,
+				&PUBLIC(RO(Proc))->Uncore.Bus.MTL_Cap_B.value);
+
+	pci_read_config_dword(dev, 0xec,
+				&PUBLIC(RO(Proc))->Uncore.Bus.MTL_Cap_C.value);
+
+	pci_read_config_dword(dev, 0xf0,
+				&PUBLIC(RO(Proc))->Uncore.Bus.MTL_Cap_E.value);
+
+	SoC_SKL_VTD();
+
+	return Router(dev, 0x48, 64, wsize, Query, mc);
+}
+
+static PCI_CALLBACK MTL_IMC(struct pci_dev *dev)
+{	/* Source: 12th Generation Intel Core Processors datasheet, vol 2 */
+	PCI_CALLBACK rc = 0;
+	unsigned short mc, cha;
+
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 0;
+	/* MCHBAR matches bits 41 to 17 ; two MC x 64KB memory space	*/
+  for (mc = 0; mc < MC_MAX_CTRL; mc++)
+  {
+	rc = MTL_HOST(dev, Query_MTL_IMC, 0x10000, mc);
+
+   if ( (PCI_CALLBACK) 0 == rc)
+   {
+    if (PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADCH.value != 0xffffffff) {
+     switch (PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADCH.DDR_TYPE) {
+     case 0b01:	/*	DDR5	*/
+     case 0b10:	/*	LPDDR5	*/
+      if (mc & 1) {
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 0;
+      } else {
+       for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
+       {
+	 PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].MTL.Sched.ReservedBits1=0;
        }
       }
 	break;
@@ -14960,18 +15114,20 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
     case Alderlake_S:							\
     case Alderlake_H:							\
     case Alderlake_N:							\
-    case Meteorlake_M:							\
-    case Meteorlake_N:							\
-    case Meteorlake_S:							\
     case Raptorlake:							\
     case Raptorlake_P:							\
     case Raptorlake_S:							\
+	ADL_SA(PRIVATE(OF(PCU)).BAR);					\
+	break;								\
+    case Meteorlake_M:							\
+    case Meteorlake_N:							\
+    case Meteorlake_S:							\
     case LunarLake:							\
     case ArrowLake:							\
     case ArrowLake_H:							\
     case ArrowLake_U:							\
     case PantherLake:							\
-	ADL_SA(PRIVATE(OF(PCU)).BAR);					\
+	MTL_SA(PRIVATE(OF(PCU)).BAR);					\
 	break;								\
     }									\
   }									\

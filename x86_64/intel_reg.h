@@ -4042,6 +4042,28 @@ typedef union
 } ADL_IMC_CR_TC_PRE;
 
 typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: E000h & Channel1: E800h */
+	unsigned long long	value;
+	struct {
+		unsigned long long
+		tRPpb		:  8-0,  /* Range:  10-76 		*/
+		ReservedBits1	: 10-8,
+		tRPab		: 18-10, /* Range:  10-92 | tRP 	*/
+		ReservedBits2	: 20-18,
+		tRDPRE		: 27-20, /* Range:  4-32		*/
+		ReservedBits3	: 28-27,
+		tPPD		: 32-28, /* Range:  4-7			*/
+		ReservedBits4	: 33-32,
+		tWRPRE		: 43-33, /* Range: 18-200		*/
+		ReservedBits5	: 45-43,
+		tRAS		: 54-45, /* Range: 28-136		*/
+		ReservedBits6	: 59-54,
+		DERATING_EXT	: 63-59, /* Range:  0-4 		*/
+		ReservedBits7	: 64-63;
+	};
+} MTL_IMC_CR_TC_PRE;
+
+typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 4004h & Channel1: 4404h */
 	unsigned int		value;
 	struct {
@@ -4083,6 +4105,21 @@ typedef union
 		tREFSBRD	: 32-24;
 	};
 } ADL_IMC_CR_TC_ACT;
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: E138h & Channel1: TODO */
+	unsigned long long	value;
+	struct {
+		unsigned long long
+		tFAW		:  9-0,  /* Range: 16-88		*/
+		tRRD_SG 	: 15-9,  /* Range:  4-32 | tRRD/tRRD_​L	*/
+		tRRD_DG 	: 22-15, /* Range:  4-32	tRRD	*/
+		tRCD		: 30-22,
+		ReservedBits1	: 32-30,
+		tRCDW		: 40-32, /* Range:  8-59		*/
+		ReservedBits2	: 64-40;
+	};
+} MTL_IMC_CR_TC_ACT;
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 400Ch & Channel1: 440Ch */
@@ -4132,6 +4169,8 @@ typedef union
 	};
 } ADL_IMC_CR_TC_RDRD;
 
+#define MTL_IMC_CR_TC_RDRD	ADL_IMC_CR_TC_RDRD
+
 typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 4010h & Channel1: 4410h */
 	unsigned int		value;
@@ -4178,6 +4217,8 @@ typedef union
 	};
 } ADL_IMC_CR_TC_RDWR;
 
+#define MTL_IMC_CR_TC_RDWR	ADL_IMC_CR_TC_RDWR
+
 typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 4014h & Channel1: 4414h */
 	unsigned int		value;
@@ -4220,6 +4261,8 @@ typedef union
 		tWRRD_DD	: 32-25; /* WR to RD, different DIMM: 4-54 */
 	};
 } ADL_IMC_CR_TC_WRRD;
+
+#define MTL_IMC_CR_TC_WRRD	ADL_IMC_CR_TC_WRRD
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 4018h & Channel1: 4418h */
@@ -4269,6 +4312,8 @@ typedef union
 		tWRWR_DD	: 32-24; /* WR to WR, different DIMM: 4-54 */
 	};
 } ADL_IMC_CR_TC_WRWR;
+
+#define MTL_IMC_CR_TC_WRWR	ADL_IMC_CR_TC_WRWR
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 401Ch & Channel1: 441Ch */
@@ -4367,6 +4412,29 @@ typedef union
 } ADL_IMC_SC_GS_CFG;	/* Scheduler configuration			*/
 
 typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: E088h & Channel1: E888h */
+	unsigned long long	value;
+	struct {
+		unsigned long long
+		ReservedBits1	:  3-0,
+		CMD_Stretch	:  4-3,  /* 00:1N , 01:2N		*/
+		ReservedBits2	:  8-4,
+		Addr_Mirroring	: 12-8,
+		ReservedBits3	: 16-12,
+		NO_GEAR4_DIV	: 17-16,
+		ReservedBits4	: 30-17,
+		NO_GEAR2_DIV	: 31-30,
+		GEAR		: 32-31, /* 0:Gear2 , 1:Gear4		*/
+		DDR_1_DPC	: 34-32,
+		ReservedBits5	: 49-34,
+		WRITE0_EN	: 50-49,
+		ReservedBits6	: 54-50,
+		WCK_DIFF_LOW_IDLE:55-54,
+		ReservedBits7	: 64-55;
+	};
+} MTL_IMC_SC_GS_CFG;	/* Scheduler configuration			*/
+
+typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 4050h & Channel1: 4450h */
 	unsigned long long	value;
 	struct {
@@ -4423,6 +4491,24 @@ typedef union
 		tPRPDEN 	: 64-59;
 	};
 } ADL_IMC_TC_PWDEN;	/* Power Down Timing				*/
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: E050h & Channel1: E850h */
+	unsigned long long	value;
+	struct {
+		unsigned long long
+		tCKE		:  7-0,  /* Range:  4-24		*/
+		tXP		: 14-7,  /* Range:  4-24		*/
+		tCPDED		: 19-14, /* Range:  0-7 in 1N mode	*/
+		tRDPDEN 	: 27-19, /* Range:  4-100		*/
+		tWRPDEN 	: 37-27, /* Range:  4-204		*/
+		tCKCKEH		: 42-37,
+		tCSH		: 48-42,
+		tCSL		: 54-48,
+		tCACSH		: 59-54,
+		tPRPDEN 	: 64-59;
+	};
+} MTL_IMC_TC_PWDEN;	/* Power Down Timing				*/
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 4070h & Channel1: 4470h */
@@ -4482,6 +4568,20 @@ typedef union
 } ADL_IMC_CR_TC_ODT;	/* ODT timing parameters			*/
 
 typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: E070h & Channel1: E870h */
+	unsigned long long	value;
+	struct {
+		unsigned long long
+		tCCD		:  6-0,  /* Ultra-H/U:LPDDR4:0-8,LPDDR5:8-16 */
+		ReservedBits1	: 16-6,
+		tCL		: 23-16, /* Range:  4-72		*/
+		ReservedBits2	: 24-23,
+		tCWL		: 32-24, /* LPDDR4: 4-64; DDR4: 5-64 @ 1N */
+		ReservedBits3	: 64-32;
+	};
+} MTL_IMC_CR_TC_ODT;	/* ODT timing parameters			*/
+
+typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 423Ch & Channel1: 463Ch */
 	unsigned int		value;
 	struct {
@@ -4517,6 +4617,21 @@ typedef union
 } ADL_IMC_REFRESH_TC;	/* Refresh timing parameters			*/
 
 typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: E4A0h & Channel1: TODO */
+	unsigned long long	value;
+	struct {
+		unsigned long long
+		tREFI		: 18-0,  /* Default: 4100		*/
+		tRFC		: 31-18, /* Default: 180		*/
+		ReservedBits1	: 32-31,
+		tREFIx9 	: 40-32,
+		tRFCpb		: 51-40, /* Refresh Per Bank Cycle Time */
+		tREFSBRD	: 59-51, /* REFsb to ACT Different Bank Delay */
+		ReservedBits2	: 64-59;
+	};
+} MTL_IMC_REFRESH_TC;	/* Refresh timing parameters			*/
+
+typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 42C4h & Channel1: 46C4h */
 	unsigned int		value;
 	struct {
@@ -4547,6 +4662,18 @@ typedef union
 		ReservedBits2	: 64-58;
 	};
 } ADL_IMC_SREXITTP;	/* Self-Refresh Exit timing parameters		*/
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: E4C0h & Channel1: ECC0h */
+	unsigned long long	value;
+	struct {
+		unsigned long long
+		tXSR		: 13-0,
+		ReservedBits1	: 45-13,
+		tSR		: 51-45,
+		tXSDLL		: 64-51;
+	};
+} MTL_IMC_SREXITTP;	/* Self-Refresh Exit timing parameters		*/
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset 5000h			*/
@@ -4612,6 +4739,8 @@ typedef union
 	};
 } ADL_IMC_MAD_MAPPING;
 
+#define MTL_IMC_MAD_MAPPING	ADL_IMC_MAD_MAPPING
+
 typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 5004h & Channel1: 5008h */
 	unsigned int		value;
@@ -4655,13 +4784,32 @@ typedef union
 		unsigned int
 		Dimm_L_Map	:  1-0,  /* DIMM L mapping: 0=DIMM0, 1=DIMM1 */
 		ReservedBits1	:  8-1,
-		EIM		:  9-8,  /* Enhanced mode enable	*/
+		EIM		:  9-8,  /* Enhanced Interleaving Mode	*/
 		ReservedBits2	: 12-9,
 		ECC		: 14-12,
 		CRC		: 15-14, /* 1 = CRC Mode is enabled	*/
 		ReservedBits3	: 32-15;
 	};
 } ADL_IMC_MAD_CHANNEL;
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: D804h & Channel1: D808h */
+	unsigned int		value;
+	struct {
+		unsigned int
+		Dimm_L_Map	:  1-0,  /* DIMM L mapping: 0=DIMM0, 1=DIMM1 */
+		ReservedBits1	:  8-1,
+		EIM		:  9-8,  /* 0:Disabled , 1:Enabled	*/
+		ReservedBits2	: 12-9,
+		ECC		: 14-12,
+		ReservedBits3	: 15-14,
+		BG0hash 	: 18-15,
+		BG1hash 	: 21-18,
+		BG2hash 	: 24-21,
+		Decoder_ebh	: 25-24,
+		ReservedBits4	: 32-25;
+	};
+} MTL_IMC_MAD_CHANNEL;
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 500Ch & Channel1: 5010h */
@@ -4728,6 +4876,25 @@ typedef union
 } ADL_IMC_MAD_DIMM;
 
 typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: D80Ch & Channel1: D810h */
+	unsigned int		value;
+	struct {
+		unsigned int
+		Dimm_L_Size	:  7-0,  /* Size of DIMM in 512 MB multiples */
+		DLW		:  8-7,  /* DIMM L Width: 0=x8, 1=x16 chips */
+		ReservedBits1	:  9-8,
+		DLNOR		: 10-9,  /* DIMM L Ranks: 0=1 rank, 1=2 ranks */
+		ReservedBits2	: 16-10,
+		Dimm_S_Size	: 23-16, /* DIMM S Size in 512 MB multiples */
+		ReservedBits3	: 24-23,
+		DSW		: 25-24, /* DIMM S Width: 0=x8, 1=x16 chips */
+		ReservedBits4	: 26-25,
+		DSNOR		: 27-26, /* DIMM S Ranks: 0=1 rank, 1=2 ranks */
+		ReservedBits	: 32-27;
+	};
+} MTL_IMC_MAD_DIMM;
+
+typedef union
 {	/* Device: 0 - Function: 0 - Offset 5918h			*/
 	unsigned int		value;
 	struct {
@@ -4761,6 +4928,8 @@ typedef union
 #define TGL_SA_PERF_STATUS	RKL_SA_PERF_STATUS
 
 #define ADL_SA_PERF_STATUS	TGL_SA_PERF_STATUS
+
+#define MTL_SA_PERF_STATUS	ADL_SA_PERF_STATUS
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset E4h 			*/
@@ -4852,6 +5021,8 @@ typedef union
 } ADL_CAPID_A;
 
 #define GKL_CAPID_A	SKL_CAPID_A
+
+#define MTL_CAPID_A	ADL_CAPID_A
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset E8h 			*/
@@ -4948,6 +5119,37 @@ typedef union
 #define GKL_CAPID_B	SKL_CAPID_B
 
 typedef union
+{	/* Device: 0 - Function: 0 - Offset E8h 			*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		SPEGFX1 	:  1-0,
+		DPEGFX1 	:  2-1,
+		VMD_DIS 	:  3-2,
+		SH_OPI_EN	:  4-3,
+		ReservedBits1	:  7-4,
+		DDD		:  8-7,
+		GNA_DIS 	:  9-8,
+		ReservedBits2	: 10-9,
+		DEV10_DIS	: 11-10, /* 1: Device 10 disabled & locked */
+		HDCPD		: 12-11,
+		LTECH		: 15-12,
+		ReservedBits3	: 17-15,
+		CDIE_DISABLE 	: 18-17, /* Compute Die Disable: 0=Enable */
+		ReservedBits4	: 19-18,
+		PKGTYP		: 20-19,
+		ReservedBits5	: 21-20,
+		PLL_REF100_CFG	: 24-21,
+		SVM_DISABLE	: 25-24,
+		CACHESZ 	: 28-25,
+		SMTCAP		: 29-28,
+		OC_ENABLED	: 30-29,
+		TRACE_HUB_DIS	: 31-30,
+		IMGU_DIS	: 32-31; /* Image Processing Unit Disable */
+	};
+} MTL_CAPID_B;
+
+typedef union
 {	/* Device: 0 - Function: 0 - Offset ECh 			*/
 	unsigned int		value;
 	struct {
@@ -5008,6 +5210,27 @@ typedef union
 } ADL_CAPID_C;
 
 typedef union
+{	/* Device: 0 - Function: 0 - Offset ECh 			*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		ReservedBits1	:  5-0,
+		DISPLAY_PIPE3	:  6-5,
+		IDD		:  7-6,
+		BCLK_OC_FREQ	:  9-7,
+		SGX_DIS 	: 10-9,
+		ReservedBits2	: 14-10,
+		QCLK_GV_DIS	: 15-14,
+		VPU_DIS 	: 16-15, /* Indicates if VPU is disabled */
+		LPDDR4_EN	: 17-16,
+		DATA_RATE_LPDDR4: 22-17,
+		DDR4_EN 	: 23-22,
+		DATA_RATE_DDR4	: 28-23,
+		ReservedBits3	: 32-28;
+	};
+} MTL_CAPID_C;
+
+typedef union
 {	/* Device: 0 - Function: 0 - Offset F0h 			*/
 	unsigned int		value;
 	struct {
@@ -5038,3 +5261,19 @@ typedef union
 		ReservedBits	: 32-25;
 	};
 } ADL_CAPID_E;
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset F0h 			*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		LPDDR5_EN	:  1-0,
+		DATA_RATE_LPDDR5:  9-1,
+		DDR5_EN 	: 10-9,
+		DATA_RATE_DDR5	: 18-10,
+		IB_ECC_DIS	: 19-18,
+		VDDQ_VOLTAGE	: 30-19,
+		CRASHLOG_DIS	: 31-30,
+		ReservedBits	: 32-31;
+	};
+} MTL_CAPID_E;

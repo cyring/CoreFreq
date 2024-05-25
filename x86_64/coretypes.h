@@ -5,8 +5,8 @@
  */
 
 #define COREFREQ_MAJOR	1
-#define COREFREQ_MINOR	97
-#define COREFREQ_REV	2
+#define COREFREQ_MINOR	98
+#define COREFREQ_REV	0
 
 #if !defined(CORE_COUNT)
 	#define CORE_COUNT	256
@@ -2356,9 +2356,10 @@ typedef struct
 			tWRMPR;
 
 	unsigned int	CMD_Rate;
+	/*	CAS to CAS delay	*/
 	union {
-	  unsigned int	B2B;
-	  unsigned int	GEAR;
+	  unsigned int	B2B;	/* Same bank */
+	  unsigned int	tCCD;	/* Different bank */
 	};
 	struct {
 	  unsigned int	GDM	:  1-0,
@@ -2369,7 +2370,8 @@ typedef struct
 			PDM_AGGR:  9-5,
 			Scramble: 10-9,
 			TSME	: 11-10,
-			Unused	: 32-11;
+			Unused	: 28-11,
+			GEAR	: 32-28;
 	};
 	unsigned int	ECC;
 } RAM_TIMING;

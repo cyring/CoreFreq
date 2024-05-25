@@ -599,6 +599,19 @@ typedef struct
 	/* E4C0h */		ADL_IMC_SREXITTP	SRExit;	/* 64 bits    */
 			} ADL;
 			struct {
+	/* E000h */		MTL_IMC_CR_TC_PRE	Timing; /* 64 bits    */
+	/* E138h */		MTL_IMC_CR_TC_ACT	ACT;	/* 64 bits    */
+	/* E00Ch */		MTL_IMC_CR_TC_RDRD	RDRD;	/* 32 bits    */
+	/* E010h */		MTL_IMC_CR_TC_RDWR	RDWR;	/* 32 bits    */
+	/* E014h */		MTL_IMC_CR_TC_WRRD	WRRD;	/* 32 bits    */
+	/* E018h */		MTL_IMC_CR_TC_WRWR	WRWR;	/* 32 bits    */
+	/* E050h */		MTL_IMC_TC_PWDEN	PWDEN;	/* 64-bits    */
+	/* E070h */		MTL_IMC_CR_TC_ODT	ODT;	/* 64 bits    */
+	/* E088h */		MTL_IMC_SC_GS_CFG	Sched;	/* 64 bits    */
+	/* E4A0h */		MTL_IMC_REFRESH_TC	Refresh; /*64 bits    */
+	/* E4C0h */		MTL_IMC_SREXITTP	SRExit;	/* 64 bits    */
+			} MTL;
+			struct {
 	/* 88h */		AMD_0F_DRAM_TIMING_LOW	DTRL;	/* 32 bits    */
 			} AMD0Fh;
 			struct
@@ -730,6 +743,13 @@ typedef struct
 	/* D810h */				MADD1;		/* 32 bits    */
 		} ADL;
 		struct {
+	/* D800h */	MTL_IMC_MAD_MAPPING	MADCH;		/* 32 bits    */
+	/* D804h */	MTL_IMC_MAD_CHANNEL	MADC0,		/* 32 bits    */
+	/* D808h */				MADC1;		/* 32 bits    */
+	/* D80Ch */	MTL_IMC_MAD_DIMM	MADD0,		/* 32 bits    */
+	/* D810h */				MADD1;		/* 32 bits    */
+		} MTL;
+		struct {
 	/* 90h */	AMD_0F_DRAM_CONFIG_LOW	DCRL;		/* 32 bits    */
 	/* 94h */	AMD_0F_DRAM_CONFIG_HIGH DCRH;		/* 32 bits    */
 		} AMD0Fh;
@@ -796,6 +816,13 @@ typedef struct
 		struct {
 			GKL_CAPID_A		GKL_Cap_A;
 			GKL_CAPID_B		GKL_Cap_B;
+		};
+		struct {
+			MTL_CAPID_A		MTL_Cap_A;
+			MTL_CAPID_B		MTL_Cap_B;
+			MTL_CAPID_C		MTL_Cap_C;
+			MTL_CAPID_E		MTL_Cap_E;
+			MTL_SA_PERF_STATUS	MTL_SA_Pll;
 		};
 		struct {
 			AMD_0F_HTT_NODE_ID	NodeID;
@@ -1479,9 +1506,15 @@ typedef struct
 #define DID_INTEL_RAPTORLAKE_B760_PCH	0x7a06
 /* Source: Intel(R) Pentium(R) Silver N5000 CPU @ 1.10GHz		*/
 #define DID_INTEL_GEMINILAKE_HB 	0x31f0
-/* Source: Meteor Lake kernel preview: Intel(R) Core(TM) Ultra 7 1003H	*/
-#define DID_INTEL_METEORLAKE_M_6_8_2_HB 0x7d01
-#define DID_INTEL_METEORLAKE_PCH	0x7e02
+/* Source: Meteor Lake: Intel Core Ultra Processor Datasheet, Vol 1	*/
+#define DID_INTEL_METEORLAKE_UT4_2_8_2_HB 0x7d00
+#define DID_INTEL_METEORLAKE_H_6_8_2_HB 0x7d01
+#define DID_INTEL_METEORLAKE_U_2_8_2_HB 0x7d02
+#define DID_INTEL_METEORLAKE_H_4_8_2_HB 0x7d14
+#define DID_INTEL_METEORLAKE_U_2_4_2_HB 0x7d16
+#define DID_INTEL_METEORLAKE_H_PCH	0x7e02
+#define DID_INTEL_METEORLAKE_U_PCH	0x7e03
+#define DID_INTEL_METEORLAKE_UT4_PCH	0x7e07
 /* Source: /include/linux/pci_ids.h					*/
 #define DID_AMD_K8_NB_MEMCTL		0x1102
 #define DID_AMD_K8_NB			0x1100
