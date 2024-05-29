@@ -1241,6 +1241,7 @@
 #define RSC_TECHNOLOGIES_R2H_CODE_EN	"Race To Halt Optimization"
 #define RSC_TECHNOLOGIES_HYPERV_CODE_EN "Hypervisor"
 #define RSC_TECHNOLOGIES_WDT_CODE_EN	"Watchdog Timer"
+#define RSC_TECHNOLOGIES_GNA_CODE_EN	"Gaussian & Neural Accelerator"
 
 #define RSC_TECH_AMD_CPB_COMM_CODE_EN	" Hardware Configuration::CpbDis "
 #define RSC_TECH_INTEL_EEO_COMM_CODE_EN " Skylake::Power Control::EEO_Disable "

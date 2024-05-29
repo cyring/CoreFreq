@@ -370,7 +370,8 @@ typedef struct
 				L2_Stream_HW_Pf : 41-40,
 				L2_UpDown_Pf	: 42-41,
 				LLC_Streamer	: 43-42,
-				_pad64		: 64-43;
+				GNA		: 44-43,
+				_pad64		: 64-44;
 	} Technology;
 
 	struct {

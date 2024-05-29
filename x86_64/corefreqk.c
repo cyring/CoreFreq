@@ -6514,10 +6514,10 @@ static PCI_CALLBACK GLK_IMC(struct pci_dev *dev)
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
 
 	pci_read_config_dword(dev, 0xe4,
-				&PUBLIC(RO(Proc))->Uncore.Bus.GKL_Cap_A.value);
+				&PUBLIC(RO(Proc))->Uncore.Bus.GLK_Cap_A.value);
 
 	pci_read_config_dword(dev, 0xe8,
-				&PUBLIC(RO(Proc))->Uncore.Bus.GKL_Cap_B.value);
+				&PUBLIC(RO(Proc))->Uncore.Bus.GLK_Cap_B.value);
 
 	SoC_SKL_VTD();
 

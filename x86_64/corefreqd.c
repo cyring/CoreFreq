@@ -4970,6 +4970,8 @@ void SKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 
 	RO(Shm)->Proc.Technology.IOMMU_Ver_Minor = \
 					RO(Proc)->Uncore.Bus.IOMMU_Ver.Minor;
+
+	RO(Shm)->Proc.Technology.GNA = !RO(Proc)->Uncore.Bus.SKL_Cap_B.GMM_DIS;
 }
 
 void RKL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
@@ -5286,6 +5288,8 @@ void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 
 	RO(Shm)->Proc.Technology.IOMMU_Ver_Minor = \
 					RO(Proc)->Uncore.Bus.IOMMU_Ver.Minor;
+
+	RO(Shm)->Proc.Technology.GNA = !RO(Proc)->Uncore.Bus.RKL_Cap_B.GNA_DIS;
 }
 
 void TGL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
@@ -5838,6 +5842,8 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 
 	RO(Shm)->Proc.Technology.IOMMU_Ver_Minor = \
 					RO(Proc)->Uncore.Bus.IOMMU_Ver.Minor;
+
+	RO(Shm)->Proc.Technology.GNA = !RO(Proc)->Uncore.Bus.ADL_Cap_B.GNA_DIS;
 }
 
 void GLK_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
@@ -5851,13 +5857,15 @@ void GLK_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.Unit.BusSpeed = MC_NIL;
 	RO(Shm)->Uncore.Unit.DDRSpeed = MC_NIL;
 
-	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.RKL_Cap_A.VT_d;
+	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.GLK_Cap_A.VT_d;
 
 	RO(Shm)->Proc.Technology.IOMMU_Ver_Major = \
 					RO(Proc)->Uncore.Bus.IOMMU_Ver.Major;
 
 	RO(Shm)->Proc.Technology.IOMMU_Ver_Minor = \
 					RO(Proc)->Uncore.Bus.IOMMU_Ver.Minor;
+
+	RO(Shm)->Proc.Technology.GNA = !RO(Proc)->Uncore.Bus.GLK_Cap_B.GMM_DIS;
 }
 
 void GLK_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
@@ -5982,6 +5990,8 @@ void MTL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 
 	RO(Shm)->Proc.Technology.IOMMU_Ver_Minor = \
 					RO(Proc)->Uncore.Bus.IOMMU_Ver.Minor;
+
+	RO(Shm)->Proc.Technology.GNA = !RO(Proc)->Uncore.Bus.MTL_Cap_B.GNA_DIS;
 }
 
 void MTL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))

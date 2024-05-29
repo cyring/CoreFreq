@@ -814,8 +814,8 @@ typedef struct
 			ADL_SA_PERF_STATUS	ADL_SA_Pll;
 		};
 		struct {
-			GKL_CAPID_A		GKL_Cap_A;
-			GKL_CAPID_B		GKL_Cap_B;
+			GLK_CAPID_A		GLK_Cap_A;
+			GLK_CAPID_B		GLK_Cap_B;
 		};
 		struct {
 			MTL_CAPID_A		MTL_Cap_A;

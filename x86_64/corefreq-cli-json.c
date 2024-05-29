@@ -1531,6 +1531,9 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.L2_UpDown_Pf);
 			json_key(&s, "LLC_Streamer");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.LLC_Streamer);
+			json_key(&s, "GNA");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.GNA);
+
 
 			json_end_object(&s);
 		}
