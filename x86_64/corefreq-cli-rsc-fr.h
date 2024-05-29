@@ -715,8 +715,17 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_TECHNOLOGIES_R2H_CODE_FR	"Optimisation Race To Halt"
 #define RSC_TECHNOLOGIES_HYPERV_CODE_FR "Hyperviseur"
 #define RSC_TECHNOLOGIES_WDT_CODE_FR	"Compteur Watchdog"
+#define RSC_TECHNOLOGIES_VMD_CODE_FR	\
+			"P""\xa9""riph""\xa9""rique de gestion de volume"
+
 #define RSC_TECHNOLOGIES_GNA_CODE_FR	\
 				"Acc""\xa9""l""\xa9""rateur Gaussien & Neuronal"
+
+#define RSC_TECHNOLOGIES_HDCP_CODE_FR	\
+				"Protection contenu haute d""\xa9""finition"
+
+#define RSC_TECHNOLOGIES_IPU_CODE_FR	"Unit""\xa9"" de traitement d'images"
+#define RSC_TECHNOLOGIES_VPU_CODE_FR	"Unit""\xa9"" de traitement visuel"
 
 #define RSC_TECH_AMD_CPB_COMM_CODE_FR	RSC_TECH_AMD_CPB_COMM_CODE_EN
 #define RSC_TECH_INTEL_EEO_COMM_CODE_FR RSC_TECH_INTEL_EEO_COMM_CODE_EN

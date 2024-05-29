@@ -1241,7 +1241,13 @@
 #define RSC_TECHNOLOGIES_R2H_CODE_EN	"Race To Halt Optimization"
 #define RSC_TECHNOLOGIES_HYPERV_CODE_EN "Hypervisor"
 #define RSC_TECHNOLOGIES_WDT_CODE_EN	"Watchdog Timer"
+#define RSC_TECHNOLOGIES_VMD_CODE_EN	"Volume Management Device"
 #define RSC_TECHNOLOGIES_GNA_CODE_EN	"Gaussian & Neural Accelerator"
+#define RSC_TECHNOLOGIES_HDCP_CODE_EN	\
+				"High-Bandwidth Digital Content Protection"
+
+#define RSC_TECHNOLOGIES_IPU_CODE_EN	"Image Processing Unit"
+#define RSC_TECHNOLOGIES_VPU_CODE_EN	"Vision Processing Unit"
 
 #define RSC_TECH_AMD_CPB_COMM_CODE_EN	" Hardware Configuration::CpbDis "
 #define RSC_TECH_INTEL_EEO_COMM_CODE_EN " Skylake::Power Control::EEO_Disable "

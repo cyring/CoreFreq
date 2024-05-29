@@ -5079,7 +5079,7 @@ typedef union
 		SMTCAP		: 29-28,
 		OC_ENABLED	: 30-29, /* 0: Overclocking is disabled */
 		TRACE_HUB_DIS	: 31-30, /* Trace Hub & I/O are disabled */
-		IMGU_DIS	: 32-31; /* Device 5 associated memory spaces */
+		IPU_DIS 	: 32-31; /* Device 5 associated memory spaces */
 	};	/* RKL: Chap. 3.1.39 ; TGL: $3.1.41			*/
 } RKL_CAPID_B;
 
@@ -5112,7 +5112,7 @@ typedef union
 		SMTCAP		: 29-28,
 		OC_ENABLED	: 30-29,
 		TRACE_HUB_DIS	: 31-30,
-		IMGU_DIS	: 32-31;
+		IPU_DIS 	: 32-31;
 	};
 } ADL_CAPID_B;
 
@@ -5145,7 +5145,7 @@ typedef union
 		SMTCAP		: 29-28,
 		OC_ENABLED	: 30-29,
 		TRACE_HUB_DIS	: 31-30,
-		IMGU_DIS	: 32-31; /* Image Processing Unit Disable */
+		IPU_DIS 	: 32-31; /* Image Processing Unit Disable */
 	};
 } MTL_CAPID_B;
 

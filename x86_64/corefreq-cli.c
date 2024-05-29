@@ -4392,10 +4392,50 @@ REASON_CODE SysInfoTech(Window *win,
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Technology.VMD == 1,
+		2, "%s%.*sVMD   [%3s]",
+		RSC(TECHNOLOGIES_VMD).CODE(), NULL,
+		width - 14 - RSZ(TECHNOLOGIES_VMD),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
 		RO(Shm)->Proc.Technology.GNA == 1,
 		2, "%s%.*sGNA   [%3s]",
 		RSC(TECHNOLOGIES_GNA).CODE(), NULL,
 		width - 14 - RSZ(TECHNOLOGIES_GNA),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Technology.HDCP == 1,
+		2, "%s%.*sHDCP   [%3s]",
+		RSC(TECHNOLOGIES_HDCP).CODE(), NULL,
+		width - 15 - RSZ(TECHNOLOGIES_HDCP),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Technology.IPU == 1,
+		2, "%s%.*sIPU   [%3s]",
+		RSC(TECHNOLOGIES_IPU).CODE(), NULL,
+		width - 14 - RSZ(TECHNOLOGIES_IPU),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Technology.VPU == 1,
+		2, "%s%.*sVPU   [%3s]",
+		RSC(TECHNOLOGIES_VPU).CODE(), NULL,
+		width - 14 - RSZ(TECHNOLOGIES_VPU),
 		NULL,
 		SCANKEY_NULL,
 		NULL
