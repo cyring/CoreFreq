@@ -722,7 +722,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 				"Acc""\xa9""l""\xa9""rateur Gaussien & Neuronal"
 
 #define RSC_TECHNOLOGIES_HDCP_CODE_FR	\
-				"Protection contenu haute d""\xa9""finition"
+				"Protection des contenus num""\xa9""riques"
 
 #define RSC_TECHNOLOGIES_IPU_CODE_FR	"Unit""\xa9"" de traitement d'images"
 #define RSC_TECHNOLOGIES_VPU_CODE_FR	"Unit""\xa9"" de traitement visuel"
@@ -738,6 +738,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_TECH_AMD_SVM_COMM_CODE_FR	RSC_TECH_AMD_SVM_COMM_CODE_EN
 #define RSC_TECH_INTEL_VTD_COMM_CODE_FR RSC_TECH_INTEL_VTD_COMM_CODE_EN
 #define RSC_TECH_AMD_V_COMM_CODE_FR	RSC_TECH_AMD_V_COMM_CODE_EN
+#define RSC_TECH_HDCP_COMM_CODE_FR	RSC_TECH_HDCP_COMM_CODE_EN
 
 #define RSC_PERF_MON_TITLE_CODE_FR	" Gestion de la performance "
 #define RSC_PERF_CAPS_TITLE_CODE_FR	" Capacit""\xa9""s de performances "

@@ -1243,9 +1243,7 @@
 #define RSC_TECHNOLOGIES_WDT_CODE_EN	"Watchdog Timer"
 #define RSC_TECHNOLOGIES_VMD_CODE_EN	"Volume Management Device"
 #define RSC_TECHNOLOGIES_GNA_CODE_EN	"Gaussian & Neural Accelerator"
-#define RSC_TECHNOLOGIES_HDCP_CODE_EN	\
-				"High-Bandwidth Digital Content Protection"
-
+#define RSC_TECHNOLOGIES_HDCP_CODE_EN	"Digital Content Protection"
 #define RSC_TECHNOLOGIES_IPU_CODE_EN	"Image Processing Unit"
 #define RSC_TECHNOLOGIES_VPU_CODE_EN	"Vision Processing Unit"
 
@@ -1260,6 +1258,7 @@
 #define RSC_TECH_INTEL_VMX_COMM_CODE_EN " Intel Virtual Machine Extensions "
 #define RSC_TECH_INTEL_VTD_COMM_CODE_EN " I/O MMU virtualization (Intel VT-d) "
 #define RSC_TECH_AMD_V_COMM_CODE_EN	" I/O MMU virtualization (AMD-Vi) "
+#define RSC_TECH_HDCP_COMM_CODE_EN " High-Bandwidth Digital Content Protection "
 
 #define RSC_PERF_MON_TITLE_CODE_EN	" Performance Monitoring "
 #define RSC_PERF_CAPS_TITLE_CODE_EN	" Performance Capabilities "
