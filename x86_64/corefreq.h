@@ -375,7 +375,8 @@ typedef struct
 				HDCP		: 46-45,
 				IPU		: 47-46,
 				VPU		: 48-47,
-				_pad64		: 64-48;
+				OC		: 49-48,
+				_pad64		: 64-49;
 	} Technology;
 
 	struct {

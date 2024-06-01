@@ -3828,7 +3828,8 @@ typedef union
 		ReservedBits4	: 25-24,
 		CACHESZ 	: 28-25, /* Cache Size Capability	*/
 		SMTCAP		: 29-28, /* SMT Capability		*/
-		ReservedBits5	: 32-29;
+		OC_ENABLED	: 30-29, /* 0: Overclocking is disabled */
+		ReservedBits5	: 32-30;
 	};
 } IVB_CAPID_B;	/* Chap. 2.5.39 CAPID0_B Capabilities B Register	*/
 
@@ -5046,7 +5047,8 @@ typedef union
 		ReservedBits7	: 25-24,
 		CACHESZ 	: 28-25,
 		SMTCAP		: 29-28,
-		ReservedBits8	: 31-29,
+		OC_ENABLED	: 30-29, /* 0: Overclocking is disabled */
+		ReservedBits8	: 31-30,
 		IMGU_DIS	: 32-31; /* Device 5 associated memory spaces */
 	};	/* Chap. 3.40 CAPID0_B Capabilities B Register		*/
 } SKL_CAPID_B;

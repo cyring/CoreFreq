@@ -1541,6 +1541,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.IPU);
 			json_key(&s, "VPU");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.VPU);
+			json_key(&s, "OC");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.OC);
 
 			json_end_object(&s);
 		}

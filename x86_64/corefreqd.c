@@ -4416,7 +4416,8 @@ void IVB_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Uncore.Unit.DDR_Ver  = 3;
 	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_UNSPEC;
 
-	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.SNB_Cap.VT_d;
+	RO(Shm)->Proc.Technology.IOMMU = !RO(Proc)->Uncore.Bus.SNB_Cap.IVB.VT_d;
+	RO(Shm)->Proc.Technology.OC = RO(Proc)->Uncore.Bus.IVB_Cap.OC_ENABLED;
 }
 
 unsigned int DimmWidthToRows(unsigned int width)
@@ -4973,6 +4974,7 @@ void SKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 
 	RO(Shm)->Proc.Technology.GNA = !RO(Proc)->Uncore.Bus.SKL_Cap_B.GMM_DIS;
 	RO(Shm)->Proc.Technology.IPU = !RO(Proc)->Uncore.Bus.SKL_Cap_B.IMGU_DIS;
+	RO(Shm)->Proc.Technology.OC = RO(Proc)->Uncore.Bus.SKL_Cap_B.OC_ENABLED;
 }
 
 void RKL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
@@ -5294,6 +5296,7 @@ void RKL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Proc.Technology.GNA = !RO(Proc)->Uncore.Bus.RKL_Cap_B.GNA_DIS;
 	RO(Shm)->Proc.Technology.HDCP= !RO(Proc)->Uncore.Bus.RKL_Cap_B.HDCPD;
 	RO(Shm)->Proc.Technology.IPU = !RO(Proc)->Uncore.Bus.RKL_Cap_B.IPU_DIS;
+	RO(Shm)->Proc.Technology.OC = RO(Proc)->Uncore.Bus.RKL_Cap_B.OC_ENABLED;
 }
 
 void TGL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
@@ -5851,6 +5854,7 @@ void ADL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Proc.Technology.GNA = !RO(Proc)->Uncore.Bus.ADL_Cap_B.GNA_DIS;
 	RO(Shm)->Proc.Technology.HDCP= !RO(Proc)->Uncore.Bus.ADL_Cap_B.HDCPD;
 	RO(Shm)->Proc.Technology.IPU = !RO(Proc)->Uncore.Bus.ADL_Cap_B.IPU_DIS;
+	RO(Shm)->Proc.Technology.OC = RO(Proc)->Uncore.Bus.ADL_Cap_B.OC_ENABLED;
 }
 
 void GLK_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
@@ -5874,6 +5878,7 @@ void GLK_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 
 	RO(Shm)->Proc.Technology.GNA = !RO(Proc)->Uncore.Bus.GLK_Cap_B.GMM_DIS;
 	RO(Shm)->Proc.Technology.IPU = !RO(Proc)->Uncore.Bus.GLK_Cap_B.IMGU_DIS;
+	RO(Shm)->Proc.Technology.OC = RO(Proc)->Uncore.Bus.GLK_Cap_B.OC_ENABLED;
 }
 
 void GLK_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
@@ -6004,6 +6009,7 @@ void MTL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	RO(Shm)->Proc.Technology.HDCP= !RO(Proc)->Uncore.Bus.MTL_Cap_B.HDCPD;
 	RO(Shm)->Proc.Technology.IPU = !RO(Proc)->Uncore.Bus.MTL_Cap_B.IPU_DIS;
 	RO(Shm)->Proc.Technology.VPU = !RO(Proc)->Uncore.Bus.MTL_Cap_C.VPU_DIS;
+	RO(Shm)->Proc.Technology.OC = RO(Proc)->Uncore.Bus.MTL_Cap_B.OC_ENABLED;
 }
 
 void MTL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
