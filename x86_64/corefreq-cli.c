@@ -1349,6 +1349,20 @@ REASON_CODE SysInfoProc(Window *win,
 			23, hSpace, RO(Shm)->Proc.Features.Factory.Ratio ),
 		RefreshFactoryFreq );
 
+    if (RO(Shm)->Proc.Features.OC_Enable)
+    {
+	PUT(	SCANKEY_NULL, attrib[!RO(Shm)->Proc.Features.OC_Lock],
+		width, 2, "%s%.*s[%7.*s]", RSC(OVERCLOCK).CODE(),
+		width - 12 - RSZ(OVERCLOCK), hSpace, 6,
+		RO(Shm)->Proc.Features.OC_Lock ?
+			RSC(LOCK).CODE() : RSC(UNLOCK).CODE() );
+
+	PUT(	SCANKEY_NULL, attrib[3], width, 0,
+		"%.*s""%s""%.*s""%+5d""%.*s""[%+4d ]",
+		17, hSpace, RSC(BIN).CODE(),
+		 2, hSpace, RO(Shm)->Proc.Features.Factory.Overclock,
+		23, hSpace, RO(Shm)->Proc.Features.Factory.Bins );
+    }
 	PUT(SCANKEY_NULL, attrib[0], width, 2, "%s", RSC(PERFORMANCE).CODE());
 
 	PUT(SCANKEY_NULL, attrib[0], width, 3, "%s", RSC(PSTATE).CODE());
@@ -4436,6 +4450,16 @@ REASON_CODE SysInfoTech(Window *win,
 		2, "%s%.*sVPU   [%3s]",
 		RSC(TECHNOLOGIES_VPU).CODE(), NULL,
 		width - 14 - RSZ(TECHNOLOGIES_VPU),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Technology.OC == 1,
+		2, "%s%.*sOC   [%3s]",
+		RSC(TECHNOLOGIES_OC).CODE(), NULL,
+		width - 13 - RSZ(TECHNOLOGIES_OC),
 		NULL,
 		SCANKEY_NULL,
 		NULL

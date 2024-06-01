@@ -357,6 +357,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FREQUENCY_CODE_FR		"Fr""\xa9""quence"
 #define RSC_RATIO_CODE_FR		"Ratio"
 #define RSC_FACTORY_CODE_FR		"Usine"
+#define RSC_OVERCLOCK_CODE_FR		"Overclock"
 #define RSC_PERFORMANCE_CODE_FR 	"Performance"
 #define RSC_TARGET_CODE_FR		"Cible"
 #define RSC_LEVEL_CODE_FR		"Niveau"
@@ -726,6 +727,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_TECHNOLOGIES_IPU_CODE_FR	"Unit""\xa9"" de traitement d'images"
 #define RSC_TECHNOLOGIES_VPU_CODE_FR	"Unit""\xa9"" de traitement visuel"
+#define RSC_TECHNOLOGIES_OC_CODE_FR	"Surcaden""\xa7""age"
 
 #define RSC_TECH_AMD_CPB_COMM_CODE_FR	RSC_TECH_AMD_CPB_COMM_CODE_EN
 #define RSC_TECH_INTEL_EEO_COMM_CODE_FR RSC_TECH_INTEL_EEO_COMM_CODE_EN

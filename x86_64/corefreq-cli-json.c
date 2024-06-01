@@ -1400,9 +1400,20 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 				}
 				json_end_object(&s);
 			}
-			json_key(&s, "FactoryFreq");
-			json_literal(&s, "%u", RO(Shm)->Proc.Features.Factory.Freq);
+			json_key(&s, "Factory");
+			{
+				json_start_object(&s);
+				json_key(&s, "Freq");
+				json_literal(&s, "%u", RO(Shm)->Proc.Features.Factory.Freq);
+				json_key(&s, "Ratio");
+				json_literal(&s, "%u", RO(Shm)->Proc.Features.Factory.Ratio);
+				json_key(&s, "Bins");
+				json_literal(&s, "%u", RO(Shm)->Proc.Features.Factory.Bins);
+				json_key(&s, "Overclock");
+				json_literal(&s, "%u", RO(Shm)->Proc.Features.Factory.Overclock);
 
+				json_end_object(&s);
+			}
 			json_key(&s, "InvariantTSC");
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.InvariantTSC);
 			json_key(&s, "HyperThreading");
@@ -1449,6 +1460,10 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.SpecTurboRatio);
 			json_key(&s, "XtraCOF");
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.XtraCOF);
+			json_key(&s, "OC_Enable");
+			json_literal(&s, "%u", RO(Shm)->Proc.Features.OC_Enable);
+			json_key(&s, "OC_Lock");
+			json_literal(&s, "%u", RO(Shm)->Proc.Features.OC_Lock);
 
 			json_end_object(&s);
 		}

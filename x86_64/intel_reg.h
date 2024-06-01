@@ -669,11 +669,14 @@ typedef union
 {	/* MSR_FLEX_RATIO(0x194): Core 2 Extreme, i9-9900K, 11th Gen, 12th Gen*/
 	unsigned long long value;
 	struct
-	{
+	{				/* OC Ratio = BCLK ratio + OC_BINS */
 		unsigned long long
-		UnknownBits1	: 16-0,
-		OC_BINS 	: 24-16, /* OC Ratio = BCLK ratio + OC_BINS */
-		UnknownBits2	: 64-24;
+		OC_VID		:  8-0,
+		UnknownBits1	: 16-8,
+		OC_ENABLED	: 17-16,
+		OC_BINS 	: 20-17, /* 0:Disabled ... 7:Unlimited	*/
+		OC_LOCK 	: 21-20,
+		UnknownBits2	: 64-21;
 	};
 } FLEX_RATIO;
 

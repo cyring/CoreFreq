@@ -2680,6 +2680,142 @@ static PROCESSOR_SPECIFIC *LookupProcessor(void)
 	return NULL;
 }
 
+static void Intel_FlexRatio(bool OC_ENABLED)
+{
+  if (OC_ENABLED) {
+    static struct {
+		struct SIGNATURE Arch;
+		unsigned short	grantFlex	:  1-0,
+				experimental	:  2-1,
+				freeToUse	: 16-2;
+    } list[] = {
+		{_Core_Yonah,		0, 1, 0},
+		{_Core_Conroe,		0, 1, 0},
+		{_Core_Kentsfield,	0, 1, 0},
+		{_Core_Conroe_616,	0, 1, 0},
+		{_Core_Penryn,		0, 1, 0},
+		{_Core_Dunnington,	0, 1, 0},
+
+		{_Atom_Bonnell, 	0, 1, 0},	/* 06_1C */
+		{_Atom_Silvermont,	0, 1, 0},	/* 06_26 */
+		{_Atom_Lincroft,	0, 1, 0},	/* 06_27 */
+		{_Atom_Clover_Trail,	0, 1, 0},	/* 06_35 */
+		{_Atom_Saltwell,	0, 1, 0},	/* 06_36 */
+
+		{_Silvermont_Bay_Trail, 0, 1, 0},	/* 06_37 */
+
+		{_Atom_Avoton,		0, 1, 0},	/* 06_4D */
+		{_Atom_Airmont, 	0, 1, 0},	/* 06_4C */
+		{_Atom_Goldmont,	1, 1, 0},	/* 06_5C */
+		{_Atom_Sofia,		1, 1, 0},	/* 06_5D */
+		{_Atom_Merrifield,	1, 1, 0},	/* 06_4A */
+		{_Atom_Moorefield,	1, 1, 0},	/* 06_5A */
+
+		{_Nehalem_Bloomfield,	1, 1, 0},	/* 06_1A */
+		{_Nehalem_Lynnfield,	1, 1, 0},	/* 06_1E */
+		{_Nehalem_MB,		1, 1, 0},	/* 06_1F */
+		{_Nehalem_EX,		1, 1, 0},	/* 06_2E */
+
+		{_Westmere,		1, 1, 0},	/* 06_25 */
+		{_Westmere_EP,		1, 1, 0},	/* 06_2C */
+		{_Westmere_EX,		1, 1, 0},	/* 06_2F */
+
+		{_SandyBridge,		1, 1, 0},	/* 06_2A */
+		{_SandyBridge_EP,	1, 1, 0},	/* 06_2D */
+
+		{_IvyBridge,		1, 0, 0},	/* 06_3A */
+		{_IvyBridge_EP, 	1, 1, 0},	/* 06_3E */
+
+		{_Haswell_DT,		1, 1, 0},	/* 06_3C */
+		{_Haswell_EP,		1, 1, 0},	/* 06_3F */
+		{_Haswell_ULT,		1, 1, 0},	/* 06_45 */
+		{_Haswell_ULX,		1, 1, 0},	/* 06_46 */
+
+		{_Broadwell,		1, 1, 0},	/* 06_3D */
+		{_Broadwell_D,		1, 1, 0},	/* 06_56 */
+		{_Broadwell_H,		1, 1, 0},	/* 06_47 */
+		{_Broadwell_EP, 	1, 1, 0},	/* 06_4F */
+
+		{_Skylake_UY,		1, 1, 0},	/* 06_4E */
+		{_Skylake_S,		1, 1, 0},	/* 06_5E */
+		{_Skylake_X,		1, 1, 0},	/* 06_55 */
+
+		{_Xeon_Phi,		0, 1, 0},	/* 06_57 */
+
+		{_Kabylake,		1, 1, 0},	/* 06_9E */
+		{_Kabylake_UY,		1, 1, 0},	/* 06_8E */
+
+		{_Cannonlake_U, 	1, 1, 0},	/* 06_66 */
+		{_Cannonlake_H, 	1, 1, 0},
+		{_Geminilake,		1, 1, 0},	/* 06_7A */
+		{_Icelake_UY,		1, 1, 0},	/* 06_7E */
+
+		{_Icelake_X,		1, 1, 0},
+		{_Icelake_D,		1, 1, 0},
+		{_Sunny_Cove,		1, 1, 0},
+		{_Tigerlake,		1, 1, 0},
+		{_Tigerlake_U,		1, 1, 0},	/* 06_8C */
+		{_Cometlake,		1, 1, 0},
+		{_Cometlake_UY, 	1, 1, 0},
+		{_Atom_Denverton,	1, 1, 0},
+		{_Tremont_Jacobsville,	1, 1, 0},
+		{_Tremont_Lakefield,	1, 1, 0},
+		{_Tremont_Elkhartlake,	1, 1, 0},
+		{_Tremont_Jasperlake,	1, 1, 0},
+		{_Sapphire_Rapids,	1, 1, 0},
+		{_Emerald_Rapids,	1, 1, 0},
+		{_Granite_Rapids_X,	1, 1, 0},
+		{_Granite_Rapids_D,	1, 1, 0},
+		{_Sierra_Forest,	1, 1, 0},
+		{_Grand_Ridge,		1, 1, 0},
+		{_Rocketlake,		1, 1, 0},
+		{_Rocketlake_U, 	1, 1, 0},
+		{_Alderlake_S,		1, 1, 0},	/* 06_97 */
+		{_Alderlake_H,		1, 1, 0},
+		{_Alderlake_N,		1, 1, 0},
+		{_Meteorlake_M, 	1, 1, 0},
+		{_Meteorlake_N, 	1, 1, 0},
+		{_Meteorlake_S, 	1, 1, 0},
+		{_Raptorlake,		1, 1, 0},	/* 06_B7 */
+		{_Raptorlake_P, 	1, 1, 0},
+		{_Raptorlake_S, 	1, 1, 0},
+		{_Lunarlake,		1, 1, 0},	/* 06_BD */
+		{_Arrowlake,		1, 1, 0},	/* 06_C6 */
+		{_Arrowlake_H,		1, 1, 0},	/* 06_C5 */
+		{_Arrowlake_U,		1, 1, 0},	/* 06_B5 */
+		{_Pantherlake,		1, 1, 0},	/* 06_CC */
+		{_Clearwater_Forest,	1, 1, 0}	/* 06_DD */
+    };
+	const unsigned int ids = sizeof(list) / sizeof(list[0]);
+	unsigned int id;
+  for (id = 0; id < ids; id++) {
+   if ((list[id].Arch.ExtFamily == PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
+    && (list[id].Arch.Family == PUBLIC(RO(Proc))->Features.Std.EAX.Family)
+    && (list[id].Arch.ExtModel == PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
+    && (list[id].Arch.Model == PUBLIC(RO(Proc))->Features.Std.EAX.Model))
+    {
+	if (list[id].grantFlex) {
+	  if (!list[id].experimental
+	   || (list[id].experimental
+	   && PUBLIC(RO(Proc))->Registration.Experimental))
+	    {
+		FLEX_RATIO flexRegister = {.value = 0};
+		RDMSR(flexRegister, MSR_FLEX_RATIO);
+		PUBLIC(RO(Proc))->Features.OC_Enable = flexRegister.OC_ENABLED;
+		PUBLIC(RO(Proc))->Features.Factory.Bins = flexRegister.OC_BINS;
+		PUBLIC(RO(Proc))->Features.OC_Lock = flexRegister.OC_LOCK;
+		PUBLIC(RO(Proc))->Features.Factory.Overclock = \
+		ABS_FREQ_MHz(	signed int,
+				PUBLIC(RO(Proc))->Features.Factory.Bins,
+				PUBLIC(RO(Proc))->Features.Factory.Clock );
+	    }
+	}
+	break;
+    }
+   }
+  }
+}
+
 static int Intel_MaxBusRatio(PLATFORM_ID *PfID)
 {
 	struct SIGNATURE whiteList[] = {
@@ -5904,6 +6040,8 @@ static PCI_CALLBACK IVB_IMC(struct pci_dev *dev)
 	pci_read_config_dword(dev, 0xe8,
 				&PUBLIC(RO(Proc))->Uncore.Bus.IVB_Cap.value);
 
+	Intel_FlexRatio(PUBLIC(RO(Proc))->Uncore.Bus.IVB_Cap.OC_ENABLED == 1);
+
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
 
 	return Router(dev, 0x48, 64, 0x8000, Query_SNB_IMC, 0);
@@ -6103,6 +6241,8 @@ static PCI_CALLBACK HSW_HOST(struct pci_dev *dev, ROUTER Query)
 
 	pci_read_config_dword(dev, 0xe8,
 				&PUBLIC(RO(Proc))->Uncore.Bus.IVB_Cap.value);
+
+	Intel_FlexRatio(PUBLIC(RO(Proc))->Uncore.Bus.IVB_Cap.OC_ENABLED == 1);
 
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
 
@@ -6345,6 +6485,8 @@ static PCI_CALLBACK SKL_HOST(	struct pci_dev *dev,
 	pci_read_config_dword(dev, 0xec,
 				&PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_C.value);
 
+	Intel_FlexRatio(PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_B.OC_ENABLED == 1);
+
 	SoC_SKL_VTD();
 
 	return Router(dev, 0x48, 64, wsize, Query, mc);
@@ -6408,6 +6550,8 @@ static PCI_CALLBACK ADL_HOST(	struct pci_dev *dev,
 	pci_read_config_dword(dev, 0xf0,
 				&PUBLIC(RO(Proc))->Uncore.Bus.ADL_Cap_E.value);
 
+	Intel_FlexRatio(PUBLIC(RO(Proc))->Uncore.Bus.ADL_Cap_B.OC_ENABLED == 1);
+
 	SoC_SKL_VTD();
 
 	return Router(dev, 0x48, 64, wsize, Query, mc);
@@ -6467,6 +6611,8 @@ static PCI_CALLBACK MTL_HOST(	struct pci_dev *dev,
 	pci_read_config_dword(dev, 0xf0,
 				&PUBLIC(RO(Proc))->Uncore.Bus.MTL_Cap_E.value);
 
+	Intel_FlexRatio(PUBLIC(RO(Proc))->Uncore.Bus.MTL_Cap_B.OC_ENABLED == 1);
+
 	SoC_SKL_VTD();
 
 	return Router(dev, 0x48, 64, wsize, Query, mc);
@@ -6518,6 +6664,8 @@ static PCI_CALLBACK GLK_IMC(struct pci_dev *dev)
 
 	pci_read_config_dword(dev, 0xe8,
 				&PUBLIC(RO(Proc))->Uncore.Bus.GLK_Cap_B.value);
+
+	Intel_FlexRatio(PUBLIC(RO(Proc))->Uncore.Bus.GLK_Cap_B.OC_ENABLED == 1);
 
 	SoC_SKL_VTD();
 

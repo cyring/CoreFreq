@@ -854,6 +854,7 @@
 #define RSC_FREQUENCY_CODE_EN		"Frequency"
 #define RSC_RATIO_CODE_EN		"Ratio"
 #define RSC_FACTORY_CODE_EN		"Factory"
+#define RSC_OVERCLOCK_CODE_EN		"Overclock"
 #define RSC_PERFORMANCE_CODE_EN 	"Performance"
 #define RSC_TARGET_CODE_EN		"Target"
 #define RSC_LEVEL_CODE_EN		"Level"
@@ -1246,6 +1247,7 @@
 #define RSC_TECHNOLOGIES_HDCP_CODE_EN	"Digital Content Protection"
 #define RSC_TECHNOLOGIES_IPU_CODE_EN	"Image Processing Unit"
 #define RSC_TECHNOLOGIES_VPU_CODE_EN	"Vision Processing Unit"
+#define RSC_TECHNOLOGIES_OC_CODE_EN	"Overclocking"
 
 #define RSC_TECH_AMD_CPB_COMM_CODE_EN	" Hardware Configuration::CpbDis "
 #define RSC_TECH_INTEL_EEO_COMM_CODE_EN " Skylake::Power Control::EEO_Disable "
@@ -2338,6 +2340,7 @@
 #define RSC_CPPC_CODE			"CPPC"
 #define RSC_MAX_CODE			"Max"
 #define RSC_MIN_CODE			"Min"
+#define RSC_BIN_CODE			"Bin"
 #define RSC_UCLK_CODE			"CLK"
 #define RSC_MCLK_CODE			"MEM"
 #define RSC_TGT_CODE			"TGT"

@@ -2161,6 +2161,8 @@ typedef struct	/* BSP CPUID features.					*/
 			CLOCK		Clock;
 			unsigned int	Freq,
 					Ratio;
+			signed int	Bins,
+					Overclock;
 		struct {
 			unsigned int	Interface;
 		    union {
@@ -2213,7 +2215,9 @@ typedef struct	/* BSP CPUID features.					*/
 			OSPM_EPP	: 55-54,
 			ACPI_CST_CAP	: 56-55,
 			ACPI_CST	: 60-56, /* 15 CState sub-packages */
-			_pad64		: 64-60;
+			OC_Enable	: 61-60,
+			OC_Lock		: 62-61,
+			_pad64		: 64-62;
 	};
 } FEATURES;
 
