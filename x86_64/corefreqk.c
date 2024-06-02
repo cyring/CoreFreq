@@ -2687,104 +2687,105 @@ static void Intel_FlexRatio(bool OC_ENABLED)
 		struct SIGNATURE Arch;
 		unsigned short	grantFlex	:  1-0,
 				experimental	:  2-1,
-				freeToUse	: 16-2;
+				freeToUse	:  8-2,
+				bitsLayout	: 16-8;
     } list[] = {
-		{_Core_Yonah,		0, 1, 0},
-		{_Core_Conroe,		0, 1, 0},
-		{_Core_Kentsfield,	0, 1, 0},
-		{_Core_Conroe_616,	0, 1, 0},
-		{_Core_Penryn,		0, 1, 0},
-		{_Core_Dunnington,	0, 1, 0},
+		{_Core_Yonah,		0, 1, 0, 1},
+		{_Core_Conroe,		0, 1, 0, 1},
+		{_Core_Kentsfield,	0, 1, 0, 1},
+		{_Core_Conroe_616,	0, 1, 0, 1},
+		{_Core_Penryn,		1, 1, 0, 1},	/* 06_17 */
+		{_Core_Dunnington,	0, 1, 0, 1},
 
-		{_Atom_Bonnell, 	0, 1, 0},	/* 06_1C */
-		{_Atom_Silvermont,	0, 1, 0},	/* 06_26 */
-		{_Atom_Lincroft,	0, 1, 0},	/* 06_27 */
-		{_Atom_Clover_Trail,	0, 1, 0},	/* 06_35 */
-		{_Atom_Saltwell,	0, 1, 0},	/* 06_36 */
+		{_Atom_Bonnell, 	0, 1, 0, 0},	/* 06_1C */
+		{_Atom_Silvermont,	0, 1, 0, 0},	/* 06_26 */
+		{_Atom_Lincroft,	0, 1, 0, 0},	/* 06_27 */
+		{_Atom_Clover_Trail,	0, 1, 0, 0},	/* 06_35 */
+		{_Atom_Saltwell,	0, 1, 0, 0},	/* 06_36 */
 
-		{_Silvermont_Bay_Trail, 0, 1, 0},	/* 06_37 */
+		{_Silvermont_Bay_Trail, 0, 1, 0, 0},	/* 06_37 */
 
-		{_Atom_Avoton,		0, 1, 0},	/* 06_4D */
-		{_Atom_Airmont, 	0, 1, 0},	/* 06_4C */
-		{_Atom_Goldmont,	1, 1, 0},	/* 06_5C */
-		{_Atom_Sofia,		1, 1, 0},	/* 06_5D */
-		{_Atom_Merrifield,	1, 1, 0},	/* 06_4A */
-		{_Atom_Moorefield,	1, 1, 0},	/* 06_5A */
+		{_Atom_Avoton,		0, 1, 0, 0},	/* 06_4D */
+		{_Atom_Airmont, 	0, 1, 0, 0},	/* 06_4C */
+		{_Atom_Goldmont,	1, 1, 0, 0},	/* 06_5C */
+		{_Atom_Sofia,		1, 1, 0, 0},	/* 06_5D */
+		{_Atom_Merrifield,	1, 1, 0, 0},	/* 06_4A */
+		{_Atom_Moorefield,	1, 1, 0, 0},	/* 06_5A */
 
-		{_Nehalem_Bloomfield,	1, 1, 0},	/* 06_1A */
-		{_Nehalem_Lynnfield,	1, 1, 0},	/* 06_1E */
-		{_Nehalem_MB,		1, 1, 0},	/* 06_1F */
-		{_Nehalem_EX,		1, 1, 0},	/* 06_2E */
+		{_Nehalem_Bloomfield,	1, 1, 0, 1},	/* 06_1A */
+		{_Nehalem_Lynnfield,	1, 1, 0, 1},	/* 06_1E */
+		{_Nehalem_MB,		1, 1, 0, 1},	/* 06_1F */
+		{_Nehalem_EX,		1, 1, 0, 1},	/* 06_2E */
 
-		{_Westmere,		1, 1, 0},	/* 06_25 */
-		{_Westmere_EP,		1, 1, 0},	/* 06_2C */
-		{_Westmere_EX,		1, 1, 0},	/* 06_2F */
+		{_Westmere,		1, 1, 0, 1},	/* 06_25 */
+		{_Westmere_EP,		1, 0, 0, 1},	/* 06_2C */
+		{_Westmere_EX,		1, 1, 0, 1},	/* 06_2F */
 
-		{_SandyBridge,		1, 1, 0},	/* 06_2A */
-		{_SandyBridge_EP,	1, 1, 0},	/* 06_2D */
+		{_SandyBridge,		1, 1, 0, 0},	/* 06_2A */
+		{_SandyBridge_EP,	1, 1, 0, 0},	/* 06_2D */
 
-		{_IvyBridge,		1, 0, 0},	/* 06_3A */
-		{_IvyBridge_EP, 	1, 1, 0},	/* 06_3E */
+		{_IvyBridge,		1, 0, 0, 0},	/* 06_3A */
+		{_IvyBridge_EP, 	1, 1, 0, 0},	/* 06_3E */
 
-		{_Haswell_DT,		1, 1, 0},	/* 06_3C */
-		{_Haswell_EP,		1, 1, 0},	/* 06_3F */
-		{_Haswell_ULT,		1, 1, 0},	/* 06_45 */
-		{_Haswell_ULX,		1, 1, 0},	/* 06_46 */
+		{_Haswell_DT,		1, 1, 0, 0},	/* 06_3C */
+		{_Haswell_EP,		1, 1, 0, 0},	/* 06_3F */
+		{_Haswell_ULT,		1, 1, 0, 0},	/* 06_45 */
+		{_Haswell_ULX,		1, 1, 0, 0},	/* 06_46 */
 
-		{_Broadwell,		1, 1, 0},	/* 06_3D */
-		{_Broadwell_D,		1, 1, 0},	/* 06_56 */
-		{_Broadwell_H,		1, 1, 0},	/* 06_47 */
-		{_Broadwell_EP, 	1, 1, 0},	/* 06_4F */
+		{_Broadwell,		1, 1, 0, 0},	/* 06_3D */
+		{_Broadwell_D,		1, 1, 0, 0},	/* 06_56 */
+		{_Broadwell_H,		1, 1, 0, 0},	/* 06_47 */
+		{_Broadwell_EP, 	1, 1, 0, 0},	/* 06_4F */
 
-		{_Skylake_UY,		1, 1, 0},	/* 06_4E */
-		{_Skylake_S,		1, 1, 0},	/* 06_5E */
-		{_Skylake_X,		1, 1, 0},	/* 06_55 */
+		{_Skylake_UY,		1, 1, 0, 0},	/* 06_4E */
+		{_Skylake_S,		1, 1, 0, 0},	/* 06_5E */
+		{_Skylake_X,		1, 1, 0, 0},	/* 06_55 */
 
-		{_Xeon_Phi,		0, 1, 0},	/* 06_57 */
+		{_Xeon_Phi,		0, 1, 0, 0},	/* 06_57 */
 
-		{_Kabylake,		1, 1, 0},	/* 06_9E */
-		{_Kabylake_UY,		1, 1, 0},	/* 06_8E */
+		{_Kabylake,		1, 1, 0, 0},	/* 06_9E */
+		{_Kabylake_UY,		1, 1, 0, 0},	/* 06_8E */
 
-		{_Cannonlake_U, 	1, 1, 0},	/* 06_66 */
-		{_Cannonlake_H, 	1, 1, 0},
-		{_Geminilake,		1, 1, 0},	/* 06_7A */
-		{_Icelake_UY,		1, 1, 0},	/* 06_7E */
+		{_Cannonlake_U, 	1, 1, 0, 0},	/* 06_66 */
+		{_Cannonlake_H, 	1, 1, 0, 0},
+		{_Geminilake,		1, 1, 0, 0},	/* 06_7A */
+		{_Icelake_UY,		1, 1, 0, 0},	/* 06_7E */
 
-		{_Icelake_X,		1, 1, 0},
-		{_Icelake_D,		1, 1, 0},
-		{_Sunny_Cove,		1, 1, 0},
-		{_Tigerlake,		1, 1, 0},
-		{_Tigerlake_U,		1, 1, 0},	/* 06_8C */
-		{_Cometlake,		1, 1, 0},
-		{_Cometlake_UY, 	1, 1, 0},
-		{_Atom_Denverton,	1, 1, 0},
-		{_Tremont_Jacobsville,	1, 1, 0},
-		{_Tremont_Lakefield,	1, 1, 0},
-		{_Tremont_Elkhartlake,	1, 1, 0},
-		{_Tremont_Jasperlake,	1, 1, 0},
-		{_Sapphire_Rapids,	1, 1, 0},
-		{_Emerald_Rapids,	1, 1, 0},
-		{_Granite_Rapids_X,	1, 1, 0},
-		{_Granite_Rapids_D,	1, 1, 0},
-		{_Sierra_Forest,	1, 1, 0},
-		{_Grand_Ridge,		1, 1, 0},
-		{_Rocketlake,		1, 1, 0},
-		{_Rocketlake_U, 	1, 1, 0},
-		{_Alderlake_S,		1, 1, 0},	/* 06_97 */
-		{_Alderlake_H,		1, 1, 0},
-		{_Alderlake_N,		1, 1, 0},
-		{_Meteorlake_M, 	1, 1, 0},
-		{_Meteorlake_N, 	1, 1, 0},
-		{_Meteorlake_S, 	1, 1, 0},
-		{_Raptorlake,		1, 1, 0},	/* 06_B7 */
-		{_Raptorlake_P, 	1, 1, 0},
-		{_Raptorlake_S, 	1, 1, 0},
-		{_Lunarlake,		1, 1, 0},	/* 06_BD */
-		{_Arrowlake,		1, 1, 0},	/* 06_C6 */
-		{_Arrowlake_H,		1, 1, 0},	/* 06_C5 */
-		{_Arrowlake_U,		1, 1, 0},	/* 06_B5 */
-		{_Pantherlake,		1, 1, 0},	/* 06_CC */
-		{_Clearwater_Forest,	1, 1, 0}	/* 06_DD */
+		{_Icelake_X,		1, 1, 0, 0},
+		{_Icelake_D,		1, 1, 0, 0},
+		{_Sunny_Cove,		1, 1, 0, 0},
+		{_Tigerlake,		1, 1, 0, 0},
+		{_Tigerlake_U,		1, 0, 0, 0},	/* 06_8C */
+		{_Cometlake,		1, 1, 0, 0},
+		{_Cometlake_UY, 	1, 1, 0, 0},
+		{_Atom_Denverton,	1, 1, 0, 0},
+		{_Tremont_Jacobsville,	1, 1, 0, 0},
+		{_Tremont_Lakefield,	1, 1, 0, 0},
+		{_Tremont_Elkhartlake,	1, 1, 0, 0},
+		{_Tremont_Jasperlake,	1, 1, 0, 0},
+		{_Sapphire_Rapids,	1, 1, 0, 0},
+		{_Emerald_Rapids,	1, 1, 0, 0},
+		{_Granite_Rapids_X,	1, 1, 0, 0},
+		{_Granite_Rapids_D,	1, 1, 0, 0},
+		{_Sierra_Forest,	1, 1, 0, 0},
+		{_Grand_Ridge,		1, 1, 0, 0},
+		{_Rocketlake,		1, 1, 0, 0},
+		{_Rocketlake_U, 	1, 1, 0, 0},
+		{_Alderlake_S,		1, 0, 0, 0},	/* 06_97 */
+		{_Alderlake_H,		1, 1, 0, 0},
+		{_Alderlake_N,		1, 1, 0, 0},
+		{_Meteorlake_M, 	1, 1, 0, 0},
+		{_Meteorlake_N, 	1, 1, 0, 0},
+		{_Meteorlake_S, 	1, 1, 0, 0},
+		{_Raptorlake,		1, 1, 0, 0},	/* 06_B7 */
+		{_Raptorlake_P, 	1, 1, 0, 0},
+		{_Raptorlake_S, 	1, 1, 0, 0},
+		{_Lunarlake,		1, 1, 0, 0},	/* 06_BD */
+		{_Arrowlake,		1, 1, 0, 0},	/* 06_C6 */
+		{_Arrowlake_H,		1, 1, 0, 0},	/* 06_C5 */
+		{_Arrowlake_U,		1, 1, 0, 0},	/* 06_B5 */
+		{_Pantherlake,		1, 1, 0, 0},	/* 06_CC */
+		{_Clearwater_Forest,	1, 1, 0, 0}	/* 06_DD */
     };
 	const unsigned int ids = sizeof(list) / sizeof(list[0]);
 	unsigned int id;
@@ -2798,17 +2799,27 @@ static void Intel_FlexRatio(bool OC_ENABLED)
 	  if (!list[id].experimental
 	   || (list[id].experimental
 	   && PUBLIC(RO(Proc))->Registration.Experimental))
-	    {
-		FLEX_RATIO flexRegister = {.value = 0};
-		RDMSR(flexRegister, MSR_FLEX_RATIO);
-		PUBLIC(RO(Proc))->Features.OC_Enable = flexRegister.OC_ENABLED;
-		PUBLIC(RO(Proc))->Features.Factory.Bins = flexRegister.OC_BINS;
-		PUBLIC(RO(Proc))->Features.OC_Lock = flexRegister.OC_LOCK;
+	  {
+		FLEX_RATIO flexReg = {.value = 0};
+		RDMSR(flexReg, MSR_FLEX_RATIO);
+
+	    switch (list[id].bitsLayout) {
+	    default:
+	    case 0:
+		PUBLIC(RO(Proc))->Features.OC_Enable = flexReg.OC_ENABLED;
+		PUBLIC(RO(Proc))->Features.Factory.Bins = flexReg.OC_BINS;
+		PUBLIC(RO(Proc))->Features.OC_Lock = flexReg.OC_LOCK;
+		break;
+	    case 1:
+		PUBLIC(RO(Proc))->Features.OC_Enable = flexReg.OC_ENABLED;
+		PUBLIC(RO(Proc))->Features.Factory.Bins=flexReg.CLOCK_FLEX_MAX;
+		break;
+	    }
 		PUBLIC(RO(Proc))->Features.Factory.Overclock = \
 		ABS_FREQ_MHz(	signed int,
 				PUBLIC(RO(Proc))->Features.Factory.Bins,
 				PUBLIC(RO(Proc))->Features.Factory.Clock );
-	    }
+	  }
 	}
 	break;
     }
@@ -5992,6 +6003,8 @@ static PCI_CALLBACK X58_QPI(struct pci_dev *dev)
 {
 	pci_read_config_dword(dev, 0xd0,
 				&PUBLIC(RO(Proc))->Uncore.Bus.QuickPath.value);
+
+	Intel_FlexRatio(true);
 
 	return (PCI_CALLBACK) 0;
 }

@@ -672,7 +672,8 @@ typedef union
 	{				/* OC Ratio = BCLK ratio + OC_BINS */
 		unsigned long long
 		OC_VID		:  8-0,
-		UnknownBits1	: 16-8,
+		CLOCK_FLEX_MAX	: 12-8,  /* R/W: Westmere/Gulftown; Wolfdale */
+		UnknownBits1	: 16-12,
 		OC_ENABLED	: 17-16,
 		OC_BINS 	: 20-17, /* 0:Disabled ... 7:Unlimited	*/
 		OC_LOCK 	: 21-20,

@@ -358,6 +358,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_RATIO_CODE_FR		"Ratio"
 #define RSC_FACTORY_CODE_FR		"Usine"
 #define RSC_OVERCLOCK_CODE_FR		"Overclock"
+#define RSC_OC_BINS_COMM_CODE_FR	\
+		" OC_BINS [0:d""\xa9""sactiv""\xa9"" ... 7:illimit""\xa9""] "
+
 #define RSC_PERFORMANCE_CODE_FR 	"Performance"
 #define RSC_TARGET_CODE_FR		"Cible"
 #define RSC_LEVEL_CODE_FR		"Niveau"
@@ -741,6 +744,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_TECH_INTEL_VTD_COMM_CODE_FR RSC_TECH_INTEL_VTD_COMM_CODE_EN
 #define RSC_TECH_AMD_V_COMM_CODE_FR	RSC_TECH_AMD_V_COMM_CODE_EN
 #define RSC_TECH_HDCP_COMM_CODE_FR	RSC_TECH_HDCP_COMM_CODE_EN
+#define RSC_TECH_OC_COMM_CODE_FR " Si OC_ENABLED alors MSR FLEX_RATIO.OC_BINS "
 
 #define RSC_PERF_MON_TITLE_CODE_FR	" Gestion de la performance "
 #define RSC_PERF_CAPS_TITLE_CODE_FR	" Capacit""\xa9""s de performances "

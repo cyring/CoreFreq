@@ -1357,11 +1357,12 @@ REASON_CODE SysInfoProc(Window *win,
 		RO(Shm)->Proc.Features.OC_Lock ?
 			RSC(LOCK).CODE() : RSC(UNLOCK).CODE() );
 
-	PUT(	SCANKEY_NULL, attrib[3], width, 0,
-		"%.*s""%s""%.*s""%+5d""%.*s""[%+4d ]",
-		17, hSpace, RSC(BIN).CODE(),
-		 2, hSpace, RO(Shm)->Proc.Features.Factory.Overclock,
-		23, hSpace, RO(Shm)->Proc.Features.Factory.Bins );
+	GridHover( PUT( SCANKEY_NULL, attrib[3], width, 0,
+			"%.*s""%s""%.*s""%+5d""%.*s""[%+4d ]",
+			17, hSpace, RSC(BIN).CODE(),
+			 2, hSpace, RO(Shm)->Proc.Features.Factory.Overclock,
+			23, hSpace, RO(Shm)->Proc.Features.Factory.Bins ),
+		(char *) RSC(OC_BINS_COMM).CODE() );
     }
 	PUT(SCANKEY_NULL, attrib[0], width, 2, "%s", RSC(PERFORMANCE).CODE());
 
@@ -4458,7 +4459,7 @@ REASON_CODE SysInfoTech(Window *win,
 		(unsigned int[]) { CRC_INTEL, 0 },
 		RO(Shm)->Proc.Technology.OC == 1,
 		2, "%s%.*sOC   [%3s]",
-		RSC(TECHNOLOGIES_OC).CODE(), NULL,
+		RSC(TECHNOLOGIES_OC).CODE(), RSC(TECH_OC_COMM).CODE(),
 		width - 13 - RSZ(TECHNOLOGIES_OC),
 		NULL,
 		SCANKEY_NULL,

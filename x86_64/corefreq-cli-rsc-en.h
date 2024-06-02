@@ -855,6 +855,7 @@
 #define RSC_RATIO_CODE_EN		"Ratio"
 #define RSC_FACTORY_CODE_EN		"Factory"
 #define RSC_OVERCLOCK_CODE_EN		"Overclock"
+#define RSC_OC_BINS_COMM_CODE_EN	" OC_BINS [0:disabled ... 7:unlimited] "
 #define RSC_PERFORMANCE_CODE_EN 	"Performance"
 #define RSC_TARGET_CODE_EN		"Target"
 #define RSC_LEVEL_CODE_EN		"Level"
@@ -1261,6 +1262,7 @@
 #define RSC_TECH_INTEL_VTD_COMM_CODE_EN " I/O MMU virtualization (Intel VT-d) "
 #define RSC_TECH_AMD_V_COMM_CODE_EN	" I/O MMU virtualization (AMD-Vi) "
 #define RSC_TECH_HDCP_COMM_CODE_EN " High-Bandwidth Digital Content Protection "
+#define RSC_TECH_OC_COMM_CODE_EN " If OC_ENABLED then MSR FLEX_RATIO.OC_BINS "
 
 #define RSC_PERF_MON_TITLE_CODE_EN	" Performance Monitoring "
 #define RSC_PERF_CAPS_TITLE_CODE_EN	" Performance Capabilities "
