@@ -114,34 +114,70 @@ struct RULER_ST Ruler = {
 	Ruler.TopOf = (struct TOPOF) { .Top = _cpu , .Boost = _boost}	\
 )
 
+void LowestOfRuler(unsigned int cpu, enum RATIO_BOOST rb, unsigned int *lowest)
+{
+	if (RO(Shm)->Cpu[cpu].Boost[rb] < RO(Shm)->Cpu[Ruler.Top[rb]].Boost[rb])
+	{
+		Ruler.Top[rb] = cpu;
+	}
+	if (RO(Shm)->Cpu[cpu].Boost[rb] < (*lowest))
+	{
+		(*lowest) = RO(Shm)->Cpu[cpu].Boost[rb];
+		SetTopOfRuler(Ruler.Top[rb], rb);
+	}
+}
+
+void HighestOfRuler(unsigned int cpu, enum RATIO_BOOST rb,unsigned int *highest)
+{
+	if (RO(Shm)->Cpu[cpu].Boost[rb] > RO(Shm)->Cpu[Ruler.Top[rb]].Boost[rb])
+	{
+		Ruler.Top[rb] = cpu;
+	}
+	if (RO(Shm)->Cpu[cpu].Boost[rb] > (*highest))
+	{
+		(*highest) = RO(Shm)->Cpu[cpu].Boost[rb];
+		SetTopOfRuler(Ruler.Top[rb], rb);
+	}
+}
+
 void SetTopOftheTop(	unsigned int cpu, enum RATIO_BOOST rb,
 			unsigned int *lowest, unsigned int *highest )
 {
-    switch (rb) {
-    case BOOST(HWP_MIN):
-    case BOOST(MIN):
-      if(RO(Shm)->Cpu[cpu].Boost[rb] < RO(Shm)->Cpu[ Ruler.Top[rb] ].Boost[rb])
-      {
-	Ruler.Top[rb] = cpu;
-      }
-      if (RO(Shm)->Cpu[cpu].Boost[rb] < (*lowest))
-      {
-	(*lowest) = RO(Shm)->Cpu[cpu].Boost[rb];
-	SetTopOfRuler(Ruler.Top[rb], rb);
-      }
-	break;
-    default:
-      if(RO(Shm)->Cpu[cpu].Boost[rb] > RO(Shm)->Cpu[ Ruler.Top[rb] ].Boost[rb])
-      {
-	Ruler.Top[rb] = cpu;
-      }
-      if (RO(Shm)->Cpu[cpu].Boost[rb] > (*highest))
-      {
-	(*highest) = RO(Shm)->Cpu[cpu].Boost[rb];
-	SetTopOfRuler(Ruler.Top[rb], rb);
-      }
-	break;
-    }
+	switch (rb) {
+	case BOOST(HWP_MIN):
+		if ((RO(Shm)->Proc.Features.HWP_Enable == 1)
+		 || (RO(Shm)->Proc.Features.ACPI_CPPC == 1))
+		{
+			LowestOfRuler(cpu, rb, lowest);
+		}
+		break;
+	case BOOST(MIN):
+		LowestOfRuler(cpu, rb, lowest);
+		break;
+	case BOOST(TGT):
+		if ((RO(Shm)->Proc.Features.HWP_Enable == 0)
+		 && (RO(Shm)->Proc.Features.ACPI_CPPC == 0))
+		{
+			HighestOfRuler(cpu, rb, highest);
+		}
+		break;
+	case BOOST(HWP_MAX) ... BOOST(HWP_TGT):
+		if ((RO(Shm)->Proc.Features.HWP_Enable == 1)
+		 || (RO(Shm)->Proc.Features.ACPI_CPPC == 1))
+		{
+			HighestOfRuler(cpu, rb, highest);
+		}
+		break;
+	case BOOST(18C) ... BOOST(1C):
+		if (RO(Shm)->Proc.Technology.Turbo == 1)
+		{
+			HighestOfRuler(cpu, rb, highest);
+		}
+		break;
+	default:
+		HighestOfRuler(cpu, rb, highest);
+		break;
+	}
 }
 
 void InsertionSortRuler(unsigned int base[],
@@ -170,11 +206,15 @@ void AggregateRatio(void)
 		unsigned int, RO(Shm)->Proc.Features.Factory.Clock.Hz
 	);
 	enum RATIO_BOOST lt, rt, min_boost = BOOST(MIN);
-    if ((RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(HWP_MIN)] > 0)
-     && (RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(HWP_MIN)]
-	< RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(MIN)]))
-    {
-	min_boost = BOOST(HWP_MIN);
+
+    if ((RO(Shm)->Proc.Features.HWP_Enable == 1)
+     || (RO(Shm)->Proc.Features.ACPI_CPPC == 1)) {
+	if ((RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(HWP_MIN)] > 0)
+	 && (RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(HWP_MIN)]
+	   < RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(MIN)]))
+	{
+		min_boost = BOOST(HWP_MIN);
+	}
     }
 	unsigned int cpu,
 	lowest = RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(MAX)],
