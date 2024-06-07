@@ -3905,7 +3905,8 @@ static int CoreFreqK_FreqDriver_UnInit(void)
 {
 	int rc = -EINVAL;
 #ifdef CONFIG_CPU_FREQ
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 3, 0)) && (!defined(CONFIG_CACHY))
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 3, 0)) && (!defined(CONFIG_CACHY)) \
+ && (!defined(RHEL_MAJOR))
 	rc =
 #else
 	rc = 0;
@@ -5357,7 +5358,7 @@ inline void SMBIOS_Decoder(void)
 #endif /* CONFIG_DMI */
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 2, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 2, 0) || (RHEL_MAJOR >= 9)
 static char *CoreFreqK_DevNode(const struct device *dev, umode_t *mode)
 #else
 static char *CoreFreqK_DevNode(struct device *dev, umode_t *mode)
@@ -5501,7 +5502,7 @@ static int CoreFreqK_Create_Device_Level_Up(INIT_ARG *pArg)
 	struct device *tmpDev;
 	UNUSED(pArg);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0) || (RHEL_MAJOR >= 9)
 	CoreFreqK.clsdev = class_create(DRV_DEVNAME);
 #else
 	CoreFreqK.clsdev = class_create(THIS_MODULE, DRV_DEVNAME);
