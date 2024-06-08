@@ -608,13 +608,21 @@ int GetKey(SCANKEY *scan, struct timespec *tsec)
 
 SCREEN_SIZE GetScreenSize(void)
 {
-	SCREEN_SIZE _screenSize = {.width = 0, .height = 0};
+	SCREEN_SIZE _screenSize = {.width = MIN_WIDTH, .height = MIN_HEIGHT};
+
+#if defined(TIOCGWINSZ)
 	struct winsize ts;
 
-	ioctl(STDIN_FILENO, TIOCGWINSZ, &ts);
-	_screenSize.width  = (int) ts.ws_col;
-	_screenSize.height = (int) ts.ws_row;
-
+	if (ioctl(STDIN_FILENO, TIOCGWINSZ, &ts) >= 0) {
+		const int _col = (int) ts.ws_col, _row = (int) ts.ws_row;
+		if (_col > 0) {
+			_screenSize.width = _col;
+		}
+		if (_row > 0) {
+			_screenSize.height = _row;
+		}
+	}
+#endif
 	return _screenSize;
 }
 

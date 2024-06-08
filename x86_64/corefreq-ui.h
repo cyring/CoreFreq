@@ -35,6 +35,8 @@
 			+ 3	/*	SEPARATOR	*/		\
 			+ 2	/*	FOOTER_ROW	*/)
 
+#define MIN_HEIGHT	24
+
 #define MAX_WIDTH	320
 #define MIN_WIDTH	80
 
