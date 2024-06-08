@@ -1406,8 +1406,6 @@ REASON_CODE SysInfoProc(Window *win,
     }
 	PUT(SCANKEY_NULL, attrib[0], width, 2, "%s", RSC(PERFORMANCE).CODE());
 
-	PUT(SCANKEY_NULL, attrib[0], width, 3, "%s", RSC(PSTATE).CODE());
-
 	coreClock = (CLOCK_ARG) {.NC = 0, .Offset = 0};
 
 	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_TGT;
@@ -1491,15 +1489,17 @@ REASON_CODE SysInfoProc(Window *win,
 				width, OutFunc, cellPadding, attrib[3] ),
 		RefreshTopFreq, BOOST(HWP_TGT) );
     }
-	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.Turbo_Unlock],
-		width, 2, "%s%.*s[%7.*s]", RSC(BOOST).CODE(),
-		width - 12 - RSZ(BOOST), hSpace, 6,
-		RO(Shm)->Proc.Features.Turbo_Unlock ?
-			RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
-
     if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
      || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
+      if (RO(Shm)->Proc.Technology.Turbo == 1)
+      {
+	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.Turbo_Unlock],
+		width, 3, "%s%.*s[%7.*s]", RSC(BOOST).CODE(),
+		width - (OutFunc == NULL ? 15 : 13) - RSZ(BOOST), hSpace, 6,
+		RO(Shm)->Proc.Features.Turbo_Unlock ?
+			RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
+      }
       if (RO(Shm)->Proc.Features.XtraCOF >= 2)
       {
 	CFlop = &RO(Shm)->Cpu[
@@ -1534,8 +1534,15 @@ REASON_CODE SysInfoProc(Window *win,
 				width, OutFunc, cellPadding, attrib[3] ),
 		RefreshTopFreq, BOOST(CPB) );
       }
+	PUT(SCANKEY_NULL, attrib[0], width, 3, "%s", RSC(PSTATE).CODE());
+    } else {
+	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.Turbo_Unlock],
+		width, 2, "%s %s%.*s[%7.*s]",
+		RSC(TURBO).CODE(), RSC(BOOST).CODE(),
+		width - 13 - RSZ(TURBO) - RSZ(BOOST), hSpace, 6,
+		RO(Shm)->Proc.Features.Turbo_Unlock ?
+			RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
     }
-
     for(boost = BOOST(1C), activeCores = 1;
       boost > BOOST(1C)-(enum RATIO_BOOST)RO(Shm)->Proc.Features.SpecTurboRatio;
 		boost--, activeCores++)
@@ -1546,8 +1553,13 @@ REASON_CODE SysInfoProc(Window *win,
 			RO(Shm)->Proc.Service.Core : Ruler.Top[boost];
 
 	char pfx[10+1+1];
+    if ((RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+     || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+    {
+	StrFormat(pfx, 10+1+1, "P%-2u", activeCores);
+    } else {
 	StrFormat(pfx, 10+1+1, "%2uC", activeCores);
-
+    }
 	CFlop = &RO(Shm)->Cpu[primary].FlipFlop[!RO(Shm)->Cpu[primary].Toggle];
 
 	GridCall( PrintRatioFreq(win, CFlop,
