@@ -6128,14 +6128,10 @@ void MTL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 	switch (RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.Sched.CMD_Stretch) {
 	case 0b00:
-	case 0b11:
 		TIMING(mc, cha).CMD_Rate = 1;
 		break;
 	case 0b01:
 		TIMING(mc, cha).CMD_Rate = 2;
-		break;
-	case 0b10:
-		TIMING(mc, cha).CMD_Rate = 3;
 		break;
 	}
 
