@@ -587,6 +587,8 @@ o---------------------------------------------------------------o
 |      when <F> is 1: don't build and display this area part    |
 |    UI_TRANSPARENCY=<F>                                        |
 |      when <F> is 1: build with background transparency        |
+|    UI_RULER_MINIMUM=<N>, UI_RULER_MAXIMUM=<N>                 |
+|      set ruler left or right bound to <N> frequency ratio     |
 |                                                               |
 |  Example:                                                     |
 |    make CC=gcc OPTIM_LVL=3 FEAT_DBG=1 ARCH_PMC=PCU            |
