@@ -216,12 +216,33 @@ void AggregateRatio(void)
     }
 	InsertionSortRuler(Ruler.Uniq, Ruler.Count, BOOST(MIN));
 
+    #ifndef UI_RULER_MINIMUM
 	Ruler.Minimum = (double) lowest;
+    #elif (UI_RULER_MINIMUM > 0) && (UI_RULER_MINIMUM <= MAX_WIDTH)
+	Ruler.Minimum = (double) UI_RULER_MINIMUM;
+    #else
+	Ruler.Minimum = 1.0;
+    #endif
+    #ifndef UI_RULER_MAXIMUM
 	Ruler.Maximum = (double) highest;
-	Ruler.Median  = (double) RO(Shm)->Cpu[
-					Ruler.Top[BOOST(ACT)]
-				].Boost[BOOST(ACT)];
+    #elif (UI_RULER_MAXIMUM > 0) && (UI_RULER_MAXIMUM <= MAX_WIDTH)
+	Ruler.Maximum = (double) UI_RULER_MAXIMUM;
+    #else
+	Ruler.Maximum = (double) MIN_WIDTH;
+    #endif
+    #if !defined(UI_RULER_MINIMUM) && !defined(UI_RULER_MAXIMUM)
+    {
+	const double median = (double) RO(Shm)->Cpu[
+						Ruler.Top[BOOST(ACT)]
+					].Boost[BOOST(ACT)];
 
+	if ((median > Ruler.Minimum) && (median < Ruler.Maximum)) {
+		Ruler.Median = median;
+	}
+    }
+    #else
+	Ruler.Median = 0.0;
+    #endif
 	if (Ruler.Median == 0.0) {
 		Ruler.Median = (Ruler.Minimum + Ruler.Maximum) / 2.0;
 	}
@@ -13143,8 +13164,10 @@ void Layout_Ruler_Load(Layer *layer, CUINT row)
 
 	/* Alternate the color of the frequency ratios			*/
   while (idx--)
-  {
-	double fPos = (Ruler.Uniq[idx] * Draw.Area.LoadWidth) / Ruler.Maximum;
+   if (Ruler.Uniq[idx] <= Ruler.Maximum)
+   {
+	const double fPos = (Ruler.Uniq[idx] * Draw.Area.LoadWidth)
+			  / Ruler.Maximum;
 	CUINT hPos = (CUINT) fPos;
 
 	ASCII tabStop[10+1] = "00";
@@ -13161,7 +13184,7 @@ void Layout_Ruler_Load(Layer *layer, CUINT row)
 	bright = !bright;
     }
 	lPos = hPos >= margin ? hPos - margin : margin;
-  }
+   }
 	LayerCopyAt(layer, hLoad1.origin.col, hLoad1.origin.row, hLoad1.length,
 			hLoad1.attr[Draw.Load], hLoad1.code[Draw.Load]);
 }

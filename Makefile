@@ -97,6 +97,14 @@ ifneq ($(UI_TRANSPARENCY),)
 LAYOUT += -D UI_TRANSPARENCY=$(UI_TRANSPARENCY)
 endif
 
+ifneq ($(UI_RULER_MINIMUM),)
+LAYOUT += -D UI_RULER_MINIMUM=$(UI_RULER_MINIMUM)
+endif
+
+ifneq ($(UI_RULER_MAXIMUM),)
+LAYOUT += -D UI_RULER_MAXIMUM=$(UI_RULER_MAXIMUM)
+endif
+
 .PHONY: all
 all: prepare corefreqd corefreq-cli | prepare
 	@if [ -e $(BUILD)/Makefile ]; then \
@@ -332,6 +340,8 @@ help:
 	"|      when <F> is 1: don't build and display this area part    |\n"\
 	"|    UI_TRANSPARENCY=<F>                                        |\n"\
 	"|      when <F> is 1: build with background transparency        |\n"\
+	"|    UI_RULER_MINIMUM=<N>, UI_RULER_MAXIMUM=<N>                 |\n"\
+	"|      set ruler left or right bound to <N> frequency ratio     |\n"\
 	"|                                                               |\n"\
 	"|  Example:                                                     |\n"\
 	"|    make CC=gcc OPTIM_LVL=3 FEAT_DBG=1 ARCH_PMC=PCU            |\n"\
