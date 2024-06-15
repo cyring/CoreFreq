@@ -2685,20 +2685,24 @@ REASON_CODE SysInfoTech(Window *win,
     {
 	{
 		NULL,
-		0,
-		2, "%s%.*s",
+		BITEXTRZ(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core]\
+			.SystemRegister.SCTLR,
+			SCTLR_I, 1),
+		2, "%s%.*sI$   [%3s]",
 		RSC(TECHNOLOGIES_ICU).CODE(), NULL,
-		width - 3 - RSZ(TECHNOLOGIES_ICU),
+		width - 13 - RSZ(TECHNOLOGIES_ICU),
 		NULL,
 		SCANKEY_NULL,
 		NULL
 	},
 	{
 		NULL,
-		0,
-		2, "%s%.*s",
+		BITEXTRZ(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core]\
+			.SystemRegister.SCTLR,
+			SCTLR_C, 1),
+		2, "%s%.*sD$   [%3s]",
 		RSC(TECHNOLOGIES_DCU).CODE(), NULL,
-		width - 3 - RSZ(TECHNOLOGIES_DCU),
+		width - 13 - RSZ(TECHNOLOGIES_DCU),
 		NULL,
 		SCANKEY_NULL,
 		NULL
