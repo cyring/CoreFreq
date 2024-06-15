@@ -899,6 +899,7 @@
 #define RSC_TECHNOLOGIES_TITLE_CODE_EN	" Technologies "
 #define RSC_TECHNOLOGIES_DCU_CODE_EN	"Data Cache Unit"
 #define RSC_TECHNOLOGIES_ICU_CODE_EN	"Instruction Cache Unit"
+#define RSC_TECHNOLOGIES_MMU_CODE_EN	"Memory Management Unit"
 #define RSC_TECHNOLOGIES_VM_CODE_EN	"Virtualization"
 #define RSC_TECHNOLOGIES_IOMMU_CODE_EN	"I/O MMU"
 #define RSC_TECHNOLOGIES_SMT_CODE_EN	"Simultaneous Multithreading"

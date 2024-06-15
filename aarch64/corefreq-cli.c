@@ -2709,6 +2709,18 @@ REASON_CODE SysInfoTech(Window *win,
 	},
 	{
 		NULL,
+		BITEXTRZ(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core]\
+			.SystemRegister.SCTLR,
+			SCTLR_M, 1),
+		2, "%s%.*sMMU   [%3s]",
+		RSC(TECHNOLOGIES_MMU).CODE(), NULL,
+		width - 14 - RSZ(TECHNOLOGIES_MMU),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		NULL,
 		RO(Shm)->Proc.Features.HyperThreading == 1,
 		2, "%s%.*sSMT   [%3s]",
 		RSC(TECHNOLOGIES_SMT).CODE(), NULL,

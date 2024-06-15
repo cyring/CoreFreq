@@ -603,6 +603,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_TECHNOLOGIES_TITLE_CODE_FR	" Technologies "
 #define RSC_TECHNOLOGIES_DCU_CODE_FR  "Unit""\xa9"" de cache de donn""\xa9""es"
 #define RSC_TECHNOLOGIES_ICU_CODE_FR  "Unit""\xa9"" de cache d'instructions"
+#define RSC_TECHNOLOGIES_MMU_CODE_FR "Unit""\xa9"" de gestion de m""\xa9""moire"
 #define RSC_TECHNOLOGIES_VM_CODE_FR	"Virtualisation"
 #define RSC_TECHNOLOGIES_IOMMU_CODE_FR	"MMU E/S"
 #define RSC_TECHNOLOGIES_SMT_CODE_FR	"Multithreading simultan""\xa9"
