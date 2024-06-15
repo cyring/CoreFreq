@@ -274,8 +274,10 @@ module_param(C3U_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(C3U_Enable, "Enable C3 UnDemotion");
 
 static signed short C1U_Enable = -1;
-module_param(C1U_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param_named(C1U_Enable,C1U_Enable,short,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param_named(C2U_Enable,C1U_Enable,short,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(C1U_Enable, "Enable C1 UnDemotion");
+MODULE_PARM_DESC(C2U_Enable, "Enable C2 UnDemotion");
 
 static signed short CC6_Enable = -1;
 module_param(CC6_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
