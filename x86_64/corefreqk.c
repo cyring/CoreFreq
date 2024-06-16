@@ -20331,9 +20331,7 @@ static long SysGate_OnDemand(void)
 						GFP_KERNEL);
 	if (PUBLIC(OF(Gate)) != NULL)
 	{
-		const size_t
-		allocPages = PAGE_SIZE << PUBLIC(RO(Proc))->Gate.ReqMem.Order;
-		memset(PUBLIC(OF(Gate)), 0, allocPages);
+		memset(PUBLIC(OF(Gate)), 0, PUBLIC(RO(Proc))->Gate.ReqMem.Size);
 		rc = 0;
 	}
     } else {					/* Already allocated	*/
@@ -23376,9 +23374,7 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 	case 1:
 		fallthrough;
 	case 0: {
-		const unsigned long
-		secSize = PAGE_SIZE << PUBLIC(RO(Proc))->Gate.ReqMem.Order;
-		if (reqSize != secSize) {
+		if (reqSize != PUBLIC(RO(Proc))->Gate.ReqMem.Size) {
 			return -EAGAIN;
 		}
 
@@ -24140,6 +24136,9 @@ static int CoreFreqK_Scale_And_Compute_Level_Up(INIT_ARG *pArg)
 
 	PUBLIC(RO(Proc))->Gate.ReqMem.Order = \
 				get_order(PUBLIC(RO(Proc))->Gate.ReqMem.Size);
+
+	PUBLIC(RO(Proc))->Gate.ReqMem.Size = \
+			PAGE_SIZE << PUBLIC(RO(Proc))->Gate.ReqMem.Order;
 
 	PUBLIC(RO(Proc))->Registration.AutoClock = AutoClock;
 	PUBLIC(RO(Proc))->Registration.Experimental = Experimental;

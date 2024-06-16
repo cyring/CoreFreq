@@ -8143,8 +8143,7 @@ void PerCore_Update(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 int SysGate_OnDemand(REF *Ref, int operation)
 {
 	int rc = -1;
-	const size_t allocPages = \
-			(size_t)PAGE_SIZE << Ref->RO(Proc)->Gate.ReqMem.Order;
+	const size_t allocPages = Ref->RO(Proc)->Gate.ReqMem.Size;
 
 	if (operation == 0) {
 	    if (Ref->RO(SysGate) != NULL) {
