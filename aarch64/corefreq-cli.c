@@ -21,6 +21,9 @@
 #include <errno.h>
 #include <sched.h>
 #include <pwd.h>
+#ifndef __USE_GNU
+#include <libgen.h>
+#endif
 
 #include "bitasm.h"
 #include "coretypes.h"

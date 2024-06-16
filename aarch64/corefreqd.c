@@ -21,6 +21,9 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <pthread.h>
+#ifndef __USE_GNU
+#include <libgen.h>
+#endif
 
 #include "bitasm.h"
 #include "arm_reg.h"
