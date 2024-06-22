@@ -529,7 +529,33 @@ typedef union
 	Reserved	: 63-32,
 	PstateEn	: 64-63; /* RW: Is this Pstate MSR valid ?	*/
     } Family_17h;
+    struct
+    {
+	unsigned long long	 /* MSR 0xC001_006[4...B] P-state [7:0] */
+	CpuFid		:  8-0,  /* RW: COF is defined as CpuFid * 5MHz */
+	CpuDfsId	: 14-8,  /* RW: Core DID			*/
+	CpuVid		: 22-14, /* RW: VID[7:0]			*/
+	IddValue	: 30-22,
+	IddDiv		: 32-30,
+	CpuVid8 	: 33-32, /* RW: VID[8]				*/
+	Reserved	: 63-33,
+	PstateEn	: 64-63;
+    } Family_19h; /* Model 70h_A0; Model 11h_B1; Model 61h_B1		*/
 } PSTATEDEF;
+
+typedef union
+{
+	unsigned long long value;
+    struct
+    {
+	unsigned long long	 /* MSR 0xC001_0293 Hardware P-state Status */
+	CpuFid		:  8-0,  /* RO: Current Core Frequency ID	*/
+	CpuDfsId	: 14-8,  /* RO: Current Core DID		*/
+	CpuVid		: 22-14, /* RO: Current Core VID		*/
+	CurHwPstate	: 25-22, /* RO: Cuurent hardware P-state	*/
+	Reserved	: 64-63;
+    };
+} HW_PSTATE_STATUS;
 
 typedef union
 {
