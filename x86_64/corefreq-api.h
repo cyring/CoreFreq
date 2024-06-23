@@ -1136,6 +1136,8 @@ typedef struct
 	BitCC	/* Intel */	OC_UTILIZED	__attribute__ ((aligned (16)));
 	BitCC	/* Intel */	OC_UNDERVOLT	__attribute__ ((aligned (16)));
 	BitCC	/* Intel */	OC_UNLOCKED	__attribute__ ((aligned (16)));
+	BitCC	/* Intel */	GDS_NO		__attribute__ ((aligned (16)));
+	BitCC	/* Intel */	RFDS_NO 	__attribute__ ((aligned (16)));
 
 	struct {
 		Bit64		Signal	__attribute__ ((aligned (8)));

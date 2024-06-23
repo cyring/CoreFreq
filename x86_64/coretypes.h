@@ -1283,7 +1283,8 @@ typedef struct THERMAL_POWER_LEAF
 		HWP_Fast	: 19-18,/* IA32_HWP_REQUEST MSR fast access */
 		HWFB_Cap	: 20-19,/* IA32 HW_FEEDBACK* MSR support */
 		HWP_Idle	: 21-20,/* Ignore (or not) Idle SMT Processor */
-		Reserved3	: 23-21,
+		Reserved3	: 22-21,
+		HWP_Ctl 	: 23-22, /* IA32_HWP_CTL MSR support	*/
 		ITD_MSR 	: 24-23, /* HW_FEEDBACK_{CHAR,THREAD_CONFIG} */
 		THERM_INT_MSR	: 25-24, /* IA32_THERM_INTERRUPT MSR	*/
 		Reserved4	: 32-25;
@@ -1509,7 +1510,9 @@ typedef struct	/* Extended Feature Flags Leaf equal or greater than 2	*/
 		DDPD_U_SPEC_CTRL:  4-3,
 		BHI_SPEC_CTRL	:  5-4,
 		MCDT_NO 	:  6-5,
-		Reserved	: 32-6;
+		Reserved1	:  7-6,
+		MONITOR_MITG_NO :  8-7,
+		Reserved2	: 32-8;
 	} EDX;
 } CPUID_0x00000007_2;
 

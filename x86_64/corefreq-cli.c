@@ -3499,6 +3499,22 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.GDS_NO,
+		attr_Feat,
+		2, "%s%.*sGDS_NO   [%7s]", RSC(MECH_GDS_NO).CODE(),
+		width - 21 - RSZ(MECH_GDS_NO),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.RFDS_NO,
+		attr_Feat,
+		2, "%s%.*sRFDS_NO   [%7s]", RSC(MECH_RFDS_NO).CODE(),
+		width - 22 - RSZ(MECH_RFDS_NO),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
 		RO(Shm)->Proc.Mechanisms.IPRED_DIS_U,
 		attr_Feat,
 		2, "%s%.*sIPRED_DIS_U   [%7s]", RSC(MECH_IPRED_DIS_U).CODE(),
@@ -3551,6 +3567,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		attr_Feat,
 		2, "%s%.*sMCDT_NO   [%7s]", RSC(MECH_MCDT_NO).CODE(),
 		width - 22 - RSZ(MECH_MCDT_NO),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Mechanisms.MONITOR_MITG_NO,
+		attr_Feat,
+		2, "%s%.*sUMON_MITG_NO   [%7s]", RSC(MECH_UMON_MITG_NO).CODE(),
+		width - 27 - RSZ(MECH_UMON_MITG_NO),
 		MECH
 	},
 	{

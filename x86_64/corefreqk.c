@@ -12392,6 +12392,16 @@ static void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UNLOCKED, Core->Bind);
 	    }
 	}
+	if (Arch_Cap.GDS_NO) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->GDS_NO, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->GDS_NO, Core->Bind);
+	}
+	if (Arch_Cap.RFDS_NO) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->RFDS_NO, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RFDS_NO, Core->Bind);
+	}
     }
     if (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.IA32_CORE_CAP)
     {
@@ -12810,6 +12820,8 @@ static void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UTILIZED, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UNDERVOLT, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UNLOCKED, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->GDS_NO	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RFDS_NO	, Core->Bind);
 
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.Mask);
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.Kind);

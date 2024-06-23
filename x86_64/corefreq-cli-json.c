@@ -1853,6 +1853,10 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.OC_UNDERVOLT);
 			json_key(&s, "OC_UNLOCKED");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.OC_UNLOCKED);
+			json_key(&s, "GDS_NO");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.GDS_NO);
+			json_key(&s, "RFDS_NO");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.RFDS_NO);
 			json_key(&s, "IPRED_DIS_U");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.IPRED_DIS_U);
 			json_key(&s, "IPRED_DIS_S");
@@ -1867,6 +1871,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.DDPD_U_DIS);
 			json_key(&s, "MCDT_NO");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.MCDT_NO);
+			json_key(&s, "MONITOR_MITG_NO");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Mechanisms.MONITOR_MITG_NO);
 			json_key(&s, "BTC_NO");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Features.leaf80000008.EBX.BTC_NO);
 			json_key(&s, "BTC_NOBR");

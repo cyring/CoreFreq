@@ -426,7 +426,10 @@ typedef struct
 				OC_UTILIZED	: 20-18,
 				OC_UNDERVOLT	: 22-20,
 				OC_UNLOCKED	: 24-22,
-				_UnusedMechBits : 64-24;
+				MONITOR_MITG_NO : 25-24,
+				GDS_NO		: 27-25,
+				RFDS_NO 	: 29-27,
+				_UnusedMechBits : 64-29;
 	} Mechanisms;
 
 	enum THERMAL_FORMULAS	thermalFormula;

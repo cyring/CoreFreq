@@ -1892,6 +1892,14 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 						RW(Proc)->OC_UNLOCKED,
 						RO(Proc)->ARCH_CAP_Mask),
 
+			GDS_NO = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->GDS_NO,
+						RO(Proc)->ARCH_CAP_Mask ),
+
+			RFDS_NO = BITCMP_CC(	LOCKLESS,
+						RW(Proc)->RFDS_NO,
+						RO(Proc)->ARCH_CAP_Mask ),
+
 			IPRED_DIS_U = BITCMP_CC(LOCKLESS,
 						RW(Proc)->IPRED_DIS_U,
 						RO(Proc)->SPEC_CTRL_Mask),
@@ -2047,6 +2055,16 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 		+ (2 * OC_UNLOCKED)
 	);
 
+	RO(Shm)->Proc.Mechanisms.GDS_NO = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
+		+ (2 * GDS_NO)
+	);
+
+	RO(Shm)->Proc.Mechanisms.RFDS_NO = (
+		RO(Shm)->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP
+		+ (2 * RFDS_NO)
+	);
+
 	RO(Shm)->Proc.Mechanisms.IPRED_DIS_U = (
 	      (RO(Shm)->Proc.Features.ExtFeature.EAX.MaxSubLeaf >= 2)
 	   && (RO(Shm)->Proc.Features.ExtFeature_Leaf2_EDX.IPRED_SPEC_CTRL == 1)
@@ -2085,6 +2103,10 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 
 	RO(Shm)->Proc.Mechanisms.MCDT_NO = (
 		RO(Shm)->Proc.Features.ExtFeature_Leaf2_EDX.MCDT_NO == 1
+	);
+
+	RO(Shm)->Proc.Mechanisms.MONITOR_MITG_NO = (
+		RO(Shm)->Proc.Features.ExtFeature_Leaf2_EDX.MONITOR_MITG_NO == 1
 	);
     }
     else if (	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)

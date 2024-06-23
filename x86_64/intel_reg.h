@@ -380,6 +380,14 @@
 	#define MSR_IA32_HWP_REQUEST		MSR_HWP_REQUEST
 #endif
 
+#ifndef MSR_HWP_CTL
+	#define MSR_HWP_CTL			0x00000776
+#endif
+
+#ifndef MSR_HWP_STATUS
+	#define MSR_HWP_STATUS			0x00000777
+#endif
+
 #ifndef MSR_IA32_XSS
 	#define MSR_IA32_XSS			0x00000da0
 #endif
@@ -595,7 +603,13 @@ typedef union
 		ReservedBits2		: 23-22,
 		OVERCLOCKING_STATUS_MSR : 24-23, /* IA32_OVERLOCKING_STATUS */
 		PBRSB_NO		: 25-24,
-		ReservedBits3		: 64-25;
+		GDS_CTRL		: 26-25, /* IA32_MCU_OPT_CTRL MSR */
+		GDS_NO			: 27-26, /* Gather Data Sampling */
+		RFDS_NO 		: 28-27, /*Register File Data Sampling*/
+		RFDS_CLEAR		: 29-28,
+		IGN_UMONITOR_SUPPORT	: 30-29, /* IA32_MCU_OPT_CTRL bit 6 */
+		MON_UMON_MITG_SUPPORT	: 31-30, /* IA32_MCU_OPT_CTRL bit 7 */
+		ReservedBits3		: 64-31;
 	};
 } ARCH_CAPABILITIES;
 
@@ -631,7 +645,11 @@ typedef union
 		_RTM_ALLOW	:  2-1, /*1: XBEGIN=IA32_TSX_CTRL[RTM_DISABLE]*/
 		_RTM_LOCKED	:  3-2, /*1: RTM_ALLOW is locked at zero */
 		_FB_CLEAR_DIS	:  4-3, /* VERW instruction will not perform */
-		ReservedBits	: 64-4;
+		_GDS_MITG_DIS	:  5-4,
+		_GDS_MITG_LOCK	:  6-5,
+		_IGN_UMONITOR	:  7-6,
+		_MON_UMON_MITG	:  8-7,
+		ReservedBits	: 64-8;
 	};
 } MCU_OPT_CTRL;	/* Microcode Update Option Control (R/W)		*/
 
