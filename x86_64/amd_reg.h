@@ -469,7 +469,7 @@ typedef union
 	unsigned long long	 /* MSR 0xC001_00[68:64] P-State [4:0]	*/
 	CpuFid		:  6-0,  /* Core Frequency ID. RW: Value <= 2Fh */
 	CpuDid		:  9-6,  /* Core Divisor ID. RW: 0h-4h divide by 1-16 */
-	CpuVid		: 16-9,  /* Core Voltage ID. RW			*/
+	CpuVid		: 16-9,  /* Core Voltage ID. RW 		*/
 	Reserved1	: 22-16,
 	NbDid		: 23-22, /* Northbridge Divisor ID. RW: 0-1 => 0-2 */
 	Reserved2	: 25-23,
@@ -484,7 +484,7 @@ typedef union
 	unsigned long long	 /* MSR 0xC001_00[6B:64] P-State [7:0]	*/
 	CpuDid		:  4-0,  /* Core Divisor ID. RW			*/
 	CpuFid		:  9-4,  /* Core Frequency ID. RW		*/
-	CpuVid		: 16-9,  /* Core Voltage ID. RW			*/
+	CpuVid		: 16-9,  /* Core Voltage ID. RW 		*/
 	Reserved1	: 32-16,
 	IddValue	: 40-32, /* Current value field. RW		*/
 	IddDiv		: 42-40, /* Current divisor field. RW		*/
@@ -496,7 +496,7 @@ typedef union
 	unsigned long long	 /* MSR 0xC001_00[6B:64] P-State [7:0]	*/
 	CpuDidLSD	:  4-0,  /* Core Divisor ID least significant digit.RW*/
 	CpuDidMSD	:  9-4,  /* Core Divisor ID most significant digit. RW*/
-	CpuVid		: 16-9,  /* Core Voltage ID. RW			*/
+	CpuVid		: 16-9,  /* Core Voltage ID. RW 		*/
 	Reserved1	: 32-16,
 	IddValue	: 40-32, /* Current value field. RW		*/
 	IddDiv		: 42-40, /* Current divisor field. RW		*/
@@ -508,7 +508,7 @@ typedef union
 	unsigned long long	 /* MSR 0xC001_00[6B:64] P-state [7:0]	*/
 	CpuFid		:  6-0,  /* Core Frequency ID. RW		*/
 	CpuDid		:  9-6,  /* Core Divisor ID. RW:0h-4h divide by 1-16 */
-	CpuVid		: 16-9,  /* Core Voltage ID. RW			*/
+	CpuVid		: 16-9,  /* Core Voltage ID. RW 		*/
 	CpuVid_bit	: 17-16,
 	Reserved1	: 22-17,
 	NbPstate	: 23-22, /* Northbrige MSR 0xC001_0071[NbPstateDis] */
@@ -522,8 +522,8 @@ typedef union
     {
 	unsigned long long	 /* MSR 0xC001_0064 [P-state [7:0]]	*/
 	CpuFid		:  8-0,  /* Core Frequency ID. RW: FFh-10h <Value>*25 */
-	CpuDfsId	: 14-8,  /* Core Divisor ID. RW			*/
-	CpuVid		: 22-14, /* Core Voltage ID. RW			*/
+	CpuDfsId	: 14-8,  /* Core Divisor ID. RW 		*/
+	CpuVid		: 22-14, /* Core Voltage ID. RW 		*/
 	IddValue	: 30-22, /* Current Dissipation in amps. RW	*/
 	IddDiv		: 32-30, /* Current Dissipation Divisor. RW	*/
 	Reserved	: 63-32,
@@ -552,7 +552,7 @@ typedef union
 	CpuFid		:  8-0,  /* RO: Current Core Frequency ID	*/
 	CpuDfsId	: 14-8,  /* RO: Current Core DID		*/
 	CpuVid		: 22-14, /* RO: Current Core VID		*/
-	CurHwPstate	: 25-22, /* RO: Cuurent hardware P-state	*/
+	CurHwPstate	: 25-22, /* RO: Current hardware P-state	*/
 	Reserved	: 64-63;
     };
 } HW_PSTATE_STATUS;

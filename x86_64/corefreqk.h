@@ -2034,7 +2034,10 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 					"Hygon C86 XXXX NN-core Processor"
 					7285(32),7280(64),7265(24),
 					5285(16),
-					3285( 8),3280( 8),3230( 4),	*/
+					3285( 8),3280( 8),3230( 4),
+	[Family 18h]		9F_02h
+				Stepping 2
+					"Hygon C86 7375"		*/
 #define _Hygon_Family_18h	\
 			{.ExtFamily=0x9, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
