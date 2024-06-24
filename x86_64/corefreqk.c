@@ -16179,7 +16179,8 @@ static void CTL_AMD_Family_17h_Temp(CORE_RO *Core)
 
 	Core->PowerThermal.Sensor = TctlSensor.CurTmp;
 
-	if (TctlSensor.CurTempRangeSel == 1)
+	if ((TctlSensor.CurTempRangeSel == 1)
+	 && (Core->PowerThermal.Sensor >= (49 << 3)))
 	{
 	/* Register: SMU::THM::THM_TCON_CUR_TMP - Bit 19: CUR_TEMP_RANGE_SEL
 		0 = Report on 0C to 225C scale range.
@@ -16204,7 +16205,8 @@ static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 
 	Core->PowerThermal.Sensor = TccdSensor.CurTmp;
 
-	if (TccdSensor.CurTempRangeSel == 1)
+	if ((TccdSensor.CurTempRangeSel == 1)
+	 && (Core->PowerThermal.Sensor >= (49 << 3)))
 	{
 		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 49;
 	} else {
@@ -16232,7 +16234,8 @@ static void CCD_AMD_Family_19h_Genoa_Temp(CORE_RO *Core)
 
 	Core->PowerThermal.Sensor = TccdSensor.CurTmp;
 
-	if (TccdSensor.CurTempRangeSel == 1)
+	if ((TccdSensor.CurTempRangeSel == 1)
+	 && (Core->PowerThermal.Sensor >= (49 << 3)))
 	{
 		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 49;
 	} else {
@@ -16253,7 +16256,8 @@ static void CCD_AMD_Family_19h_Zen4_Temp(CORE_RO *Core)
 
 	Core->PowerThermal.Sensor = TccdSensor.CurTmp;
 
-	if (TccdSensor.CurTempRangeSel == 1)
+	if ((TccdSensor.CurTempRangeSel == 1)
+	 && (Core->PowerThermal.Sensor >= (49 << 3)))
 	{
 		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 49;
 	} else {
