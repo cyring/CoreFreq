@@ -25,6 +25,9 @@
 #ifdef CONFIG_CPU_FREQ
 #include <linux/cpufreq.h>
 #endif /* CONFIG_CPU_FREQ */
+#ifdef CONFIG_PM_OPP
+#include <linux/pm_opp.h>
+#endif /* CONFIG_PM_OPP */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 #include <linux/sched/signal.h>
 #endif /* KERNEL_VERSION(4, 11, 0) */
@@ -2021,6 +2024,62 @@ static void Query_DeviceTree(unsigned int cpu)
 	Core->Boost[BOOST(TGT)] = cur_freq / UNIT_KHz(PRECISION);
 }
 
+#ifdef CONFIG_PM_OPP
+static unsigned long GetVoltage_From_OPP(unsigned int cpu,
+					unsigned long freq_hz)
+{
+	unsigned long u_volt = 0;
+	struct device *cpu_dev = get_cpu_device(cpu);
+    if (cpu_dev != NULL) {
+    #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 13, 0)
+	struct dev_pm_opp *opp = dev_pm_opp_find_freq_ceil(cpu_dev, &freq_hz);
+    #else
+	struct opp *opp_find_freq_ceil(cpu_dev, &freq_hz);
+    #endif
+	if (!IS_ERR(opp)) {
+	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 13, 0)
+		u_volt = dev_pm_opp_get_voltage(opp);
+		dev_pm_opp_put(opp);
+	    #else
+		u_volt = opp_get_voltage(opp);
+	    #endif
+	}
+    }
+	return u_volt;
+}
+
+static void Query_Voltage_From_OPP(void)
+{
+	unsigned int cpu;
+    for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++) {
+	enum RATIO_BOOST boost;
+      for (boost = BOOST(MIN); boost < BOOST(SIZE) - BOOST(18C); boost++)
+      {
+	unsigned long freq_hz = PUBLIC(RO(Proc))->Features.Factory.Clock.Hz
+			* PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(18C) + boost],
+
+	u_volt = GetVoltage_From_OPP(cpu, freq_hz);
+	u_volt = u_volt >> 5;
+
+	PRIVATE(OF(Core, AT(cpu)))->OPP[boost].VID = (signed int) u_volt;
+      }
+    }
+}
+
+inline enum RATIO_BOOST Find_OPP_From_Ratio(CORE_RO *Core, unsigned int ratio)
+{
+	enum RATIO_BOOST boost, last = BOOST(MIN);
+	for (boost = BOOST(MIN); boost < BOOST(SIZE) - BOOST(18C); boost++) {
+		if (Core->Boost[BOOST(18C) + boost] <= ratio) {
+			last = boost;
+			continue;
+		}
+		break;
+	}
+	return last;
+}
+#endif /* CONFIG_PM_OPP */
+
 static void Compute_ACPI_CPPC_Bounds(unsigned int cpu)
 {
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
@@ -3307,6 +3366,39 @@ static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
     #endif
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(TGT)] = Core->Ratio.COF.Q;
 
+    #ifdef CONFIG_PM_OPP
+    {
+	enum RATIO_BOOST index = Find_OPP_From_Ratio(Core, Core->Ratio.COF.Q);
+
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if (!((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)))
+	    {
+		break;
+	    }
+		fallthrough;
+	case FORMULA_SCOPE_SMT:
+		Core->PowerThermal.VID = \
+			PRIVATE(OF(Core, AT(Core->Bind)))->OPP[index].VID;
+		break;
+	case FORMULA_SCOPE_PKG:
+	    if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		Core->PowerThermal.VID = \
+			PRIVATE(OF(Core, AT(Core->Bind)))->OPP[index].VID;
+	    }
+		break;
+	case FORMULA_SCOPE_NONE:
+		break;
+	}
+	if (((PUBLIC(RO(Proc))->Features.Hybrid) 
+	  && (Core->Bind == PUBLIC(RO(Proc))->Service.Hybrid))
+	 || (Core->Bind == PUBLIC(RO(Proc))->Service.Core))
+	{
+		PUBLIC(RO(Proc))->PowerThermal.VID.CPU = \
+			PRIVATE(OF(Core, AT(Core->Bind)))->OPP[index].VID;
+	}
+    }
+    #endif /* CONFIG_PM_OPP */
 	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
 
 	return HRTIMER_RESTART;
@@ -5921,6 +6013,10 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 				CoreFreqK_ResetChip, CoreFreqK_AppendChip) == 0;
 
 	Controller_Start(0);
+
+#ifdef CONFIG_PM_OPP
+	Query_Voltage_From_OPP();
+#endif /* CONFIG_PM_OPP */
 
 #ifdef CONFIG_HOTPLUG_CPU
 	#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 6, 0)

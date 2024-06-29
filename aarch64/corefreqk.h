@@ -234,8 +234,13 @@ typedef struct
 		    };
 		} SaveArea;
 #ifdef CONFIG_CPU_FREQ
-	struct cpufreq_policy	FreqPolicy;
+		struct cpufreq_policy	FreqPolicy;
 #endif /* CONFIG_CPU_FREQ */
+#ifdef CONFIG_PM_OPP
+		struct {
+			signed int	VID;
+		} OPP[BOOST(SIZE) - BOOST(18C)];
+#endif /* CONFIG_PM_OPP */
 	} *Core[];
 } KPRIVATE;
 
@@ -494,7 +499,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -518,7 +527,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -542,7 +555,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -566,7 +583,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -590,7 +611,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -614,7 +639,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -638,7 +667,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -662,7 +695,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -686,7 +723,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -710,7 +751,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -734,7 +779,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -758,7 +807,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -782,7 +835,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -806,7 +863,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -830,7 +891,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -854,7 +919,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -878,7 +947,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -902,7 +975,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -926,7 +1003,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -950,7 +1031,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -974,7 +1059,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -998,7 +1087,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -1022,7 +1115,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -1046,7 +1143,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -1070,7 +1171,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -1094,7 +1199,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -1118,7 +1227,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -1142,7 +1255,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -1166,7 +1283,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -1190,7 +1311,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -1214,7 +1339,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -1238,7 +1367,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -1262,7 +1395,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -1286,7 +1423,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {

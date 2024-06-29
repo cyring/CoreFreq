@@ -158,6 +158,50 @@ static void (*ComputeVoltage_None_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_None_PerPkg
 };
 
+static void ComputeVoltage_OPP( struct FLIP_FLOP *CFlip,
+				RO(SHM_STRUCT) *RO(Shm),
+				unsigned int cpu )
+{
+	COMPUTE_VOLTAGE(OPP,
+			CFlip->Voltage.Vcore,
+			CFlip->Voltage.VID);
+
+	Core_ComputeVoltageLimits(&RO(Shm)->Cpu[cpu], CFlip);
+}
+
+#define ComputeVoltage_OPP_PerSMT	ComputeVoltage_OPP
+
+static void ComputeVoltage_OPP_PerCore( struct FLIP_FLOP *CFlip,
+					RO(SHM_STRUCT) *RO(Shm),
+					unsigned int cpu )
+{
+	if ((RO(Shm)->Cpu[cpu].Topology.ThreadID == 0)
+	 || (RO(Shm)->Cpu[cpu].Topology.ThreadID == -1))
+	{
+		ComputeVoltage_OPP(CFlip, RO(Shm), cpu);
+	}
+}
+
+static  void ComputeVoltage_OPP_PerPkg( struct FLIP_FLOP *CFlip,
+					RO(SHM_STRUCT) *RO(Shm),
+					unsigned int cpu )
+{
+	if (cpu == RO(Shm)->Proc.Service.Core)
+	{
+		ComputeVoltage_OPP(CFlip, RO(Shm), cpu);
+	}
+}
+
+static void (*ComputeVoltage_OPP_Matrix[4])(	struct FLIP_FLOP*,
+						RO(SHM_STRUCT)*,
+						unsigned int ) = \
+{
+	[FORMULA_SCOPE_NONE] = ComputeVoltage_None,
+	[FORMULA_SCOPE_SMT ] = ComputeVoltage_OPP_PerSMT,
+	[FORMULA_SCOPE_CORE] = ComputeVoltage_OPP_PerCore,
+	[FORMULA_SCOPE_PKG ] = ComputeVoltage_OPP_PerPkg
+};
+
 void Core_ComputePowerLimits(CPU_STRUCT *Cpu, struct FLIP_FLOP *CFlip)
 {	/* Per Core, computes the Min CPU Energy consumed.		*/
 	TEST_AND_SET_SENSOR( ENERGY, LOWEST,	CFlip->State.Energy,
@@ -245,6 +289,9 @@ static void *Core_Cycle(void *arg)
 	}
 
 	switch (KIND_OF_FORMULA(RO(Shm)->Proc.voltageFormula)) {
+	case VOLTAGE_KIND_OPP:
+		ComputeVoltageFormula = ComputeVoltage_OPP_Matrix;
+		break;
 	case VOLTAGE_KIND_NONE:
 	default:
 		ComputeVoltageFormula = ComputeVoltage_None_Matrix;
@@ -1520,6 +1567,13 @@ static void Pkg_ComputeVoltage_None(struct PKG_FLIP_FLOP *PFlip)
 	UNUSED(PFlip);
 }
 
+static void Pkg_ComputeVoltage_OPP(struct PKG_FLIP_FLOP *PFlip)
+{
+	COMPUTE_VOLTAGE(OPP,
+			PFlip->Voltage.CPU,
+			PFlip->Voltage.VID.CPU);
+}
+
 static void Pkg_ComputePower_None(RW(PROC) *RW(Proc), struct FLIP_FLOP *CFlop)
 {
 	UNUSED(RW(Proc));
@@ -1591,6 +1645,9 @@ REASON_CODE Core_Manager(REF *Ref)
 	}
 
 	switch (KIND_OF_FORMULA(RO(Shm)->Proc.voltageFormula)) {
+	case VOLTAGE_KIND_OPP:
+		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_OPP;
+		break;
 	case VOLTAGE_KIND_NONE:
 	default:
 		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_None;
