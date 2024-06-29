@@ -2039,7 +2039,9 @@ static unsigned long GetVoltage_From_OPP(unsigned int cpu,
 	if (!IS_ERR(opp)) {
 	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 13, 0)
 		u_volt = dev_pm_opp_get_voltage(opp);
+	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 		dev_pm_opp_put(opp);
+	    #endif
 	    #else
 		u_volt = opp_get_voltage(opp);
 	    #endif
