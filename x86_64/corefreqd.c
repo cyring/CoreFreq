@@ -784,6 +784,50 @@ static void (*ComputeVoltage_AMD_RMB_Matrix[4])(struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_AMD_RMB_PerPkg
 };
 
+static void ComputeVoltage_AMD_19_61h( struct FLIP_FLOP *CFlip,
+							RO(SHM_STRUCT) *RO(Shm),
+							unsigned int cpu )
+{
+	COMPUTE_VOLTAGE(AMD_19_61h,
+			CFlip->Voltage.Vcore,
+			CFlip->Voltage.VID);
+
+	Core_ComputeVoltageLimits(&RO(Shm)->Cpu[cpu], CFlip);
+}
+
+#define ComputeVoltage_AMD_19_61h_PerSMT	ComputeVoltage_AMD_19_61h
+
+static void ComputeVoltage_AMD_19_61h_PerCore( struct FLIP_FLOP *CFlip,
+							RO(SHM_STRUCT) *RO(Shm),
+							unsigned int cpu )
+{
+	if ((RO(Shm)->Cpu[cpu].Topology.ThreadID == 0)
+	 || (RO(Shm)->Cpu[cpu].Topology.ThreadID == -1))
+	{
+		ComputeVoltage_AMD_19_61h(CFlip, RO(Shm), cpu);
+	}
+}
+
+static void ComputeVoltage_AMD_19_61h_PerPkg( struct FLIP_FLOP *CFlip,
+							RO(SHM_STRUCT) *RO(Shm),
+							unsigned int cpu )
+{
+	if (cpu == RO(Shm)->Proc.Service.Core)
+	{
+		ComputeVoltage_AMD_19_61h(CFlip, RO(Shm), cpu);
+	}
+}
+
+static void (*ComputeVoltage_AMD_19_61h_Matrix[4])(struct FLIP_FLOP*,
+							RO(SHM_STRUCT)*,
+							unsigned int) = \
+{
+	[FORMULA_SCOPE_NONE] = ComputeVoltage_None,
+	[FORMULA_SCOPE_SMT ] = ComputeVoltage_AMD_19_61h_PerSMT,
+	[FORMULA_SCOPE_CORE] = ComputeVoltage_AMD_19_61h_PerCore,
+	[FORMULA_SCOPE_PKG ] = ComputeVoltage_AMD_19_61h_PerPkg
+};
+
 static void ComputeVoltage_Winbond_IO( struct FLIP_FLOP *CFlip,
 						RO(SHM_STRUCT) *RO(Shm),
 						unsigned int cpu )
@@ -1057,6 +1101,9 @@ static void *Core_Cycle(void *arg)
 		break;
 	case VOLTAGE_KIND_AMD_RMB:
 		ComputeVoltageFormula = ComputeVoltage_AMD_RMB_Matrix;
+		break;
+	case VOLTAGE_KIND_AMD_19_61h:
+		ComputeVoltageFormula = ComputeVoltage_AMD_19_61h_Matrix;
 		break;
 	case VOLTAGE_KIND_WINBOND_IO:
 		ComputeVoltageFormula = ComputeVoltage_Winbond_IO_Matrix;
@@ -8658,6 +8705,17 @@ static void Pkg_ComputeVoltage_AMD_RMB(struct PKG_FLIP_FLOP *PFlip)
 			PFlip->Voltage.VID.SOC);
 }
 
+static void Pkg_ComputeVoltage_AMD_19_61h(struct PKG_FLIP_FLOP *PFlip)
+{
+	COMPUTE_VOLTAGE(AMD_19_61h,
+			PFlip->Voltage.CPU,
+			PFlip->Voltage.VID.CPU);
+/*TODO
+	COMPUTE_VOLTAGE(AMD_19_61h,
+			PFlip->Voltage.SOC,
+			PFlip->Voltage.VID.SOC);			*/
+}
+
 static void Pkg_ComputeVoltage_Winbond_IO(struct PKG_FLIP_FLOP *PFlip)
 {	/* Winbond W83627EHF/EF, W83627EHG,EG				*/
 	COMPUTE_VOLTAGE(WINBOND_IO,
@@ -8813,6 +8871,9 @@ REASON_CODE Core_Manager(REF *Ref)
 		break;
 	case VOLTAGE_KIND_AMD_RMB:
 		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_AMD_RMB;
+		break;
+	case VOLTAGE_KIND_AMD_19_61h:
+		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_AMD_19_61h;
 		break;
 	case VOLTAGE_KIND_WINBOND_IO:
 		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_Winbond_IO;
