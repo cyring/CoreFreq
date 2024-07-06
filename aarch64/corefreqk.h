@@ -302,6 +302,13 @@ struct SMBIOS17
 	u32	extended_conf_speed;	/*	0x58	DWORD		*/
 } __attribute__((__packed__));
 
+#define FREQ2COF(_frequency, _COF)					\
+({									\
+	_COF.Q = (_frequency) / UNIT_KHz(PRECISION),			\
+	_COF.R = CLOCK_KHz(unsigned short,				\
+			(_frequency) - (_COF.Q * UNIT_KHz(PRECISION))); \
+})
+
 #if !defined(RHEL_MAJOR)
 	#define RHEL_MAJOR 0
 #endif

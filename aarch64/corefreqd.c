@@ -342,12 +342,12 @@ static void *Core_Cycle(void *arg)
 	CFlip->Delta.C1 	= RO(Core)->Delta.C1;
 
 	/* Update all clock ratios.					*/
-	memcpy(Cpu->Boost, RO(Core)->Boost, (BOOST(SIZE))*sizeof(unsigned int));
+	memcpy(Cpu->Boost, RO(Core)->Boost, (BOOST(SIZE)) * sizeof(COF_ST));
 
-	const double FRQ = Cpu->Boost[BOOST(MAX)] * CFlip->Clock.Hz;
+	const double FRQ = Cpu->Boost[BOOST(MAX)].Q * CFlip->Clock.Hz;
 
 	CFlip->Absolute.Ratio.Perf = (double)RO(Core)->Ratio.COF.Q;
-	CFlip->Absolute.Ratio.Perf +=(double)RO(Core)->Ratio.COF.R /UNIT_KHz(1);
+	CFlip->Absolute.Ratio.Perf +=(double)RO(Core)->Ratio.COF.R / PRECISION;
 
 	/* Compute IPS=Instructions per Hz				*/
 	CFlip->State.IPS = (double)CFlip->Delta.INST / FRQ;
@@ -384,7 +384,7 @@ static void *Core_Cycle(void *arg)
 
 	/* Relative Frequency = Relative Ratio x Bus Clock Frequency	*/
 	CFlip->Relative.Ratio	= (double)(CFlip->Delta.C0.URC
-					* Cpu->Boost[BOOST(MAX)]) / FRQ;
+					* Cpu->Boost[BOOST(MAX)].Q) / FRQ;
 
 	CFlip->Relative.Freq	= REL_FREQ_MHz( double,
 						CFlip->Relative.Ratio,
@@ -764,7 +764,7 @@ void Uncore_Update(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 	/*	Copy the Uncore clock ratios.				*/
 	memcpy( RO(Shm)->Uncore.Boost,
 		RO(Proc)->Uncore.Boost,
-		(UNCORE_BOOST(SIZE)) * sizeof(unsigned int) );
+		(UNCORE_BOOST(SIZE)) * sizeof(COF_ST) );
 }
 
 void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
@@ -1160,7 +1160,7 @@ void PerCore_Update(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 	}
 	/*	Initialize all clock ratios.				*/
 	memcpy( RO(Shm)->Cpu[cpu].Boost, RO(Core, AT(cpu))->Boost,
-		(BOOST(SIZE)) * sizeof(unsigned int) );
+		(BOOST(SIZE)) * sizeof(COF_ST) );
 
 	RO(Shm)->Cpu[cpu].Query.Revision = RO(Core, AT(cpu))->Query.Revision;
 
@@ -1774,7 +1774,7 @@ REASON_CODE Core_Manager(REF *Ref)
 	    }
 	    if (Quiet & 0x100) {
 		printf( "    CPU #%03u @ %.2f MHz\n", cpu,
-		  ABS_FREQ_MHz(double , RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)],
+		  ABS_FREQ_MHz(double , RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)].Q,
 					RO(Core, AT(cpu))->Clock) );
 	    }
 		/*	Notify a CPU has been brought up		*/

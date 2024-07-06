@@ -211,7 +211,7 @@ typedef struct
 
 	CLOCK				Clock;
 
-	unsigned int			Boost[BOOST(SIZE)];
+	COF_ST				Boost[BOOST(SIZE)];
 
 	COF_UNION			Ratio;
 } CORE_RO;

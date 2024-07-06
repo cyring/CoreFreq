@@ -446,7 +446,10 @@ extern void Set_SINT(TGrid*,	signed int _SINT,		unsigned int) ;
 	__builtin_choose_expr(__builtin_types_compatible_p (		\
 		__typeof__(_data), __typeof__(signed int)) ,		\
 			Set_SINT,					\
-	(void)0))))))))))))))(_pGrid, _data, _order)
+	__builtin_choose_expr(__builtin_types_compatible_p (		\
+		__typeof__(_data), __typeof__(COF_ST *)) ,		\
+			Set_pVOID,					\
+	(void)0)))))))))))))))(_pGrid, _data, _order)
 
 typedef struct _Stock {
 	struct _Stock	*next;

@@ -29,7 +29,7 @@ typedef struct
 
 	Bit64				OffLine __attribute__ ((aligned (8)));
 
-	unsigned int			Boost[BOOST(SIZE)];
+	COF_ST				Boost[BOOST(SIZE)];
 
 	struct
 	{
@@ -458,7 +458,7 @@ typedef struct
 	} App;
 
 	struct {
-		unsigned int		Boost[UNCORE_BOOST(SIZE)];
+		COF_ST			Boost[UNCORE_BOOST(SIZE)];
 	    struct
 	    {
 		unsigned long long	Speed;
