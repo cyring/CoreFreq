@@ -344,13 +344,16 @@ static void *Core_Cycle(void *arg)
 	/* Update all clock ratios.					*/
 	memcpy(Cpu->Boost, RO(Core)->Boost, (BOOST(SIZE)) * sizeof(COF_ST));
 
-	const double FRQ = Cpu->Boost[BOOST(MAX)].Q * CFlip->Clock.Hz;
+	const double FSF = UNIT_KHz(1.0)
+			 / ( (double)(RO(Shm)->Sleep.Interval * CFlip->Clock.Hz)
+			 * ( (double)Cpu->Boost[BOOST(MAX)].Q
+			   + (double)Cpu->Boost[BOOST(MAX)].R / PRECISION ) );
 
 	CFlip->Absolute.Ratio.Perf = (double)RO(Core)->Ratio.COF.Q;
 	CFlip->Absolute.Ratio.Perf +=(double)RO(Core)->Ratio.COF.R / PRECISION;
 
 	/* Compute IPS=Instructions per Hz				*/
-	CFlip->State.IPS = (double)CFlip->Delta.INST / FRQ;
+	CFlip->State.IPS = (double)CFlip->Delta.INST * FSF;
 
 	/* Compute IPC=Instructions per non-halted reference cycle.
 	   ( Protect against a division by zero )			*/
@@ -369,22 +372,22 @@ static void *Core_Cycle(void *arg)
 		CFlip->State.CPI = 0.0f;
 	}
 	/* Compute the Turbo State.					*/
-	CFlip->State.Turbo = (double)CFlip->Delta.C0.UCC / FRQ;
+	CFlip->State.Turbo = (double)CFlip->Delta.C0.UCC * FSF;
 
 	/* Compute the C-States.					*/
-	CFlip->State.C0 = (double)CFlip->Delta.C0.URC / FRQ;
+	CFlip->State.C0 = (double)CFlip->Delta.C0.URC * FSF;
 
-	CFlip->State.C3 = (double)CFlip->Delta.C3 / FRQ;
+	CFlip->State.C3 = (double)CFlip->Delta.C3 * FSF;
 
-	CFlip->State.C6 = (double)CFlip->Delta.C6 / FRQ;
+	CFlip->State.C6 = (double)CFlip->Delta.C6 * FSF;
 
-	CFlip->State.C7 = (double)CFlip->Delta.C7 / FRQ;
+	CFlip->State.C7 = (double)CFlip->Delta.C7 * FSF;
 
-	CFlip->State.C1 = (double)CFlip->Delta.C1 / FRQ;
+	CFlip->State.C1 = (double)CFlip->Delta.C1 * FSF;
 
 	/* Relative Frequency = Relative Ratio x Bus Clock Frequency	*/
-	CFlip->Relative.Ratio	= (double)(CFlip->Delta.C0.URC
-					* Cpu->Boost[BOOST(MAX)].Q) / FRQ;
+	CFlip->Relative.Ratio	= (double)CFlip->Delta.C0.URC
+			/ (double)UNIT_KHz(RO(Shm)->Sleep.Interval * PRECISION);
 
 	CFlip->Relative.Freq	= REL_FREQ_MHz( double,
 						CFlip->Relative.Ratio,
