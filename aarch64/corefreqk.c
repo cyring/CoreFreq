@@ -1963,18 +1963,8 @@ static void Query_DeviceTree(unsigned int cpu)
 	struct cpufreq_policy *pFreqPolicy = \
 		&PRIVATE(OF(Core, AT(cpu)))->FreqPolicy;
 #endif
-	volatile CNTFRQ cntfrq;
 	unsigned int max_freq = 0, min_freq = 0, cur_freq = 0;
 	COF_ST COF;
-
-	__asm__ __volatile__(
-		"mrs	%[cntfrq],	cntfrq_el0"	"\n\t"
-		"isb"
-		: [cntfrq]	"=r" (cntfrq)
-		:
-		: "memory"
-	);
-	cntfrq.value = cntfrq.value / 1000000U;
 #ifdef CONFIG_CPU_FREQ
   if (cpufreq_get_policy(pFreqPolicy,cpu) == 0)
   {
@@ -2025,6 +2015,16 @@ static void Query_DeviceTree(unsigned int cpu)
     if (max_freq > 0) {
 	FREQ2COF(max_freq, COF);
     } else {
+	volatile CNTFRQ cntfrq;
+
+	__asm__ __volatile__(
+		"mrs	%[cntfrq],	cntfrq_el0"	"\n\t"
+		"isb"
+		: [cntfrq]	"=r" (cntfrq)
+		:
+		: "memory"
+	);
+	cntfrq.ClockFreq_Hz = cntfrq.ClockFreq_Hz / 10U;
 	FREQ2COF(cntfrq.ClockFreq_Hz, COF);
     }
 	Core->Boost[BOOST(MAX)].Q = COF.Q;
@@ -3303,16 +3303,15 @@ inline COF_UNION Compute_COF_From_CPU_Freq(struct cpufreq_policy *pFreqPolicy)
 }
 #endif /* CONFIG_CPU_FREQ */
 
-inline COF_UNION Compute_COF_From_PMU_Counter(	unsigned long long cnt,
+inline COF_UNION Compute_COF_From_PMU_Counter(	unsigned long long deltaCounter,
 						CLOCK clk,
-						COF_ST lowest )
+						COF_ST lowestRatio )
 {
-	const unsigned long long PMU_freq = (cnt * clk.Q)
-				/ (PUBLIC(RO(Proc))->SleepInterval * PRECISION);
 	COF_UNION ratio;
-	FREQ2COF(PMU_freq, ratio.COF);
-	if (ratio.COF.Q < lowest.Q) {
-		ratio.COF = lowest;
+	deltaCounter /= PUBLIC(RO(Proc))->SleepInterval;
+	FREQ2COF(deltaCounter, ratio.COF);
+	if (ratio.COF.Q < lowestRatio.Q) {
+		ratio.COF = lowestRatio;
 	}
 	return ratio;
 }
@@ -3407,7 +3406,7 @@ static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
 	case FORMULA_SCOPE_NONE:
 		break;
 	}
-	if (((PUBLIC(RO(Proc))->Features.Hybrid) 
+	if (((PUBLIC(RO(Proc))->Features.Hybrid)
 	  && (Core->Bind == PUBLIC(RO(Proc))->Service.Hybrid))
 	 || (Core->Bind == PUBLIC(RO(Proc))->Service.Core))
 	{
