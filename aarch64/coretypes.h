@@ -662,10 +662,12 @@ enum OFFLINE
 	OS
 };
 
-typedef struct
-{
-	unsigned int	Q :  8-0,
-			R : 32-8;
+typedef union {
+	struct
+	{
+		unsigned int	Q :  8-0,
+				R : 32-8;
+	};
 } COF_ST;
 
 typedef struct

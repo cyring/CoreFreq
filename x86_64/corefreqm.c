@@ -4,6 +4,7 @@
  * Licenses: GPL2
  */
 
+#define _GNU_SOURCE
 #include <sys/ioctl.h>
 #include <pthread.h>
 #include <stdlib.h>
