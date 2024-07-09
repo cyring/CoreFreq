@@ -3406,13 +3406,6 @@ static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
 	case FORMULA_SCOPE_NONE:
 		break;
 	}
-	if (((PUBLIC(RO(Proc))->Features.Hybrid)
-	  && (Core->Bind == PUBLIC(RO(Proc))->Service.Hybrid))
-	 || (Core->Bind == PUBLIC(RO(Proc))->Service.Core))
-	{
-		PUBLIC(RO(Proc))->PowerThermal.VID.CPU = \
-			PRIVATE(OF(Core, AT(Core->Bind)))->OPP[index].VID;
-	}
     }
     #endif /* CONFIG_PM_OPP */
 	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);

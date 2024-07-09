@@ -1706,6 +1706,7 @@ REASON_CODE Core_Manager(REF *Ref)
 		];
 
 	PFlip->Thermal.Temp = 0;
+	PFlip->Voltage.VID.CPU = 0;
 	/*	Reset the averages & the max frequency			*/
 	RO(Shm)->Proc.Avg.Turbo = 0;
 	RO(Shm)->Proc.Avg.C0    = 0;
@@ -1799,7 +1800,11 @@ REASON_CODE Core_Manager(REF *Ref)
 		if (CFlop->Thermal.Temp > PFlip->Thermal.Temp)
 			PFlip->Thermal.Temp = CFlop->Thermal.Temp;
 	}
-
+	/*	Workaround to a Package discrete voltage: the highest Vcore */
+	if (!RO(Proc)->PowerThermal.VID.CPU) {
+		if (CFlop->Voltage.VID > PFlip->Voltage.VID.CPU)
+			PFlip->Voltage.VID.CPU = CFlop->Voltage.VID;
+	}
 	/*	Workaround to RAPL Package counter: sum of all Cores	*/
 	Pkg_ComputePowerFormula(RW(Proc), CFlop);
 
@@ -1908,7 +1913,10 @@ REASON_CODE Core_Manager(REF *Ref)
 	Pkg_ComputeThermalFormula(PFlip, SProc);
       }
 	/*	Package Voltage formulas				*/
+      if (RO(Proc)->PowerThermal.VID.CPU)
+      {
 	PFlip->Voltage.VID.CPU = RO(Proc)->PowerThermal.VID.CPU;
+      }
 	PFlip->Voltage.VID.SOC = RO(Proc)->PowerThermal.VID.SOC;
 
 	Pkg_ComputeVoltageFormula(PFlip);
