@@ -973,7 +973,8 @@ TGrid *PrintRatioFreq(	Window *win,
 
     if ((( pRatio->Q > 0 || pRatio->R > 0 )  && !zerobase) || (zerobase))
     {
-	double Freq_MHz=ABS_FREQ_MHz(double,pRatio->Q,CFlop->Clock) + pRatio->R;
+	const COF_ST COF = (*pRatio);
+    const double Freq_MHz = CLOCK_MHz(double, COF2FLOAT(COF) * CFlop->Clock.Hz);
 
 	if ((Freq_MHz > 0.0) && (Freq_MHz < CLOCK_MHz(double, UNIT_GHz(10.0))))
 	{
@@ -1071,7 +1072,7 @@ void RefreshTopFreq(TGrid *grid, DATA_TYPE data[])
 					!RO(Shm)->Cpu[top].Toggle
 				];
 	RefreshItemFreq(grid, COF.Q,
-			ABS_FREQ_MHz(double, COF.Q, CFlop->Clock) + COF.R);
+			CLOCK_MHz(double, COF2FLOAT(COF) * CFlop->Clock.Hz));
 }
 
 void RefreshPrimaryFreq(TGrid *grid, DATA_TYPE data[])
@@ -1087,7 +1088,7 @@ void RefreshPrimaryFreq(TGrid *grid, DATA_TYPE data[])
 					].Toggle
 				];
 	RefreshItemFreq(grid, COF.Q,
-			ABS_FREQ_MHz(double, COF.Q, CFlop->Clock) + COF.R);
+			CLOCK_MHz(double, COF2FLOAT(COF) * CFlop->Clock.Hz));
 }
 
 void RefreshHybridFreq(TGrid *grid, DATA_TYPE data[])
@@ -1103,7 +1104,7 @@ void RefreshHybridFreq(TGrid *grid, DATA_TYPE data[])
 					].Toggle
 				];
 	RefreshItemFreq(grid, COF.Q,
-			ABS_FREQ_MHz(double, COF.Q, CFlop->Clock) + COF.R);
+			CLOCK_MHz(double, COF2FLOAT(COF) * CFlop->Clock.Hz));
 }
 
 void RefreshConfigTDP(TGrid *grid, DATA_TYPE data[])
@@ -8204,7 +8205,7 @@ void Pkg_Fmt_Freq(	ASCII *item, ASCII *code, CLOCK *clock,
     } else {
 	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1,
 			"%s" "%7.2f MHz %c%4u %c ",
-			code, ABS_FREQ_MHz(double, ratio.Q, (*clock)),
+			code, CLOCK_MHz(double, COF2FLOAT(ratio) * clock->Hz),
 			unlock ? '<' : '[', ratio.Q, unlock ? '>' : ']');
     }
 }

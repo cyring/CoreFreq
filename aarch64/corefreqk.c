@@ -3295,23 +3295,23 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 })
 
 #ifdef CONFIG_CPU_FREQ
-inline COF_UNION Compute_COF_From_CPU_Freq(struct cpufreq_policy *pFreqPolicy)
+inline COF_ST Compute_COF_From_CPU_Freq(struct cpufreq_policy *pFreqPolicy)
 {
-	COF_UNION ratio;
-	FREQ2COF(pFreqPolicy->cur, ratio.COF);
+	COF_ST ratio;
+	FREQ2COF(pFreqPolicy->cur, ratio);
 	return ratio;
 }
 #endif /* CONFIG_CPU_FREQ */
 
-inline COF_UNION Compute_COF_From_PMU_Counter(	unsigned long long deltaCounter,
+inline COF_ST Compute_COF_From_PMU_Counter(	unsigned long long deltaCounter,
 						CLOCK clk,
 						COF_ST lowestRatio )
 {
-	COF_UNION ratio;
+	COF_ST ratio;
 	deltaCounter /= PUBLIC(RO(Proc))->SleepInterval;
-	FREQ2COF(deltaCounter, ratio.COF);
-	if (ratio.COF.Q < lowestRatio.Q) {
-		ratio.COF = lowestRatio;
+	FREQ2COF(deltaCounter, ratio);
+	if (ratio.Q < lowestRatio.Q) {
+		ratio = lowestRatio;
 	}
 	return ratio;
 }
@@ -3379,12 +3379,12 @@ static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
 						Core->Clock,
 						Core->Boost[BOOST(MIN)]);
     #endif
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(TGT)].Q = Core->Ratio.COF.Q;
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(TGT)].R = Core->Ratio.COF.R;
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(TGT)].Q = Core->Ratio.Q;
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(TGT)].R = Core->Ratio.R;
 
     #ifdef CONFIG_PM_OPP
     {
-	enum RATIO_BOOST index = Find_OPP_From_Ratio(Core, Core->Ratio.COF.Q);
+	enum RATIO_BOOST index = Find_OPP_From_Ratio(Core, Core->Ratio.Q);
 
 	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
 	case FORMULA_SCOPE_CORE:

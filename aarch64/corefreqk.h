@@ -305,8 +305,7 @@ struct SMBIOS17
 #define FREQ2COF(_frequency, _COF)					\
 ({									\
 	_COF.Q = (_frequency) / UNIT_KHz(PRECISION),			\
-	_COF.R = CLOCK_KHz(unsigned short,				\
-			(_frequency) - (_COF.Q * UNIT_KHz(PRECISION))); \
+	_COF.R = (_frequency) - (_COF.Q * UNIT_KHz(PRECISION)); 	\
 })
 
 #if !defined(RHEL_MAJOR)

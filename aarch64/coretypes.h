@@ -664,14 +664,9 @@ enum OFFLINE
 
 typedef struct
 {
-	unsigned short	Q,
-			R;
+	unsigned int	Q :  8-0,
+			R : 32-8;
 } COF_ST;
-
-typedef union {
-	unsigned int	Perf;	/* STATUS or BOOST P-State */
-	COF_ST		COF;
-} COF_UNION;
 
 typedef struct
 {

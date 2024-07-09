@@ -571,3 +571,8 @@ typedef struct {
 	time(&now);							\
 	now - ref;							\
 })
+
+#define COF2FLOAT(_COF) 						\
+(									\
+	(double)_COF.Q + (double)_COF.R / UNIT_KHz(PRECISION)		\
+)

@@ -346,11 +346,9 @@ static void *Core_Cycle(void *arg)
 
 	const double FSF = UNIT_KHz(1.0)
 			 / ( (double)(RO(Shm)->Sleep.Interval * CFlip->Clock.Hz)
-			 * ( (double)Cpu->Boost[BOOST(MAX)].Q
-			   + (double)Cpu->Boost[BOOST(MAX)].R / PRECISION ) );
+			 * COF2FLOAT(Cpu->Boost[BOOST(MAX)]) );
 
-	CFlip->Absolute.Ratio.Perf = (double)RO(Core)->Ratio.COF.Q;
-	CFlip->Absolute.Ratio.Perf +=(double)RO(Core)->Ratio.COF.R / PRECISION;
+	CFlip->Absolute.Ratio.Perf = COF2FLOAT(RO(Core)->Ratio);
 
 	/* Compute IPS=Instructions per Hz				*/
 	CFlip->State.IPS = (double)CFlip->Delta.INST * FSF;

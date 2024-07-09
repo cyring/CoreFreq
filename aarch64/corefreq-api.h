@@ -213,7 +213,7 @@ typedef struct
 
 	COF_ST				Boost[BOOST(SIZE)];
 
-	COF_UNION			Ratio;
+	COF_ST				Ratio;
 } CORE_RO;
 
 typedef struct
