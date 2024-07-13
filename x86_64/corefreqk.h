@@ -2053,8 +2053,9 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 	[Zen4/Raphael]		AF_61h Stepping 2	 5 nm	[RPL]
 	[Zen4/Dragon Range]	AF_61h Stepping 2	 5 nm	FL1
 	[Zen4/Phoenix Point]	AF_74h			 4 nm	[PHX]
-	[Zen4/Hawk Point]	AF_75h			 4 nm	[PHX]
+	[Zen4/Phoenix-R]	AF_75h			 4 nm	[PHX]
 	[Zen4c/Phoenix2]	AF_78h			 4 nm	[PHX2]
+	[Zen4c/Hawk Point]	AF_7Ch			 4 nm	[HWK]
 	[Zen4c][Bergamo][Siena] AF_A0h Stepping [1][2]	 5 nm	SVR
 	[Zen4/Storm Peak]	AF_18h Stepping 1	 5 nm	WS/SP6
 	[Zen5/Granite Ridge]						*/
@@ -2072,8 +2073,9 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 #define _AMD_Zen4_Genoa {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x1, .Model=0x1}
 #define _AMD_Zen4_RPL	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x6, .Model=0x1}
 #define _AMD_Zen4_PHX	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x7, .Model=0x4}
-#define _AMD_Zen4_HWK	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x7, .Model=0x5}
+#define _AMD_Zen4_PHXR	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x7, .Model=0x5}
 #define _AMD_Zen4_PHX2	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x7, .Model=0x8}
+#define _AMD_Zen4_HWK	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x7, .Model=0xC}
 #define _AMD_Zen4_Bergamo	\
 			{.ExtFamily=0xa, .Family=0xF, .ExtModel=0xa, .Model=0x0}
 
@@ -3597,10 +3599,11 @@ enum {
 	CN_PHOENIX
 };
 enum {
-	CN_PHOENIX_R
+	CN_PHOENIX2
 };
 enum {
-	CN_PHOENIX2
+	CN_PHOENIX_R,
+	CN_HAWK_POINT
 };
 
 enum {
@@ -3697,8 +3700,9 @@ static char *Arch_AMD_Zen4_RPL[] = ZLIST(
 static char *Arch_AMD_Zen4_PHX[] = ZLIST(
 		[CN_PHOENIX]		=	"Zen4/Phoenix Point"
 );
-static char *Arch_AMD_Zen4_HWK[] = ZLIST(
-		[CN_PHOENIX_R]		=	"Zen4/Hawk Point"
+static char *Arch_AMD_Zen4_PHXR[] = ZLIST(
+		[CN_PHOENIX_R]		=	"Zen4/Phoenix Point-R",
+		[CN_HAWK_POINT]		=	"Zen4/Hawk Point"
 );
 static char *Arch_AMD_Zen4_PHX2[] = ZLIST(
 		[CN_PHOENIX2]		=	"Zen4/Phoenix2"
@@ -8133,7 +8137,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHX_Specific[] = {
 	},
 	{0}
 };
-static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
+static PROCESSOR_SPECIFIC AMD_Zen4_PHXR_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD Ryzen 9 PRO 8945HS",	\
 			"AMD Ryzen 9 8945HS",		\
@@ -8141,7 +8145,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 			"AMD Ryzen 9 8940H"		),
 	.Boost = {+12, 0},
 	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_PHOENIX_R,
+	.CodeNameIdx = CN_HAWK_POINT,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
@@ -8156,7 +8160,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 			"AMD Ryzen Embedded 8845HS" ),
 	.Boost = {+13, 0},
 	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_PHOENIX_R,
+	.CodeNameIdx = CN_HAWK_POINT,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
@@ -8173,7 +8177,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 			"AMD Ryzen Embedded 8840U"	),
 	.Boost = {+18, 0},
 	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_PHOENIX_R,
+	.CodeNameIdx = CN_HAWK_POINT,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
@@ -8188,7 +8192,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 			"AMD Ryzen Embedded 8645HS"	),
 	.Boost = {+7, 0},
 	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_PHOENIX_R,
+	.CodeNameIdx = CN_HAWK_POINT,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
@@ -8204,7 +8208,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 			"AMD Ryzen Embedded 8640U"	),
 	.Boost = {+14, 0},
 	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_PHOENIX_R,
+	.CodeNameIdx = CN_HAWK_POINT,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
@@ -8218,7 +8222,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 			"AMD Ryzen 3 8440U"		),
 	.Boost = {+17, 0},
 	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_PHOENIX_R,
+	.CodeNameIdx = CN_HAWK_POINT,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
@@ -8227,7 +8231,20 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD Ryzen 7 8700F",		\
+	.Brand = ZLIST( "AMD Ryzen 7 PRO 8700GE"),
+	.Boost = {+15, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PHOENIX_R,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 7 PRO 8700G",	\
+			"AMD Ryzen 7 8700F",		\
 			"AMD Ryzen 7 8700G"		),
 	.Boost = {+9, 0},
 	.Param.Offset = {0, 0, 0},
@@ -8240,7 +8257,20 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 5 8600G"),
+	.Brand = ZLIST("AMD Ryzen 5 PRO 8600GE"),
+	.Boost = {+11, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PHOENIX_R,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 5 PRO 8600G",	\
+			"AMD Ryzen 5 8600G"		),
 	.Boost = {+7, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PHOENIX_R,
@@ -8281,9 +8311,35 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHX2_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD Ryzen 5 8500G",		\
+	.Brand = ZLIST( "AMD Ryzen 5 PRO 8500G",	\
+			"AMD Ryzen 3 PRO 8300G",	\
+			"AMD Ryzen 5 8500G",		\
 			"AMD Ryzen 3 8300G"		),
 	.Boost = {+15, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PHOENIX2,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 5 PRO 8500GE"),
+	.Boost = {+16, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_PHOENIX2,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 3 PRO 8300GE"),
+	.Boost = {+14, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PHOENIX2,
 	.TgtRatioUnlocked = 1,
@@ -11998,8 +12054,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen4_PHX
 	},
-[AMD_Zen4_HWK] = {							/*117*/
-	.Signature = _AMD_Zen4_HWK,
+[AMD_Zen4_PHXR] = {							/*117*/
+	.Signature = _AMD_Zen4_PHXR,
 	.Query = Query_AMD_F19h_PerSocket,
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
@@ -12018,9 +12074,9 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = Stop_Uncore_AMD_Family_19h,
 		.ClockMod = NULL
 		},
-	.Specific = AMD_Zen4_HWK_Specific,
+	.Specific = AMD_Zen4_PHXR_Specific,
 	.SystemDriver = AMD_Zen_Driver,
-	.Architecture = Arch_AMD_Zen4_HWK
+	.Architecture = Arch_AMD_Zen4_PHXR
 	},
 [AMD_Zen4_PHX2] = {							/*118*/
 	.Signature = _AMD_Zen4_PHX2,
@@ -12046,7 +12102,31 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen4_PHX2
 	},
-[AMD_Zen4_Bergamo] = {							/*119*/
+[AMD_Zen4_HWK] = {							/*119*/
+	.Signature = _AMD_Zen4_HWK,
+	.Query = Query_AMD_F19h_PerSocket,
+	.Update = PerCore_AMD_Family_19h_Query,
+	.Start = Start_AMD_Family_19h,
+	.Stop = Stop_AMD_Family_19h,
+	.Exit = Exit_AMD_F19h,
+	.Timer = InitTimer_AMD_Zen4_PHX,
+	.BaseClock = BaseClock_AMD_Family_19h,
+	.ClockMod = ClockMod_AMD_Zen,
+	.TurboClock = TurboClock_AMD_Zen,
+	.thermalFormula = THERMAL_FORMULA_AMD_19h,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_ZEN4,
+	.powerFormula   = POWER_FORMULA_AMD_19h,
+	.PCI_ids = PCI_AMD_19h_ids,
+	.Uncore = {
+		.Start = Start_Uncore_AMD_Family_19h,
+		.Stop = Stop_Uncore_AMD_Family_19h,
+		.ClockMod = NULL
+		},
+	.Specific = AMD_Zen4_PHXR_Specific,
+	.SystemDriver = AMD_Zen_Driver,
+	.Architecture = Arch_AMD_Zen4_PHXR
+	},
+[AMD_Zen4_Bergamo] = {							/*120*/
 	.Signature = _AMD_Zen4_Bergamo,
 	.Query = Query_AMD_F19h_11h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -12070,7 +12150,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen4_Bergamo
 	},
-[AMD_Zen4_STP] = {							/*120*/
+[AMD_Zen4_STP] = {							/*121*/
 	.Signature = _AMD_Zen4_STP,
 	.Query = Query_AMD_F19h_11h_PerCluster,
 	.Update = PerCore_AMD_Family_19h_Query,
