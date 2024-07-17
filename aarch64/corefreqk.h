@@ -308,6 +308,8 @@ struct SMBIOS17
 	_COF.R = (_frequency) - (_COF.Q * UNIT_KHz(PRECISION)); 	\
 })
 
+#define COF2FREQ(_COF)	( (_COF.Q * UNIT_KHz(PRECISION)) + _COF.R )
+
 #if !defined(RHEL_MAJOR)
 	#define RHEL_MAJOR 0
 #endif

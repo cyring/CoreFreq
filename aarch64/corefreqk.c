@@ -1990,8 +1990,7 @@ static void Query_DeviceTree(unsigned int cpu)
 		}
 	}
     if ((table->flags & CPUFREQ_BOOST_FREQ) == CPUFREQ_BOOST_FREQ) {
-     if(((COF.Q * PRECISION) + COF.R) > ((Core->Boost[BOOST(TBH)].Q * PRECISION)
-					+ Core->Boost[BOOST(TBH)].R))
+	if (COF2FREQ(COF) > COF2FREQ(Core->Boost[BOOST(TBH)]))
 	{
 		Core->Boost[BOOST(TBO)].Q = Core->Boost[BOOST(TBH)].Q;
 		Core->Boost[BOOST(TBO)].R = Core->Boost[BOOST(TBH)].R;
@@ -2072,32 +2071,48 @@ static unsigned long GetVoltage_From_OPP(unsigned int cpu,
 	return u_volt;
 }
 
-static void Query_Voltage_From_OPP(void)
+static void Store_Voltage_Identifier	(unsigned int cpu,
+					enum RATIO_BOOST boost,
+					unsigned long kHz )
 {
-	unsigned int cpu;
-    for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++) {
-	enum RATIO_BOOST boost;
-      for (boost = BOOST(MIN); boost < BOOST(SIZE) - BOOST(18C); boost++)
-      {
-	unsigned long freq_hz = PUBLIC(RO(Proc))->Features.Factory.Clock.Hz
-			* PUBLIC(RO(Core,AT(cpu)))->Boost[BOOST(18C) + boost].Q,
+    if (kHz > 0) {
+	unsigned long freq_Hz = 1000LU * kHz,
 
-	u_volt = GetVoltage_From_OPP(cpu, freq_hz);
+	u_volt = GetVoltage_From_OPP(cpu, freq_Hz);
 	u_volt = u_volt >> 5;
 
 	PRIVATE(OF(Core, AT(cpu)))->OPP[boost].VID = (signed int) u_volt;
-      }
     }
 }
 
-inline enum RATIO_BOOST Find_OPP_From_Ratio(CORE_RO *Core, unsigned int ratio)
+static void Query_Voltage_From_OPP(void)
 {
-	enum RATIO_BOOST boost, last = BOOST(MIN);
-	for (boost = BOOST(MIN); boost < BOOST(SIZE) - BOOST(18C); boost++) {
-		if (Core->Boost[BOOST(18C) + boost].Q <= ratio) {
-			last = boost;
-			continue;
-		}
+	unsigned int cpu;
+  for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++) {
+	enum RATIO_BOOST boost = BOOST(MIN);
+
+	Store_Voltage_Identifier(cpu, boost,
+			COF2FREQ(PUBLIC(RO(Core,AT(cpu)))->Boost[boost]));
+
+    for (; boost < BOOST(SIZE) - BOOST(18C); boost++)
+    {
+	Store_Voltage_Identifier(cpu, boost,
+		COF2FREQ(PUBLIC(RO(Core,AT(cpu)))->Boost[BOOST(18C) + boost]));
+    }
+  }
+}
+
+static enum RATIO_BOOST Find_OPP_From_Ratio(CORE_RO *Core, COF_ST ratio)
+{
+	enum RATIO_BOOST boost = BOOST(MIN), last;
+
+	if (COF2FREQ(ratio) <= COF2FREQ(Core->Boost[boost])) {
+		last = boost;
+	} else for (; boost < BOOST(SIZE) - BOOST(18C); boost++) {
+	    if (COF2FREQ(Core->Boost[BOOST(18C) + boost]) <= COF2FREQ(ratio)) {
+		last = boost;
+		continue;
+	    }
 		break;
 	}
 	return last;
@@ -3310,7 +3325,7 @@ inline COF_ST Compute_COF_From_PMU_Counter(	unsigned long long deltaCounter,
 	COF_ST ratio;
 	deltaCounter /= PUBLIC(RO(Proc))->SleepInterval;
 	FREQ2COF(deltaCounter, ratio);
-	if (ratio.Q < lowestRatio.Q) {
+	if (COF2FREQ(ratio) < COF2FREQ(lowestRatio)) {
 		ratio = lowestRatio;
 	}
 	return ratio;
@@ -3384,7 +3399,7 @@ static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
 
     #ifdef CONFIG_PM_OPP
     {
-	enum RATIO_BOOST index = Find_OPP_From_Ratio(Core, Core->Ratio.Q);
+	enum RATIO_BOOST index = Find_OPP_From_Ratio(Core, Core->Ratio);
 
 	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
 	case FORMULA_SCOPE_CORE:
