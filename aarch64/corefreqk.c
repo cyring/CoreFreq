@@ -5470,7 +5470,9 @@ inline void SMBIOS_Decoder(void)
 #endif /* CONFIG_DMI */
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 2, 0) || (RHEL_MAJOR >= 9)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 2, 0) \
+ || ((RHEL_MAJOR == 8) && ((RHEL_MINOR < 3) || (RHEL_MINOR > 8))) \
+ || ((RHEL_MAJOR >= 9) && (RHEL_MINOR > 0) && (RHEL_MINOR < 99))
 static char *CoreFreqK_DevNode(const struct device *dev, umode_t *mode)
 #else
 static char *CoreFreqK_DevNode(struct device *dev, umode_t *mode)
@@ -5614,7 +5616,9 @@ static int CoreFreqK_Create_Device_Level_Up(INIT_ARG *pArg)
 	struct device *tmpDev;
 	UNUSED(pArg);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0) || (RHEL_MAJOR >= 9)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0) \
+ || (defined(RHEL_MAJOR) && (RHEL_MAJOR >= 9) \
+ && (RHEL_MINOR > 0) && (RHEL_MINOR < 99))
 	CoreFreqK.clsdev = class_create(DRV_DEVNAME);
 #else
 	CoreFreqK.clsdev = class_create(THIS_MODULE, DRV_DEVNAME);
