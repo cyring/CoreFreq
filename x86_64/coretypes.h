@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	98
-#define COREFREQ_REV	0
+#define COREFREQ_REV	1
 
 #if !defined(CORE_COUNT)
 	#define CORE_COUNT	256
@@ -149,6 +149,7 @@ enum {	GenuineArch = 0,
 	AMD_Zen4_HWK,
 	AMD_Zen4_Bergamo,
 	AMD_Zen4_STP,
+	AMD_Zen5_STX,
 	ARCHITECTURES
 };
 
