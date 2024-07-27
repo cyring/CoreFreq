@@ -2059,7 +2059,7 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 	[Zen4c][Bergamo][Siena] AF_A0h Stepping [1][2]	 5 nm	SVR
 	[Zen4/Storm Peak]	AF_18h Stepping 1	 5 nm	WS/SP6
 	[Zen5/5c/Strix Point]	BF_24h			 4 nm	[STX]/FP8
-	[Zen5/Granite Ridge]	BF_44h			 4 nm		*/
+	[Zen5/Granite Ridge]	BF_44h			 4 nm	Eldora	*/
 #define _AMD_Family_19h {.ExtFamily=0xA, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 #define _AMD_Zen3_VMR	{.ExtFamily=0xA, .Family=0xF, .ExtModel=0x2, .Model=0x1}
 #define _AMD_Zen3_CZN	{.ExtFamily=0xA, .Family=0xF, .ExtModel=0x5, .Model=0x0}
@@ -2081,7 +2081,10 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 			{.ExtFamily=0xA, .Family=0xF, .ExtModel=0xa, .Model=0x0}
 
 #define _AMD_Zen4_STP	{.ExtFamily=0xA, .Family=0xF, .ExtModel=0x1, .Model=0x8}
+
 #define _AMD_Zen5_STX	{.ExtFamily=0xB, .Family=0xF, .ExtModel=0x2, .Model=0x4}
+#define _AMD_Zen5_Eldora	\
+			{.ExtFamily=0xB, .Family=0xF, .ExtModel=0x4, .Model=0x4}
 
 typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
 
@@ -3632,6 +3635,10 @@ enum {
 	CN_STRIX_POINT
 };
 
+enum {
+	CN_ELDORA
+};
+
 static char *Arch_AMD_Zen[] = ZLIST(
 		[CN_SUMMIT_RIDGE]	=	"Zen/Summit Ridge",
 		[CN_WHITEHAVEN] 	=	"Zen/Whitehaven",
@@ -3728,6 +3735,9 @@ static char *Arch_AMD_Zen4_STP[] = ZLIST(
 );
 static char *Arch_AMD_Zen5_STX[] = ZLIST(
 		[CN_STRIX_POINT]	=	"Zen5/Strix Point"
+);
+static char *Arch_AMD_Zen5_Eldora[] = ZLIST(
+		[CN_ELDORA]		=	"Zen5/Granite Ridge"
 );
 
 static char *Arch_AMD_Family_17h[] = ZLIST("AMD Zen");
@@ -8663,6 +8673,61 @@ static PROCESSOR_SPECIFIC AMD_Zen5_STX_Specific[] = {
 	},
 	{0}
 };
+static PROCESSOR_SPECIFIC AMD_Zen5_Eldora_Specific[] = {
+	{
+	.Brand = ZLIST("AMD Ryzen 9 9950X"),
+	.Boost = {+14, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_ELDORA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 9 9900X"),
+	.Boost = {+12, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_ELDORA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 7 9700X"),
+	.Boost = {+17, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_ELDORA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 5 9600X"),
+	.Boost = {+15, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_ELDORA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{0}
+};
 static PROCESSOR_SPECIFIC Misc_Specific_Processor[] = {
 	{0}
 };
@@ -12307,5 +12372,29 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Specific = AMD_Zen5_STX_Specific,
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen5_STX
+	},
+[AMD_Zen5_Eldora] = {							/*123*/
+	.Signature = _AMD_Zen5_Eldora,
+	.Query = Query_AMD_F19h_61h_PerCluster,
+	.Update = PerCore_AMD_Family_19h_Query,
+	.Start = Start_AMD_Family_19h,
+	.Stop = Stop_AMD_Family_19h,
+	.Exit = Exit_AMD_F19h,
+	.Timer = InitTimer_AMD_Zen4_RPL,
+	.BaseClock = BaseClock_AMD_Family_19h,
+	.ClockMod = ClockMod_AMD_Zen,
+	.TurboClock = TurboClock_AMD_Zen,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN4,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_19_61h,
+	.powerFormula   = POWER_FORMULA_AMD_19h,
+	.PCI_ids = PCI_AMD_19h_ids,
+	.Uncore = {
+		.Start = Start_Uncore_AMD_Family_19h,
+		.Stop = Stop_Uncore_AMD_Family_19h,
+		.ClockMod = NULL
+		},
+	.Specific = AMD_Zen5_Eldora_Specific,
+	.SystemDriver = AMD_Zen_Driver,
+	.Architecture = Arch_AMD_Zen5_Eldora
 	}
 };

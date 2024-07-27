@@ -2189,6 +2189,7 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Zen4_RPL:
 	case AMD_Zen4_Bergamo:
 	case AMD_Zen4_STP:
+	case AMD_Zen5_Eldora:
 	case AMD_Family_17h:
 	case Hygon_Family_18h:
 	case AMD_Family_19h:
@@ -8191,6 +8192,7 @@ static bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	AMD_17_ZEN2_COF XtraCOF = {.value = 0};
 
 	switch (PUBLIC(RO(Proc))->ArchID) {
+	case AMD_Zen5_Eldora:
 	case AMD_Zen5_STX:
 	case AMD_Zen4_HWK:
 	case AMD_Zen4_PHX2:

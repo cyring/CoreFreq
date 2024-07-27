@@ -150,6 +150,7 @@ enum {	GenuineArch = 0,
 	AMD_Zen4_Bergamo,
 	AMD_Zen4_STP,
 	AMD_Zen5_STX,
+	AMD_Zen5_Eldora,
 	ARCHITECTURES
 };
 
