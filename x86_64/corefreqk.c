@@ -3,6 +3,7 @@
  * Copyright (C) 2015-2024 CYRIL COURTIAT
  * Licenses: GPL2
  *
+ * Upadacitinib [07.29.2024]
  * Infliximab [11.17.2023]
  * Vedolizumab [05.25.2023]
  *
@@ -16175,6 +16176,24 @@ static void Core_AMD_Family_17h_ThermTrip(CORE_RO *Core)
 			(Bit64)ThermTrip.CTF_THRESHOLD << LSHIFT_CRITIC_TMP;
 }
 
+static void Core_AMD_Zen_Filter_Temp( CORE_RO *Core,	unsigned int CurTmp,
+							bool scaleRangeSel )
+{
+	/* Register: SMU::THM::THM_TCON_CUR_TMP - Bit 19: CUR_TEMP_RANGE_SEL
+		0 = Report on 0C to 225C scale range.
+		1 = Report on -49C to 206C scale range.
+	*/
+	Core->PowerThermal.Sensor = CurTmp;
+
+	if ((scaleRangeSel == true)
+	 && (Core->PowerThermal.Sensor >= (49 << 3)))
+	{
+		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 49;
+	} else {
+		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 0;
+	}
+}
+
 static void CTL_AMD_Family_17h_Temp(CORE_RO *Core)
 {
 	TCTL_REGISTER TctlSensor = {.value = 0};
@@ -16183,19 +16202,8 @@ static void CTL_AMD_Family_17h_Temp(CORE_RO *Core)
 				SMU_AMD_THM_TCTL_REGISTER_F17H,
 				PRIVATE(OF(Zen)).Device.DF );
 
-	Core->PowerThermal.Sensor = TctlSensor.CurTmp;
-
-	if ((TctlSensor.CurTempRangeSel == 1)
-	 && (Core->PowerThermal.Sensor >= (49 << 3)))
-	{
-	/* Register: SMU::THM::THM_TCON_CUR_TMP - Bit 19: CUR_TEMP_RANGE_SEL
-		0 = Report on 0C to 225C scale range.
-		1 = Report on -49C to 206C scale range.
-	*/
-		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 49;
-	} else {
-		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 0;
-	}
+	Core_AMD_Zen_Filter_Temp( Core, TctlSensor.CurTmp,
+					TctlSensor.CurTempRangeSel == 1 );
 
 	Core_AMD_Family_17h_ThermTrip(Core);
 }
@@ -16209,15 +16217,8 @@ static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 				+ (Core->T.Cluster.CCD << 2)),
 				PRIVATE(OF(Zen)).Device.DF );
 
-	Core->PowerThermal.Sensor = TccdSensor.CurTmp;
-
-	if ((TccdSensor.CurTempRangeSel == 1)
-	 && (Core->PowerThermal.Sensor >= (49 << 3)))
-	{
-		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 49;
-	} else {
-		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 0;
-	}
+	Core_AMD_Zen_Filter_Temp( Core, TccdSensor.CurTmp,
+					TccdSensor.CurTempRangeSel == 1 );
 
 	Core_AMD_Family_17h_ThermTrip(Core);
 }
@@ -16238,15 +16239,8 @@ static void CCD_AMD_Family_19h_Genoa_Temp(CORE_RO *Core)
 				+ (Core->T.Cluster.CCD << 2)),
 				PRIVATE(OF(Zen)).Device.DF );
 
-	Core->PowerThermal.Sensor = TccdSensor.CurTmp;
-
-	if ((TccdSensor.CurTempRangeSel == 1)
-	 && (Core->PowerThermal.Sensor >= (49 << 3)))
-	{
-		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 49;
-	} else {
-		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 0;
-	}
+	Core_AMD_Zen_Filter_Temp( Core, TccdSensor.CurTmp,
+					TccdSensor.CurTempRangeSel == 1 );
 
 	Core_AMD_Family_17h_ThermTrip(Core);
 }
@@ -16260,15 +16254,8 @@ static void CCD_AMD_Family_19h_Zen4_Temp(CORE_RO *Core)
 				+ (Core->T.Cluster.CCD << 2)),
 				PRIVATE(OF(Zen)).Device.DF );
 
-	Core->PowerThermal.Sensor = TccdSensor.CurTmp;
-
-	if ((TccdSensor.CurTempRangeSel == 1)
-	 && (Core->PowerThermal.Sensor >= (49 << 3)))
-	{
-		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 49;
-	} else {
-		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 0;
-	}
+	Core_AMD_Zen_Filter_Temp( Core, TccdSensor.CurTmp,
+					TccdSensor.CurTempRangeSel == 1 );
 
 	Core_AMD_Family_17h_ThermTrip(Core);
 }
