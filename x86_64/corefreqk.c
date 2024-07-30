@@ -8906,8 +8906,10 @@ static void Query_AMD_F17h_Power_Limits(PROC_RO *Pkg)
 				SMU_AMD_F17H_ZEN2_MCM_PWR,
 				PRIVATE(OF(Zen)).Device.DF );
 	/*		Junction Temperature				*/
-	Pkg->PowerThermal.Param.Offset[THERMAL_TARGET] = \
-				Pkg->PowerThermal.Zen.PWR.TjMax;
+	if (Pkg->PowerThermal.Zen.PWR.TjMax > 0) {
+		Pkg->PowerThermal.Param.Offset[THERMAL_TARGET] = \
+					Pkg->PowerThermal.Zen.PWR.TjMax;
+	}
 	/*		Thermal Design Power				*/
 	Core_AMD_SMN_Read( Pkg->PowerThermal.Zen.TDP,
 				SMU_AMD_F17H_ZEN2_MCM_TDP,
