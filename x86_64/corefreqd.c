@@ -5588,6 +5588,8 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
     for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
     {
+	unsigned short tWR_quantity;
+
 	TIMING(mc, cha).tCL = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ODT.tCL;
 
@@ -5620,12 +5622,22 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	TIMING(mc, cha).tREFI = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Refresh.tREFI;
 
+	switch (RO(Shm)->Uncore.Unit.DDR_Ver) {
+	default:
+	case 4:
+		tWR_quantity = 4U;
+		break;
+	case 5:
+		tWR_quantity = 8U;
+		break;
+	}
       if (RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tWRPRE >=
-		(RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ODT.tCWL + 4U))
+	 (RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ODT.tCWL + tWR_quantity))
       {
 	TIMING(mc, cha).tWR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Timing.tWRPRE
-			- RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ODT.tCWL -4U;
+			- RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.ODT.tCWL
+			- tWR_quantity;
       }
 
 	TIMING(mc, cha).tRTPr = \
@@ -6095,6 +6107,8 @@ void MTL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
     for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
     {
+	unsigned short tWR_quantity;
+
 	TIMING(mc, cha).tCCD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.ODT.tCCD;
 
@@ -6130,12 +6144,23 @@ void MTL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	TIMING(mc, cha).tREFI = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.Refresh.tREFI;
 
+
+	switch (RO(Shm)->Uncore.Unit.DDR_Ver) {
+	default:
+	case 4:
+		tWR_quantity = 4U;
+		break;
+	case 5:
+		tWR_quantity = 8U;
+		break;
+	}
       if (RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.Timing.tWRPRE >=
-		(RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.ODT.tCWL + 4U))
+	 (RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.ODT.tCWL + tWR_quantity))
       {
 	TIMING(mc, cha).tWR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.Timing.tWRPRE
-			- RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.ODT.tCWL -4U;
+			- RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.ODT.tCWL
+			- tWR_quantity;
       }
 
 	TIMING(mc, cha).tRTPr = \
