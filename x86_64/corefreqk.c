@@ -5567,7 +5567,17 @@ static void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
     }
 	/*	Check for 2 DIMMs Per Channel is enabled		*/
     if (PUBLIC(RO(Proc))->Uncore.Bus.ADL_Cap_A.DDPCD == 0) {
-	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 2;
+	switch (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADCH.DDR_TYPE) {
+	case 0b00:	/*	DDR4	*/
+		PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 1;
+		break;
+	case 0b11:	/*	LPDDR4	*/
+	case 0b01:	/*	DDR5	*/
+	case 0b10:	/*	LPDDR5	*/
+	default:
+		PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 2;
+		break;
+	}
     } else {
 	/*	Guessing activated channel from the populated DIMM.	*/
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
@@ -5662,7 +5672,17 @@ static void Query_MTL_IMC(void __iomem *mchmap, unsigned short mc)
     }
 	/*	Check for 2 DIMMs Per Channel is enabled		*/
     if (PUBLIC(RO(Proc))->Uncore.Bus.MTL_Cap_A.DDPCD == 0) {
-	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 2;
+	switch (PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADCH.DDR_TYPE) {
+	case 0b00:	/*	DDR4	*/
+		PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 1;
+		break;
+	case 0b11:	/*	LPDDR4	*/
+	case 0b01:	/*	DDR5	*/
+	case 0b10:	/*	LPDDR5	*/
+	default:
+		PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 2;
+		break;
+	}
     } else {
 	/*	Guessing activated channel from the populated DIMM.	*/
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
