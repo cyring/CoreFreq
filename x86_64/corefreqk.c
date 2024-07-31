@@ -6590,19 +6590,15 @@ static PCI_CALLBACK ADL_IMC(struct pci_dev *dev)
    if ( (PCI_CALLBACK) 0 == rc)
    {
     if (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADCH.value != 0xffffffff) {
-     switch (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADCH.DDR_TYPE) {
-     case 0b01:	/*	DDR5	*/
-     case 0b10:	/*	LPDDR5	*/
-      if (mc & 1) {
-	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 0;
-      } else {
-       for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
-       {
+      switch (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADCH.DDR_TYPE) {
+	case 0b01:	/*	DDR5	*/
+	case 0b10:	/*	LPDDR5	*/
+	for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
+	{
 	 PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].ADL.Sched.ReservedBits1=0;
-       }
-      }
+	}
 	break;
-     }
+      }
     }
     if (PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount > 0)
     {
@@ -6651,19 +6647,15 @@ static PCI_CALLBACK MTL_IMC(struct pci_dev *dev)
    if ( (PCI_CALLBACK) 0 == rc)
    {
     if (PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADCH.value != 0xffffffff) {
-     switch (PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADCH.DDR_TYPE) {
-     case 0b01:	/*	DDR5	*/
-     case 0b10:	/*	LPDDR5	*/
-      if (mc & 1) {
-	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 0;
-      } else {
-       for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
-       {
+      switch (PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADCH.DDR_TYPE) {
+	case 0b01:	/*	DDR5	*/
+	case 0b10:	/*	LPDDR5	*/
+	for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
+	{
 	 PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].MTL.Sched.ReservedBits1=0;
-       }
-      }
+	}
 	break;
-     }
+      }
     }
     if (PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount > 0)
     {
