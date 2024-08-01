@@ -5531,7 +5531,7 @@ EXIT_TGL_IMC:
 
 static void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
 {	/* Source: 12th Generation Intel Core Processor Datasheet Vol 2 */
-	unsigned short cha;
+	unsigned short cha, virtualCount;
 
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 0;
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 0;
@@ -5566,16 +5566,19 @@ static void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
 		goto EXIT_ADL_IMC;
     }
 	/*	Check for 2 DIMMs Per Channel is enabled		*/
-    if (PUBLIC(RO(Proc))->Uncore.Bus.ADL_Cap_A.DDPCD == 0) {
+    if (PUBLIC(RO(Proc))->Uncore.Bus.ADL_Cap_A.DDPCD == 0)
+    {
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 2;
+
 	switch (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADCH.DDR_TYPE) {
 	case 0b00:	/*	DDR4	*/
-		PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 1;
+		virtualCount = 1;
 		break;
 	case 0b11:	/*	LPDDR4	*/
 	case 0b01:	/*	DDR5	*/
 	case 0b10:	/*	LPDDR5	*/
 	default:
-		PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 2;
+		virtualCount = 2;
 		break;
 	}
     } else {
@@ -5585,10 +5588,12 @@ static void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
 	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD0.Dimm_S_Size != 0))
 	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.Dimm_L_Size != 0)
 	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].ADL.MADD1.Dimm_S_Size != 0));
+
+	virtualCount = PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount;
     }
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
 
-    for (cha = 0 ; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
+    for (cha = 0 ; cha < virtualCount; cha++)
     {
 	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].ADL.Timing.value = \
 					readq(mchmap + 0xe000 + 0x800 * cha);
@@ -5635,8 +5640,8 @@ EXIT_ADL_IMC:
 #define MTL_SA	ADL_SA
 
 static void Query_MTL_IMC(void __iomem *mchmap, unsigned short mc)
-{	/* Source: 12th Generation Intel Core Processor Datasheet Vol 2 */
-	unsigned short cha;
+{	/* Source: 13th and 14th Gen. Intel Core Processors Datasheet Vol 2 */
+	unsigned short cha, virtualCount;
 
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 0;
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 0;
@@ -5671,16 +5676,19 @@ static void Query_MTL_IMC(void __iomem *mchmap, unsigned short mc)
 		goto EXIT_MTL_IMC;
     }
 	/*	Check for 2 DIMMs Per Channel is enabled		*/
-    if (PUBLIC(RO(Proc))->Uncore.Bus.MTL_Cap_A.DDPCD == 0) {
+    if (PUBLIC(RO(Proc))->Uncore.Bus.MTL_Cap_A.DDPCD == 0)
+    {
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 2;
+
 	switch (PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADCH.DDR_TYPE) {
 	case 0b00:	/*	DDR4	*/
-		PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 1;
+		virtualCount = 1;
 		break;
 	case 0b11:	/*	LPDDR4	*/
 	case 0b01:	/*	DDR5	*/
 	case 0b10:	/*	LPDDR5	*/
 	default:
-		PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 2;
+		virtualCount = 2;
 		break;
 	}
     } else {
@@ -5690,10 +5698,12 @@ static void Query_MTL_IMC(void __iomem *mchmap, unsigned short mc)
 	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADD0.Dimm_S_Size != 0))
 	+ ((PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADD1.Dimm_L_Size != 0)
 	|| (PUBLIC(RO(Proc))->Uncore.MC[mc].MTL.MADD1.Dimm_S_Size != 0));
+
+	virtualCount = PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount;
     }
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
 
-    for (cha = 0 ; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
+    for (cha = 0 ; cha < virtualCount; cha++)
     {
 	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].MTL.Timing.value = \
 					readq(mchmap + 0xe000 + 0x800 * cha);
@@ -6654,7 +6664,7 @@ static PCI_CALLBACK MTL_HOST(	struct pci_dev *dev,
 }
 
 static PCI_CALLBACK MTL_IMC(struct pci_dev *dev)
-{	/* Source: 12th Generation Intel Core Processors datasheet, vol 2 */
+{	/* Source: 13th and 14th Gen. Intel Core Processors datasheet, vol 2 */
 	PCI_CALLBACK rc = 0;
 	unsigned short mc, cha;
 
