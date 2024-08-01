@@ -5579,14 +5579,29 @@ void TGL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
-	unsigned short mc, cha;
+	unsigned short mc, cha, virtualCount;
 
   for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
   {
      RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
      RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
 
-    for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
+    if (RO(Proc)->Uncore.Bus.ADL_Cap_A.DDPCD == 0) {
+	switch (RO(Proc)->Uncore.MC[mc].ADL.MADCH.DDR_TYPE) {
+		case 0b00:	/*	DDR4	*/
+			virtualCount = 1;
+			break;
+		case 0b11:	/*	LPDDR4	*/
+		case 0b01:	/*	DDR5	*/
+		case 0b10:	/*	LPDDR5	*/
+		default:
+			virtualCount = RO(Shm)->Uncore.MC[mc].ChannelCount;
+			break;
+	}
+    } else {
+	virtualCount = RO(Shm)->Uncore.MC[mc].ChannelCount;
+    }
+    for (cha = 0; cha < virtualCount; cha++)
     {
 	unsigned short tWR_quantity;
 
