@@ -1502,6 +1502,9 @@ typedef struct
 #define DID_INTEL_RAPTORLAKE_U_2P_8E_HB 0xa708
 #define DID_INTEL_RAPTORLAKE_U_2P_4E_HB 0xa71b
 #define DID_INTEL_RAPTORLAKE_U_1P_4E_HB 0xa71c
+#define DID_INTEL_RAPTORLAKE_E_8P_0E_HB 0xA711
+#define DID_INTEL_RAPTORLAKE_E_6P_0E_HB 0xA712
+#define DID_INTEL_RAPTORLAKE_E_4P_0E_HB 0xA713
 /* Source: Intel(R) Core(TM) i7-14700K					*/
 #define DID_INTEL_RAPTORLAKE_S_8P_12E_HB 0xa740
 /* Source: PCH Controller Device IDs—Intel 700 Series Chipset Family PCH */
