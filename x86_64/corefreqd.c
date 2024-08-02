@@ -5579,29 +5579,14 @@ void TGL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
-	unsigned short mc, cha, virtualCount;
+	unsigned short mc, cha;
 
   for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount; mc++)
   {
      RO(Shm)->Uncore.MC[mc].SlotCount = RO(Proc)->Uncore.MC[mc].SlotCount;
      RO(Shm)->Uncore.MC[mc].ChannelCount = RO(Proc)->Uncore.MC[mc].ChannelCount;
 
-    if (RO(Proc)->Uncore.Bus.ADL_Cap_A.DDPCD == 0) {
-	switch (RO(Proc)->Uncore.MC[mc].ADL.MADCH.DDR_TYPE) {
-		case 0b00:	/*	DDR4	*/
-			virtualCount = 1;
-			break;
-		case 0b11:	/*	LPDDR4	*/
-		case 0b01:	/*	DDR5	*/
-		case 0b10:	/*	LPDDR5	*/
-		default:
-			virtualCount = RO(Shm)->Uncore.MC[mc].ChannelCount;
-			break;
-	}
-    } else {
-	virtualCount = RO(Shm)->Uncore.MC[mc].ChannelCount;
-    }
-    for (cha = 0; cha < virtualCount; cha++)
+    for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
     {
 	unsigned short tWR_quantity;
 
@@ -5732,11 +5717,9 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.SRExit.tXSR;
 
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[0].Banks = \
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[1].Banks = \
 	!RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Sched.ReservedBits1 ? 16 : 8;
 
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[0].Cols = 1 << 10;
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[1].Cols = 1 << 10;
 
 	TIMING(mc, cha).tCKE = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.PWDEN.tCKE;
@@ -5759,88 +5742,88 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
     switch (RO(Shm)->Uncore.Unit.DDR_Ver) {
     case 1 ... 4:
-	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
-	].Rows = DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD0.DLW);
+	].DIMM[0].Rows = DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD0.DLW);
 
-	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
-	].Rows = DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD0.DSW);
+	].DIMM[0].Rows = DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD0.DSW);
 
-	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
-	].Rows = DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD1.DLW);
+	].DIMM[0].Rows = DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD1.DLW);
 
-	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
-	].Rows = DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD1.DSW);
+	].DIMM[0].Rows = DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD1.DSW);
 
-	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
-	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_L_Size;
+	].DIMM[0].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_L_Size;
 
-	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
-	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_S_Size;
+	].DIMM[0].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_S_Size;
 
-	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
-	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_L_Size;
+	].DIMM[0].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_L_Size;
 
-	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
-	].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_S_Size;
+	].DIMM[0].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_S_Size;
 	break;
     case 5:
     default:
-	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
-	].Rows = 1 << 17;
+	].DIMM[0].Rows = 1 << 17;
 
-	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
-	].Rows = 1 << 17;
+	].DIMM[0].Rows = 1 << 17;
 
-	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
-	].Rows = 1 << 17;
+	].DIMM[0].Rows = 1 << 17;
 
-	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
-	].Rows = 1 << 17;
+	].DIMM[0].Rows = 1 << 17;
 
-	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
-	].Size = 1024 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_L_Size;
+	].DIMM[0].Size = 1024 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_L_Size;
 
-	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
-	].Size = 1024 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_S_Size;
+	].DIMM[0].Size = 1024 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_S_Size;
 
-	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
-	].Size = 1024 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_L_Size;
+	].DIMM[0].Size = 1024 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_L_Size;
 
-	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
-	].Size = 1024 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_S_Size;
+	].DIMM[0].Size = 1024 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_S_Size;
 	break;
     }
-	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
-	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD0.DLNOR;
+	].DIMM[0].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD0.DLNOR;
 
-	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
-	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD0.DSNOR;
+	].DIMM[0].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD0.DSNOR;
 
-	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
-	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD1.DLNOR;
+	].DIMM[0].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD1.DLNOR;
 
-	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[
+	RO(Shm)->Uncore.MC[mc].Channel[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
-	].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD1.DSNOR;
+	].DIMM[0].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD1.DSNOR;
   }
 }
 
