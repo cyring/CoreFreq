@@ -5731,11 +5731,6 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	TIMING(mc, cha).tXS = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.SRExit.tXSR;
 
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[0].Banks = \
-	!RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Sched.ReservedBits1 ? 16 : 8;
-
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[0].Cols = 1 << 10;
-
 	TIMING(mc, cha).tCKE = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.PWDEN.tCKE;
 
@@ -5835,6 +5830,12 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	].DIMM[0].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD1.DSNOR;
 	break;
     }
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[0].Banks = \
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[0].Banks = \
+	!RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Sched.ReservedBits1 ? 16 : 8;
+
+	RO(Shm)->Uncore.MC[mc].Channel[0].DIMM[0].Cols = \
+	RO(Shm)->Uncore.MC[mc].Channel[1].DIMM[0].Cols = 1 << 10;
   }
 }
 
