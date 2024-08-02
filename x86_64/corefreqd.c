@@ -5749,14 +5749,11 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Sched.GEAR4 ? 4 : \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].ADL.Sched.GEAR2 ? 2 : 1;
     }
+    switch (RO(Shm)->Uncore.Unit.DDR_Ver) {
+    case 1 ... 4:
 	RO(Shm)->Uncore.MC[mc].Channel[0].Timing.ECC = \
 				RO(Proc)->Uncore.MC[mc].ADL.MADC0.ECC;
 
-	RO(Shm)->Uncore.MC[mc].Channel[1].Timing.ECC = \
-				RO(Proc)->Uncore.MC[mc].ADL.MADC1.ECC;
-
-    switch (RO(Shm)->Uncore.Unit.DDR_Ver) {
-    case 1 ... 4:
 	RO(Shm)->Uncore.MC[mc].Channel[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
 	].DIMM[0].Rows = DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD0.DLW);
@@ -5764,14 +5761,6 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	RO(Shm)->Uncore.MC[mc].Channel[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
 	].DIMM[0].Rows = DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD0.DSW);
-
-	RO(Shm)->Uncore.MC[mc].Channel[
-		RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
-	].DIMM[0].Rows = DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD1.DLW);
-
-	RO(Shm)->Uncore.MC[mc].Channel[
-		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
-	].DIMM[0].Rows = DimmWidthToRows(RO(Proc)->Uncore.MC[mc].ADL.MADD1.DSW);
 
 	RO(Shm)->Uncore.MC[mc].Channel[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
@@ -5782,15 +5771,21 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	].DIMM[0].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD0.Dimm_S_Size;
 
 	RO(Shm)->Uncore.MC[mc].Channel[
-		RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
-	].DIMM[0].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_L_Size;
+		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
+	].DIMM[0].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD0.DLNOR;
 
 	RO(Shm)->Uncore.MC[mc].Channel[
-		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
-	].DIMM[0].Size = 512 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_S_Size;
+		!RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
+	].DIMM[0].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD0.DSNOR;
 	break;
     case 5:
     default:
+	RO(Shm)->Uncore.MC[mc].Channel[0].Timing.ECC = \
+				RO(Proc)->Uncore.MC[mc].ADL.MADC0.ECC;
+
+	RO(Shm)->Uncore.MC[mc].Channel[1].Timing.ECC = \
+				RO(Proc)->Uncore.MC[mc].ADL.MADC1.ECC;
+
 	RO(Shm)->Uncore.MC[mc].Channel[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
 	].DIMM[0].Rows = 1 << 17;
@@ -5822,8 +5817,7 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	RO(Shm)->Uncore.MC[mc].Channel[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
 	].DIMM[0].Size = 1024 * RO(Proc)->Uncore.MC[mc].ADL.MADD1.Dimm_S_Size;
-	break;
-    }
+
 	RO(Shm)->Uncore.MC[mc].Channel[
 		RO(Proc)->Uncore.MC[mc].ADL.MADC0.Dimm_L_Map
 	].DIMM[0].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD0.DLNOR;
@@ -5839,6 +5833,8 @@ void ADL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	RO(Shm)->Uncore.MC[mc].Channel[
 		!RO(Proc)->Uncore.MC[mc].ADL.MADC1.Dimm_L_Map
 	].DIMM[0].Ranks = 1 + RO(Proc)->Uncore.MC[mc].ADL.MADD1.DSNOR;
+	break;
+    }
   }
 }
 
