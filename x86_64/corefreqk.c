@@ -5591,7 +5591,6 @@ static void Query_ADL_IMC(void __iomem *mchmap, unsigned short mc)
 
 	virtualCount = PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount;
     }
-	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 1;
 
     for (cha = 0 ; cha < virtualCount; cha++)
@@ -5702,7 +5701,7 @@ static void Query_MTL_IMC(void __iomem *mchmap, unsigned short mc)
 
 	virtualCount = PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount;
     }
-	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 1;
 
     for (cha = 0 ; cha < virtualCount; cha++)
     {
