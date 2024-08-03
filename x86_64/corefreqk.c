@@ -2783,7 +2783,7 @@ static void Intel_FlexRatio(bool OC_ENABLED)
 		{_Meteorlake_M, 	1, 1, 0, 0},
 		{_Meteorlake_N, 	1, 1, 0, 0},
 		{_Meteorlake_S, 	1, 1, 0, 0},
-		{_Raptorlake,		1, 1, 0, 0},	/* 06_B7 */
+		{_Raptorlake,		1, 0, 0, 0},	/* 06_B7 */
 		{_Raptorlake_P, 	1, 1, 0, 0},
 		{_Raptorlake_S, 	1, 1, 0, 0},
 		{_Lunarlake,		1, 1, 0, 0},	/* 06_BD */
