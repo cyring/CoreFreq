@@ -4,10 +4,6 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_MAJOR	1
-#define COREFREQ_MINOR	98
-#define COREFREQ_REV	0
-
 #if !defined(CORE_COUNT)
 	#define CORE_COUNT	256
 #elif !(CORE_COUNT == 64 || CORE_COUNT == 128 || CORE_COUNT == 256 \
