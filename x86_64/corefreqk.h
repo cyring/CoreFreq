@@ -3753,7 +3753,7 @@ static char *Arch_AMD_Zen5_Eldora[] = ZLIST(
 		[CN_ELDORA]		=	"Zen5/Granite Ridge"
 );
 
-static char *Arch_AMD_Family_17h[] = ZLIST("AMD Zen");
+static char *Arch_AMD_Family_17h[]	=	ZLIST("AMD Family 17h");
 
 static char *Arch_Hygon_Family_18h[] = ZLIST(
 		[CN_DHYANA]		=	"Dhyana",
@@ -3761,9 +3761,9 @@ static char *Arch_Hygon_Family_18h[] = ZLIST(
 		[CN_DHYANA_V2]		=	"Dhyana V2"
 );
 
-static char *Arch_AMD_Family_19h[]	=	ZLIST("AMD Zen3");
+static char *Arch_AMD_Family_19h[]	=	ZLIST("AMD Family 19h");
 
-static char *Arch_AMD_Family_1Ah[]	=	ZLIST("AMD Zen5");
+static char *Arch_AMD_Family_1Ah[]	=	ZLIST("AMD Family 1Ah");
 
 static PROCESSOR_SPECIFIC Void_Specific[] = { {0} };
 
