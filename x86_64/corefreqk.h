@@ -3050,6 +3050,18 @@ static struct pci_device_id PCI_ADL_RPL_ids[] = {
 		.driver_data = (kernel_ulong_t) RPL_IMC
 	},
 	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_E_8P_0E_HB),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_E_6P_0E_HB),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_E_4P_0E_HB),
+		.driver_data = (kernel_ulong_t) RPL_IMC
+	},
+	{
 		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_Z790_PCH),
 		.driver_data = (kernel_ulong_t) RPL_PCH
 	},
