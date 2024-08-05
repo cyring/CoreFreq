@@ -1448,6 +1448,7 @@ typedef struct
 /* Source: 11th Generation Intel Core Processor Desktop Datasheet Vol1	*/
 #define DID_INTEL_TIGERLAKE_UP3_IMC	0xa082
 #define DID_INTEL_TIGERLAKE_UP4_IMC	0xa087
+#define DID_INTEL_TGL_PCH_LP_SMBUS 	0xa0a3 /* TGL-LP Watchdog	*/
 #define DID_INTEL_ROCKETLAKE_S_8C_IMC_HB 0x4c43
 #define DID_INTEL_ROCKETLAKE_S_6C_IMC_HB 0x4c53
 /* Source: Intel 500 Series Chipset Family Platform Controller Hub	*/
@@ -1468,6 +1469,10 @@ typedef struct
 #define DID_INTEL_ALDERLAKE_H_6P_4E_HB	0x4649
 #define DID_INTEL_ALDERLAKE_H_4P_8E_HB	0x4621
 #define DID_INTEL_ALDERLAKE_H_4P_4E_HB	0x4629
+#define DID_INTEL_ALDERLAKE_HL_6P_8E_HB 0x4643
+#define DID_INTEL_ALDERLAKE_U_2P_8E_HB	0x4601
+#define DID_INTEL_ALDERLAKE_U_2P_4E_HB	0x4609
+#define DID_INTEL_ALDERLAKE_U_1P_4E_HB	0x4619
 /* Source: Intel 600 Series Chipset Family Platform Controller Hub	*/
 #define DID_INTEL_ALDERLAKE_H610_PCH	0x7a87
 #define DID_INTEL_ALDERLAKE_B660_PCH	0x7a86
@@ -1477,10 +1482,11 @@ typedef struct
 #define DID_INTEL_ALDERLAKE_W680_PCH	0x7a88
 #define DID_INTEL_ALDERLAKE_WM690_PCH	0x7a8d
 #define DID_INTEL_ALDERLAKE_HM670_PCH	0x7a8c
-#define DID_INTEL_PCH_600_SMBUS 	0xa0a3
-/* Source: 12th Gen Intel(R) Core(TM) i7-12700H 			*/
+/* Source: 12th Gen Intel Core i5-12500H;i7-12700H;i7-12800HL;i9-12900H */
 #define DID_INTEL_ALDERLAKE_PCH_P	0x5182 /* PCH eSPI Controller	*/
-#define DID_INTEL_PCH_P_SMBUS		0x51a3
+#define DID_INTEL_ALDERLAKE_PCH_U	0x5188 /* PCH-U eSPI Controller */
+#define DID_INTEL_ADL_PCH_P_SMBUS	0x51a3 /* ADL PCH-P Watchdog	*/
+#define DID_INTEL_ADL_S_PCH_SMBUS	0x7aa3
 /* Source: 13th Generation Intel Core Processors Datasheet, vol 1	*/
 #define DID_INTEL_RAPTORLAKE_S_8P_16E_HB 0xa700
 #define DID_INTEL_RAPTORLAKE_S_8P_8E_HB 0xa703
@@ -1502,15 +1508,20 @@ typedef struct
 #define DID_INTEL_RAPTORLAKE_U_2P_8E_HB 0xa708
 #define DID_INTEL_RAPTORLAKE_U_2P_4E_HB 0xa71b
 #define DID_INTEL_RAPTORLAKE_U_1P_4E_HB 0xa71c
-#define DID_INTEL_RAPTORLAKE_E_8P_0E_HB 0xA711
-#define DID_INTEL_RAPTORLAKE_E_6P_0E_HB 0xA712
-#define DID_INTEL_RAPTORLAKE_E_4P_0E_HB 0xA713
+#define DID_INTEL_RAPTORLAKE_E_8P_0E_HB 0xa711
+#define DID_INTEL_RAPTORLAKE_E_6P_0E_HB 0xa712
+#define DID_INTEL_RAPTORLAKE_E_4P_0E_HB 0xa713
 /* Source: Intel(R) Core(TM) i7-14700K					*/
 #define DID_INTEL_RAPTORLAKE_S_8P_12E_HB 0xa740
 /* Source: PCH Controller Device IDs—Intel 700 Series Chipset Family PCH */
 #define DID_INTEL_RAPTORLAKE_Z790_PCH	0x7a04
 #define DID_INTEL_RAPTORLAKE_H770_PCH	0x7a05
 #define DID_INTEL_RAPTORLAKE_B760_PCH	0x7a06
+#define DID_INTEL_RAPTORLAKE_WM790_PCH	0x7a0d
+#define DID_INTEL_RAPTORLAKE_HM770_PCH	0x7a0c
+#define DID_INTEL_RAPTORLAKE_C262_PCH	0x7a14
+#define DID_INTEL_RAPTORLAKE_C266_PCH	0x7a13
+#define DID_INTEL_RPL_D_PCH_SMBUS	0x7a23 /* RPL-Desktop Watchdog	*/
 /* Source: Intel(R) Pentium(R) Silver N5000 CPU @ 1.10GHz		*/
 #define DID_INTEL_GEMINILAKE_HB 	0x31f0
 /* Source: Meteor Lake: Intel Core Ultra Processor Datasheet, Vol 1	*/

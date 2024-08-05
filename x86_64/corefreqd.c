@@ -7038,9 +7038,14 @@ static char *Chipset[CHIPSETS] = {
 	[IC_WM690]		= "Intel WM690",
 	[IC_HM670]		= "Intel HM670",
 	[IC_ADL_PCH_P]		= "Intel ADL PCH-P",
+	[IC_ADL_PCH_U]		= "Intel ADL PCH-U",
 	[IC_Z790]		= "Intel Z790",
 	[IC_H770]		= "Intel H770",
 	[IC_B760]		= "Intel B760",
+	[IC_WM790]		= "Intel WM790",
+	[IC_HM770]		= "Intel HM770",
+	[IC_C262]		= "Intel C262",
+	[IC_C266]		= "Intel C266",
 	[IC_MTL_H]		= "Intel MTL-H",
 	[IC_MTL_U]		= "Intel MTL-U",
 	[IC_MTL_UT4]		= "Intel MTL-U Type4",
@@ -7507,6 +7512,10 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 	case DID_INTEL_ALDERLAKE_H_6P_4E_HB:
 	case DID_INTEL_ALDERLAKE_H_4P_8E_HB:
 	case DID_INTEL_ALDERLAKE_H_4P_4E_HB:
+	case DID_INTEL_ALDERLAKE_HL_6P_8E_HB:
+	case DID_INTEL_ALDERLAKE_U_2P_8E_HB:
+	case DID_INTEL_ALDERLAKE_U_2P_4E_HB:
+	case DID_INTEL_ALDERLAKE_U_1P_4E_HB:
 		ADL_CAP(RO(Shm), RO(Proc), RO(Core));
 		ADL_IMC(RO(Shm), RO(Proc));
 		break;
@@ -7536,6 +7545,9 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		break;
 	case DID_INTEL_ALDERLAKE_PCH_P:
 		SET_CHIPSET(IC_ADL_PCH_P);
+		break;
+	case DID_INTEL_ALDERLAKE_PCH_U:
+		SET_CHIPSET(IC_ADL_PCH_U);
 		break;
 	case DID_INTEL_GEMINILAKE_HB:
 		GLK_CAP(RO(Shm), RO(Proc), RO(Core));
@@ -7577,6 +7589,18 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		break;
 	case DID_INTEL_RAPTORLAKE_B760_PCH:
 		SET_CHIPSET(IC_B760);
+		break;
+	case DID_INTEL_RAPTORLAKE_WM790_PCH:
+		SET_CHIPSET(IC_WM790);
+		break;
+	case DID_INTEL_RAPTORLAKE_HM770_PCH:
+		SET_CHIPSET(IC_HM770);
+		break;
+	case DID_INTEL_RAPTORLAKE_C262_PCH:
+		SET_CHIPSET(IC_C262);
+		break;
+	case DID_INTEL_RAPTORLAKE_C266_PCH:
+		SET_CHIPSET(IC_C266);
 		break;
 	case DID_INTEL_METEORLAKE_UT4_2_8_2_HB:
 	case DID_INTEL_METEORLAKE_H_6_8_2_HB:

@@ -2929,6 +2929,22 @@ static struct pci_device_id PCI_ADL_RPL_ids[] = {
 		.driver_data = (kernel_ulong_t) ADL_IMC
 	},
 	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_HL_6P_8E_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_U_2P_8E_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_U_2P_4E_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_U_1P_4E_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
 		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_H610_PCH),
 		.driver_data = (kernel_ulong_t) ADL_PCH
 	},
@@ -2962,6 +2978,10 @@ static struct pci_device_id PCI_ADL_RPL_ids[] = {
 	},
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_PCH_P),
+		.driver_data = (kernel_ulong_t) ADL_PCH
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_PCH_U),
 		.driver_data = (kernel_ulong_t) ADL_PCH
 	},
 /* 13th Generation							*/
@@ -3071,6 +3091,22 @@ static struct pci_device_id PCI_ADL_RPL_ids[] = {
 	},
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_B760_PCH),
+		.driver_data = (kernel_ulong_t) RPL_PCH
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_WM790_PCH),
+		.driver_data = (kernel_ulong_t) RPL_PCH
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_HM770_PCH),
+		.driver_data = (kernel_ulong_t) RPL_PCH
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_C262_PCH),
+		.driver_data = (kernel_ulong_t) RPL_PCH
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_RAPTORLAKE_C266_PCH),
 		.driver_data = (kernel_ulong_t) RPL_PCH
 	},
 	{0, }
