@@ -84,43 +84,21 @@ cd CoreFreq
 make -j
 ```
 ```console
-cc  -Wall -Wfatal-errors -Wno-unused-variable -pthread -c x86_64/corefreqd.c \
-  -D CORE_COUNT=256 -D TASK_ORDER=5 -D MAX_FREQ_HZ=7125000000 -D UBENCH=0 -D DELAY_TSC=1 \
-  -o build/corefreqd.o
-cc  -Wall -Wfatal-errors -Wno-unused-variable -c x86_64/corefreqm.c \
-  -D CORE_COUNT=256 -D TASK_ORDER=5 -D MAX_FREQ_HZ=7125000000 -D UBENCH=0 -D DELAY_TSC=1 \
-  -o build/corefreqm.o
-cc  -Wall -Wfatal-errors -Wno-unused-variable -c x86_64/corefreq-cli.c \
-  -D CORE_COUNT=256 -D TASK_ORDER=5 -D MAX_FREQ_HZ=7125000000 -D UBENCH=0 -D DELAY_TSC=1  \
-  -o build/corefreq-cli.o
-cc  -Wall -Wfatal-errors -Wno-unused-variable -c x86_64/corefreq-ui.c \
-  -D CORE_COUNT=256 -D TASK_ORDER=5 -D MAX_FREQ_HZ=7125000000 -D UBENCH=0 -D DELAY_TSC=1 \
-  -o build/corefreq-ui.o
-cc  -Wall -Wfatal-errors -Wno-unused-variable -c x86_64/corefreq-cli-rsc.c \
-  -D CORE_COUNT=256 -D TASK_ORDER=5 -D MAX_FREQ_HZ=7125000000 -D UBENCH=0 -D DELAY_TSC=1  \
-  -o build/corefreq-cli-rsc.o
-cc  -Wall -Wfatal-errors -Wno-unused-variable -c x86_64/corefreq-cli-json.c \
-  -D CORE_COUNT=256 -D TASK_ORDER=5 -D MAX_FREQ_HZ=7125000000 -D UBENCH=0 -D DELAY_TSC=1 \
-  -o build/corefreq-cli-json.o
-cc  -Wall -Wfatal-errors -Wno-unused-variable -c x86_64/corefreq-cli-extra.c \
-  -D CORE_COUNT=256 -D TASK_ORDER=5 -D MAX_FREQ_HZ=7125000000 -D UBENCH=0 -D DELAY_TSC=1 \
-  -o build/corefreq-cli-extra.o
-cc  -Wall -Wfatal-errors -Wno-unused-variable x86_64/corefreqd.c x86_64/corefreqm.c \
-  -D CORE_COUNT=256 -D TASK_ORDER=5 -D MAX_FREQ_HZ=7125000000 -D UBENCH=0 -D DELAY_TSC=1 \
-  -o build/corefreqd -lpthread -lm -lrt
-cc  -Wall -Wfatal-errors -Wno-unused-variable \
-  x86_64/corefreq-cli.c x86_64/corefreq-ui.c x86_64/corefreq-cli-rsc.c \
-  x86_64/corefreq-cli-json.c x86_64/corefreq-cli-extra.c \
-  -D CORE_COUNT=256 -D TASK_ORDER=5 -D MAX_FREQ_HZ=7125000000 -D UBENCH=0 -D DELAY_TSC=1  \
-  -o build/corefreq-cli -lm -lrt
-make[1]: Entering directory '/usr/lib/modules/x.y.z/build'
+  CC [build/corefreqd.o]
+  CC [build/corefreqm.o]
+  CC [build/corefreq-cli.o]
+  CC [build/corefreq-ui.o]
+  CC [build/corefreq-cli-rsc.o]
+  CC [build/corefreq-cli-json.o]
+  CC [build/corefreq-cli-extra.o]
+  LD [build/corefreqd]
+  LD [build/corefreq-cli]
   CC [M]  CoreFreq/build/module/corefreqk.o
   LD [M]  CoreFreq/build/corefreqk.o
   MODPOST CoreFreq/build/Module.symvers
   CC [M]  CoreFreq/build/corefreqk.mod.o
   LD [M]  CoreFreq/build/corefreqk.ko
   BTF [M] CoreFreq/build/corefreqk.ko
-make[1]: Leaving directory '/usr/lib/modules/x.y.z/build
 ```
 4. (Optionally) Sign the driver
 If module signature verification is enabled into Kernel, you will have to sign the `corefreqk.ko` driver.  
@@ -525,6 +503,9 @@ gmake CC=clang
 o---------------------------------------------------------------o
 |  make [all] [clean] [info] [help] [install] [module-install]  |
 |                                                               |
+|  V=<n>                                                        |
+|    where <n> is the verbose build level                       |
+|                                                               |
 |  CC=<COMPILER>                                                |
 |    where <COMPILER> is cc, gcc, clang                         |
 |                                                               |
@@ -596,7 +577,6 @@ o---------------------------------------------------------------o
 |         MSR_CORE_PERF_URC=MSR_CORE_PERF_FIXED_CTR2            |
 |         HWM_CHIPSET=W83627 MAX_FREQ_HZ=5350000000             |
 |         CORE_COUNT=1024 NO_FOOTER=1 NO_UPPER=1                |
-|         clean all                                             |
 o---------------------------------------------------------------o
 ```
 

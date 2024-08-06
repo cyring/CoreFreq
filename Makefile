@@ -313,7 +313,7 @@ help:
 	"|  make [all] [clean] [info] [help] [install] [module-install]  |\n"\
 	"|                                                               |\n"\
 	"|  V=<n>                                                        |\n"\
-	"|    where <n> is the kernel verbose build level                |\n"\
+	"|    where <n> is the verbose build level                       |\n"\
 	"|                                                               |\n"\
 	"|  CC=<COMPILER>                                                |\n"\
 	"|    where <COMPILER> is cc, gcc, clang                         |\n"\
@@ -382,10 +382,9 @@ help:
 	"|      set ruler left or right bound to <N> frequency ratio     |\n"\
 	"|                                                               |\n"\
 	"|  Example:                                                     |\n"\
-	"|    make CC=gcc OPTIM_LVL=3 FEAT_DBG=1 ARCH_PMC=PCU            |\n"\
-	"|         MSR_CORE_PERF_UCC=MSR_CORE_PERF_FIXED_CTR1            |\n"\
-	"|         MSR_CORE_PERF_URC=MSR_CORE_PERF_FIXED_CTR2            |\n"\
-	"|         HWM_CHIPSET=W83627 MAX_FREQ_HZ=5350000000             |\n"\
+	"|    make CC=gcc OPTIM_LVL=3 FEAT_DBG=1 ARCH_PMC=PCU \\          |\n"\
+	"|         MSR_CORE_PERF_UCC=MSR_CORE_PERF_FIXED_CTR1 \\          |\n"\
+	"|         MSR_CORE_PERF_URC=MSR_CORE_PERF_FIXED_CTR2 \\          |\n"\
+	"|         HWM_CHIPSET=W83627 MAX_FREQ_HZ=5350000000  \\          |\n"\
 	"|         CORE_COUNT=1024 NO_FOOTER=1 NO_UPPER=1                |\n"\
-	"|         clean all                                             |\n"\
 	"o---------------------------------------------------------------o"
