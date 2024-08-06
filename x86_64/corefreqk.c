@@ -16217,12 +16217,25 @@ static void Core_AMD_Zen_Filter_Temp( CORE_RO *Core,	unsigned int CurTmp,
 	*/
 	Core->PowerThermal.Sensor = CurTmp;
 
-	if ((scaleRangeSel == true)
-	 && (Core->PowerThermal.Sensor >= (49 << 3)))
-	{
+	if (scaleRangeSel == true) {
+	    if (Core->PowerThermal.Sensor >= (49 << 3))
+	    {
 		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 49;
+
+		if (Core->PowerThermal.Sensor > (255 << 3)) {
+			Core->PowerThermal.Events[eLOG] |= EVENT_THOLD2_LOG;
+		}
+	    } else {
+		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 0;
+
+		Core->PowerThermal.Events[eLOG] |= EVENT_THOLD1_LOG;
+	    }
 	} else {
 		Core->PowerThermal.Param.Offset[THERMAL_OFFSET_P1] = 0;
+
+		if (Core->PowerThermal.Sensor > (225 << 3)) {
+			Core->PowerThermal.Events[eLOG] |= EVENT_THOLD2_LOG;
+		}
 	}
 }
 
