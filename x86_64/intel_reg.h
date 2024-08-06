@@ -62,6 +62,8 @@
 	#define MSR_PLATFORM_INFO		0x000000ce
 #endif
 
+#define MSR_FEATURE_CONFIG			0x0000013c
+
 #ifndef MSR_MISC_FEATURE_CONTROL
 	#define MSR_MISC_FEATURE_CONTROL	0x000001a4
 #endif
@@ -807,6 +809,18 @@ typedef union
 */
 
 typedef union
+{	/* MSR FEATURE_CONFIG(0x13c)					*/
+	unsigned long long	value;
+	struct				/* Core Ultra(R/W) , Core scope */
+	{
+		unsigned long long
+		AESNI_LOCK		:  1-0,
+		AESNI_DISABLE		:  2-1,
+		ReservedBits		: 64-2;
+	};
+} FEATURE_CONFIG;
+
+typedef union
 {	/* MSR MISC_FEATURE_CONTROL(0x1a4)				*/
 	unsigned long long	value;
 	struct				/* R/W , Core scope , Disable=1 */
@@ -1331,13 +1345,18 @@ typedef union
 		unsigned long long
 		HW_Coord_EIST	:  1-0,  /* Pkg: 0=Enable; 1=Disable	*/
 		Perf_BIAS_Enable:  2-1,  /* SMT: 1=Enable; 0=Disable*	*/
-		ReservedBits1	: 10-2,
+		ReservedBits1	:  6-2,
+		ENABLE_HWP	:  7-6,  /* Ultra: 0=Clear CPUID:HWP Base */
+		ENABLE_HWP_INTR :  8-7,  /* Ultra: 0=Clear CPUID:HWP Interrupt*/
+		ENABLE_OOB_AUTO :  9-8,  /* Ultra: HWP OUT_OF_BAND_AUTONOMOUS */
+		ReservedBits2	: 10-9,
 		ENABLE_SDC	: 11-10, /* Errata [ADL010]		*/
-		ReservedBits2	: 13-11,
+		ReservedBits3	: 12-11,
+		ENABLE_HWP_EPP	: 13-12, /* Ultra: 0=Clear CPUID:HWP EPP */
 		LOCK		: 14-13, /* Errata [ADL010]		*/
-		ReservedBits3	: 22-14,
+		ReservedBits4	: 22-14,
 		Therm_Intr_Coord: 23-22, /* Pkg: Goldmont 0=Disable; 1=Enable */
-		ReservedBits4	: 64-23;
+		ReservedBits5	: 64-23;
 	};
 } MISC_PWR_MGMT;
 /*
@@ -1686,10 +1705,14 @@ typedef union
 	struct
 	{
 		unsigned long long
-		ReservedBits1	: 16-0,
-		Target		: 24-16,	/* R/O: Thread scope	*/
-		Offset		: 28-24,	/* Nehalem		*/
-		ReservedBits2	: 64-28;
+		TCC_Offset_TW	:  7-0,  /* Ultra: TCC Offset Time Window */
+		TCC_Offset_Clamp:  8-7,  /* Ultra: 1=Clamping: RATL throttling*/
+		Temp_Ctrl_Offset: 16-8,  /* Ultra: Temperature Control Offset */
+		Target		: 24-16, /* NHM(R/O): Thread scope. O/W Pkg */
+		Offset		: 28-24, /* NHM...Ultra: TCC Activation Offset*/
+		ReservedBits1	: 31-28,
+		LOCKED		: 32-31, /* Ultra: 1=Read-only register */
+		ReservedBits2	: 64-32;
 	};	/* Core, NHM, SNB and superior architectures		*/
 	struct
 	{
