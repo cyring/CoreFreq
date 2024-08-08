@@ -2718,7 +2718,7 @@ static void Intel_FlexRatio(bool OC_ENABLED)
 		{_Atom_Merrifield,	1, 1, 0, 0},	/* 06_4A */
 		{_Atom_Moorefield,	1, 1, 0, 0},	/* 06_5A */
 
-		{_Nehalem_Bloomfield,	1, 1, 0, 1},	/* 06_1A */
+		{_Nehalem_Bloomfield,	0, 0, 0, 1},	/* 06_1A */
 		{_Nehalem_Lynnfield,	1, 1, 0, 1},	/* 06_1E */
 		{_Nehalem_MB,		1, 1, 0, 1},	/* 06_1F */
 		{_Nehalem_EX,		1, 1, 0, 1},	/* 06_2E */
