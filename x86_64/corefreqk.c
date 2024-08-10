@@ -2686,9 +2686,8 @@ static PROCESSOR_SPECIFIC *LookupProcessor(void)
 	return NULL;
 }
 
-static void Intel_FlexRatio(bool OC_ENABLED)
+static void Intel_FlexRatio(void)
 {
-  if (OC_ENABLED) {
     static struct {
 		struct SIGNATURE Arch;
 		unsigned short	grantFlex	:  1-0,
@@ -2724,7 +2723,7 @@ static void Intel_FlexRatio(bool OC_ENABLED)
 		{_Nehalem_EX,		1, 1, 0, 1},	/* 06_2E */
 
 		{_Westmere,		1, 1, 0, 1},	/* 06_25 */
-		{_Westmere_EP,		1, 0, 0, 1},	/* 06_2C */
+		{_Westmere_EP,		1, 0, 0, 1},	/* 06_2C : R/W */
 		{_Westmere_EX,		1, 1, 0, 1},	/* 06_2F */
 
 		{_SandyBridge,		1, 1, 0, 0},	/* 06_2A */
@@ -2761,7 +2760,7 @@ static void Intel_FlexRatio(bool OC_ENABLED)
 		{_Icelake_D,		1, 1, 0, 0},
 		{_Sunny_Cove,		1, 1, 0, 0},
 		{_Tigerlake,		1, 1, 0, 0},
-		{_Tigerlake_U,		1, 0, 0, 0},	/* 06_8C */
+		{_Tigerlake_U,		1, 0, 0, 0},	/* 06_8C : R/W */
 		{_Cometlake,		1, 1, 0, 0},
 		{_Cometlake_UY, 	1, 1, 0, 0},
 		{_Atom_Denverton,	1, 1, 0, 0},
@@ -2778,7 +2777,7 @@ static void Intel_FlexRatio(bool OC_ENABLED)
 		{_Rocketlake,		1, 1, 0, 0},
 		{_Rocketlake_U, 	1, 1, 0, 0},
 		{_Alderlake_S,		1, 0, 0, 0},	/* 06_97 */
-		{_Alderlake_H,		1, 1, 0, 0},
+		{_Alderlake_H,		1, 0, 0, 0},	/* 06_9A */
 		{_Alderlake_N,		1, 1, 0, 0},
 		{_Meteorlake_M, 	1, 1, 0, 0},
 		{_Meteorlake_N, 	1, 1, 0, 0},
@@ -2830,7 +2829,6 @@ static void Intel_FlexRatio(bool OC_ENABLED)
 	break;
     }
    }
-  }
 }
 
 static int Intel_MaxBusRatio(PLATFORM_ID *PfID)
@@ -6040,7 +6038,7 @@ static PCI_CALLBACK X58_QPI(struct pci_dev *dev)
 	pci_read_config_dword(dev, 0xd0,
 				&PUBLIC(RO(Proc))->Uncore.Bus.QuickPath.value);
 
-	Intel_FlexRatio(true);
+	Intel_FlexRatio();
 
 	return (PCI_CALLBACK) 0;
 }
@@ -6089,7 +6087,7 @@ static PCI_CALLBACK IVB_IMC(struct pci_dev *dev)
 	pci_read_config_dword(dev, 0xe8,
 				&PUBLIC(RO(Proc))->Uncore.Bus.IVB_Cap.value);
 
-	Intel_FlexRatio(PUBLIC(RO(Proc))->Uncore.Bus.IVB_Cap.OC_ENABLED == 1);
+	Intel_FlexRatio();
 
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
 
@@ -6291,7 +6289,7 @@ static PCI_CALLBACK HSW_HOST(struct pci_dev *dev, ROUTER Query)
 	pci_read_config_dword(dev, 0xe8,
 				&PUBLIC(RO(Proc))->Uncore.Bus.IVB_Cap.value);
 
-	Intel_FlexRatio(PUBLIC(RO(Proc))->Uncore.Bus.IVB_Cap.OC_ENABLED == 1);
+	Intel_FlexRatio();
 
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
 
@@ -6534,7 +6532,7 @@ static PCI_CALLBACK SKL_HOST(	struct pci_dev *dev,
 	pci_read_config_dword(dev, 0xec,
 				&PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_C.value);
 
-	Intel_FlexRatio(PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_B.OC_ENABLED == 1);
+	Intel_FlexRatio();
 
 	SoC_SKL_VTD();
 
@@ -6599,7 +6597,7 @@ static PCI_CALLBACK ADL_HOST(	struct pci_dev *dev,
 	pci_read_config_dword(dev, 0xf0,
 				&PUBLIC(RO(Proc))->Uncore.Bus.ADL_Cap_E.value);
 
-	Intel_FlexRatio(PUBLIC(RO(Proc))->Uncore.Bus.ADL_Cap_B.OC_ENABLED == 1);
+	Intel_FlexRatio();
 
 	SoC_SKL_VTD();
 
@@ -6656,7 +6654,7 @@ static PCI_CALLBACK MTL_HOST(	struct pci_dev *dev,
 	pci_read_config_dword(dev, 0xf0,
 				&PUBLIC(RO(Proc))->Uncore.Bus.MTL_Cap_E.value);
 
-	Intel_FlexRatio(PUBLIC(RO(Proc))->Uncore.Bus.MTL_Cap_B.OC_ENABLED == 1);
+	Intel_FlexRatio();
 
 	SoC_SKL_VTD();
 
@@ -6706,7 +6704,7 @@ static PCI_CALLBACK GLK_IMC(struct pci_dev *dev)
 	pci_read_config_dword(dev, 0xe8,
 				&PUBLIC(RO(Proc))->Uncore.Bus.GLK_Cap_B.value);
 
-	Intel_FlexRatio(PUBLIC(RO(Proc))->Uncore.Bus.GLK_Cap_B.OC_ENABLED == 1);
+	Intel_FlexRatio();
 
 	SoC_SKL_VTD();
 
