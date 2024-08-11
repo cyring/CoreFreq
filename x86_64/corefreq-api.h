@@ -1398,6 +1398,7 @@ typedef struct
 #define DID_INTEL_KBL_PCH_H_SMBUS	0xa2a3
 /* Source: Hewlett-Packard Company - Sunrise Point-LP SMBus		*/
 #define DID_INTEL_SPT_LP_SMBUS		0x9d23
+#define DID_INTEL_SPT_H_PCH_SMBUS	0xa123
 /* Source: 8th Generation Intel Processor for S-Platforms Datasheet Vol2 */
 #define DID_INTEL_COFFEELAKE_S_IMC_HAQ	0x3e1f
 #define DID_INTEL_COFFEELAKE_S_IMC_HAS	0x3ec2
@@ -1418,10 +1419,12 @@ typedef struct
 #define DID_INTEL_WHISKEYLAKE_U_IMC_HAD 0x3e35
 #define DID_INTEL_WHISKEYLAKE_U_IMC_HAQ 0x3e34
 #define DID_INTEL_CANNONLAKE_U_IMC_HB	0x5a04
+#define DID_INTEL_CNL_PCH_LP_SMBUS	0x9da3
 #define DID_INTEL_CNL_PCH_SMBUS 	0xa323
 /* Source: Comet Lake PCH-LP SMBus and PCH-V SMBus Host Controllers	*/
 #define DID_INTEL_CML_PCH_LP_SMBUS	0x02a3
 #define DID_INTEL_CML_PCH_V_SMBUS	0xa3a3
+#define DID_INTEL_CML_H_PCH_SMBUS	0x06a3
 /* Source: Intel 400 Series Chipset Family On-Package Platform Controller Hub */
 #define DID_INTEL_COMETLAKE_S_IMC_6C	0x9b53
 #define DID_INTEL_COMETLAKE_S_IMC_10C	0x9b54
@@ -1443,6 +1446,7 @@ typedef struct
 #define DID_INTEL_COMETLAKE_W480_PCH	0x0697
 #define DID_INTEL_ICELAKE_U_4C		0x8a12
 #define DID_INTEL_ICELAKE_U_PCH 	0x3482
+#define DID_INTEL_ICL_LP_SMBUS		0x34a3
 /* Source: Apple MacBook Air/Pro - Intel Core i5-1038NG7		*/
 #define DID_INTEL_ICL_PCH_NG_SMBUS	0x38a3
 /* Source: Linux: arch/x86/events/intel/uncore_snb.c			*/
@@ -1461,6 +1465,7 @@ typedef struct
 #define DID_INTEL_TIGERLAKE_UP3_IMC	0xa082
 #define DID_INTEL_TIGERLAKE_UP4_IMC	0xa087
 #define DID_INTEL_TGL_PCH_LP_SMBUS 	0xa0a3 /* TGL-LP Watchdog	*/
+#define DID_INTEL_TGL_H_PCH_SMBUS	0x43a3
 #define DID_INTEL_ROCKETLAKE_S_8C_IMC_HB 0x4c43
 #define DID_INTEL_ROCKETLAKE_S_6C_IMC_HB 0x4c53
 /* Source: Intel 500 Series Chipset Family Platform Controller Hub	*/
