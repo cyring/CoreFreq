@@ -1384,6 +1384,9 @@ typedef struct
 #define DID_INTEL_SKYLAKE_H_IMC_HAQ	0x1910
 /* Source: Intel Xeon Processor E3-1200 v5 Product Family		*/
 #define DID_INTEL_SKYLAKE_DT_IMC_HA	0x1918
+/* Source: Intel C620 Series Chipset Platform Controller Hub Datasheet	*/
+#define DID_INTEL_C620_PCH_SMBUS	0xa1a3
+#define DID_INTEL_C620_SUPER_SMBUS	0xa223
 /* Source:7th Generation Intel Processor for S-Platforms & Core X-Series Vol2*/
 #define DID_INTEL_KABYLAKE_H_IMC_HAD	0x5900
 #define DID_INTEL_KABYLAKE_U_IMC_HA	0x5904
