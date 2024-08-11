@@ -1228,8 +1228,9 @@ typedef struct
 #define DID_INTEL_X58_HUB_CORE		0x342e
 #define DID_INTEL_X58_HUB_CTRL		0x3423
 #define DID_INTEL_IIO_CORE_REG		0x3728
-/* Source: Intel Corporation Jasper Lake SMBus				*/
-#define DID_INTEL_JSL_SMBUS	0x4da3
+/* Source: Intel Corporation Elkhart Lake SMBus and Jasper Lake SMBus	*/
+#define DID_INTEL_EHL_SMBUS		0x4b23
+#define DID_INTEL_JSL_SMBUS		0x4da3
 /* Source: /include/linux/pci_ids.h					*/
 #define DID_INTEL_SNB_IMC_HA0		0x3ca0
 /* Source: 2nd Generation Intel Core Processor Family Vol2		*/
@@ -1394,6 +1395,7 @@ typedef struct
 #define DID_INTEL_KABYLAKE_U_IMC_HAQ	0x5914
 #define DID_INTEL_KABYLAKE_S_IMC_HAQ	0x591f
 #define DID_INTEL_KABYLAKE_X_IMC_HAQ	0x5906
+#define DID_INTEL_KBL_PCH_H_SMBUS	0xa2a3
 /* Source: Hewlett-Packard Company - Sunrise Point-LP SMBus		*/
 #define DID_INTEL_SPT_LP_SMBUS		0x9d23
 /* Source: 8th Generation Intel Processor for S-Platforms Datasheet Vol2 */
@@ -1416,8 +1418,10 @@ typedef struct
 #define DID_INTEL_WHISKEYLAKE_U_IMC_HAD 0x3e35
 #define DID_INTEL_WHISKEYLAKE_U_IMC_HAQ 0x3e34
 #define DID_INTEL_CANNONLAKE_U_IMC_HB	0x5a04
-/* Source: Comet Lake PCH-LP SMBus Host Controller			*/
+#define DID_INTEL_CNL_PCH_SMBUS 	0xa323
+/* Source: Comet Lake PCH-LP SMBus and PCH-V SMBus Host Controllers	*/
 #define DID_INTEL_CML_PCH_LP_SMBUS	0x02a3
+#define DID_INTEL_CML_PCH_V_SMBUS	0xa3a3
 /* Source: Intel 400 Series Chipset Family On-Package Platform Controller Hub */
 #define DID_INTEL_COMETLAKE_S_IMC_6C	0x9b53
 #define DID_INTEL_COMETLAKE_S_IMC_10C	0x9b54
@@ -1439,6 +1443,8 @@ typedef struct
 #define DID_INTEL_COMETLAKE_W480_PCH	0x0697
 #define DID_INTEL_ICELAKE_U_4C		0x8a12
 #define DID_INTEL_ICELAKE_U_PCH 	0x3482
+/* Source: Apple MacBook Air/Pro - Intel Core i5-1038NG7		*/
+#define DID_INTEL_ICL_PCH_NG_SMBUS	0x38a3
 /* Source: Linux: arch/x86/events/intel/uncore_snb.c			*/
 #define DID_INTEL_COMETLAKE_U1_IMC	0x9b51
 #define DID_INTEL_COMETLAKE_U3_IMC	0x9b71
@@ -1492,6 +1498,7 @@ typedef struct
 #define DID_INTEL_ALDERLAKE_PCH_P	0x5182 /* PCH eSPI Controller	*/
 #define DID_INTEL_ALDERLAKE_PCH_U	0x5188 /* PCH-U eSPI Controller */
 #define DID_INTEL_ADL_PCH_P_SMBUS	0x51a3 /* ADL PCH-P Watchdog	*/
+#define DID_INTEL_ADL_PCH_M_SMBUS	0x54a3 /* ADL PCH-M Watchdog	*/
 #define DID_INTEL_ADL_S_PCH_SMBUS	0x7aa3
 /* Source: 13th Generation Intel Core Processors Datasheet, vol 1	*/
 #define DID_INTEL_RAPTORLAKE_S_8P_16E_HB 0xa700
@@ -1539,6 +1546,8 @@ typedef struct
 #define DID_INTEL_METEORLAKE_H_PCH	0x7e02
 #define DID_INTEL_METEORLAKE_U_PCH	0x7e03
 #define DID_INTEL_METEORLAKE_UT4_PCH	0x7e07
+/* Source: Arrow Lake Client Platform/MTL-S (0x6-0xc6, stepping: 0x0)	*/
+#define DID_INTEL_ARL_MTL_PCH_S_SMBUS	0x7f23
 /* Source: /include/linux/pci_ids.h					*/
 #define DID_AMD_K8_NB_MEMCTL		0x1102
 #define DID_AMD_K8_NB			0x1100

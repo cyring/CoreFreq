@@ -10374,7 +10374,15 @@ static void Intel_Watchdog(CORE_RO *Core)
 		.driver_data = (kernel_ulong_t) ICH_TCO
 		},
 		{
+		PCI_VDEVICE(INTEL, DID_INTEL_EHL_SMBUS),
+		.driver_data = (kernel_ulong_t) TCOBASE
+		},
+		{
 		PCI_VDEVICE(INTEL, DID_INTEL_JSL_SMBUS),
+		.driver_data = (kernel_ulong_t) TCOBASE
+		},
+		{
+		PCI_VDEVICE(INTEL, DID_INTEL_KBL_PCH_H_SMBUS),
 		.driver_data = (kernel_ulong_t) TCOBASE
 		},
 		{
@@ -10382,7 +10390,19 @@ static void Intel_Watchdog(CORE_RO *Core)
 		.driver_data = (kernel_ulong_t) TCOBASE
 		},
 		{
+		PCI_VDEVICE(INTEL, DID_INTEL_CNL_PCH_SMBUS),
+		.driver_data = (kernel_ulong_t) TCOBASE
+		},
+		{
 		PCI_VDEVICE(INTEL, DID_INTEL_CML_PCH_LP_SMBUS),
+		.driver_data = (kernel_ulong_t) TCOBASE
+		},
+		{
+		PCI_VDEVICE(INTEL, DID_INTEL_CML_PCH_V_SMBUS),
+		.driver_data = (kernel_ulong_t) TCOBASE
+		},
+		{
+		PCI_VDEVICE(INTEL, DID_INTEL_ICL_PCH_NG_SMBUS),
 		.driver_data = (kernel_ulong_t) TCOBASE
 		},
 		{
@@ -10394,11 +10414,19 @@ static void Intel_Watchdog(CORE_RO *Core)
 		.driver_data = (kernel_ulong_t) TCOBASE
 		},
 		{
+		PCI_VDEVICE(INTEL, DID_INTEL_ADL_PCH_M_SMBUS),
+		.driver_data = (kernel_ulong_t) TCOBASE
+		},
+		{
 		PCI_VDEVICE(INTEL, DID_INTEL_ADL_S_PCH_SMBUS),
 		.driver_data = (kernel_ulong_t) TCOBASE
 		},
 		{
 		PCI_VDEVICE(INTEL, DID_INTEL_RPL_D_PCH_SMBUS),
+		.driver_data = (kernel_ulong_t) TCOBASE
+		},
+		{
+		PCI_VDEVICE(INTEL, DID_INTEL_ARL_MTL_PCH_S_SMBUS),
 		.driver_data = (kernel_ulong_t) TCOBASE
 		},
 		{0, }
