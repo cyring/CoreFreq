@@ -1228,6 +1228,8 @@ typedef struct
 #define DID_INTEL_X58_HUB_CORE		0x342e
 #define DID_INTEL_X58_HUB_CTRL		0x3423
 #define DID_INTEL_IIO_CORE_REG		0x3728
+/* Source: Intel Corporation Jasper Lake SMBus				*/
+#define DID_INTEL_JSL_SMBUS	0x4da3
 /* Source: /include/linux/pci_ids.h					*/
 #define DID_INTEL_SNB_IMC_HA0		0x3ca0
 /* Source: 2nd Generation Intel Core Processor Family Vol2		*/
@@ -1392,6 +1394,8 @@ typedef struct
 #define DID_INTEL_KABYLAKE_U_IMC_HAQ	0x5914
 #define DID_INTEL_KABYLAKE_S_IMC_HAQ	0x591f
 #define DID_INTEL_KABYLAKE_X_IMC_HAQ	0x5906
+/* Source: Hewlett-Packard Company - Sunrise Point-LP SMBus		*/
+#define DID_INTEL_SPT_LP_SMBUS		0x9d23
 /* Source: 8th Generation Intel Processor for S-Platforms Datasheet Vol2 */
 #define DID_INTEL_COFFEELAKE_S_IMC_HAQ	0x3e1f
 #define DID_INTEL_COFFEELAKE_S_IMC_HAS	0x3ec2
@@ -1412,6 +1416,8 @@ typedef struct
 #define DID_INTEL_WHISKEYLAKE_U_IMC_HAD 0x3e35
 #define DID_INTEL_WHISKEYLAKE_U_IMC_HAQ 0x3e34
 #define DID_INTEL_CANNONLAKE_U_IMC_HB	0x5a04
+/* Source: Comet Lake PCH-LP SMBus Host Controller			*/
+#define DID_INTEL_CML_PCH_LP_SMBUS	0x02a3
 /* Source: Intel 400 Series Chipset Family On-Package Platform Controller Hub */
 #define DID_INTEL_COMETLAKE_S_IMC_6C	0x9b53
 #define DID_INTEL_COMETLAKE_S_IMC_10C	0x9b54
