@@ -541,6 +541,18 @@ typedef union
 	Reserved	: 63-33,
 	PstateEn	: 64-63;
     } Family_19h; /* Model 70h_A0; Model 11h_B1; Model 61h_B1		*/
+    struct
+    {
+	unsigned long long	 /* MSR 0xC001_006[4...B] P-state [7:0] */
+	CpuFid		: 11-0,  /* Undocumented FID			*/
+	CpuDfsId	: 14-11, /* Undocumented DID			*/
+	CpuVid		: 22-14, /* VID verified w/ 9950X		*/
+	IddValue	: 30-22,
+	IddDiv		: 32-30,
+	CpuVid8 	: 33-32,
+	Reserved	: 63-33,
+	PstateEn	: 64-63;
+    } Family_1Ah; /* CPUID signature BF_44h				*/
 } PSTATEDEF;
 
 typedef union
