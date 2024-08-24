@@ -8110,16 +8110,20 @@ static void Query_AMD_Family_15h(unsigned int cpu)
 inline COF_ST AMD_Zen_CoreCOF(PSTATEDEF PStateDef)
 {/* Source: PPR for AMD Family 17h Model 01h, Revision B1 Processors
     CoreCOF = (PStateDef[CpuFid[7:0]] / PStateDef[CpuDfsId]) * 200	*/
+	unsigned long remainder;
 	COF_ST COF;
     if (PStateDef.Family_17h.CpuDfsId > 0b111) {
 	COF.Q	= (PStateDef.Family_17h.CpuFid << 1)
 		/ PStateDef.Family_17h.CpuDfsId;
-	COF.R	= (UNIT_KHz(1) * (PStateDef.Family_17h.CpuFid
-			- ((COF.Q * PStateDef.Family_17h.CpuDfsId) >> 1))) >> 2;
+	remainder = (UNIT_KHz(1) * (PStateDef.Family_17h.CpuFid
+		  - ((COF.Q * PStateDef.Family_17h.CpuDfsId) >> 1))) >> 2;
+	COF.R	= (unsigned short) remainder;
     } else switch (PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily) {
 	case 0xB:	/*	Zen5: Granite Ridge & Strix Point	*/
 		COF.Q = (PStateDef.Family_1Ah.CpuFid >> 1) / 10;
-		COF.R = 0;
+		remainder = (PRECISION * PStateDef.Family_1Ah.CpuFid) >> 1;
+		remainder = remainder - (UNIT_KHz(1) * COF.Q);
+		COF.R = (unsigned short) remainder;
 		break;
 	default:
 		COF.Q = PStateDef.Family_17h.CpuFid >> 2;
