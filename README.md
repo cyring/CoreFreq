@@ -542,7 +542,7 @@ o---------------------------------------------------------------o
 |    where <freq> is at least 4850000000 Hz                     |
 |                                                               |
 |  HWM_CHIPSET=<chipset>                                        |
-|    where <chipset> is W83627 or IT8720 or COMPATIBLE          |
+|    where <chipset> is W83627; IT8720; AMD_VCO or COMPATIBLE   |
 |                                                               |
 |  Performance Counters:                                        |
 |    -------------------------------------------------------    |

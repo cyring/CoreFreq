@@ -628,6 +628,8 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 #define COMPATIBLE		0xffff
 #define W83627			0x5ca3
 #define IT8720			0x8720
+/* Voltage Curve Optimizer						*/
+#define AMD_VCO			0xfacc
 
 /*
  * --- Core_AMD_SMN_Read and Core_AMD_SMN_Write ---
@@ -12222,7 +12224,15 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
 	.thermalFormula = THERMAL_FORMULA_AMD_ZEN3,
+#if defined(HWM_CHIPSET)
+#if (HWM_CHIPSET == AMD_VCO)
+	.voltageFormula = VOLTAGE_FORMULA_ZEN3_VCO,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_AMD_19h,
+#endif
+#else
+	.voltageFormula = VOLTAGE_FORMULA_AMD_19h,
+#endif
 	.powerFormula   = POWER_FORMULA_AMD_19h,
 	.PCI_ids = PCI_AMD_19h_ids,
 	.Uncore = {
@@ -12390,7 +12400,15 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
 	.thermalFormula = THERMAL_FORMULA_AMD_ZEN4,
-	.voltageFormula = VOLTAGE_FORMULA_AMD_19_61h,
+#if defined(HWM_CHIPSET)
+#if (HWM_CHIPSET == AMD_VCO)
+	.voltageFormula = VOLTAGE_FORMULA_ZEN4_VCO,
+#else
+	.voltageFormula = VOLTAGE_FORMULA_AMD_ZEN4,
+#endif
+#else
+	.voltageFormula = VOLTAGE_FORMULA_AMD_ZEN4,
+#endif
 	.powerFormula   = POWER_FORMULA_AMD_19h,
 	.PCI_ids = PCI_AMD_19h_ids,
 	.Uncore = {
@@ -12582,7 +12600,15 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
 	.thermalFormula = THERMAL_FORMULA_AMD_1Ah,
+#if defined(HWM_CHIPSET)
+#if (HWM_CHIPSET == AMD_VCO)
+	.voltageFormula = VOLTAGE_FORMULA_ZEN5_VCO,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_AMD_1Ah,
+#endif
+#else
+	.voltageFormula = VOLTAGE_FORMULA_AMD_1Ah,
+#endif
 	.powerFormula   = POWER_FORMULA_AMD_1Ah,
 	.PCI_ids = PCI_AMD_1Ah_ids,
 	.Uncore = {
