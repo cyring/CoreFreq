@@ -14925,11 +14925,22 @@ static void AMD_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 
 #define Counters_VirtualMachine(Core, T)				\
 ({									\
-	if (!PUBLIC(RO(Proc))->Features.AdvPower.EDX.Inv_TSC) { 	\
-		RDTSC64(Core->Counter[T].TSC);				\
-	} else {							\
-		RDTSCP64(Core->Counter[T].TSC); 			\
-	}								\
+    if (!PUBLIC(RO(Proc))->Features.AdvPower.EDX.Inv_TSC) {		\
+	RDTSC64(Core->Counter[T].TSC);					\
+    } else {								\
+	RDTSCP64(Core->Counter[T].TSC); 				\
+    }									\
+    switch (PUBLIC(RO(Proc))->Features.Info.Hypervisor.CRC) {		\
+    HCF_MSR:								\
+    case CRC_VBOX:							\
+    case CRC_KBOX:							\
+    default:								\
+	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_CORE_PERF_UCC);		\
+	RDCOUNTER(Core->Counter[T].C0.URC, MSR_CORE_PERF_URC);		\
+	break;								\
+    case CRC_KVM:							\
+    case CRC_VMWARE:							\
+    case CRC_HYPERV:							\
 	/* HV_PARTITION_PRIVILEGE_MASK: AccessVpRunTimeReg	*/	\
 	if (BITVAL(Core->CpuID[						\
 			CPUID_40000003_00000000_HYPERVISOR_FEATURES	\
@@ -14941,7 +14952,10 @@ static void AMD_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 		 * PUBLIC(RO(Proc))->Features.Factory.Ratio * 10;	\
 									\
 		Core->Counter[T].C0.UCC = Core->Counter[T].C0.URC;	\
-	}								\
+	} else								\
+		goto HCF_MSR;						\
+	break;								\
+    }									\
 	/* Derive C1: */						\
 	Core->Counter[T].C1 =						\
 	    (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?		\
