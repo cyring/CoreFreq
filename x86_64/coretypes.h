@@ -1468,14 +1468,14 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf 1		*/
 		Reserved3	: 17-13,
 		FRED		: 18-17, /* Flexible Return and Event Delivery*/
 		LKGS		: 19-18, /* Load Kernel GS segment register */
-		WRMSRNS 	: 20-19, /* Sierra Forest, Grand Ridge	*/
+		WRMSRNS_Inst	: 20-19, /* Sierra Forest, Grand Ridge	*/
 		NMI_SRC 	: 21-20, /* NMI-source reporting	*/
 		AMX_FP16	: 22-21, /* Granite Rapids		*/
 		HRESET		: 23-22, /* History Reset instruction	*/
 		AVX_IFMA	: 24-23, /* Sierra Forest, Grand Ridge	*/
 		Reserved4	: 26-24,
 		LAM		: 27-26, /* Linear Address Masking	*/
-		RDMSRLIST	: 28-27, /* Sierra Forest, Grand Ridge	*/
+		RDMSRLIST_Inst	: 28-27, /* Sierra Forest, Grand Ridge	*/
 		Reserved5	: 30-28,
 		INVD_DISABLE	: 31-30,
 		Reserved6	: 32-31;
