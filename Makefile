@@ -32,6 +32,16 @@ DELAY_TSC = 0
 endif
 ARCH_PMC ?=
 
+SILENT = 0
+ifneq ($(findstring s,$(firstword -$(MAKEFLAGS))),)
+	SILENT = 1
+else
+	ifneq ($(V),)
+		RMDIR += -v
+		RM += -v
+	endif
+endif
+
 obj-m := corefreqk.o
 corefreqk-y := module/corefreqk.o
 
@@ -194,50 +204,61 @@ module-install:
 clean:
 	@if [ -e $(BUILD)/Makefile ]; then \
 	    if [ -z ${V} ]; then \
-		echo "  CLEAN [M] $(PWD)/$(BUILD)"; \
+		if [ ${SILENT} -eq 0 ]; then \
+			echo "  CLEAN [M] $(PWD)/$(BUILD)"; \
+		fi; \
 		$(MAKE) -s -C $(KERNELDIR) M=$(PWD)/$(BUILD) clean; \
 	    else \
 		$(MAKE) -C $(KERNELDIR) M=$(PWD)/$(BUILD) clean; \
 	    fi \
 	fi
 	@if [ -e $(BUILD)/corefreqd ]; then \
-		$(if $(V), $(RM) -v, echo "  CLEAN [$(BUILD)/corefreqd]"; \
-		$(RM)) $(BUILD)/corefreqd; \
+		if [ ${SILENT} -eq 0 ]; then \
+			echo "  CLEAN [$(BUILD)/corefreqd]"; \
+		fi; \
+		$(RM) $(BUILD)/corefreqd; \
 	fi
 	@if [ -e $(BUILD)/corefreq-cli ]; then \
-		$(if $(V), $(RM) -v, echo "  CLEAN [$(BUILD)/corefreq-cli]"; \
-		$(RM)) $(BUILD)/corefreq-cli; \
+		if [ ${SILENT} -eq 0 ]; then \
+			echo "  CLEAN [$(BUILD)/corefreq-cli]"; \
+		fi; \
+		$(RM) $(BUILD)/corefreq-cli; \
 	fi
 	@if [ -e $(BUILD)/module/corefreqk.c ]; then \
-		$(if $(V), $(RM) -v, \
-		echo "  CLEAN [$(BUILD)/module/corefreqk.c]"; \
-		$(RM)) $(BUILD)/module/corefreqk.c; \
+		if [ ${SILENT} -eq 0 ]; then \
+			echo "  CLEAN [$(BUILD)/module/corefreqk.c]"; \
+		fi; \
+		$(RM) $(BUILD)/module/corefreqk.c; \
 	fi
 	@if [ -e $(BUILD)/Makefile ]; then \
-		$(if $(V), $(RM) -v, echo "  CLEAN [$(BUILD)/Makefile]"; \
-		$(RM)) $(BUILD)/Makefile; \
+		if [ ${SILENT} -eq 0 ]; then \
+			echo "  CLEAN [$(BUILD)/Makefile]"; \
+		fi; \
+		$(RM) $(BUILD)/Makefile; \
 	fi
 	@if [ -d $(BUILD)/module ]; then \
-		$(if $(V), $(RMDIR) -v, echo "  RMDIR [$(BUILD)/module]"; \
-		$(RMDIR)) $(BUILD)/module; \
+		if [ ${SILENT} -eq 0 ]; then \
+			echo "  RMDIR [$(BUILD)/module]"; \
+		fi; \
+		$(RMDIR) $(BUILD)/module; \
 	fi
 	@if [ -d $(BUILD) ] && [ -z "$(ls -A $(BUILD))" ]; then \
-		$(if $(V), $(RMDIR) -v, echo "  RMDIR [$(BUILD)]"; \
-		$(RMDIR)) $(BUILD); \
+		if [ ${SILENT} -eq 0 ]; then echo "  RMDIR [$(BUILD)]"; fi; \
+		$(RMDIR) $(BUILD); \
 	fi
 
 $(BUILD)/corefreqm.o: $(HW)/corefreqm.c
-	$(if $(V), $(CC), @echo "  CC [$@]"; \
+	$(if $(V), $(CC), @if [ ${SILENT} -eq 0 ]; then echo "  CC [$@]"; fi; \
 	$(CC)) $(OPTIM_FLG) $(WARNING) -pthread $(DEFINITIONS) \
 	  -c $(HW)/corefreqm.c -o $(BUILD)/corefreqm.o
 
 $(BUILD)/corefreqd.o: $(HW)/corefreqd.c
-	$(if $(V), $(CC), @echo "  CC [$@]"; \
+	$(if $(V), $(CC), @if [ ${SILENT} -eq 0 ]; then echo "  CC [$@]"; fi; \
 	$(CC)) $(OPTIM_FLG) $(WARNING) -pthread $(DEFINITIONS) \
 	  -c $(HW)/corefreqd.c -o $(BUILD)/corefreqd.o
 
 $(BUILD)/corefreqd: $(BUILD)/corefreqd.o $(BUILD)/corefreqm.o
-	$(if $(V), $(CC), @echo "  LD [$@]"; \
+	$(if $(V), $(CC), @if [ ${SILENT} -eq 0 ]; then echo "  LD [$@]"; fi; \
 	$(CC)) $(OPTIM_FLG) -o $(BUILD)/corefreqd \
 	  $(BUILD)/corefreqd.o $(BUILD)/corefreqm.o -lpthread -lm -lrt -lc
 
@@ -245,27 +266,27 @@ $(BUILD)/corefreqd: $(BUILD)/corefreqd.o $(BUILD)/corefreqm.o
 corefreqd: $(BUILD)/corefreqd
 
 $(BUILD)/corefreq-ui.o: $(HW)/corefreq-ui.c
-	$(if $(V), $(CC), @echo "  CC [$@]"; \
+	$(if $(V), $(CC), @if [ ${SILENT} -eq 0 ]; then echo "  CC [$@]"; fi; \
 	$(CC)) $(OPTIM_FLG) $(WARNING) $(DEFINITIONS) \
 	  -c $(HW)/corefreq-ui.c -o $(BUILD)/corefreq-ui.o
 
 $(BUILD)/corefreq-cli.o: $(HW)/corefreq-cli.c
-	$(if $(V), $(CC), @echo "  CC [$@]"; \
+	$(if $(V), $(CC), @if [ ${SILENT} -eq 0 ]; then echo "  CC [$@]"; fi; \
 	$(CC)) $(OPTIM_FLG) $(WARNING) $(DEFINITIONS) $(LAYOUT) \
 	  -c $(HW)/corefreq-cli.c -o $(BUILD)/corefreq-cli.o
 
 $(BUILD)/corefreq-cli-rsc.o: $(HW)/corefreq-cli-rsc.c
-	$(if $(V), $(CC), @echo "  CC [$@]"; \
+	$(if $(V), $(CC), @if [ ${SILENT} -eq 0 ]; then echo "  CC [$@]"; fi; \
 	$(CC)) $(OPTIM_FLG) $(WARNING) $(DEFINITIONS) $(LAYOUT) \
 	  -c $(HW)/corefreq-cli-rsc.c -o $(BUILD)/corefreq-cli-rsc.o
 
 $(BUILD)/corefreq-cli-json.o: $(HW)/corefreq-cli-json.c
-	$(if $(V), $(CC), @echo "  CC [$@]"; \
+	$(if $(V), $(CC), @if [ ${SILENT} -eq 0 ]; then echo "  CC [$@]"; fi; \
 	$(CC)) $(OPTIM_FLG) $(WARNING) $(DEFINITIONS) \
 	  -c $(HW)/corefreq-cli-json.c -o $(BUILD)/corefreq-cli-json.o
 
 $(BUILD)/corefreq-cli-extra.o: $(HW)/corefreq-cli-extra.c
-	$(if $(V), $(CC), @echo "  CC [$@]"; \
+	$(if $(V), $(CC), @if [ ${SILENT} -eq 0 ]; then echo "  CC [$@]"; fi; \
 	$(CC)) $(OPTIM_FLG) $(WARNING) $(DEFINITIONS) \
 	  -c $(HW)/corefreq-cli-extra.c -o $(BUILD)/corefreq-cli-extra.o
 
@@ -274,7 +295,7 @@ $(BUILD)/corefreq-cli:	$(BUILD)/corefreq-cli.o \
 			$(BUILD)/corefreq-cli-rsc.o \
 			$(BUILD)/corefreq-cli-json.o \
 			$(BUILD)/corefreq-cli-extra.o
-	$(if $(V), $(CC), @echo "  LD [$@]"; \
+	$(if $(V), $(CC), @if [ ${SILENT} -eq 0 ]; then echo "  LD [$@]"; fi; \
 	$(CC)) $(OPTIM_FLG) -o $(BUILD)/corefreq-cli \
 	  $(BUILD)/corefreq-cli.o $(BUILD)/corefreq-ui.o \
 	  $(BUILD)/corefreq-cli-rsc.o $(BUILD)/corefreq-cli-json.o \
@@ -304,6 +325,7 @@ info:
 	$(info NO_FOOTER [$(NO_FOOTER)])
 	$(info NO_UPPER [$(NO_UPPER)])
 	$(info NO_LOWER [$(NO_LOWER)])
+	$(info SILENT [$(SILENT)])
 	@echo -n
 
 .PHONY: help
