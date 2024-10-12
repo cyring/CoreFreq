@@ -7522,6 +7522,7 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 	case AMD_Family_17h:
 	case Hygon_Family_18h:
 	case AMD_Family_19h:
+	case AMD_Family_1Ah:
 	case AMD_Zen:
 	case AMD_ZenPlus:
 	case AMD_EPYC_Rome_CPK:
@@ -7535,6 +7536,8 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 	case AMD_Zen4_Bergamo:
 	case AMD_Zen4_STP:
 	case AMD_Zen5_Eldora:
+	case AMD_Zen5_Turin:
+	case AMD_Zen5_Turin_Dense:
 		TopologyFunc = Topology_CCD;
 		OffLineItem = RSC(TOPOLOGY_OFF_2).CODE();
 		TopologySubHeader[1] = TopologyAltSubHeader[2];

@@ -148,6 +148,8 @@ enum {	GenuineArch = 0,
 	AMD_Zen4_STP,
 	AMD_Zen5_STX,
 	AMD_Zen5_Eldora,
+	AMD_Zen5_Turin,
+	AMD_Zen5_Turin_Dense,
 	ARCHITECTURES
 };
 
@@ -1889,16 +1891,26 @@ typedef struct	/* Processor Capacity Leaf.				*/
 		CPPC		: 28-27,
 		PSFD		: 29-28, /* 1: SPEC_CTRL_MSR is supported */
 		BTC_NO		: 30-29, /* No Branch Type Confusion	*/
-		Reserved5	: 31-30,
+		IBPB_RET	: 31-30, /* F1Ah: MSR::PRED_CMD[IBPB]	*/
 		BranchSample	: 32-31;
 	} EBX;
-	struct { /* AMD reserved					*/
+    union
+	{	/* AMD reserved					*/
+	struct {
 		unsigned int
 		NC		:  8-0,  /* Zero based number of threads */
 		Reserved1	: 12-8,
 		ApicIdCoreIdSize: 16-12,/* Initial APIC ID size to compute MNC*/
 		CU_PTSC_Size	: 18-16, /* 00b=40,01b=48,10b=56,11b=64 bits  */
 		Reserved2	: 32-18;
+		};
+	struct {
+		unsigned int
+		NC		: 12-0,
+		ApicIdCoreIdSize: 16-12,
+		CU_PTSC_Size	: 18-16,
+		Reserved2	: 32-18;
+		} F1Ah;
 	} ECX;
 	struct
 	{	/* AMD Family 17h					*/

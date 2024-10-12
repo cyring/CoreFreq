@@ -2072,7 +2072,9 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 	[Zen4c][Bergamo][Siena] AF_A0h Stepping [1][2]	 5 nm	SVR
 	[Zen4/Storm Peak]	AF_18h Stepping 1	 5 nm	WS/SP6
 	[Zen5/5c/Strix Point]	BF_24h			 4 nm	[STX]/FP8
-	[Zen5/Granite Ridge]	BF_44h			 4 nm	Eldora	*/
+	[Zen5/Granite Ridge]	BF_44h			 4 nm	Eldora
+	[Zen5/Turin]		BF_02h Stepping 1	 4 nm	SP5
+	[Zen5c/Turin]		BF_11h Stepping 0	 3 nm	SP5	*/
 #define _AMD_Family_19h {.ExtFamily=0xA, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 #define _AMD_Zen3_VMR	{.ExtFamily=0xA, .Family=0xF, .ExtModel=0x2, .Model=0x1}
 #define _AMD_Zen3_CZN	{.ExtFamily=0xA, .Family=0xF, .ExtModel=0x5, .Model=0x0}
@@ -2099,6 +2101,10 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 #define _AMD_Zen5_STX	{.ExtFamily=0xB, .Family=0xF, .ExtModel=0x2, .Model=0x4}
 #define _AMD_Zen5_Eldora	\
 			{.ExtFamily=0xB, .Family=0xF, .ExtModel=0x4, .Model=0x4}
+
+#define _AMD_Zen5_Turin {.ExtFamily=0xB, .Family=0xF, .ExtModel=0x0, .Model=0x2}
+#define _AMD_Zen5_Turin_Dense	\
+			{.ExtFamily=0xB, .Family=0xF, .ExtModel=0x1, .Model=0x1}
 
 typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
 
@@ -3702,6 +3708,14 @@ enum {
 	CN_ELDORA
 };
 
+enum {
+	CN_TURIN
+};
+
+enum {
+	CN_TURIN_DENSE
+};
+
 static char *Arch_AMD_Zen[] = ZLIST(
 		[CN_SUMMIT_RIDGE]	=	"Zen/Summit Ridge",
 		[CN_WHITEHAVEN] 	=	"Zen/Whitehaven",
@@ -3801,6 +3815,12 @@ static char *Arch_AMD_Zen5_STX[] = ZLIST(
 );
 static char *Arch_AMD_Zen5_Eldora[] = ZLIST(
 		[CN_ELDORA]		=	"Zen5/Granite Ridge"
+);
+static char *Arch_AMD_Zen5_Turin[] = ZLIST(
+		[CN_TURIN]		=	"Zen5/Turin"
+);
+static char *Arch_AMD_Zen5_Turin_Dense[] = ZLIST(
+		[CN_TURIN_DENSE]	=	"Zen5/Turin-Dense"
 );
 
 static char *Arch_AMD_Family_17h[]	=	ZLIST("AMD Family 17h");
@@ -8902,6 +8922,205 @@ static PROCESSOR_SPECIFIC AMD_Zen5_Eldora_Specific[] = {
 	},
 	{0}
 };
+static PROCESSOR_SPECIFIC AMD_Zen5_Turin_Specific[] = {
+	{
+	.Brand = ZLIST("AMD EPYC 9965"),	/* Model: 17	*/
+	.Boost = {+15, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_TURIN_DENSE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 9845"),
+	.Boost = {+16, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_TURIN,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC 9825",	\
+			"AMD EPYC 9115" 	),
+	.Boost = {+15, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_TURIN,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC 9755",	/* Model: 2	*/	\
+			"AMD EPYC 9645",	\
+			"AMD EPYC 9335" 	),
+	.Boost = {+14, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_TURIN,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC 9745",	\
+			"AMD EPYC 9455P"	\
+			"AMD EPYC 9455" 	),
+	.Boost = {+13, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_TURIN,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC 9655P",	\
+			"AMD EPYC 9655",	\
+			"AMD EPYC 9535" 	),
+	.Boost = {+19, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_TURIN,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 9575F"),	/* Model: 2	*/
+	.Boost = {+17, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_TURIN,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC 9565",	\
+			"AMD EPYC 9555P",	\
+			"AMD EPYC 9555",	\
+			"AMD EPYC 9475F"	),
+	.Boost = {+12, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_TURIN,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 9375F"),
+	.Boost = {+10, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_TURIN,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC 9365",	\
+			"AMD EPYC 9355P",	\
+			"AMD EPYC 9355" 	),
+	.Boost = {+9, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_TURIN,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC 9275F",	\
+			"AMD EPYC 9135" 	),
+	.Boost = {+7, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_TURIN,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 9255"),
+	.Boost = {+11, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_TURIN,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 9175F"),
+	.Boost = {+8, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_TURIN,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 9015"),
+	.Boost = {+5, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_TURIN,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{0}
+};
+
 static PROCESSOR_SPECIFIC Misc_Specific_Processor[] = {
 	{0}
 };
@@ -12622,5 +12841,53 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Specific = AMD_Zen5_Eldora_Specific,
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen5_Eldora
+	},
+[AMD_Zen5_Turin] = {							/*125*/
+	.Signature = _AMD_Zen5_Turin,
+	.Query = Query_AMD_F1Ah_PerCluster,
+	.Update = PerCore_AMD_Family_1Ah_Query,
+	.Start = Start_AMD_Family_1Ah,
+	.Stop = Stop_AMD_Family_1Ah,
+	.Exit = Exit_AMD_F1Ah,
+	.Timer = InitTimer_AMD_Family_1Ah,
+	.BaseClock = BaseClock_AMD_Family_1Ah,
+	.ClockMod = ClockMod_AMD_Zen,
+	.TurboClock = TurboClock_AMD_Zen,
+	.thermalFormula = THERMAL_FORMULA_AMD_1Ah,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_1Ah,
+	.powerFormula   = POWER_FORMULA_AMD_1Ah,
+	.PCI_ids = PCI_AMD_1Ah_ids,
+	.Uncore = {
+		.Start = Start_Uncore_AMD_Family_1Ah,
+		.Stop = Stop_Uncore_AMD_Family_1Ah,
+		.ClockMod = NULL
+		},
+	.Specific = AMD_Zen5_Turin_Specific,
+	.SystemDriver = AMD_Zen_Driver,
+	.Architecture = Arch_AMD_Zen5_Turin
+	},
+[AMD_Zen5_Turin_Dense] = {						/*126*/
+	.Signature = _AMD_Zen5_Turin_Dense,
+	.Query = Query_AMD_F1Ah_PerCluster,
+	.Update = PerCore_AMD_Family_1Ah_Query,
+	.Start = Start_AMD_Family_1Ah,
+	.Stop = Stop_AMD_Family_1Ah,
+	.Exit = Exit_AMD_F1Ah,
+	.Timer = InitTimer_AMD_Family_1Ah,
+	.BaseClock = BaseClock_AMD_Family_1Ah,
+	.ClockMod = ClockMod_AMD_Zen,
+	.TurboClock = TurboClock_AMD_Zen,
+	.thermalFormula = THERMAL_FORMULA_AMD_1Ah,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_1Ah,
+	.powerFormula   = POWER_FORMULA_AMD_1Ah,
+	.PCI_ids = PCI_AMD_1Ah_ids,
+	.Uncore = {
+		.Start = Start_Uncore_AMD_Family_1Ah,
+		.Stop = Stop_Uncore_AMD_Family_1Ah,
+		.ClockMod = NULL
+		},
+	.Specific = AMD_Zen5_Turin_Specific,
+	.SystemDriver = AMD_Zen_Driver,
+	.Architecture = Arch_AMD_Zen5_Turin_Dense
 	}
 };
