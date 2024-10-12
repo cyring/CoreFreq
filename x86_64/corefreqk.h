@@ -8818,7 +8818,9 @@ static PROCESSOR_SPECIFIC AMD_Zen4_STP_Specific[] = {
 };
 static PROCESSOR_SPECIFIC AMD_Zen5_STX_Specific[] = {
 	{
-	.Brand = ZLIST( "AMD Ryzen AI 9 HX 375",	\
+	.Brand = ZLIST( "AMD Ryzen AI 9 HX PRO 375",	\
+			"AMD Ryzen AI 9 HX PRO 370",	\
+			"AMD Ryzen AI 9 HX 375",	\
 			"AMD Ryzen AI 9 HX 370" 	),
 	.Boost = {+31, 0},
 	.Param.Offset = {100, 0, 0},
@@ -8831,7 +8833,8 @@ static PROCESSOR_SPECIFIC AMD_Zen5_STX_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen AI 9 365"),
+	.Brand = ZLIST( "AMD Ryzen AI 7 PRO 360",	\
+			"AMD Ryzen AI 9 365"		),
 	.Boost = {+30, 0},
 	.Param.Offset = {100, 0, 0},
 	.CodeNameIdx = CN_STRIX_POINT,
