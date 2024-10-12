@@ -4711,7 +4711,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen Embedded V"),
 	.Boost = {+16, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {105, 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4724,7 +4724,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 			"AMD Athlon Silver",	\
 			"AMD Athlon Gold"	),
 	.Boost = {+9, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4896,7 +4896,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC Embedded 7251",	\
 			"AMD EPYC 7251"			),
 	.Boost = {+8, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {81, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4908,7 +4908,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC Embedded 7261",	\
 			"AMD EPYC 7261"			),
 	.Boost = {+4, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {85, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4920,7 +4920,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC Embedded 7281",	\
 			"AMD EPYC 7281" 		),
 	.Boost = {+6, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {85, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4935,7 +4935,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 			"AMD EPYC 7351",		\
 			"AMD EPYC 7301" 		),
 	.Boost = {+5, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {85, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4948,7 +4948,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 			"AMD EPYC Embedded 7301",	\
 			"AMD EPYC 7371" 		),
 	.Boost = {+7, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {85, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4962,7 +4962,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 			"AMD EPYC 7401P",		\
 			"AMD EPYC 7401" 		),
 	.Boost = {+8, +2},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {85, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4974,7 +4974,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC Embedded 7451",	\
 			"AMD EPYC 7451"			),
 	.Boost = {+6, +3},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {81, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4990,7 +4990,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 			"AMD EPYC 7551",		\
 			"AMD EPYC 7501" 		),
 	.Boost = {+6, +4},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {85, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -5002,7 +5002,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC Embedded 7601",	\
 			"AMD EPYC 7601" 		),
 	.Boost = {+5, +5},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {81, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -5015,7 +5015,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC Embedded 3101",	\
 			"AMD EPYC 3101" 		),
 	.Boost = {+8, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_SNOWY_OWL,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -5027,7 +5027,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC Embedded 3151",	\
 			"AMD EPYC 3151" 		),
 	.Boost = {+2, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_SNOWY_OWL,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -5039,7 +5039,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC Embedded 3201",	\
 			"AMD EPYC 3201" 		),
 	.Boost = {+16, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_SNOWY_OWL,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -5053,7 +5053,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 			"AMD EPYC 3251",		\
 			"AMD EPYC 3255" 		),
 	.Boost = {+6, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {105, 0, 0},
 	.CodeNameIdx = CN_SNOWY_OWL,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -5065,7 +5065,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC Embedded 3351",	\
 			"AMD EPYC 3351" 		),
 	.Boost = {+11, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {105, 0, 0},
 	.CodeNameIdx = CN_SNOWY_OWL,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -5077,7 +5077,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC Embedded 3451",	\
 			"AMD EPYC 3451" 		),
 	.Boost = {+9, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {105, 0, 0},
 	.CodeNameIdx = CN_SNOWY_OWL,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -6257,7 +6257,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_Renoir_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Athlon Gold PRO 4150GE"),
 	.Boost = {+5, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {100, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -6747,7 +6747,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_Jupiter_Specific[] = {
 	.Brand = ZLIST( "AMD Custom APU 0405",	\
 			"AMD Custom APU 0932"	),
 	.Boost = {+7, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {100, 0, 0},
 	.CodeNameIdx = CN_VANGOGH,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -7871,7 +7871,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 			"AMD EPYC 9534",		\
 			"AMD EPYC 9254" 		),
 	.Boost = {+13, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_GENOA,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -7884,7 +7884,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 	{
 	.Brand = ZLIST("AMD EPYC 9634"),
 	.Boost = {+15, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_GENOA,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -7902,7 +7902,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 			"AMD EPYC 9554",		\
 			"AMD EPYC 9124" 		),
 	.Boost = {+7, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_GENOA,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -7916,7 +7916,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC 9474F",	\
 			"AMD EPYC 9374F"	),
 	.Boost = {+5, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_GENOA,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -7932,7 +7932,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 			"AMD EPYC 9454P",		\
 			"AMD EPYC 9454" 		),
 	.Boost = {+11, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_GENOA,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -7948,7 +7948,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 			"AMD EPYC 9354P",		\
 			"AMD EPYC 9354" 		),
 	.Boost = {+6, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_GENOA,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -7962,7 +7962,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC 9334",	\
 			"AMD EPYC 9224" 	),
 	.Boost = {+12, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_GENOA,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -7976,7 +7976,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC 9274F",	\
 			"AMD EPYC 9174F"	),
 	.Boost = {+3, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_GENOA,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -7990,7 +7990,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 	{
 	.Brand = ZLIST("AMD EPYC 9684X"),
 	.Boost = {+12, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_GENOA_X,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -8003,7 +8003,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 	{
 	.Brand = ZLIST("AMD EPYC 9384X"),
 	.Boost = {+8, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_GENOA_X,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -8016,7 +8016,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 	{
 	.Brand = ZLIST("AMD EPYC 9184X"),
 	.Boost = {+7, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_GENOA_X,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -8268,7 +8268,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	{
 	.Brand = ZLIST("AMD EPYC 4464P"),
 	.Boost = {+17, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_EPYC_RAPHAEL,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -8282,7 +8282,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC 4584PX",	\
 			"AMD EPYC 4344P"	),
 	.Boost = {+15, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_EPYC_RAPHAEL,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -8296,7 +8296,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC 4244P",	\
 			"AMD EPYC 4124P"	),
 	.Boost = {+13, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_EPYC_RAPHAEL,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -8310,7 +8310,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC 4564P",	\
 			"AMD EPYC 4484PX"	),
 	.Boost = {+12, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_EPYC_RAPHAEL,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -8323,7 +8323,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	{
 	.Brand = ZLIST("AMD EPYC 4364P"),
 	.Boost = {+9, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_EPYC_RAPHAEL,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -8642,7 +8642,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Bergamo_Specific[] = {
 			"AMD EPYC 9754S",		\
 			"AMD EPYC 9754" 		),
 	.Boost = {+9, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_BERGAMO,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -8656,7 +8656,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Bergamo_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC Embedded 9734",	\
 			"AMD EPYC 9734" 		),
 	.Boost = {+8, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_BERGAMO,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -8669,7 +8669,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Bergamo_Specific[] = {
 	{
 	.Brand = ZLIST("AMD EPYC 8534PN"),
 	.Boost = {+11, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {75, 0, 0},
 	.CodeNameIdx = CN_SIENA,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -8682,7 +8682,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Bergamo_Specific[] = {
 	{
 	.Brand = ZLIST("AMD EPYC 8534P"),
 	.Boost = {+8, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {75, 0, 0},
 	.CodeNameIdx = CN_SIENA,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -8699,7 +8699,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Bergamo_Specific[] = {
 			"AMD EPYC 8124PN",		\
 			"AMD EPYC 8024PN"	)	,
 	.Boost = {+10, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {75, 0, 0},
 	.CodeNameIdx = CN_SIENA,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -8714,7 +8714,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Bergamo_Specific[] = {
 			"AMD EPYC 8124P",		\
 			"AMD EPYC 8024P"	)	,
 	.Boost = {+6, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {75, 0, 0},
 	.CodeNameIdx = CN_SIENA,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -8727,7 +8727,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Bergamo_Specific[] = {
 	{
 	.Brand = ZLIST("AMD EPYC 8324P"),
 	.Boost = {+4, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {75, 0, 0},
 	.CodeNameIdx = CN_SIENA,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -8740,7 +8740,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Bergamo_Specific[] = {
 	{
 	.Brand = ZLIST("AMD EPYC 8224P"),
 	.Boost = {+5, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {75, 0, 0},
 	.CodeNameIdx = CN_SIENA,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
