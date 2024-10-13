@@ -2165,6 +2165,8 @@ static PCI_CALLBACK GLK_IMC(struct pci_dev *dev) ;
 #define RPL_PCH CML_PCH
 static PCI_CALLBACK MTL_IMC(struct pci_dev *dev) ;
 #define MTL_PCH CML_PCH
+#define ARL_IMC MTL_IMC
+#define ARL_PCH MTL_PCH
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev) ;
@@ -3161,6 +3163,23 @@ static struct pci_device_id PCI_MTL_ids[] = {
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_METEORLAKE_UT4_PCH),
 		.driver_data = (kernel_ulong_t) MTL_PCH
+	},
+/* Arrow Lake */
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ARROWLAKE_S_8_16_HB),
+		.driver_data = (kernel_ulong_t) ARL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ARROWLAKE_S_8_12_HB),
+		.driver_data = (kernel_ulong_t) ARL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ARROWLAKE_S_6_8_HB),
+		.driver_data = (kernel_ulong_t) ARL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ARROWLAKE_S_PCH),
+		.driver_data = (kernel_ulong_t) ARL_PCH
 	},
 	{0, }
 };
@@ -12014,7 +12033,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SAV,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_MTL_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Alderlake,
 		.Stop = Stop_Uncore_Alderlake,
@@ -12038,7 +12057,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SAV,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_MTL_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Alderlake,
 		.Stop = Stop_Uncore_Alderlake,
@@ -12062,7 +12081,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SAV,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_MTL_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Alderlake,
 		.Stop = Stop_Uncore_Alderlake,

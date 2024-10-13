@@ -89,6 +89,7 @@ enum CHIPSET {
 	IC_MTL_H,
 	IC_MTL_U,
 	IC_MTL_UT4,
+	IC_ARL_S,
 	IC_K8,
 	IC_ZEN,
 	CHIPSETS

@@ -1556,6 +1556,11 @@ typedef struct
 #define DID_INTEL_METEORLAKE_UT4_PCH	0x7e07
 /* Source: Arrow Lake Client Platform/MTL-S (0x6-0xc6, stepping: 0x0)	*/
 #define DID_INTEL_ARL_MTL_PCH_S_SMBUS	0x7f23
+/* Source: Intel Core Ultra 200S | ASRock Z890 Taichi OCF		*/
+#define DID_INTEL_ARROWLAKE_S_8_16_HB	0x7d1a
+#define DID_INTEL_ARROWLAKE_S_8_12_HB	0x7d1b
+#define DID_INTEL_ARROWLAKE_S_6_8_HB	0x7d2a
+#define DID_INTEL_ARROWLAKE_S_PCH	0xae0d
 /* Source: /include/linux/pci_ids.h					*/
 #define DID_AMD_K8_NB_MEMCTL		0x1102
 #define DID_AMD_K8_NB			0x1100
