@@ -6183,7 +6183,7 @@ void MTL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		tWR_quantity = 4U;
 		break;
 	case 5:
-		tWR_quantity = 8U;
+		tWR_quantity = 10U;
 		break;
 	}
       if (RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.Timing.tWRPRE >=
