@@ -2955,6 +2955,54 @@ static struct pci_device_id PCI_ADL_RPL_ids[] = {
 		.driver_data = (kernel_ulong_t) ADL_IMC
 	},
 	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_N300_8E_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_N200_4E_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_N100_4E_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_X7835RE_8C_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_X7433RE_4C_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_N97_4E_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_X7425E_4C_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_N50_2E_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_X7213RE_2C_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_X7211RE_2C_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_X7213E_2C_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_X7211E_2C_HB),
+		.driver_data = (kernel_ulong_t) ADL_IMC
+	},
+	{
 		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_H610_PCH),
 		.driver_data = (kernel_ulong_t) ADL_PCH
 	},
@@ -2992,6 +3040,22 @@ static struct pci_device_id PCI_ADL_RPL_ids[] = {
 	},
 	{
 		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_PCH_U),
+		.driver_data = (kernel_ulong_t) ADL_PCH
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_N305_PCH),
+		.driver_data = (kernel_ulong_t) ADL_PCH
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_N95_PCH),
+		.driver_data = (kernel_ulong_t) ADL_PCH
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_X7000E_PCH),
+		.driver_data = (kernel_ulong_t) ADL_PCH
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_ALDERLAKE_X7000RE_PCH),
 		.driver_data = (kernel_ulong_t) ADL_PCH
 	},
 /* 13th Generation							*/
