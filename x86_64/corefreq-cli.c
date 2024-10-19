@@ -130,7 +130,6 @@ void SetTopOftheTop(	unsigned int cpu, enum RATIO_BOOST rb,
       if (RO(Shm)->Cpu[cpu].Boost[rb] < (*lowest))
       {
 	(*lowest) = RO(Shm)->Cpu[cpu].Boost[rb];
-	SetTopOfRuler(Ruler.Top[rb], rb);
       }
 	break;
     default:
