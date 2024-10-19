@@ -64,10 +64,10 @@ jobs:
             distro: debian-10-buster
             base_image: arm64v8/debian:10
             packages: linux-headers-arm64
-          - arch: aarch64
-            distro: ubuntu-rolling
-            base_image: arm64v8/ubuntu:rolling
-            packages: linux-headers-generic
+          #- arch: aarch64
+          #  distro: ubuntu-rolling
+          #  base_image: arm64v8/ubuntu:rolling
+          #  packages: linux-headers-generic
           - arch: aarch64
             distro: ubuntu-16.04-xenial
             base_image: arm64v8/ubuntu:16.04
