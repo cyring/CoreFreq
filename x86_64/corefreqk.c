@@ -10491,6 +10491,14 @@ static void Intel_Watchdog(CORE_RO *Core)
 		PCI_VDEVICE(INTEL, DID_INTEL_ARL_MTL_PCH_S_SMBUS),
 		.driver_data = (kernel_ulong_t) TCOBASE
 		},
+		{
+		PCI_VDEVICE(INTEL, DID_INTEL_ARROWLAKE_S_SMBUS),
+		.driver_data = (kernel_ulong_t) TCOBASE
+		},
+		{
+		PCI_VDEVICE(INTEL, DID_INTEL_LUNARLAKE_V_SMBUS),
+		.driver_data = (kernel_ulong_t) TCOBASE
+		},
 		{0, }
 	};
 	if (CoreFreqK_ProbePCI(PCI_WDT_ids, NULL, NULL) < RC_SUCCESS) {

@@ -1578,6 +1578,11 @@ typedef struct
 #define DID_INTEL_ARROWLAKE_S_8_12_HB	0x7d1b
 #define DID_INTEL_ARROWLAKE_S_6_8_HB	0x7d2a
 #define DID_INTEL_ARROWLAKE_S_PCH	0xae0d
+#define DID_INTEL_ARROWLAKE_S_SMBUS	0xae22
+/* Source: Intel Core Ultra 200V Series Processors Datasheet, Vol 1	*/
+#define DID_INTEL_LUNARLAKE_V_4P_4E	0x6400
+#define DID_INTEL_LUNARLAKE_V_PCH	0xa807
+#define DID_INTEL_LUNARLAKE_V_SMBUS	0xa822
 /* Source: /include/linux/pci_ids.h					*/
 #define DID_AMD_K8_NB_MEMCTL		0x1102
 #define DID_AMD_K8_NB			0x1100

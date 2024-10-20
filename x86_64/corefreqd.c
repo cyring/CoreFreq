@@ -6379,6 +6379,9 @@ void MTL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 #define ARL_CAP MTL_CAP
 #define ARL_IMC MTL_IMC
 
+#define LNL_CAP MTL_CAP
+#define LNL_IMC MTL_IMC
+
 void AMD_0Fh_MCH(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
     struct {
@@ -7063,6 +7066,7 @@ static char *Chipset[CHIPSETS] = {
 	[IC_MTL_U]		= "Intel MTL-U",
 	[IC_MTL_UT4]		= "Intel MTL-U Type4",
 	[IC_ARL_S]		= "Intel ARL-S",
+	[IC_LNL_V]		= "Intel LNL-V",
 	[IC_K8] 		= "K8/HyperTransport",
 	[IC_ZEN]		= "Zen UMC"
 };
@@ -7665,6 +7669,13 @@ void PCI_Intel(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 		break;
 	case DID_INTEL_ARROWLAKE_S_PCH:
 		SET_CHIPSET(IC_ARL_S);
+		break;
+	case DID_INTEL_LUNARLAKE_V_4P_4E:
+		LNL_CAP(RO(Shm), RO(Proc), RO(Core));
+		LNL_IMC(RO(Shm), RO(Proc));
+		break;
+	case DID_INTEL_LUNARLAKE_V_PCH:
+		SET_CHIPSET(IC_LNL_V);
 		break;
 	}
 }
