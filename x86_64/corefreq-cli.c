@@ -2600,8 +2600,10 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		NULL
 	},
 	{
-		(unsigned int[]) { CRC_INTEL, 0 },
-		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FSRC == 1,
+		NULL,
+		(RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FSRC == 1)
+		|| (RO(Shm)->Proc.Features.ExtFeature2_EAX.FSRC_CMPSB == 1)
+		|| (RO(Shm)->Proc.Features.ExtFeature2_EAX.FSRC_SCASB == 1),
 		attr_Feat,
 		2, "%s%.*sFSRC   [%7s]", RSC(FEATURES_FSRC).CODE(),
 		width - 19 - RSZ(FEATURES_FSRC),
@@ -2616,8 +2618,9 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		NULL
 	},
 	{
-		(unsigned int[]) { CRC_INTEL, 0 },
-		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FSRS == 1,
+		NULL,
+		(RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.FSRS == 1)
+		|| (RO(Shm)->Proc.Features.ExtFeature2_EAX.FSRS == 1),
 		attr_Feat,
 		2, "%s%.*sFSRS   [%7s]", RSC(FEATURES_FSRS).CODE(),
 		width - 19 - RSZ(FEATURES_FSRS),
@@ -2633,7 +2636,8 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
-		RO(Shm)->Proc.Features.ExtFeature.EBX.ERMS == 1,
+		(RO(Shm)->Proc.Features.ExtFeature.EBX.ERMS == 1)
+		|| (RO(Shm)->Proc.Features.ExtFeature2_EAX.AMD_ERMSB == 1),
 		attr_Feat,
 		2, "%s%.*sERMS   [%7s]", RSC(FEATURES_ERMS).CODE(),
 		width - 19 - RSZ(FEATURES_ERMS),
@@ -2938,8 +2942,9 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		NULL
 	},
 	{
-		(unsigned int[]) { CRC_INTEL, 0 },
-		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.PREFETCHI == 1,
+		NULL,
+		(RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.PREFETCHI == 1)
+		|| (RO(Shm)->Proc.Features.ExtFeature2_EAX.PREFETCHI == 1),
 		attr_Feat,
 		2, "%s%.*sPREFETCHI   [%7s]", RSC(FEATURES_PREFETCHI).CODE(),
 		width - 24 - RSZ(FEATURES_PREFETCHI),
@@ -3198,6 +3203,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		capability
 	},
 	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Features.ExtFeature2_EAX.SBPB == 1,
+		attr_Feat,
+		2, "%s%.*sSBPB   [%7s]", RSC(MECH_SBPB).CODE(),
+		width - 19 - RSZ(MECH_SBPB),
+		capability
+	},
+	{
 		NULL,
 		RO(Shm)->Proc.Mechanisms.STIBP,
 		attr_Feat,
@@ -3227,6 +3240,22 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		attr_Feat,
 		3, "%s%.*s[%7s]", RSC(MECH_SSBD_NOT_REQUIRED).CODE(),
 		width - (OutFunc == NULL ? 15:13) - RSZ(MECH_SSBD_NOT_REQUIRED),
+		capability
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Features.ExtFeature2_EAX.SRSO_NO == 1,
+		attr_Feat,
+		2, "%s%.*sSRSO_NO   [%7s]", RSC(MECH_SRSO_NO).CODE(),
+		width - 22 - RSZ(MECH_SRSO_NO),
+		capability
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		RO(Shm)->Proc.Features.ExtFeature2_EAX.SRSO_USR_KNL_NO == 1,
+		attr_Feat,
+		3, "%s%.*s[%7s]", RSC(MECH_SRSO_USR_KNL_NO).CODE(),
+		width - (OutFunc == NULL ? 15:13) - RSZ(MECH_SRSO_USR_KNL_NO),
 		capability
 	},
 	{

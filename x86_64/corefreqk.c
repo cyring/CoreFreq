@@ -452,6 +452,10 @@ static signed short Mech_IBPB = -1;
 module_param(Mech_IBPB, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Mech_IBPB, "Mitigation Mechanism IBPB");
 
+static signed short Mech_SBPB = -1;
+module_param(Mech_SBPB, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Mech_SBPB, "Mitigation Mechanism SBPB");
+
 static signed short Mech_L1D_FLUSH = -1;
 module_param(Mech_L1D_FLUSH, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Mech_L1D_FLUSH, "Mitigation Mechanism Cache L1D Flush");
@@ -1285,7 +1289,7 @@ static void Query_Features(void *pArg)
 	/* Specified as L3 Cache or L2I-ext Performance Events Counters */
 	if (iArg->Features->ExtInfo.ECX.PerfLLC) {
 		switch (iArg->Features->Std.EAX.ExtFamily) {
-		case 0x8 ... 0xa:
+		case 0x8 ... 0xB:
 		/* PPR: six performance events counters per L3 complex	*/
 			iArg->Features->Factory.PMC.LLC = 6;
 			break;
@@ -12682,6 +12686,16 @@ static void AMD_Mitigation_Mechanisms(CORE_RO *Core)
 	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
 	    {
 		Pred_Cmd.IBPB = Mech_IBPB;
+		WRMSR(Pred_Cmd, MSR_AMD_PRED_CMD);
+	    }
+	}
+	if (PUBLIC(RO(Proc))->Features.ExtFeature2_EAX.SBPB
+	&& ((Mech_SBPB == COREFREQ_TOGGLE_OFF)
+	 || (Mech_SBPB == COREFREQ_TOGGLE_ON)))
+	{
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
+	    {
+		Pred_Cmd.SBPB = Mech_SBPB;
 		WRMSR(Pred_Cmd, MSR_AMD_PRED_CMD);
 	    }
 	}

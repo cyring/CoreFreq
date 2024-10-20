@@ -1955,30 +1955,42 @@ typedef struct	/* AMD Extended ID Leaf.				*/
 	} EDX;
 } CPUID_0x8000001e;
 
-typedef struct	/*	AMD Extended Feature Identification 2			*/
+typedef struct	/*	AMD Extended Feature Identification 2		*/
 {
 	struct CPUID_0x80000021_EAX {
 		unsigned int
 		NoNestDataBp	:  1-0,
-		Reserved_01	:  2-1,
+		NonSerializing	:  2-1,  /* FsGsKernelGsBaseNonSerializing */
 		LFenceAlways	:  3-2,
 		SmmPgCfgLock	:  4-3,
 		Reserved_04	:  5-4,
 		Reserved_05	:  6-5,
 		NullSelector	:  7-6,
-		UAIE		:  8-7,
+		UAIE		:  8-7,  /* UpperAddressIgnore		*/
 		AUTO_IBRS	:  9-8,
 		NoSmmCtl_MSR	: 10-9,
-		Reserved_10	: 11-10,
-		Reserved_11	: 12-11,
-		Reserved_12	: 13-12,
-		PrefetchCtl_MSR : 14-13,
-		Reserved_14	: 15-14,
-		Reserved_15	: 16-15,
-		Reserved_16	: 17-16,
+		FSRS		: 11-10, /* Fast Short Rep Stosb supported */
+		FSRC_CMPSB	: 12-11, /* Fast Short Rep Cmpsb supported */
+		PreciseRetire	: 13-12, /*MSR PERF_LEGACY_CTL2[PreciseRetire]*/
+		PrefetchCtl_MSR : 14-13, /* MSR PrefetchControl supported */
+		L2TlbSizeX32	: 15-14, /* L2TLB sizes are 32 multiples */
+		AMD_ERMSB	: 16-15, /* Enhanced REP MOVSB/STOSB	*/
+		OPCODE_0F017	: 17-16, /* OPCODE_0F017_RECLAIM	*/
 		CpuidUserDis	: 18-17,
 		EPSF		: 19-18,
-		Reserved	: 32-19;
+		FSRC_SCASB	: 20-19, /* Fast short Rep SCASB supported */
+		PREFETCHI	: 21-20, /* IC prefetch supported	*/
+		FP512_DOWNGRADE : 22-21, /*Downgrading FP512 datapath to FP256*/
+		WL_CLASS_SUPPORT: 23-22, /* Workload based heuristic feedback */
+		Reserved_23	: 24-23,
+		ERAPS		: 25-24, /* Enhanced Ret Addr Predictor Sec. */
+		Reserved_25	: 26-25,
+		Reserved_26	: 27-26,
+		SBPB		: 28-27, /* Selective Branch Predictor Barrier*/
+		IBPB_BRTYPE	: 29-28, /* MSR PRED_CMD[IBPB] flush	*/
+		SRSO_NO 	: 30-29, /* Speculative Return Stack Overflow */
+		SRSO_USR_KNL_NO : 31-30, /* No SRSO at User-Kernel boundary */
+		SRSO_MSR_FIX	: 32-31; /* BP_CFG[4]: other SRSO cases */
 	} EAX;
 } CPUID_0x80000021;
 
@@ -2112,12 +2124,13 @@ typedef struct	/* AMD Extended Performance Monitoring and Debug.	*/
 		unsigned int
 		NumPerfCtrCore	:  4-0,
 		LbrStackSize	: 10-4,
-		NumPerfCtrNB	: 16-10,
-		Reserved	: 32-16;
+		NumPerfCtrNB	: 16-10, /* # of available Data Fabric PMCs */
+		NumPerfCtrUmc	: 24-16, /* # of available UMC PMCs */
+		Reserved	: 32-24;
 	} EBX;
 	struct {
 		unsigned int
-		Reserved	: 32-0;
+		ActiveUmcMask	: 32-0; /*Calculate the number of PMCs per UMC*/
 	} ECX;
 	struct
 	{
@@ -2142,7 +2155,7 @@ Note: While CPUID Fn8000_0026 is a preferred superset to CPUID_Fn0000000B,
 		Reserved	: 29-5,
 		PowerRankingCap	: 30-29, /* ProcessorPowerEfficiencyRanking */
 		CoreTopology	: 31-30, /* CoreType:HeterogeneousCoreTopology*/
-		AsymmetricCores : 31-30;
+		AsymmetricCores : 32-31;
 	} EAX;
 	struct {
 		unsigned int

@@ -1140,7 +1140,7 @@
 
 #define RSC_FEATURES_DS_CPL_CODE_EN	"CPL Qualified Debug Store"
 #define RSC_FEATURES_DTES_64_CODE_EN	"64-Bit Debug Store"
-#define RSC_FEATURES_FSRC_CODE_EN	"Fast Short REP CMPSB"
+#define RSC_FEATURES_FSRC_CODE_EN	"Fast Short REP CMPSB|SCASB"
 #define RSC_FEATURES_FSRM_CODE_EN	"Fast Short REP MOVSB"
 #define RSC_FEATURES_FSRS_CODE_EN	"Fast Short REP STOSB"
 #define RSC_FEATURES_FZRM_CODE_EN	"Fast Zero-length REP MOVSB"
@@ -2050,6 +2050,7 @@
 
 #define RSC_MECH_IBRS_CODE_EN	"Indirect Branch Restricted Speculation"
 #define RSC_MECH_IBPB_CODE_EN	"Indirect Branch Prediction Barrier"
+#define RSC_MECH_SBPB_CODE_EN	"Selective Branch Predictor Barrier"
 #define RSC_MECH_STIBP_CODE_EN	"Single Thread Indirect Branch Predictor"
 #define RSC_MECH_SSBD_CODE_EN	"Speculative Store Bypass Disable"
 #define RSC_MECH_L1D_FLUSH_CODE_EN "Writeback & invalidate the L1 data cache"
@@ -2100,6 +2101,8 @@
 #define RSC_MECH_BHI_DIS_S_CODE_EN	"Arch - BHI disabled for CPL0/1/2"
 #define RSC_MECH_MCDT_NO_CODE_EN "No MXCSR Configuration Dependent Timing"
 #define RSC_MECH_UMON_MITG_NO_CODE_EN	"No MONITOR/UMONITOR mitigation"
+#define RSC_MECH_SRSO_NO_CODE_EN	"No Speculative Return Stack Overflow"
+#define RSC_MECH_SRSO_USR_KNL_NO_CODE_EN "No SRSO at the User-Kernel boundary"
 #define RSC_MECH_BTC_NO_CODE_EN 	"No Branch Type Confusion"
 #define RSC_MECH_BTC_NOBR_CODE_EN 	"BTC on Non-Branch instruction"
 #define RSC_MECH_XPROC_LEAK_CODE_EN  "Arch - Cross Processor Information Leak"

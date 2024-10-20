@@ -296,7 +296,9 @@ typedef union
     {
 	unsigned long long
 	IBPB		:  1-0,  /* WO: Indirect Branch Prediction Barrier */
-	Reserved	: 64-1;
+	Reserved1	:  7-1,
+	SBPB		:  8-7,  /* WO: Selective Branch Predictor Barrior */
+	Reserved2	: 64-8;
     };
 } AMD_PRED_CMD;
 
