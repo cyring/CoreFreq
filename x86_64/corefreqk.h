@@ -7963,6 +7963,7 @@ static PROCESSOR_SPECIFIC AMD_Zen3_Chagall_Specific[] = {
 static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD EPYC Embedded 9654P",	\
+			"AMD EPYC Embedded 9534",	\
 			"AMD EPYC Embedded 9654",	\
 			"AMD EPYC Embedded 9254",	\
 			"AMD EPYC 9654P",		\
