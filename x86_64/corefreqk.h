@@ -8816,7 +8816,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Bergamo_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 8534P"),
+	.Brand = ZLIST( "AMD EPYC Embedded 8534P",	\
+			"AMD EPYC 8534P"		),
 	.Boost = {+8, 0},
 	.Param.Offset = {75, 0, 0},
 	.CodeNameIdx = CN_SIENA,
@@ -8833,7 +8834,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Bergamo_Specific[] = {
 			"AMD EPYC 8324PN",		\
 			"AMD EPYC 8224PN",		\
 			"AMD EPYC 8124PN",		\
-			"AMD EPYC 8024PN"	)	,
+			"AMD EPYC 8024PN"		),
 	.Boost = {+10, 0},
 	.Param.Offset = {75, 0, 0},
 	.CodeNameIdx = CN_SIENA,
@@ -8846,9 +8847,12 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Bergamo_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 8434P",		\
+	.Brand = ZLIST( "AMD EPYC Embedded 8434P",	\
+			"AMD EPYC Embedded 8124P",	\
+			"AMD EPYC Embedded 8C24P",	\
+			"AMD EPYC 8434P",		\
 			"AMD EPYC 8124P",		\
-			"AMD EPYC 8024P"	)	,
+			"AMD EPYC 8024P"		),
 	.Boost = {+6, 0},
 	.Param.Offset = {75, 0, 0},
 	.CodeNameIdx = CN_SIENA,
@@ -8861,7 +8865,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Bergamo_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 8324P"),
+	.Brand = ZLIST( "AMD EPYC Embedded 8324P",	\
+			"AMD EPYC 8324P"		),
 	.Boost = {+4, 0},
 	.Param.Offset = {75, 0, 0},
 	.CodeNameIdx = CN_SIENA,
@@ -8874,7 +8879,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_Bergamo_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 8224P"),
+	.Brand = ZLIST( "AMD EPYC Embedded 8224P",	\
+			"AMD EPYC 8224P"		),
 	.Boost = {+5, 0},
 	.Param.Offset = {75, 0, 0},
 	.CodeNameIdx = CN_SIENA,
