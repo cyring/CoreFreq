@@ -6915,6 +6915,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MDN_Specific[] = {
 static PROCESSOR_SPECIFIC AMD_Zen3_VMR_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD Ryzen 5 5600X3D",	\
+			"AMD Ryzen 7 5700X3D",	\
 			"AMD Ryzen 7 5800X3D"	),
 	.Boost = {+11, +1},
 	.Param.Offset = {90, 0, 0},
@@ -8231,6 +8232,19 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 5 7600X3D"),
+	.Boost = {+6, 0},
+	.Param.Offset = {89, 0, 0},
+	.CodeNameIdx = CN_RAPHAEL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.HSMP_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
