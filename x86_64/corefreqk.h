@@ -8734,6 +8734,18 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHX2_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
+	.Brand = ZLIST("AMD Ryzen 5 8500GE"),
+	.Boost = {+16, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_PHOENIX2,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
 	.Brand = ZLIST("AMD Ryzen 3 PRO 8300GE"),
 	.Boost = {+14, 0},
 	.Param.Offset = {95, 0, 0},
