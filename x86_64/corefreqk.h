@@ -2071,6 +2071,8 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 	[Zen4c/Hawk Point]	AF_7Ch			 4 nm	[HWK]
 	[Zen4c][Bergamo][Siena] AF_A0h Stepping [1][2]	 5 nm	SVR
 	[Zen4/Storm Peak]	AF_18h Stepping 1	 5 nm	WS/SP6
+
+	[Family 1Ah]		BF_00h
 	[Zen5/5c/Strix Point]	BF_24h			 4 nm	[STX]/FP8
 	[Zen5/Granite Ridge]	BF_44h			 4 nm	Eldora
 	[Zen5/Turin]		BF_02h Stepping 1	 4 nm	SP5
@@ -2188,6 +2190,7 @@ static PCI_CALLBACK AMD_DataFabric_Rembrandt(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Raphael(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Genoa(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Phoenix(struct pci_dev *pdev) ;
+#define AMD_DataFabric_Turin AMD_DataFabric_Genoa
 
 static struct pci_device_id PCI_Void_ids[] = {
 	{0, }
@@ -3443,7 +3446,19 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 };
 
 #define PCI_AMD_19h_ids PCI_AMD_17h_ids
-#define PCI_AMD_1Ah_ids PCI_AMD_19h_ids
+
+/* AMD Family 1Ah							*/
+static struct pci_device_id PCI_AMD_1Ah_ids[] = {
+	{
+		PCI_VDEVICE(AMD, DID_AMD_1AH_ZEN5_TURIN_IOMMU),
+		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_1AH_TURIN_DF_UMC),
+		.driver_data = (kernel_ulong_t) AMD_DataFabric_Turin
+	},
+	{0, }
+};
 
 	 /*	Left as empty for initialization purpose.	*/
 static char *Arch_Misc_Processor[]	=	ZLIST(NULL);

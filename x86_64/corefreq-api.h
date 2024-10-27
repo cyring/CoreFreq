@@ -1636,3 +1636,6 @@ typedef struct
 #define DID_AMD_19H_RAPHAEL_DF_UMC	0x14e0	/*	Raphael 	*/
 #define DID_AMD_19H_GENOA_DF_UMC	0x14ad	/*	Genoa		*/
 #define DID_AMD_19H_PHOENIX_DF_UMC	0x14f0	/*	Phoenix 	*/
+/* Source: AMD PPR Vol 1 for AMD Family 1Ah Model 02h C1		*/
+#define DID_AMD_1AH_ZEN5_TURIN_IOMMU	0x153b	/*	Turin		*/
+#define DID_AMD_1AH_TURIN_DF_UMC	0x12c0	/*	Turin		*/
