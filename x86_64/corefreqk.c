@@ -8150,7 +8150,7 @@ inline COF_ST AMD_Zen_CoreCOF(PSTATEDEF PStateDef)
 		  - ((COF.Q * PStateDef.Family_17h.CpuDfsId) >> 1))) >> 2;
 	COF.R	= (unsigned short) remainder;
     } else switch (PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily) {
-	case 0xB:	/*	Zen5: Granite Ridge & Strix Point	*/
+	case 0xB:	/*	Zen5: Granite Ridge, Strix Point, Turin */
 		COF.Q = (PStateDef.Family_1Ah.CpuFid >> 1) / 10;
 		remainder = (PRECISION * PStateDef.Family_1Ah.CpuFid) >> 1;
 		remainder = remainder - (UNIT_KHz(1) * COF.Q);

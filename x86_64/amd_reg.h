@@ -546,15 +546,15 @@ typedef union
     struct
     {
 	unsigned long long	 /* MSR 0xC001_006[4...B] P-state [7:0] */
-	CpuFid		: 11-0,  /* Undocumented FID			*/
-	CpuDfsId	: 14-11, /* Undocumented DID			*/
+	CpuFid		: 12-0,  /* CoreCOF = PStateDef[CpuFid[11:0]] * 5MHz */
+	Reserved1	: 14-12,
 	CpuVid		: 22-14, /* VID verified w/ 9950X		*/
 	IddValue	: 30-22,
 	IddDiv		: 32-30,
 	CpuVid8 	: 33-32,
-	Reserved	: 63-33,
+	Reserved2	: 63-33,
 	PstateEn	: 64-63;
-    } Family_1Ah; /* CPUID signature BF_44h				*/
+    } Family_1Ah; /* CPUID signature BF_44h, BF_02h			*/
 } PSTATEDEF;
 
 typedef union
