@@ -10492,6 +10492,10 @@ static void Intel_Watchdog(CORE_RO *Core)
 		.driver_data = (kernel_ulong_t) TCOBASE
 		},
 		{
+		PCI_VDEVICE(INTEL, DID_INTEL_METEORLAKE_M_SMBUS),
+		.driver_data = (kernel_ulong_t) TCOBASE
+		},
+		{
 		PCI_VDEVICE(INTEL, DID_INTEL_ARL_MTL_PCH_S_SMBUS),
 		.driver_data = (kernel_ulong_t) TCOBASE
 		},

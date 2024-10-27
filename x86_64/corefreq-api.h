@@ -1571,6 +1571,12 @@ typedef struct
 #define DID_INTEL_METEORLAKE_H_PCH	0x7e02
 #define DID_INTEL_METEORLAKE_U_PCH	0x7e03
 #define DID_INTEL_METEORLAKE_UT4_PCH	0x7e07
+/* Source: Intel Core Ultra Processors (PS Series) Datasheet		*/
+#define DID_INTEL_METEORLAKE_M_6_8_2_HB 0x7d21
+#define DID_INTEL_METEORLAKE_M_4_8_2_HB 0x7d22
+#define DID_INTEL_METEORLAKE_M_2_8_2_HB 0x7d24
+#define DID_INTEL_METEORLAKE_M_4_4_2_HB 0x7d23
+#define DID_INTEL_METEORLAKE_M_SMBUS	0x7e22
 /* Source: Arrow Lake Client Platform/MTL-S (0x6-0xc6, stepping: 0x0)	*/
 #define DID_INTEL_ARL_MTL_PCH_S_SMBUS	0x7f23
 /* Source: Intel Core Ultra 200S | ASRock Z890 Taichi OCF		*/

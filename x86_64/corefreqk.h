@@ -3219,6 +3219,22 @@ static struct pci_device_id PCI_MTL_ids[] = {
 		.driver_data = (kernel_ulong_t) MTL_IMC
 	},
 	{
+		PCI_VDEVICE(INTEL, DID_INTEL_METEORLAKE_M_6_8_2_HB),
+		.driver_data = (kernel_ulong_t) MTL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_METEORLAKE_M_4_8_2_HB),
+		.driver_data = (kernel_ulong_t) MTL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_METEORLAKE_M_2_8_2_HB),
+		.driver_data = (kernel_ulong_t) MTL_IMC
+	},
+	{
+		PCI_VDEVICE(INTEL, DID_INTEL_METEORLAKE_M_4_4_2_HB),
+		.driver_data = (kernel_ulong_t) MTL_IMC
+	},
+	{
 		PCI_VDEVICE(INTEL, DID_INTEL_METEORLAKE_H_PCH),
 		.driver_data = (kernel_ulong_t) MTL_PCH
 	},
