@@ -1992,6 +1992,17 @@ typedef struct	/*	AMD Extended Feature Identification 2		*/
 		SRSO_USR_KNL_NO : 31-30, /* No SRSO at User-Kernel boundary */
 		SRSO_MSR_FIX	: 32-31; /* BP_CFG[4]: other SRSO cases */
 	} EAX;
+	struct {
+		unsigned int
+		MicrocodePatchSz: 16-0,  /* 0:5568 otherwise 16-byte multiples*/
+		RapSize 	: 24-16, /* x8 is the minimum number of CALL */
+		Reserved	: 32-24;
+	} EBX;
+	struct
+	{
+		unsigned int
+		Reserved	: 32-0;
+	} ECX, EDX;
 } CPUID_0x80000021;
 
 enum	/*	Intel SGX Capability Enumeration Leaf.			*/
