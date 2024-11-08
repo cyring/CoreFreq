@@ -6679,6 +6679,17 @@ static PROCESSOR_SPECIFIC AMD_Zen2_Renoir_Specific[] = {
 	.UncoreUnlocked = 0,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
+	{
+	.Brand = ZLIST("AMD Ryzen Embedded V2A46"),
+	.Boost = {+2, 0},
+	.Param.Offset = {105, 0, 0},
+	.CodeNameIdx = CN_GREY_HAWK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
 	{0}
 };
 static PROCESSOR_SPECIFIC AMD_Zen2_LCN_Specific[] = {
