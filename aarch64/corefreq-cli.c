@@ -2907,8 +2907,7 @@ void Refresh_HWP_Cap_Freq(TGrid *grid, DATA_TYPE data[])
 				CFlop->Clock
 		);
 
-	const unsigned int maxRatio = MAXCLOCK_TO_RATIO(unsigned int,
-							CFlop->Clock.Hz);
+	const unsigned int maxRatio = 99;
 
 	if (StrLenFormat(length, item, grid->cell.length + 1,
 		"CPU #%-3u  %7.2f (%3u)  %7.2f (%3u)  %7.2f (%3u)  %7.2f (%3u)",
@@ -3190,8 +3189,7 @@ REASON_CODE SysInfoPerfCaps(	Window *win,
 				CFlop->Clock
 		);
 
-	const unsigned int maxRatio = MAXCLOCK_TO_RATIO(unsigned int,
-							CFlop->Clock.Hz);
+	const unsigned int maxRatio = 99;
 
 	GridCall(
 	    PUT(SCANKEY_NULL, HWP_Cap_Attr[bix], width, 3,
