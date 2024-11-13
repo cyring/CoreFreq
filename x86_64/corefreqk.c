@@ -2215,8 +2215,6 @@ static void Map_AMD_Topology(void *arg)
 		};
 		/*	Fn8000_001D Cache Properties.			*/
 		unsigned long idx, level[CACHE_MAX_LEVEL] = {1, 0, 2, 3};
-		/*	Skip one CDD on two with Threadripper.		*/
-		unsigned int factor = 0;
 
 		for (idx = 0; idx < CACHE_MAX_LEVEL; idx++ ) {
 		    __asm__ volatile
@@ -2267,93 +2265,51 @@ static void Map_AMD_Topology(void *arg)
 	      { 	/*		SMT is enabled .		*/
 			Core->T.ThreadID  = leaf8000001e.EAX.ExtApicId & 1;
 
-		/* CCD factor for [x24 ... x384] SMT EPYC & Threadripper */
-		factor	=  (leaf80000008.ECX.NC == 0xff)
-			|| (leaf80000008.ECX.NC == 0xdf)
-			|| (leaf80000008.ECX.NC == 0xbf)
-			|| (leaf80000008.ECX.NC == 0xa7)
-			|| (leaf80000008.ECX.NC == 0x8f)
-			|| (leaf80000008.ECX.NC == 0x7f)
-			|| (leaf80000008.ECX.NC == 0x5f)
-			|| (leaf80000008.ECX.NC == 0x3f)
-			|| (leaf80000008.ECX.NC == 0x2f)
-
-			|| ((leaf80000008.ECX.F1Ah.NC == 0x17f)
-			 && ((PUBLIC(RO(Proc))->ArchID == AMD_Zen5_Turin)
-			 || (PUBLIC(RO(Proc))->ArchID == AMD_Zen5_Turin_Dense)))
-
-			|| ((leaf80000008.ECX.F1Ah.NC == 0x13f)
-			 && ((PUBLIC(RO(Proc))->ArchID == AMD_Zen5_Turin)
-			 || (PUBLIC(RO(Proc))->ArchID == AMD_Zen5_Turin_Dense)))
-
-			|| ((leaf80000008.ECX.F1Ah.NC == 0x11f)
-			 && ((PUBLIC(RO(Proc))->ArchID == AMD_Zen5_Turin)
-			 || (PUBLIC(RO(Proc))->ArchID == AMD_Zen5_Turin_Dense)))
-
-			|| ((leaf80000008.ECX.NC == 0x1f)
-			 && ((PUBLIC(RO(Proc))->ArchID == AMD_EPYC_Rome_CPK)
-			 || (PUBLIC(RO(Proc))->ArchID == AMD_EPYC_Milan)
-			 || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Chagall)
-			 || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Badami)
-			 || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Genoa)
-			 || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Bergamo)
-			 || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_STP)
-			 || (PUBLIC(RO(Proc))->ArchID == AMD_Zen5_Turin)
-			 || (PUBLIC(RO(Proc))->ArchID == AMD_Zen5_Turin_Dense)))
-
-			|| ((leaf80000008.ECX.NC == 0x17)
-			 && ((PUBLIC(RO(Proc))->ArchID == AMD_EPYC_Rome_CPK)
-			  || (PUBLIC(RO(Proc))->ArchID == AMD_EPYC_Milan)
-			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Chagall)
-			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Badami)
-			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Genoa)
-			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Bergamo)
-			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_STP)));
 	      }
 	      else
 	      { 	/*		SMT is disabled.		*/
 			Core->T.ThreadID  = 0;
-
-		/* CCD factor for [x12 ... x192] physical EPYC & Threadripper */
-		factor	=  (leaf80000008.ECX.NC == 0xbf)
-			|| (leaf80000008.ECX.NC == 0x9f)
-			|| (leaf80000008.ECX.NC == 0x8f)
-			|| (leaf80000008.ECX.NC == 0x7f)
-			|| (leaf80000008.ECX.NC == 0x6f)
-			|| (leaf80000008.ECX.NC == 0x5f)
-			|| (leaf80000008.ECX.NC == 0x53)
-			|| (leaf80000008.ECX.NC == 0x3f)
-			|| (leaf80000008.ECX.NC == 0x2f)
-			|| (leaf80000008.ECX.NC == 0x1f)
-			|| (leaf80000008.ECX.NC == 0x17)
-
-			|| ((leaf80000008.ECX.NC == 0x0f)
-			 && ((PUBLIC(RO(Proc))->ArchID == AMD_EPYC_Rome_CPK)
-			 || (PUBLIC(RO(Proc))->ArchID == AMD_EPYC_Milan)
-			 || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Chagall)
-			 || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Badami)
-			 || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Genoa)
-			 || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Bergamo)
-			 || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_STP)
-			 || (PUBLIC(RO(Proc))->ArchID == AMD_Zen5_Turin)
-			 || (PUBLIC(RO(Proc))->ArchID == AMD_Zen5_Turin_Dense)))
-
-			|| ((leaf80000008.ECX.NC == 0x0b)
-			 && ((PUBLIC(RO(Proc))->ArchID == AMD_EPYC_Rome_CPK)
-			  || (PUBLIC(RO(Proc))->ArchID == AMD_EPYC_Milan)
-			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Chagall)
-			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen3_Badami)
-			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Genoa)
-			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_Bergamo)
-			  || (PUBLIC(RO(Proc))->ArchID == AMD_Zen4_STP)));
 	      }
-		/* CCD has to remain within range values from 0 to 7	*/
-		factor = factor & (Core->T.CoreID < 32);
 
 		Core->T.Cluster.Node = leaf8000001e.ECX.NodeId;
 
+	      if (PUBLIC(RO(Proc))->Features.Info.LargestExtFunc >= 0x80000026)
+	      {
+		CPUID_0x80000026 leaf80000026 = {
+			.EAX = {0}, .EBX = {0}, .ECX = {0}, .EDX = {0}
+		};
+		__asm__ volatile
+		(
+			"movq	$0x80000026, %%rax	\n\t"
+			"xorq	%%rbx, %%rbx		\n\t"
+			"xorq	%%rcx, %%rcx		\n\t"
+			"xorq	%%rdx, %%rdx		\n\t"
+			"cpuid				\n\t"
+			"mov	%%eax, %0		\n\t"
+			"mov	%%ebx, %1		\n\t"
+			"mov	%%ecx, %2		\n\t"
+			"mov	%%edx, %3"
+			: "=r" (leaf80000026.EAX),
+			  "=r" (leaf80000026.EBX),
+			  "=r" (leaf80000026.ECX),
+			  "=r" (leaf80000026.EDX)
+			:
+			: "%rax", "%rbx", "%rcx", "%rdx"
+		);
+	       if ( ((PUBLIC(RO(Proc))->ArchID == AMD_Zen5_Turin)
+	          || (PUBLIC(RO(Proc))->ArchID == AMD_Zen5_Turin_Dense))
+	          && (leaf80000008.ECX.F1Ah.NC > 0xff) )
+	       {
+		Core->T.Cluster.CCD=(leaf80000026.EDX.Extended_APIC_ID & 0xf00);
+		Core->T.Cluster.CCD= Core->T.Cluster.CCD >> 8;
+	       } else {
+		Core->T.Cluster.CCD=(leaf80000026.EDX.Extended_APIC_ID & 0xf0);
+		Core->T.Cluster.CCD= Core->T.Cluster.CCD >> 4;
+	       }
+	      } else {
+		Core->T.Cluster.CCD = (Core->T.ApicID & 0xf0) >> 4;
+	      }
 	      if (CPU_Complex == true ) {
-		Core->T.Cluster.CCD = (Core->T.CoreID >> 3) << factor;
 		Core->T.Cluster.CCX = Core->T.CoreID >> 2;
 	      }
 	    } else {	/*	Fallback algorithm.			*/
