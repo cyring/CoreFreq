@@ -56,10 +56,10 @@ jobs:
           #   base_image: amd64/fedora:26
           #   packages: kernel-devel
 
-          - arch: aarch64
-            distro: debian-testing
-            base_image: arm64v8/debian:testing
-            packages: linux-headers-arm64
+          #- arch: aarch64
+          #  distro: debian-testing
+          #  base_image: arm64v8/debian:testing
+          #  packages: linux-headers-arm64
           - arch: aarch64
             distro: debian-10-buster
             base_image: arm64v8/debian:10
@@ -76,10 +76,10 @@ jobs:
             distro: ubuntu-14.04-trusty
             base_image: arm64v8/ubuntu:14.04
             packages: linux-headers-generic
-          - arch: aarch64
-            distro: alpine-latest
-            base_image: arm64v8/alpine:latest
-            packages: linux-virt-dev
+          #- arch: aarch64
+          #  distro: alpine-latest
+          #  base_image: arm64v8/alpine:latest
+          #  packages: linux-virt-dev
           #- arch: aarch64
           #  distro: alpine-3.10
           #  base_image: arm64v8/alpine:3.10
