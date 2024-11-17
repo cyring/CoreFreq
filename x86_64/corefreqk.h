@@ -3442,13 +3442,7 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 		PCI_VDEVICE(AMD, DID_AMD_19H_PHOENIX_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_DataFabric_Phoenix
 	},
-	{0, }
-};
-
-#define PCI_AMD_19h_ids PCI_AMD_17h_ids
-
 /* AMD Family 1Ah							*/
-static struct pci_device_id PCI_AMD_1Ah_ids[] = {
 	{
 		PCI_VDEVICE(AMD, DID_AMD_1AH_ZEN5_TURIN_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
@@ -3459,6 +3453,9 @@ static struct pci_device_id PCI_AMD_1Ah_ids[] = {
 	},
 	{0, }
 };
+
+#define PCI_AMD_19h_ids PCI_AMD_17h_ids
+#define PCI_AMD_1Ah_ids PCI_AMD_17h_ids
 
 	 /*	Left as empty for initialization purpose.	*/
 static char *Arch_Misc_Processor[]	=	ZLIST(NULL);
