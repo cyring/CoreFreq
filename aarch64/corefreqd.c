@@ -860,6 +860,9 @@ void SystemRegisters(	RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core),
 	RO(Shm)->Cpu[cpu].SystemRegister.FLAGS = \
 				RO(Core, AT(cpu))->SystemRegister.FLAGS;
 
+	RO(Shm)->Cpu[cpu].SystemRegister.HCR = \
+				RO(Core, AT(cpu))->SystemRegister.HCR;
+
 	RO(Shm)->Cpu[cpu].SystemRegister.SCTLR = \
 				RO(Core, AT(cpu))->SystemRegister.SCTLR;
 

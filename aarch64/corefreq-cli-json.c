@@ -1391,6 +1391,10 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_key(&s, "FLAGS");
 			json_string(&s, hexStr);
 
+			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.HCR);
+			json_key(&s, "HCR");
+			json_string(&s, hexStr);
+
 			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.SCTLR);
 			json_key(&s, "SCTLR");
 			json_string(&s, hexStr);

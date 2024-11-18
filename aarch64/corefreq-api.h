@@ -200,6 +200,7 @@ typedef struct
 
 	struct {
 		Bit64			FLAGS	__attribute__ ((aligned (8)));
+		Bit64			HCR	__attribute__ ((aligned (8)));
 		Bit64			SCTLR	__attribute__ ((aligned (8)));
 		Bit64			SCTLR2	__attribute__ ((aligned (8)));
 		Bit64			EL	__attribute__ ((aligned (8)));
