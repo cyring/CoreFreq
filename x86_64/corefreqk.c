@@ -8095,28 +8095,37 @@ static void Query_AMD_Family_15h(unsigned int cpu)
 }
 
 inline COF_ST AMD_Zen_CoreCOF(PSTATEDEF PStateDef)
-{/* Source: PPR for AMD Family 17h Model 01h, Revision B1 Processors
-    CoreCOF = (PStateDef[CpuFid[7:0]] / PStateDef[CpuDfsId]) * 200	*/
+{
 	unsigned long remainder;
 	COF_ST COF;
-    if (PStateDef.Family_17h.CpuDfsId > 0b111) {
-	COF.Q	= (PStateDef.Family_17h.CpuFid << 1)
-		/ PStateDef.Family_17h.CpuDfsId;
-	remainder = (UNIT_KHz(1) * (PStateDef.Family_17h.CpuFid
-		  - ((COF.Q * PStateDef.Family_17h.CpuDfsId) >> 1))) >> 2;
-	COF.R	= (unsigned short) remainder;
-    } else switch (PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily) {
-	case 0xB:	/*	Zen5: Granite Ridge, Strix Point, Turin */
+    switch (PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily) {
+    case 0xB:
+	/* Source: PPR Family 1Ah Model 02h.
+	 * Arch: Granite Ridge, Strix Point, Turin, Dense
+	 *	CoreCOF = Core::X86::Msr::PStateDef[CpuFid[11:0]] * 5 MHz
+	 */
 		COF.Q = (PStateDef.Family_1Ah.CpuFid >> 1) / 10;
 		remainder = (PRECISION * PStateDef.Family_1Ah.CpuFid) >> 1;
 		remainder = remainder - (UNIT_KHz(1) * COF.Q);
 		COF.R = (unsigned short) remainder;
 		break;
-	default:
+    default:
+	/* Source: PPR for AMD Family 17h Model 01h, Revision B1 Processors
+	 *	CoreCOF = (PStateDef[CpuFid[7:0]] / PStateDef[CpuDfsId]) * 200
+	 */
+      if (PStateDef.Family_17h.CpuDfsId != 0)
+      {
+	COF.Q	= (PStateDef.Family_17h.CpuFid << 1)
+		/ PStateDef.Family_17h.CpuDfsId;
+	remainder = (UNIT_KHz(1) * (PStateDef.Family_17h.CpuFid
+		  - ((COF.Q * PStateDef.Family_17h.CpuDfsId) >> 1))) >> 2;
+	COF.R	= (unsigned short) remainder;
+      } else  {
 		COF.Q = PStateDef.Family_17h.CpuFid >> 2;
 		COF.R = 0;
+      }
 		break;
-	}
+    }
 	return COF;
 }
 
@@ -8138,16 +8147,36 @@ inline unsigned short AMD_Zen_Compute_FID_DID(	unsigned int COF,
 	}
 }
 
+inline unsigned short AMD_Zen5_Compute_FID(	unsigned int COF,
+						unsigned int *FID )
+{
+	unsigned int tmp = (COF << 1) * 10;
+	if ((tmp >= 0x10) && (tmp <= 0xfff)) {
+		(*FID) = tmp;
+		return 0;
+	} else {
+		return 1;
+	}
+}
+
 static unsigned short AMD_Zen_CoreFID(	unsigned int COF,
 					unsigned int *FID,
 					unsigned int *DID )
 {
-	unsigned short ret = AMD_Zen_Compute_FID_DID(COF, FID, DID);
+	unsigned short ret;
+    switch (PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily) {
+    case 0xB:
+	ret = AMD_Zen5_Compute_FID(COF, FID);
+	break;
+    default:
+	ret = AMD_Zen_Compute_FID_DID(COF, FID, DID);
 	while ((ret != 0) && ((*DID) > 0))
 	{
 		(*DID) = (*DID) >> 1;
 		ret = AMD_Zen_Compute_FID_DID(COF, FID, DID);
 	}
+	break;
+    }
 	return ret;
 }
 
@@ -8332,7 +8361,7 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 	CLOCK_ZEN_ARG *pClockZen = (CLOCK_ZEN_ARG *) arg;
 	PSTATEDEF PstateDef = {.value = 0};
 	COF_ST COF = {.Q = 0, .R = 0};
-	unsigned int FID, DID;
+	unsigned int FID, DID = 0;
 	const unsigned int smp = pClockZen->pClockMod->cpu == -1 ?
 		smp_processor_id() : pClockZen->pClockMod->cpu;
 
@@ -8351,13 +8380,27 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 
 		COF.Q = COF.Q + pClockZen->pClockMod->Offset;
 	}
-	FID = PstateDef.Family_17h.CpuFid;
-	DID = PstateDef.Family_17h.CpuDfsId;
+	switch (PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily) {
+	case 0xB:
+		FID = PstateDef.Family_1Ah.CpuFid;
+		break;
+	default:
+		FID = PstateDef.Family_17h.CpuFid;
+		DID = PstateDef.Family_17h.CpuDfsId;
+		break;
+	}
 	/*	Attempt to write the P-State MSR with new FID and DID	*/
 	if (AMD_Zen_CoreFID(COF.Q, &FID, &DID) == 0)
 	{
-		PstateDef.Family_17h.CpuFid = FID;
-		PstateDef.Family_17h.CpuDfsId = DID;
+		switch (PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily) {
+		case 0xB:
+			PstateDef.Family_1Ah.CpuFid = FID;
+			break;
+		default:
+			PstateDef.Family_17h.CpuFid = FID;
+			PstateDef.Family_17h.CpuDfsId = DID;
+			break;
+		}
 		WRMSR(PstateDef, pClockZen->PstateAddr);
 
 		pClockZen->rc = RC_OK_COMPUTE;
