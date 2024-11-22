@@ -452,7 +452,7 @@ REASON_CODE SystemRegisters(	Window *win,
 		RSC(SYSTEM_REGISTERS_COND4).ATTR()
 	};
 	enum AUTOMAT {
-		DO_END, DO_SPC, DO_CPU, DO_FLAG,
+		DO_END, DO_SPC, DO_CPU, DO_FLAG, DO_HCR,
 		DO_SCTLR, DO_SCTLR2, DO_EL, DO_FPSR
 	};
 	const struct SR_ST {
@@ -507,6 +507,192 @@ REASON_CODE SystemRegisters(	Window *win,
 	[14] =	{DO_FLAG, 1	, FLAG_I	, 1	},
 	[15] =	{DO_FLAG, 1	, FLAG_F	, 1	},
 	[16] =	{DO_FLAG, 1	, FLAG_EL	, 2	},
+		{DO_END , 1	, UNDEF_CR	, 0	}
+	}
+      },
+      {
+	.header = (struct SR_HDR[]) {
+	[ 0] = {&RSC(SYS_REG_HDR11_HCR).CODE()[ 0], NULL},
+	[ 1] = {&RSC(SYS_REG_HDR11_HCR).CODE()[ 5], RSC(SYS_REG_TWEDEL).CODE()},
+	[ 2] = {&RSC(SYS_REG_HDR11_HCR).CODE()[10], RSC(SYS_REG_TWEDEN).CODE()},
+	[ 3] = {&RSC(SYS_REG_HDR11_HCR).CODE()[15], RSC(SYS_REG_TID5).CODE()},
+	[ 4] = {&RSC(SYS_REG_HDR11_HCR).CODE()[20], RSC(SYS_REG_DCT).CODE()},
+	[ 5] = {&RSC(SYS_REG_HDR11_HCR).CODE()[25], RSC(SYS_REG_ATA).CODE()},
+	[ 6] = {&RSC(SYS_REG_HDR11_HCR).CODE()[30], RSC(SYS_REG_TTLBOS).CODE()},
+	[ 7] = {&RSC(SYS_REG_HDR11_HCR).CODE()[35], RSC(SYS_REG_TTLBIS).CODE()},
+	[ 8] = {&RSC(SYS_REG_HDR11_HCR).CODE()[40], RSC(SYS_REG_ENSCXT).CODE()},
+	[ 9] = {&RSC(SYS_REG_HDR11_HCR).CODE()[45], RSC(SYS_REG_TOCU).CODE()},
+	[10] = {&RSC(SYS_REG_HDR11_HCR).CODE()[50], RSC(SYS_REG_AMVOFF).CODE()},
+	[11] = {&RSC(SYS_REG_HDR11_HCR).CODE()[55], RSC(SYS_REG_TICAB).CODE()},
+	[12] = {&RSC(SYS_REG_HDR11_HCR).CODE()[60], RSC(SYS_REG_TID4).CODE()},
+	[13] = {&RSC(SYS_REG_HDR11_HCR).CODE()[65], RSC(SYS_REG_GPF).CODE()},
+	[14] = {&RSC(SYS_REG_HDR11_HCR).CODE()[70], RSC(SYS_REG_FIEN).CODE()},
+	[15] = {&RSC(SYS_REG_HDR11_HCR).CODE()[75], RSC(SYS_REG_FWB).CODE()},
+	[16] = {&RSC(SYS_REG_HDR11_HCR).CODE()[80], RSC(SYS_REG_NV2).CODE()},
+
+	[17] = {&RSC(SYS_REG_HDR12_HCR).CODE()[ 0], RSC(SYS_REG_HCR).CODE()},
+	[18] = {&RSC(SYS_REG_HDR12_HCR).CODE()[ 5], RSC(SYS_REG_TWEDEL).CODE()},
+	[19] = {&RSC(SYS_REG_HDR12_HCR).CODE()[10], RSC(SYS_REG_TWEDEN).CODE()},
+	[20] = {&RSC(SYS_REG_HDR12_HCR).CODE()[15], RSC(SYS_REG_TID5).CODE()},
+	[21] = {&RSC(SYS_REG_HDR12_HCR).CODE()[20], RSC(SYS_REG_DCT).CODE()},
+	[22] = {&RSC(SYS_REG_HDR12_HCR).CODE()[25], RSC(SYS_REG_ATA).CODE()},
+	[23] = {&RSC(SYS_REG_HDR12_HCR).CODE()[30], RSC(SYS_REG_TTLBOS).CODE()},
+	[24] = {&RSC(SYS_REG_HDR12_HCR).CODE()[35], RSC(SYS_REG_TTLBIS).CODE()},
+	[25] = {&RSC(SYS_REG_HDR12_HCR).CODE()[40], RSC(SYS_REG_ENSCXT).CODE()},
+	[26] = {&RSC(SYS_REG_HDR12_HCR).CODE()[45], RSC(SYS_REG_TOCU).CODE()},
+	[27] = {&RSC(SYS_REG_HDR12_HCR).CODE()[50], RSC(SYS_REG_AMVOFF).CODE()},
+	[28] = {&RSC(SYS_REG_HDR12_HCR).CODE()[55], RSC(SYS_REG_TICAB).CODE()},
+	[29] = {&RSC(SYS_REG_HDR12_HCR).CODE()[60], RSC(SYS_REG_TID4).CODE()},
+	[30] = {&RSC(SYS_REG_HDR12_HCR).CODE()[65], RSC(SYS_REG_GPF).CODE()},
+	[31] = {&RSC(SYS_REG_HDR12_HCR).CODE()[70], RSC(SYS_REG_FIEN).CODE()},
+	[32] = {&RSC(SYS_REG_HDR12_HCR).CODE()[75], RSC(SYS_REG_FWB).CODE()},
+	[33] = {&RSC(SYS_REG_HDR12_HCR).CODE()[80], RSC(SYS_REG_NV2).CODE()},
+		{NULL, NULL}
+	},
+	.flag = (struct SR_BIT[]) {
+	[ 0] =	{DO_CPU , 1	, UNDEF_CR	, 0	},
+	[ 1] =	{DO_HCR , 1	, HYPCR_TWEDEL	, 4	},
+	[ 2] =	{DO_HCR , 1	, HYPCR_TWEDEn	, 1	},
+	[ 3] =	{DO_HCR , 1	, HYPCR_TID5	, 1	},
+	[ 4] =	{DO_HCR , 1	, HYPCR_DCT	, 1	},
+	[ 5] =	{DO_HCR , 1	, HYPCR_ATA	, 1	},
+	[ 6] =	{DO_HCR , 1	, HYPCR_TTLBOS	, 1	},
+	[ 7] =	{DO_HCR , 1	, HYPCR_TTLBIS	, 1	},
+	[ 8] =	{DO_HCR , 1	, HYPCR_EnSCXT	, 1	},
+	[ 9] =	{DO_HCR , 1	, HYPCR_TOCU	, 1	},
+	[10] =	{DO_HCR , 1	, HYPCR_AMVOFF	, 1	},
+	[11] =	{DO_HCR , 1	, HYPCR_TICAB	, 1	},
+	[12] =	{DO_HCR , 1	, HYPCR_TID4	, 1	},
+	[13] =	{DO_HCR , 1	, HYPCR_GPF	, 1	},
+	[14] =	{DO_HCR , 1	, HYPCR_FIEN	, 1	},
+	[15] =	{DO_HCR , 1	, HYPCR_FWB	, 1	},
+	[16] =	{DO_HCR , 1	, HYPCR_NV2	, 1	},
+		{DO_END , 1	, UNDEF_CR	, 0	}
+	}
+      },
+      {
+	.header = (struct SR_HDR[]) {
+	[ 0] = {&RSC(SYS_REG_HDR21_HCR).CODE()[ 0], RSC(SYS_REG_HCR).CODE()},
+	[ 1] = {&RSC(SYS_REG_HDR21_HCR).CODE()[ 5], RSC(SYS_REG_AT).CODE()},
+	[ 2] = {&RSC(SYS_REG_HDR21_HCR).CODE()[10], RSC(SYS_REG_NV1).CODE()},
+	[ 3] = {&RSC(SYS_REG_HDR21_HCR).CODE()[15], RSC(SYS_REG_NV).CODE()},
+	[ 4] = {&RSC(SYS_REG_HDR21_HCR).CODE()[20], RSC(SYS_REG_API).CODE()},
+	[ 5] = {&RSC(SYS_REG_HDR21_HCR).CODE()[25], RSC(SYS_REG_APK).CODE()},
+	[ 6] = {&RSC(SYS_REG_HDR21_HCR).CODE()[30], RSC(SYS_REG_TME).CODE()},
+	[ 7] = {&RSC(SYS_REG_HDR21_HCR).CODE()[35], RSC(SYS_REG_MIOCNC).CODE()},
+	[ 8] = {&RSC(SYS_REG_HDR21_HCR).CODE()[40], RSC(SYS_REG_TEA).CODE()},
+	[ 9] = {&RSC(SYS_REG_HDR21_HCR).CODE()[45], RSC(SYS_REG_TERR).CODE()},
+	[10] = {&RSC(SYS_REG_HDR21_HCR).CODE()[50], RSC(SYS_REG_TLOR).CODE()},
+	[11] = {&RSC(SYS_REG_HDR21_HCR).CODE()[55], RSC(SYS_REG_E2H).CODE()},
+	[12] = {&RSC(SYS_REG_HDR21_HCR).CODE()[60], RSC(SYS_REG_ID).CODE()},
+	[13] = {&RSC(SYS_REG_HDR21_HCR).CODE()[65], RSC(SYS_REG_CD).CODE()},
+	[14] = {&RSC(SYS_REG_HDR21_HCR).CODE()[70], RSC(SYS_REG_RW).CODE()},
+	[15] = {&RSC(SYS_REG_HDR21_HCR).CODE()[75], RSC(SYS_REG_TRVM).CODE()},
+	[16] = {&RSC(SYS_REG_HDR21_HCR).CODE()[80], RSC(SYS_REG_HCD).CODE()},
+		{NULL, NULL}
+	},
+	.flag = (struct SR_BIT[]) {
+	[ 0] =	{DO_CPU , 1	, UNDEF_CR	, 0	},
+	[ 1] =	{DO_HCR , 1	, HYPCR_AT	, 1	},
+	[ 2] =	{DO_HCR , 1	, HYPCR_NV1	, 1	},
+	[ 3] =	{DO_HCR , 1	, HYPCR_NV	, 1	},
+	[ 4] =	{DO_HCR , 1	, HYPCR_API	, 1	},
+	[ 5] =	{DO_HCR , 1	, HYPCR_APK	, 1	},
+	[ 6] =	{DO_HCR , 1	, HYPCR_TME	, 1	},
+	[ 7] =	{DO_HCR , 1	, HYPCR_MIOCNC	, 1	},
+	[ 8] =	{DO_HCR , 1	, HYPCR_TEA	, 1	},
+	[ 9] =	{DO_HCR , 1	, HYPCR_TERR	, 1	},
+	[10] =	{DO_HCR , 1	, HYPCR_TLOR	, 1	},
+	[11] =	{DO_HCR , 1	, HYPCR_E2H	, 1	},
+	[12] =	{DO_HCR , 1	, HYPCR_ID	, 1	},
+	[13] =	{DO_HCR , 1	, HYPCR_CD	, 1	},
+	[14] =	{DO_HCR , 1	, HYPCR_RW	, 1	},
+	[15] =	{DO_HCR , 1	, HYPCR_TRVM	, 1	},
+	[16] =	{DO_HCR , 1	, HYPCR_HCD	, 1	},
+		{DO_END , 1	, UNDEF_CR	, 0	}
+	}
+      },
+      {
+	.header = (struct SR_HDR[]) {
+	[ 0] = {&RSC(SYS_REG_HDR31_HCR).CODE()[ 0], RSC(SYS_REG_HCR).CODE()},
+	[ 1] = {&RSC(SYS_REG_HDR31_HCR).CODE()[ 5], RSC(SYS_REG_TDZ).CODE()},
+	[ 2] = {&RSC(SYS_REG_HDR31_HCR).CODE()[10], RSC(SYS_REG_TGE).CODE()},
+	[ 3] = {&RSC(SYS_REG_HDR31_HCR).CODE()[15], RSC(SYS_REG_TVM).CODE()},
+	[ 4] = {&RSC(SYS_REG_HDR31_HCR).CODE()[20], RSC(SYS_REG_TTLB).CODE()},
+	[ 5] = {&RSC(SYS_REG_HDR31_HCR).CODE()[25], RSC(SYS_REG_TPU).CODE()},
+	[ 6] = {&RSC(SYS_REG_HDR31_HCR).CODE()[30], RSC(SYS_REG_TPCP).CODE()},
+	[ 7] = {&RSC(SYS_REG_HDR31_HCR).CODE()[35], RSC(SYS_REG_TSW).CODE()},
+	[ 8] = {&RSC(SYS_REG_HDR31_HCR).CODE()[40], RSC(SYS_REG_TACR).CODE()},
+	[ 9] = {&RSC(SYS_REG_HDR31_HCR).CODE()[45], RSC(SYS_REG_TIDCP).CODE()},
+	[10] = {&RSC(SYS_REG_HDR31_HCR).CODE()[50], RSC(SYS_REG_TSC).CODE()},
+	[11] = {&RSC(SYS_REG_HDR31_HCR).CODE()[55], RSC(SYS_REG_TID3).CODE()},
+	[12] = {&RSC(SYS_REG_HDR31_HCR).CODE()[60], RSC(SYS_REG_TID2).CODE()},
+	[13] = {&RSC(SYS_REG_HDR31_HCR).CODE()[65], RSC(SYS_REG_TID1).CODE()},
+	[14] = {&RSC(SYS_REG_HDR31_HCR).CODE()[70], RSC(SYS_REG_TID0).CODE()},
+	[15] = {&RSC(SYS_REG_HDR31_HCR).CODE()[75], RSC(SYS_REG_TWE).CODE()},
+	[16] = {&RSC(SYS_REG_HDR31_HCR).CODE()[80], RSC(SYS_REG_TWI).CODE()},
+		{NULL, NULL}
+	},
+	.flag = (struct SR_BIT[]) {
+	[ 0] =	{DO_CPU , 1	, UNDEF_CR	, 0	},
+	[ 1] =	{DO_HCR , 1	, HYPCR_TDZ	, 1	},
+	[ 2] =	{DO_HCR , 1	, HYPCR_TGE	, 1	},
+	[ 3] =	{DO_HCR , 1	, HYPCR_TVM	, 1	},
+	[ 4] =	{DO_HCR , 1	, HYPCR_TTLB	, 1	},
+	[ 5] =	{DO_HCR , 1	, HYPCR_TPU	, 1	},
+	[ 6] =	{DO_HCR , 1	, HYPCR_TPCP	, 1	},
+	[ 7] =	{DO_HCR , 1	, HYPCR_TSW	, 1	},
+	[ 8] =	{DO_HCR , 1	, HYPCR_TACR	, 1	},
+	[ 9] =	{DO_HCR , 1	, HYPCR_TIDCP	, 1	},
+	[10] =	{DO_HCR , 1	, HYPCR_TSC	, 1	},
+	[11] =	{DO_HCR , 1	, HYPCR_TID3	, 1	},
+	[12] =	{DO_HCR , 1	, HYPCR_TID2	, 1	},
+	[13] =	{DO_HCR , 1	, HYPCR_TID1	, 1	},
+	[14] =	{DO_HCR , 1	, HYPCR_TID0	, 1	},
+	[15] =	{DO_HCR , 1	, HYPCR_TWE	, 1	},
+	[16] =	{DO_HCR , 1	, HYPCR_TWI	, 1	},
+		{DO_END , 1	, UNDEF_CR	, 0	}
+	}
+      },
+      {
+	.header = (struct SR_HDR[]) {
+	[ 0] = {&RSC(SYS_REG_HDR41_HCR).CODE()[ 0], RSC(SYS_REG_HCR).CODE()},
+	[ 1] = {&RSC(SYS_REG_HDR41_HCR).CODE()[ 5], RSC(SYS_REG_DC).CODE()},
+	[ 2] = {&RSC(SYS_REG_HDR41_HCR).CODE()[10], RSC(SYS_REG_BSU).CODE()},
+	[ 3] = {&RSC(SYS_REG_HDR41_HCR).CODE()[15], RSC(SYS_REG_FB).CODE()},
+	[ 4] = {&RSC(SYS_REG_HDR41_HCR).CODE()[20], RSC(SYS_REG_VSE).CODE()},
+	[ 5] = {&RSC(SYS_REG_HDR41_HCR).CODE()[25], RSC(SYS_REG_VI).CODE()},
+	[ 6] = {&RSC(SYS_REG_HDR41_HCR).CODE()[30], RSC(SYS_REG_VF).CODE()},
+	[ 7] = {&RSC(SYS_REG_HDR41_HCR).CODE()[35], RSC(SYS_REG_AMO).CODE()},
+	[ 8] = {&RSC(SYS_REG_HDR41_HCR).CODE()[40], RSC(SYS_REG_IMO).CODE()},
+	[ 9] = {&RSC(SYS_REG_HDR41_HCR).CODE()[45], RSC(SYS_REG_FMO).CODE()},
+	[10] = {&RSC(SYS_REG_HDR41_HCR).CODE()[50], RSC(SYS_REG_PTW).CODE()},
+	[11] = {&RSC(SYS_REG_HDR41_HCR).CODE()[55], NULL},
+	[12] = {&RSC(SYS_REG_HDR41_HCR).CODE()[60], RSC(SYS_REG_SWIO).CODE()},
+	[13] = {&RSC(SYS_REG_HDR41_HCR).CODE()[65], NULL},
+	[14] = {&RSC(SYS_REG_HDR41_HCR).CODE()[70], RSC(SYS_REG_VM).CODE()},
+	[15] = {&RSC(SYS_REG_HDR41_HCR).CODE()[75], NULL},
+	[16] = {&RSC(SYS_REG_HDR41_HCR).CODE()[80], NULL},
+		{NULL, NULL}
+	},
+	.flag = (struct SR_BIT[]) {
+	[ 0] =	{DO_CPU , 1	, UNDEF_CR	, 0	},
+	[ 1] =	{DO_HCR , 1	, HYPCR_DC	, 1	},
+	[ 2] =	{DO_HCR , 1	, HYPCR_BSU	, 2	},
+	[ 3] =	{DO_HCR , 1	, HYPCR_FB	, 1	},
+	[ 4] =	{DO_HCR , 1	, HYPCR_VSE	, 1	},
+	[ 5] =	{DO_HCR , 1	, HYPCR_VI	, 1	},
+	[ 6] =	{DO_HCR , 1	, HYPCR_VF	, 1	},
+	[ 7] =	{DO_HCR , 1	, HYPCR_AMO	, 1	},
+	[ 8] =	{DO_HCR , 1	, HYPCR_IMO	, 1	},
+	[ 9] =	{DO_HCR , 1	, HYPCR_FMO	, 1	},
+	[10] =	{DO_HCR , 1	, HYPCR_PTW	, 1	},
+	[11] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[12] =	{DO_HCR , 1	, HYPCR_SWIO	, 1	},
+	[13] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[14] =	{DO_HCR , 1	, HYPCR_VM	, 1	},
+	[15] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[16] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
 		{DO_END , 1	, UNDEF_CR	, 0	}
 	}
       },
@@ -912,6 +1098,17 @@ REASON_CODE SystemRegisters(	Window *win,
 			PRT(REG, attrib[2], "%3llx ",
 			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.FLAGS,
 					pFlag->pos, pFlag->len));
+			break;
+		    case DO_HCR:
+		      if (BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.FLAGS,
+					FLAG_EL, 2) >= 2)
+		      {
+			PRT(REG, attrib[2], "%3llx ",
+			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.HCR,
+					pFlag->pos, pFlag->len));
+		      } else {
+			PRT(REG, attrib[1], RSC(SYS_REGS_NA).CODE());
+		      }
 			break;
 		    case DO_SCTLR:
 			PRT(REG, attrib[2], "%3llx ",

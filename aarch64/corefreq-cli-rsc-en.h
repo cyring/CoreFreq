@@ -676,6 +676,65 @@
 #define RSC_SYS_REG_FLAG_TCO_CODE_EN	" Tag Check Override "
 #define RSC_SYS_REG_FLAG_PM_CODE_EN	" PMU Exception Mask "
 
+#define RSC_SYS_REG_HCR_CODE_EN 	" Hypervisor Configuration Register "
+#define RSC_SYS_REG_TWEDEL_CODE_EN	" TWE Delay "
+#define RSC_SYS_REG_TWEDEN_CODE_EN	" TWE Delay Enable "
+#define RSC_SYS_REG_TID5_CODE_EN	" Trap ID group 5 "
+#define RSC_SYS_REG_DCT_CODE_EN 	" Default Cacheability Tagging "
+#define RSC_SYS_REG_TTLBOS_CODE_EN	" Trap TLB maintenance instructions "
+#define RSC_SYS_REG_TTLBIS_CODE_EN	" Trap TLB, Inner Shareable domain "
+#define RSC_SYS_REG_ENSCXT_CODE_EN	" Software Context Number registers "
+#define RSC_SYS_REG_TOCU_CODE_EN	" Trap IC IVAU, IC IALLU, and DC CVAU "
+#define RSC_SYS_REG_AMVOFF_CODE_EN	" Activity Monitors Virtual Offsets "
+#define RSC_SYS_REG_TICAB_CODE_EN	" Trap ICIALLUIS and IC IALLUIS "
+#define RSC_SYS_REG_TID4_CODE_EN	" Trap ID group 4 "
+#define RSC_SYS_REG_GPF_CODE_EN 	" Granule Protection Faults "
+#define RSC_SYS_REG_FIEN_CODE_EN	" Fault Injection Enable "
+#define RSC_SYS_REG_FWB_CODE_EN 	" Forced Write-Back "
+#define RSC_SYS_REG_NV2_CODE_EN 	" Nested Virtualization "
+#define RSC_SYS_REG_AT_CODE_EN		" Address Translation "
+#define RSC_SYS_REG_NV1_CODE_EN 	" Nested Virtualization "
+#define RSC_SYS_REG_NV_CODE_EN		" Nested Virtualization "
+#define RSC_SYS_REG_API_CODE_EN 	" Pointer Authentication instructions "
+#define RSC_SYS_REG_APK_CODE_EN 	" Trap Access registers holding key "
+#define RSC_SYS_REG_MIOCNC_CODE_EN	" Mismatched Inner/Outer Cacheability "
+#define RSC_SYS_REG_TEA_CODE_EN 	" Trap External abort exceptions "
+#define RSC_SYS_REG_TERR_CODE_EN	" Trap Error Record registers "
+#define RSC_SYS_REG_TLOR_CODE_EN	" Trap LOR registers "
+#define RSC_SYS_REG_E2H_CODE_EN 	" EL2 Host Operating System "
+#define RSC_SYS_REG_ID_CODE_EN		" Stage 2 Instruction Disable "
+#define RSC_SYS_REG_CD_CODE_EN		" Stage 2 Data access Disable "
+#define RSC_SYS_REG_RW_CODE_EN		" State for lower Exception levels "
+#define RSC_SYS_REG_TRVM_CODE_EN	" Reads of Virtual Memory registers "
+#define RSC_SYS_REG_HCD_CODE_EN 	" HVC instruction Disable "
+#define RSC_SYS_REG_TDZ_CODE_EN 	" Trap DC ZVA instructions "
+#define RSC_SYS_REG_TGE_CODE_EN 	" Trap General Exceptions "
+#define RSC_SYS_REG_TVM_CODE_EN 	" Trap Virtual Memory controls "
+#define RSC_SYS_REG_TTLB_CODE_EN	" Trap TLB maintenance instructions "
+#define RSC_SYS_REG_TPU_CODE_EN 	" Trap cache maintenance instructions "
+#define RSC_SYS_REG_TPCP_CODE_EN	" Trap data or unified cache "
+#define RSC_SYS_REG_TSW_CODE_EN 	" Trap data or unified cache - Set/Way "
+#define RSC_SYS_REG_TACR_CODE_EN	" Trap Auxiliary Control Registers "
+#define RSC_SYS_REG_TSC_CODE_EN 	" Trap SMC instructions "
+#define RSC_SYS_REG_TID3_CODE_EN	" Trap ID group 3 "
+#define RSC_SYS_REG_TID2_CODE_EN	" Trap ID group 2 "
+#define RSC_SYS_REG_TID1_CODE_EN	" Trap ID group 1 "
+#define RSC_SYS_REG_TID0_CODE_EN	" Trap ID group 0 "
+#define RSC_SYS_REG_TWE_CODE_EN 	" WFE instruction at EL0 or EL1 "
+#define RSC_SYS_REG_TWI_CODE_EN 	" WFI instruction at EL0 or EL1 "
+#define RSC_SYS_REG_DC_CODE_EN		" Default Cacheability "
+#define RSC_SYS_REG_BSU_CODE_EN 	" Barrier Shareability Upgrade "
+#define RSC_SYS_REG_FB_CODE_EN		" Force Broadcast "
+#define RSC_SYS_REG_VSE_CODE_EN 	" Virtual Serror Exception "
+#define RSC_SYS_REG_VI_CODE_EN		" Virtual IRQ Interrupt "
+#define RSC_SYS_REG_VF_CODE_EN		" Virtual FIQ Interrupt "
+#define RSC_SYS_REG_AMO_CODE_EN 	" Physical SError exception routing "
+#define RSC_SYS_REG_IMO_CODE_EN 	" Physical IRQ Routing "
+#define RSC_SYS_REG_FMO_CODE_EN 	" Physical FIQ Routing "
+#define RSC_SYS_REG_PTW_CODE_EN 	" Protected Table Walk "
+#define RSC_SYS_REG_SWIO_CODE_EN	" Set/Way Invalidation Override "
+#define RSC_SYS_REG_VM_CODE_EN		" Virtualization enable "
+
 #define RSC_SYS_REG_SCTL_CODE_EN	" System Control Register (SCTLR_EL1) "
 #define RSC_SYS_REG_TIDCP_CODE_EN " Implementation Defined System instructions "
 #define RSC_SYS_REG_SPINT_CODE_EN	" SP Interrupt Mask enable "
@@ -1954,13 +2013,33 @@
 	"FLAG\0  PM\0  N \0  Z \0  C \0  V \0 TCO\0 DIT\0" \
 	" UAO\0 PAN\0 NMI\0 SSB\0S D \0  A \0  I \0  F \0 EL \0  M "
 
+#define RSC_SYS_REG_HDR11_HCR_CODE	\
+	"    \0   T\0WE  \0 ID5\0 DCT\0 ATA\0   T\0TL  \0" \
+	"SCXT\0    \0AMVO\0 IC \0 ID4\0 GPF\0 FI \0 FWB\0 NV2"
+
+#define RSC_SYS_REG_HDR12_HCR_CODE	\
+	"HCR \0 DLY\0 DEn\0    \0    \0    \0 BOS\0 BIS\0" \
+	" En \0 OCU\0 En \0 AB \0    \0    \0 En \0    \0    "
+
+#define RSC_SYS_REG_HDR21_HCR_CODE	\
+	"HCR \0 AT \0 NV1\0 NV \0 API\0 APK\0 TME\0 IOC\0" \
+	" TEA\0 ERR\0 LOR\0 E2H\0 ID \0 CD \0 RW \0 RVM\0 HCD"
+
+#define RSC_SYS_REG_HDR31_HCR_CODE	\
+	"HCR \0 DZ \0 GE \0 VM \0 TLB\0 PU \0 PCP\0 SW \0" \
+	" ACR\0 ID \0 SMC\0 ID3\0 ID2\0 ID1\0 ID0\0 TWE\0 TWI"
+
+#define RSC_SYS_REG_HDR41_HCR_CODE	\
+	"HCR \0 DC \0 BSU\0 FB \0 VSE\0 VI \0 VF \0 AMO\0" \
+	" IMO\0 FMO\0 PTW\0    \0SWIO\0    \0 VM \0    \0    "
+
 #define RSC_SYS_REG_HDR11_SCTL_CODE	\
 	"    \0 TID\0  SP\0 NMI\0 TPI\0  TC\0SO  \0 PAN\0" \
 	" ALS\0 AS0\0 ASR\0   T\0ME  \0   T\0MT  \0   T\0WE  "
 
 #define RSC_SYS_REG_HDR12_SCTL_CODE	\
 	"SCTL\0  CP\0 INT\0    \0 DR2\0 EL1\0 EL0\0    \0" \
-	"    \0    \0    \0 EL1\0 EL0\0 EL1\0 EL0\0 DLY\0  En"
+	"    \0    \0    \0 EL1\0 EL0\0 EL1\0 EL0\0 DLY\0 En "
 
 #define RSC_SYS_REG_HDR21_SCTL_CODE	\
 	"    \0SSBS\0   A\0TA  \0   T\0CF  \0  IT\0   B\0" \
