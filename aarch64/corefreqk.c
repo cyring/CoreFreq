@@ -2449,14 +2449,6 @@ static void SystemRegisters(CORE_RO *Core)
 
 	isar2.value = SysRegRead(ID_AA64ISAR2_EL1);
 
-    if (Experimental) {
-	__asm__ __volatile__(
-		"mrs	%[hcr]	,	hcr_el2"
-		: [hcr] 	"=r" (Core->SystemRegister.HCR)
-		:
-		: "cc", "memory"
-	);
-    }
 	__asm__ __volatile__(
 		"mrs	%[sctlr],	sctlr_el1"	"\n\t"
 		"mrs	%[mmfr1],	id_aa64mmfr1_el1""\n\t"
@@ -2603,6 +2595,14 @@ static void SystemRegisters(CORE_RO *Core)
 	}
 	if (PUBLIC(RO(Proc))->Features.SME) {
 		Core->SystemRegister.SVCR = SysRegRead(MRS_SVCR);
+	}
+	if (BITEXTRZ(Core->SystemRegister.FLAGS, FLAG_EL, 2) >= 2) {
+		__asm__ __volatile__(
+			"mrs	%[hcr]	,	hcr_el2"
+			: [hcr] 	"=r" (Core->SystemRegister.HCR)
+			:
+			: "cc", "memory"
+		);
 	}
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask, Core->Bind);
 }
