@@ -1414,6 +1414,11 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.SVCR);
 			json_key(&s, "SVCR");
 			json_string(&s, hexStr);
+
+			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.CPACR);
+			json_key(&s, "CPACR");
+			json_string(&s, hexStr);
+
 			json_end_object(&s);
 		}
 		json_key(&s, "Slice");

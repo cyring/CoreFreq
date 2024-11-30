@@ -289,6 +289,16 @@ enum SYS_REG {
 	FPSR_DZC	= 1,
 	FPSR_IOC	= 0,
 
+	ACR_TCPAC	= 31,
+	ACR_TAM 	= 30,
+	ACR_E0POE	= 29,
+	ACR_TTA 	= 28,
+	ACR_SMEN	= 24,	/* [25:24]				*/
+	ACR_FPEN	= 20,	/* [21:20]				*/
+	ACR_ZEN 	= 16,	/* [17:16]				*/
+	ACR_RES8	= 8,	/* [15: 8]				*/
+	ACR_RES0	= 0,	/* [ 7: 0]				*/
+
 	UNDEF_CR	= 64
 };
 

@@ -206,6 +206,7 @@ typedef struct
 		Bit64			EL	__attribute__ ((aligned (8)));
 		Bit64			FPSR	__attribute__ ((aligned (8)));
 		Bit64			SVCR	__attribute__ ((aligned (8)));
+		Bit64			CPACR	__attribute__ ((aligned (8)));
 	} SystemRegister;
 
 	unsigned int			Bind;

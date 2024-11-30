@@ -832,6 +832,17 @@
 #define RSC_SYS_REG_EL_EXEC_CODE_EN	" Executes in AArch64 or AArch32 "
 #define RSC_SYS_REG_EL_SEC_CODE_EN	" Secure Exception Level "
 
+#define RSC_SYS_REG_CPACR_CODE_EN	" Access Control Register "
+#define RSC_SYS_REG_ACR_TCP_CODE_EN	" Trap Coprocessor Access Control "
+#define RSC_SYS_REG_ACR_TAM_CODE_EN	" Trap Activity Monitor Access "
+#define RSC_SYS_REG_ACR_POE_CODE_EN	" Trap Permission Overlay Register EL0 "
+#define RSC_SYS_REG_ACR_TTA_CODE_EN	" Trap Trace unit Access "
+#define RSC_SYS_REG_ACR_SME_CODE_EN	" Trap SME, SVE instructions "
+#define RSC_SYS_REG_ACR_FP_CODE_EN	" Trap Advanced SIMD & Floating-Point "
+#define RSC_SYS_REG_ACR_ZEN_CODE_EN	" Trap SVE instructions ZCR Register "
+#define RSC_SYS_REG_ACR_R8_CODE_EN	" Reserved Bits [15:8] "
+#define RSC_SYS_REG_ACR_R0_CODE_EN	" Reserved Bits [7:0] "
+
 #define RSC_ISA_TITLE_CODE_EN		" Instruction Set Extensions "
 
 #define RSC_ISA_AES_COMM_CODE_EN	" Advanced Encryption Standard "
@@ -2072,6 +2083,9 @@
 #define RSC_SYS_REG_HDR12_EL_CODE	\
 	"Exec\0:   \0 64 \0 32 \0    \0 64 \0 32 \0    \0" \
 	" 64 \0 32 \0 SEC\0    \0 64 \0 32 "
+
+#define RSC_SYS_REG_HDR_CPACR_CODE	\
+	"ACR \0 TCP\0 TAM\0 POR\0 TTA\0 SME\0 FP \0 ZEN\0   R\0ES  "
 
 #define RSC_ISA_AES_CODE		"          AES [%c]"
 #define RSC_ISA_PMULL_CODE		"        PMULL [%c]"

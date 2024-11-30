@@ -878,6 +878,9 @@ void SystemRegisters(	RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core),
 	RO(Shm)->Cpu[cpu].SystemRegister.SVCR = \
 				RO(Core, AT(cpu))->SystemRegister.SVCR;
 
+	RO(Shm)->Cpu[cpu].SystemRegister.CPACR = \
+				RO(Core, AT(cpu))->SystemRegister.CPACR;
+
 	RO(Shm)->Cpu[cpu].Query.SCTLRX = RO(Core, AT(cpu))->Query.SCTLRX;
 }
 

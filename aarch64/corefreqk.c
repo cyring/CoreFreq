@@ -2604,6 +2604,12 @@ static void SystemRegisters(CORE_RO *Core)
 			: "cc", "memory"
 		);
 	}
+	__asm__ __volatile__(
+		"mrs	%[cpacr],	cpacr_el1"
+		: [cpacr] 	"=r" (Core->SystemRegister.CPACR)
+		:
+		: "cc", "memory"
+	);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask, Core->Bind);
 }
 
