@@ -9147,7 +9147,7 @@ static PROCESSOR_SPECIFIC AMD_Zen5_Turin_Specific[] = {
 	.Brand = ZLIST("AMD EPYC 9845"),
 	.Boost = {+16, 0},
 	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_TURIN,
+	.CodeNameIdx = CN_TURIN_DENSE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
@@ -9157,8 +9157,7 @@ static PROCESSOR_SPECIFIC AMD_Zen5_Turin_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 9825",	\
-			"AMD EPYC 9115" 	),
+	.Brand = ZLIST("AMD EPYC 9115"),
 	.Boost = {+15, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_TURIN,
@@ -9171,8 +9170,20 @@ static PROCESSOR_SPECIFIC AMD_Zen5_Turin_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
+	.Brand = ZLIST("AMD EPYC 9825"),
+	.Boost = {+15, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_TURIN_DENSE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
 	.Brand = ZLIST( "AMD EPYC 9755",	/* Model: 2	*/	\
-			"AMD EPYC 9645",	\
 			"AMD EPYC 9335" 	),
 	.Boost = {+14, 0},
 	.Param.Offset = {0, 0, 0},
@@ -9186,8 +9197,33 @@ static PROCESSOR_SPECIFIC AMD_Zen5_Turin_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 9745",	\
-			"AMD EPYC 9455P"	\
+	.Brand = ZLIST("AMD EPYC 9745"),
+	.Boost = {+13, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_TURIN_DENSE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 9645"),
+	.Boost = {+14, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_TURIN_DENSE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC 9455P"	\
 			"AMD EPYC 9455" 	),
 	.Boost = {+13, 0},
 	.Param.Offset = {0, 0, 0},
