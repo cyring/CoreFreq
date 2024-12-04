@@ -991,6 +991,15 @@ static void Query_Features(void *pArg)
 		iArg->Features->HBC = 0;
 		break;
 	}
+	switch (isar2.CLRBHB) {
+	case 0b0001:
+		iArg->Features->CLRBHB = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->CLRBHB = 0;
+		break;
+	}
 	switch (isar2.SYSREG_128) {
 	case 0b0001:
 		iArg->Features->SYSREG128 = 1;
@@ -1016,6 +1025,15 @@ static void Query_Features(void *pArg)
 	case 0b0000:
 	default:
 		iArg->Features->PRFMSLC = 0;
+		break;
+	}
+	switch (isar2.PCDPHINT) {
+	case 0b0001:
+		iArg->Features->PCDPHINT = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->PCDPHINT = 0;
 		break;
 	}
 	switch (isar2.RPRFM) {
