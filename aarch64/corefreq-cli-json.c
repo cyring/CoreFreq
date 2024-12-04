@@ -732,6 +732,47 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SME_SF8DP2);
 					json_end_object(&s);
 				}
+				json_key(&s, "MVFR");
+				{
+					json_start_object(&s);
+					json_key(&s, "FP_Round");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FP_Round);
+					json_key(&s, "FP_Sh_Vec");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FP_Sh_Vec);
+					json_key(&s, "FP_Sqrt");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FP_Sqrt);
+					json_key(&s, "FP_Divide");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FP_Divide);
+					json_key(&s, "FP_Trap");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FP_Trap);
+					json_key(&s, "FP_DP");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FP_DP);
+					json_key(&s, "FP_SP");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FP_SP);
+					json_key(&s, "FP_HP");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FP_HP);
+					json_key(&s, "FP_NaN");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FP_NaN);
+					json_key(&s, "FP_FtZ");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FP_FtZ);
+					json_key(&s, "FP_Misc");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FP_Misc);
+					json_key(&s, "SIMD_Reg");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SIMD_Reg);
+					json_key(&s, "SIMD_FMA");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SIMD_FMA);
+					json_key(&s, "SIMD_HP");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SIMD_HP);
+					json_key(&s, "SIMD_SP");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SIMD_SP);
+					json_key(&s, "SIMD_Int");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SIMD_Int);
+					json_key(&s, "SIMD_LS");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SIMD_LS);
+					json_key(&s, "SIMD_Misc");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SIMD_Misc);
+					json_end_object(&s);
+				}
 				json_key(&s, "MISC");
 				{
 					json_start_object(&s);

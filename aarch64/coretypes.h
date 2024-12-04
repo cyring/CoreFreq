@@ -295,6 +295,9 @@ enum SYS_REG {
 	FPCR_RM 	= 22,	/* [23:22]				*/
 	FPCR_FZH	= 19,
 
+	SVCR_SMEZA	= 1,
+	SVCR_SVEME	= 0,
+
 	ACR_TCPAC	= 31,
 	ACR_TAM 	= 30,
 	ACR_E0POE	= 29,
@@ -992,7 +995,25 @@ typedef struct	/* BSP features.					*/
 			MTE		: 17-14,
 			DF2		: 18-17,
 			PFAR		: 19-18,
-			_Unused1_	: 64-19;
+			FP_Round	: 20-19,
+			FP_Sh_Vec	: 21-20,
+			FP_Sqrt 	: 22-21,
+			FP_Divide	: 23-22,
+			FP_Trap 	: 24-23,
+			FP_DP		: 25-24,
+			FP_SP		: 26-25,
+			FP_HP		: 27-26,
+			FP_NaN		: 28-27,
+			FP_FtZ		: 29-28,
+			FP_Misc 	: 30-29,
+			SIMD_Reg	: 31-30,
+			SIMD_FMA	: 32-31,
+			SIMD_HP 	: 33-32,
+			SIMD_SP 	: 34-33,
+			SIMD_Int	: 35-34,
+			SIMD_LS 	: 36-35,
+			SIMD_Misc	: 37-36,
+			_Unused1_	: 64-37;
 
 		Bit64	InvariantTSC	:  8-0,
 			HyperThreading	:  9-8,

@@ -727,6 +727,55 @@ typedef union
 } SSBS2;
 
 typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		SIMDReg 	:  4-0,
+		FPSP		:  8-4,
+		FPDP		: 12-8,
+		FPTrap		: 16-12,
+		FPDivide	: 20-16,
+		FPSqrt		: 24-20,
+		FPShVec 	: 28-24,
+		FPRound 	: 32-28,
+		RES0		: 64-32;
+	};
+} MVFR0;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		FPFtZ		:  4-0,
+		FPDNaN		:  8-4,
+		SIMDLS		: 12-8,
+		SIMDInt 	: 16-12,
+		SIMDSP		: 20-16,
+		SIMDHP		: 24-20,
+		FPHP		: 28-24,
+		SIMDFMAC 	: 32-28,
+		RES0		: 64-32;
+	};
+} MVFR1;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		SIMDMisc	:  4-0,
+		FPMisc		:  8-4,
+		RES0		: 32-8,
+		RES1		: 64-32;
+	};
+} MVFR2;
+
+typedef union
 {	/* R82; A55; A75; A76; A76AE; A77; A78; A78AE; A78C; X1; X1C; N3; V1 */
 	unsigned long long	value;	/*	Pkg:0x0000000007bfda77	*/
 	struct

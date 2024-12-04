@@ -453,7 +453,8 @@ REASON_CODE SystemRegisters(	Window *win,
 	};
 	enum AUTOMAT {
 		DO_END, DO_SPC, DO_CPU, DO_FLAG, DO_HCR,
-		DO_SCTLR, DO_SCTLR2, DO_EL, DO_FPSR, DO_FPCR, DO_ACR
+		DO_SCTLR, DO_SCTLR2, DO_EL, DO_FPSR, DO_FPCR,
+		DO_SVCR, DO_ACR
 	};
 	const struct SR_ST {
 		struct SR_HDR {
@@ -1036,9 +1037,9 @@ REASON_CODE SystemRegisters(	Window *win,
 	[11] = {&RSC(SYS_REG_HDR_FPSR).CODE()[55],RSC(SYS_REG_FPSR_IOC).CODE()},
 	[12] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
 	[13] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
-	[14] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
-	[15] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
-	[16] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[14] = {&RSC(SYS_REG_HDR_SVCR).CODE()[ 0],RSC(SYS_REG_SVCR).CODE()},
+	[15] = {&RSC(SYS_REG_HDR_SVCR).CODE()[ 5],RSC(SYS_REG_SVCR_ZA).CODE()},
+	[16] = {&RSC(SYS_REG_HDR_SVCR).CODE()[10],RSC(SYS_REG_SVCR_SM).CODE()},
 		{NULL, NULL}
 	},
 	.flag = (struct SR_BIT[]) {
@@ -1056,9 +1057,9 @@ REASON_CODE SystemRegisters(	Window *win,
 	[11] =	{DO_FPSR, 1	, FPSR_IOC	, 1	},
 	[12] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
 	[13] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
-	[14] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
-	[15] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
-	[16] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[14] =	{DO_CPU , 1	, UNDEF_CR	, 0	},
+	[15] =	{DO_SVCR, RO(Shm)->Proc.Features.SME, SVCR_SMEZA, 1	},
+	[16] =	{DO_SVCR, RO(Shm)->Proc.Features.SME, SVCR_SVEME, 1	},
 		{DO_END , 1	, UNDEF_CR	, 0	}
 	}
       },
@@ -1180,6 +1181,11 @@ REASON_CODE SystemRegisters(	Window *win,
 		    case DO_FPCR:
 			PRT(REG, attrib[2], "%3llx ",
 			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.FPCR,
+					pFlag->pos, pFlag->len));
+			break;
+		    case DO_SVCR:
+			PRT(REG, attrib[2], "%3llx ",
+			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.SVCR,
 					pFlag->pos, pFlag->len));
 			break;
 		    case DO_ACR:

@@ -839,6 +839,10 @@
 #define RSC_SYS_REG_EL_EXEC_CODE_EN	" Executes in AArch64 or AArch32 "
 #define RSC_SYS_REG_EL_SEC_CODE_EN	" Secure Exception Level "
 
+#define RSC_SYS_REG_SVCR_CODE_EN	" Streaming Vector Control Register "
+#define RSC_SYS_REG_SVCR_ZA_CODE_EN	" SME ZA storage "
+#define RSC_SYS_REG_SVCR_SM_CODE_EN	" Streaming SVE mode "
+
 #define RSC_SYS_REG_CPACR_CODE_EN	" Access Control Register "
 #define RSC_SYS_REG_ACR_TCP_CODE_EN	" Trap Coprocessor Access Control "
 #define RSC_SYS_REG_ACR_TAM_CODE_EN	" Trap Activity Monitor Access "
@@ -2093,6 +2097,8 @@
 #define RSC_SYS_REG_HDR12_EL_CODE	\
 	"Exec\0:   \0 64 \0 32 \0    \0 64 \0 32 \0    \0" \
 	" 64 \0 32 \0 SEC\0    \0 64 \0 32 "
+
+#define RSC_SYS_REG_HDR_SVCR_CODE	"SVCR\0 ZA \0 SM "
 
 #define RSC_SYS_REG_HDR_CPACR_CODE	\
 	"ACR \0 TCP\0 TAM\0 POR\0 TTA\0 SME\0 FP \0 ZEN\0   R\0ES  "

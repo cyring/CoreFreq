@@ -524,6 +524,9 @@ static void Query_Features(void *pArg)
 	volatile AA64MMFR2 mmfr2;
 	volatile AA64PFR0 pfr0;
 	volatile AA64PFR1 pfr1;
+	volatile MVFR0 mvfr0;
+	volatile MVFR1 mvfr1;
+	volatile MVFR2 mvfr2;
 
 	iArg->Features->Info.Vendor.CRC = CRC_RESERVED;
 	iArg->SMT_Count = 1;
@@ -542,6 +545,9 @@ static void Query_Features(void *pArg)
 		"mrs	%[mmfr1],	id_aa64mmfr1_el1""\n\t"
 		"mrs	%[pfr0] ,	id_aa64pfr0_el1""\n\t"
 		"mrs	%[pfr1] ,	id_aa64pfr1_el1""\n\t"
+		"mrs	%[mvfr0],	mvfr0_el1"	"\n\t"
+		"mrs	%[mvfr1],	mvfr1_el1"	"\n\t"
+		"mrs	%[mvfr2],	mvfr2_el1"	"\n\t"
 		"isb"
 		: [midr]	"=r" (midr),
 		  [cntfrq]	"=r" (cntfrq),
@@ -554,7 +560,10 @@ static void Query_Features(void *pArg)
 		  [mmfr0]	"=r" (mmfr0),
 		  [mmfr1]	"=r" (mmfr1),
 		  [pfr0]	"=r" (pfr0),
-		  [pfr1]	"=r" (pfr1)
+		  [pfr1]	"=r" (pfr1),
+		  [mvfr0]	"=r" (mvfr0),
+		  [mvfr1]	"=r" (mvfr1),
+		  [mvfr2]	"=r" (mvfr2)
 		:
 		: "memory"
 	);
@@ -1553,6 +1562,179 @@ static void Query_Features(void *pArg)
 	iArg->Features->SME_SF8DP4 = smfr0.SF8DP4;
 	iArg->Features->SME_SF8DP2 = smfr0.SF8DP2;
     }
+	switch (mvfr0.FPRound) {
+	case 0b0001:
+		iArg->Features->FP_Round = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->FP_Round = 0;
+		break;
+	}
+	switch (mvfr0.FPShVec) {
+	case 0b0001:
+		iArg->Features->FP_Sh_Vec = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->FP_Sh_Vec = 0;
+		break;
+	}
+	switch (mvfr0.FPSqrt) {
+	case 0b0001:
+		iArg->Features->FP_Sqrt = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->FP_Sqrt = 0;
+		break;
+	}
+	switch (mvfr0.FPDivide) {
+	case 0b0001:
+		iArg->Features->FP_Divide = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->FP_Divide = 0;
+		break;
+	}
+	switch (mvfr0.FPTrap) {
+	case 0b0001:
+		iArg->Features->FP_Trap = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->FP_Trap = 0;
+		break;
+	}
+	switch (mvfr0.FPDP) {
+	case 0b0010:
+	case 0b0001:
+		iArg->Features->FP_DP = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->FP_DP = 0;
+		break;
+	}
+	switch (mvfr0.FPSP) {
+	case 0b0010:
+	case 0b0001:
+		iArg->Features->FP_SP = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->FP_SP = 0;
+		break;
+	}
+	switch (mvfr1.FPHP) {
+	case 0b0011:
+	case 0b0010:
+	case 0b0001:
+		iArg->Features->FP_HP = 1;
+		break;
+	default:
+	case 0b0000:
+		iArg->Features->FP_HP = 0;
+		break;
+	}
+	switch (mvfr0.SIMDReg) {
+	case 0b0010:
+	case 0b0001:
+		iArg->Features->SIMD_Reg = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SIMD_Reg = 0;
+		break;
+	}
+	switch (mvfr1.SIMDFMAC) {
+	case 0b0001:
+		iArg->Features->SIMD_FMA = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SIMD_FMA = 0;
+		break;
+	}
+	switch (mvfr1.SIMDHP) {
+	case 0b0010:
+	case 0b0001:
+		iArg->Features->SIMD_HP = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SIMD_HP = 0;
+		break;
+	}
+	switch (mvfr1.SIMDSP) {
+	case 0b0001:
+		iArg->Features->SIMD_SP = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SIMD_SP = 0;
+		break;
+	}
+	switch (mvfr1.SIMDInt) {
+	case 0b0001:
+		iArg->Features->SIMD_Int = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SIMD_Int = 0;
+		break;
+	}
+	switch (mvfr1.SIMDLS) {
+	case 0b0001:
+		iArg->Features->SIMD_LS = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SIMD_LS = 0;
+		break;
+	}
+	switch (mvfr1.FPDNaN) {
+	case 0b0001:
+		iArg->Features->FP_NaN = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->FP_NaN = 0;
+		break;
+	}
+	switch (mvfr1.FPFtZ) {
+	case 0b0001:
+		iArg->Features->FP_FtZ = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->FP_FtZ = 0;
+		break;
+	}
+	switch (mvfr2.FPMisc) {
+	case 0b0100:
+	case 0b0011:
+	case 0b0010:
+	case 0b0001:
+		iArg->Features->FP_Misc = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->FP_Misc = 0;
+		break;
+	}
+	switch (mvfr2.SIMDMisc) {
+	case 0b0011:
+	case 0b0010:
+	case 0b0001:
+		iArg->Features->SIMD_Misc = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->SIMD_Misc = 0;
+		break;
+	}
 	/* Reset the performance features bits: present is 0b1		*/
 	iArg->Features->PerfMon.CoreCycles    = 0b0;
 	iArg->Features->PerfMon.InstrRetired  = 0b0;
