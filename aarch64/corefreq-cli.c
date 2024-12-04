@@ -453,7 +453,7 @@ REASON_CODE SystemRegisters(	Window *win,
 	};
 	enum AUTOMAT {
 		DO_END, DO_SPC, DO_CPU, DO_FLAG, DO_HCR,
-		DO_SCTLR, DO_SCTLR2, DO_EL, DO_FPSR, DO_ACR
+		DO_SCTLR, DO_SCTLR2, DO_EL, DO_FPSR, DO_FPCR, DO_ACR
 	};
 	const struct SR_ST {
 		struct SR_HDR {
@@ -1064,43 +1064,43 @@ REASON_CODE SystemRegisters(	Window *win,
       },
       {
 	.header = (struct SR_HDR[]) {
-	[ 0] = {&RSC(SYS_REG_HDR_CPACR).CODE()[ 0],RSC(SYS_REG_CPACR).CODE()},
-	[ 1] = {&RSC(SYS_REG_HDR_CPACR).CODE()[ 5],RSC(SYS_REG_ACR_TCP).CODE()},
-	[ 2] = {&RSC(SYS_REG_HDR_CPACR).CODE()[10],RSC(SYS_REG_ACR_TAM).CODE()},
-	[ 3] = {&RSC(SYS_REG_HDR_CPACR).CODE()[15],RSC(SYS_REG_ACR_POE).CODE()},
-	[ 4] = {&RSC(SYS_REG_HDR_CPACR).CODE()[20],RSC(SYS_REG_ACR_TTA).CODE()},
-	[ 5] = {&RSC(SYS_REG_HDR_CPACR).CODE()[25],RSC(SYS_REG_ACR_SME).CODE()},
-	[ 6] = {&RSC(SYS_REG_HDR_CPACR).CODE()[30],RSC(SYS_REG_ACR_FP).CODE()},
-	[ 7] = {&RSC(SYS_REG_HDR_CPACR).CODE()[35],RSC(SYS_REG_ACR_ZEN).CODE()},
-	[ 8] = {&RSC(SYS_REG_HDR_CPACR).CODE()[40],RSC(SYS_REG_ACR_R8).CODE()},
-	[ 9] = {&RSC(SYS_REG_HDR_CPACR).CODE()[45],RSC(SYS_REG_ACR_R0).CODE()},
-	[10] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
-	[11] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
-	[12] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
-	[13] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
-	[14] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
-	[15] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
-	[16] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[ 0] = {&RSC(SYS_REG_HDR_FPCR).CODE()[ 0],RSC(SYS_REG_FPCR).CODE()},
+	[ 1] = {&RSC(SYS_REG_HDR_FPCR).CODE()[ 5],RSC(SYS_REG_FPCR_AHP).CODE()},
+	[ 2] = {&RSC(SYS_REG_HDR_FPCR).CODE()[10],RSC(SYS_REG_FPCR_DN).CODE()},
+	[ 3] = {&RSC(SYS_REG_HDR_FPCR).CODE()[15],RSC(SYS_REG_FPCR_FZ).CODE()},
+	[ 4] = {&RSC(SYS_REG_HDR_FPCR).CODE()[20],RSC(SYS_REG_FPCR_RM).CODE()},
+	[ 5] = {&RSC(SYS_REG_HDR_FPCR).CODE()[25],RSC(SYS_REG_FPCR_FZH).CODE()},
+	[ 6] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[ 7] = {&RSC(SYS_REG_HDR_CPACR).CODE()[ 0],RSC(SYS_REG_CPACR).CODE()},
+	[ 8] = {&RSC(SYS_REG_HDR_CPACR).CODE()[ 5],RSC(SYS_REG_ACR_TCP).CODE()},
+	[ 9] = {&RSC(SYS_REG_HDR_CPACR).CODE()[10],RSC(SYS_REG_ACR_TAM).CODE()},
+	[10] = {&RSC(SYS_REG_HDR_CPACR).CODE()[15],RSC(SYS_REG_ACR_POE).CODE()},
+	[11] = {&RSC(SYS_REG_HDR_CPACR).CODE()[20],RSC(SYS_REG_ACR_TTA).CODE()},
+	[12] = {&RSC(SYS_REG_HDR_CPACR).CODE()[25],RSC(SYS_REG_ACR_SME).CODE()},
+	[13] = {&RSC(SYS_REG_HDR_CPACR).CODE()[30],RSC(SYS_REG_ACR_FP).CODE()},
+	[14] = {&RSC(SYS_REG_HDR_CPACR).CODE()[35],RSC(SYS_REG_ACR_ZEN).CODE()},
+	[15] = {&RSC(SYS_REG_HDR_CPACR).CODE()[40],RSC(SYS_REG_ACR_R8).CODE()},
+	[16] = {&RSC(SYS_REG_HDR_CPACR).CODE()[45],RSC(SYS_REG_ACR_R0).CODE()},
 		{NULL, NULL}
 	},
 	.flag = (struct SR_BIT[]) {
 	[ 0] =	{DO_CPU , 1	, UNDEF_CR	, 0	},
-	[ 1] =	{DO_ACR , 1	, ACR_TCPAC	, 1	},
-	[ 2] =	{DO_ACR , 1	, ACR_TAM 	, 1	},
-	[ 3] =	{DO_ACR , 1	, ACR_E0POE	, 1	},
-	[ 4] =	{DO_ACR , 1	, ACR_TTA 	, 1	},
-	[ 5] =	{DO_ACR , 1	, ACR_SMEN	, 2	},
-	[ 6] =	{DO_ACR , 1	, ACR_FPEN	, 2	},
-	[ 7] =	{DO_ACR , 1	, ACR_ZEN 	, 2	},
-	[ 8] =	{DO_ACR , 1	, ACR_RES8	, 8	},
-	[ 9] =	{DO_ACR , 1	, ACR_RES0	, 8	},
-	[10] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
-	[11] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
-	[12] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
-	[13] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
-	[14] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
-	[15] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
-	[16] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[ 1] =	{DO_FPCR, 1	, FPCR_AHP	, 1	},
+	[ 2] =	{DO_FPCR, 1	, FPCR_DN	, 1	},
+	[ 3] =	{DO_FPCR, 1	, FPCR_FZ	, 1	},
+	[ 4] =	{DO_FPCR, 1	, FPCR_RM	, 2	},
+	[ 5] =	{DO_FPCR, 1	, FPCR_FZH	, 1	},
+	[ 6] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[ 7] =	{DO_CPU , 1	, UNDEF_CR	, 0	},
+	[ 8] =	{DO_ACR , 1	, ACR_TCPAC	, 1	},
+	[ 9] =	{DO_ACR , 1	, ACR_TAM 	, 1	},
+	[10] =	{DO_ACR , 1	, ACR_E0POE	, 1	},
+	[11] =	{DO_ACR , 1	, ACR_TTA 	, 1	},
+	[12] =	{DO_ACR , 1	, ACR_SMEN	, 2	},
+	[13] =	{DO_ACR , 1	, ACR_FPEN	, 2	},
+	[14] =	{DO_ACR , 1	, ACR_ZEN 	, 2	},
+	[15] =	{DO_ACR , 1	, ACR_RES8	, 8	},
+	[16] =	{DO_ACR , 1	, ACR_RES0	, 8	},
 		{DO_END , 1	, UNDEF_CR	, 0	}
 	}
       }
@@ -1175,6 +1175,11 @@ REASON_CODE SystemRegisters(	Window *win,
 		    case DO_FPSR:
 			PRT(REG, attrib[2], "%3llx ",
 			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.FPSR,
+					pFlag->pos, pFlag->len));
+			break;
+		    case DO_FPCR:
+			PRT(REG, attrib[2], "%3llx ",
+			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.FPCR,
 					pFlag->pos, pFlag->len));
 			break;
 		    case DO_ACR:

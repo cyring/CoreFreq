@@ -192,6 +192,7 @@ typedef struct
 		Bit64			SCTLR2	__attribute__ ((aligned (8)));
 		Bit64			EL	__attribute__ ((aligned (8)));
 		Bit64			FPSR	__attribute__ ((aligned (8)));
+		Bit64			FPCR	__attribute__ ((aligned (8)));
 		Bit64			SVCR	__attribute__ ((aligned (8)));
 		Bit64			CPACR	__attribute__ ((aligned (8)));
 	} SystemRegister;

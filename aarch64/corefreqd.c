@@ -875,6 +875,9 @@ void SystemRegisters(	RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core),
 	RO(Shm)->Cpu[cpu].SystemRegister.FPSR = \
 				RO(Core, AT(cpu))->SystemRegister.FPSR;
 
+	RO(Shm)->Cpu[cpu].SystemRegister.FPCR = \
+				RO(Core, AT(cpu))->SystemRegister.FPCR;
+
 	RO(Shm)->Cpu[cpu].SystemRegister.SVCR = \
 				RO(Core, AT(cpu))->SystemRegister.SVCR;
 

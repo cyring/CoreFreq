@@ -828,6 +828,13 @@
 #define RSC_SYS_REG_FPSR_DZC_CODE_EN	" Divide by Zero Cumulative "
 #define RSC_SYS_REG_FPSR_IOC_CODE_EN	" Invalid Operation Cumulative "
 
+#define RSC_SYS_REG_FPCR_CODE_EN	" Floating-point Control Register "
+#define RSC_SYS_REG_FPCR_AHP_CODE_EN	" Alternative Half-Precision "
+#define RSC_SYS_REG_FPCR_DN_CODE_EN	" Default NaN "
+#define RSC_SYS_REG_FPCR_FZ_CODE_EN	" Flush-to-Zero mode "
+#define RSC_SYS_REG_FPCR_RM_CODE_EN	" Rounding Mode "
+#define RSC_SYS_REG_FPCR_FZH_CODE_EN	" Flush-to-Zero on Half-precision "
+
 #define RSC_SYS_REG_EL_CODE_EN		" Exception Level "
 #define RSC_SYS_REG_EL_EXEC_CODE_EN	" Executes in AArch64 or AArch32 "
 #define RSC_SYS_REG_EL_SEC_CODE_EN	" Secure Exception Level "
@@ -2075,6 +2082,9 @@
 
 #define RSC_SYS_REG_HDR_FPSR_CODE	\
 	"FPSR\0  N \0  Z \0  C \0  V \0 QC \0 IDC\0 IXC\0 UFC\0 OFC\0 DZC\0 IOC"
+
+#define RSC_SYS_REG_HDR_FPCR_CODE	\
+	"FPCR\0 AHP\0 DN \0 FZ \0 RM \0 FZH"
 
 #define RSC_SYS_REG_HDR11_EL_CODE	\
 	" EL \0    \0"" Lev\0el0 \0    \0 Lev\0el1 \0    \0" \
