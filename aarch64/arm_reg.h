@@ -10,6 +10,7 @@
 #define ID_AA64MMFR3_EL1	sys_reg(0b11, 0b000, 0b0000, 0b0111, 0b011)
 #define ID_AA64SMFR0_EL1	sys_reg(0b11, 0b000, 0b0000, 0b0100, 0b101)
 #define ID_AA64ZFR0_EL1 	sys_reg(0b11, 0b000, 0b0000, 0b0100, 0b100)
+#define ID_AA64PFR2_EL1 	sys_reg(0b11, 0b000, 0b0000, 0b0100, 0b010)
 #define SCTLR2_EL1		sys_reg(0b11, 0b000, 0b0001, 0b0000, 0b011)
 #define MRS_SSBS2		sys_reg(0b11, 0b011, 0b0100, 0b0010, 0b110)
 #define MRS_PAN 		sys_reg(0b11, 0b000, 0b0100, 0b0010, 0b011)
@@ -19,6 +20,7 @@
 #define MRS_ALLINT		sys_reg(0b11, 0b000, 0b0100, 0b0011, 0b000)
 #define MRS_PM			sys_reg(0b11, 0b000, 0b0100, 0b0011, 0b001)
 #define MRS_SVCR		sys_reg(0b11, 0b011, 0b0100, 0b0010, 0b010)
+#define MRS_FPMR		sys_reg(0b11, 0b011, 0b0100, 0b0100, 0b010)
 #define AMCGCR_EL0		sys_reg(0b11, 0b011, 0b1101, 0b0010, 0b010)
 #define CLUSTERCFR_EL1		sys_reg(0b11, 0b000, 0b1111, 0b0011, 0b000)
 #define CLUSTERIDR_EL1		sys_reg(0b11, 0b000, 0b1111, 0b0011, 0b001)
@@ -653,9 +655,11 @@ typedef union
 		MTEPERM 	:  4-0,
 		MTESTOREONLY	:  8-4,
 		MTEFAR		: 12-8,
-		RES0		: 32-12,
+		RES0		: 16-12,
+		UINJ		: 20-16,
+		RES1		: 32-20,
 		FPMR		: 36-32,
-		RES1		: 64-36;
+		RES2		: 64-36;
 	};
 } AA64PFR2;
 

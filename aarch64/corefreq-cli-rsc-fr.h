@@ -640,6 +640,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_FGT_CODE_FR	\
 	"Contr""\xb4""les de Pi""\xa8""ges ""\xa0"" Granularit""\xa9"" Fine"
 
+#define RSC_FEATURES_FPMR_CODE_FR    "Registre de mode de la virgule flottante"
 #define RSC_FEATURES_PFAR_CODE_FR	\
 				"Registres de D""\xa9""faut d'Adresse Physique"
 
@@ -650,10 +651,17 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 		"Contr""\xb4""leur d'interruption g""\xa9""n""\xa9""rique"
 
 #define RSC_FEATURES_MTE_CODE_FR	\
-				"Extension de marquage de m""\xa9""moire"
+				"Extension de marquage de la m""\xa9""moire"
 
 #define RSC_FEATURES_MPAM_CODE_FR	\
 			"Partitionnement et supervision de la m""\xa9""moire"
+
+#define RSC_FEATURES_MTE_FAR_CODE_FR	"Signaler Tag Check Fault"
+#define RSC_FEATURES_MTE_PERM_CODE_FR	\
+				"Droits d'acc""\xa8""s aux balises d'allocation"
+
+#define RSC_FEATURES_MTE_STOREONLY_CODE_FR \
+				"V""\xa9""rification de la balise Store-only"
 
 #define RSC_FEATURES_NMI_CODE_FR	"Interruption non masquable"
 #define RSC_FEATURES_PA_CODE_FR 	"Plage d'Adressage Physique"
@@ -675,6 +683,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_TSC_CODE_FR	"Compteur d'horodatage"
 #define RSC_FEATURES_UAO_CODE_FR	\
 				"Surcharge de l'acc""\xa8""s utilisateur"
+
+#define RSC_FEATURES_UINJ_CODE_FR	\
+				"Injection d'instructions non d""\xa9""finies"
 
 #define RSC_FEATURES_VA_CODE_FR 	"Plage d'adressage virtuel"
 #define RSC_FEATURES_VHE_CODE_FR	\

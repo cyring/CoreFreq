@@ -2734,6 +2734,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 	},
 	{
 		NULL,
+		RO(Shm)->Proc.Features.FPMR == 1,
+		attr_Feat,
+		2, "%s%.*sFPMR   [%7s]", RSC(FEATURES_FPMR).CODE(),
+		width - 19 - RSZ(FEATURES_FPMR),
+		NULL
+	},
+	{
+		NULL,
 		RO(Shm)->Proc.Features.PFAR == 1,
 		attr_Feat,
 		2, "%s%.*sPFAR   [%7s]", RSC(FEATURES_PFAR).CODE(),
@@ -2779,6 +2787,31 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		: RO(Shm)->Proc.Features.MTE == 1 ?
 			"%s v1%.*sMTE   [%7s]" : "%s   %.*sMTE   [%7s]",
 		RSC(FEATURES_MTE).CODE(), width - 21 - RSZ(FEATURES_MTE),
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Features.MTE_FAR == 1,
+		attr_Feat,
+		3, "%s%.*sTAGGED_FAR   [%7s]", RSC(FEATURES_MTE_FAR).CODE(),
+		width - (OutFunc == NULL ? 28:26) - RSZ(FEATURES_MTE_FAR),
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Features.MTE_PERM == 1,
+		attr_Feat,
+		3, "%s%.*sPERM   [%7s]", RSC(FEATURES_MTE_PERM).CODE(),
+		width - (OutFunc == NULL ? 22:20) - RSZ(FEATURES_MTE_PERM),
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Features.MTE_STOREONLY == 1,
+		attr_Feat,
+		3, "%s%.*sSTOREONLY   [%7s]",
+		RSC(FEATURES_MTE_STOREONLY).CODE(),
+		width - (OutFunc == NULL ? 27:25) - RSZ(FEATURES_MTE_STOREONLY),
 		NULL
 	},
 	{
@@ -2872,6 +2905,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		attr_Feat,
 		2, "%s%.*sUAO   [%7s]", RSC(FEATURES_UAO).CODE(),
 		width - 18 - RSZ(FEATURES_UAO),
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Features.UINJ == 1,
+		attr_Feat,
+		2, "%s%.*sUINJ   [%7s]", RSC(FEATURES_UINJ).CODE(),
+		width - 19 - RSZ(FEATURES_UINJ),
 		NULL
 	},
 	{

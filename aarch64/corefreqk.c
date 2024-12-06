@@ -524,6 +524,7 @@ static void Query_Features(void *pArg)
 	volatile AA64MMFR2 mmfr2;
 	volatile AA64PFR0 pfr0;
 	volatile AA64PFR1 pfr1;
+	volatile AA64PFR2 pfr2;
 	volatile MVFR0 mvfr0;
 	volatile MVFR1 mvfr1;
 	volatile MVFR2 mvfr2;
@@ -1424,6 +1425,55 @@ static void Query_Features(void *pArg)
 		iArg->Features->PFAR = 0;
 		break;
 	}
+
+	pfr2.value = SysRegRead(ID_AA64PFR2_EL1);
+
+	switch(pfr2.FPMR) {
+	case 0b0001:
+		iArg->Features->FPMR = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->FPMR = 0;
+		break;
+	}
+	switch(pfr2.UINJ) {
+	case 0b0001:
+		iArg->Features->UINJ = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->UINJ = 0;
+		break;
+	}
+	switch(pfr2.MTEFAR) {
+	case 0b0001:
+		iArg->Features->MTE_FAR = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->MTE_FAR = 0;
+		break;
+	}
+	switch(pfr2.MTESTOREONLY) {
+	case 0b0001:
+		iArg->Features->MTE_STOREONLY = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->MTE_STOREONLY = 0;
+		break;
+	}
+	switch(pfr2.MTEPERM) {
+	case 0b0001:
+		iArg->Features->MTE_PERM = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->MTE_PERM = 0;
+		break;
+	}
+
     if (iArg->Features->SVE | iArg->Features->SME)
     {
 	volatile AA64ZFR0 zfr0 = {.value = SysRegRead(ID_AA64ZFR0_EL1)};
@@ -2812,6 +2862,10 @@ static void SystemRegisters(CORE_RO *Core)
 		:
 		: "cc", "memory"
 	);
+	if (PUBLIC(RO(Proc))->Features.FPMR) {
+		volatile unsigned long long fpmr = SysRegRead(MRS_FPMR);
+		UNUSED(fpmr);	/*TODO*/
+	}
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask, Core->Bind);
 }
 

@@ -1015,7 +1015,12 @@ typedef struct	/* BSP features.					*/
 			SIMD_Int	: 37-36,
 			SIMD_LS 	: 38-37,
 			SIMD_Misc	: 39-38,
-			_Unused1_	: 64-39;
+			FPMR		: 40-39,
+			UINJ		: 41-40,
+			MTE_FAR		: 42-41,
+			MTE_STOREONLY	: 43-42,
+			MTE_PERM 	: 44-43,
+			_Unused1_	: 64-44;
 
 		Bit64	InvariantTSC	:  8-0,
 			HyperThreading	:  9-8,
