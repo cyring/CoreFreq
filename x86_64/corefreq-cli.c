@@ -989,8 +989,8 @@ REASON_CODE SystemRegisters(	Window *win,
 		PRT(REG, attrib[0], RSC(SYS_REGS_SPACE).CODE());
 		break;
 	case DO_CPU:
-		PRT(REG,attrib[BITVAL(RO(Shm)->Cpu[cpu].OffLine,OS) ? 4:3],
-			"#%-2u ", cpu);
+		PRT(REG, attrib[BITVAL(RO(Shm)->Cpu[cpu].OffLine,OS) ? 4:3],
+			"#%-3u", cpu);
 		break;
 	default:
 	    {
