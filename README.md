@@ -59,6 +59,11 @@ If **bold** and **bright** colors are not rendered then use the following termin
 In the Preferences - Colors tab, select `Show bold text in bright colors`  
 #### alacritty terminal
 Uncomment and set `draw_bold_text_with_bright_colors: true` in `<config-file>`  
+#### SSH
+Force pseudo-terminal allocation. This option is used to execute a menu based application on a remote machine.  
+```sh
+ssh -t corefreq-cli
+```
 
 ### Dependencies
 * The Linux Kernel with a minimum version 3.3
