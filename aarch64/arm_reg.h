@@ -6,6 +6,8 @@
 
 #define CPUPWRCTLR_EL1		sys_reg(0b11, 0b000, 0b1111, 0b0010, 0b111)
 #define ID_AA64ISAR2_EL1	sys_reg(0b11, 0b000, 0b0000, 0b0110, 0b010)
+#define ID_AA64ISAR3_EL1	sys_reg(0b11, 0b000, 0b0000, 0b0110, 0b011)
+#define ID_AA64ISAR4_EL1	sys_reg(0b11, 0b000, 0b0000, 0b0110, 0b100)
 #define ID_AA64MMFR2_EL1	sys_reg(0b11, 0b000, 0b0000, 0b0111, 0b010)
 #define ID_AA64MMFR3_EL1	sys_reg(0b11, 0b000, 0b0000, 0b0111, 0b011)
 #define ID_AA64SMFR0_EL1	sys_reg(0b11, 0b000, 0b0000, 0b0100, 0b101)
@@ -466,7 +468,11 @@ typedef union
 		FAMINMAX	:  8-4,
 		TLBIW		: 12-8,
 		PACM		: 16-12,
-		RES0		: 64-16;
+		LSFE		: 20-16,
+		OCCMO		: 24-20,
+		LSUI		: 28-24,
+		FPRCVT		: 32-28,
+		RES0		: 64-32;
 	};
 } AA64ISAR3;
 

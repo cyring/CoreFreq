@@ -519,6 +519,7 @@ static void Query_Features(void *pArg)
 	volatile AA64ISAR0 isar0;
 	volatile AA64ISAR1 isar1;
 	volatile AA64ISAR2 isar2;
+	volatile AA64ISAR3 isar3;
 	volatile AA64MMFR0 mmfr0;
 	volatile AA64MMFR1 mmfr1;
 	volatile AA64MMFR2 mmfr2;
@@ -570,6 +571,7 @@ static void Query_Features(void *pArg)
 	);
 
 	isar2.value = SysRegRead(ID_AA64ISAR2_EL1);
+	isar3.value = SysRegRead(ID_AA64ISAR3_EL1);
 	mmfr2.value = SysRegRead(ID_AA64MMFR2_EL1);
 
 	iArg->Features->Info.Signature.Stepping = midr.Revision
