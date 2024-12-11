@@ -6980,7 +6980,9 @@ static PROCESSOR_SPECIFIC AMD_Zen3_VMR_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 5 5600X"),
+	.Brand = ZLIST( "AMD Ryzen 5 5600XT",	\
+			"AMD Ryzen 5 5600X",	\
+			"AMD Ryzen 5 5600T"	),
 	.Boost = {+9, +1},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_VERMEER,
