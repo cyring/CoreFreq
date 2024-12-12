@@ -1085,6 +1085,81 @@ static void Query_Features(void *pArg)
 		break;
 	}
 
+	switch (isar3.CPA) {
+	case 0b0010:
+	case 0b0001:
+		iArg->Features->CPA = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->CPA = 0;
+		break;
+	}
+	switch (isar3.FAMINMAX) {
+	case 0b0001:
+		iArg->Features->FAMINMAX = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->FAMINMAX = 0;
+		break;
+	}
+	switch (isar3.TLBIW) {
+	case 0b0001:
+		iArg->Features->TLBIW = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->TLBIW = 0;
+		break;
+	}
+	switch (isar3.PACM) {
+	case 0b0010:
+	case 0b0001:
+		iArg->Features->PACM = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->PACM = 0;
+		break;
+	}
+	switch (isar3.LSFE) {
+	case 0b0001:
+		iArg->Features->LSFE = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->LSFE = 0;
+		break;
+	}
+	switch (isar3.OCCMO) {
+	case 0b0001:
+		iArg->Features->OCCMO = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->OCCMO = 0;
+		break;
+	}
+	switch (isar3.LSUI) {
+	case 0b0001:
+		iArg->Features->LSUI = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->LSUI = 0;
+		break;
+	}
+	switch (isar3.FPRCVT) {
+	case 0b0001:
+		iArg->Features->FPRCVT = 1;
+		break;
+	case 0b0000:
+	default:
+		iArg->Features->FPRCVT = 0;
+		break;
+	}
+
 	switch (mmfr0.ECV) {
 	case 0b0010:
 	case 0b0001:

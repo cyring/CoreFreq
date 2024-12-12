@@ -858,11 +858,15 @@
 
 #define RSC_ISA_AES_COMM_CODE_EN	" Advanced Encryption Standard "
 #define RSC_ISA_LSE_COMM_CODE_EN	" Atomic instructions "
+#define RSC_ISA_LSFE_COMM_CODE_EN	" Large System Float Extension "
 #define RSC_ISA_CRC32_COMM_CODE_EN	" Cyclic Redundancy Check "
 #define RSC_ISA_DP_COMM_CODE_EN 	" Dot Product instructions "
 #define RSC_ISA_EPAC_COMM_CODE_EN 	" Enhanced Pointer Authentication "
 #define RSC_ISA_FCMA_COMM_CODE_EN	\
 			" Floating-point Complex Multiplication & Addition "
+
+#define RSC_ISA_FAMINMAX_COMM_CODE_EN	\
+		" Floating-point Absolute Minimum & Maximum (ASIMD|SVE2) "
 
 #define RSC_ISA_FHM_COMM_CODE_EN	\
 				" Floating-point Half-precision Multiplication "
@@ -875,11 +879,17 @@
 #define RSC_ISA_JSCVT_COMM_CODE_EN	" JavaScript Conversion "
 #define RSC_ISA_LRCPC_COMM_CODE_EN	" Load-Acquire RCpc instructions "
 
+#define RSC_ISA_LSUI_COMM_CODE_EN	\
+				" Load and Store Unprivileged instructions "
+
 #define RSC_ISA_LUT_COMM_CODE_EN	\
 				" ASIMD & SVE2 LookUp Table instructions "
 
 #define RSC_ISA_MOPS_COMM_CODE_EN	\
 				" Memory Copy and Memory Set instructions "
+
+#define RSC_ISA_OCCMO_COMM_CODE_EN	\
+				" Outer Cacheable Cache Maintenance Operation "
 
 #define RSC_ISA_PACIMP_COMM_CODE_EN	\
 			" Pointer Authentication Code, using Generic key "
@@ -895,6 +905,9 @@
 #define RSC_ISA_PAUTH_LR_COMM_CODE_EN	" Pointer Authentication Link Register "
 #define RSC_ISA_PCDPHINT_COMM_CODE_EN " Producer-Consumer Data Placement Hints "
 #define RSC_ISA_PRFMSLC_COMM_CODE_EN	" PRFM instructions support SLC target "
+#define RSC_ISA_FPRCVT_COMM_CODE_EN	\
+			" Floating-point to/from integer in scalar FP register "
+
 #define RSC_ISA_FRINTTS_COMM_CODE_EN	" Floating-point to Integer "
 #define RSC_ISA_SPECRES_COMM_CODE_EN	" Prediction Invalidation "
 #define RSC_ISA_ATS1A_COMM_CODE_EN	" Address Translation Stage 1 "
@@ -904,6 +917,7 @@
 #define RSC_ISA_CONSTPACFLD_COMM_CODE_EN \
 					" Determine the size of the PAC Field "
 
+#define RSC_ISA_CPA_COMM_CODE_EN	" Checked Pointer Arithmetic extension "
 #define RSC_ISA_CSSC_COMM_CODE_EN	" Common Short Sequence Compression "
 #define RSC_ISA_HBC_COMM_CODE_EN	" Hinted Conditional Branch "
 #define RSC_ISA_I8MM_COMM_CODE_EN	" Int8 Matrix Multiplication "
@@ -917,6 +931,7 @@
 #define RSC_ISA_SYSINSTR128_COMM_CODE_EN \
 			" System instructions that can take 128-bit inputs "
 
+#define RSC_ISA_TLBIW_COMM_CODE_EN	" TLBI VMALL for Dirty state "
 #define RSC_ISA_WFxT_COMM_CODE_EN 	" WFE & WFI instructions with timeout "
 #define RSC_ISA_XS_COMM_CODE_EN 	" XS attribute for memory "
 #define RSC_ISA_LS64_COMM_CODE_EN	" Atomic 64-byte loads and stores "
@@ -2114,9 +2129,11 @@
 #define RSC_ISA_PMULL_CODE		"        PMULL [%c]"
 #define RSC_ISA_LSE_CODE		"          LSE [%c]"
 #define RSC_ISA_LSE128_CODE		"       LSE128 [%c]"
+#define RSC_ISA_LSFE_CODE		"         LSFE [%c]"
 #define RSC_ISA_CRC32_CODE		"        CRC32 [%c]"
 #define RSC_ISA_DP_CODE 		"           DP [%c]"
 #define RSC_ISA_EPAC_CODE		"         EPAC [%c]"
+#define RSC_ISA_FAMINMAX_CODE		"     FAMINMAX [%c]"
 #define RSC_ISA_FCMA_CODE		"         FCMA [%c]"
 #define RSC_ISA_FHM_CODE		"          FHM [%c]"
 #define RSC_ISA_FP_CODE 		"           FP [%c]"
@@ -2126,16 +2143,20 @@
 #define RSC_ISA_LRCPC_CODE		"        LRCPC [%c]"
 #define RSC_ISA_LRCPC2_CODE		"       LRCPC2 [%c]"
 #define RSC_ISA_LRCPC3_CODE		"       LRCPC3 [%c]"
+#define RSC_ISA_LSUI_CODE		"         LSUI [%c]"
 #define RSC_ISA_LUT_CODE		"          LUT [%c]"
 #define RSC_ISA_MOPS_CODE		"         MOPS [%c]"
+#define RSC_ISA_OCCMO_CODE		"        OCCMO [%c]"
 #define RSC_ISA_PACGA_CODE		"        PACGA [%c]"
 #define RSC_ISA_PACQARMA3_CODE		"    PACQARMA3 [%c]"
 #define RSC_ISA_PACQARMA5_CODE		"    PACQARMA5 [%c]"
 #define RSC_ISA_PAUTH_CODE		"        PAuth [%c]"
 #define RSC_ISA_PAUTH2_CODE		"       PAuth2 [%c]"
 #define RSC_ISA_PAUTH_LR_CODE		"     PAuth_LR [%c]"
+#define RSC_ISA_PACM_CODE		"         PACM [%c]"
 #define RSC_ISA_PCDPHINT_CODE		"     PCDPHINT [%c]"
 #define RSC_ISA_PRFMSLC_CODE		"      PRFMSLC [%c]"
+#define RSC_ISA_FPRCVT_CODE		"       FPRCVT [%c]"
 #define RSC_ISA_FRINTTS_CODE		"      FRINTTS [%c]"
 #define RSC_ISA_SPECRES_CODE		"      SPECRES [%c]"
 #define RSC_ISA_SPECRES2_CODE		"     SPECRES2 [%c]"
@@ -2144,6 +2165,7 @@
 #define RSC_ISA_EBF16_CODE		"        EBF16 [%c]"
 #define RSC_ISA_CLRBHB_CODE		"       CLRBHB [%c]"
 #define RSC_ISA_CONSTPACFLD_CODE	"  CONSTPACFLD [%c]"
+#define RSC_ISA_CPA_CODE		"          CPA [%c]"
 #define RSC_ISA_CSSC_CODE		"         CSSC [%c]"
 #define RSC_ISA_HBC_CODE		"          HBC [%c]"
 #define RSC_ISA_I8MM_CODE		"         I8MM [%c]"
@@ -2151,6 +2173,7 @@
 #define RSC_ISA_SB_CODE 		"           SB [%c]"
 #define RSC_ISA_SYSREG128_CODE		"    SYSREG128 [%c]"
 #define RSC_ISA_SYSINSTR128_CODE	"  SYSINSTR128 [%c]"
+#define RSC_ISA_TLBIW_CODE		"        TLBIW [%c]"
 #define RSC_ISA_WFxT_CODE		"         WFxT [%c]"
 #define RSC_ISA_XS_CODE 		"           XS [%c]"
 #define RSC_ISA_LS64_CODE		"         LS64 [%c]"

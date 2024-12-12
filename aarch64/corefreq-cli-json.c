@@ -569,6 +569,27 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.CONSTPACFIELD);
 					json_end_object(&s);
 				}
+				json_key(&s, "ISAR3");
+				{
+					json_start_object(&s);
+					json_key(&s, "CPA");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.CPA);
+					json_key(&s, "FAMINMAX");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FAMINMAX);
+					json_key(&s, "TLBIW");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.TLBIW);
+					json_key(&s, "PACM");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PACM);
+					json_key(&s, "LSFE");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.LSFE);
+					json_key(&s, "OCCMO");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.OCCMO);
+					json_key(&s, "LSUI");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.LSUI);
+					json_key(&s, "FPRCVT");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.FPRCVT);
+					json_end_object(&s);
+				}
 				json_key(&s, "MMFR0");
 				{
 					json_start_object(&s);

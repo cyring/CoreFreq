@@ -1020,7 +1020,15 @@ typedef struct	/* BSP features.					*/
 			MTE_FAR		: 42-41,
 			MTE_STOREONLY	: 43-42,
 			MTE_PERM 	: 44-43,
-			_Unused1_	: 64-44;
+			CPA		: 45-44,
+			FAMINMAX	: 46-45,
+			TLBIW		: 47-46,
+			PACM		: 48-47,
+			LSFE		: 49-48,
+			OCCMO		: 50-49,
+			LSUI		: 51-50,
+			FPRCVT		: 52-51,
+			_Unused1_	: 64-52;
 
 		Bit64	InvariantTSC	:  8-0,
 			HyperThreading	:  9-8,
