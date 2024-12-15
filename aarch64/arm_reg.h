@@ -581,15 +581,19 @@ typedef union
 	struct
 	{
 		unsigned long long
+		PoPS		:  4-0,
 		EIESB		:  8-4,
 		ASID2		: 12-8,
 		HACDBS		: 16-12,
 		FGWTE3		: 20-16,
 		NV_frac 	: 24-20,
 		E2H0		: 28-24,
-		RES0		: 36-28,
+		RMEGDI		: 32-28,
+		RES0		: 36-32,
 		E3DSE		: 40-36,
-		RES1		: 64-40;
+		RES1		: 44-40,
+		SRMASK		: 48-44,
+		RES2		: 64-48;
 	};
 } AA64MMFR4;
 
