@@ -23517,7 +23517,8 @@ static long CoreFreqK_ioctl(	struct file *filp,
 static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 {
 	unsigned long reqSize = vma->vm_end - vma->vm_start;
-    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0) \
+     || (defined(RHEL_MAJOR) && (RHEL_MAJOR >= 9) && (RHEL_MINOR >= 5))
 	vm_flags_t vm_ro = VM_READ;
     #endif
 	int rc = -EIO;
@@ -23532,7 +23533,8 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 		goto EXIT_PAGE;
 	}
 
-    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0) \
+     || (defined(RHEL_MAJOR) && (RHEL_MAJOR >= 9) && (RHEL_MINOR >= 5))
 	vm_flags_reset_once(vma, vm_ro);
     #else
 	vma->vm_flags = VM_READ;
@@ -23574,7 +23576,8 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 			return -EAGAIN;
 		}
 
-	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0) \
+	     || (defined(RHEL_MAJOR) && (RHEL_MAJOR >= 9) && (RHEL_MINOR >= 5))
 		vm_flags_reset_once(vma, vm_ro);
 	    #else
 		vma->vm_flags = VM_READ;
@@ -23605,7 +23608,8 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 			goto EXIT_PAGE;
 		}
 
-	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0) \
+	     || (defined(RHEL_MAJOR) && (RHEL_MAJOR >= 9) && (RHEL_MINOR >= 5))
 		vm_flags_reset_once(vma, vm_ro);
 	    #else
 		vma->vm_flags = VM_READ;
