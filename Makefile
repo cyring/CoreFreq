@@ -2,9 +2,9 @@
 # Copyright (C) 2015-2024 CYRIL COURTIAT
 # Licenses: GPL2
 
-COREFREQ_MAJOR = 1
-COREFREQ_MINOR = 98
-COREFREQ_REV = 8
+COREFREQ_MAJOR = 2
+COREFREQ_MINOR = 0
+COREFREQ_REV = 0
 HW = $(shell uname -m)
 CC ?= cc
 WARNING = -Wall -Wfatal-errors
