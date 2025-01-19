@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2024 CYRIL COURTIAT
+ * Copyright (C) 2015-2025 CYRIL COURTIAT
  * Licenses: GPL2
  */
 

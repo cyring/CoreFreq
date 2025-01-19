@@ -181,7 +181,7 @@ CoreFreq(14:30:-1): Processor [ 8F_71] Architecture [Zen2/Matisse] SMT [32/32]
 ### Daemon
 
 ```console
-CoreFreq Daemon #.##.#  Copyright (C) 2015-2024 CYRIL COURTIAT
+CoreFreq Daemon #.##.#  Copyright (C) 2015-2025 CYRIL COURTIAT
 
   Processor [AMD Ryzen 9 3950X 16-Core Processor]
   Architecture [Zen2/Matisse] 32/32 CPU Online.
@@ -696,5 +696,5 @@ parm:           HSMP_Attempt:Attempt the HSMP interface (short)
 # About
 [CyrIng](https://github.com/cyring)
 
-Copyright (C) 2015-2024 CYRIL COURTIAT  
+Copyright (C) 2015-2025 CYRIL COURTIAT  
  -------
