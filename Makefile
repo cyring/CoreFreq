@@ -7,7 +7,7 @@ COREFREQ_MINOR = 0
 COREFREQ_REV = 1
 HW = $(shell uname -m)
 CC ?= cc
-WARNING = -Wall -Wfatal-errors
+WARNING ?= -Wall -Wfatal-errors
 SYMLINK ?= ln -s
 INSTALL ?= install
 DEPMOD ?= depmod
@@ -345,7 +345,7 @@ help:
 	"|    where <COMPILER> is cc, gcc, clang                         |\n"\
 	"|                                                               |\n"\
 	"|  WARNING=<ARG>                                                |\n"\
-	"|    where default argument is -Wall                            |\n"\
+	"|    where default argument is -Wall -Wfatal-errors             |\n"\
 	"|                                                               |\n"\
 	"|  KERNELDIR=<PATH>                                             |\n"\
 	"|    where <PATH> is the Kernel source directory                |\n"\
