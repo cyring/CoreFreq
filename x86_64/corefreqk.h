@@ -8279,7 +8279,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD Ryzen 9 7900X",		\
 			"AMD Ryzen 7 7700X",		\
-			"AMD Ryzen Embedded 7700X"	),
+			"AMD Ryzen Embedded 7700X",	\
+			"AMD Ryzen 5 7400F"		),
 	.Boost = {+9, +1},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_RAPHAEL,
@@ -9065,7 +9066,8 @@ static PROCESSOR_SPECIFIC AMD_Zen5_STX_Specific[] = {
 };
 static PROCESSOR_SPECIFIC AMD_Zen5_Eldora_Specific[] = {
 	{
-	.Brand = ZLIST("AMD Ryzen 9 9950X"),
+	.Brand = ZLIST( "AMD Ryzen 9 9950X",	\
+			"AMD Ryzen 5 9600"	),
 	.Boost = {+14, 0},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_ELDORA,
