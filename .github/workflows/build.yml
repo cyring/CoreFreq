@@ -7,7 +7,7 @@ on:
 
 jobs:
   build_job:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
 
     strategy:
