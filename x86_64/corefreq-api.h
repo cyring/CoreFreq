@@ -1639,3 +1639,6 @@ typedef struct
 /* Source: AMD PPR Vol 1 for AMD Family 1Ah Model 02h C1		*/
 #define DID_AMD_1AH_ZEN5_TURIN_IOMMU	0x153b	/*	Turin		*/
 #define DID_AMD_1AH_TURIN_DF_UMC	0x12c0	/*	Turin		*/
+/* Source: lspci - Ryzen AI 9 HX 370					*/
+#define DID_AMD_1AH_ZEN5_STX_IOMMU	0x1508	/*	Strix Point	*/
+#define DID_AMD_1AH_STX_DF_UMC		0x16f8	/*	Strix Point	*/

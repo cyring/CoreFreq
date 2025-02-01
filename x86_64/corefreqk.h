@@ -2191,6 +2191,7 @@ static PCI_CALLBACK AMD_DataFabric_Raphael(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Genoa(struct pci_dev *pdev) ;
 static PCI_CALLBACK AMD_DataFabric_Phoenix(struct pci_dev *pdev) ;
 #define AMD_DataFabric_Turin AMD_DataFabric_Genoa
+#define AMD_DataFabric_Strix_Point AMD_DataFabric_Phoenix
 
 static struct pci_device_id PCI_Void_ids[] = {
 	{0, }
@@ -3450,6 +3451,15 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 	{
 		PCI_VDEVICE(AMD, DID_AMD_1AH_TURIN_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_DataFabric_Turin
+	},
+	/*			Strix Point				*/
+	{
+		PCI_VDEVICE(AMD, DID_AMD_1AH_ZEN5_STX_IOMMU),
+		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
+	},
+	{
+		PCI_VDEVICE(AMD, DID_AMD_1AH_STX_DF_UMC),
+		.driver_data = (kernel_ulong_t) AMD_DataFabric_Strix_Point
 	},
 	{0, }
 };
