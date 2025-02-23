@@ -4143,7 +4143,7 @@ static void Compute_ACPI_CPPC_Bounds(unsigned int cpu)
 	}
 }
 
-inline signed int Disable_ACPI_CPPC(unsigned int cpu, void *arg)
+static signed int Disable_ACPI_CPPC(unsigned int cpu, void *arg)
 {
 #if defined(CONFIG_ACPI_CPPC_LIB) \
  && LINUX_VERSION_CODE >= KERNEL_VERSION(5, 17, 0)
@@ -4162,7 +4162,7 @@ inline signed int Disable_ACPI_CPPC(unsigned int cpu, void *arg)
 	return rc;
 }
 
-inline signed int Enable_ACPI_CPPC(unsigned int cpu, void *arg)
+static signed int Enable_ACPI_CPPC(unsigned int cpu, void *arg)
 {
 #if defined(CONFIG_ACPI_CPPC_LIB) \
  && LINUX_VERSION_CODE >= KERNEL_VERSION(5, 17, 0)
@@ -7999,7 +7999,7 @@ static void Query_AMD_Family_14h(unsigned int cpu)
 	HyperThreading_Technology();
 }
 
-inline unsigned int AMD_F15h_CoreCOF(unsigned int FID, unsigned int DID)
+static unsigned int AMD_F15h_CoreCOF(unsigned int FID, unsigned int DID)
 {/*	CoreCOF (MHz) = 100 * (CpuFid[5:0] + 10h) / (2 ^ CpuDid)	*/
 	unsigned int COF = (FID + 0x10) / (1 << DID);
 
@@ -8098,7 +8098,7 @@ static void Query_AMD_Family_15h(unsigned int cpu)
 	Default_Unlock_Reset();
 }
 
-inline COF_ST AMD_Zen_CoreCOF(PSTATEDEF PStateDef)
+static COF_ST AMD_Zen_CoreCOF(PSTATEDEF PStateDef)
 {
 	unsigned long remainder;
 	COF_ST COF;
@@ -8133,7 +8133,7 @@ inline COF_ST AMD_Zen_CoreCOF(PSTATEDEF PStateDef)
 	return COF;
 }
 
-inline unsigned short AMD_Zen_Compute_FID_DID(	unsigned int COF,
+static unsigned short AMD_Zen_Compute_FID_DID(	unsigned int COF,
 						unsigned int *FID,
 						unsigned int *DID )
 {
@@ -8151,7 +8151,7 @@ inline unsigned short AMD_Zen_Compute_FID_DID(	unsigned int COF,
 	}
 }
 
-inline unsigned short AMD_Zen5_Compute_FID(	unsigned int COF,
+static unsigned short AMD_Zen5_Compute_FID(	unsigned int COF,
 						unsigned int *FID )
 {
 	unsigned int tmp = (COF << 1) * 10;
@@ -8478,7 +8478,7 @@ OutOfMemory:
     }
 }
 
-inline unsigned short CPPC_AMD_Zen_ScaleRatio(	CORE_RO *Core,
+static unsigned short CPPC_AMD_Zen_ScaleRatio(	CORE_RO *Core,
 						unsigned int scale,
 						unsigned short hint,
 						unsigned short CPB )
@@ -8499,7 +8499,7 @@ inline unsigned short CPPC_AMD_Zen_ScaleRatio(	CORE_RO *Core,
 	return scaled;
 }
 
-inline unsigned int CPPC_AMD_Zen_ScaleHint(	CORE_RO *Core,
+static unsigned int CPPC_AMD_Zen_ScaleHint(	CORE_RO *Core,
 						unsigned int scale,
 						signed int ratio,
 						unsigned short CPB )
@@ -11672,7 +11672,7 @@ struct CSTATES_ENCODING_ST {
 };
 
 #define MAKE_TOGGLE_CSTATE_FUNC( _type, _feature, _parameter )		\
-inline unsigned int Toggle_CState_##_feature( _type *pConfigRegister,	\
+static unsigned int Toggle_CState_##_feature( _type *pConfigRegister,	\
 					typeof(_parameter) _parameter)  \
 {									\
 	switch ( _parameter )						\
@@ -20136,7 +20136,7 @@ static void Cycle_AMD_Family_17h(CORE_RO *Core,
 	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(Core->Bind)))->Sync.V, NTFY);
 }
 
-inline void SoC_RAPL(AMD_17_SVI SVI, const unsigned long long factor)
+static void SoC_RAPL(AMD_17_SVI SVI, const unsigned long long factor)
 {
 	unsigned long long VCC, ICC, ACCU;
 	/*	PLATFORM RAPL workaround to provide the SoC power	*/
@@ -23687,7 +23687,7 @@ static struct file_operations CoreFreqK_fops = {
 };
 
 #ifdef CONFIG_PM_SLEEP
-inline void Print_SuspendResume(void)
+static void Print_SuspendResume(void)
 {
 	pr_notice("CoreFreq: %s(%u:%d:%d)\n",
 		CoreFreqK.ResumeFromSuspend ? "Suspend" : "Resume",
@@ -24037,7 +24037,7 @@ static void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
 #undef safe_strim
 #endif /* CONFIG_DMI */
 
-inline void SMBIOS_Decoder(void)
+static void SMBIOS_Decoder(void)
 {
 #ifdef CONFIG_DMI
 	size_t count = 0;

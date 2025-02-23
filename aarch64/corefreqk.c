@@ -2464,7 +2464,7 @@ static void Compute_ACPI_CPPC_Bounds(unsigned int cpu)
 	}
 }
 
-inline signed int Disable_ACPI_CPPC(unsigned int cpu, void *arg)
+static signed int Disable_ACPI_CPPC(unsigned int cpu, void *arg)
 {
 #if defined(CONFIG_ACPI_CPPC_LIB) \
  && LINUX_VERSION_CODE >= KERNEL_VERSION(5, 17, 0)
@@ -2483,7 +2483,7 @@ inline signed int Disable_ACPI_CPPC(unsigned int cpu, void *arg)
 	return rc;
 }
 
-inline signed int Enable_ACPI_CPPC(unsigned int cpu, void *arg)
+static signed int Enable_ACPI_CPPC(unsigned int cpu, void *arg)
 {
 #if defined(CONFIG_ACPI_CPPC_LIB) \
  && LINUX_VERSION_CODE >= KERNEL_VERSION(5, 17, 0)
@@ -3657,7 +3657,7 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 })
 
 #ifdef CONFIG_CPU_FREQ
-inline COF_ST Compute_COF_From_CPU_Freq(struct cpufreq_policy *pFreqPolicy)
+static COF_ST Compute_COF_From_CPU_Freq(struct cpufreq_policy *pFreqPolicy)
 {
 	COF_ST ratio;
 	FREQ2COF(pFreqPolicy->cur, ratio);
@@ -3665,7 +3665,7 @@ inline COF_ST Compute_COF_From_CPU_Freq(struct cpufreq_policy *pFreqPolicy)
 }
 #endif /* CONFIG_CPU_FREQ */
 
-inline COF_ST Compute_COF_From_PMU_Counter(	unsigned long long deltaCounter,
+static COF_ST Compute_COF_From_PMU_Counter(	unsigned long long deltaCounter,
 						CLOCK clk,
 						COF_ST lowestRatio )
 {
@@ -5474,7 +5474,7 @@ static struct file_operations CoreFreqK_fops = {
 };
 
 #ifdef CONFIG_PM_SLEEP
-inline void Print_SuspendResume(void)
+static void Print_SuspendResume(void)
 {
 	pr_notice("CoreFreq: %s(%u:%d:%d)\n",
 		CoreFreqK.ResumeFromSuspend ? "Suspend" : "Resume",
@@ -5816,7 +5816,7 @@ static void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
 #undef safe_strim
 #endif /* CONFIG_DMI */
 
-inline void SMBIOS_Decoder(void)
+static void SMBIOS_Decoder(void)
 {
 #ifdef CONFIG_DMI
 	size_t count = 0;
