@@ -200,14 +200,6 @@ typedef struct
 
 	struct {
 		Bit64			FLAGS	__attribute__ ((aligned (8)));
-		Bit64			HCR	__attribute__ ((aligned (8)));
-		Bit64			SCTLR	__attribute__ ((aligned (8)));
-		Bit64			SCTLR2	__attribute__ ((aligned (8)));
-		Bit64			EL	__attribute__ ((aligned (8)));
-		Bit64			FPSR	__attribute__ ((aligned (8)));
-		Bit64			FPCR	__attribute__ ((aligned (8)));
-		Bit64			SVCR	__attribute__ ((aligned (8)));
-		Bit64			CPACR	__attribute__ ((aligned (8)));
 	} SystemRegister;
 
 	unsigned int			Bind;
@@ -331,9 +323,6 @@ typedef struct
 	signed int		ArchID;
 
 	struct {
-		CLUSTERCFR	ClusterCfg;
-		CLUSTERIDR	ClusterRev;
-
 		unsigned int	Boost[UNCORE_BOOST(SIZE)];
 		BUS_REGISTERS	Bus;
 		MC_REGISTERS	MC[MC_MAX_CTRL];
@@ -397,12 +386,6 @@ typedef struct
 
 	BitCC			HWP		__attribute__ ((aligned (16)));
 	BitCC			VM		__attribute__ ((aligned (16)));
-	BitCC			CLRBHB		__attribute__ ((aligned (16)));
-	BitCC			CSV2_1		__attribute__ ((aligned (16)));
-	BitCC			CSV2_2		__attribute__ ((aligned (16)));
-	BitCC			CSV2_3		__attribute__ ((aligned (16)));
-	BitCC			CSV3		__attribute__ ((aligned (16)));
-	BitCC			SSBS		__attribute__ ((aligned (16)));
 	struct {
 		Bit64		Signal	__attribute__ ((aligned (8)));
 	} OS;

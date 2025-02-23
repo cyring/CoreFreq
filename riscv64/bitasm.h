@@ -85,17 +85,18 @@ __asm__ volatile							\
 )
 
 #define RDTSC64(_mem64) 						\
-__asm__ volatile							\
+/*TODO __asm__ volatile							\
 (									\
 	"csrr	%0	, mcycle"					\
 	: "=r" (_mem64) 						\
 	:								\
 	: "cc", "memory"						\
-)
+)*/									\
+	_mem64 = 0;
 
 #define ASM_RDTSC(_reg) 						\
-	"# Read variant TSC."			"\n\t"			\
-	"csrr	" #_reg ",	mcycle" 	"\n\t"
+	"# Read variant TSC."	/*TODO		"\n\t"			\
+	"csrr	" #_reg ",	mcycle" 	"\n\t"*/
 
 #define ASM_CODE_RDPMC(_ctr, _reg)					\
 	"# Read PMU counter."			"\n\t"			\
@@ -163,9 +164,9 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define _BITSET_GPR(_lock, _base, _offset)				\
 ({									\
-	volatile unsigned char _ret;					\
+/*	volatile unsigned char _ret;					\
 									\
-/*	__asm__ volatile						\
+	__asm__ volatile						\
 	(								\
 		"mov	x12, #1"		"\n\t"			\
 		"lsl	x12, x12, %[offset]"	"\n\t"			\
@@ -177,14 +178,17 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 		  [offset] "r" (_offset)				\
 		_BITSET_CLOBBERS_##_lock				\
 	);*/								\
+	const __typeof__(_base) _shl = 1LLU << _offset; 		\
+	const unsigned char _ret = ((_base) & (_shl)) != 0;		\
+	_base = (_base) | (_shl);					\
 	_ret;								\
 })
 
 #define _BITSET_IMM(_lock, _base, _imm6)				\
 ({									\
-	volatile unsigned char _ret;					\
+/*	volatile unsigned char _ret;					\
 									\
-/*	__asm__ volatile						\
+	__asm__ volatile						\
 	(								\
 		"mov	x12, #1"		"\n\t"			\
 		"lsl	x12, x12, %[imm6]"	"\n\t"			\
@@ -196,6 +200,9 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 		  [imm6] "i" (_imm6)					\
 		_BITSET_CLOBBERS_##_lock				\
 	);*/								\
+	const __typeof__(_base) _shl = 1LLU << _imm6;			\
+	const unsigned char _ret = ((_base) & (_shl)) != 0;		\
+	_base = (_base) | (_shl);					\
 	_ret;								\
 })
 
@@ -228,9 +235,9 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define _BITCLR_GPR(_lock, _base, _offset)				\
 ({									\
-	volatile unsigned char _ret;					\
+/*	volatile unsigned char _ret;					\
 									\
-/*	__asm__ volatile						\
+	__asm__ volatile						\
 	(								\
 		"mov	x12, #1"		"\n\t"			\
 		"lsl	x12, x12, %[offset]"	"\n\t"			\
@@ -242,14 +249,17 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 		  [offset] "r" (_offset)				\
 		_BITCLR_CLOBBERS_##_lock				\
 	);*/								\
+	const __typeof__(_base) _shl = 1LLU << _offset; 		\
+	const unsigned char _ret = ((_base) & (_shl)) != 0;		\
+	_base = (_base) & ~(_shl);					\
 	_ret;								\
 })
 
 #define _BITCLR_IMM(_lock, _base, _imm6)				\
 ({									\
-	volatile unsigned char _ret;					\
+/*	volatile unsigned char _ret;					\
 									\
-/*	__asm__ volatile						\
+	__asm__ volatile						\
 	(								\
 		"mov	x12, #1"		"\n\t"			\
 		"lsl	x12, x12, %[imm6]"	"\n\t"			\
@@ -261,6 +271,9 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 		  [imm6] "i" (_imm6)					\
 		_BITCLR_CLOBBERS_##_lock				\
 	);*/								\
+	const __typeof__(_base) _shl = 1LLU << _imm6;			\
+	const unsigned char _ret = ((_base) & (_shl)) != 0;		\
+	_base = (_base) & ~(_shl);					\
 	_ret;								\
 })
 
@@ -292,9 +305,9 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define _BIT_TEST_GPR(_lock, _base, _offset)				\
 ({									\
-	volatile unsigned char _ret;					\
+/*	volatile unsigned char _ret;					\
 									\
-/*	__asm__ volatile						\
+	__asm__ volatile						\
 	(								\
 		"mov	x12, #1"		"\n\t"			\
 		"lsl	x12, x12, %[offset]"	"\n\t"			\
@@ -306,14 +319,15 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 		  [offset] "r" (_offset)				\
 		_BIT_TEST_CLOBBERS_##_lock				\
 	);*/								\
+	const unsigned char _ret = ((_base) & (1LLU << _offset)) != 0;	\
 	_ret;								\
 })
 
 #define _BIT_TEST_IMM(_lock, _base, _imm6)				\
 ({									\
-	volatile unsigned char _ret;					\
+/*	volatile unsigned char _ret;					\
 									\
-/*	__asm__ volatile						\
+	__asm__ volatile						\
 	(								\
 		"mov	x12, #1"		"\n\t"			\
 		"lsl	x12, x12, %[imm6]"	"\n\t"			\
@@ -325,6 +339,7 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 		  [imm6] "i" (_imm6)					\
 		_BIT_TEST_CLOBBERS_##_lock				\
 	);*/								\
+	const unsigned char _ret = ((_base) & (1LLU << _imm6)) != 0;	\
 	_ret;								\
 })
 
@@ -351,9 +366,9 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define _BITWISEAND(_lock, _opl, _opr)					\
 ({									\
-	volatile Bit64 _dest __attribute__ ((aligned (8)));		\
+/*	volatile Bit64 _dest __attribute__ ((aligned (8)));		\
 									\
-/*	__asm__ volatile						\
+	__asm__ volatile						\
 	(								\
 		_BITWISEAND_PRE_INST_##_lock				\
 		"and	x10, x11, %[opr]"	"\n\t"			\
@@ -364,6 +379,7 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 		  [opr]  "Lr" (_opr)					\
 		_BITWISEAND_CLOBBERS_##_lock				\
 	);*/								\
+	const Bit64 _dest __attribute__ ((aligned (8)))=(_opl) & (_opr);\
 	_dest;								\
 })
 
@@ -390,9 +406,9 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define _BITWISEOR(_lock, _opl, _opr)					\
 ({									\
-	volatile Bit64 _dest __attribute__ ((aligned (8)));		\
+/*	volatile Bit64 _dest __attribute__ ((aligned (8)));		\
 									\
-/*	__asm__ volatile						\
+	__asm__ volatile						\
 	(								\
 		_BITWISEOR_PRE_INST_##_lock				\
 		"orr	x10, x11, %[opr]"	"\n\t"			\
@@ -403,6 +419,7 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 		  [opr]  "Lr" (_opr)					\
 		_BITWISEOR_CLOBBERS_##_lock				\
 	);*/								\
+	const Bit64 _dest __attribute__ ((aligned (8)))=(_opl) | (_opr);\
 	_dest;								\
 })
 
@@ -429,9 +446,9 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define _BITWISEXOR(_lock, _opl, _opr)					\
 ({									\
-	volatile Bit64 _dest __attribute__ ((aligned (8)));		\
+/*	volatile Bit64 _dest __attribute__ ((aligned (8)));		\
 									\
-/*	__asm__ volatile						\
+	__asm__ volatile						\
 	(								\
 		_BITWISEXOR_PRE_INST_##_lock				\
 		"eor	x10, x11, %[opr]"	"\n\t"			\
@@ -442,6 +459,7 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 		  [opr]  "Lr" (_opr)					\
 		_BITWISEXOR_CLOBBERS_##_lock				\
 	);*/								\
+	const Bit64 _dest __attribute__ ((aligned (8)))=(_opl) ^ (_opr);\
 	_dest;								\
 })
 
@@ -530,6 +548,7 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 		  [src] "r" (_src)					\
 		_BITSTOR_CLOBBERS_##_lock				\
 	);*/								\
+	_dest = _src;							\
 })
 
 #define BITSTOR(_lock, _dest, _src)					\
@@ -615,6 +634,7 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 		  [opr]  "Lr" (_opr)					\
 		_BITWISESET_CLOBBERS_##_lock				\
 	);*/								\
+	_BITSTOR(_lock, _opl, _opr);					\
 })
 
 #define BITWISESET(_lock, _opl, _opr)					\
@@ -643,14 +663,15 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define _BITWISECLR(_lock, _dest)					\
 ({									\
-	__asm__ volatile						\
+/*	__asm__ volatile						\
 	(								\
 		_BITWISECLR_PRE_INST_##_lock				\
 		_BITWISECLR_POST_INST_##_lock				\
 		:							\
 		: [addr] "r" (&_dest)					\
 		_BITWISECLR_CLOBBERS_##_lock				\
-	);								\
+	);*/								\
+	_dest = 0;							\
 })
 
 #define BITWISECLR(_lock, _dest)					\
@@ -738,9 +759,9 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define _BITCMP(_lock, _opl, _opr)					\
 ({									\
-	volatile unsigned char _ret;					\
+/*	volatile unsigned char _ret;					\
 									\
-/*	__asm__ volatile						\
+	__asm__ volatile						\
 	(								\
 		_BITCMP_PRE_INST_##_lock				\
 		"cmp	x11,	%[opr]" 		"\n\t"		\
@@ -752,6 +773,7 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 		  [opr]	"Lr"	(_opr)					\
 		_BITCMP_CLOBBERS_##_lock				\
 	);*/								\
+	const unsigned char _ret = _opl == _opr ? 1 : 0;		\
 	_ret;								\
 })
 

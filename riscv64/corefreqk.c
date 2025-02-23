@@ -71,7 +71,7 @@ enum {
 MODULE_AUTHOR ("CYRIL COURTIAT <labs[at]cyring[dot]fr>");
 MODULE_DESCRIPTION ("CoreFreq Processor Driver");
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 12, 0)
-MODULE_SUPPORTED_DEVICE ("ARM");
+MODULE_SUPPORTED_DEVICE ("RISCV");
 #endif
 MODULE_LICENSE ("GPL");
 MODULE_VERSION (COREFREQ_VERSION);
@@ -80,7 +80,7 @@ static signed int ArchID = -1;
 module_param(ArchID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ArchID, "Force an architecture (ID)");
 
-static signed int AutoClock = 0b11;
+static signed int AutoClock = /*TODO: 0b11*/ 0b00;
 module_param(AutoClock, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(AutoClock, "Estimate Clock Frequency 0:Spec; 1:Once; 2:Auto");
 
@@ -424,7 +424,7 @@ static long CoreFreqK_Register_ClockSource(unsigned int cpu)
     }
 	return rc;
 }
-
+/*
 static void VendorFromMainID(	MIDR midr, char *pVendorID, unsigned int *pCRC,
 				enum HYPERVISOR *pHypervisor )
 {
@@ -437,7 +437,7 @@ static const struct {
     } mfrTbl[] = {
 	{	0x00,	VENDOR_RESERVED, __builtin_strlen(VENDOR_RESERVED),
 		CRC_RESERVED,	BARE_METAL				},
-	{	0x41,	VENDOR_ARM,	__builtin_strlen(VENDOR_ARM),
+	{	0x41,	VENDOR_RISC,	__builtin_strlen(VENDOR_RISC),
 		CRC_ARM,	BARE_METAL				},
 	{	0x42,	VENDOR_BROADCOM, __builtin_strlen(VENDOR_BROADCOM),
 		CRC_BROADCOM,	BARE_METAL				},
@@ -479,7 +479,7 @@ static const struct {
 	}
     }
 }
-
+*/
 static signed int SearchArchitectureID(void)
 {
 	signed int id;
@@ -506,1377 +506,58 @@ static signed int SearchArchitectureID(void)
 static void Query_Features(void *pArg)
 {
 	INIT_ARG *iArg = (INIT_ARG *) pArg;
-
-	volatile MIDR midr;
-	volatile CNTFRQ cntfrq;
-	volatile CNTPCT cntpct;
-	volatile PMCR pmcr;
-	volatile AA64DFR0 dfr0;
-	volatile AA64DFR1 dfr1;
-	volatile AA64ISAR0 isar0;
-	volatile AA64ISAR1 isar1;
-	volatile AA64ISAR2 isar2;
-	volatile AA64ISAR3 isar3;
-	volatile AA64MMFR0 mmfr0;
-	volatile AA64MMFR1 mmfr1;
-	volatile AA64MMFR2 mmfr2;
-	volatile AA64PFR0 pfr0;
-	volatile AA64PFR1 pfr1;
-	volatile AA64PFR2 pfr2;
-	volatile MVFR0 mvfr0;
-	volatile MVFR1 mvfr1;
-	volatile MVFR2 mvfr2;
+/*	volatile unsigned long long cntfrq;	TODO*/
 
 	iArg->Features->Info.Vendor.CRC = CRC_RESERVED;
 	iArg->SMT_Count = 1;
 	iArg->HypervisorID = HYPERV_NONE;
-/*
+/*TODO
 	__asm__ __volatile__(
-		"mrs	%[midr] ,	midr_el1"	"\n\t"
-		"mrs	%[cntfrq],	cntfrq_el0"	"\n\t"
-		"mrs	%[cntpct],	cntpct_el0"	"\n\t"
-		"mrs	%[pmcr] ,	pmcr_el0"	"\n\t"
-		"mrs	%[dfr0] ,	id_aa64dfr0_el1""\n\t"
-		"mrs	%[dfr1] ,	id_aa64dfr1_el1""\n\t"
-		"mrs	%[isar0],	id_aa64isar0_el1""\n\t"
-		"mrs	%[isar1],	id_aa64isar1_el1""\n\t"
-		"mrs	%[mmfr0],	id_aa64mmfr0_el1""\n\t"
-		"mrs	%[mmfr1],	id_aa64mmfr1_el1""\n\t"
-		"mrs	%[pfr0] ,	id_aa64pfr0_el1""\n\t"
-		"mrs	%[pfr1] ,	id_aa64pfr1_el1""\n\t"
-		"mrs	%[mvfr0],	mvfr0_el1"	"\n\t"
-		"mrs	%[mvfr1],	mvfr1_el1"	"\n\t"
-		"mrs	%[mvfr2],	mvfr2_el1"	"\n\t"
-		"isb"
-		: [midr]	"=r" (midr),
-		  [cntfrq]	"=r" (cntfrq),
-		  [cntpct]	"=r" (cntpct),
-		  [pmcr]	"=r" (pmcr),
-		  [dfr0]	"=r" (dfr0),
-		  [dfr1]	"=r" (dfr1),
-		  [isar0]	"=r" (isar0),
-		  [isar1]	"=r" (isar1),
-		  [mmfr0]	"=r" (mmfr0),
-		  [mmfr1]	"=r" (mmfr1),
-		  [pfr0]	"=r" (pfr0),
-		  [pfr1]	"=r" (pfr1),
-		  [mvfr0]	"=r" (mvfr0),
-		  [mvfr1]	"=r" (mvfr1),
-		  [mvfr2]	"=r" (mvfr2)
+		"csrr	%[cntfrq],	mcycle" "\n\t"
+		"fence iorw, iorw"
+		: [cntfrq]	"=r" (cntfrq)
 		:
 		: "memory"
 	);
-
-	isar2.value = SysRegRead(ID_AA64ISAR2_EL1);
-	isar3.value = SysRegRead(ID_AA64ISAR3_EL1);
-	mmfr2.value = SysRegRead(ID_AA64MMFR2_EL1);
 */
-	iArg->Features->Info.Signature.Stepping = midr.Revision
-						| (midr.Variant << 4);
-	iArg->Features->Info.Signature.Family = midr.PartNum & 0x00f;
-	iArg->Features->Info.Signature.ExtFamily = (midr.PartNum & 0xff0) >> 4;
-	iArg->Features->Info.Signature.Model = pmcr.IDcode & 0x0f;
-	iArg->Features->Info.Signature.ExtModel = (pmcr.IDcode & 0xf0) >> 4;
-
+	iArg->Features->Info.Signature.Stepping = 0;
+	iArg->Features->Info.Signature.Family = 0 & 0x00f;
+	iArg->Features->Info.Signature.ExtFamily = (0 & 0xff0) >> 4;
+	iArg->Features->Info.Signature.Model = 0 & 0x0f;
+	iArg->Features->Info.Signature.ExtModel = (0 & 0xf0) >> 4;
+/*
 	VendorFromMainID(midr, iArg->Features->Info.Vendor.ID,
 			&iArg->Features->Info.Vendor.CRC, &iArg->HypervisorID);
 
-	iArg->Features->Factory.Freq = cntfrq.ClockFreq_Hz;
-	iArg->Features->Factory.Freq = iArg->Features->Factory.Freq / 10000;
+	iArg->Features->Factory.Freq = cntfrq;
+	iArg->Features->Factory.Freq = iArg->Features->Factory.Freq / 1U;
+*/
+	iArg->Features->Factory.Freq = 1000;
 
 #if defined(CONFIG_ACPI)
 	iArg->Features->ACPI = acpi_disabled == 0;
 #else
 	iArg->Features->ACPI = 0;
 #endif
+/*
 	iArg->Features->TSC = \
 	iArg->Features->Inv_TSC = \
-	iArg->Features->RDTSCP = cntpct.PhysicalCount != 0;
+	iArg->Features->RDTSCP = cntfrq != 0;
+*/
+	iArg->Features->TSC = \
+	iArg->Features->Inv_TSC = \
+	iArg->Features->RDTSCP = 0;
 
-	iArg->Features->PerfMon.FixCtrs = 0;
-	iArg->Features->PerfMon.MonCtrs = pmcr.NumEvtCtrs;
-	iArg->Features->PerfMon.Version = dfr0.PMUVer;
+	iArg->Features->PerfMon.FixCtrs = \
+	iArg->Features->PerfMon.MonCtrs = \
+	iArg->Features->PerfMon.Version = 0;
+
 	if (iArg->Features->PerfMon.Version > 0) {
 		iArg->Features->PerfMon.FixCtrs++; /* Fixed Cycle Counter */
 	}
-	/*TODO(Memory-mapped PMU register at offset 0xe00): pmcfgr	*/
+
 	iArg->Features->PerfMon.MonWidth = \
 	iArg->Features->PerfMon.FixWidth = 0b111111 == 0b111111 ? 64 : 0;
-
-	switch (dfr1.PMICNTR) { /* Performance Monitors Instruction Counter */
-	case 0b0001:
-		iArg->Features->PerfMon.FixCtrs++;
-		break;
-	case 0b0000:
-	default:
-		break;
-	}
-	switch (dfr1.EBEP) {
-	case 0b0001:
-		iArg->Features->EBEP = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->EBEP = 0;
-		break;
-	}
-	switch (isar0.AES) {
-	case 0b0010:
-		iArg->Features->PMULL = 1;
-		fallthrough;
-	case 0b0001:
-		iArg->Features->AES = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->PMULL = \
-		iArg->Features->AES = 0;
-		break;
-	}
-	switch (isar0.SHA1) {
-	case 0b0001:
-		iArg->Features->SHA1 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SHA1 = 0;
-		break;
-	}
-	switch (isar0.SHA2) {
-	case 0b0010:
-		iArg->Features->SHA512 = 1;
-		fallthrough;
-	case 0b0001:
-		iArg->Features->SHA256 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SHA512 = 0;
-		iArg->Features->SHA256 = 0;
-		break;
-	}
-	switch (isar0.SHA3) {
-	case 0b0001:
-		iArg->Features->SHA3 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SHA3 = 0;
-		break;
-	}
-	switch (isar0.CRC32) {
-	case 0b0001:
-		iArg->Features->CRC32 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->CRC32 = 0;
-		break;
-	}
-	switch (isar0.Atomic) {
-	case 0b0011:
-		iArg->Features->LSE128 = 1;
-		fallthrough;
-	case 0b0010:
-		iArg->Features->LSE = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->LSE128 = \
-		iArg->Features->LSE = 0;
-		break;
-	}
-	switch (isar0.TME) {
-	case 0b0001:
-		iArg->Features->TME = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->TME = 0;
-		break;
-	}
-	switch (isar0.RDM) {
-	case 0b0001:
-		iArg->Features->RDMA = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->RDMA = 0;
-		break;
-	}
-	switch (isar0.DP) {
-	case 0b0001:
-		iArg->Features->DP = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->DP = 0;
-		break;
-	}
-	switch (isar0.SM3) {
-	case 0b0001:
-		iArg->Features->SM3 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SM3 = 0;
-		break;
-	}
-	switch (isar0.SM4) {
-	case 0b0001:
-		iArg->Features->SM4 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SM4 = 0;
-		break;
-	}
-	switch (isar0.FHM) {
-	case 0b0001:
-		iArg->Features->FHM = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->FHM = 0;
-		break;
-	}
-	switch (isar0.TS) {
-	case 0b0010:
-		iArg->Features->FlagM2 = 1;
-		fallthrough;
-	case 0b0001:
-		iArg->Features->FlagM = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->FlagM2 = \
-		iArg->Features->FlagM = 0;
-		break;
-	}
-	switch (isar0.TLB) {
-	case 0b0010:
-		iArg->Features->TLBIRANGE = 1;
-		fallthrough;
-	case 0b0001:
-		iArg->Features->TLBIOS = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->TLBIRANGE = \
-		iArg->Features->TLBIOS = 0;
-		break;
-	}
-	switch (isar0.RNDR) {
-	case 0b0001:
-		iArg->Features->RAND = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->RAND = 0;
-		break;
-	}
-	switch (isar1.FCMA) {
-	case 0b0001:
-		iArg->Features->FCMA = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->FCMA = 0;
-		break;
-	}
-	switch (isar1.GPI) {
-	case 0b0001:
-		iArg->Features->PACIMP = 1;
-		break;
-	case 0b0000:
-		iArg->Features->PACIMP = 0;
-		break;
-	}
-	switch (isar1.GPA) {
-	case 0b0001:
-		iArg->Features->PACQARMA5 = 1;
-		break;
-	case 0b0000:
-		iArg->Features->PACQARMA5 = 0;
-		break;
-	}
-	switch (isar1.LRCPC) {
-	case 0b0011:
-		iArg->Features->LRCPC3 = 1;
-		fallthrough;
-	case 0b0010:
-		iArg->Features->LRCPC2 = 1;
-		fallthrough;
-	case 0b0001:
-		iArg->Features->LRCPC = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->LRCPC3 = \
-		iArg->Features->LRCPC2 = \
-		iArg->Features->LRCPC = 0;
-		break;
-	}
-	switch (isar1.JSCVT) {
-	case 0b0001:
-		iArg->Features->JSCVT = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->JSCVT = 0;
-		break;
-	}
-	switch (isar1.FRINTTS) {
-	case 0b0001:
-		iArg->Features->FRINTTS = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->FRINTTS = 0;
-		break;
-	}
-	switch (isar1.SPECRES) {
-	case 0b0010:
-		iArg->Features->SPECRES2 = 1;
-		fallthrough;
-	case 0b0001:
-		iArg->Features->SPECRES = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SPECRES2 = \
-		iArg->Features->SPECRES = 0;
-		break;
-	}
-	switch (isar1.BF16) {
-	case 0b0010:
-		iArg->Features->EBF16 = 1;
-		fallthrough;
-	case 0b0001:
-		iArg->Features->BF16 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->EBF16 = \
-		iArg->Features->BF16 = 0;
-		break;
-	}
-	switch (isar1.I8MM) {
-	case 0b0001:
-		iArg->Features->I8MM = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->I8MM = 0;
-		break;
-	}
-	switch (isar1.SB) {
-	case 0b0001:
-		iArg->Features->SB = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SB = 0;
-		break;
-	}
-	switch (isar1.XS) {
-	case 0b0001:
-		iArg->Features->XS = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->XS = 0;
-		break;
-	}
-	switch (isar1.LS64) {
-	case 0b0011:
-		iArg->Features->LS64_ACCDATA = 1;
-		fallthrough;
-	case 0b0010:
-		iArg->Features->LS64_V = 1;
-		fallthrough;
-	case 0b0001:
-		iArg->Features->LS64 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->LS64_ACCDATA = \
-		iArg->Features->LS64_V = \
-		iArg->Features->LS64 = 0;
-		break;
-	}
-	switch (isar1.DGH) {
-	case 0b0001:
-		iArg->Features->DGH = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->DGH = 0;
-		break;
-	}
-	switch (isar1.DPB) {
-	case 0b0010:
-		iArg->Features->DPB2 = 1;
-		fallthrough;
-	case 0b0001:
-		iArg->Features->DPB = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->DPB2 = \
-		iArg->Features->DPB = 0;
-		break;
-	}
-	switch (isar2.GPA3) {
-	case 0b0001:
-		iArg->Features->PACQARMA3 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->PACQARMA3 = 0;
-		break;
-	}
-
-	iArg->Features->PAuth = (isar2.APA3 == 0b0001) || (isar1.API == 0b0001)
-				|| (isar1.APA == 0b0001);
-
-	iArg->Features->EPAC = (isar2.APA3 == 0b0010) || (isar1.API == 0b0010)
-				|| (isar1.APA == 0b0010);
-
-	iArg->Features->PAuth2 = (isar2.APA3 == 0b0011) || (isar1.API == 0b0011)
-				|| (isar1.APA == 0b0011);
-
-	iArg->Features->FPAC = (isar2.APA3 == 0b0100) || (isar1.API == 0b0100)
-				|| (isar1.APA == 0b0100);
-
-	iArg->Features->FPACCOMBINE = (isar2.APA3 == 0b0101)
-				|| (isar1.API == 0b0101)||(isar1.APA == 0b0101);
-
-	iArg->Features->PAuth_LR = (isar2.APA3 == 0b0110)
-				|| (isar1.API == 0b0110)||(isar1.APA == 0b0110);
-
-	switch (isar2.WFxT) {
-	case 0b0001:
-		iArg->Features->WFxT = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->WFxT = 0;
-		break;
-	}
-	switch (isar2.RPRES) {
-	case 0b0001:
-		iArg->Features->RPRES = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->RPRES = 0;
-		break;
-	}
-	switch (isar2.MOPS) {
-	case 0b0001:
-		iArg->Features->MOPS = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->MOPS = 0;
-		break;
-	}
-	switch (isar2.BC) {
-	case 0b0001:
-		iArg->Features->HBC = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->HBC = 0;
-		break;
-	}
-	switch (isar2.CLRBHB) {
-	case 0b0001:
-		iArg->Features->CLRBHB = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->CLRBHB = 0;
-		break;
-	}
-	switch (isar2.SYSREG_128) {
-	case 0b0001:
-		iArg->Features->SYSREG128 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SYSREG128 = 0;
-		break;
-	}
-	switch (isar2.SYSINSTR_128) {
-	case 0b0001:
-		iArg->Features->SYSINSTR128 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SYSINSTR128 = 0;
-		break;
-	}
-	switch (isar2.PRFMSLC) {
-	case 0b0001:
-		iArg->Features->PRFMSLC = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->PRFMSLC = 0;
-		break;
-	}
-	switch (isar2.PCDPHINT) {
-	case 0b0001:
-		iArg->Features->PCDPHINT = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->PCDPHINT = 0;
-		break;
-	}
-	switch (isar2.RPRFM) {
-	case 0b0001:
-		iArg->Features->RPRFM = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->RPRFM = 0;
-		break;
-	}
-	switch (isar2.CSSC) {
-	case 0b0001:
-		iArg->Features->CSSC = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->CSSC = 0;
-		break;
-	}
-	switch (isar2.LUT) {
-	case 0b0001:
-		iArg->Features->LUT = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->LUT = 0;
-		break;
-	}
-	switch (isar2.ATS1A) {
-	case 0b0001:
-		iArg->Features->ATS1A = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->ATS1A = 0;
-		break;
-	}
-	switch (isar2.PAC_frac) {
-	case 0b0001:
-		iArg->Features->CONSTPACFIELD = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->CONSTPACFIELD = 0;
-		break;
-	}
-
-	switch (isar3.CPA) {
-	case 0b0010:
-	case 0b0001:
-		iArg->Features->CPA = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->CPA = 0;
-		break;
-	}
-	switch (isar3.FAMINMAX) {
-	case 0b0001:
-		iArg->Features->FAMINMAX = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->FAMINMAX = 0;
-		break;
-	}
-	switch (isar3.TLBIW) {
-	case 0b0001:
-		iArg->Features->TLBIW = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->TLBIW = 0;
-		break;
-	}
-	switch (isar3.PACM) {
-	case 0b0010:
-	case 0b0001:
-		iArg->Features->PACM = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->PACM = 0;
-		break;
-	}
-	switch (isar3.LSFE) {
-	case 0b0001:
-		iArg->Features->LSFE = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->LSFE = 0;
-		break;
-	}
-	switch (isar3.OCCMO) {
-	case 0b0001:
-		iArg->Features->OCCMO = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->OCCMO = 0;
-		break;
-	}
-	switch (isar3.LSUI) {
-	case 0b0001:
-		iArg->Features->LSUI = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->LSUI = 0;
-		break;
-	}
-	switch (isar3.FPRCVT) {
-	case 0b0001:
-		iArg->Features->FPRCVT = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->FPRCVT = 0;
-		break;
-	}
-
-	switch (mmfr0.ECV) {
-	case 0b0010:
-	case 0b0001:
-		iArg->Features->ECV = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->ECV = 0;
-		break;
-	}
-	switch (mmfr0.FGT) {
-	case 0b0010:
-		iArg->Features->FGT2 = 1;
-		fallthrough;
-	case 0b0001:
-		iArg->Features->FGT = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->FGT2 = \
-		iArg->Features->FGT = 0;
-	}
-	switch (mmfr0.ExS) {
-	case 0b0001:
-		iArg->Features->ExS = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->ExS = 0;
-		break;
-	}
-	switch (mmfr0.BigEnd_EL0) {
-	case 0b0001:
-		iArg->Features->BigEnd_EL0 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->BigEnd_EL0 = 0;
-		break;
-	}
-	switch (mmfr0.BigEnd) {
-	case 0b0001:
-		iArg->Features->BigEnd_EE = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->BigEnd_EE = 0;
-		break;
-	}
-
-	iArg->Features->PARange = mmfr0.PARange;
-
-	switch (mmfr1.VH) {
-	case 0b0001:
-		iArg->Features->VHE = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->VHE = 0;
-		break;
-	}
-	switch (mmfr1.PAN) {
-	case 0b0001:
-	case 0b0010:
-	case 0b0011:
-		iArg->Features->PAN = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->PAN = 0;
-		break;
-	}
-	switch (mmfr1.ECBHB) {
-	case 0b0001:
-		iArg->Features->ECBHB = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->ECBHB = 0;
-		break;
-	}
-
-	switch (mmfr2.UAO) {
-	case 0b0001:
-		iArg->Features->UAO = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->UAO = 0;
-		break;
-	}
-	if (mmfr2.VARange < 0b0011) {
-		iArg->Features->VARange = mmfr2.VARange;
-	} else {
-		iArg->Features->VARange = 0b11;
-	}
-
-	switch (pfr0.FP) {
-	case 0b0000:
-	case 0b0001:
-		iArg->Features->FP = 1;
-		break;
-	case 0b1111:
-	default:
-		iArg->Features->FP = 0;
-		break;
-	}
-	switch (pfr0.AdvSIMD) {
-	case 0b0000:
-	case 0b0001:
-		iArg->Features->SIMD = 1;
-		break;
-	case 0b1111:
-	default:
-		iArg->Features->SIMD = 0;
-		break;
-	}
-	switch (pfr0.GIC) {
-	case 0b0011:
-		iArg->Features->GIC_frac = 1;
-		fallthrough;
-	case 0b0001:
-		iArg->Features->GIC_vers = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->GIC_frac = \
-		iArg->Features->GIC_vers = 0;
-		break;
-	}
-	switch (pfr0.SVE) {
-	case 0b0001:
-		iArg->Features->SVE = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SVE = 0;
-		break;
-	}
-	switch (pfr0.DIT) {
-	case 0b0001:
-	case 0b0010:
-		iArg->Features->DIT = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->DIT = 0;
-		break;
-	}
-	switch (pfr0.RAS) {
-	case 0b0010:
-		iArg->Features->RAS_frac = 1;
-		iArg->Features->RAS = 1;
-		break;
-	case 0b0001:
-		switch (pfr1.RAS_frac) {
-		case 0b0001:
-			iArg->Features->RAS_frac = 1;
-			break;
-		case 0b0000:
-		default:
-			iArg->Features->RAS_frac = 0;
-			break;
-		}
-		iArg->Features->RAS = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->RAS_frac = 0;
-		iArg->Features->RAS = 0;
-		break;
-	}
-	switch (pfr0.MPAM) {
-	case 0b0000:
-	case 0b0001:
-		iArg->Features->MPAM_vers = pfr0.MPAM;
-		switch (pfr1.MPAM_frac) {
-		case 0b0000:
-		case 0b0001:
-			iArg->Features->MPAM_frac = pfr1.MPAM_frac;
-			break;
-		default:
-			iArg->Features->MPAM_frac = 0;
-			break;
-		}
-		break;
-	default:
-		iArg->Features->MPAM_vers = \
-		iArg->Features->MPAM_frac = 0;
-		break;
-	}
-	switch (pfr0.AMU) {
-	case 0b0001:
-		iArg->Features->AMU_vers = 1;
-		iArg->Features->AMU_frac = 0;
-		break;
-	case 0b0010:
-		iArg->Features->AMU_vers = 1;
-		iArg->Features->AMU_frac = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->AMU_vers = 0;
-		iArg->Features->AMU_frac = 0;
-		break;
-	}
-	if (iArg->Features->AMU_vers > 0) {
-/*		AMCGCR amcgc = {.value = SysRegRead(AMCGCR_EL0)};
-		iArg->Features->AMU.CG0NC = amcgc.CG0NC;
-		iArg->Features->AMU.CG1NC = amcgc.CG1NC;*/
-	}
-	switch (pfr0.RME) {
-	case 0b0001:
-		iArg->Features->RME = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->RME = 0;
-		break;
-	}
-	switch (pfr0.SEL2) {
-	case 0b0001:
-		iArg->Features->SEL2 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SEL2 = 0;
-		break;
-	}
-
-	switch (pfr1.BT) {
-	case 0b0001:
-		iArg->Features->BTI = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->BTI = 0;
-		break;
-	}
-
-	iArg->Features->SSBS = pfr1.SSBS;
-
-	switch (pfr1.MTE) {
-	case 0b0010:
-		switch (pfr1.MTE_frac) {
-		case 0b0000:
-			iArg->Features->MTE = 3;
-			break;
-		case 0b1111:
-			iArg->Features->MTE = 2;
-			break;
-		default:
-			iArg->Features->MTE = 1;
-			break;
-		}
-		break;
-	case 0b0011:
-	default:
-		switch (pfr1.MTEX) {
-		case 0b0001:
-			iArg->Features->MTE = 4;
-			break;
-		case 0b0000:
-		default:
-			iArg->Features->MTE = 3;
-			break;
-		}
-		break;
-	case 0b0001:
-		iArg->Features->MTE = 1;
-		break;
-	case 0b0000:
-		iArg->Features->MTE = 0;
-		break;
-	}
-	switch (pfr1.SME) {
-	case 0b0001:
-	case 0b0010:
-		iArg->Features->SME = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SME = 0;
-		break;
-	}
-	switch (pfr1.RNDR_trap) {
-	case 0b0001:
-		iArg->Features->RNG_TRAP = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->RNG_TRAP = 0;
-		break;
-	}
-
-	iArg->Features->CSV2 = pfr1.CSV2_frac;
-
-	switch (pfr1.NMI) {
-	case 0b0001:
-		iArg->Features->NMI = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->NMI = 0;
-		break;
-	}
-	switch (pfr1.GCS) {
-	case 0b0001:
-		iArg->Features->GCS = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->GCS = 0;
-		break;
-	}
-	switch (pfr1.THE) {
-	case 0b0001:
-		iArg->Features->THE = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->THE = 0;
-		break;
-	}
-	switch (pfr1.DF2) {
-	case 0b0001:
-		iArg->Features->DF2 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->DF2 = 0;
-		break;
-	}
-	switch (pfr1.PFAR) {
-	case 0b0001:
-		iArg->Features->PFAR = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->PFAR = 0;
-		break;
-	}
-/*
-	pfr2.value = SysRegRead(ID_AA64PFR2_EL1);
-*/
-	switch(pfr2.FPMR) {
-	case 0b0001:
-		iArg->Features->FPMR = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->FPMR = 0;
-		break;
-	}
-	switch(pfr2.UINJ) {
-	case 0b0001:
-		iArg->Features->UINJ = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->UINJ = 0;
-		break;
-	}
-	switch(pfr2.MTEFAR) {
-	case 0b0001:
-		iArg->Features->MTE_FAR = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->MTE_FAR = 0;
-		break;
-	}
-	switch(pfr2.MTESTOREONLY) {
-	case 0b0001:
-		iArg->Features->MTE_STOREONLY = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->MTE_STOREONLY = 0;
-		break;
-	}
-	switch(pfr2.MTEPERM) {
-	case 0b0001:
-		iArg->Features->MTE_PERM = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->MTE_PERM = 0;
-		break;
-	}
-
-    if (iArg->Features->SVE | iArg->Features->SME)
-    {
-/*	volatile AA64ZFR0 zfr0 = {.value = SysRegRead(ID_AA64ZFR0_EL1)};
-
-	switch (zfr0.SVE_F64MM) {
-	case 0b0001:
-		iArg->Features->SVE_F64MM = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SVE_F64MM = 0;
-		break;
-	}
-	switch (zfr0.SVE_F32MM) {
-	case 0b0001:
-		iArg->Features->SVE_F32MM = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SVE_F32MM = 0;
-		break;
-	}
-	switch (zfr0.SVE_I8MM) {
-	case 0b0001:
-		iArg->Features->SVE_I8MM = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SVE_I8MM = 0;
-		break;
-	}
-	switch (zfr0.SVE_SM4) {
-	case 0b0001:
-		iArg->Features->SVE_SM4 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SVE_SM4 = 0;
-		break;
-	}
-	switch (zfr0.SVE_SHA3) {
-	case 0b0001:
-		iArg->Features->SVE_SHA3 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SVE_SHA3 = 0;
-		break;
-	}
-	switch (zfr0.SVE_BF16) {
-	case 0b0010:
-		iArg->Features->SVE_EBF16 = 1;
-		fallthrough;
-	case 0b0001:
-		iArg->Features->SVE_BF16 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SVE_EBF16 = \
-		iArg->Features->SVE_BF16 = 0;
-		break;
-	}
-	switch (zfr0.BitPerm) {
-	case 0b0001:
-		iArg->Features->SVE_BitPerm = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SVE_BitPerm = 0;
-		break;
-	}
-	switch (zfr0.SVE_AES) {
-	case 0b0010:
-		iArg->Features->SVE_PMULL128 = 1;
-		fallthrough;
-	case 0b0001:
-		iArg->Features->SVE_AES = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SVE_PMULL128 = \
-		iArg->Features->SVE_AES = 0;
-	}
-	switch (zfr0.SVE_Ver) {
-	case 0b0001:
-		iArg->Features->SVE2 = 1;
-		break;
-	default:
-		iArg->Features->SVE2 = 0;
-		break;
-	}*/
-    }
-    if (iArg->Features->SME) {
-/*	volatile AA64SMFR0 smfr0 = {.value = SysRegRead(ID_AA64SMFR0_EL1)};
-
-	switch (smfr0.SMEver) {
-	case 0b0010:
-		iArg->Features->SME2p1 = 1;
-		fallthrough;
-	case 0b0001:
-		iArg->Features->SME2 = 1;
-		break;
-	default:
-		iArg->Features->SME2p1 = \
-		iArg->Features->SME2 = 0;
-		break;
-	}
-
-	iArg->Features->SME_FA64 = smfr0.FA64;
-	iArg->Features->SME_LUTv2 = smfr0.LUTv2;
-
-	switch (smfr0.I16I64) {
-	case 0b1111:
-		iArg->Features->SME_I16I64 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SME_I16I64 = 0;
-		break;
-	}
-
-	iArg->Features->SME_F64F64 = smfr0.F64F64;
-
-	switch (smfr0.I16I32) {
-	case 0b0101:
-		iArg->Features->SME_I16I32 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SME_I16I32 = 0;
-		break;
-	}
-
-	iArg->Features->SME_B16B16 = smfr0.B16B16;
-	iArg->Features->SME_F16F16 = smfr0.F16F16;
-	iArg->Features->SME_F8F16 = smfr0.F8F16;
-	iArg->Features->SME_F8F32 = smfr0.F8F32;
-
-	switch (smfr0.I8I32) {
-	case 0b1111:
-		iArg->Features->SME_I8I32 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SME_I8I32 = 0;
-		break;
-	}
-
-	iArg->Features->SME_F16F32 = smfr0.F16F32;
-	iArg->Features->SME_B16F32 = smfr0.B16F32;
-	iArg->Features->SME_BI32I32 = smfr0.BI32I32;
-	iArg->Features->SME_F32F32 = smfr0.F32F32;
-	iArg->Features->SME_SF8FMA = smfr0.SF8FMA;
-	iArg->Features->SME_SF8DP4 = smfr0.SF8DP4;
-	iArg->Features->SME_SF8DP2 = smfr0.SF8DP2;*/
-    }
-	switch (mvfr0.FPRound) {
-	case 0b0001:
-		iArg->Features->FP_Round = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->FP_Round = 0;
-		break;
-	}
-	switch (mvfr0.FPShVec) {
-	case 0b0001:
-		iArg->Features->FP_Sh_Vec = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->FP_Sh_Vec = 0;
-		break;
-	}
-	switch (mvfr0.FPSqrt) {
-	case 0b0001:
-		iArg->Features->FP_Sqrt = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->FP_Sqrt = 0;
-		break;
-	}
-	switch (mvfr0.FPDivide) {
-	case 0b0001:
-		iArg->Features->FP_Divide = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->FP_Divide = 0;
-		break;
-	}
-	switch (mvfr0.FPTrap) {
-	case 0b0001:
-		iArg->Features->FP_Trap = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->FP_Trap = 0;
-		break;
-	}
-	switch (mvfr0.FPDP) {
-	case 0b0010:
-	case 0b0001:
-		iArg->Features->FP_DP = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->FP_DP = 0;
-		break;
-	}
-	switch (mvfr0.FPSP) {
-	case 0b0010:
-	case 0b0001:
-		iArg->Features->FP_SP = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->FP_SP = 0;
-		break;
-	}
-	switch (mvfr1.FPHP) {
-	case 0b0011:
-	case 0b0010:
-	case 0b0001:
-		iArg->Features->FP_HP = 1;
-		break;
-	default:
-	case 0b0000:
-		iArg->Features->FP_HP = 0;
-		break;
-	}
-	switch (mvfr0.SIMDReg) {
-	case 0b0010:
-	case 0b0001:
-		iArg->Features->SIMD_Reg = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SIMD_Reg = 0;
-		break;
-	}
-	switch (mvfr1.SIMDFMAC) {
-	case 0b0001:
-		iArg->Features->SIMD_FMA = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SIMD_FMA = 0;
-		break;
-	}
-	switch (mvfr1.SIMDHP) {
-	case 0b0010:
-	case 0b0001:
-		iArg->Features->SIMD_HP = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SIMD_HP = 0;
-		break;
-	}
-	switch (mvfr1.SIMDSP) {
-	case 0b0001:
-		iArg->Features->SIMD_SP = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SIMD_SP = 0;
-		break;
-	}
-	switch (mvfr1.SIMDInt) {
-	case 0b0001:
-		iArg->Features->SIMD_Int = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SIMD_Int = 0;
-		break;
-	}
-	switch (mvfr1.SIMDLS) {
-	case 0b0001:
-		iArg->Features->SIMD_LS = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SIMD_LS = 0;
-		break;
-	}
-	switch (mvfr1.FPDNaN) {
-	case 0b0001:
-		iArg->Features->FP_NaN = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->FP_NaN = 0;
-		break;
-	}
-	switch (mvfr1.FPFtZ) {
-	case 0b0001:
-		iArg->Features->FP_FtZ = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->FP_FtZ = 0;
-		break;
-	}
-	switch (mvfr2.FPMisc) {
-	case 0b0100:
-	case 0b0011:
-	case 0b0010:
-	case 0b0001:
-		iArg->Features->FP_Misc = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->FP_Misc = 0;
-		break;
-	}
-	switch (mvfr2.SIMDMisc) {
-	case 0b0011:
-	case 0b0010:
-	case 0b0001:
-		iArg->Features->SIMD_Misc = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SIMD_Misc = 0;
-		break;
-	}
 	/* Reset the performance features bits: present is 0b1		*/
 	iArg->Features->PerfMon.CoreCycles    = 0b0;
 	iArg->Features->PerfMon.InstrRetired  = 0b0;
@@ -2047,73 +728,46 @@ static CLOCK BaseClock_GenericMachine(unsigned int ratio)
 	UNUSED(ratio);
 	return clock;
 };
-
+/*
 static void Cache_Level(CORE_RO *Core, unsigned int level, unsigned int select)
 {
 	const CSSELR cssel[CACHE_MAX_LEVEL] = {
-		[0] = { .InD = 1, .Level = 0 }, /*	L1I	*/
-		[1] = { .InD = 0, .Level = 0 }, /*	L1D	*/
-		[2] = { .InD = 0, .Level = 1 }, /*	L2	*/
-		[3] = { .InD = 0, .Level = 2 }	/*	L3	*/
+		[0] = { .InD = 1, .Level = 0 }, **	L1I	**
+		[1] = { .InD = 0, .Level = 0 }, **	L1D	**
+		[2] = { .InD = 0, .Level = 1 }, **	L2	**
+		[3] = { .InD = 0, .Level = 2 }	**	L3	**
 	};
-/*	__asm__ volatile
-	(
-		"msr	csselr_el1,	%[cssel]"	"\n\t"
-		"mrs	%[ccsid],	ccsidr_el1"	"\n\t"
-		"isb"
-		: [ccsid]	"=r" (Core->T.Cache[level].ccsid)
-		: [cssel]	"r"  (cssel[select])
-		: "memory"
-	);*/
 }
-
+*/
 static void Cache_Topology(CORE_RO *Core)
 {
-	volatile CLIDR clidr;
-/*	__asm__ volatile
-	(
-		"mrs	%[clidr],	clidr_el1"	"\n\t"
-		"isb"
-		: [clidr]	"=r" (clidr)
-		:
-		: "memory"
-	);*/
+/*
+	volatile unsigned long long clidr;
 
 	if (clidr.Ctype1 == 0b011) {
-		Cache_Level(Core, 0, 0);	/*	L1I		*/
-		Cache_Level(Core, 1, 1);	/*	L1D		*/
+		Cache_Level(Core, 0, 0);	**	L1I		**
+		Cache_Level(Core, 1, 1);	**	L1D		**
 	} else if (clidr.Ctype1 == 0b010) {
-						/*	Skip L1I	*/
-		Cache_Level(Core, 1, 1);	/*	L1D		*/
+						**	Skip L1I	**
+		Cache_Level(Core, 1, 1);	**	L1D		**
 	} else if (clidr.Ctype1 == 0b001) {
-		Cache_Level(Core, 0, 0);	/*	L1I		*/
-						/*	Skip L1D	*/
+		Cache_Level(Core, 0, 0);	**	L1I		**
+						**	Skip L1D	**
 	}
-	if (clidr.Ctype2 == 0b100) {		/*	L2		*/
+	if (clidr.Ctype2 == 0b100) {		**	L2		**
 		Cache_Level(Core, 2, 2);
 	}
-	if (clidr.Ctype3 == 0b100) {		/*	L3		*/
+	if (clidr.Ctype3 == 0b100) {		**	L3		**
 		Cache_Level(Core, 3, 3);
 	}
+*/
 }
 
 static void Map_Generic_Topology(void *arg)
 {
     if (arg != NULL) {
 	CORE_RO *Core = (CORE_RO *) arg;
-
-	volatile MIDR midr;
-	volatile MPIDR mpid;
-/*	__asm__ volatile
-	(
-		"mrs	%[midr] ,	midr_el1"	"\n\t"
-		"mrs	%[mpid] ,	mpidr_el1"	"\n\t"
-		"isb"
-		: [midr]	"=r" (midr),
-		  [mpid]	"=r" (mpid)
-		:
-		: "memory"
-	);*/
+/*
 	Core->T.PN = midr.PartNum;
 	if (mpid.MT) {
 		Core->T.MPID = mpid.value & 0xfffff;
@@ -2127,6 +781,7 @@ static void Map_Generic_Topology(void *arg)
 		Core->T.Cluster.CMP = mpid.Aff1;
 		Core->T.CoreID = mpid.Aff0;
 	}
+*/
 	Cache_Topology(Core);
     }
 }
@@ -2153,7 +808,7 @@ static unsigned int Proc_Topology(void)
     for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++) {
 	PUBLIC(RO(Core, AT(cpu)))->T.PN 	= 0;
 	PUBLIC(RO(Core, AT(cpu)))->T.BSP	= 0;
-	PUBLIC(RO(Core, AT(cpu)))->T.MPID	= -1;
+	PUBLIC(RO(Core, AT(cpu)))->T.MPID	= /*TODO(Hardware ID)-1*/ 1;
 	PUBLIC(RO(Core, AT(cpu)))->T.CoreID	= -1;
 	PUBLIC(RO(Core, AT(cpu)))->T.ThreadID	= -1;
 	PUBLIC(RO(Core, AT(cpu)))->T.PackageID	= -1;
@@ -2338,17 +993,19 @@ static void Query_DeviceTree(unsigned int cpu)
     if (max_freq > 0) {
 	FREQ2COF(max_freq, COF);
     } else {
-	volatile CNTFRQ cntfrq;
+/*TODO	volatile unsigned long long cntfrq;
 
 	__asm__ __volatile__(
-		"csrr	%[cntfrq],	mcycle"	"\n\t"
+		"csrr	%[cntfrq],	mcycle" "\n\t"
 		"fence iorw, iorw"
 		: [cntfrq]	"=r" (cntfrq)
 		:
 		: "memory"
 	);
-	cntfrq.ClockFreq_Hz = cntfrq.ClockFreq_Hz / 10U;
-	FREQ2COF(cntfrq.ClockFreq_Hz, COF);
+	cntfrq = cntfrq / 10U;
+	FREQ2COF(cntfrq, COF);
+*/
+	FREQ2COF((10LLU * UNIT_KHz(PRECISION)), COF);
     }
 	Core->Boost[BOOST(MAX)].Q = COF.Q;
 	Core->Boost[BOOST(MAX)].R = COF.R;
@@ -2754,192 +1411,27 @@ static void Query_GenericMachine(unsigned int cpu)
 	For_All_ACPI_CPPC(Read_ACPI_CPPC_Registers, NULL);
 }
 
-static void Query_DynamIQ(unsigned int cpu)
-{
-	Query_GenericMachine(cpu);
-
-    if (PUBLIC(RO(Proc))->HypervisorID == BARE_METAL) {
-	/* Query the Cluster Configuration on Bare Metal only		**
-	PUBLIC(RO(Proc))->Uncore.ClusterCfg.value = SysRegRead(CLUSTERCFR_EL1);
-	PUBLIC(RO(Proc))->Uncore.ClusterRev.value = SysRegRead(CLUSTERIDR_EL1);*/
-    }
-}
-
 static void SystemRegisters(CORE_RO *Core)
 {
-	volatile AA64ISAR2 isar2;
-	volatile AA64MMFR1 mmfr1;
-	volatile AA64PFR0 pfr0;
-/*
-	isar2.value = SysRegRead(ID_AA64ISAR2_EL1);
-
-	__asm__ __volatile__(
-		"mrs	%[sctlr],	sctlr_el1"	"\n\t"
-		"mrs	%[mmfr1],	id_aa64mmfr1_el1""\n\t"
-		"mrs	%[pfr0] ,	id_aa64pfr0_el1""\n\t"
-		"mrs	%[fpcr] ,	fpcr"		"\n\t"
-		"mrs	%[fpsr] ,	fpsr"		"\n\t"
-		"cmp	xzr	,	xzr, lsl #0"	"\n\t"
-		"mrs	x14	,	nzcv"		"\n\t"
-		"mrs	x13	,	daif"		"\n\t"
-		"mrs	x12	,	currentel"	"\n\t"
-		"mrs	x11	,	spsel"		"\n\t"
-		"isb"					"\n\t"
-		"mov	%[flags],	xzr"		"\n\t"
-		"orr	%[flags],	x14, x13"	"\n\t"
-		"orr	%[flags],	%[flags], x12"	"\n\t"
-		"orr	%[flags],	%[flags], x11"
-		: [sctlr]	"=r" (Core->SystemRegister.SCTLR),
-		  [mmfr1]	"=r" (mmfr1),
-		  [pfr0]	"=r" (pfr0),
-		  [fpcr]	"=r" (Core->SystemRegister.FPCR),
-		  [fpsr]	"=r" (Core->SystemRegister.FPSR),
-		  [flags]	"=r" (Core->SystemRegister.FLAGS)
-		:
-		: "cc", "memory", "%x11", "%x12", "%x13", "%x14"
-	);*/
-	if (mmfr1.VH) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);
-	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);
-	}
-	Core->Query.SCTLRX = 0;
-    if (Experimental) {
-/*	volatile AA64MMFR3 mmfr3 = {.value = SysRegRead(ID_AA64MMFR3_EL1)};
-	if ((Core->Query.SCTLRX = mmfr3.SCTLRX) == 0b0001) {
-		Core->SystemRegister.SCTLR2 = SysRegRead(SCTLR2_EL1);
-	}*/
-    }
-	if (PUBLIC(RO(Proc))->Features.DIT) {
-/*		Core->SystemRegister.FLAGS |= (
-			SysRegRead(MRS_DIT) & (1LLU << FLAG_DIT)
-		);*/
-	}
-	if (isar2.CLRBHB == 0b0001) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CLRBHB, Core->Bind);
-	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CLRBHB, Core->Bind);
-	}
-	switch (pfr0.EL3) {
-	case 0b0010:
-		BITSET(LOCKLESS, Core->SystemRegister.EL, EL3_32);
-		fallthrough;
-	case 0b0001:
-		BITSET(LOCKLESS, Core->SystemRegister.EL, EL3_64);
-		break;
-	}
-	switch (pfr0.EL2) {
-	case 0b0010:
-		BITSET(LOCKLESS, Core->SystemRegister.EL, EL2_32);
-		fallthrough;
-	case 0b0001:
-		BITSET(LOCKLESS, Core->SystemRegister.EL, EL2_64);
-		break;
-	}
-	switch (pfr0.SEL2) {
-	case 0b0001:
-		BITSET(LOCKLESS, Core->SystemRegister.EL, EL2_SEC);
-		break;
-	}
-	switch (pfr0.EL1) {
-	case 0b0010:
-		BITSET(LOCKLESS, Core->SystemRegister.EL, EL1_32);
-		fallthrough;
-	case 0b0001:
-		BITSET(LOCKLESS, Core->SystemRegister.EL, EL1_64);
-		break;
-	}
-	switch (pfr0.EL0) {
-	case 0b0010:
-		BITSET(LOCKLESS, Core->SystemRegister.EL, EL0_32);
-		fallthrough;
-	case 0b0001:
-		BITSET(LOCKLESS, Core->SystemRegister.EL, EL0_64);
-		break;
-	}
-	switch (pfr0.CSV2) {
-	case 0b0001:
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_1, Core->Bind);
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_2, Core->Bind);
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_3, Core->Bind);
-		break;
-	case 0b0010:
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_1, Core->Bind);
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_2, Core->Bind);
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_3, Core->Bind);
-		break;
-	case 0b0011:
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_1, Core->Bind);
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_2, Core->Bind);
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_3, Core->Bind);
-		break;
-	default:
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_1, Core->Bind);
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_2, Core->Bind);
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_3, Core->Bind);
-	}
-	if (pfr0.CSV3) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV3, Core->Bind);
-	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV3, Core->Bind);
-	}
-	if (PUBLIC(RO(Proc))->Features.SSBS == 0b0010)
-	{
-/*		SSBS2 mrs_ssbs = {.value = SysRegRead(MRS_SSBS2)};
-
-	    if (mrs_ssbs.SSBS) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBS, Core->Bind);
-	    } else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBS, Core->Bind);
-	    }*/
+		Core->SystemRegister.FLAGS |= (
+			(1LLU << FLAG_DIT)
+		);
 		Core->SystemRegister.FLAGS |= (1LLU << FLAG_SSBS);
-	}
-	if (PUBLIC(RO(Proc))->Features.PAN) {
-/*		Core->SystemRegister.FLAGS |= (
-			SysRegRead(MRS_PAN) & (1LLU << FLAG_PAN)
-		);*/
-	}
-	if (PUBLIC(RO(Proc))->Features.UAO) {
-/*		Core->SystemRegister.FLAGS |= (
-			SysRegRead(MRS_UAO) & (1LLU << FLAG_UAO)
-		);*/
-	}
-	if (PUBLIC(RO(Proc))->Features.MTE) {
-/*		Core->SystemRegister.FLAGS |= (
-			SysRegRead(MRS_TCO) & (1LLU << FLAG_TCO)
-		);*/
-	}
-	if (PUBLIC(RO(Proc))->Features.NMI) {
-/*		Core->SystemRegister.FLAGS |= (
-			SysRegRead(MRS_ALLINT) & (1LLU << FLAG_NMI)
-		);*/
-	}
-	if (PUBLIC(RO(Proc))->Features.EBEP) {
-/*		Core->SystemRegister.FLAGS |= (
-			SysRegRead(MRS_PM) & (1LLU << FLAG_PM)
-		);*/
-	}
-	if (PUBLIC(RO(Proc))->Features.SME) {
-/*		Core->SystemRegister.SVCR = SysRegRead(MRS_SVCR);*/
-	}
-	if (BITEXTRZ(Core->SystemRegister.FLAGS, FLAG_EL, 2) >= 2) {
-/*		__asm__ __volatile__(
-			"mrs	%[hcr]	,	hcr_el2"
-			: [hcr] 	"=r" (Core->SystemRegister.HCR)
-			:
-			: "cc", "memory"
-		);*/
-	}
-/*	__asm__ __volatile__(
-		"mrs	%[cpacr],	cpacr_el1"
-		: [cpacr] 	"=r" (Core->SystemRegister.CPACR)
-		:
-		: "cc", "memory"
-	);*/
-	if (PUBLIC(RO(Proc))->Features.FPMR) {
-/*		volatile unsigned long long fpmr = SysRegRead(MRS_FPMR);
-		UNUSED(fpmr);	TODO*/
-	}
+		Core->SystemRegister.FLAGS |= (
+			(1LLU << FLAG_PAN)
+		);
+		Core->SystemRegister.FLAGS |= (
+			(1LLU << FLAG_UAO)
+		);
+		Core->SystemRegister.FLAGS |= (
+			(1LLU << FLAG_TCO)
+		);
+		Core->SystemRegister.FLAGS |= (
+			(1LLU << FLAG_NMI)
+		);
+		Core->SystemRegister.FLAGS |= (
+			(1LLU << FLAG_PM)
+		);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask, Core->Bind);
 }
 
@@ -2957,11 +1449,6 @@ static void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->HWP	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_1	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_2	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_3	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV3	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBS	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->VM	, Core->Bind);
 
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.Mask);
@@ -2971,11 +1458,6 @@ static void PerCore_Reset(CORE_RO *Core)
 
 static void PerCore_GenericMachine(void *arg)
 {
-	volatile CPUPWRCTLR cpuPwrCtl;
-	volatile PMUSERENR pmuser;
-	volatile PMCNTENSET enset;
-	volatile PMCNTENCLR enclr;
-	volatile REVIDR revid;
 	CORE_RO *Core = (CORE_RO *) arg;
 
 	Query_DeviceTree(Core->Bind);
@@ -2985,38 +1467,12 @@ static void PerCore_GenericMachine(void *arg)
 	  Core->Boost[BOOST(MAX)].Q < PUBLIC(RO(Proc))->Features.Factory.Ratio ?
 		Hybrid_Secondary : Hybrid_Primary;
     }
-    if (Experimental && (PUBLIC(RO(Proc))->HypervisorID == BARE_METAL)) {
-/*	cpuPwrCtl.value = SysRegRead(CPUPWRCTLR_EL1);*/
-	Core->Query.CStateBaseAddr = cpuPwrCtl.WFI_RET_CTRL;
-    }
-/*	__asm__ __volatile__(
-		"mrs	%[pmuser],	pmuserenr_el0"	"\n\t"
-		"mrs	%[enset],	pmcntenset_el0" "\n\t"
-		"mrs	%[enclr],	pmcntenclr_el0" "\n\t"
-		"isb"
-		: [pmuser]	"=r" (pmuser),
-		  [enset]	"=r" (enset),
-		  [enclr]	"=r" (enclr)
-		:
-		: "memory"
-	);*/
-
     if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
-	PUBLIC(RO(Proc))->Features.PerfMon.CoreCycles	= pmuser.CR
-							| enset.C
-							| enclr.C;
-	PUBLIC(RO(Proc))->Features.PerfMon.InstrRetired = pmuser.IR
-							| enset.F0
-							| enclr.F0;
+	PUBLIC(RO(Proc))->Features.PerfMon.CoreCycles	= \
+	PUBLIC(RO(Proc))->Features.PerfMon.InstrRetired = 0;
     }
-/*	__asm__ __volatile__(
-		"mrs	%[revid],	revidr_el1"	"\n\t"
-		"isb"
-		: [revid]	"=r" (revid)
-		:
-		: "memory"
-	);*/
-	Core->Query.Revision = revid.Revision;
+
+	Core->Query.Revision = 0;
 
 	SystemRegisters(Core);
 
@@ -3248,132 +1704,22 @@ static void Controller_Exit(void)
 
 static void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 {
-/*	__asm__ __volatile__
-	(
-		"# Assign an event number per counter"	"\n\t"
-		"mrs	x12	,	pmselr_el0"	"\n\t"
-		"str	x12	,	%[PMSELR]"	"\n\t"
-		"orr	x12	,	x12, #3"	"\n\t"
-		"msr	pmselr_el0,	x12"		"\n\t"
-
-		"# Choosen [EVENT#] to collect from"	"\n\t"
-		"mrs	x12	,	pmxevtyper_el0" "\n\t"
-		"str	x12	,	%[PMTYPE3]"	"\n\t"
-		"orr	x12	,	x12, %[EVENT3]" "\n\t"
-		"msr	pmxevtyper_el0, x12"		"\n\t"
-
-		"ldr	x12	,	%[PMSELR]"	"\n\t"
-		"orr	x12	,	x12, #2"	"\n\t"
-		"msr	pmselr_el0,	x12"		"\n\t"
-		"mrs	x12	,	pmxevtyper_el0" "\n\t"
-		"str	x12	,	%[PMTYPE2]"	"\n\t"
-		"orr	x12	,	x12, %[EVENT2]" "\n\t"
-		"msr	pmxevtyper_el0, x12"		"\n\t"
-
-		"ldr	x12	,	%[PMSELR]"	"\n\t"
-		"orr	x12	,	x12, #0b11111"	"\n\t"
-		"msr	pmselr_el0,	x12"		"\n\t"
-		"mrs	x12	,	pmxevtyper_el0" "\n\t"
-		"str	x12	,	%[PMTYPE1]"	"\n\t"
-		"orr	x12	,	x12, %[FILTR1]" "\n\t"
-		"msr	pmxevtyper_el0, x12"		"\n\t"
-
-		"# No filtered EL within Cycle counter" "\n\t"
-		"mrs	x12	,	pmccfiltr_el0"	"\n\t"
-		"str	x12	,	%[PMCCFILTR]"	"\n\t"
-		"msr	pmccfiltr_el0,	xzr"		"\n\t"
-
-		"# Enable counters at position [ENSET]" "\n\t"
-		"mrs	x12	,	pmcntenset_el0" "\n\t"
-		"str	x12	,	%[PMCNTEN]"	"\n\t"
-		"orr	x12	,	x12, %[ENSET]"	"\n\t"
-		"msr	pmcntenset_el0, x12"		"\n\t"
-
-		"# Enable User-space access to counters""\n\t"
-		"mrs	x12	,	pmuserenr_el0"	"\n\t"
-		"str	x12	,	%[PMUSER]"	"\n\t"
-		"orr	x12	,	x12, %[ENUSR]"	"\n\t"
-		"msr	pmuserenr_el0,	%12"		"\n\t"
-
-		"# Enable all PMU counters"		"\n\t"
-		"mrs	x12	,	pmcr_el0"	"\n\t"
-		"str	x12	,	%[PMCR]"	"\n\t"
-		"mov	x12	,	%[CTRL]"	"\n\t"
-		"msr	pmcr_el0,	x12"		"\n\t"
-		"isb"
-		: [PMCR]	"+m" (Save->PMCR),
-		  [PMSELR]	"+m" (Save->PMSELR),
-		  [PMTYPE3]	"+m" (Save->PMTYPE[2]),
-		  [PMTYPE2]	"+m" (Save->PMTYPE[1]),
-		  [PMTYPE1]	"+m" (Save->PMTYPE[0]),
-		  [PMCCFILTR]	"+m" (Save->PMCCFILTR),
-		  [PMCNTEN]	"+m" (Save->PMCNTEN),
-		  [PMUSER]	"+m" (Save->PMUSER)
-		: [EVENT3]	"r" (0x0008),
-		  [EVENT2]	"r" (0x0011),
-		  [FILTR1]	"r" (0x0),
-		  [ENSET]	"r" (0b10000000000000000000000000001100),
-		  [ENUSR]	"r" (0b0000101),
-		  [CTRL]	"i" (0b0000000010000111)
-		: "memory", "%x12"
-	);*/
+/*TODO*/
 }
 
 static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 					CORE_RO *Core)
 {
-/*	__asm__ __volatile__(
-		"# Restore PMU configuration registers" "\n\t"
-		"msr	pmcr_el0,	%[PMCR]"	"\n\t"
-
-		"msr	pmuserenr_el0,	%[PMUSER]"	"\n\t"
-
-		"msr	pmcntenset_el0, %[PMCNTEN]"	"\n\t"
-
-		"msr	pmccfiltr_el0,	%[PMCCFILTR]"	"\n\t"
-
-		"ldr	x12	,	%[PMSELR]"	"\n\t"
-		"orr	x12	,	x12, #0b11111"	"\n\t"
-		"msr	pmselr_el0,	x12"		"\n\t"
-		"ldr	x12	,	%[PMTYPE1]"	"\n\t"
-		"msr	pmxevtyper_el0, x12"		"\n\t"
-
-		"ldr	x12	,	%[PMSELR]"	"\n\t"
-		"orr	x12	,	x12, #2"	"\n\t"
-		"msr	pmselr_el0,	x12"		"\n\t"
-		"ldr	x12	,	%[PMTYPE2]"	"\n\t"
-		"msr	pmxevtyper_el0, x12"		"\n\t"
-
-		"ldr	x12	,	%[PMSELR]"	"\n\t"
-		"orr	x12	,	x12, #3"	"\n\t"
-		"msr	pmselr_el0,	x12"		"\n\t"
-		"ldr	x12	,	%[PMTYPE3]"	"\n\t"
-		"msr	pmxevtyper_el0, x12"		"\n\t"
-
-		"ldr	x12	,	%[PMSELR]"	"\n\t"
-		"msr	pmselr_el0,	x12"		"\n\t"
-
-		"isb"
-		:
-		: [PMCR]	"r" (Save->PMCR),
-		  [PMSELR]	"m" (Save->PMSELR),
-		  [PMTYPE3]	"m" (Save->PMTYPE[2]),
-		  [PMTYPE2]	"m" (Save->PMTYPE[1]),
-		  [PMTYPE1]	"m" (Save->PMTYPE[0]),
-		  [PMCCFILTR]	"r" (Save->PMCCFILTR),
-		  [PMCNTEN]	"r" (Save->PMCNTEN),
-		  [PMUSER]	"r" (Save->PMUSER)
-		: "memory", "%x12"
-	);*/
+/*TODO*/
 }
 
 #define Counters_Generic(Core, T)					\
 ({									\
-	RDTSC_COUNTERx3(Core->Counter[T].TSC,				\
-		/*TODO	pmevcntr2_el0*/mcycle,	Core->Counter[T].C0.UCC,\
-		/*TODO	pmccntr_el0*/mcycle,	Core->Counter[T].C0.URC,\
-		/*TODO	pmevcntr3_el0*/mcycle,	Core->Counter[T].INST );\
-									\
+/*	RDTSC_COUNTERx3(Core->Counter[T].TSC,				\
+		**TODO	pmevcntr2_el0**mcycle,	Core->Counter[T].C0.UCC,\
+		**TODO	pmccntr_el0**mcycle,	Core->Counter[T].C0.URC,\
+		**TODO	pmevcntr3_el0**mcycle,	Core->Counter[T].INST );\
+*/									\
 	Core->Counter[T].INST &= INST_COUNTER_OVERFLOW;			\
 	/* Normalize frequency: */					\
 	Core->Counter[T].C1 = ( 					\
@@ -3470,15 +1816,15 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 
 #define PKG_Counters_Generic(Core, T)					\
 ({									\
-	volatile CNTPCT cntpct; 					\
+/*TODO	volatile unsigned long long cntpct; 				\
 	__asm__ volatile						\
 	(								\
-		"csrr	%[cntpct],	mcycle"/*"cntpct_el0"TODO*/	\
+		"csrr	%[cntpct],	mcycle"				\
 		: [cntpct]	"=r" (cntpct) 				\
 		:							\
 		: "cc", "memory"					\
 	);								\
-	PUBLIC(RO(Proc))->Counter[T].PCLK = cntpct.PhysicalCount;	\
+	PUBLIC(RO(Proc))->Counter[T].PCLK = cntpct;*/			\
 })
 
 #define Pkg_OVH(Pkg, Core)						\

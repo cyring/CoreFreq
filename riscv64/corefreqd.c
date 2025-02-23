@@ -39,7 +39,7 @@
 	sysconf(_SC_PAGESIZE) > 0 ? sysconf(_SC_PAGESIZE) : 4096	\
 )
 
-/* AArch64 LDAXP/STLXP alignment, 128-Byte Blocks of Memory */
+/* Architecture alignment is at most 128-Byte Blocks of Memory */
 static BitCC roomSeed	__attribute__ ((aligned (16))) = InitCC(0x0);
 static BitCC roomCore	__attribute__ ((aligned (16))) = InitCC(0x0);
 static BitCC roomClear	__attribute__ ((aligned (16))) = InitCC(0x0);
@@ -687,7 +687,7 @@ void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 void Mitigation_Stage(	RO(SHM_STRUCT) *RO(Shm),
 			RO(PROC) *RO(Proc), RW(PROC) *RW(Proc) )
 {
-	const unsigned short
+/*	const unsigned short
 		CLRBHB = BITWISEAND_CC( LOCKLESS,
 					RW(Proc)->CLRBHB,
 					RO(Proc)->SPEC_CTRL_Mask) != 0,
@@ -711,6 +711,14 @@ void Mitigation_Stage(	RO(SHM_STRUCT) *RO(Shm),
 		SSBS = BITCMP_CC(	LOCKLESS,
 					RW(Proc)->SSBS,
 					RO(Proc)->SPEC_CTRL_Mask );
+*/
+	const unsigned short
+		CLRBHB = 0,
+		CSV2_1 = 0,
+		CSV2_2 = 0,
+		CSV2_3 = 0,
+		CSV3 = 0,
+		SSBS = 0;
 
 	RO(Shm)->Proc.Mechanisms.CLRBHB = CLRBHB ? 0b11 : 0b00;
 
@@ -755,8 +763,10 @@ void Uncore_Update(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 	RO(Shm)->Uncore.CtrlCount = RO(Proc)->Uncore.CtrlCount;
 	/*	Decode the Memory Controller for each found vendor:device */
 	Chipset[IC_CHIPSET] = RO(Proc)->Features.Info.Vendor.ID;
+/*TODO
 	RO(Shm)->Uncore.ChipID	=  RO(Proc)->Uncore.ClusterRev.Revision
 				| (RO(Proc)->Uncore.ClusterRev.Variant << 4);
+*/
 	RO(Shm)->Uncore.Chipset.ArchID = IC_CHIPSET;
 	/*	Copy the chipset codename.				*/
 	StrCopy(RO(Shm)->Uncore.Chipset.CodeName,
@@ -859,30 +869,6 @@ void SystemRegisters(	RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core),
 {
 	RO(Shm)->Cpu[cpu].SystemRegister.FLAGS = \
 				RO(Core, AT(cpu))->SystemRegister.FLAGS;
-
-	RO(Shm)->Cpu[cpu].SystemRegister.HCR = \
-				RO(Core, AT(cpu))->SystemRegister.HCR;
-
-	RO(Shm)->Cpu[cpu].SystemRegister.SCTLR = \
-				RO(Core, AT(cpu))->SystemRegister.SCTLR;
-
-	RO(Shm)->Cpu[cpu].SystemRegister.SCTLR2 = \
-				RO(Core, AT(cpu))->SystemRegister.SCTLR2;
-
-	RO(Shm)->Cpu[cpu].SystemRegister.EL = \
-				RO(Core, AT(cpu))->SystemRegister.EL;
-
-	RO(Shm)->Cpu[cpu].SystemRegister.FPSR = \
-				RO(Core, AT(cpu))->SystemRegister.FPSR;
-
-	RO(Shm)->Cpu[cpu].SystemRegister.FPCR = \
-				RO(Core, AT(cpu))->SystemRegister.FPCR;
-
-	RO(Shm)->Cpu[cpu].SystemRegister.SVCR = \
-				RO(Core, AT(cpu))->SystemRegister.SVCR;
-
-	RO(Shm)->Cpu[cpu].SystemRegister.CPACR = \
-				RO(Core, AT(cpu))->SystemRegister.CPACR;
 
 	RO(Shm)->Cpu[cpu].Query.SCTLRX = RO(Core, AT(cpu))->Query.SCTLRX;
 }
@@ -1231,7 +1217,7 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 		/*		Start SysGate				*/
 		BITSET(LOCKLESS, Ref->RO(Shm)->SysGate.Operation, 0);
 		/*		Notify					*/
-		BITWISESET(LOCKLESS, PendingSync,BIT_MASK_NTFY);
+		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_NTFY);
 	    }
 	}
     }
