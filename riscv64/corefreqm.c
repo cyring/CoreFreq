@@ -50,25 +50,25 @@ void CallWith_RDTSC_RDPMC(	RO(SHM_STRUCT) *RO(Shm),
 				unsigned long arg )
 {
 	struct SLICE_STRUCT *pSlice = &RO(Shm)->Cpu[cpu].Slice;
-
+/*TODO(Cycles)
 	RDTSC_PMCx1(	pSlice->Counter[0].TSC,
-			/*TODO:pmevcntr3_el0*/mcycle,
+			pmevcntr3_el0:mcycle,
 			pSlice->Counter[0].INST );
-
+*/
 	pSlice->Counter[0].INST &= INST_COUNTER_OVERFLOW;
-
+/*TODO(Cycles)
 	RDTSC_PMCx1(	pSlice->Counter[1].TSC,
-			/*TODO:pmevcntr3_el0*/mcycle,
+			pmevcntr3_el0:mcycle,
 			pSlice->Counter[1].INST );
-
+*/
 	pSlice->Counter[1].INST &= INST_COUNTER_OVERFLOW;
 
 	SliceFunc(RO(Shm), RW(Shm), cpu, arg);
-
+/*TODO(Cycles)
 	RDTSC_PMCx1(	pSlice->Counter[2].TSC,
-			/*TODO:pmevcntr3_el0*/mcycle,
+			pmevcntr3_el0:mcycle,
 			pSlice->Counter[2].INST );
-
+*/
 	pSlice->Counter[2].INST &= INST_COUNTER_OVERFLOW;
 
 	if (BITVAL(RW(Shm)->Proc.Sync, BURN)) {

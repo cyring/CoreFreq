@@ -511,7 +511,7 @@ static void Query_Features(void *pArg)
 	iArg->Features->Info.Vendor.CRC = CRC_RESERVED;
 	iArg->SMT_Count = 1;
 	iArg->HypervisorID = HYPERV_NONE;
-/*TODO
+/*TODO(Cycles)
 	__asm__ __volatile__(
 		"csrr	%[cntfrq],	mcycle" "\n\t"
 		"fence iorw, iorw"
@@ -993,7 +993,8 @@ static void Query_DeviceTree(unsigned int cpu)
     if (max_freq > 0) {
 	FREQ2COF(max_freq, COF);
     } else {
-/*TODO	volatile unsigned long long cntfrq;
+/*TODO(Cycles)
+	volatile unsigned long long cntfrq;
 
 	__asm__ __volatile__(
 		"csrr	%[cntfrq],	mcycle" "\n\t"
@@ -1715,10 +1716,11 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 
 #define Counters_Generic(Core, T)					\
 ({									\
-/*	RDTSC_COUNTERx3(Core->Counter[T].TSC,				\
-		**TODO	pmevcntr2_el0**mcycle,	Core->Counter[T].C0.UCC,\
-		**TODO	pmccntr_el0**mcycle,	Core->Counter[T].C0.URC,\
-		**TODO	pmevcntr3_el0**mcycle,	Core->Counter[T].INST );\
+/*TODO(Cycles)								\
+	RDTSC_COUNTERx3(Core->Counter[T].TSC,				\
+			pmevcntr2_el0:mcycle,	Core->Counter[T].C0.UCC,\
+			pmccntr_el0:mcycle,	Core->Counter[T].C0.URC,\
+			pmevcntr3_el0:mcycle,	Core->Counter[T].INST );\
 */									\
 	Core->Counter[T].INST &= INST_COUNTER_OVERFLOW;			\
 	/* Normalize frequency: */					\
@@ -1816,7 +1818,8 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 
 #define PKG_Counters_Generic(Core, T)					\
 ({									\
-/*TODO	volatile unsigned long long cntpct; 				\
+/*TODO(Cycles)								\
+	volatile unsigned long long cntpct; 				\
 	__asm__ volatile						\
 	(								\
 		"csrr	%[cntpct],	mcycle"				\
