@@ -50,12 +50,16 @@ void CallWith_RDTSC_RDPMC(	RO(SHM_STRUCT) *RO(Shm),
 				unsigned long arg )
 {
 	struct SLICE_STRUCT *pSlice = &RO(Shm)->Cpu[cpu].Slice;
+
+	RDTSC64(pSlice->Counter[0].TSC);
 /*TODO(Cycles)
 	RDTSC_PMCx1(	pSlice->Counter[0].TSC,
 			pmevcntr3_el0:mcycle,
 			pSlice->Counter[0].INST );
 */
 	pSlice->Counter[0].INST &= INST_COUNTER_OVERFLOW;
+
+	RDTSC64(pSlice->Counter[1].TSC);
 /*TODO(Cycles)
 	RDTSC_PMCx1(	pSlice->Counter[1].TSC,
 			pmevcntr3_el0:mcycle,
@@ -64,6 +68,8 @@ void CallWith_RDTSC_RDPMC(	RO(SHM_STRUCT) *RO(Shm),
 	pSlice->Counter[1].INST &= INST_COUNTER_OVERFLOW;
 
 	SliceFunc(RO(Shm), RW(Shm), cpu, arg);
+
+	RDTSC64(pSlice->Counter[2].TSC);
 /*TODO(Cycles)
 	RDTSC_PMCx1(	pSlice->Counter[2].TSC,
 			pmevcntr3_el0:mcycle,
@@ -122,7 +128,8 @@ void Slice_Atomic(RO(SHM_STRUCT) *RO(Shm), RW(SHM_STRUCT) *RW(Shm),
 	UNUSED(RW(Shm));
 	register unsigned long loop = arg;
     do {
-/*	__asm__ volatile
+	__asm__ volatile("nop");
+/*TODO	__asm__ volatile
 	(
 		"ldr	x10,	%[_err]"		"\n\t"
 		"1:"					"\n\t"

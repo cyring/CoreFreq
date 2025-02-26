@@ -80,7 +80,7 @@ static signed int ArchID = -1;
 module_param(ArchID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ArchID, "Force an architecture (ID)");
 
-static signed int AutoClock = /*TODO: 0b11*/ 0b00;
+static signed int AutoClock = 0b11;
 module_param(AutoClock, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(AutoClock, "Estimate Clock Frequency 0:Spec; 1:Once; 2:Auto");
 
@@ -506,11 +506,13 @@ static signed int SearchArchitectureID(void)
 static void Query_Features(void *pArg)
 {
 	INIT_ARG *iArg = (INIT_ARG *) pArg;
-/*	volatile unsigned long long cntfrq;	TODO*/
+	volatile unsigned long long cntfrq;
 
 	iArg->Features->Info.Vendor.CRC = CRC_RESERVED;
 	iArg->SMT_Count = 1;
 	iArg->HypervisorID = HYPERV_NONE;
+
+	RDTSC64(cntfrq);
 /*TODO(Cycles)
 	__asm__ __volatile__(
 		"csrr	%[cntfrq],	mcycle" "\n\t"
@@ -539,14 +541,9 @@ static void Query_Features(void *pArg)
 #else
 	iArg->Features->ACPI = 0;
 #endif
-/*
 	iArg->Features->TSC = \
 	iArg->Features->Inv_TSC = \
 	iArg->Features->RDTSCP = cntfrq != 0;
-*/
-	iArg->Features->TSC = \
-	iArg->Features->Inv_TSC = \
-	iArg->Features->RDTSCP = 0;
 
 	iArg->Features->PerfMon.FixCtrs = \
 	iArg->Features->PerfMon.MonCtrs = \
@@ -1716,6 +1713,7 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 
 #define Counters_Generic(Core, T)					\
 ({									\
+	RDTSC64(Core->Counter[T].TSC);					\
 /*TODO(Cycles)								\
 	RDTSC_COUNTERx3(Core->Counter[T].TSC,				\
 			pmevcntr2_el0:mcycle,	Core->Counter[T].C0.UCC,\
@@ -1818,7 +1816,8 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 
 #define PKG_Counters_Generic(Core, T)					\
 ({									\
-/*TODO(Cycles)								\
+	RDTSC64(PUBLIC(RO(Proc))->Counter[T].PCLK);			\
+/*TODO(CleanUp)								\
 	volatile unsigned long long cntpct; 				\
 	__asm__ volatile						\
 	(								\

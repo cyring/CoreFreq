@@ -2033,16 +2033,16 @@ REASON_CODE Child_Manager(REF *Ref)
 			Arg[cpu].TID = 0;
 		}
 	} else {
-		unsigned int seed32 = time(0);
-/*TODO(Cycles)	__asm__ volatile
+		volatile unsigned long seed;
+		__asm__ volatile
 		(
-			"csrr %0, mcycle"
-			: "=r" (seed32)
+			"rdtime %0"
+			: "=r" (seed)
 			:
 			:
-		);*/
+		);
 	    #ifdef __GLIBC__
-		initstate_r(	seed32,
+		initstate_r(	(unsigned int) seed,
 				RO(Shm)->Cpu[cpu].Slice.Random.state,
 				sizeof(RO(Shm)->Cpu[cpu].Slice.Random.state),
 				&RO(Shm)->Cpu[cpu].Slice.Random.data );
