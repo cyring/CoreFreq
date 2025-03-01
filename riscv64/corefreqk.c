@@ -506,22 +506,25 @@ static signed int SearchArchitectureID(void)
 static void Query_Features(void *pArg)
 {
 	INIT_ARG *iArg = (INIT_ARG *) pArg;
-	volatile unsigned long long cntfrq;
+	volatile unsigned long long cntfrq, instret;
 
 	iArg->Features->Info.Vendor.CRC = CRC_RESERVED;
 	iArg->SMT_Count = 1;
 	iArg->HypervisorID = HYPERV_NONE;
 
 	RDTSC64(cntfrq);
-/*TODO(Cycles)
-	__asm__ __volatile__(
-		"csrr	%[cntfrq],	mcycle" "\n\t"
-		"fence iorw, iorw"
-		: [cntfrq]	"=r" (cntfrq)
-		:
-		: "memory"
-	);
-*/
+	RDINST64(instret);
+
+	iArg->Features->TSC = \
+	iArg->Features->Inv_TSC = \
+	iArg->Features->RDTSCP = cntfrq != 0;
+
+	iArg->Features->PerfMon.MonWidth = \
+	iArg->Features->PerfMon.FixWidth = 64;
+	/* Reset the performance features bits: present is 0b1		*/
+	iArg->Features->PerfMon.CoreCycles    = 0b0;
+	iArg->Features->PerfMon.InstrRetired  = instret != 0 ? 0b1 : 0b0;
+
 	iArg->Features->Info.Signature.Stepping = 0;
 	iArg->Features->Info.Signature.Family = 0 & 0x00f;
 	iArg->Features->Info.Signature.ExtFamily = (0 & 0xff0) >> 4;
@@ -530,9 +533,6 @@ static void Query_Features(void *pArg)
 /*
 	VendorFromMainID(midr, iArg->Features->Info.Vendor.ID,
 			&iArg->Features->Info.Vendor.CRC, &iArg->HypervisorID);
-
-	iArg->Features->Factory.Freq = cntfrq;
-	iArg->Features->Factory.Freq = iArg->Features->Factory.Freq / 1U;
 */
 	iArg->Features->Factory.Freq = 1000;
 
@@ -541,23 +541,15 @@ static void Query_Features(void *pArg)
 #else
 	iArg->Features->ACPI = 0;
 #endif
-	iArg->Features->TSC = \
-	iArg->Features->Inv_TSC = \
-	iArg->Features->RDTSCP = cntfrq != 0;
+	iArg->Features->PerfMon.FixCtrs = iArg->Features->TSC 
+					+ iArg->Features->PerfMon.InstrRetired;
 
-	iArg->Features->PerfMon.FixCtrs = \
 	iArg->Features->PerfMon.MonCtrs = \
 	iArg->Features->PerfMon.Version = 0;
 
 	if (iArg->Features->PerfMon.Version > 0) {
 		iArg->Features->PerfMon.FixCtrs++; /* Fixed Cycle Counter */
 	}
-
-	iArg->Features->PerfMon.MonWidth = \
-	iArg->Features->PerfMon.FixWidth = 0b111111 == 0b111111 ? 64 : 0;
-	/* Reset the performance features bits: present is 0b1		*/
-	iArg->Features->PerfMon.CoreCycles    = 0b0;
-	iArg->Features->PerfMon.InstrRetired  = 0b0;
 }
 
 static void Compute_Interval(void)
@@ -1714,11 +1706,10 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 #define Counters_Generic(Core, T)					\
 ({									\
 	RDTSC64(Core->Counter[T].TSC);					\
-/*TODO(Cycles)								\
-	RDTSC_COUNTERx3(Core->Counter[T].TSC,				\
-			pmevcntr2_el0:mcycle,	Core->Counter[T].C0.UCC,\
-			pmccntr_el0:mcycle,	Core->Counter[T].C0.URC,\
-			pmevcntr3_el0:mcycle,	Core->Counter[T].INST );\
+	RDINST64(Core->Counter[T].INST);				\
+/*TODO(Performance Cycles)						\
+	Core->Counter[T].C0.UCC						\
+	Core->Counter[T].C0.URC						\
 */									\
 	Core->Counter[T].INST &= INST_COUNTER_OVERFLOW;			\
 	/* Normalize frequency: */					\
@@ -1803,7 +1794,7 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 })
 
 #define Delta_INST(Core)						\
-({	/* Delta of Retired Instructions */				\
+({	/*TODO(Delta of Retired Instructions: Counter Reset)		\
 	if (Core->Counter[1].INST >= Core->Counter[0].INST) {		\
 		Core->Delta.INST  =  Core->Counter[1].INST		\
 				  -  Core->Counter[0].INST;		\
@@ -1811,7 +1802,8 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 		Core->Delta.INST  = (INST_COUNTER_OVERFLOW + 0x1)	\
 				  - Core->Counter[0].INST;		\
 		Core->Delta.INST += Core->Counter[1].INST;		\
-	}								\
+	}*/								\
+	Core->Delta.INST  = Core->Counter[1].INST;			\
 })
 
 #define PKG_Counters_Generic(Core, T)					\

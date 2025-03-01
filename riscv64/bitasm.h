@@ -93,6 +93,15 @@ __asm__ volatile							\
 	: "cc", "memory"						\
 )
 
+#define RDINST64(_mem64)						\
+__asm__ volatile							\
+(									\
+	"rdinstret %0"							\
+	: "=r" (_mem64) 						\
+	:								\
+	: "cc", "memory"						\
+)
+
 #define ASM_RDTSC(_reg) 						\
 	"# Read variant TSC."			"\n\t"			\
 	"rdtime " #_reg 		 	"\n\t"
