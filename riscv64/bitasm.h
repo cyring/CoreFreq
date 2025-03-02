@@ -102,13 +102,22 @@ __asm__ volatile							\
 	: "cc", "memory"						\
 )
 
+#define RDPMC64(_mem64) 						\
+__asm__ volatile							\
+(									\
+	"rdcycle %0"							\
+	: "=r" (_mem64) 						\
+	:								\
+	: "cc", "memory"						\
+)
+
 #define ASM_RDTSC(_reg) 						\
 	"# Read variant TSC."			"\n\t"			\
 	"rdtime " #_reg 		 	"\n\t"
 
 #define ASM_CODE_RDPMC(_ctr, _reg)					\
 	"# Read PMU counter."			"\n\t"			\
-/*TODO	"csrr	" #_reg ", " #_ctr		"\n\t"	*/		\
+	_ctr"	" #_reg				"\n\t"			\
 
 #define ASM_RDPMC(_ctr, _reg) ASM_CODE_RDPMC(_ctr, _reg)
 

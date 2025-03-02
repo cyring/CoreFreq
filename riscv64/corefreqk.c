@@ -506,23 +506,24 @@ static signed int SearchArchitectureID(void)
 static void Query_Features(void *pArg)
 {
 	INIT_ARG *iArg = (INIT_ARG *) pArg;
-	volatile unsigned long long cntfrq, instret;
+	volatile unsigned long long timectr, instret, perfctr;
 
 	iArg->Features->Info.Vendor.CRC = CRC_RESERVED;
 	iArg->SMT_Count = 1;
 	iArg->HypervisorID = HYPERV_NONE;
 
-	RDTSC64(cntfrq);
+	RDTSC64(timectr);
 	RDINST64(instret);
+	RDPMC64(perfctr);
 
 	iArg->Features->TSC = \
 	iArg->Features->Inv_TSC = \
-	iArg->Features->RDTSCP = cntfrq != 0;
+	iArg->Features->RDTSCP = timectr != 0;
 
 	iArg->Features->PerfMon.MonWidth = \
 	iArg->Features->PerfMon.FixWidth = 64;
 	/* Reset the performance features bits: present is 0b1		*/
-	iArg->Features->PerfMon.CoreCycles    = 0b0;
+	iArg->Features->PerfMon.CoreCycles    = perfctr != 0 ? 0b1 : 0b0;
 	iArg->Features->PerfMon.InstrRetired  = instret != 0 ? 0b1 : 0b0;
 
 	iArg->Features->Info.Signature.Stepping = 0;
@@ -534,14 +535,18 @@ static void Query_Features(void *pArg)
 	VendorFromMainID(midr, iArg->Features->Info.Vendor.ID,
 			&iArg->Features->Info.Vendor.CRC, &iArg->HypervisorID);
 */
-	iArg->Features->Factory.Freq = 1000;
-
+	if (iArg->Features->PerfMon.CoreCycles) {
+		iArg->Features->Factory.Freq = perfctr / 600000000LLU;
+	} else {
+		iArg->Features->Factory.Freq = 1000;
+	}
 #if defined(CONFIG_ACPI)
 	iArg->Features->ACPI = acpi_disabled == 0;
 #else
 	iArg->Features->ACPI = 0;
 #endif
 	iArg->Features->PerfMon.FixCtrs = iArg->Features->TSC 
+					+ iArg->Features->PerfMon.CoreCycles
 					+ iArg->Features->PerfMon.InstrRetired;
 
 	iArg->Features->PerfMon.MonCtrs = \
@@ -982,20 +987,14 @@ static void Query_DeviceTree(unsigned int cpu)
     if (max_freq > 0) {
 	FREQ2COF(max_freq, COF);
     } else {
-/*TODO(Cycles)
 	volatile unsigned long long cntfrq;
-
-	__asm__ __volatile__(
-		"csrr	%[cntfrq],	mcycle" "\n\t"
-		"fence iorw, iorw"
-		: [cntfrq]	"=r" (cntfrq)
-		:
-		: "memory"
-	);
-	cntfrq = cntfrq / 10U;
-	FREQ2COF(cntfrq, COF);
-*/
-	FREQ2COF((10LLU * UNIT_KHz(PRECISION)), COF);
+	RDPMC64(cntfrq);
+	if (cntfrq) {
+		COF.Q = cntfrq / 60000000000LLU;
+		COF.R = cntfrq - (60000000000LLU * COF.Q);
+	} else {
+		FREQ2COF((10LLU * UNIT_KHz(PRECISION)), COF);
+	}
     }
 	Core->Boost[BOOST(MAX)].Q = COF.Q;
 	Core->Boost[BOOST(MAX)].R = COF.R;
@@ -1707,10 +1706,9 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 ({									\
 	RDTSC64(Core->Counter[T].TSC);					\
 	RDINST64(Core->Counter[T].INST);				\
-/*TODO(Performance Cycles)						\
-	Core->Counter[T].C0.UCC						\
-	Core->Counter[T].C0.URC						\
-*/									\
+	RDPMC64(Core->Counter[T].C0.UCC);				\
+	Core->Counter[T].C0.UCC = Core->Counter[T].C0.UCC / 600LLU;	\
+	Core->Counter[T].C0.URC = Core->Counter[T].C0.UCC;		\
 	Core->Counter[T].INST &= INST_COUNTER_OVERFLOW;			\
 	/* Normalize frequency: */					\
 	Core->Counter[T].C1 = ( 					\
@@ -1756,7 +1754,7 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 })
 
 #define Delta_C0(Core)							\
-({	/* Absolute Delta of Unhalted (Core & Ref) C0 Counter. */	\
+({ /* TODO(Absolute Delta of Unhalted (Core & Ref) C0 Counter: Reset)	\
 	if (Core->Counter[1].C0.UCC >= Core->Counter[0].C0.UCC) {	\
 		Core->Delta.C0.UCC  =  Core->Counter[1].C0.UCC		\
 				    -  Core->Counter[0].C0.UCC; 	\
@@ -1764,7 +1762,9 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 	if (Core->Counter[1].C0.URC >= Core->Counter[0].C0.URC) {	\
 		Core->Delta.C0.URC  =  Core->Counter[1].C0.URC		\
 				    -  Core->Counter[0].C0.URC; 	\
-	}								\
+	}*/								\
+	Core->Delta.C0.UCC = Core->Counter[1].C0.UCC;			\
+	Core->Delta.C0.URC = Core->Counter[1].C0.URC;			\
 })
 
 #define Delta_C1(Core)							\
