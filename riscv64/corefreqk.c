@@ -1693,13 +1693,34 @@ static void Controller_Exit(void)
 
 static void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 {
-/*TODO*/
+	register unsigned long long ctr_reg;
+	__asm__ volatile
+	(
+		"csrr %0, scounteren"
+		: "=r" (Save->SCOUNTEREN)
+		:
+		: "cc", "memory"
+	);
+	ctr_reg = Save->SCOUNTEREN | 0b101;
+	__asm__ volatile
+	(
+		"csrw scounteren, %0"
+		:
+		: "r" (ctr_reg)
+		: "cc", "memory"
+	);
 }
 
 static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 					CORE_RO *Core)
 {
-/*TODO*/
+	__asm__ volatile
+	(
+		"csrw scounteren, %0"
+		:
+		: "r" (Save->SCOUNTEREN)
+		: "cc", "memory"
+	);
 }
 
 #define Counters_Generic(Core, T)					\

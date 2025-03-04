@@ -155,6 +155,7 @@ typedef struct
 		union SAVE_AREA_CORE {
 		    struct
 		    {
+			unsigned long long SCOUNTEREN;
 		    };
 		} SaveArea;
 #ifdef CONFIG_CPU_FREQ
