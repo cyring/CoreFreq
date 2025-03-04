@@ -536,7 +536,7 @@ static void Query_Features(void *pArg)
 			&iArg->Features->Info.Vendor.CRC, &iArg->HypervisorID);
 */
 	if (iArg->Features->PerfMon.CoreCycles) {
-		iArg->Features->Factory.Freq = perfctr / 600000000LLU;
+		iArg->Features->Factory.Freq = 1000 | (perfctr & 0x3ffLLU);
 	} else {
 		iArg->Features->Factory.Freq = 1000;
 	}
@@ -990,8 +990,8 @@ static void Query_DeviceTree(unsigned int cpu)
 	volatile unsigned long long cntfrq;
 	RDPMC64(cntfrq);
 	if (cntfrq) {
-		COF.Q = cntfrq / 60000000000LLU;
-		COF.R = cntfrq - (60000000000LLU * COF.Q);
+		COF.Q = 10;
+		COF.R = (10 | (cntfrq & 0x3LLU)) - 10;
 	} else {
 		FREQ2COF((10LLU * UNIT_KHz(PRECISION)), COF);
 	}
@@ -1728,7 +1728,7 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 	RDTSC64(Core->Counter[T].TSC);					\
 	RDINST64(Core->Counter[T].INST);				\
 	RDPMC64(Core->Counter[T].C0.UCC);				\
-	Core->Counter[T].C0.UCC = Core->Counter[T].C0.UCC / 600LLU;	\
+	Core->Counter[T].C0.UCC &= INST_COUNTER_OVERFLOW;		\
 	Core->Counter[T].C0.URC = Core->Counter[T].C0.UCC;		\
 	Core->Counter[T].INST &= INST_COUNTER_OVERFLOW;			\
 	/* Normalize frequency: */					\
