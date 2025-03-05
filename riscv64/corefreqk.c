@@ -1421,6 +1421,13 @@ static void SystemRegisters(CORE_RO *Core)
 		Core->SystemRegister.FLAGS |= (
 			(1LLU << FLAG_PM)
 		);
+	__asm__ volatile
+	(
+		"csrr %0, sstatus"
+		: "=r" (Core->SystemRegister.sstatus.value)
+		:
+		: "memory"
+	);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask, Core->Bind);
 }
 
@@ -1693,21 +1700,23 @@ static void Controller_Exit(void)
 
 static void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 {
-	register unsigned long long ctr_reg;
+	register SCOUNTEREN ctr_en_reg;
 	__asm__ volatile
 	(
 		"csrr %0, scounteren"
-		: "=r" (Save->SCOUNTEREN)
+		: "=r" (Save->scounteren.value)
 		:
-		: "cc", "memory"
+		: "memory"
 	);
-	ctr_reg = Save->SCOUNTEREN | 0b101;
+	ctr_en_reg = Save->scounteren;
+	ctr_en_reg.CY = 1;
+	ctr_en_reg.IR = 1;
 	__asm__ volatile
 	(
 		"csrw scounteren, %0"
 		:
-		: "r" (ctr_reg)
-		: "cc", "memory"
+		: "r" (ctr_en_reg.value)
+		: "memory"
 	);
 }
 
@@ -1718,8 +1727,8 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 	(
 		"csrw scounteren, %0"
 		:
-		: "r" (Save->SCOUNTEREN)
-		: "cc", "memory"
+		: "r" (Save->scounteren.value)
+		: "memory"
 	);
 }
 
@@ -1837,7 +1846,7 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 		"csrr	%[cntpct],	mcycle"				\
 		: [cntpct]	"=r" (cntpct) 				\
 		:							\
-		: "cc", "memory"					\
+		: "memory"						\
 	);								\
 	PUBLIC(RO(Proc))->Counter[T].PCLK = cntpct;*/			\
 })

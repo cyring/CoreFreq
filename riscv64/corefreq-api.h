@@ -200,6 +200,7 @@ typedef struct
 
 	struct {
 		Bit64			FLAGS	__attribute__ ((aligned (8)));
+		SSTATUS 		sstatus;
 	} SystemRegister;
 
 	unsigned int			Bind;

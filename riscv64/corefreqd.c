@@ -870,6 +870,9 @@ void SystemRegisters(	RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core),
 	RO(Shm)->Cpu[cpu].SystemRegister.FLAGS = \
 				RO(Core, AT(cpu))->SystemRegister.FLAGS;
 
+	RO(Shm)->Cpu[cpu].SystemRegister.sstatus = \
+				RO(Core, AT(cpu))->SystemRegister.sstatus.value;
+
 	RO(Shm)->Cpu[cpu].Query.SCTLRX = RO(Core, AT(cpu))->Query.SCTLRX;
 }
 

@@ -10,6 +10,75 @@ typedef union
 	struct
 	{
 		unsigned long long
+		CY		:  1-0, /* cycle register		*/
+		TM		:  2-1, /* time register		*/
+		IR		:  3-2, /* instret register		*/
+		HPM3		:  4-3,
+		HPM4		:  5-4,
+		HPM5		:  6-5,
+		HPM6		:  7-6,
+		HPM7		:  8-7,
+		HPM8		:  9-8,
+		HPM9		: 10-9,
+		HPM10		: 11-10,
+		HPM11		: 12-11,
+		HPM12		: 13-12,
+		HPM13		: 14-13,
+		HPM14		: 15-14,
+		HPM15		: 16-15,
+		HPM16		: 17-16,
+		HPM17		: 18-17,
+		HPM18		: 19-18,
+		HPM19		: 20-19,
+		HPM20		: 21-20,
+		HPM21		: 22-21,
+		HPM22		: 23-22,
+		HPM23		: 24-23,
+		HPM24		: 25-24,
+		HPM25		: 26-25,
+		HPM26		: 27-26,
+		HPM27		: 28-27,
+		HPM28		: 29-28,
+		HPM29		: 30-29,
+		HPM30		: 31-30,
+		HPM31		: 32-31,
+		ReservedBits	: 64-32;
+	};
+} SCOUNTEREN;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		WPRI0		:  1-0,
+		SIE		:  2-1, /* Enables all interrupts	*/
+		WPRI2		:  5-2,
+		SPIE		:  6-5,
+		UBE		:  7-6,
+		WPRI7		:  8-7,
+		SPP		:  9-8,
+		VS		: 11-9,
+		WPRI11		: 13-11,
+		FS		: 15-13,
+		XS		: 17-15,
+		WPRI17		: 18-17,
+		SUM		: 19-18,
+		MXR		: 20-19,
+		WPRI20		: 32-20,
+		UXL		: 34-32,
+		WPRI34		: 63-34,
+		SD		: 64-63;
+	};
+} SSTATUS;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
 		Highest 	:  8-0,
 		Guaranteed	: 16-8,
 		Most_Efficient	: 24-16,
