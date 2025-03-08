@@ -35,13 +35,12 @@ enum CRC_MANUFACTURER
 	CRC_HYPERV	= 0x543a585e
 };
 
-enum CODENAME
-{
-	RV64,
-	CODENAMES
-};
-
 enum {	GenuineArch = 0,
+	Andes,
+	SiFive,
+	T_Head,
+	Veyron,
+	SpacemiT,
 	ARCHITECTURES
 };
 

@@ -53,21 +53,21 @@ typedef union
 	{
 		unsigned long long
 		WPRI0		:  1-0,
-		SIE		:  2-1, /* Enables all interrupts	*/
+		SIE		:  2-1, /* Supervisor all Interrupts Enable */
 		WPRI2		:  5-2,
-		SPIE		:  6-5,
-		UBE		:  7-6,
+		SPIE		:  6-5, /* Supervisor Prior Interrupt Enable */
+		UBE		:  7-6, /* Endianness Control. 0:Little; 1:Big*/
 		WPRI7		:  8-7,
-		SPP		:  9-8,
-		VS		: 11-9,
+		SPP		:  9-8, /* Supervisor Previous Privilege mode */
+		VS		: 11-9, /* Vector Extension State	*/
 		WPRI11		: 13-11,
-		FS		: 15-13,
-		XS		: 17-15,
+		FS		: 15-13, /* Floating-point Unit State	*/
+		XS		: 17-15, /* User-mode eXtensions State	*/
 		WPRI17		: 18-17,
-		SUM		: 19-18,
-		MXR		: 20-19,
+		SUM		: 19-18, /* Supervisor User Memory access */
+		MXR		: 20-19, /* Make eXecutable Readable	*/
 		WPRI20		: 32-20,
-		UXL		: 34-32,
+		UXL		: 34-32, /* U-mode UXLEN		*/
 		WPRI34		: 63-34,
 		SD		: 64-63;
 	};

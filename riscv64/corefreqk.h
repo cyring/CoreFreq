@@ -257,11 +257,6 @@ typedef struct {
 	void			(*SetTarget)(void *arg);
 } SYSTEM_DRIVER;
 
-typedef struct {
-	char			**Brand;
-	enum CODENAME		CN;
-} ARCH_ST;
-
 typedef struct
 {
 	struct	SIGNATURE	Signature;
@@ -285,7 +280,7 @@ typedef struct
 	} Uncore;
 	PROCESSOR_SPECIFIC	*Specific;
 	SYSTEM_DRIVER		SystemDriver;
-	ARCH_ST			Architecture;
+	char			**Architecture;
 } ARCH;
 
 static CLOCK BaseClock_GenericMachine(unsigned int ratio) ;
@@ -296,7 +291,12 @@ static void Stop_GenericMachine(void *arg) ;
 static void InitTimer_GenericMachine(unsigned int cpu) ;
 
 /*	[Void]								*/
-#define _Void_Signature {.ExtFamily=0x00, .Family=0x0, .ExtModel=0x0, .Model=0x0}
+#define _Void_Signature {.ExtFamily=0x00,.Family=0x0, .ExtModel=0x0,.Model=0x0}
+#define _Andes {.ExtFamily=0x31, .Family=0xE, .ExtModel=0x0, .Model=0x0}
+#define _SiFive {.ExtFamily=0x48, .Family=0x9, .ExtModel=0x0, .Model=0x0}
+#define _T_Head {.ExtFamily=0x5B, .Family=0x7, .ExtModel=0x0, .Model=0x0}
+#define _Veyron {.ExtFamily=0x61, .Family=0xF, .ExtModel=0x0, .Model=0x0}
+#define _SpacemiT {.ExtFamily=0x71, .Family=0x0, .ExtModel=0x0, .Model=0x0}
 
 typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
 
@@ -304,11 +304,14 @@ static struct pci_device_id PCI_Void_ids[] = {
 	{0, }
 };
 
-static char *CodeName[CODENAMES] = {
-	[    RV64]	= "RV64"
-};
+static char *Arch_Generic[]	=	ZLIST("RV64");
+static char *Arch_Andes[]	=	ZLIST("Andes");
+static char *Arch_SiFive[]	=	ZLIST("SiFive");
+static char *Arch_T_Head[]	=	ZLIST("T-Head");
+static char *Arch_Veyron[]	=	ZLIST("Veyron");
+static char *Arch_SpacemiT[]	=	ZLIST("SpacemiT");
 
-#define Arch_Misc_Processor {.Brand = ZLIST(NULL), .CN = RV64}
+static PROCESSOR_SPECIFIC Void_Specific[] = { {0} };
 
 static PROCESSOR_SPECIFIC Misc_Specific_Processor[] = {
 	{0}
@@ -373,6 +376,146 @@ static ARCH Arch[ARCHITECTURES] = {
 		},
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
-	.Architecture = Arch_Misc_Processor
+	.Architecture = Arch_Generic
 	},
+[Andes] = {
+	.Signature = _Andes,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Andes
+	},
+[SiFive] = {
+	.Signature = _SiFive,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_SiFive
+	},
+[T_Head] = {
+	.Signature = _T_Head,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_T_Head
+	},
+[Veyron] = {
+	.Signature = _Veyron,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Veyron
+	},
+[SpacemiT] = {
+	.Signature = _SpacemiT,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_SpacemiT
+	}
 };

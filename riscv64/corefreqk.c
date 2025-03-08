@@ -8,6 +8,7 @@
 #include <linux/module.h>
 #include <linux/cpu.h>
 #include <linux/pci.h>
+#include <asm/sbi.h>
 #ifdef CONFIG_DMI
 #include <linux/dmi.h>
 #endif /* CONFIG_DMI */
@@ -507,6 +508,9 @@ static void Query_Features(void *pArg)
 {
 	INIT_ARG *iArg = (INIT_ARG *) pArg;
 	volatile unsigned long long timectr, instret, perfctr;
+	const unsigned long
+		mvendorid = riscv_cached_mvendorid(iArg->localProcessor),
+		marchid = riscv_cached_marchid(iArg->localProcessor);
 
 	iArg->Features->Info.Vendor.CRC = CRC_RESERVED;
 	iArg->SMT_Count = 1;
@@ -527,10 +531,10 @@ static void Query_Features(void *pArg)
 	iArg->Features->PerfMon.InstrRetired  = instret != 0 ? 0b1 : 0b0;
 
 	iArg->Features->Info.Signature.Stepping = 0;
-	iArg->Features->Info.Signature.Family = 0 & 0x00f;
-	iArg->Features->Info.Signature.ExtFamily = (0 & 0xff0) >> 4;
-	iArg->Features->Info.Signature.Model = 0 & 0x0f;
-	iArg->Features->Info.Signature.ExtModel = (0 & 0xf0) >> 4;
+	iArg->Features->Info.Signature.Family = mvendorid & 0x00f;
+	iArg->Features->Info.Signature.ExtFamily = (mvendorid & 0xff0) >> 4;
+	iArg->Features->Info.Signature.Model = marchid & 0x0f;
+	iArg->Features->Info.Signature.ExtModel = (marchid & 0xf0) >> 4;
 /*
 	VendorFromMainID(midr, iArg->Features->Info.Vendor.ID,
 			&iArg->Features->Info.Vendor.CRC, &iArg->HypervisorID);
@@ -887,7 +891,7 @@ static void OverrideCodeNameString(PROCESSOR_SPECIFIC *pSpecific)
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
 		Arch[
 			PUBLIC(RO(Proc))->ArchID
-		].Architecture.Brand[pSpecific->CodeNameIdx], CODENAME_LEN);
+		].Architecture[pSpecific->CodeNameIdx], CODENAME_LEN);
 }
 
 static void OverrideUnlockCapability(PROCESSOR_SPECIFIC *pSpecific)
@@ -4491,9 +4495,6 @@ static int CoreFreqK_Scale_And_Compute_Level_Up(INIT_ARG *pArg)
 
 	memcpy(&PUBLIC(RO(Proc))->Features, pArg->Features, sizeof(FEATURES));
 
-	/* Initialize default uArch's codename with the CPUID brand.	*/
-	Arch[GenuineArch].Architecture.Brand[0] = \
-				PUBLIC(RO(Proc))->Features.Info.Vendor.ID;
 	/* Initialize with any hypervisor found so far.			*/
 	PUBLIC(RO(Proc))->HypervisorID = pArg->HypervisorID;
 	return 0;
@@ -4658,12 +4659,13 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 	}
 	/*	Set the uArch's name with the first found codename	*/
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
-		CodeName[Arch[PUBLIC(RO(Proc))->ArchID].Architecture.CN],
+		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[0],
 		CODENAME_LEN);
 
-	StrCopy(PUBLIC(RO(Proc))->Features.Info.Brand,
-		Arch[PUBLIC(RO(Proc))->ArchID].Architecture.Brand[0],
-		BRAND_SIZE);
+	StrCopy(PUBLIC(RO(Proc))->Features.Info.Vendor.ID,
+		PUBLIC(RO(Proc))->Architecture,
+		12 + 4);
+
 	/*	Check if the Processor is actually virtualized ?	*/
 	#ifdef CONFIG_XEN
 	if (xen_pv_domain() || xen_hvm_domain())
