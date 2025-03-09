@@ -35,7 +35,7 @@
 		pSlice->Delta.INST  =  pSlice->Counter[2].INST		\
 				    -  pSlice->Counter[1].INST; 	\
 	else {								\
-		pSlice->Delta.INST  = (INST_COUNTER_OVERFLOW + 0x1)	\
+		pSlice->Delta.INST  = (PMU_COUNTER_OVERFLOW + 0x1)	\
 				    - pSlice->Counter[1].INST;		\
 		pSlice->Delta.INST += pSlice->Counter[2].INST;		\
 	}								\
@@ -53,17 +53,17 @@ void CallWith_RDTSC_RDPMC(	RO(SHM_STRUCT) *RO(Shm),
 
 	RDTSC64(pSlice->Counter[0].TSC);
 	RDINST64(pSlice->Counter[0].INST);
-	pSlice->Counter[0].INST &= INST_COUNTER_OVERFLOW;
+	pSlice->Counter[0].INST &= PMU_COUNTER_OVERFLOW;
 
 	RDTSC64(pSlice->Counter[1].TSC);
 	RDINST64(pSlice->Counter[1].INST);
-	pSlice->Counter[1].INST &= INST_COUNTER_OVERFLOW;
+	pSlice->Counter[1].INST &= PMU_COUNTER_OVERFLOW;
 
 	SliceFunc(RO(Shm), RW(Shm), cpu, arg);
 
 	RDTSC64(pSlice->Counter[2].TSC);
 	RDINST64(pSlice->Counter[2].INST);
-	pSlice->Counter[2].INST &= INST_COUNTER_OVERFLOW;
+	pSlice->Counter[2].INST &= PMU_COUNTER_OVERFLOW;
 
 	if (BITVAL(RW(Shm)->Proc.Sync, BURN)) {
 		DeltaTSC(pSlice);

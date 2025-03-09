@@ -1741,9 +1741,9 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 	RDTSC64(Core->Counter[T].TSC);					\
 	RDINST64(Core->Counter[T].INST);				\
 	RDPMC64(Core->Counter[T].C0.UCC);				\
-	Core->Counter[T].C0.UCC &= INST_COUNTER_OVERFLOW;		\
+	Core->Counter[T].C0.UCC &= PMU_COUNTER_OVERFLOW;		\
 	Core->Counter[T].C0.URC = Core->Counter[T].C0.UCC;		\
-	Core->Counter[T].INST &= INST_COUNTER_OVERFLOW;			\
+	Core->Counter[T].INST &= PMU_COUNTER_OVERFLOW;			\
 	/* Normalize frequency: */					\
 	Core->Counter[T].C1 = ( 					\
 		Core->Counter[T].TSC					\
@@ -1788,7 +1788,7 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 })
 
 #define Delta_C0(Core)							\
-({ /* TODO(Absolute Delta of Unhalted (Core & Ref) C0 Counter: Reset)	\
+({									\
 	if (Core->Counter[1].C0.UCC >= Core->Counter[0].C0.UCC) {	\
 		Core->Delta.C0.UCC  =  Core->Counter[1].C0.UCC		\
 				    -  Core->Counter[0].C0.UCC; 	\
@@ -1796,9 +1796,7 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 	if (Core->Counter[1].C0.URC >= Core->Counter[0].C0.URC) {	\
 		Core->Delta.C0.URC  =  Core->Counter[1].C0.URC		\
 				    -  Core->Counter[0].C0.URC; 	\
-	}*/								\
-	Core->Delta.C0.UCC = Core->Counter[1].C0.UCC;			\
-	Core->Delta.C0.URC = Core->Counter[1].C0.URC;			\
+	}								\
 })
 
 #define Delta_C1(Core)							\
@@ -1828,31 +1826,21 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 })
 
 #define Delta_INST(Core)						\
-({	/*TODO(Delta of Retired Instructions: Counter Reset)		\
+({									\
 	if (Core->Counter[1].INST >= Core->Counter[0].INST) {		\
 		Core->Delta.INST  =  Core->Counter[1].INST		\
 				  -  Core->Counter[0].INST;		\
 	} else {							\
-		Core->Delta.INST  = (INST_COUNTER_OVERFLOW + 0x1)	\
+		Core->Delta.INST  = (PMU_COUNTER_OVERFLOW + 0x1)	\
 				  - Core->Counter[0].INST;		\
 		Core->Delta.INST += Core->Counter[1].INST;		\
-	}*/								\
-	Core->Delta.INST  = Core->Counter[1].INST;			\
+	}								\
 })
 
 #define PKG_Counters_Generic(Core, T)					\
 ({									\
 	RDTSC64(PUBLIC(RO(Proc))->Counter[T].PCLK);			\
-/*TODO(CleanUp)								\
-	volatile unsigned long long cntpct; 				\
-	__asm__ volatile						\
-	(								\
-		"csrr	%[cntpct],	mcycle"				\
-		: [cntpct]	"=r" (cntpct) 				\
-		:							\
-		: "memory"						\
-	);								\
-	PUBLIC(RO(Proc))->Counter[T].PCLK = cntpct;*/			\
+	PUBLIC(RO(Proc))->Counter[T].PCLK &= PMU_COUNTER_OVERFLOW;	\
 })
 
 #define Pkg_OVH(Pkg, Core)						\
