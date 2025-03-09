@@ -780,6 +780,14 @@ static void Map_Generic_Topology(void *arg)
 		Core->T.CoreID = mpid.Aff0;
 	}
 */
+#ifdef CONFIG_OF
+	struct device_node *cpu_node = of_cpu_device_node_get(Core->Bind);
+	if (cpu_node != NULL) {
+		of_property_read_u32(cpu_node, "reg", &Core->T.CoreID);
+		of_node_put(cpu_node);
+	}
+#endif /* CONFIG_OF */
+
 	Cache_Topology(Core);
     }
 }
