@@ -292,6 +292,7 @@ static void InitTimer_GenericMachine(unsigned int cpu) ;
 
 /*	[Void]								*/
 #define _Void_Signature {.ExtFamily=0x00,.Family=0x0, .ExtModel=0x0,.Model=0x0}
+#define _Microchip {.ExtFamily=0x02, .Family=0x9, .ExtModel=0x0, .Model=0x0}
 #define _Andes {.ExtFamily=0x31, .Family=0xE, .ExtModel=0x0, .Model=0x0}
 #define _SiFive {.ExtFamily=0x48, .Family=0x9, .ExtModel=0x0, .Model=0x0}
 #define _T_Head {.ExtFamily=0x5B, .Family=0x7, .ExtModel=0x0, .Model=0x0}
@@ -304,7 +305,8 @@ static struct pci_device_id PCI_Void_ids[] = {
 	{0, }
 };
 
-static char *Arch_Generic[]	=	ZLIST("RV64");
+static char *Arch_Generic[]	=	ZLIST("RISC-V");
+static char *Arch_Microchip[]	=	ZLIST("Microchip");
 static char *Arch_Andes[]	=	ZLIST("Andes");
 static char *Arch_SiFive[]	=	ZLIST("SiFive");
 static char *Arch_T_Head[]	=	ZLIST("T-Head");
@@ -350,7 +352,7 @@ static unsigned int Policy_GetFreq(unsigned int cpu) ;
 }
 
 static ARCH Arch[ARCHITECTURES] = {
-[GenuineArch] = {							/*  0*/
+[GenericArch] = {							/*  0*/
 	.Signature = _Void_Signature,
 	.Query = Query_GenericMachine,
 	.Update = PerCore_GenericMachine,
@@ -377,6 +379,34 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Generic
+	},
+[Microchip] = {
+	.Signature = _Microchip,
+	.Query = Query_GenericMachine,
+	.Update = PerCore_GenericMachine,
+	.Start = Start_GenericMachine,
+	.Stop = Stop_GenericMachine,
+	.Exit = NULL,
+	.Timer = InitTimer_GenericMachine,
+	.BaseClock = BaseClock_GenericMachine,
+	.ClockMod = NULL,
+	.TurboClock = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+#ifdef CONFIG_PM_OPP
+	.voltageFormula = VOLTAGE_FORMULA_OPP,
+#else
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
+	.powerFormula   = POWER_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_Microchip
 	},
 [Andes] = {
 	.Signature = _Andes,

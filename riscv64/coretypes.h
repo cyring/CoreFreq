@@ -35,7 +35,8 @@ enum CRC_MANUFACTURER
 	CRC_HYPERV	= 0x543a585e
 };
 
-enum {	GenuineArch = 0,
+enum {	GenericArch = 0,
+	Microchip,
 	Andes,
 	SiFive,
 	T_Head,

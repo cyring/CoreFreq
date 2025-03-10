@@ -509,8 +509,8 @@ static void Query_Features(void *pArg)
 	INIT_ARG *iArg = (INIT_ARG *) pArg;
 	volatile unsigned long long timectr, instret, perfctr;
 	const unsigned long
-		mvendorid = riscv_cached_mvendorid(iArg->localProcessor),
-		marchid = riscv_cached_marchid(iArg->localProcessor);
+		mvendorid = riscv_cached_mvendorid(iArg->localProcessor);
+	/*TODO	marchid = riscv_cached_marchid(iArg->localProcessor);	*/
 
 	iArg->Features->Info.Vendor.CRC = CRC_RESERVED;
 	iArg->SMT_Count = 1;
@@ -533,8 +533,8 @@ static void Query_Features(void *pArg)
 	iArg->Features->Info.Signature.Stepping = 0;
 	iArg->Features->Info.Signature.Family = mvendorid & 0x00f;
 	iArg->Features->Info.Signature.ExtFamily = (mvendorid & 0xff0) >> 4;
-	iArg->Features->Info.Signature.Model = marchid & 0x0f;
-	iArg->Features->Info.Signature.ExtModel = (marchid & 0xf0) >> 4;
+	iArg->Features->Info.Signature.Model = 0 & 0x0f;
+	iArg->Features->Info.Signature.ExtModel = (0 & 0xf0) >> 4;
 /*
 	VendorFromMainID(midr, iArg->Features->Info.Vendor.ID,
 			&iArg->Features->Info.Vendor.CRC, &iArg->HypervisorID);
