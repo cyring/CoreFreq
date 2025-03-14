@@ -542,11 +542,21 @@ static void Query_Features(void *pArg)
 	VendorFromMainID(midr, iArg->Features->Info.Vendor.ID,
 			&iArg->Features->Info.Vendor.CRC, &iArg->HypervisorID);
 */
-	if (iArg->Features->TSC) {
-		iArg->Features->Factory.Freq = 512;
-	} else {
-		iArg->Features->Factory.Freq = 1000;
-	}
+#ifdef CONFIG_OF
+  {
+    struct device_node *cpu_node = of_cpu_device_node_get(iArg->localProcessor);
+    if (cpu_node != NULL) {
+	of_property_read_u32(	cpu_node, "clock-frequency",
+				&iArg->Features->Factory.Freq ); /* Hz->Mhz */
+	of_node_put(cpu_node);
+	iArg->Features->Factory.Freq = iArg->Features->Factory.Freq / 1000000U;
+    }
+    else
+	iArg->Features->Factory.Freq = 512;
+  }
+#else
+	iArg->Features->Factory.Freq = 512;
+#endif /* CONFIG_OF */
 #if defined(CONFIG_ACPI)
 	iArg->Features->ACPI = acpi_disabled == 0;
 #else
@@ -773,6 +783,14 @@ static void Map_Generic_Topology(void *arg)
 		Core->T.CoreID = mpid.Aff0;
 	}
 */
+#ifdef CONFIG_OF
+	struct device_node *cpu_node = of_cpu_device_node_get(Core->Bind);
+	if (cpu_node != NULL) {
+		of_property_read_u32(cpu_node, "reg", &Core->T.CoreID);
+		of_node_put(cpu_node);
+	}
+#endif /* CONFIG_OF */
+
 	Cache_Topology(Core);
     }
 }
@@ -981,6 +999,16 @@ static void Query_DeviceTree(unsigned int cpu)
 #endif
   }
 #endif /* CONFIG_CPU_FREQ */
+#ifdef CONFIG_OF
+  if (max_freq == 0) {
+	struct device_node *cpu_node = of_cpu_device_node_get(Core->Bind);
+    if (cpu_node != NULL) {
+	of_property_read_u32(cpu_node, "clock-frequency", &max_freq); /* Hz */
+	of_node_put(cpu_node);
+	max_freq = max_freq / 1000U; /* KHz */
+    }
+  }
+#endif /* CONFIG_OF */
     if (max_freq > 0) {
 	FREQ2COF(max_freq, COF);
     } else {

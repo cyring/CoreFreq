@@ -4,6 +4,21 @@
  * Licenses: GPL2
  */
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 4, 0)
+#define of_cpu_device_node_get(cpu)					\
+({									\
+	struct device_node *cpu_node;					\
+	struct device *cpu_dev; 					\
+	cpu_dev = get_cpu_device(cpu);					\
+	if (!cpu_dev) { 						\
+		cpu_node = of_get_cpu_node(cpu, NULL);			\
+	} else {							\
+		cpu_node = of_node_get(cpu_dev->of_node);		\
+	}								\
+	cpu_node;							\
+})
+#endif
+
 #define Atomic_Read_VPMC(_lock, _dest, _src)				\
 {									\
 /*	__asm__ volatile						\
