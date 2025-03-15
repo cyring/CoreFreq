@@ -6297,6 +6297,19 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 	StrCopy(PUBLIC(RO(Proc))->Features.Info.Brand,
 		Arch[PUBLIC(RO(Proc))->ArchID].Architecture.Brand[0],
 		BRAND_SIZE);
+	/*	Attempt to detect virtualization from Device Tree	*/
+	#ifdef CONFIG_OF
+	{
+	    const char *virtualBoard[] = DT_VIRTUAL_BOARD;
+	    if (of_device_compatible_match(of_root, virtualBoard) > 0)
+	    {
+		PUBLIC(RO(Proc))->HypervisorID = HYPERV_KVM;
+		PUBLIC(RO(Proc))->Features.Info.Hypervisor.CRC = CRC_KVM;
+		StrCopy(PUBLIC(RO(Proc))->Features.Info.Hypervisor.ID,
+			VENDOR_KVM, 12 + 4);
+	    }
+	}
+	#endif /* CONFIG_OF */
 	/*	Check if the Processor is actually virtualized ?	*/
 	#ifdef CONFIG_XEN
 	if (xen_pv_domain() || xen_hvm_domain())

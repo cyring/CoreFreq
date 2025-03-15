@@ -4,6 +4,24 @@
  * Licenses: GPL2
  */
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0)
+#define of_device_compatible_match(_device_, _compat_)			\
+({									\
+	const struct device_node *device = _device_;			\
+	const char *const *compat = _compat_;				\
+	unsigned int tmp, score = 0;					\
+									\
+	if (compat != NULL)						\
+		while (*compat) {					\
+			tmp = of_device_is_compatible(device, *compat); \
+			if (tmp > score)				\
+				score = tmp;				\
+			compat++;					\
+		}							\
+	score;								\
+})
+#endif
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
 	#define sys_reg(op0, op1, crn, crm, op2) ({	\
 		UNUSED(op0);				\
@@ -145,6 +163,12 @@ ASM_COUNTERx3(x11, x12, x13, x14, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 #define VENDOR_KBOX	"KVMKM"
 #define VENDOR_VMWARE	"VMwawarereVM"
 #define VENDOR_HYPERV	"Micrt Hvosof"
+
+#define DT_VIRTUAL_BOARD {						\
+	"linux,dummy-virt",						\
+	"qemu,pseries",							\
+	NULL								\
+}
 
 #define LATCH_NONE		0b000000000000
 #define LATCH_TGT_RATIO_UNLOCK	0b000000000001	/* <T>	TgtRatioUnlocked */
