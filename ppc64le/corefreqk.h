@@ -84,6 +84,7 @@
 #define VENDOR_KBOX	"KVMKM"
 #define VENDOR_VMWARE	"VMwawarereVM"
 #define VENDOR_HYPERV	"Micrt Hvosof"
+#define VENDOR_PWRSIM	"PWRsimPWRsim"
 
 #define LATCH_NONE		0b000000000000
 #define LATCH_TGT_RATIO_UNLOCK	0b000000000001	/* <T>	TgtRatioUnlocked */

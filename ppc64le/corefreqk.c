@@ -4677,6 +4677,13 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 		PUBLIC(RO(Proc))->Features.Info.Hypervisor.CRC = CRC_KVM;
 		StrCopy(PUBLIC(RO(Proc))->Features.Info.Hypervisor.ID,
 			VENDOR_KVM, 12 + 4);
+	    } else if (of_property_match_string(of_root, "model",
+						"Mambo,Simulated-System") >= 0)
+	    {
+		PUBLIC(RO(Proc))->HypervisorID = SYSTEM_PWRSIM;
+		PUBLIC(RO(Proc))->Features.Info.Hypervisor.CRC = CRC_PWRSIM;
+		StrCopy(PUBLIC(RO(Proc))->Features.Info.Hypervisor.ID,
+			VENDOR_PWRSIM, 12 + 4);
 	    }
 	}
 	#endif /* CONFIG_OF */
