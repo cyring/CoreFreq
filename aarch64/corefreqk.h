@@ -4,7 +4,22 @@
  * Licenses: GPL2
  */
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0)
+#if defined(CONFIG_OF) && LINUX_VERSION_CODE < KERNEL_VERSION(6, 4, 0)
+#define of_cpu_device_node_get(cpu)					\
+({									\
+	struct device_node *cpu_node;					\
+	struct device *cpu_dev; 					\
+	cpu_dev = get_cpu_device(cpu);					\
+	if (!cpu_dev) { 						\
+		cpu_node = of_get_cpu_node(cpu, NULL);			\
+	} else {							\
+		cpu_node = of_node_get(cpu_dev->of_node);		\
+	}								\
+	cpu_node;							\
+})
+#endif
+
+#if defined(CONFIG_OF) && LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0)
 #define of_device_compatible_match(_device_, _compat_)			\
 ({									\
 	const struct device_node *device = _device_;			\
@@ -163,12 +178,6 @@ ASM_COUNTERx3(x11, x12, x13, x14, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 #define VENDOR_KBOX	"KVMKM"
 #define VENDOR_VMWARE	"VMwawarereVM"
 #define VENDOR_HYPERV	"Micrt Hvosof"
-
-#define DT_VIRTUAL_BOARD {						\
-	"linux,dummy-virt",						\
-	"qemu,pseries",							\
-	NULL								\
-}
 
 #define LATCH_NONE		0b000000000000
 #define LATCH_TGT_RATIO_UNLOCK	0b000000000001	/* <T>	TgtRatioUnlocked */

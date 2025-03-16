@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 4, 0)
+#if defined(CONFIG_OF) && LINUX_VERSION_CODE < KERNEL_VERSION(6, 4, 0)
 #define of_cpu_device_node_get(cpu)					\
 ({									\
 	struct device_node *cpu_node;					\
@@ -16,6 +16,24 @@
 		cpu_node = of_node_get(cpu_dev->of_node);		\
 	}								\
 	cpu_node;							\
+})
+#endif
+
+#if defined(CONFIG_OF) && LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0)
+#define of_device_compatible_match(_device_, _compat_)			\
+({									\
+	const struct device_node *device = _device_;			\
+	const char *const *compat = _compat_;				\
+	unsigned int tmp, score = 0;					\
+									\
+	if (compat != NULL)						\
+		while (*compat) {					\
+			tmp = of_device_is_compatible(device, *compat); \
+			if (tmp > score)				\
+				score = tmp;				\
+			compat++;					\
+		}							\
+	score;								\
 })
 #endif
 

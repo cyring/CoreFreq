@@ -96,6 +96,13 @@ ifneq ($(HWM_CHIPSET),)
 ccflags-y += -D HWM_CHIPSET=$(HWM_CHIPSET)
 endif
 
+ccflags-y += -D DT_VIRTUAL_BOARD='{	\
+	"linux,dummy-virt",		\
+	"riscv-virtio", 		\
+	"qemu,pseries",			\
+	NULL				\
+}'
+
 ifneq ($(NO_HEADER),)
 LAYOUT += -D NO_HEADER=$(NO_HEADER)
 endif
