@@ -46,7 +46,9 @@ typedef struct
 				RdAlloc 	: 30-29,
 				WrBack		: 31-30,
 				WrThrough	: 32-31,
-				RES0		: 64-32;
+				NumSets 	: 56-32,
+				RES0		: 63-56,
+				FEAT_CCIDX	: 64-63;
 			};
 		} ccsid;
 		unsigned int	Size;

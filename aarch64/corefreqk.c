@@ -2067,6 +2067,8 @@ static void Cache_Level(CORE_RO *Core, unsigned int level, unsigned int select)
 		[2] = { .InD = 0, .Level = 1 }, /*	L2	*/
 		[3] = { .InD = 0, .Level = 2 }	/*	L3	*/
 	};
+	volatile AA64MMFR2 mmfr2;
+
 	__asm__ volatile
 	(
 		"msr	csselr_el1,	%[cssel]"	"\n\t"
@@ -2076,6 +2078,8 @@ static void Cache_Level(CORE_RO *Core, unsigned int level, unsigned int select)
 		: [cssel]	"r"  (cssel[select])
 		: "memory"
 	);
+	mmfr2.value = SysRegRead(ID_AA64MMFR2_EL1);
+	Core->T.Cache[level].ccsid.FEAT_CCIDX = mmfr2.CCIDX == 0b0001 ? 1 : 0;
 }
 
 static void Cache_Topology(CORE_RO *Core)

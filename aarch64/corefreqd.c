@@ -789,7 +789,9 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 			RO(Core, AT(cpu))->T.Cache[level].ccsid.LineSz + 4;
 
 	RO(Shm)->Cpu[cpu].Topology.Cache[level].Set = \
-			RO(Core, AT(cpu))->T.Cache[level].ccsid.Set + 1;
+		RO(Core, AT(cpu))->T.Cache[level].ccsid.FEAT_CCIDX ?
+			RO(Core, AT(cpu))->T.Cache[level].ccsid.NumSets + 1
+		:	RO(Core, AT(cpu))->T.Cache[level].ccsid.Set + 1;
 
 	RO(Shm)->Cpu[cpu].Topology.Cache[level].Way = \
 			RO(Core, AT(cpu))->T.Cache[level].ccsid.Assoc + 1;
