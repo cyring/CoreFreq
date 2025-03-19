@@ -2062,10 +2062,10 @@ static CLOCK BaseClock_GenericMachine(unsigned int ratio)
 static void Cache_Level(CORE_RO *Core, unsigned int level, unsigned int select)
 {
 	const CSSELR cssel[CACHE_MAX_LEVEL] = {
-		[0] = { .InD = 1, .Level = 0 }, /*	L1I	*/
-		[1] = { .InD = 0, .Level = 0 }, /*	L1D	*/
-		[2] = { .InD = 0, .Level = 1 }, /*	L2	*/
-		[3] = { .InD = 0, .Level = 2 }	/*	L3	*/
+		[0] = { .InD = 1, .Level = 0, .TnD = 0, .RES0 = 0 }, /* L1I */
+		[1] = { .InD = 0, .Level = 0, .TnD = 0, .RES0 = 0 }, /* L1D */
+		[2] = { .InD = 0, .Level = 1, .TnD = 0, .RES0 = 0 }, /* L2  */
+		[3] = { .InD = 0, .Level = 2, .TnD = 0, .RES0 = 0 }  /* L3  */
 	};
 	volatile AA64MMFR2 mmfr2;
 

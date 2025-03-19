@@ -33,24 +33,7 @@ typedef struct
 	struct CLUSTER_ST	Cluster;
 	struct CACHE_INFO
 	{
-		union CCSIDR
-		{
-			unsigned long long	value;
-			struct
-			{
-				unsigned long long
-				LineSz		:  3-0,
-				Assoc		: 13-3,
-				Set		: 28-13,
-				WrAlloc 	: 29-28,
-				RdAlloc 	: 30-29,
-				WrBack		: 31-30,
-				WrThrough	: 32-31,
-				NumSets 	: 56-32,
-				RES0		: 63-56,
-				FEAT_CCIDX	: 64-63;
-			};
-		} ccsid;
+		CCSIDR		ccsid;
 		unsigned int	Size;
 	} Cache[CACHE_MAX_LEVEL];
 } CACHE_TOPOLOGY;

@@ -786,7 +786,9 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
   for (level = 0; level < CACHE_MAX_LEVEL; level++)
     if (RO(Core, AT(cpu))->T.Cache[level].ccsid.value != 0) {
 	RO(Shm)->Cpu[cpu].Topology.Cache[level].LineSz = \
-			RO(Core, AT(cpu))->T.Cache[level].ccsid.LineSz + 4;
+		RO(Core, AT(cpu))->T.Cache[level].ccsid.FEAT_CCIDX ?
+			RO(Core, AT(cpu))->T.Cache[level].ccsid.LineSize + 4
+		:	RO(Core, AT(cpu))->T.Cache[level].ccsid.LineSz + 4;
 
 	RO(Shm)->Cpu[cpu].Topology.Cache[level].Set = \
 		RO(Core, AT(cpu))->T.Cache[level].ccsid.FEAT_CCIDX ?
@@ -794,7 +796,9 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 		:	RO(Core, AT(cpu))->T.Cache[level].ccsid.Set + 1;
 
 	RO(Shm)->Cpu[cpu].Topology.Cache[level].Way = \
-			RO(Core, AT(cpu))->T.Cache[level].ccsid.Assoc + 1;
+		RO(Core, AT(cpu))->T.Cache[level].ccsid.FEAT_CCIDX ?
+			RO(Core, AT(cpu))->T.Cache[level].ccsid.Associativity +1
+		:	RO(Core, AT(cpu))->T.Cache[level].ccsid.Assoc + 1;
 
 	RO(Shm)->Cpu[cpu].Topology.Cache[level].Size = \
 			RO(Shm)->Cpu[cpu].Topology.Cache[level].Way

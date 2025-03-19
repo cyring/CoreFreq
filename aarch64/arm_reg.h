@@ -270,10 +270,37 @@ typedef union
 	struct
 	{
 		unsigned long long
+		LineSz		:  3-0,
+		Assoc		: 13-3,
+		Set		: 28-13,
+		WrAlloc 	: 29-28,
+		RdAlloc 	: 30-29,
+		WrBack		: 31-30,
+		WrThrough	: 32-31,
+		RES0		: 63-32,
+		FEAT_CCIDX	: 64-63;
+	};
+	struct
+	{
+		unsigned long long
+		LineSize	:  3-0,
+		Associativity	: 24-3,
+		RES1		: 32-24,
+		NumSets 	: 56-32,
+		RES2		: 64-56;
+	};
+} CCSIDR;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
 		InD		:  1-0,
 		Level		:  4-1,
-		RES0		: 32-4,
-		RES1		: 64-32;
+		TnD		:  5-4,
+		RES0		: 64-5;
 	};
 } CSSELR;
 
