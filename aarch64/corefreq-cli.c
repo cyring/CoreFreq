@@ -3164,6 +3164,7 @@ REASON_CODE SysInfoTech(Window *win,
 		[BARE_METAL]	= RSC(TECH_BARE_METAL).CODE(),
 		[HYPERV_XEN]	= RSC(TECH_HYPERV_XEN).CODE(),
 		[HYPERV_KVM]	= RSC(TECH_HYPERV_KVM).CODE(),
+		[HYPERV_AVF]	= RSC(TECH_HYPERV_AVF).CODE(),
 		[HYPERV_VBOX]	= RSC(TECH_HYPERV_VBOX).CODE(),
 		[HYPERV_KBOX]	= RSC(TECH_HYPERV_KBOX).CODE(),
 		[HYPERV_VMWARE] = RSC(TECH_HYPERV_VMWARE).CODE(),
@@ -17832,9 +17833,7 @@ int main(int argc, char *argv[])
 	|| (RO(Shm)->Proc.Features.RDTSCP == 1) )
 
   #define CONDITION_RDPMC()						\
-	((RO(Shm)->Proc.PM_version >= 1)				\
-	&& (BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].SystemRegister.CR4,\
-							CR4_PCE) == 1) )
+	(RO(Shm)->Proc.PM_version >= 1)
 
 	UBENCH_SETUP(CONDITION_RDTSCP(), CONDITION_RDPMC());
 

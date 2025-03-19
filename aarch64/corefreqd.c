@@ -1691,9 +1691,7 @@ REASON_CODE Core_Manager(REF *Ref)
 	|| (RO(Proc)->Features.RDTSCP == 1) )
 
     #define CONDITION_RDPMC()						\
-	(  (RO(Proc)->Features.PerfMon.Version >= 1)		\
-	&& (BITVAL(RO(Core, AT(RO(Proc)->Service.Core))->SystemRegister.CR4, \
-							CR4_PCE) == 1) )
+	(RO(Proc)->Features.PerfMon.Version >= 1)
 
 	UBENCH_SETUP(CONDITION_RDTSCP(), CONDITION_RDPMC());
 	Print_uBenchmark((Quiet & 0x100));

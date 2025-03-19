@@ -538,7 +538,6 @@ static void Query_Features(void *pArg)
 		"mrs	%[midr] ,	midr_el1"	"\n\t"
 		"mrs	%[cntfrq],	cntfrq_el0"	"\n\t"
 		"mrs	%[cntpct],	cntpct_el0"	"\n\t"
-		"mrs	%[pmcr] ,	pmcr_el0"	"\n\t"
 		"mrs	%[dfr0] ,	id_aa64dfr0_el1""\n\t"
 		"mrs	%[dfr1] ,	id_aa64dfr1_el1""\n\t"
 		"mrs	%[isar0],	id_aa64isar0_el1""\n\t"
@@ -554,7 +553,6 @@ static void Query_Features(void *pArg)
 		: [midr]	"=r" (midr),
 		  [cntfrq]	"=r" (cntfrq),
 		  [cntpct]	"=r" (cntpct),
-		  [pmcr]	"=r" (pmcr),
 		  [dfr0]	"=r" (dfr0),
 		  [dfr1]	"=r" (dfr1),
 		  [isar0]	"=r" (isar0),
@@ -574,19 +572,6 @@ static void Query_Features(void *pArg)
 	isar3.value = SysRegRead(ID_AA64ISAR3_EL1);
 	mmfr2.value = SysRegRead(ID_AA64MMFR2_EL1);
 
-	iArg->Features->Info.Signature.Stepping = midr.Revision
-						| (midr.Variant << 4);
-	iArg->Features->Info.Signature.Family = midr.PartNum & 0x00f;
-	iArg->Features->Info.Signature.ExtFamily = (midr.PartNum & 0xff0) >> 4;
-	iArg->Features->Info.Signature.Model = pmcr.IDcode & 0x0f;
-	iArg->Features->Info.Signature.ExtModel = (pmcr.IDcode & 0xf0) >> 4;
-
-	VendorFromMainID(midr, iArg->Features->Info.Vendor.ID,
-			&iArg->Features->Info.Vendor.CRC, &iArg->HypervisorID);
-
-	iArg->Features->Factory.Freq = cntfrq.ClockFreq_Hz;
-	iArg->Features->Factory.Freq = iArg->Features->Factory.Freq / 10000;
-
 #if defined(CONFIG_ACPI)
 	iArg->Features->ACPI = acpi_disabled == 0;
 #else
@@ -597,14 +582,37 @@ static void Query_Features(void *pArg)
 	iArg->Features->RDTSCP = cntpct.PhysicalCount != 0;
 
 	iArg->Features->PerfMon.FixCtrs = 0;
-	iArg->Features->PerfMon.MonCtrs = pmcr.NumEvtCtrs;
 	iArg->Features->PerfMon.Version = dfr0.PMUVer;
-	if (iArg->Features->PerfMon.Version > 0) {
-		iArg->Features->PerfMon.FixCtrs++; /* Fixed Cycle Counter */
-	}
+    if (iArg->Features->PerfMon.Version > 0)
+    {
+	__asm__ __volatile__(
+		"mrs	%[pmcr] ,	pmcr_el0"	"\n\t"
+		"isb"
+		: [pmcr]	"=r" (pmcr)
+		:
+		: "memory"
+	);
+
+	iArg->Features->Info.Signature.Model = pmcr.IDcode & 0x0f;
+	iArg->Features->Info.Signature.ExtModel = (pmcr.IDcode & 0xf0) >> 4;
+
+	iArg->Features->PerfMon.MonCtrs = pmcr.NumEvtCtrs;
+	iArg->Features->PerfMon.FixCtrs++; /* Fixed Cycle Counter */
+
 	/*TODO(Memory-mapped PMU register at offset 0xe00): pmcfgr	*/
 	iArg->Features->PerfMon.MonWidth = \
 	iArg->Features->PerfMon.FixWidth = 0b111111 == 0b111111 ? 64 : 0;
+    }
+	iArg->Features->Info.Signature.Stepping = midr.Revision
+						| (midr.Variant << 4);
+	iArg->Features->Info.Signature.Family = midr.PartNum & 0x00f;
+	iArg->Features->Info.Signature.ExtFamily = (midr.PartNum & 0xff0) >> 4;
+
+	VendorFromMainID(midr, iArg->Features->Info.Vendor.ID,
+			&iArg->Features->Info.Vendor.CRC, &iArg->HypervisorID);
+
+	iArg->Features->Factory.Freq = cntfrq.ClockFreq_Hz;
+	iArg->Features->Factory.Freq = iArg->Features->Factory.Freq / 10000;
 
 	switch (dfr1.PMICNTR) { /* Performance Monitors Instruction Counter */
 	case 0b0001:
@@ -2992,6 +3000,7 @@ static void PerCore_GenericMachine(void *arg)
 	cpuPwrCtl.value = SysRegRead(CPUPWRCTLR_EL1);
 	Core->Query.CStateBaseAddr = cpuPwrCtl.WFI_RET_CTRL;
     }
+    if (PUBLIC(RO(Proc))->Features.PerfMon.Version > 0) {
 	__asm__ __volatile__(
 		"mrs	%[pmuser],	pmuserenr_el0"	"\n\t"
 		"mrs	%[enset],	pmcntenset_el0" "\n\t"
@@ -3003,7 +3012,7 @@ static void PerCore_GenericMachine(void *arg)
 		:
 		: "memory"
 	);
-
+    }
     if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 	PUBLIC(RO(Proc))->Features.PerfMon.CoreCycles	= pmuser.CR
 							| enset.C
@@ -3251,6 +3260,7 @@ static void Controller_Exit(void)
 
 static void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 {
+    if (PUBLIC(RO(Proc))->Features.PerfMon.Version > 0) {
 	__asm__ __volatile__
 	(
 		"# Assign an event number per counter"	"\n\t"
@@ -3320,11 +3330,13 @@ static void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 		  [CTRL]	"i" (0b0000000010000111)
 		: "memory", "%x12"
 	);
+    }
 }
 
 static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 					CORE_RO *Core)
 {
+    if (PUBLIC(RO(Proc))->Features.PerfMon.Version > 0) {
 	__asm__ __volatile__(
 		"# Restore PMU configuration registers" "\n\t"
 		"msr	pmcr_el0,	%[PMCR]"	"\n\t"
@@ -3368,10 +3380,12 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 		  [PMUSER]	"r" (Save->PMUSER)
 		: "memory", "%x12"
 	);
+    }
 }
 
 #define Counters_Generic(Core, T)					\
 ({									\
+    if (PUBLIC(RO(Proc))->Features.PerfMon.Version > 0) {		\
 	RDTSC_COUNTERx3(Core->Counter[T].TSC,				\
 			pmevcntr2_el0,	Core->Counter[T].C0.UCC,	\
 			pmccntr_el0,	Core->Counter[T].C0.URC,	\
@@ -3388,6 +3402,9 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 	Core->Counter[T].C1 =						\
 	  (Core->Counter[T].C1 > Core->Counter[T].C0.URC) ?		\
 	    Core->Counter[T].C1 - Core->Counter[T].C0.URC : 0;		\
+    } else {								\
+	RDTSC64(Core->Counter[T].TSC);					\
+    }									\
 })
 
 #define Mark_OVH(Core)							\
@@ -6303,7 +6320,13 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 	    const char *virtualBoard[] = DT_VIRTUAL_BOARD;
 	    if (of_device_compatible_match(of_root, virtualBoard) > 0)
 	    {
-		PUBLIC(RO(Proc))->HypervisorID = HYPERV_KVM;
+		struct device_node *np = of_find_node_by_name(NULL, "avf");
+		if (np != NULL) {
+			of_node_put(np);
+			PUBLIC(RO(Proc))->HypervisorID = HYPERV_AVF;
+		} else {
+			PUBLIC(RO(Proc))->HypervisorID = HYPERV_KVM;
+		}
 		PUBLIC(RO(Proc))->Features.Info.Hypervisor.CRC = CRC_KVM;
 		StrCopy(PUBLIC(RO(Proc))->Features.Info.Hypervisor.ID,
 			VENDOR_KVM, 12 + 4);

@@ -1870,6 +1870,7 @@
 #define RSC_TECH_BARE_METAL_CODE	"Bare-Metal"
 #define RSC_TECH_HYPERV_XEN_CODE	"       Xen"
 #define RSC_TECH_HYPERV_KVM_CODE	"       KVM"
+#define RSC_TECH_HYPERV_AVF_CODE	"       AVF"
 #define RSC_TECH_HYPERV_VBOX_CODE	"VirtualBox"
 #define RSC_TECH_HYPERV_KBOX_CODE	"  KVM/VBox"
 #define RSC_TECH_HYPERV_VMWARE_CODE	"    VMware"

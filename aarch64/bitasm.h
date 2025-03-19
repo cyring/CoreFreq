@@ -99,7 +99,7 @@ __asm__ volatile							\
 
 #define ASM_CODE_RDPMC(_ctr, _reg)					\
 	"# Read PMU counter."			"\n\t"			\
-	"mrs	" #_reg ", " #_ctr		"\n\t"			\
+/*TODO	"mrs	" #_reg ", " #_ctr		"\n\t"		*/	\
 
 #define ASM_RDPMC(_ctr, _reg) ASM_CODE_RDPMC(_ctr, _reg)
 
@@ -792,7 +792,7 @@ inline static void UBENCH_With_RDTSC_No_RDPMC(unsigned int idx) 	\
 									\
 inline static void UBENCH_With_RDTSCP_RDPMC(unsigned int idx)		\
 {									\
-	RDTSCP_PMCx1(	uBenchCounter[0][idx],				\
+	RDTSC_PMCx1(	uBenchCounter[0][idx],				\
 			0x40000000,					\
 			uBenchCounter[1][idx]) ;			\
 }									\
@@ -821,7 +821,7 @@ static void (*UBENCH_RDCOUNTER)(unsigned int) = UBENCH_RDCOUNTER_VOID;
 ({									\
 	void (*MatrixCallFunc[2][2])(unsigned int) = {			\
 		{UBENCH_With_RDTSC_No_RDPMC, UBENCH_With_RDTSC_RDPMC},	\
-		{UBENCH_With_RDTSCP_No_RDPMC,UBENCH_With_RDTSCP_RDPMC}	\
+		{UBENCH_With_RDTSC_No_RDPMC, UBENCH_With_RDTSCP_RDPMC}	\
 	};								\
 	UBENCH_RDCOUNTER = MatrixCallFunc[withRDTSCP][withRDPMC];	\
 									\
