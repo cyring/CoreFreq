@@ -17832,9 +17832,7 @@ int main(int argc, char *argv[])
 	|| (RO(Shm)->Proc.Features.RDTSCP == 1) )
 
   #define CONDITION_RDPMC()						\
-	((RO(Shm)->Proc.PM_version >= 1)				\
-	&& (BITVAL(RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].SystemRegister.CR4,\
-							CR4_PCE) == 1) )
+	(RO(Shm)->Proc.PM_version >= 1)
 
 	UBENCH_SETUP(CONDITION_RDTSCP(), CONDITION_RDPMC());
 

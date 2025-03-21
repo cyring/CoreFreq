@@ -113,11 +113,11 @@ __asm__ volatile							\
 
 #define ASM_RDTSC(_reg) 						\
 	"# Read variant TSC."			"\n\t"			\
-	"rdtime " #_reg 		 	"\n\t"
+	"rdtime " #_reg 			"\n\t"
 
 #define ASM_CODE_RDPMC(_ctr, _reg)					\
 	"# Read PMU counter."			"\n\t"			\
-	_ctr"	" #_reg				"\n\t"			\
+	_ctr"	" #_reg 			"\n\t"			\
 
 #define ASM_RDPMC(_ctr, _reg) ASM_CODE_RDPMC(_ctr, _reg)
 
@@ -129,7 +129,7 @@ __asm__ volatile							\
 	"sd	" #_reg ",	%0"					\
 	: "=m" (_mem)							\
 	:								\
-	: "%" #_reg"", 							\
+	: "%" #_reg"",							\
 	  "cc", "memory"						\
 )
 
@@ -831,8 +831,8 @@ inline static void UBENCH_With_RDTSC_No_RDPMC(unsigned int idx) 	\
 									\
 inline static void UBENCH_With_RDTSCP_RDPMC(unsigned int idx)		\
 {									\
-	RDTSCP_PMCx1(	uBenchCounter[0][idx],				\
-			0x40000000,					\
+	RDTSC_PMCx1(	uBenchCounter[0][idx],				\
+			"rdcycle",					\
 			uBenchCounter[1][idx]) ;			\
 }									\
 									\
@@ -840,7 +840,7 @@ inline static void UBENCH_With_RDTSCP_RDPMC(unsigned int idx)		\
 inline static void UBENCH_With_RDTSC_RDPMC(unsigned int idx)		\
 {									\
 	RDTSC_PMCx1(	uBenchCounter[0][idx],				\
-			0x40000000,					\
+			"rdcycle",					\
 			uBenchCounter[1][idx]) ;			\
 }									\
 									\
@@ -860,7 +860,7 @@ static void (*UBENCH_RDCOUNTER)(unsigned int) = UBENCH_RDCOUNTER_VOID;
 ({									\
 	void (*MatrixCallFunc[2][2])(unsigned int) = {			\
 		{UBENCH_With_RDTSC_No_RDPMC, UBENCH_With_RDTSC_RDPMC},	\
-		{UBENCH_With_RDTSCP_No_RDPMC,UBENCH_With_RDTSCP_RDPMC}	\
+		{UBENCH_With_RDTSC_No_RDPMC, UBENCH_With_RDTSCP_RDPMC}	\
 	};								\
 	UBENCH_RDCOUNTER = MatrixCallFunc[withRDTSCP][withRDPMC];	\
 									\

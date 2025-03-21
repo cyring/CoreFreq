@@ -142,11 +142,11 @@ _mem64 = 0
 
 #define ASM_RDTSC(_reg) 						\
 	"# Read variant TSC."			"\n\t"			\
-/*TODO*/ "mfspr " #_reg	", 0x10c" 		"\n\t"
+	"mfspr " #_reg	", 0x10c"		"\n\t"
 
 #define ASM_CODE_RDPMC(_ctr, _reg)					\
 	"# Read PMU counter."			"\n\t"			\
-	_ctr"	" #_reg				"\n\t"			\
+	"mfspr " #_reg ", " #_ctr		"\n\t"			\
 
 #define ASM_RDPMC(_ctr, _reg) ASM_CODE_RDPMC(_ctr, _reg)
 
@@ -155,10 +155,10 @@ __asm__ volatile							\
 (									\
 	ASM_CODE_RDPMC(_ctr, _reg)					\
 	"# Store values into memory."		"\n\t"			\
-	"sd	" #_reg ",	%0"					\
+	"st	" #_reg ",	%0"					\
 	: "=m" (_mem)							\
 	:								\
-	: "%" #_reg"", 							\
+	: "%" #_reg"",							\
 	  "cc", "memory"						\
 )
 
@@ -170,8 +170,8 @@ __asm__ volatile							\
 	_tsc_inst(_reg0)						\
 	ASM_RDPMC(_ctr1, _reg1) 					\
 	"# Store values into memory."		"\n\t"			\
-	"sd	" #_reg0 ",	%0"		"\n\t"			\
-	"sd	" #_reg1 ",	%1"					\
+	"st	" #_reg0 ",	%0"		"\n\t"			\
+	"st	" #_reg1 ",	%1"					\
 	: "=m" (mem_tsc),	"=m" (_mem1)				\
 	:								\
 	: "%" #_reg0""	,	"%" #_reg1"",				\
@@ -179,7 +179,7 @@ __asm__ volatile							\
 )
 
 #define RDTSC_PMCx1(mem_tsc, ...)					\
-ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
+ASM_RDTSC_PMCx1(14, 15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define	_BITSET_PRE_INST_FULL_LOCK					\
 	"1:"					"\n\t"			\
@@ -860,8 +860,8 @@ inline static void UBENCH_With_RDTSC_No_RDPMC(unsigned int idx) 	\
 									\
 inline static void UBENCH_With_RDTSCP_RDPMC(unsigned int idx)		\
 {									\
-	RDTSCP_PMCx1(	uBenchCounter[0][idx],				\
-			0x40000000,					\
+	RDTSC_PMCx1(	uBenchCounter[0][idx],				\
+			0x10c,						\
 			uBenchCounter[1][idx]) ;			\
 }									\
 									\
@@ -869,7 +869,7 @@ inline static void UBENCH_With_RDTSCP_RDPMC(unsigned int idx)		\
 inline static void UBENCH_With_RDTSC_RDPMC(unsigned int idx)		\
 {									\
 	RDTSC_PMCx1(	uBenchCounter[0][idx],				\
-			0x40000000,					\
+			0x10c,						\
 			uBenchCounter[1][idx]) ;			\
 }									\
 									\
@@ -889,7 +889,7 @@ static void (*UBENCH_RDCOUNTER)(unsigned int) = UBENCH_RDCOUNTER_VOID;
 ({									\
 	void (*MatrixCallFunc[2][2])(unsigned int) = {			\
 		{UBENCH_With_RDTSC_No_RDPMC, UBENCH_With_RDTSC_RDPMC},	\
-		{UBENCH_With_RDTSCP_No_RDPMC,UBENCH_With_RDTSCP_RDPMC}	\
+		{UBENCH_With_RDTSC_No_RDPMC, UBENCH_With_RDTSCP_RDPMC}	\
 	};								\
 	UBENCH_RDCOUNTER = MatrixCallFunc[withRDTSCP][withRDPMC];	\
 									\
