@@ -188,8 +188,7 @@ typedef struct
 		unsigned long long
 					CfgLock :  1-0,  /* Core	*/
 					IORedir :  2-1,  /* Core	*/
-					SCTLRX	:  3-2,  /* Thread	*/
-					Unused	: 32-3,
+					Unused	: 32-2,
 					Revision: 64-32;
 		};
 		unsigned short int	CStateLimit;
@@ -199,7 +198,8 @@ typedef struct
 	CACHE_TOPOLOGY			T;
 
 	struct {
-		Bit64			FLAGS	__attribute__ ((aligned (8)));
+		Bit32			FLAGS	__attribute__ ((aligned (4)));
+		Bit32			FPSCR	__attribute__ ((aligned (4)));
 	} SystemRegister;
 
 	unsigned int			Bind;

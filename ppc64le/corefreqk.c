@@ -1427,25 +1427,17 @@ static void Query_GenericMachine(unsigned int cpu)
 
 static void SystemRegisters(CORE_RO *Core)
 {
-		Core->SystemRegister.FLAGS |= (
-			(1LLU << FLAG_DIT)
-		);
-		Core->SystemRegister.FLAGS |= (1LLU << FLAG_SSBS);
-		Core->SystemRegister.FLAGS |= (
-			(1LLU << FLAG_PAN)
-		);
-		Core->SystemRegister.FLAGS |= (
-			(1LLU << FLAG_UAO)
-		);
-		Core->SystemRegister.FLAGS |= (
-			(1LLU << FLAG_TCO)
-		);
-		Core->SystemRegister.FLAGS |= (
-			(1LLU << FLAG_NMI)
-		);
-		Core->SystemRegister.FLAGS |= (
-			(1LLU << FLAG_PM)
-		);
+	__asm__ volatile
+	(
+		"li	14, 0xffffffffffffffff" "\n\t"
+		"li	15, 0x7"		"\n\t"
+		"mtxer	2" 			"\n\t"
+		"addc	14, 14, 15"		"\n\t"
+		"mfxer  %0"
+		: "=r" (Core->SystemRegister.FLAGS)
+		:
+		: "%14", "%15", "cc", "memory"
+	);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask, Core->Bind);
 }
 

@@ -1449,40 +1449,12 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 		json_key(&s, "SystemRegister");
 		{
 			json_start_object(&s);
-			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.FLAGS);
+			snprintf(hexStr, 32, "0x%x", RO(Shm)->Cpu[cpu].SystemRegister.FLAGS);
 			json_key(&s, "FLAGS");
 			json_string(&s, hexStr);
 
-			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.HCR);
-			json_key(&s, "HCR");
-			json_string(&s, hexStr);
-
-			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.SCTLR);
-			json_key(&s, "SCTLR");
-			json_string(&s, hexStr);
-
-			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.SCTLR2);
-			json_key(&s, "SCTLR2");
-			json_string(&s, hexStr);
-
-			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.EL);
-			json_key(&s, "EL");
-			json_string(&s, hexStr);
-
-			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.FPSR);
-			json_key(&s, "FPSR");
-			json_string(&s, hexStr);
-
-			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.FPCR);
-			json_key(&s, "FPCR");
-			json_string(&s, hexStr);
-
-			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.SVCR);
-			json_key(&s, "SVCR");
-			json_string(&s, hexStr);
-
-			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.CPACR);
-			json_key(&s, "CPACR");
+			snprintf(hexStr, 32, "0x%x", RO(Shm)->Cpu[cpu].SystemRegister.FPSCR);
+			json_key(&s, "FPSCR");
 			json_string(&s, hexStr);
 
 			json_end_object(&s);

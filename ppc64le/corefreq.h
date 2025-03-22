@@ -38,8 +38,7 @@ typedef struct
 		struct {
 		unsigned short int	CfgLock :  1-0,
 					IORedir :  2-1,
-					SCTLRX	:  3-2,
-					Unused	: 16-3;
+					Unused	: 16-2;
 		};
 		unsigned short int	CStateLimit;
 		unsigned short int	CStateBaseAddr; /* Any I/O BAR	*/
@@ -186,15 +185,8 @@ typedef struct
 	} Absolute;
 
 	struct {
-		Bit64			FLAGS	__attribute__ ((aligned (8)));
-		Bit64			HCR	__attribute__ ((aligned (8)));
-		Bit64			SCTLR	__attribute__ ((aligned (8)));
-		Bit64			SCTLR2	__attribute__ ((aligned (8)));
-		Bit64			EL	__attribute__ ((aligned (8)));
-		Bit64			FPSR	__attribute__ ((aligned (8)));
-		Bit64			FPCR	__attribute__ ((aligned (8)));
-		Bit64			SVCR	__attribute__ ((aligned (8)));
-		Bit64			CPACR	__attribute__ ((aligned (8)));
+		Bit32			FLAGS	__attribute__ ((aligned (4)));
+		Bit32			FPSCR	__attribute__ ((aligned (4)));
 	} SystemRegister;
 
 	struct SLICE_STRUCT {
