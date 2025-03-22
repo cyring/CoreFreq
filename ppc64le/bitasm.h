@@ -146,7 +146,7 @@ _mem64 = 0
 
 #define ASM_CODE_RDPMC(_ctr, _reg)					\
 	"# Read PMU counter."			"\n\t"			\
-	"mfspr " #_reg ", " #_ctr		"\n\t"			\
+	"mfspr " #_reg ", " #_ctr		"\n\t"
 
 #define ASM_RDPMC(_ctr, _reg) ASM_CODE_RDPMC(_ctr, _reg)
 

@@ -99,7 +99,7 @@ __asm__ volatile							\
 
 #define ASM_CODE_RDPMC(_ctr, _reg)					\
 	"# Read PMU counter."			"\n\t"			\
-/*TODO	"mrs	" #_reg ", " #_ctr		"\n\t"		*/	\
+	"mrs	" #_reg ", " #_ctr		"\n\t"
 
 #define ASM_RDPMC(_ctr, _reg) ASM_CODE_RDPMC(_ctr, _reg)
 
@@ -793,7 +793,7 @@ inline static void UBENCH_With_RDTSC_No_RDPMC(unsigned int idx) 	\
 inline static void UBENCH_With_RDTSCP_RDPMC(unsigned int idx)		\
 {									\
 	RDTSC_PMCx1(	uBenchCounter[0][idx],				\
-			0x40000000,					\
+			cntvct_el0,					\
 			uBenchCounter[1][idx]) ;			\
 }									\
 									\
@@ -801,7 +801,7 @@ inline static void UBENCH_With_RDTSCP_RDPMC(unsigned int idx)		\
 inline static void UBENCH_With_RDTSC_RDPMC(unsigned int idx)		\
 {									\
 	RDTSC_PMCx1(	uBenchCounter[0][idx],				\
-			0x40000000,					\
+			cntvct_el0,					\
 			uBenchCounter[1][idx]) ;			\
 }									\
 									\

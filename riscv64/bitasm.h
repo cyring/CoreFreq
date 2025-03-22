@@ -117,7 +117,7 @@ __asm__ volatile							\
 
 #define ASM_CODE_RDPMC(_ctr, _reg)					\
 	"# Read PMU counter."			"\n\t"			\
-	_ctr"	" #_reg 			"\n\t"			\
+	_ctr"	" #_reg 			"\n\t"
 
 #define ASM_RDPMC(_ctr, _reg) ASM_CODE_RDPMC(_ctr, _reg)
 
