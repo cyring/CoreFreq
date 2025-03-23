@@ -506,7 +506,8 @@ static signed int SearchArchitectureID(void)
 static void Query_Features(void *pArg)
 {
 	INIT_ARG *iArg = (INIT_ARG *) pArg;
-	volatile unsigned long long timectr, instret, perfctr, version;
+	volatile unsigned long long timectr, instret, perfctr;
+	volatile unsigned int version;
 
 	iArg->Features->Info.Vendor.CRC = CRC_RESERVED;
 	iArg->SMT_Count = 1;
