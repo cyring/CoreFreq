@@ -1430,13 +1430,15 @@ static void SystemRegisters(CORE_RO *Core)
 {
 	__asm__ volatile
 	(
-		"li	14, 0xffffffffffffffff" "\n\t"
-		"li	15, 0x7"		"\n\t"
-		"mtxer	2" 			"\n\t"
-		"addc	14, 14, 15"		"\n\t"
-		"mfxer  %0"
-		: "=r" (Core->SystemRegister.FLAGS)
-		:
+		"li	14,	0"	"\n\t"
+		"mtxer	14"		"\n\t"
+		"li	14,	%1"	"\n\t"
+		"li	15,	%2"	"\n\t"
+		"addc	14, 14, 15"	"\n\t"
+		"mfxer	15"		"\n\t"
+		"stw	15,	%0"
+		: "=m" (Core->SystemRegister.FLAGS)
+		: "i" (0xfffffffffffffff9), "i" (0x7)
 		: "%14", "%15", "cc", "memory"
 	);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask, Core->Bind);
