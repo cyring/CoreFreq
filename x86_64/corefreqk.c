@@ -4257,7 +4257,8 @@ static signed int Get_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 static signed int Get_EPP_ACPI_CPPC(unsigned int cpu)
 {
 	signed int rc = -ENODEV;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+#if defined(CONFIG_ACPI_CPPC_LIB) \
+ && LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
 	u64 epp_perf;
 
 	if ((rc = cppc_get_epp_perf((signed int) cpu, &epp_perf)) == 0)
@@ -4275,7 +4276,8 @@ static signed int Get_EPP_ACPI_CPPC(unsigned int cpu)
 static signed int Put_EPP_ACPI_CPPC(unsigned int cpu, signed short epp)
 {
 	signed int rc = -ENODEV;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+#if defined(CONFIG_ACPI_CPPC_LIB) \
+ && LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
 	struct cppc_perf_ctrls perf_ctrls = {
 		.max_perf = 0,
 		.min_perf = 0,
