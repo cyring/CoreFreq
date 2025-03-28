@@ -1208,8 +1208,6 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.PN);
 			json_key(&s, "BSP");
 			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.BSP);
-			json_key(&s, "MPID");
-			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.MPID);
 			json_key(&s, "PackageID");
 			json_literal(&s, "%d", RO(Shm)->Cpu[cpu].Topology.PackageID);
 			json_key(&s, "Hybrid_ID");

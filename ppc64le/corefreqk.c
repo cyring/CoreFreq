@@ -769,19 +769,26 @@ static void Map_Generic_Topology(void *arg)
 {
     if (arg != NULL) {
 	CORE_RO *Core = (CORE_RO *) arg;
-/*
-	Core->T.PN = midr.PartNum;
-	if (mpid.MT) {
-		Core->T.MPID = mpid.value & 0xfffff;
-		Core->T.Cluster.CMP = mpid.Aff3;
-		Core->T.PackageID = mpid.Aff2;
-		Core->T.CoreID = mpid.Aff1;
-		Core->T.ThreadID = mpid.Aff0;
+
+	__asm__ volatile
+	(
+		"mfspr %0	, 0x11f"
+		: "=r" (Core->T.PN)
+		:
+		: "memory"
+	);
+/*TODO
+	if (MT) {
+		Core->T.BSP =
+		Core->T.Cluster.CMP =
+		Core->T.PackageID =
+		Core->T.CoreID =
+		Core->T.ThreadID =
 	} else {
-		Core->T.MPID = mpid.value & 0xfffff;
-		Core->T.PackageID = mpid.Aff2;
-		Core->T.Cluster.CMP = mpid.Aff1;
-		Core->T.CoreID = mpid.Aff0;
+		Core->T.BSP =
+		Core->T.PackageID =
+		Core->T.Cluster.CMP =
+		Core->T.CoreID =
 	}
 */
 #ifdef CONFIG_OF
@@ -818,7 +825,6 @@ static unsigned int Proc_Topology(void)
     for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++) {
 	PUBLIC(RO(Core, AT(cpu)))->T.PN 	= 0;
 	PUBLIC(RO(Core, AT(cpu)))->T.BSP	= 0;
-	PUBLIC(RO(Core, AT(cpu)))->T.MPID	= /*TODO(Hardware ID)-1*/ 1;
 	PUBLIC(RO(Core, AT(cpu)))->T.CoreID	= -1;
 	PUBLIC(RO(Core, AT(cpu)))->T.ThreadID	= -1;
 	PUBLIC(RO(Core, AT(cpu)))->T.PackageID	= -1;
@@ -830,7 +836,7 @@ static unsigned int Proc_Topology(void)
 	if (cpu_present(cpu)) { /*	CPU state probed by the OS.	*/
 	    if (Core_Topology(cpu) == 0) {
 		/* CPU state based on the hardware. */
-		if (PUBLIC(RO(Core, AT(cpu)))->T.MPID >= 0)
+		if (PUBLIC(RO(Core, AT(cpu)))->T.PN > 0)
 		{
 			BITCLR(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine,HW);
 
@@ -842,8 +848,8 @@ static unsigned int Proc_Topology(void)
 	PN =	( PN ^ PUBLIC(RO(Core, AT(cpu)))->T.PN )
 		| PUBLIC(RO(Core, AT(cpu)))->T.PN;
     }
-	SoC.Family = PN & 0x00f;
-	SoC.ExtFamily = (PN & 0xff0) >> 4;
+	SoC.Family = (PN & 0xf000000) >> 24;
+	SoC.ExtFamily = (PN & 0xff0000) >> 16;
 
 	PUBLIC(RO(Proc))->Features.Hybrid = !(
 	    SoC.Family == PUBLIC(RO(Proc))->Features.Info.Signature.Family
@@ -2799,8 +2805,8 @@ static signed int Seek_Topology_Core_Peer(unsigned int cpu, signed int exclude)
 
     for (seek = 0; seek < PUBLIC(RO(Proc))->CPU.Count; seek++) {
 	if ( ((exclude ^ cpu) > 0)
-	  && (PUBLIC(RO(Core, AT(seek)))->T.MPID \
-		!= PUBLIC(RO(Core, AT(cpu)))->T.MPID)
+	  && (PUBLIC(RO(Core, AT(seek)))->T.PN \
+		!= PUBLIC(RO(Core, AT(cpu)))->T.PN)
 	  && (PUBLIC(RO(Core, AT(seek)))->T.CoreID \
 		== PUBLIC(RO(Core, AT(cpu)))->T.CoreID)
 	  && (PUBLIC(RO(Core, AT(seek)))->T.ThreadID \
@@ -2822,8 +2828,8 @@ static signed int Seek_Topology_Thread_Peer(unsigned int cpu,signed int exclude)
 
     for (seek = 0; seek < PUBLIC(RO(Proc))->CPU.Count; seek++) {
 	if ( ((exclude ^ cpu) > 0)
-	  && (PUBLIC(RO(Core, AT(seek)))->T.MPID \
-		!= PUBLIC(RO(Core, AT(cpu)))->T.MPID)
+	  && (PUBLIC(RO(Core, AT(seek)))->T.PN \
+		!= PUBLIC(RO(Core, AT(cpu)))->T.PN)
 	  && (PUBLIC(RO(Core, AT(seek)))->T.CoreID \
 		== PUBLIC(RO(Core, AT(cpu)))->T.CoreID)
 	  && (PUBLIC(RO(Core, AT(seek)))->T.ThreadID \
@@ -3907,11 +3913,11 @@ static int CoreFreqK_HotPlug_CPU_Online(unsigned int cpu)
   if (cpu < PUBLIC(RO(Proc))->CPU.Count)
   {
 	/*	Is this the very first time the processor is online ?	*/
-   if (PUBLIC(RO(Core, AT(cpu)))->T.MPID == -1)
+   if (PUBLIC(RO(Core, AT(cpu)))->T.PN == 0)
    {
     if (Core_Topology(cpu) == 0)
     {
-     if (PUBLIC(RO(Core, AT(cpu)))->T.MPID >= 0)
+     if (PUBLIC(RO(Core, AT(cpu)))->T.PN > 0)
      {
 	BITCLR(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine, HW);
 	/*		Is the BCLK frequency missing  ?		*/

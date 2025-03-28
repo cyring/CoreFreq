@@ -46,11 +46,8 @@ typedef struct
 	} Query;
 
 	struct {
-		struct {
-		unsigned int	PN	: 12-0,
-				BSP	: 32-12;
-		};
-		signed int		MPID,
+		unsigned long		PN;
+		signed int		BSP,
 					CoreID,
 					ThreadID,
 					PackageID;
