@@ -510,7 +510,6 @@ static void Query_Features(void *pArg)
 	volatile unsigned long long timectr, instret, perfctr;
 	const unsigned long
 		mvendorid = riscv_cached_mvendorid(iArg->localProcessor);
-	/*TODO	marchid = riscv_cached_marchid(iArg->localProcessor);	*/
 
 	iArg->Features->Info.Vendor.CRC = CRC_RESERVED;
 	iArg->SMT_Count = 1;
@@ -1481,7 +1480,7 @@ static void PerCore_GenericMachine(void *arg)
 	PUBLIC(RO(Proc))->Features.PerfMon.InstrRetired = 0;
     }
 
-	Core->Query.Revision = 0;
+	Core->Query.Revision = riscv_cached_marchid(Core->Bind);
 
 	SystemRegisters(Core);
 

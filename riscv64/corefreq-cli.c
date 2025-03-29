@@ -1415,8 +1415,8 @@ REASON_CODE SysInfoProc(Window *win,
 		hSpace, RO(Shm)->Proc.Features.Info.Vendor.ID );
 
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
-		"%s""%.*s[0x%08x]", RSC(REVISION).CODE(),
-		width - 15 - RSZ(REVISION), hSpace,
+		"%s""%.*s[0x%016lx]", RSC(REVISION).CODE(),
+		width - 23 - RSZ(REVISION), hSpace,
 		RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Query.Revision );
 
 	PUT(	SCANKEY_NULL, attrib[2], width, 2,

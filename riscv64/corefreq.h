@@ -33,7 +33,7 @@ typedef struct
 
 	struct
 	{
-		unsigned int		Revision;
+		unsigned long		Revision;
 
 		struct {
 		unsigned short int	CfgLock :  1-0,

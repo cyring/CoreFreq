@@ -186,9 +186,9 @@ typedef struct
 					CfgLock :  1-0,  /* Core	*/
 					IORedir :  2-1,  /* Core	*/
 					SCTLRX	:  3-2,  /* Thread	*/
-					Unused	: 32-3,
-					Revision: 64-32;
+					Unused	: 64-3;
 		};
+		unsigned long		Revision;
 		unsigned short int	CStateLimit;
 		unsigned short int	CStateBaseAddr; /* Any I/O BAR	*/
 	} Query;

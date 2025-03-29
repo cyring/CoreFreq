@@ -742,8 +742,8 @@ static CLOCK BaseClock_GenericMachine(unsigned int ratio)
 };
 
 static void Cache_Topology(CORE_RO *Core)
-
 {
+/*	Source:	arch/powerpc/kernel/setup_64.c: ppc64_caches structure	*/
 	Core->T.Cache[0].Size = ppc64_caches.l1i.size;
 	Core->T.Cache[1].Size = ppc64_caches.l1d.size;
 	Core->T.Cache[2].Size = ppc64_caches.l2.size;
