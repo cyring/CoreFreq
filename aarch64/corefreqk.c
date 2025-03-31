@@ -2046,11 +2046,11 @@ static CLOCK Compute_Clock(unsigned int cpu, COMPUTE_ARG *pCompute)
 	return pCompute->Clock;
 }
 
-inline void ClockToHz(CLOCK *clock)
-{
-	clock->Hz  = clock->Q * 1000000L;
-	clock->Hz += clock->R * PRECISION;
-}
+#define ClockToHz(clock)						\
+({									\
+	clock->Hz  = clock->Q * 1000000L;				\
+	clock->Hz += clock->R * PRECISION;				\
+})
 
 static CLOCK BaseClock_GenericMachine(unsigned int ratio)
 {
@@ -3042,7 +3042,7 @@ static void PerCore_GenericMachine(void *arg)
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 56)
-inline void Sys_DumpTask(SYSGATE_RO *SysGate)
+static void Sys_DumpTask(SYSGATE_RO *SysGate)
 {
 	SysGate->taskCount = 0;
 }

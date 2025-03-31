@@ -1580,7 +1580,7 @@ static CLOCK Compute_Clock(unsigned int cpu, COMPUTE_ARG *pCompute)
 	return pCompute->Clock;
 }
 
-inline void ClockToHz(CLOCK *clock)
+static void ClockToHz(CLOCK *clock)
 {
 	clock->Hz  = clock->Q * 1000000L;
 	clock->Hz += clock->R * PRECISION;
@@ -2336,7 +2336,7 @@ static void Map_AMD_Topology(void *arg)
  Sources: Intel Software Developer's Manual vol 3A Chap. 8.9 /
 	  Intel whitepaper: Detecting Hyper-Threading Technology /
 */
-inline unsigned short FindMaskWidth(unsigned short maxCount)
+static unsigned short FindMaskWidth(unsigned short maxCount)
 {
 	unsigned short maskWidth = 0, count = (maxCount - 1);
 
@@ -4665,10 +4665,11 @@ static PCI_CALLBACK Router(	struct pci_dev *dev, unsigned int offset,
 		return (PCI_CALLBACK) -ENOMEM;
 }
 
-inline PCI_CALLBACK GetMemoryBAR(int M, int B, int D, int F,unsigned int offset,
-				unsigned int bsize, unsigned long long wsize,
-				unsigned short range,
-				struct pci_dev **device, void __iomem **memmap)
+#if defined(ARCH_PMC)
+PCI_CALLBACK GetMemoryBAR(int M, int B, int D, int F, unsigned int offset,
+			unsigned int bsize, unsigned long long wsize,
+			unsigned short range,
+			struct pci_dev **device, void __iomem **memmap)
 {
   if ((*device) == NULL) {
     if (((*device) = pci_get_domain_bus_and_slot(M, B, PCI_DEVFN(D,F))) != NULL)
@@ -4709,7 +4710,7 @@ inline PCI_CALLBACK GetMemoryBAR(int M, int B, int D, int F,unsigned int offset,
 	return (PCI_CALLBACK) -EEXIST;
 }
 
-inline void PutMemoryBAR(struct pci_dev **device, void __iomem **memmap)
+void PutMemoryBAR(struct pci_dev **device, void __iomem **memmap)
 {
 	if ((*memmap) != NULL) {
 		iounmap((*memmap));
@@ -4721,6 +4722,7 @@ inline void PutMemoryBAR(struct pci_dev **device, void __iomem **memmap)
 		(*device) = NULL;
 	}
 }
+#endif /* ARCH_PMC */
 
 static void Query_P945(void __iomem *mchmap, unsigned short mc)
 {	/* Source: Mobile Intel 945 Express Chipset Family.		*/
@@ -5092,7 +5094,7 @@ static kernel_ulong_t Query_Lynnfield_IMC(struct pci_dev *dev,unsigned short mc)
 	return rc;
 }
 
-inline void BIOS_DDR(void __iomem *mchmap)
+static void BIOS_DDR(void __iomem *mchmap)
 {
 	PUBLIC(RO(Proc))->Uncore.Bus.BIOS_DDR.value = readl(mchmap + 0x5e00);
 }
@@ -5287,7 +5289,7 @@ static void Query_HSW_CLK(void __iomem *mchmap, unsigned short mc)
 	Query_HSW_IMC(mchmap, mc);
 }
 
-inline void SKL_SA(void __iomem *mchmap)
+static void SKL_SA(void __iomem *mchmap)
 {
 	PUBLIC(RO(Proc))->Uncore.Bus.SKL_SA_Pll.value = readl(mchmap + 0x5918);
 }
@@ -5352,7 +5354,7 @@ static void Query_SKL_IMC(void __iomem *mchmap, unsigned short mc)
     }
 }
 
-inline void RKL_SA(void __iomem *mchmap)
+static void RKL_SA(void __iomem *mchmap)
 {
 	PUBLIC(RO(Proc))->Uncore.Bus.ADL_SA_Pll.value = readq(mchmap+0x5918);
 
@@ -8008,12 +8010,12 @@ static unsigned int AMD_F15h_CoreCOF(unsigned int FID, unsigned int DID)
 	return COF;
 }
 
-inline unsigned int AMD_F15h_CoreFID(unsigned int COF, unsigned int DID)
-{
-	unsigned int FID = (COF * (1 << DID)) - 0x10;
-
-	return FID;
-}
+#define AMD_F15h_CoreFID(COF, DID)					\
+({									\
+	unsigned int FID = (COF * (1 << DID)) - 0x10;			\
+									\
+	FID;								\
+})
 
 static void Compute_AMD_Family_15h_Boost(unsigned int cpu)
 {
@@ -14497,7 +14499,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 56)
-inline void Sys_DumpTask(SYSGATE_RO *SysGate)
+static void Sys_DumpTask(SYSGATE_RO *SysGate)
 {
 	SysGate->taskCount = 0;
 }

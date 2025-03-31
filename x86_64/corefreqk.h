@@ -705,6 +705,11 @@ static u16 amd_pci_dev_to_node_id(struct pci_dev *pdev)
 {
 	return PCI_SLOT(pdev->devfn) - AMD_NODE0_PCI_SLOT;
 }
+
+#define GetRootFromNode(_node)	pci_get_domain_bus_and_slot( 0x0, 0x0,	\
+							PCI_DEVFN(0x0, 0x0) )
+#else
+#define GetRootFromNode(_node)	node_to_amd_nb(_node)->root
 #endif
 
 #define AMD_SMN_RW(node, address, value, write, indexPort, dataPort)	\
@@ -714,7 +719,7 @@ static u16 amd_pci_dev_to_node_id(struct pci_dev *pdev)
 									\
   if (node < amd_nb_num())						\
   {									\
-    if ((root = node_to_amd_nb(node)->root) != NULL)			\
+    if ((root = GetRootFromNode(node)) != NULL) 			\
     {									\
 	res = pci_write_config_dword(root, indexPort, address);		\
 									\
@@ -2117,6 +2122,15 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 			{.ExtFamily=0xB, .Family=0xF, .ExtModel=0x1, .Model=0x1}
 
 typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
+
+#if defined(ARCH_PMC)
+PCI_CALLBACK GetMemoryBAR(int M, int B, int D, int F, unsigned int offset,
+			unsigned int bsize, unsigned long long wsize,
+			unsigned short range,
+			struct pci_dev **device, void __iomem **memmap);
+
+void PutMemoryBAR(struct pci_dev **device, void __iomem **memmap) ;
+#endif /* ARCH_PMC */
 
 static PCI_CALLBACK P945(struct pci_dev *dev) ;
 static PCI_CALLBACK P955(struct pci_dev *dev) ;
