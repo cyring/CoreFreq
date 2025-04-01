@@ -2187,6 +2187,8 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Zen4_PHX2:
 	case AMD_Zen4_HWK:
 	case AMD_Zen5_STX:
+	case AMD_Zen5_KRK:
+	case AMD_Zen5_STXH:
 		CPU_Complex = false;
 		fallthrough;
 	/* Zen CPU Complex */
@@ -8246,6 +8248,8 @@ static bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	AMD_17_ZEN2_COF XtraCOF = {.value = 0};
 
 	switch (PUBLIC(RO(Proc))->ArchID) {
+	case AMD_Zen5_STXH:
+	case AMD_Zen5_KRK:
 	case AMD_Zen5_Eldora:
 	case AMD_Zen5_STX:
 	case AMD_Zen4_HWK:

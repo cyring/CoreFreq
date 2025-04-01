@@ -7539,6 +7539,8 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 	case AMD_Zen4_PHX2:
 	case AMD_Zen4_HWK:
 	case AMD_Zen5_STX:
+	case AMD_Zen5_KRK:
+	case AMD_Zen5_STXH:
 		TopologyFunc = Topology_SMT;
 		OffLineItem = RSC(TOPOLOGY_OFF_0).CODE();
 		TopologySubHeader[1] = TopologyAltSubHeader[0];

@@ -150,6 +150,8 @@ enum {	GenuineArch = 0,
 	AMD_Zen5_Eldora,
 	AMD_Zen5_Turin,
 	AMD_Zen5_Turin_Dense,
+	AMD_Zen5_KRK,
+	AMD_Zen5_STXH,
 	ARCHITECTURES
 };
 
