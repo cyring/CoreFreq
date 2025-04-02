@@ -1657,6 +1657,9 @@ static void Start_Alderlake(void *arg) ;
 static void Start_Uncore_Alderlake(void *arg) ;
 static void Stop_Uncore_Alderlake(void *arg) ;
 
+static void Start_Uncore_Arrowlake(void *arg) ;
+#define     Stop_Uncore_Arrowlake Stop_Uncore_Alderlake
+
 static void Power_ACCU_SKL_DEFAULT(PROC_RO *Pkg, unsigned int T) ;
 static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T) ;
 static void (*Power_ACCU_Skylake)(PROC_RO*,unsigned int)=Power_ACCU_SKL_DEFAULT;
@@ -12482,8 +12485,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_MTL_ids,
 	.Uncore = {
-		.Start = Start_Uncore_Alderlake,
-		.Stop = Stop_Uncore_Alderlake,
+		.Start = Start_Uncore_Arrowlake,
+		.Stop = Stop_Uncore_Arrowlake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
@@ -12506,8 +12509,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_MTL_ids,
 	.Uncore = {
-		.Start = Start_Uncore_Alderlake,
-		.Stop = Stop_Uncore_Alderlake,
+		.Start = Start_Uncore_Arrowlake,
+		.Stop = Stop_Uncore_Arrowlake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
@@ -12530,8 +12533,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_MTL_ids,
 	.Uncore = {
-		.Start = Start_Uncore_Alderlake,
-		.Stop = Stop_Uncore_Alderlake,
+		.Start = Start_Uncore_Arrowlake,
+		.Stop = Stop_Uncore_Arrowlake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
@@ -12554,8 +12557,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
-		.Start = Start_Uncore_Alderlake,
-		.Stop = Stop_Uncore_Alderlake,
+		.Start = Start_Uncore_Arrowlake,
+		.Stop = Stop_Uncore_Arrowlake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,

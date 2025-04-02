@@ -14886,8 +14886,6 @@ static void Intel_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
   {									\
 	UNCORE_GLOBAL_PERF_CONTROL  Uncore_GlobalPerfControl;		\
 	UNCORE_FIXED_PERF_CONTROL   Uncore_FixedPerfControl;		\
-	UNCORE_GLOBAL_PERF_STATUS   Uncore_PerfOverflow = {.value = 0}; \
-	UNCORE_GLOBAL_PERF_OVF_CTRL Uncore_PerfOvfControl = {.value = 0};\
 									\
 	RDMSR(	Uncore_GlobalPerfControl,				\
 		MSR_##PMU##_UNCORE_PERF_GLOBAL_CTRL );			\
@@ -14908,11 +14906,20 @@ static void Intel_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 	Uncore_FixedPerfControl.PMU.EN_CTR0 = 1;			\
 	WRMSR(	Uncore_FixedPerfControl,				\
 		MSR_##PMU##_UNCORE_PERF_FIXED_CTR_CTRL );		\
+  }									\
+})
+
+#define Uncore_Counters_Ovf(PMU)					\
+({									\
+  if (PUBLIC(RO(Proc))->Features.PerfMon.EAX.Version >= 3)		\
+  {									\
+	UNCORE_GLOBAL_PERF_STATUS   Uncore_PerfOverflow = {.value = 0}; \
+	UNCORE_GLOBAL_PERF_OVF_CTRL Uncore_PerfOvfControl = {.value = 0};\
 									\
 	RDMSR(Uncore_PerfOverflow, MSR_##PMU##_UNCORE_PERF_GLOBAL_STATUS);\
 									\
     if (Uncore_PerfOverflow.PMU.Overflow_CTR0) {			\
-	RDMSR(Uncore_PerfOvfControl, MSR_UNCORE_PERF_GLOBAL_OVF_CTRL);	\
+	/* MSR_UNCORE_PERF_GLOBAL_OVF_CTRL is a write-only register */	\
 	Uncore_PerfOvfControl.Clear_Ovf_CTR0 = 1;			\
 	WRMSR(Uncore_PerfOvfControl, MSR_UNCORE_PERF_GLOBAL_OVF_CTRL);	\
     }									\
@@ -17462,6 +17469,7 @@ static void Start_Uncore_Nehalem(void *arg)
 	UNUSED(arg);
 
 	Uncore_Counters_Set(NHM);
+	Uncore_Counters_Ovf(NHM);
 }
 
 static void Stop_Uncore_Nehalem(void *arg)
@@ -17688,6 +17696,7 @@ static void Start_Uncore_SandyBridge(void *arg)
 	UNUSED(arg);
 
 	Uncore_Counters_Set(SNB);
+	Uncore_Counters_Ovf(SNB);
 }
 
 static void Stop_Uncore_SandyBridge(void *arg)
@@ -18256,6 +18265,7 @@ static void Start_Uncore_Haswell_ULT(void *arg)
 
     if (PUBLIC(RO(Proc))->Registration.Experimental) {
 	Uncore_Counters_Set(SNB);
+	Uncore_Counters_Ovf(SNB);
     }
 }
 
@@ -18960,6 +18970,7 @@ static void Start_Uncore_Skylake(void *arg)
 	UNUSED(arg);
 
 	Uncore_Counters_Set(SKL);
+	Uncore_Counters_Ovf(SKL);
 
 	Pkg_Intel_PMC_Set(ARCH_PMC, 0x5838);
 }
@@ -19201,6 +19212,7 @@ static void Start_Uncore_Skylake_X(void *arg)
 	UNUSED(arg);
 /*TODO(Unsolved)
 	Uncore_Counters_Set(SKL_X);
+	Uncore_Counters_Ovf(SKL_X);
 */
 	Pkg_Intel_PMC_Set(ARCH_PMC, 0x5838);
 }
@@ -19574,6 +19586,7 @@ static void Start_Uncore_Alderlake(void *arg)
 	UNUSED(arg);
 
 	Uncore_Counters_Set(ADL);
+	Uncore_Counters_Ovf(ADL);
 }
 
 static void Stop_Uncore_Alderlake(void *arg)
@@ -19581,6 +19594,13 @@ static void Stop_Uncore_Alderlake(void *arg)
 	UNUSED(arg);
 
 	Uncore_Counters_Clear(ADL);
+}
+
+static void Start_Uncore_Arrowlake(void *arg)
+{
+	UNUSED(arg);
+
+	Uncore_Counters_Set(ADL);
 }
 
 
