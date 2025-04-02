@@ -6321,7 +6321,7 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 		Arch[PUBLIC(RO(Proc))->ArchID].Architecture.Brand[0],
 		BRAND_SIZE);
 	/*	Attempt to detect virtualization from Device Tree	*/
-	#ifdef CONFIG_OF
+	#if defined(CONFIG_OF) && LINUX_VERSION_CODE >= KERNEL_VERSION(3, 19, 0)
 	{
 	    const char *virtualBoard[] = DT_VIRTUAL_BOARD;
 	    if (of_device_compatible_match(of_root, virtualBoard) > 0)
