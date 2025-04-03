@@ -11373,16 +11373,16 @@ static	struct {
 		{_Alderlake_S,		1, 1, 0, 0},	/* 06_97 */
 		{_Alderlake_H,		1, 1, 0, 0},
 		{_Alderlake_N,		1, 1, 0, 0},
-		{_Meteorlake_M, 	1, 1, 1, 0},
-		{_Meteorlake_N, 	1, 1, 1, 0},
-		{_Meteorlake_S, 	1, 1, 1, 0},
+		{_Meteorlake_M, 	1, 1, 0, 0},
+		{_Meteorlake_N, 	1, 1, 0, 0},
+		{_Meteorlake_S, 	1, 1, 0, 0},
 		{_Raptorlake,		1, 1, 0, 0},	/* 06_B7 */
 		{_Raptorlake_P, 	1, 1, 0, 0},
 		{_Raptorlake_S, 	1, 1, 0, 0},
-		{_Lunarlake,		1, 1, 1, 0},	/* 06_BD */
-		{_Arrowlake,		1, 1, 1, 0},	/* 06_C6 */
-		{_Arrowlake_H,		1, 1, 1, 0},	/* 06_C5 */
-		{_Arrowlake_U,		1, 1, 1, 0},	/* 06_B5 */
+		{_Lunarlake,		1, 1, 0, 0},	/* 06_BD */
+		{_Arrowlake,		1, 1, 0, 0},	/* 06_C6 */
+		{_Arrowlake_H,		1, 1, 0, 0},	/* 06_C5 */
+		{_Arrowlake_U,		1, 1, 0, 0},	/* 06_B5 */
 		{_Pantherlake,		1, 1, 1, 0},	/* 06_CC */
 		{_Clearwater_Forest,	1, 1, 1, 0}	/* 06_DD */
 	};
