@@ -15137,6 +15137,8 @@ static void AMD_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 			MSR_CORE_PERF_FIXED_CTR0,Core->Counter[T].INST);\
 })
 
+#define SMT_Counters_Arrowlake_Ecore SMT_Counters_Alderlake_Ecore
+
 #define SMT_Counters_Alderlake_Pcore(Core, T)				\
 ({									\
 	RDTSC_COUNTERx7(Core->Counter[T].TSC,				\
@@ -15148,6 +15150,8 @@ static void AMD_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 			MSR_CORE_C7_RESIDENCY, Core->Counter[T].C7,	\
 			MSR_CORE_PERF_FIXED_CTR0,Core->Counter[T].INST);\
 })
+
+#define SMT_Counters_Arrowlake_Pcore SMT_Counters_Alderlake_Pcore
 
 #define SMT_Counters_AMD_Family_17h(Core, T)				\
 ({									\
@@ -15392,6 +15396,8 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
     RDCOUNTER(PUBLIC(RO(Proc))->Counter[T].MC6, MSR_ATOM_MC6_RESIDENCY);\
 })
 
+#define PKG_Counters_Arrowlake_Ecore PKG_Counters_Alderlake_Ecore
+
 #define PKG_Counters_Alderlake_Pcore(Core, T)				\
 ({									\
     RDTSCP_COUNTERx7(PUBLIC(RO(Proc))->Counter[T].PCLK ,		\
@@ -15403,6 +15409,19 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 	MSR_PKG_C9_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC09,	\
 	MSR_ADL_UNCORE_PERF_FIXED_CTR0 ,				\
 				PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
+})
+
+#define PKG_Counters_Arrowlake_Pcore(Core, T)				\
+({									\
+    RDTSCP_COUNTERx6(PUBLIC(RO(Proc))->Counter[T].PCLK ,		\
+	MSR_PKG_C2_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC02,	\
+	MSR_PKG_C3_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC03,	\
+	MSR_PKG_C6_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC06,	\
+	MSR_PKG_C7_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC07,	\
+	MSR_PKG_C8_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC08,	\
+	MSR_PKG_C9_RESIDENCY,	PUBLIC(RO(Proc))->Counter[T].PC09);	\
+/*TODO	MSR_ARL_UNCORE_PERF_FIXED_CTR0 ,				\
+	PUBLIC(RO(Proc))->Counter[T].Uncore.FC0			*/	\
 })
 
 /*
@@ -15965,6 +15984,8 @@ static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T)
         RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(PLATFORM)],	\
 					MSR_PLATFORM_ENERGY_STATUS);	\
 })
+
+#define PWR_ACCU_Arrowlake PWR_ACCU_Alderlake
 
 #define Delta_PWR_ACCU(Pkg, PwrDomain)					\
 ({									\
@@ -19596,11 +19617,256 @@ static void Stop_Uncore_Alderlake(void *arg)
 	Uncore_Counters_Clear(ADL);
 }
 
+
+#define Cycle_Arrowlake_Ecore Cycle_Alderlake_Ecore
+
+static enum hrtimer_restart Cycle_Arrowlake_Pcore(struct hrtimer *pTimer)
+{
+	PERF_STATUS PerfStatus = {.value = 0};
+	CORE_RO *Core;
+	unsigned int cpu;
+
+	cpu = smp_processor_id();
+	Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+	Mark_OVH(Core);
+
+    if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
+    {
+	hrtimer_forward(pTimer,
+			hrtimer_cb_get_time(pTimer),
+			RearmTheTimer);
+
+	SMT_Counters_Arrowlake_Pcore(Core, 1);
+
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
+
+	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+	Core->Ratio.Perf = PerfStatus.SNB.CurrentRatio;
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+	{
+		PKG_Counters_Arrowlake_Pcore(Core, 1);
+
+		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
+
+		Monitor_CorePerfLimitReasons(PUBLIC(RO(Proc)));
+		Monitor_GraphicsPerfLimitReasons(PUBLIC(RO(Proc)));
+		Monitor_RingPerfLimitReasons(PUBLIC(RO(Proc)));
+
+	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
+	    {
+	    case FORMULA_SCOPE_PKG:
+		Core_Intel_Temp(Core);
+		break;
+	    }
+
+		PUBLIC(RO(Proc))->PowerThermal.VID.CPU = PerfStatus.SNB.CurrVID;
+
+	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
+	    {
+	    case FORMULA_SCOPE_PKG:
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+		break;
+	    }
+
+		PWR_ACCU_Arrowlake(PUBLIC(RO(Proc)), 1);
+
+		Delta_PC02(PUBLIC(RO(Proc)));
+
+		Delta_PC03(PUBLIC(RO(Proc)));
+
+		Delta_PC06(PUBLIC(RO(Proc)));
+
+		Delta_PC07(PUBLIC(RO(Proc)));
+
+		Delta_PC08(PUBLIC(RO(Proc)));
+
+		Delta_PC09(PUBLIC(RO(Proc)));
+
+		Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
+
+		Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
+
+		Delta_PWR_ACCU(Proc, PKG);
+
+		Delta_PWR_ACCU(Proc, CORES);
+
+		Delta_PWR_ACCU(Proc, UNCORE);
+
+		Delta_PWR_ACCU(Proc, RAM);
+
+		Delta_PWR_ACCU(Proc, PLATFORM);
+
+		Save_PC02(PUBLIC(RO(Proc)));
+
+		Save_PC03(PUBLIC(RO(Proc)));
+
+		Save_PC06(PUBLIC(RO(Proc)));
+
+		Save_PC07(PUBLIC(RO(Proc)));
+
+		Save_PC08(PUBLIC(RO(Proc)));
+
+		Save_PC09(PUBLIC(RO(Proc)));
+
+		Save_PTSC(PUBLIC(RO(Proc)));
+
+		Save_UNCORE_FC0(PUBLIC(RO(Proc)));
+
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
+
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), CORES);
+
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), UNCORE);
+
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), RAM);
+
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), PLATFORM);
+
+		Sys_Tick(PUBLIC(RO(Proc)));
+	} else {
+		Core->PowerThermal.VID = 0;
+	}
+
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core_Intel_Temp(Core);
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core_Intel_Temp(Core);
+		break;
+	}
+
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+		break;
+	}
+
+	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+	Delta_INST(Core);
+
+	Delta_C0(Core);
+
+	Delta_C3(Core);
+
+	Delta_C6(Core);
+
+	Delta_C7(Core);
+
+	Delta_TSC_OVH(Core);
+
+	Delta_C1(Core);
+
+	Save_INST(Core);
+
+	Save_TSC(Core);
+
+	Save_C0(Core);
+
+	Save_C3(Core);
+
+	Save_C6(Core);
+
+	Save_C7(Core);
+
+	Save_C1(Core);
+
+	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
+
+	return HRTIMER_RESTART;
+    } else
+	return HRTIMER_NORESTART;
+}
+
+static void InitTimer_Arrowlake(unsigned int cpu)
+{
+    switch (PUBLIC(RO(Core, AT(cpu)))->T.Cluster.Hybrid.CoreType) {
+    case Hybrid_Atom:
+	smp_call_function_single(cpu, InitTimer, Cycle_Arrowlake_Ecore, 1);
+	break;
+    case Hybrid_Core:
+    case Hybrid_RSVD1:
+    case Hybrid_RSVD2:
+    default:
+	smp_call_function_single(cpu, InitTimer, Cycle_Arrowlake_Pcore, 1);
+	break;
+    }
+}
+
+static void Start_Arrowlake(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
+	UNUSED(arg);
+
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
+
+	Intel_Core_Counters_Set(Save, Core);
+
+    switch (PUBLIC(RO(Core, AT(cpu)))->T.Cluster.Hybrid.CoreType) {
+    case Hybrid_Atom:
+	SMT_Counters_Arrowlake_Ecore(Core, 0);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Hybrid)
+	{
+		PKG_Counters_Arrowlake_Ecore(Core, 0);
+	}
+	break;
+    case Hybrid_Core:
+    case Hybrid_RSVD1:
+    case Hybrid_RSVD2:
+    default:
+	SMT_Counters_Arrowlake_Pcore(Core, 0);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+	{
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
+		PKG_Counters_Arrowlake_Pcore(Core, 0);
+
+		PWR_ACCU_Arrowlake(PUBLIC(RO(Proc)), 0);
+	}
+	break;
+    }
+
+	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD);
+
+	hrtimer_start(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+
+	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
+}
+
 static void Start_Uncore_Arrowlake(void *arg)
 {
 	UNUSED(arg);
 
-	Uncore_Counters_Set(ADL);
+/*TODO	Uncore_Counters_Set(ARL);					*/
+}
+
+static void Stop_Uncore_Arrowlake(void *arg)
+{
+	UNUSED(arg);
+
+/*TODO	Uncore_Counters_Clear(ARL);					*/
 }
 
 
