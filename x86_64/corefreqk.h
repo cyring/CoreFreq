@@ -1680,7 +1680,7 @@ static void PerCore_Raptorlake_Query(void *arg) ;
 
 static void PerCore_Meteorlake_Query(void *arg) ;
 
-#define PerCore_Arrowlake_Query PerCore_Raptorlake_Query
+#define PerCore_Arrowlake_Query PerCore_Meteorlake_Query
 
 static void Query_AMD_Family_0Fh(unsigned int cpu) ;
 static void PerCore_AMD_Family_0Fh_Query(void *arg) ;

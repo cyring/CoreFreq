@@ -9633,7 +9633,7 @@ static void Intel_Core_MicroArchControl(CORE_RO *Core)
 }
 
 static void Intel_Core_MicroArchitecture(CORE_RO *Core) 	/* Per P-Core */
-{ /* 06_7D, 06_7E, 06_8C, 06_8D, 06_97, 06_9A, 06_B7, 06_BA, 06_BF, MTL */
+{ /* 06_7D, 06_7E, 06_8C, 06_8D, 06_97, 06_9A, 06_B7, 06_BA, 06_BF, MTL, ARL */
   if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
   {
     switch (Core->T.Cluster.Hybrid.CoreType) {
@@ -9675,7 +9675,7 @@ static void Intel_Core_MicroArchitecture(CORE_RO *Core) 	/* Per P-Core */
 }
 
 static void Intel_Ultra7_MicroArchitecture(CORE_RO *Core)
-{	/* 06_AA, 06_AB, 06_AC						*/
+{	/* 06_AA, 06_AB, 06_AC, 06_C6					*/
 	MISC_FEATURE_CONTROL MiscFeatCtrl = {.value = 0};
 	RDMSR(MiscFeatCtrl, MSR_MISC_FEATURE_CONTROL);
 
