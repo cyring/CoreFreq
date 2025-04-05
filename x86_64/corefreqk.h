@@ -1657,6 +1657,12 @@ static void Start_Alderlake(void *arg) ;
 static void Start_Uncore_Alderlake(void *arg) ;
 static void Stop_Uncore_Alderlake(void *arg) ;
 
+static void InitTimer_Arrowlake(unsigned int cpu) ;
+static void Start_Arrowlake(void *arg) ;
+#define     Stop_Arrowlake Stop_Skylake
+static void Start_Uncore_Arrowlake(void *arg) ;
+static void Stop_Uncore_Arrowlake(void *arg) ;
+
 static void Power_ACCU_SKL_DEFAULT(PROC_RO *Pkg, unsigned int T) ;
 static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T) ;
 static void (*Power_ACCU_Skylake)(PROC_RO*,unsigned int)=Power_ACCU_SKL_DEFAULT;
@@ -1673,6 +1679,8 @@ static void PerCore_Alderlake_Query(void *arg) ;
 static void PerCore_Raptorlake_Query(void *arg) ;
 
 static void PerCore_Meteorlake_Query(void *arg) ;
+
+#define PerCore_Arrowlake_Query PerCore_Meteorlake_Query
 
 static void Query_AMD_Family_0Fh(unsigned int cpu) ;
 static void PerCore_AMD_Family_0Fh_Query(void *arg) ;
@@ -12445,11 +12453,11 @@ static ARCH Arch[ARCHITECTURES] = {
 [LunarLake] = { 							/* 90*/
 	.Signature = _Lunarlake,
 	.Query = Query_Skylake,
-	.Update = PerCore_Raptorlake_Query,
-	.Start = Start_Alderlake,
-	.Stop = Stop_Alderlake,
+	.Update = PerCore_Arrowlake_Query,
+	.Start = Start_Arrowlake,
+	.Stop = Stop_Arrowlake,
 	.Exit = NULL,
-	.Timer = InitTimer_Alderlake,
+	.Timer = InitTimer_Arrowlake,
 	.BaseClock = BaseClock_Skylake,
 	.ClockMod = ClockMod_Skylake_HWP,
 	.TurboClock = Intel_Turbo_Config8C,
@@ -12458,8 +12466,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_LNL_ids,
 	.Uncore = {
-		.Start = Start_Uncore_Alderlake,
-		.Stop = Stop_Uncore_Alderlake,
+		.Start = Start_Uncore_Arrowlake,
+		.Stop = Stop_Uncore_Arrowlake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
@@ -12469,11 +12477,11 @@ static ARCH Arch[ARCHITECTURES] = {
 [ArrowLake] = { 							/* 91*/
 	.Signature = _Arrowlake,
 	.Query = Query_Skylake,
-	.Update = PerCore_Raptorlake_Query,
-	.Start = Start_Alderlake,
-	.Stop = Stop_Alderlake,
+	.Update = PerCore_Arrowlake_Query,
+	.Start = Start_Arrowlake,
+	.Stop = Stop_Arrowlake,
 	.Exit = NULL,
-	.Timer = InitTimer_Alderlake,
+	.Timer = InitTimer_Arrowlake,
 	.BaseClock = BaseClock_Skylake,
 	.ClockMod = ClockMod_Skylake_HWP,
 	.TurboClock = Intel_Turbo_Config8C,
@@ -12482,8 +12490,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_MTL_ids,
 	.Uncore = {
-		.Start = Start_Uncore_Alderlake,
-		.Stop = Stop_Uncore_Alderlake,
+		.Start = Start_Uncore_Arrowlake,
+		.Stop = Stop_Uncore_Arrowlake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
@@ -12493,11 +12501,11 @@ static ARCH Arch[ARCHITECTURES] = {
 [ArrowLake_H] = {							/* 92*/
 	.Signature = _Arrowlake_H,
 	.Query = Query_Skylake,
-	.Update = PerCore_Raptorlake_Query,
-	.Start = Start_Alderlake,
-	.Stop = Stop_Alderlake,
+	.Update = PerCore_Arrowlake_Query,
+	.Start = Start_Arrowlake,
+	.Stop = Stop_Arrowlake,
 	.Exit = NULL,
-	.Timer = InitTimer_Alderlake,
+	.Timer = InitTimer_Arrowlake,
 	.BaseClock = BaseClock_Skylake,
 	.ClockMod = ClockMod_Skylake_HWP,
 	.TurboClock = Intel_Turbo_Config8C,
@@ -12506,8 +12514,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_MTL_ids,
 	.Uncore = {
-		.Start = Start_Uncore_Alderlake,
-		.Stop = Stop_Uncore_Alderlake,
+		.Start = Start_Uncore_Arrowlake,
+		.Stop = Stop_Uncore_Arrowlake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
@@ -12517,11 +12525,11 @@ static ARCH Arch[ARCHITECTURES] = {
 [ArrowLake_U] = {							/* 93*/
 	.Signature = _Arrowlake_U,
 	.Query = Query_Skylake,
-	.Update = PerCore_Raptorlake_Query,
-	.Start = Start_Alderlake,
-	.Stop = Stop_Alderlake,
+	.Update = PerCore_Arrowlake_Query,
+	.Start = Start_Arrowlake,
+	.Stop = Stop_Arrowlake,
 	.Exit = NULL,
-	.Timer = InitTimer_Alderlake,
+	.Timer = InitTimer_Arrowlake,
 	.BaseClock = BaseClock_Skylake,
 	.ClockMod = ClockMod_Skylake_HWP,
 	.TurboClock = Intel_Turbo_Config8C,
@@ -12530,8 +12538,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_MTL_ids,
 	.Uncore = {
-		.Start = Start_Uncore_Alderlake,
-		.Stop = Stop_Uncore_Alderlake,
+		.Start = Start_Uncore_Arrowlake,
+		.Stop = Stop_Uncore_Arrowlake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
@@ -12541,11 +12549,11 @@ static ARCH Arch[ARCHITECTURES] = {
 [PantherLake] = {							/* 94*/
 	.Signature = _Pantherlake,
 	.Query = Query_Skylake,
-	.Update = PerCore_Raptorlake_Query,
-	.Start = Start_Alderlake,
-	.Stop = Stop_Alderlake,
+	.Update = PerCore_Arrowlake_Query,
+	.Start = Start_Arrowlake,
+	.Stop = Stop_Arrowlake,
 	.Exit = NULL,
-	.Timer = InitTimer_Alderlake,
+	.Timer = InitTimer_Arrowlake,
 	.BaseClock = BaseClock_Skylake,
 	.ClockMod = ClockMod_Skylake_HWP,
 	.TurboClock = Intel_Turbo_Config8C,
@@ -12554,8 +12562,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
-		.Start = Start_Uncore_Alderlake,
-		.Stop = Stop_Uncore_Alderlake,
+		.Start = Start_Uncore_Arrowlake,
+		.Stop = Stop_Uncore_Arrowlake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
