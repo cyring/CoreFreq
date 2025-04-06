@@ -5032,7 +5032,7 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 			attrib[0], width, 2,
 			"%s%.*s%s       [%3s]", RSC(PERF_MON_HDC).CODE(),
 			width - 18 - RSZ(PERF_MON_HDC), hSpace,
-			RSC(PERF_LABEL_HDC).CODE(), ENABLED(bix) );
+			RSC(PERF_LABEL_HDC).CODE(), RSC(NOT_AVAILABLE).CODE() );
 	}
 /* Section Mark */
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
