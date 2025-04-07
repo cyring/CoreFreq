@@ -6004,8 +6004,6 @@ void GLK_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 
 void MTL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 {
-	unsigned int units = 12;
-	unsigned int Bus_Rate = RO(Proc)->Uncore.Bus.BIOS_DDR.MC_PLL_RATIO;
 	unsigned short mc, clock_done;
 
   for (mc = 0, clock_done = 0;
@@ -6022,7 +6020,6 @@ void MTL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		if ((RO(Proc)->Uncore.Bus.MTL_Cap_C.DDR4_EN)
 		 && (RO(Proc)->Uncore.Bus.MTL_Cap_A.DDR_OVERCLOCK == 0))
 		{
-			units = RO(Proc)->Uncore.Bus.MTL_Cap_C.DATA_RATE_DDR4;
 			clock_done = 1;
 		}
 		break;
@@ -6033,7 +6030,6 @@ void MTL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		if ((RO(Proc)->Uncore.Bus.MTL_Cap_C.LPDDR4_EN)
 		 && (RO(Proc)->Uncore.Bus.MTL_Cap_A.DDR_OVERCLOCK == 0))
 		{
-			units = RO(Proc)->Uncore.Bus.MTL_Cap_C.DATA_RATE_LPDDR4;
 			clock_done = 1;
 		}
 		break;
@@ -6044,7 +6040,6 @@ void MTL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		if ((RO(Proc)->Uncore.Bus.MTL_Cap_E.DDR5_EN)
 		 && (RO(Proc)->Uncore.Bus.MTL_Cap_A.DDR_OVERCLOCK == 0))
 		{
-			units = RO(Proc)->Uncore.Bus.MTL_Cap_E.DATA_RATE_DDR5;
 			clock_done = 1;
 		}
 		break;
@@ -6055,44 +6050,22 @@ void MTL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 		if ((RO(Proc)->Uncore.Bus.MTL_Cap_E.LPDDR5_EN)
 		 && (RO(Proc)->Uncore.Bus.MTL_Cap_A.DDR_OVERCLOCK == 0))
 		{
-			units = RO(Proc)->Uncore.Bus.MTL_Cap_E.DATA_RATE_LPDDR5;
 			clock_done = 1;
 		}
 		break;
 	}
     }
   }
-    if (RO(Proc)->Uncore.Bus.MTL_SA_Pll.QCLK_RATIO == 0)
-    {
-	RO(Shm)->Uncore.CtrlSpeed = (266 * units) + ((334 * units) / 501);
+	RO(Shm)->Uncore.Bus.Rate = \
+		RO(Proc)->Uncore.Bus.MTL_CR_BIOS.REQ.QCLK_RATIO * PRECISION;
 
-	Bus_Rate = Bus_Rate * 100U;
-    }
-    else	/*	Is Memory frequency overclocked ?		*/
-    {
-	unsigned long long Freq_Hz;
+	RO(Shm)->Uncore.Bus.Rate = RO(Shm)->Uncore.Bus.Rate / 3U;
 
-	if (RO(Proc)->Uncore.Bus.MTL_SA_Pll.QCLK_REF == 0) {
-		Freq_Hz = RO(Proc)->Uncore.Bus.MTL_SA_Pll.QCLK_RATIO;
-		Freq_Hz = Freq_Hz * RO(Core)->Clock.Hz * 800LLU;
-		Freq_Hz = Freq_Hz / RO(Shm)->Proc.Features.Factory.Clock.Hz;
-		Freq_Hz = Freq_Hz / 3LLU;
-
-		Bus_Rate = Bus_Rate * 400U;
-		Bus_Rate = Bus_Rate / 3U;
-	} else {
-		Freq_Hz = RO(Proc)->Uncore.Bus.MTL_SA_Pll.QCLK_RATIO;
-		Freq_Hz = Freq_Hz * RO(Core)->Clock.Hz * 200LLU;
-		Freq_Hz = Freq_Hz / RO(Shm)->Proc.Features.Factory.Clock.Hz;
-
-		Bus_Rate = Bus_Rate * 100U;
-	}
-	RO(Shm)->Uncore.CtrlSpeed = (unsigned short) Freq_Hz;
-    }
-	RO(Shm)->Uncore.Bus.Rate = Bus_Rate;
 	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
 				* RO(Shm)->Uncore.Bus.Rate)
 				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
+
+	RO(Shm)->Uncore.CtrlSpeed = 2LLU * RO(Shm)->Uncore.Bus.Speed;
 
 	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;
 	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;

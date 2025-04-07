@@ -5632,10 +5632,8 @@ EXIT_ADL_IMC:
 	EMPTY_STMT();
 }
 
-#define MTL_SA	ADL_SA
-
 static void Query_MTL_IMC(void __iomem *mchmap, unsigned short mc)
-{	/* Source: 13th and 14th Gen. Intel Core Processors Datasheet Vol 2 */
+{	/* Source: 13th and 14th Gen. Ultra series 1 and 2. Datasheet Vol 2 */
 	unsigned short cha, virtualCount;
 
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = 0;
@@ -5733,13 +5731,16 @@ static void Query_MTL_IMC(void __iomem *mchmap, unsigned short mc)
 	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].MTL.SRExit.value = \
 					readq(mchmap + 0xe4c0 + 0x800 * cha);
     }
-    if (mc == 0) {
-	Query_Turbo_TDP_Config(mchmap);
-	BIOS_DDR(mchmap);
-	MTL_SA(mchmap);
-    }
 EXIT_MTL_IMC:
 	EMPTY_STMT();
+}
+
+static void Query_MTL_Package_IMC(void __iomem *mchmap, unsigned short mc)
+{
+	Query_Turbo_TDP_Config(mchmap);
+ /* Source: Intel Core Ultra 200S and 200HX Series Proc. CFG & MEM Registers */
+	PUBLIC(RO(Proc))->Uncore.Bus.MTL_CR_MEM.value = readl(mchmap + 0x13d00);
+	PUBLIC(RO(Proc))->Uncore.Bus.MTL_CR_BIOS.value= readl(mchmap + 0x13d08);
 }
 
 static void Query_GLK_IMC(void __iomem *mchmap, unsigned short mc)
@@ -6659,7 +6660,7 @@ static PCI_CALLBACK MTL_HOST(	struct pci_dev *dev,
 }
 
 static PCI_CALLBACK MTL_IMC(struct pci_dev *dev)
-{	/* Source: 13th and 14th Gen. Intel Core Processors datasheet, vol 2 */
+{/* Source: D0:F0 Host Bridge and DRAM Controller - MCHBAR (part 5) Registers */
 	PCI_CALLBACK rc = 0;
 	unsigned short mc, cha;
 
@@ -6688,6 +6689,8 @@ static PCI_CALLBACK MTL_IMC(struct pci_dev *dev)
     }
    }
   }
+	rc = MTL_HOST(dev, Query_MTL_Package_IMC, 0x14000, 0);
+
 	return rc;
 }
 

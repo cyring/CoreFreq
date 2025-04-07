@@ -4975,8 +4975,6 @@ typedef union
 
 #define ADL_SA_PERF_STATUS	TGL_SA_PERF_STATUS
 
-#define MTL_SA_PERF_STATUS	ADL_SA_PERF_STATUS
-
 typedef union
 {	/* Device: 0 - Function: 0 - Offset E4h 			*/
 	unsigned int		value;
@@ -5324,3 +5322,38 @@ typedef union
 		ReservedBits	: 32-31;
 	};
 } MTL_CAPID_E;
+
+typedef union
+{	/* Offset 13D00h,  13D04h					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		MC0_EN		:  1-0,
+		MC1_EN		:  2-1,
+		IBECC0_EN	:  3-2,
+		IBECC1_EN	:  4-3,
+		CCE0_EN		:  5-4,
+		CCE1_EN		:  6-5,
+		DDR_TYPE	:  9-6, /*1=DDR5;2=LPDDR5;3=LPDDR4;0=RSVD*/
+		ReservedBits	: 32-9;
+	} CONFIG;
+} MTL_MEMSS_PMA_CR_MEM;
+
+typedef union
+{	/* Offset 13D08h(REQ),  13D10h(DATA)				*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		QCLK_RATIO	:  8-0,
+		GEAR_TYPE	:  9-8,
+		MAX_BW_MBPS	: 29-9,
+		QCLK_WP_IDX	: 31-29,
+		RUN_BUSY	: 32-31;
+	} REQ;
+	struct {
+		unsigned int
+		QCLK_RATIO	:  8-0,
+		GEAR_TYPE	:  9-8,
+		ReservedBits	: 32-9;
+	} DATA;
+} MTL_MEMSS_PMA_CR_BIOS;
