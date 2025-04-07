@@ -99,7 +99,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: uraimo/run-on-arch-action@v2.7.1
+      - uses: uraimo/run-on-arch-action@v3
         name: Build
         id: build
         with:
