@@ -6056,15 +6056,20 @@ void MTL_CAP(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core))
 	}
     }
   }
+	/* Clock Topology: BCLK drives the Memory Controller clock domain.
+	 * Qclk ratio with reference of 33.33MHz.			*/
 	RO(Shm)->Uncore.Bus.Rate = \
-		RO(Proc)->Uncore.Bus.MTL_CR_BIOS.REQ.QCLK_RATIO * PRECISION;
+		( RO(Proc)->Uncore.Bus.MTL_CR_BIOS.REQ.QCLK_RATIO
+		* RO(Proc)->Uncore.Bus.MTL_BCLK.PCIE_FREQ_KHZ ) / 3000U;
 
-	RO(Shm)->Uncore.Bus.Rate = RO(Shm)->Uncore.Bus.Rate / 3U;
+	/* BCLK_FREQ_0_0_0_MCHBAR is used by software to calculate
+	 * various clock frequencies that are derived from BCLK
+	 * such as Core, Ring, Memory Controller and GT.		*/
+	RO(Shm)->Uncore.Bus.Speed = \
+		( RO(Proc)->Uncore.Bus.MTL_CR_BIOS.REQ.QCLK_RATIO
+		* RO(Proc)->Uncore.Bus.MTL_BCLK.SOC_FREQ_KHZ ) / 3000LLU;
 
-	RO(Shm)->Uncore.Bus.Speed = (RO(Core)->Clock.Hz
-				* RO(Shm)->Uncore.Bus.Rate)
-				/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
-
+	/* DDR Transfer Rate (MT/s)					*/
 	RO(Shm)->Uncore.CtrlSpeed = 2LLU * RO(Shm)->Uncore.Bus.Speed;
 
 	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;

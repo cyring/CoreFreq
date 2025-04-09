@@ -4158,7 +4158,7 @@ typedef union
 	struct {
 		unsigned long long
 		tFAW		:  9-0,  /* Range: 16-88		*/
-		tRRD_SG 	: 15-9,  /* Range:  4-32 | tRRD/tRRD_​L	*/
+		tRRD_SG 	: 15-9,  /* Range:  4-32 | tRRD/tRRD_L	*/
 		tRRD_DG 	: 22-15, /* Range:  4-32	tRRD	*/
 		tRCD		: 30-22,
 		ReservedBits1	: 32-30,
@@ -5322,6 +5322,18 @@ typedef union
 		ReservedBits	: 32-31;
 	};
 } MTL_CAPID_E;
+
+#define MTL_SA_PERF_STATUS ADL_SA_PERF_STATUS
+
+typedef union
+{	/* Offset 5F60h BCLK_FREQ_0_0_0_MCHBAR				*/
+	unsigned long long	value;
+	struct {
+		unsigned long long
+		SOC_FREQ_KHZ	: 32-0,
+		PCIE_FREQ_KHZ	: 64-32;
+	};
+} MTL_PWR_MGMT_BCLK;
 
 typedef union
 {	/* Offset 13D00h,  13D04h					*/

@@ -822,6 +822,8 @@ typedef struct
 			MTL_CAPID_B		MTL_Cap_B;
 			MTL_CAPID_C		MTL_Cap_C;
 			MTL_CAPID_E		MTL_Cap_E;
+			MTL_SA_PERF_STATUS	MTL_SA_Pll;	/* 64 bits    */
+			MTL_PWR_MGMT_BCLK	MTL_BCLK;	/* 64 bits    */
 			MTL_MEMSS_PMA_CR_MEM	MTL_CR_MEM;	/* 32 bits    */
 			MTL_MEMSS_PMA_CR_BIOS	MTL_CR_BIOS;	/* 32 bits    */
 		};
