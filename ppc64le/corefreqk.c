@@ -1563,11 +1563,18 @@ static void InitTimer(void *Cycle_Function)
 
     if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, CREATED) == 0)
     {
+    #if LINUX_VERSION_CODE < KERNEL_VERSION(6, 15, 0)
 	hrtimer_init(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
 			CLOCK_MONOTONIC,
 			HRTIMER_MODE_REL_PINNED);
 
 	PRIVATE(OF(Core, AT(cpu)))->Join.Timer.function = Cycle_Function;
+    #else
+	hrtimer_setup(	&PRIVATE(OF(Core, AT(cpu)))->Join.Timer,
+			Cycle_Function,
+			CLOCK_MONOTONIC,
+			HRTIMER_MODE_REL_PINNED);
+    #endif
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, CREATED);
     }
 }
