@@ -10420,7 +10420,7 @@ static void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)	/* Per SMT */
 
 static void Intel_Watchdog(CORE_RO *Core)
 {
-	struct pci_device_id PCI_WDT_ids[] = {
+static struct pci_device_id PCI_WDT_ids[] = {
 		{
 		PCI_VDEVICE(INTEL, DID_INTEL_ICH10_LPC),
 		.driver_data = (kernel_ulong_t) ICH_TCO
