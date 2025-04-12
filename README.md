@@ -246,7 +246,7 @@ yum install kernel-devel
 yum group install "Development Tools"
 ```
 
-## AlmaLinux
+## AlmaLinux, Rocky Linux
 ```sh
 ## as root, install kernel development package and dependencies
 dnf --assumeyes install kernel-devel gcc make git bc
@@ -325,6 +325,8 @@ doas ckms build corefreqk=M.m.r
 ## Or manually if using the Clang compiler
 gmake CC=clang
 ```
+
+## [Clear Linux](https://github.com/cyring/CoreFreq/wiki/CoreFreq-for-Clear-Linux)
 
 ## [Buildroot](https://github.com/cyring/CoreFreq-buildroot)
 
