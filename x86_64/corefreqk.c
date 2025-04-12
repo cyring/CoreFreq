@@ -24639,6 +24639,15 @@ static int CoreFreqK_Scale_And_Compute_Level_Up(INIT_ARG *pArg)
 					COREFREQ_REV	);
 
 	PUBLIC(RO(Proc))->CPU.Count = pArg->SMT_Count;
+
+    if (PUBLIC(RO(Proc))->CPU.Count > CORE_COUNT) {
+	pr_warn("CoreFreq: Detected %u CPUs, but built with CORE_COUNT=%u\n",
+		PUBLIC(RO(Proc))->CPU.Count, CORE_COUNT);
+	pr_warn("CoreFreq: Run 'make help' for instructions "	\
+		"on setting CORE_COUNT.\n");
+
+	return -ENOMEM;
+    } else {
 	/* PreCompute SysGate memory allocation. */
 	PUBLIC(RO(Proc))->Gate.ReqMem.Size = sizeof(SYSGATE_RO);
 
@@ -24659,6 +24668,7 @@ static int CoreFreqK_Scale_And_Compute_Level_Up(INIT_ARG *pArg)
 	Arch[GenuineArch].Architecture[0] = \
 				PUBLIC(RO(Proc))->Features.Info.Vendor.ID;
 	return 0;
+    }
 }
 
 static void CoreFreqK_Alloc_Public_Cache_Level_Down(void)
