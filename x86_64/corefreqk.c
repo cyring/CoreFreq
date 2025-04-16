@@ -15022,8 +15022,12 @@ static void AMD_Core_Counters_Clear(union SAVE_AREA_CORE *Save, CORE_RO *Core)
     case CRC_VBOX:							\
     case CRC_KBOX:							\
     default:								\
-	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_CORE_PERF_UCC);		\
-	RDCOUNTER(Core->Counter[T].C0.URC, MSR_CORE_PERF_URC);		\
+	if (PUBLIC(RO(Proc))->Features.Power.ECX.HCF_Cap		\
+	 || PUBLIC(RO(Proc))->Features.AdvPower.EDX.EffFrqRO)		\
+	{								\
+		RDCOUNTER(Core->Counter[T].C0.UCC, MSR_CORE_PERF_UCC);	\
+		RDCOUNTER(Core->Counter[T].C0.URC, MSR_CORE_PERF_URC);	\
+	}								\
 	break;								\
     case CRC_KVM:							\
     case CRC_VMWARE:							\
