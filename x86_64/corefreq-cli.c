@@ -8471,6 +8471,9 @@ void MemoryController(	Window *win,
 
 	    if (RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size > 0)
 	    {
+		const unsigned short part = \
+		(RO(Shm)->Uncore.MC[mc].SlotCount > 1 ? slot:cha) % MC_MAX_DIMM;
+
 		PRT(IMC, attrib[1], "%5u",
 			RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks);
 		PRT(IMC, attrib[1], "%5u",
@@ -8489,7 +8492,7 @@ void MemoryController(	Window *win,
 		PRT(IMC, attrib[1], "%5s", &str[0]);
 		PRT(IMC, attrib[1], "%5s", &str[8]);
 
-	     if ((li = strlen(RO(Shm)->SMB.Memory.PartNumber[slot])) > 0)
+	     if ((li = strlen(RO(Shm)->SMB.Memory.PartNumber[part])) > 0)
 	     {
 		if (li >= (4 * MC_MATY)) {
 			li = (4 * MC_MATY) - 1;
@@ -8498,7 +8501,7 @@ void MemoryController(	Window *win,
 			"%%%d.*s", (MC_MATX - 11) * MC_MATY);
 
 		StrFormat(chipStr, (MC_MATX * MC_MATY) + 1,
-			str, li, RO(Shm)->SMB.Memory.PartNumber[slot]);
+			str, li, RO(Shm)->SMB.Memory.PartNumber[part]);
 
 	      for (nc = 0; nc < (MC_MATX - 11); nc++) {
 		memcpy(item, &chipStr[nc * MC_MATY], MC_MATY);
