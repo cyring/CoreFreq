@@ -9004,8 +9004,9 @@ static unsigned int Query_AMD_HSMP_Interface(void)
 	if (PUBLIC(RO(Proc))->Features.HSMP_Capable)
 	{ /* Mark the SMU as Enable if the reachability test is successful */
 		RESET_ARRAY(arg, 8, 0, .value);
+		arg[0].value = 0x2;
 		rx = AMD_HSMP_Exec(HSMP_TEST_MSG, arg);
-	    if (rx == HSMP_RESULT_OK)
+	    if ((rx == HSMP_RESULT_OK) && (arg[0].value == (0x2 + 0x1)))
 	    {
 		PUBLIC(RO(Proc))->Features.HSMP_Enable = 1;
 	    }

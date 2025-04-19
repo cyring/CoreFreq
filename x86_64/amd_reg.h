@@ -222,6 +222,8 @@
 #define SMU_HSMP_CMD		0x3b10534
 #define SMU_HSMP_ARG		0x3b109e0
 #define SMU_HSMP_RSP		0x3b10980
+/* Sources: PPR Vol 4 for AMD Family 1Ah Model 02h C1 (Turin)		*/
+#define SMU_HSMP_CMD_F1A	0x3b10934
 
 enum HSMP_FUNC {
 	HSMP_TEST_MSG	= 0x1,	/* Returns [ARG0] + 1			*/
@@ -242,8 +244,32 @@ enum HSMP_FUNC {
 	HSMP_RD_CCLK	= 0x10, /* CPU core clock limit (MHz)		*/
 	HSMP_RD_PC0	= 0x11, /* Socket C0 Residency (100%)		*/
 	HSMP_WR_DPM_LCLK= 0x12, /* NBIO[24:16]; Max[15:8], Min[7:0] DPM */
-	HSMP_RESERVED	= 0x13,
-	HSMP_RD_DDR_BW	= 0x14	/* Max[31:20];Usage{Gbps[19:8],Pct[7:0]}*/
+	HSMP_RD_DPM_LCLK= 0x13, /* In:NBIO[24:16];Out:Max[15:8],Min[7:0]*/
+	HSMP_RD_DDR_BW	= 0x14, /* Max[31:20];Usage{Gbps[19:8],Pct[7:0]}*/
+	HSMP_RD_PKG_TMP = 0x15, /* Socket temperature			*/
+	HSMP_RD_DIMM_TR = 0x16, /* In:Addr[7:0]; Out:Rate[3], Range[2:0]*/
+	HSMP_RD_DIMM_PWR= 0x17, /* In:Addr[7:0];Out:mWatt[31:17]ms[16:8]*/
+	HSMP_RD_DIMM_THM= 0x18, /* In:Addr[7:0];Out:Tmp.C[31:21]ms[16:8]*/
+	HSMP_RD_FRQ_SKTL= 0x19, /* Out: Socket Freq[31:16], Limit[15-0] */
+	HSMP_RD_FRQ_CCLK= 0x1a, /* I:Apic[31:16]; O:Frq[31:16],Lim[15-0]*/
+	HSMP_RD_SVI_PWR = 0x1b, /* Out: mWatt[31:0]			*/
+	HSMP_RD_FMAX_SKT= 0x1c, /* Out: Fmax[31:16], Fmin[15:0] MHz	*/
+	HSMP_RD_IO_BW	= 0x1d, /* In:Link[15:8],Type[2:0]; Out:BW[31:0]*/
+	HSMP_RD_XGMI_BW = 0x1e, /* In:Link[15:8],Type[2:0]; Out:BW[31:0]*/
+	HSMP_RW_GMI3	= 0x1f, /* RW_Op[31], Min[15:8], Max[7:0] width */
+	HSMP_RW_PCIE	= 0x20, /* RW_Op[31], Link_Rate[7:0]		*/
+	HSMP_RW_PWR_MODE= 0x21, /* RW_Op[31], Efficiency_Mode[2:0]	*/
+	HSMP_RW_DF_PST	= 0x22, /* RW_Op[31], Min[15:8],Max[7:0] P-State*/
+	HSMP_RD_MTRC_VER= 0x23, /* Metrics table version		*/
+	HSMP_RD_MTRC_TBL= 0x24, /* Metrics table			*/
+	HSMP_RD_MTRC_BAR= 0x25, /* Metrics table dram address		*/
+	HSMP_RW_XGMI_PST= 0x26, /* RW_Op[31], Min[15:8],Max[7:0] P-State*/
+	HSMP_RW_C_POLICY= 0x27, /* RW_Op[31], CPU Freq Policy[0]	*/
+	HSMP_RW_DF_CST	= 0x28, /* RW_Op[31], Enable[0] DataFab C-State */
+	HSMP_RESERVED	= 0x29,
+	HSMP_RD_RAPL_U	= 0x30, /* TU[19:16], ESU[12:8] 1/(2^ESU) Joules*/
+	HSMP_RD_RAPL_CCT= 0x31, /* In:Apic[15:0];Out:CoreCounter[Hi:Low]*/
+	HSMP_RD_RAPL_PCT= 0x32, /* Pkg Counter[Hi:Low]=[Arg1:Arg0]	*/
 };
 
 enum {

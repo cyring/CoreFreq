@@ -994,14 +994,16 @@ typedef union
 	if (PRIVATE(OF(Zen)).Device.DF) {				\
 		rx = AMD_HSMP_Mailbox(	MSG_FUNC,			\
 					MSG_ARG,			\
-					SMU_HSMP_CMD,			\
+		PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily < 0xB ?	\
+					SMU_HSMP_CMD : SMU_HSMP_CMD_F1A,\
 					SMU_HSMP_ARG,			\
 					SMU_HSMP_RSP,			\
 					PRIVATE(OF(Zen)).Device.DF );	\
 	} else {							\
 		rx = PCI_HSMP_Mailbox(	MSG_FUNC,			\
 					MSG_ARG,			\
-					SMU_HSMP_CMD,			\
+		PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily < 0xB ?	\
+					SMU_HSMP_CMD : SMU_HSMP_CMD_F1A,\
 					SMU_HSMP_ARG,			\
 					SMU_HSMP_RSP,			\
 					AMD_HSMP_INDEX_REGISTER,	\
@@ -1016,7 +1018,8 @@ typedef union
 ({									\
 	unsigned int rx=PCI_HSMP_Mailbox(MSG_FUNC,			\
 					MSG_ARG,			\
-					SMU_HSMP_CMD,			\
+		PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily < 0xB ?	\
+					SMU_HSMP_CMD : SMU_HSMP_CMD_F1A,\
 					SMU_HSMP_ARG,			\
 					SMU_HSMP_RSP,			\
 					AMD_HSMP_INDEX_REGISTER,	\
