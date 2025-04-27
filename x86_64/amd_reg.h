@@ -284,6 +284,17 @@ enum {
 #define IS_HSMP_OOO(_rx) (_rx == HSMP_UNSPECIFIED			\
 			|| (_rx >= HSMP_FAIL_BGN && _rx <= HSMP_FAIL_END))
 
+typedef union
+{
+	unsigned int	value;
+    struct {
+	unsigned int
+			addr	:  8-0,
+			ms	: 17-8,
+			mWatt	: 32-17;
+    };
+} ZEN_HSMP_DIMM_PWR;
+
 /* Sources: BKDG for AMD Families 0Fh, 10h up to 16h			*/
 const struct {
 	unsigned int	MCF,
@@ -1715,6 +1726,22 @@ typedef union
 		DatBufferCount	: 31-24,
 		SdpInit 	: 32-31;
 	};
+	struct
+	{
+		unsigned int
+		SdpFatalDatErr	:  1-0,
+		SdpParityEn	:  2-1,
+		ReservedBits1	:  3-2,
+		SdpCancelEn	:  4-3,
+		ReservedBits2	:  9-4,
+		DramScrubCrdt	: 10-9,
+		SdpSubChnTokenEn: 11-10, /* F1Ah: dual DCQ SDP token mgmt */
+		ReservedBits3	: 12-11,
+		SdpAckDly	: 16-12, /* F1Ah: <SdpAckDly> * 32 UCLKs */
+		CmdBufferCount	: 24-16,
+		DatBufferCount	: 31-24,
+		SdpInit 	: 32-31;
+	} Zen4;
 } AMD_17_UMC_SDP_CTRL;
 
 typedef union
@@ -1723,14 +1750,15 @@ typedef union
 	struct {
 		unsigned int
 		DisAutoRefresh	:  1-0,  /* Disable periodic refresh	*/
-		ReservedBits1	:  3-1,
+		PerBankRefEn	:  2-1,  /* F19h:per-bank or same-bank refresh*/
+		ReservedBits1	:  3-2,
 		LpDis		:  4-3,  /* Disable DFI low power requests */
 		UrgRefLimit	:  7-4,  /* UrgRefLimit Refresh range [1-6] */
 		ReservedBits2	:  8-7,
 		SubUrgRef	: 11-8,  /* SubUrgRefLowerBound <= UrgRefLimit*/
-		ReservedBits3	: 16-11,
+		Tlp_wakeup	: 16-11, /* F19h:lp_ctrl_wakeup lp_data_wakeup*/
 		AutoRef_DDR4	: 19-16, /* {1X,2X,4X,RSVD,RSVD,OTF-2X,OTF-4X}*/
-		ReservedBits4	: 20-19,
+		AllBankRefEn	: 20-19, /* F19h: all-bank refresh. REFab */
 		PchgCmdSep	: 24-20, /* CMD separation between PRE CMDs */
 		AutoRefCmdSep	: 28-24, /* CMD separation between REF CMDs */
 		PwrDownEn	: 29-28, /* 1: Enable DRAM Power Down Mode */
@@ -1841,7 +1869,11 @@ typedef union
 		ReservedBits2	: 14-11,
 		PinReducedEcc	: 15-14,
 		AddrXorEn	: 16-15,
-		ReservedBits3	: 32-16;
+		D5BfEccEn	: 17-16, /* F1Ah:DDR5 Bounded Fault ECC Code */
+		EccOvrRdCrcErr	: 18-17, /* F1Ah:override of RD CRC error */
+		EccClkGaterDis	: 19-18, /* F1Ah:medium grain clock gating */
+		DpprUCErrPoison : 20-19, /* F1Ah:DPPR trigger a poison scrub */
+		ReservedBits3	: 32-20;
 	};
 } AMD_17_UMC_ECC_CTRL;
 

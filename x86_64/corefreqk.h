@@ -1774,6 +1774,8 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 #define     Query_AMD_F19h_74h_PerSocket Query_AMD_F19h_61h_PerCluster
 #define     InitTimer_AMD_Zen4_PHX InitTimer_AMD_Zen4_RPL
 
+static void InitTimer_AMD_Zen4_Genoa(unsigned int cpu) ;
+
 #define     Exit_AMD_F1Ah Exit_AMD_F19h
 #define     Query_AMD_F1Ah_PerSocket Query_AMD_F19h_PerSocket
 #define     Query_AMD_F1Ah_PerCluster Query_AMD_F19h_PerCluster
@@ -13070,7 +13072,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
 	.Exit = Exit_AMD_F19h,
-	.Timer = InitTimer_AMD_Zen4_RPL,
+	.Timer = InitTimer_AMD_Zen4_Genoa,
 	.BaseClock = BaseClock_AMD_Family_19h,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,

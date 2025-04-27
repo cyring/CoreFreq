@@ -20527,6 +20527,43 @@ static void Call_DFLT(	const unsigned int plane0, const unsigned int plane1,
 	PUBLIC(RO(Core,AT( PUBLIC(RO(Proc))->Service.Core )))->PowerThermal.VID;
 }
 
+static void Call_Genoa( const unsigned int plane0, const unsigned int plane1,
+			const unsigned long long factor )
+{
+	UNUSED(plane0);
+	UNUSED(plane1);
+	UNUSED(factor);
+
+	PUBLIC(RO(Proc))->PowerThermal.VID.CPU = \
+	PUBLIC(RO(Core,AT( PUBLIC(RO(Proc))->Service.Core )))->PowerThermal.VID;
+	/*		Convert DIMM Power from HSMP to RAPL		*/
+  if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
+  {
+	ZEN_HSMP_DIMM_PWR DIMM_PWR;
+	unsigned int rx;
+	HSMP_ARG arg[8];
+	RESET_ARRAY(arg, 8, 0, .value);
+
+    if ((rx = AMD_HSMP_Exec(HSMP_RD_DIMM_PWR, arg)) == HSMP_RESULT_OK)
+    {
+	DIMM_PWR.value = arg[0].value;
+
+	PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(RAM)] = DIMM_PWR.mWatt;
+
+	PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(RAM)] = \
+		PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(RAM)]
+		<< PUBLIC(RO(Proc))->PowerThermal.Unit.ESU;
+
+	PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(RAM)] = \
+		PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(RAM)] / 1000LLU;
+    }
+    else if (IS_HSMP_OOO(rx))
+    {
+	PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
+    }
+  }
+}
+
 static enum hrtimer_restart Entry_AMD_F17h(struct hrtimer *pTimer,
 		void (*Call_SMU)(const unsigned int, const unsigned int,
 				const unsigned long long),
@@ -20576,6 +20613,10 @@ static enum hrtimer_restart Cycle_AMD_Zen4_RPL(struct hrtimer *pTimer)
 {
 	return Entry_AMD_F17h(pTimer, Call_DFLT, 0, 0, 0LLU);
 }
+static enum hrtimer_restart Cycle_AMD_Zen4_Genoa(struct hrtimer *pTimer)
+{
+	return Entry_AMD_F17h(pTimer, Call_Genoa, 0, 0, 0LLU);
+}
 static enum hrtimer_restart Cycle_AMD_F17h(struct hrtimer *pTimer)
 {
 	return Entry_AMD_F17h(pTimer, Call_DFLT, 0, 0, 0LLU);
@@ -20614,6 +20655,11 @@ static void InitTimer_AMD_Zen3Plus_RMB(unsigned int cpu)
 static void InitTimer_AMD_Zen4_RPL(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_AMD_Zen4_RPL, 1);
+}
+
+static void InitTimer_AMD_Zen4_Genoa(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_AMD_Zen4_Genoa, 1);
 }
 
 static void Start_AMD_Family_17h(void *arg)
