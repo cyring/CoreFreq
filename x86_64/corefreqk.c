@@ -6506,6 +6506,9 @@ static void SoC_SKL_VTD(void)
 {
   if (PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_A.VT_d == 0)
   {
+   if (!request_mem_region(0xfed90000, 0x1000, DRV_DEVNAME)) {
+	pr_warn("CoreFreq: SoC_SKL_VTD: request_mem_region 0xfed90000\n");
+   } else {
 	void __iomem *VT_d_MMIO;
 	const unsigned int VTBAR = 0xfed90000;
 
@@ -6517,6 +6520,8 @@ static void SoC_SKL_VTD(void)
 
 	iounmap(VT_d_MMIO);
     }
+	release_mem_region(0xfed90000, 0x1000);
+   }
   }
 }
 
