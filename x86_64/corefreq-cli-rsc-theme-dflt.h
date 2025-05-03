@@ -5,7 +5,7 @@
  */
 
 #define RSC_THEME_DFLT_CODE		/* 72 chars */			\
-"           Default theme by CyrIng.  Since 2015; updated May 2022       "
+"           Default theme by CyrIng.  Since 2015; updated May 2025       "
 
 #define RSC_UI_THM_DFLT_ATTR						\
 {									\
@@ -1929,7 +1929,7 @@
 
 #define RSC_SMBIOS_ITEM_THM_DFLT_ATTR					\
 {									\
-	HDK,LCK,LCK,HDK,HDK,						\
+	HDK,LCK,LCK,LCK,HDK,						\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\

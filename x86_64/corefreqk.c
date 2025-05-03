@@ -24359,7 +24359,7 @@ static void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
 		const struct SMBIOS17 *entry = (struct SMBIOS17*) dh;
 	  if ((entry->length > 0x1a) && (entry->size > 0))
 	  {
-	    if ((*count) < MC_MAX_DIMM)
+	    if ((*count) < SMB_MAX_DIMM)
 	    {
 		const char *locator[2] = {
 			safe_strim(SMBIOS_String(dh, entry->device_locator_id)),
