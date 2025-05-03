@@ -6415,10 +6415,15 @@ void MemoryController(	Window *win,
 		PRT(IMC, attrib[1], RSC(MEM_CTRL_EIGHT_CHA_1).CODE());
 		PRT(IMC, attrib[1], RSC(MEM_CTRL_EIGHT_CHA_2).CODE());
 		break;
+	case 12:
+		PRT(IMC, attrib[1], RSC(MEM_CTRL_TWELVE_CHA_0).CODE());
+		PRT(IMC, attrib[1], RSC(MEM_CTRL_TWELVE_CHA_1).CODE());
+		PRT(IMC, attrib[1], RSC(MEM_CTRL_TWELVE_CHA_2).CODE());
+		break;
 	default:
-		PRT(IMC, attrib[0], RSC(MEM_CTRL_DISABLED_0).CODE());
-		PRT(IMC, attrib[0], RSC(MEM_CTRL_DISABLED_1).CODE());
-		PRT(IMC, attrib[0], RSC(MEM_CTRL_DISABLED_2).CODE());
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_UNDEFINED_0).CODE());
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_UNDEFINED_1).CODE());
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_UNDEFINED_2).CODE());
 		break;
 	}
       if (RO(Shm)->Uncore.MC[mc].ChannelCount > 0)
