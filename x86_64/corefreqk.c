@@ -20317,6 +20317,7 @@ static void Start_AMD_Family_15h(void *arg)
 }
 
 static void Cycle_AMD_Family_17h(CORE_RO *Core,
+			void (*Call_PWR)(CORE_RO *Core),
 			void (*Call_SMU)(const unsigned int, const unsigned int,
 					const unsigned long long),
 			const unsigned int plane0, const unsigned int plane1,
@@ -20361,7 +20362,7 @@ static void Cycle_AMD_Family_17h(CORE_RO *Core,
 		break;
 	}
 
-		Call_SMU(plane0, plane1, factor);
+	Call_SMU(plane0, plane1, factor);
 
 	RDCOUNTER( PUBLIC(RO(Proc))->Counter[1].Power.ACCU[PWR_DOMAIN(PKG)],
 			MSR_AMD_PKG_ENERGY_STATUS );
@@ -20403,21 +20404,10 @@ static void Cycle_AMD_Family_17h(CORE_RO *Core,
 		Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
 		break;
 	}
-
-	/*		Read the Physical Core RAPL counter.		*/
     if (Core->T.ThreadID == 0)
     {
-	RDCOUNTER(Core->Counter[1].Power.ACCU,MSR_AMD_PP0_ENERGY_STATUS);
-	Core->Counter[1].Power.ACCU &= 0xffffffff;
-
-	Core->Delta.Power.ACCU  = Core->Counter[1].Power.ACCU
-				- Core->Counter[0].Power.ACCU;
-
-	Core->Delta.Power.ACCU &= 0xffffffff;
-
-	Core->Counter[0].Power.ACCU = Core->Counter[1].Power.ACCU;
+	Call_PWR(Core);
     }
-
 	AMD_Zen_PMC_Counters(Core, 1, ARCH_PMC,
 		AMD_Zen_PMC_Closure(Core, 1, ARCH_PMC)
 	);
@@ -20447,6 +20437,52 @@ static void Cycle_AMD_Family_17h(CORE_RO *Core,
 	Save_C1(Core);
 
 	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(Core->Bind)))->Sync.V, NTFY);
+}
+
+static void Call_MSR_ACCU(CORE_RO *Core)
+{	/*		Read the Physical Core RAPL counter.		*/
+	RDCOUNTER(Core->Counter[1].Power.ACCU, MSR_AMD_PP0_ENERGY_STATUS);
+	Core->Counter[1].Power.ACCU &= 0xffffffff;
+
+	Core->Delta.Power.ACCU  = Core->Counter[1].Power.ACCU
+				- Core->Counter[0].Power.ACCU;
+
+	Core->Delta.Power.ACCU &= 0xffffffff;
+
+	Core->Counter[0].Power.ACCU = Core->Counter[1].Power.ACCU;
+}
+
+static void Call_HSMP_ACCU(CORE_RO *Core)
+{	/*		Convert DIMM Power from HSMP to RAPL.		*/
+    if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
+    {
+	ZEN_HSMP_DIMM_PWR DIMM_PWR = {
+		.mWatt = 0, .ms = 0, .addr = Core->T.ApicID
+	};
+	HSMP_ARG arg[8] = {
+		[7] = {0x0}, [6] = {0x0}, [5] = {0x0}, [4] = {0x0},
+		[3] = {0x0}, [2] = {0x0}, [1] = {0x0}, [0] = {DIMM_PWR.value}
+	};
+	unsigned int rx;
+      if ((rx = AMD_HSMP_Exec(HSMP_RD_DIMM_PWR, arg)) == HSMP_RESULT_OK)
+      {
+	DIMM_PWR.value = arg[0].value;
+
+	Core->Delta.RAM.ACCU = (unsigned long long) DIMM_PWR.mWatt;
+	Core->Delta.RAM.ACCU <<= PUBLIC(RO(Proc))->PowerThermal.Unit.ESU;
+	Core->Delta.RAM.ACCU = Core->Delta.RAM.ACCU / 1000LLU;
+      }
+      else if (IS_HSMP_OOO(rx))
+      {
+	PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
+      }
+    }
+}
+
+static void Call_Genoa_ACCU(CORE_RO *Core)
+{
+	Call_MSR_ACCU(Core);
+	Call_HSMP_ACCU(Core);
 }
 
 static void SoC_RAPL(AMD_17_SVI SVI, const unsigned long long factor)
@@ -20541,35 +20577,10 @@ static void Call_Genoa( const unsigned int plane0, const unsigned int plane1,
 
 	PUBLIC(RO(Proc))->PowerThermal.VID.CPU = \
 	PUBLIC(RO(Core,AT( PUBLIC(RO(Proc))->Service.Core )))->PowerThermal.VID;
-	/*		Convert DIMM Power from HSMP to RAPL		*/
-  if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
-  {
-	ZEN_HSMP_DIMM_PWR DIMM_PWR;
-	unsigned int rx;
-	HSMP_ARG arg[8];
-	RESET_ARRAY(arg, 8, 0, .value);
-
-    if ((rx = AMD_HSMP_Exec(HSMP_RD_DIMM_PWR, arg)) == HSMP_RESULT_OK)
-    {
-	DIMM_PWR.value = arg[0].value;
-
-	PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(RAM)] = DIMM_PWR.mWatt;
-
-	PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(RAM)] = \
-		PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(RAM)]
-		<< PUBLIC(RO(Proc))->PowerThermal.Unit.ESU;
-
-	PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(RAM)] = \
-		PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(RAM)] / 1000LLU;
-    }
-    else if (IS_HSMP_OOO(rx))
-    {
-	PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
-    }
-  }
 }
 
 static enum hrtimer_restart Entry_AMD_F17h(struct hrtimer *pTimer,
+		void (*Call_PWR)(CORE_RO *Core),
 		void (*Call_SMU)(const unsigned int, const unsigned int,
 				const unsigned long long),
 		const unsigned int plane0, const unsigned int plane1,
@@ -20581,50 +20592,50 @@ static enum hrtimer_restart Entry_AMD_F17h(struct hrtimer *pTimer,
 
 	Mark_OVH(Core);
 
-	if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
-	{
-		hrtimer_forward(pTimer,
-				hrtimer_cb_get_time(pTimer),
-				RearmTheTimer);
+    if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
+    {
+	hrtimer_forward(pTimer,
+			hrtimer_cb_get_time(pTimer),
+			RearmTheTimer);
 
-		Cycle_AMD_Family_17h(Core, Call_SMU, plane0, plane1, factor);
+	Cycle_AMD_Family_17h(Core, Call_PWR, Call_SMU, plane0, plane1, factor);
 
-		return HRTIMER_RESTART;
-	} else
-		return HRTIMER_NORESTART;
+	return HRTIMER_RESTART;
+    } else
+	return HRTIMER_NORESTART;
 }
 
 static enum hrtimer_restart Cycle_AMD_F17h_Zen(struct hrtimer *pTimer)
 {
-	return Entry_AMD_F17h(pTimer, Call_SVI, 0, 1, 360772LLU);
+	return Entry_AMD_F17h(pTimer, Call_MSR_ACCU, Call_SVI, 0, 1, 360772LLU);
 }
 static enum hrtimer_restart Cycle_AMD_F17h_Zen2_SP(struct hrtimer *pTimer)
 {
-	return Entry_AMD_F17h(pTimer, Call_SVI, 1, 0, 294300LLU);
+	return Entry_AMD_F17h(pTimer, Call_MSR_ACCU, Call_SVI, 1, 0, 294300LLU);
 }
 static enum hrtimer_restart Cycle_AMD_F17h_Zen2_MP(struct hrtimer *pTimer)
 {
-	return Entry_AMD_F17h(pTimer, Call_SVI, 2, 1, 294300LLU);
+	return Entry_AMD_F17h(pTimer, Call_MSR_ACCU, Call_SVI, 2, 1, 294300LLU);
 }
 static enum hrtimer_restart Cycle_AMD_F17h_Zen2_APU(struct hrtimer *pTimer)
 {
-	return Entry_AMD_F17h(pTimer, Call_SVI_APU, 0, 1, 294300LLU);
+	return Entry_AMD_F17h(pTimer, Call_MSR_ACCU,Call_SVI_APU,0,1,294300LLU);
 }
 static enum hrtimer_restart Cycle_AMD_Zen3Plus_RMB(struct hrtimer *pTimer)
 {
-	return Entry_AMD_F17h(pTimer, Call_SVI_RMB, 0, 2, 0LLU);
+	return Entry_AMD_F17h(pTimer, Call_MSR_ACCU, Call_SVI_RMB, 0, 2, 0LLU);
 }
 static enum hrtimer_restart Cycle_AMD_Zen4_RPL(struct hrtimer *pTimer)
 {
-	return Entry_AMD_F17h(pTimer, Call_DFLT, 0, 0, 0LLU);
+	return Entry_AMD_F17h(pTimer, Call_MSR_ACCU, Call_DFLT, 0, 0, 0LLU);
 }
 static enum hrtimer_restart Cycle_AMD_Zen4_Genoa(struct hrtimer *pTimer)
 {
-	return Entry_AMD_F17h(pTimer, Call_Genoa, 0, 0, 0LLU);
+	return Entry_AMD_F17h(pTimer, Call_Genoa_ACCU, Call_Genoa, 0, 0, 0LLU);
 }
 static enum hrtimer_restart Cycle_AMD_F17h(struct hrtimer *pTimer)
 {
-	return Entry_AMD_F17h(pTimer, Call_DFLT, 0, 0, 0LLU);
+	return Entry_AMD_F17h(pTimer, Call_MSR_ACCU, Call_DFLT, 0, 0, 0LLU);
 }
 
 static void InitTimer_AMD_Family_17h(unsigned int cpu)
@@ -20705,7 +20716,7 @@ static void Start_AMD_Family_17h(void *arg)
     }
     if (Core->T.ThreadID == 0)
     {
-	RDCOUNTER(Core->Counter[0].Power.ACCU,MSR_AMD_PP0_ENERGY_STATUS);
+	RDCOUNTER(Core->Counter[0].Power.ACCU, MSR_AMD_PP0_ENERGY_STATUS);
 	Core->Counter[0].Power.ACCU &= 0xffffffff;
     }
 

@@ -388,7 +388,7 @@ typedef struct
 		struct
 		{
 		unsigned long long	ACCU;
-		} Power;
+		} Power, RAM;
 
 		unsigned int		SMI;
 	} Delta __attribute__ ((aligned (8)));

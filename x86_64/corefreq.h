@@ -225,7 +225,7 @@ typedef struct
 					C1;
 			struct {
 		unsigned long long	ACCU;
-			} Power;
+			} Power, RAM;
 		} Delta __attribute__ ((aligned (8)));
 
 		CLOCK			Clock;
