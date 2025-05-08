@@ -1248,7 +1248,7 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 	}
 }
 
-void Master_Ring_Handler(REF *Ref, unsigned int rid)
+void Main_Ring_Handler(REF *Ref, unsigned int rid)
 {
     if (!RING_NULL(Ref->RW(Shm)->Ring[rid]))
     {
@@ -1429,18 +1429,18 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
   }
 }
 
-int ServerFollowService(SERVICE_PROC *pSlave,
-			SERVICE_PROC *pMaster,
+int ServerFollowService(SERVICE_PROC *pPeer,
+			SERVICE_PROC *pMain,
 			pthread_t tid)
 {
-	if (pSlave->Proc != pMaster->Proc) {
-		pSlave->Proc = pMaster->Proc;
+	if (pPeer->Proc != pMain->Proc) {
+		pPeer->Proc = pMain->Proc;
 
 		cpu_set_t cpuset;
 		CPU_ZERO(&cpuset);
-		CPU_SET(pSlave->Core, &cpuset);
-		if (pSlave->Thread != -1) {
-			const signed int cpu = pSlave->Thread;
+		CPU_SET(pPeer->Core, &cpuset);
+		if (pPeer->Thread != -1) {
+			const signed int cpu = pPeer->Thread;
 			CPU_SET(cpu , &cpuset);
 		}
 		return pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
@@ -1513,7 +1513,7 @@ static void *Emergency_Handler(void *pRef)
 		}
 	} else if (errno == EAGAIN) {
 		if (Ref->CPID) {
-			Master_Ring_Handler(Ref, rid);
+			Main_Ring_Handler(Ref, rid);
 		} else {
 			Child_Ring_Handler(Ref, rid);
 		}

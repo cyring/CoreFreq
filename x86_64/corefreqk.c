@@ -2826,7 +2826,7 @@ static void Intel_FlexRatio(void)
 
 static int Intel_MaxBusRatio(PLATFORM_ID *PfID)
 {
-	struct SIGNATURE whiteList[] = {
+	struct SIGNATURE allowList[] = {
 		_Core_Conroe,		/* 06_0F */
 		_Core_Penryn,		/* 06_17 */
 		_Atom_Bonnell,		/* 06_1C */
@@ -2838,16 +2838,16 @@ static int Intel_MaxBusRatio(PLATFORM_ID *PfID)
 		_Atom_Bonnell,		/* 06_1C */
 		_Atom_Airmont		/* 06_4C */
 	};
-	const int ids = sizeof(whiteList) / sizeof(whiteList[0]);
+	const int ids = sizeof(allowList) / sizeof(allowList[0]);
 	int id;
 	for (id = 0; id < ids; id++) {
-		if ((whiteList[id].ExtFamily \
+		if ((allowList[id].ExtFamily \
 			== PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
-		 && (whiteList[id].Family \
+		 && (allowList[id].Family \
 			== PUBLIC(RO(Proc))->Features.Std.EAX.Family)
-		 && (whiteList[id].ExtModel \
+		 && (allowList[id].ExtModel \
 			== PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
-		 && (whiteList[id].Model \
+		 && (allowList[id].Model \
 			== PUBLIC(RO(Proc))->Features.Std.EAX.Model))
 		{
 			RDMSR((*PfID), MSR_IA32_PLATFORM_ID);
@@ -8853,17 +8853,17 @@ static long ClockSource_OC_Granted(void)
 		const struct {
 			char *name;
 			size_t len;
-		} whiteList[] = {
+		} allowList[] = {
 			{ "hpet",	__builtin_strlen("hpet")	},
 			{ "acpi_pm",	__builtin_strlen("acpi_pm")	},
 			{ "jiffies",	__builtin_strlen("jiffies")	}
 		};
-		const size_t dim = sizeof(whiteList) / sizeof(whiteList[0]);
+		const size_t dim = sizeof(allowList) / sizeof(allowList[0]);
 		size_t idx;
 
 		for (idx = 0; idx < dim; idx++) {
-			if (0 == strncmp(whiteList[idx].name, clockName,
-					whiteList[idx].len))
+			if (0 == strncmp(allowList[idx].name, clockName,
+					allowList[idx].len))
 			{
 				rc = RC_SUCCESS;
 				break;
@@ -9823,20 +9823,20 @@ static int Cmp_Skylake_Target(CORE_RO *Core, unsigned int ratio)
 
 static bool IsPerformanceControlCapable(void)
 {
-	struct SIGNATURE blackList[] = {
+	struct SIGNATURE denyList[] = {
 		_Silvermont_Bay_Trail,	/* 06_37 */
 		_Atom_Merrifield,	/* 06_4A */
 		_Atom_Avoton,		/* 06_4D */
 		_Atom_Moorefield,	/* 06_5A */
 		_Atom_Sofia		/* 06_5D */
 	};
-	const int ids = sizeof(blackList) / sizeof(blackList[0]);
+	const int ids = sizeof(denyList) / sizeof(denyList[0]);
 	int id;
      for (id = 0; id < ids; id++) {
-      if((blackList[id].ExtFamily==PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
-      && (blackList[id].Family == PUBLIC(RO(Proc))->Features.Std.EAX.Family)
-      && (blackList[id].ExtModel == PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
-      && (blackList[id].Model == PUBLIC(RO(Proc))->Features.Std.EAX.Model))
+      if((denyList[id].ExtFamily==PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
+      && (denyList[id].Family == PUBLIC(RO(Proc))->Features.Std.EAX.Family)
+      && (denyList[id].ExtModel == PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
+      && (denyList[id].Model == PUBLIC(RO(Proc))->Features.Std.EAX.Model))
       {
 	return (PUBLIC(RO(Proc))->Registration.Driver.CPUfreq == 1);
       }
@@ -10664,7 +10664,7 @@ static void Query_AMD_Family_0Fh_C1E(CORE_RO *Core)		/* Per Core */
 
 static void ThermalMonitor2_Set(CORE_RO *Core, MISC_PROC_FEATURES MiscFeatures)
 {	/* Intel Core Solo Duo. */
-	struct SIGNATURE whiteList[] = {
+	struct SIGNATURE allowList[] = {
 		_Core_Yonah	,	/* 06_0E */
 		_Core_Conroe	,	/* 06_0F */
 		_Core_Penryn	,	/* 06_17 */
@@ -10677,14 +10677,14 @@ static void ThermalMonitor2_Set(CORE_RO *Core, MISC_PROC_FEATURES MiscFeatures)
 		_Tigerlake_U	,	/* 06_8C */
 		_Alderlake_S		/* 06_97 */
 	};
-	const int ids = sizeof(whiteList) / sizeof(whiteList[0]);
+	const int ids = sizeof(allowList) / sizeof(allowList[0]);
 	int id;
   for (id = 0; id < ids; id++)
   {
-    if((whiteList[id].ExtFamily == PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
-    && (whiteList[id].Family == PUBLIC(RO(Proc))->Features.Std.EAX.Family)
-    && (whiteList[id].ExtModel == PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
-    && (whiteList[id].Model == PUBLIC(RO(Proc))->Features.Std.EAX.Model))
+    if((allowList[id].ExtFamily == PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
+    && (allowList[id].Family == PUBLIC(RO(Proc))->Features.Std.EAX.Family)
+    && (allowList[id].ExtModel == PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
+    && (allowList[id].Model == PUBLIC(RO(Proc))->Features.Std.EAX.Model))
     {
 	if (MiscFeatures.TCC)
 	{
@@ -11301,7 +11301,7 @@ static	struct {
 				grantODCM	:  2-1,
 				experimental	:  3-2,
 				freeToUse	: 16-3;
-	} whiteList[] = {
+	} allowList[] = {
 		{_Core_Yonah,		0, 1, 1, 0},
 		{_Core_Conroe,		0, 1, 0, 0},
 		{_Core_Kentsfield,	0, 1, 1, 0},
@@ -11399,14 +11399,14 @@ static	struct {
 		{_Pantherlake,		1, 1, 1, 0},	/* 06_CC */
 		{_Clearwater_Forest,	1, 1, 1, 0}	/* 06_DD */
 	};
-	const unsigned int ids = sizeof(whiteList) / sizeof(whiteList[0]);
+	const unsigned int ids = sizeof(allowList) / sizeof(allowList[0]);
 	unsigned int id;
  for (id = 0; id < ids; id++)
  {
- if((whiteList[id].Arch.ExtFamily==PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
-  && (whiteList[id].Arch.Family == PUBLIC(RO(Proc))->Features.Std.EAX.Family)
-  && (whiteList[id].Arch.ExtModel==PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
-  && (whiteList[id].Arch.Model == PUBLIC(RO(Proc))->Features.Std.EAX.Model))
+ if((allowList[id].Arch.ExtFamily==PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
+  && (allowList[id].Arch.Family == PUBLIC(RO(Proc))->Features.Std.EAX.Family)
+  && (allowList[id].Arch.ExtModel==PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
+  && (allowList[id].Arch.Model == PUBLIC(RO(Proc))->Features.Std.EAX.Model))
   {
 	break;
   }
@@ -11437,7 +11437,7 @@ static	struct {
     );
     if (Power.ECX.SETBH == 1)
     {
-      if ((id < ids) && (whiteList[id].grantPWR_MGMT == 1))
+      if ((id < ids) && (allowList[id].grantPWR_MGMT == 1))
       {
 	RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
 	RDMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
@@ -11445,8 +11445,8 @@ static	struct {
 	switch (PowerMGMT_Unlock) {
 	case COREFREQ_TOGGLE_OFF:
 	case COREFREQ_TOGGLE_ON:
-	  if (!whiteList[id].experimental
-	   || (whiteList[id].experimental
+	  if (!allowList[id].experimental
+	   || (allowList[id].experimental
 	   && PUBLIC(RO(Proc))->Registration.Experimental))
 	  {
 	    Core->PowerThermal.PwrManagement.Perf_BIAS_Enable=PowerMGMT_Unlock;
@@ -11464,8 +11464,8 @@ static	struct {
 
       if ((PowerPolicy >= 0) && (PowerPolicy <= 15))
       {
-	if (!whiteList[id].experimental
-	 || (whiteList[id].experimental
+	if (!allowList[id].experimental
+	 || (allowList[id].experimental
 	 && PUBLIC(RO(Proc))->Registration.Experimental))
 	{
 	Core->PowerThermal.PerfEnergyBias.PowerPolicy = PowerPolicy;
@@ -11478,7 +11478,7 @@ static	struct {
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PowerMgmt, Core->Bind);
     }
     if ((PUBLIC(RO(Proc))->Features.Std.EDX.ACPI == 1)
-     && (id < ids) && (whiteList[id].grantODCM == 1))
+     && (id < ids) && (allowList[id].grantODCM == 1))
     {
 	CLOCK_MODULATION ClockModulation = {.value = 0};
 	int ToggleFeature = 0;
@@ -11501,8 +11501,8 @@ static	struct {
 	}
 	if (ToggleFeature == 1)
 	{
-	  if (!whiteList[id].experimental
-	   || (whiteList[id].experimental
+	  if (!allowList[id].experimental
+	   || (allowList[id].experimental
 	   && PUBLIC(RO(Proc))->Registration.Experimental))
 	  {
 	    WRMSR(ClockModulation, MSR_IA32_THERM_CONTROL);
@@ -12615,20 +12615,20 @@ static void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 	}
     } else {
 	/* Source: arch/x86/kernel/cpu/intel.c				*/
-	struct SIGNATURE whiteList[] = {
+	struct SIGNATURE allowList[] = {
 		_Icelake_UY,		/* 06_7E */
 		_Icelake_X,		/* 06_6A */
 		_Tremont_Jacobsville,	/* 06_86 */
 		_Tremont_Elkhartlake,	/* 06_96 */
 		_Tremont_Jasperlake	/* 06_9C */
 	};
-	const int ids = sizeof(whiteList) / sizeof(whiteList[0]);
+	const int ids = sizeof(allowList) / sizeof(allowList[0]);
 	int id;
      for (id = 0; id < ids; id++) {
-      if((whiteList[id].ExtFamily==PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
-      && (whiteList[id].Family == PUBLIC(RO(Proc))->Features.Std.EAX.Family)
-      && (whiteList[id].ExtModel == PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
-      && (whiteList[id].Model == PUBLIC(RO(Proc))->Features.Std.EAX.Model))
+      if((allowList[id].ExtFamily==PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
+      && (allowList[id].Family == PUBLIC(RO(Proc))->Features.Std.EAX.Family)
+      && (allowList[id].ExtModel == PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
+      && (allowList[id].Model == PUBLIC(RO(Proc))->Features.Std.EAX.Model))
       {
 	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SPLA, Core->Bind);
 	break;

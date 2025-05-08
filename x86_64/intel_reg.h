@@ -1037,7 +1037,7 @@ typedef union
 /*
 	Atom Avoton [06_4D] & Goldmont [06_5C], Nehalem [06_1A, 06_1E, 06_1F]
 	Xeon Westmere [06_25, 06_2C]
-	*must blackList w/ Nehalem Xeon 7500 [06_2E] & Westmere Xeon E7 [06_2F]
+	*must be unused w/ Nehalem Xeon 7500 [06_2E] & Westmere Xeon E7 [06_2F]
 	Sandy Bridge [06_2A] & Xeon SNB-E5 [06_2D]
 	Haswell [06_3C, 06_45, 06_46] & Xeon E5v3 [06_3F]
 	Broadwell [06_3D, 06_56] & Xeon E3v4 [06_47] & Xeon E5v4[06_4F]

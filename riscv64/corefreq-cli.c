@@ -89,16 +89,16 @@ char *BuildConfigFQN(char *dirPath)
 	return &ConfigFQN[1];
 }
 
-int ClientFollowService(SERVICE_PROC *pSlave, SERVICE_PROC *pMaster, pid_t pid)
+int ClientFollowService(SERVICE_PROC *pPeer, SERVICE_PROC *pMain, pid_t pid)
 {
-	if (pSlave->Proc != pMaster->Proc) {
-		pSlave->Proc = pMaster->Proc;
+	if (pPeer->Proc != pMain->Proc) {
+		pPeer->Proc = pMain->Proc;
 
 		cpu_set_t cpuset;
 		CPU_ZERO(&cpuset);
-		CPU_SET(pSlave->Core, &cpuset);
-		if (pSlave->Thread != -1) {
-			const signed int cpu = pSlave->Thread;
+		CPU_SET(pPeer->Core, &cpuset);
+		if (pPeer->Thread != -1) {
+			const signed int cpu = pPeer->Thread;
 			CPU_SET(cpu , &cpuset);
 		}
 		return sched_setaffinity(pid, sizeof(cpu_set_t), &cpuset);
