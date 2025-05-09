@@ -2308,15 +2308,30 @@ static void Map_AMD_Topology(void *arg)
 	       {
 		Core->T.Cluster.CCD=(leaf80000026.EDX.Extended_APIC_ID & 0xf00);
 		Core->T.Cluster.CCD= Core->T.Cluster.CCD >> 8;
-	       } else {
+	       }
+	       else
+	       {
 		Core->T.Cluster.CCD=(leaf80000026.EDX.Extended_APIC_ID & 0xf0);
-		Core->T.Cluster.CCD= Core->T.Cluster.CCD >> 4;
+
+		if (leaf80000008.ECX.NC >= 0x7f) {
+			Core->T.Cluster.CCD= Core->T.Cluster.CCD >> 6;
+		} else if (leaf80000008.ECX.NC >= 0x3f) {
+			Core->T.Cluster.CCD= Core->T.Cluster.CCD >> 5;
+		} else {
+			Core->T.Cluster.CCD= Core->T.Cluster.CCD >> 4;
+		}
 	       }
 	      } else {
 		Core->T.Cluster.CCD = (Core->T.ApicID & 0xf0) >> 4;
 	      }
 	      if (CPU_Complex == true ) {
-		Core->T.Cluster.CCX = Core->T.CoreID >> 2;
+		if (leaf80000008.ECX.NC >= 0x7f) {
+			Core->T.Cluster.CCX = Core->T.CoreID >> 4;
+		} else if (leaf80000008.ECX.NC >= 0x3f) {
+			Core->T.Cluster.CCX = Core->T.CoreID >> 3;
+		} else {
+			Core->T.Cluster.CCX = Core->T.CoreID >> 2;
+		}
 	      }
 	    } else {	/*	Fallback algorithm.			*/
 		Core->T.ApicID    = leaf1_ebx.Init_APIC_ID;
@@ -20404,10 +20419,8 @@ static void Cycle_AMD_Family_17h(CORE_RO *Core,
 		Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
 		break;
 	}
-    if (Core->T.ThreadID == 0)
-    {
 	Call_PWR(Core);
-    }
+
 	AMD_Zen_PMC_Counters(Core, 1, ARCH_PMC,
 		AMD_Zen_PMC_Closure(Core, 1, ARCH_PMC)
 	);
@@ -20441,6 +20454,8 @@ static void Cycle_AMD_Family_17h(CORE_RO *Core,
 
 static void Call_MSR_ACCU(CORE_RO *Core)
 {	/*		Read the Physical Core RAPL counter.		*/
+    if (Core->T.ThreadID == 0)
+    {
 	RDCOUNTER(Core->Counter[1].Power.ACCU, MSR_AMD_PP0_ENERGY_STATUS);
 	Core->Counter[1].Power.ACCU &= 0xffffffff;
 
@@ -20450,12 +20465,13 @@ static void Call_MSR_ACCU(CORE_RO *Core)
 	Core->Delta.Power.ACCU &= 0xffffffff;
 
 	Core->Counter[0].Power.ACCU = Core->Counter[1].Power.ACCU;
+    }
 }
 
 static void Call_HSMP_ACCU(CORE_RO *Core)
 {	/*		Convert DIMM Power from HSMP to RAPL.		*/
-    if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
-    {
+  if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
+  {
 	ZEN_HSMP_DIMM_PWR DIMM_PWR = {
 		.mWatt = 0, .ms = 0, .addr = Core->T.ApicID
 	};
@@ -20464,19 +20480,21 @@ static void Call_HSMP_ACCU(CORE_RO *Core)
 		[3] = {0x0}, [2] = {0x0}, [1] = {0x0}, [0] = {DIMM_PWR.value}
 	};
 	unsigned int rx;
-      if ((rx = AMD_HSMP_Exec(HSMP_RD_DIMM_PWR, arg)) == HSMP_RESULT_OK)
-      {
+    if ((rx = AMD_HSMP_Exec(HSMP_RD_DIMM_PWR, arg)) == HSMP_RESULT_OK)
+    {
 	DIMM_PWR.value = arg[0].value;
-
+      if ((DIMM_PWR.mWatt > 0) && (DIMM_PWR.mWatt != 0b111111111111111))
+      {
 	Core->Delta.RAM.ACCU = (unsigned long long) DIMM_PWR.mWatt;
 	Core->Delta.RAM.ACCU <<= PUBLIC(RO(Proc))->PowerThermal.Unit.ESU;
 	Core->Delta.RAM.ACCU = Core->Delta.RAM.ACCU / 1000LLU;
       }
-      else if (IS_HSMP_OOO(rx))
-      {
-	PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
-      }
     }
+    else if (IS_HSMP_OOO(rx))
+    {
+	PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
+    }
+  }
 }
 
 static void Call_Genoa_ACCU(CORE_RO *Core)

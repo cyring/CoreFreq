@@ -8109,6 +8109,19 @@ static PROCESSOR_SPECIFIC AMD_Zen3_Chagall_Specific[] = {
 };
 static PROCESSOR_SPECIFIC AMD_Zen4_Genoa_Specific[] = {
 	{
+	.Brand = ZLIST("AMD Eng Sample"),
+	.Boost = {+10, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_GENOA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
 	.Brand = ZLIST( "AMD EPYC Embedded 9654P",	\
 			"AMD EPYC Embedded 9534",	\
 			"AMD EPYC Embedded 9654",	\

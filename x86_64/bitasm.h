@@ -55,7 +55,7 @@ typedef unsigned int		Bit32;
 
 #define ATOMIC_SEED 0x436f726546726571LLU
 
-#define BIT_IO_RETRIES_COUNT	80
+#define BIT_IO_RETRIES_COUNT	400
 #define BIT_IO_DELAY_INTERVAL	150	/*	in udelay() unit	*/
 
 #define LOCKLESS " "
