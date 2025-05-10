@@ -7117,9 +7117,9 @@ static PCI_CALLBACK AMD_17h_DataFabric( struct pci_dev *pdev,
 	PUBLIC(RO(Proc))->Uncore.MC[umc].ChannelCount = cha;
 	pci_dev_put(dev);
    } else {
-	pr_err( "CoreFreq: AMD_17h_DataFabric()"		\
-		" Break UMC(%hu) probing @ PCI(0x%x:0x0:0x%x)\n",
-		umc, domain, devfn[umc]);
+	pr_warn("CoreFreq: AMD_17h_DataFabric()"		\
+		" Break UMC(%hu) probing @ PCI(0x%x:0x0:0x%x.0x%x)\n",
+		umc, domain, PCI_SLOT(devfn[umc]), PCI_FUNC(devfn[umc]));
 	break;
    }
   }
@@ -7364,8 +7364,11 @@ static PCI_CALLBACK AMD_DataFabric_Genoa(struct pci_dev *pdev)
 						{0x10, 0x30}
 					},
 					0x40, 0x98,
-					1, MC_MAX_CHA,
-		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
+					4, MC_MAX_CHA,
+		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0),
+					PCI_DEVFN(0x19, 0x0),
+					PCI_DEVFN(0x1a, 0x0),
+					PCI_DEVFN(0x1b, 0x0)} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Phoenix(struct pci_dev *pdev)
