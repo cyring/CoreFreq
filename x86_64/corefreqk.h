@@ -1750,6 +1750,16 @@ static void CTL_AMD_Family_17h_Temp(CORE_RO *Core) ;
 static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core) ;
 static void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 
+static void Pkg_AMD_Family_17h_Thermal(PROC_RO *Pkg, CORE_RO* Core)
+{
+	Core_AMD_Family_17h_Temp(Core);
+
+	Pkg->PowerThermal.Sensor = Core->PowerThermal.Sensor;
+}
+static void Pkg_AMD_Family_19h_Genoa_Temp(PROC_RO *Pkg, CORE_RO* Core) ;
+static void (*Pkg_AMD_Family_17h_Temp)(PROC_RO*, CORE_RO*) = \
+	Pkg_AMD_Family_17h_Thermal;
+
 static void Query_Hygon_F18h(unsigned int cpu);
 
 #define     Exit_AMD_F19h Exit_AMD_F17h

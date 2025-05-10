@@ -9264,6 +9264,7 @@ static void Query_AMD_F17h_PerCluster(unsigned int cpu)
 static void Query_AMD_F19h_11h_PerCluster(unsigned int cpu)
 {
 	Core_AMD_Family_17h_Temp = CCD_AMD_Family_19h_Genoa_Temp;
+	Pkg_AMD_Family_17h_Temp = Pkg_AMD_Family_19h_Genoa_Temp;
 
 	Probe_AMD_DataFabric();
 
@@ -16500,12 +16501,12 @@ static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 	Core_AMD_Family_17h_ThermTrip(Core);
 }
 
-#define Pkg_AMD_Family_17h_Temp(Pkg, Core)				\
-({									\
-	Core_AMD_Family_17h_Temp(Core);					\
-									\
-	Pkg->PowerThermal.Sensor = Core->PowerThermal.Sensor;		\
-})
+static void Pkg_AMD_Family_19h_Genoa_Temp(PROC_RO *Pkg, CORE_RO* Core)
+{
+	CTL_AMD_Family_17h_Temp(Core);
+
+	Pkg->PowerThermal.Sensor = Core->PowerThermal.Sensor;
+}
 
 static void CCD_AMD_Family_19h_Genoa_Temp(CORE_RO *Core)
 {
