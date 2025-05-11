@@ -940,7 +940,8 @@ typedef union
 									\
 	for (idx = 0; (idx < 8) && (res == 0); idx++) { 		\
 		res = AMD_SMN_RW(amd_pci_dev_to_node_id(UMC_device),	\
-				HSMP_ArgRegister,MSG_ARG[idx].value,true,\
+				HSMP_ArgRegister + (idx << 2),		\
+				MSG_ARG[idx].value, true,		\
 				AMD_HSMP_INDEX_PORT, AMD_HSMP_DATA_PORT);\
 	}								\
       if ( (res == 0)							\
@@ -968,7 +969,8 @@ typedef union
 	{								\
 	    for (idx = 0; (idx < 8) && (res == 0); idx++) {		\
 		res = AMD_SMN_RW(amd_pci_dev_to_node_id(UMC_device),	\
-				HSMP_ArgRegister, MSG_ARG[idx].value, false,\
+				HSMP_ArgRegister + (idx << 2),		\
+				MSG_ARG[idx].value, false,		\
 				AMD_HSMP_INDEX_PORT, AMD_HSMP_DATA_PORT);\
 	    }								\
 	}								\
