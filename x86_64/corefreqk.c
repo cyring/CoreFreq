@@ -7361,7 +7361,7 @@ static PCI_CALLBACK AMD_DataFabric_Genoa(struct pci_dev *pdev)
 						{ 0x0, 0x20},
 						{0x10, 0x30}
 					},
-					0x40, 0x98,
+					0x40, 0x90,
 					4, MC_MAX_CHA,
 		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0),
 					PCI_DEVFN(0x19, 0x0),
