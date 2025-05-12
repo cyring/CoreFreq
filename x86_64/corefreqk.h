@@ -854,7 +854,7 @@ typedef union
 	unsigned char ret;						\
   do {									\
 	ret = BIT_ATOM_TRYLOCK( BUS_LOCK,				\
-				PRIVATE(OF(Zen)).AMD_SMN_LOCK,		\
+				PRIVATE(OF(Zen)).AMD_HSMP_LOCK, 	\
 				ATOMIC_SEED );				\
     if ( ret == 0 ) {							\
 	udelay(BIT_IO_DELAY_INTERVAL);					\
@@ -897,7 +897,7 @@ typedef union
 	    }								\
 	}								\
 	BIT_ATOM_UNLOCK(BUS_LOCK,					\
-			PRIVATE(OF(Zen)).AMD_SMN_LOCK,			\
+			PRIVATE(OF(Zen)).AMD_HSMP_LOCK, 		\
 			ATOMIC_SEED);					\
     }									\
 	tries--;							\
@@ -924,7 +924,7 @@ typedef union
 	unsigned char ret;						\
   do {									\
 	ret = BIT_ATOM_TRYLOCK( BUS_LOCK,				\
-				PRIVATE(OF(Zen)).AMD_SMN_LOCK,		\
+				PRIVATE(OF(Zen)).AMD_HSMP_LOCK, 	\
 				ATOMIC_SEED );				\
     if ( ret == 0 ) {							\
 	udelay(BIT_IO_DELAY_INTERVAL);					\
@@ -976,7 +976,7 @@ typedef union
 	}								\
       }									\
 	BIT_ATOM_UNLOCK(BUS_LOCK,					\
-			PRIVATE(OF(Zen)).AMD_SMN_LOCK,			\
+			PRIVATE(OF(Zen)).AMD_HSMP_LOCK, 		\
 			ATOMIC_SEED);					\
     }									\
 	if (res != 0) { 						\
@@ -1132,6 +1132,7 @@ typedef struct
 			struct pci_dev	*DF;
 			#endif
 		    } Device;
+			Bit64	AMD_HSMP_LOCK __attribute__ ((aligned (8)));
 			Bit64	AMD_SMN_LOCK __attribute__ ((aligned (8)));
 			Bit64	AMD_FCH_LOCK __attribute__ ((aligned (8)));
 		} Zen;

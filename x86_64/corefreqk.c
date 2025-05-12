@@ -4624,7 +4624,6 @@ static void Skylake_X_Platform_Info(unsigned int cpu)
 static void Probe_AMD_DataFabric(void)
 {
 #ifdef CONFIG_AMD_NB
-    if (PUBLIC(RO(Proc))->Registration.Experimental) {
 	if (PRIVATE(OF(Zen)).Device.DF == NULL)
 	{
 		struct pci_dev *dev;
@@ -4634,7 +4633,6 @@ static void Probe_AMD_DataFabric(void)
 			PRIVATE(OF(Zen)).Device.DF = dev;
 		}
 	}
-    }
 #endif /* CONFIG_AMD_NB */
 }
 
@@ -24912,6 +24910,7 @@ static void CoreFreqK_Ignition_Level_Down(void)
 
 static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 {
+	BIT_ATOM_INIT(PRIVATE(OF(Zen)).AMD_HSMP_LOCK, ATOMIC_SEED);
 	BIT_ATOM_INIT(PRIVATE(OF(Zen)).AMD_SMN_LOCK, ATOMIC_SEED);
 	BIT_ATOM_INIT(PRIVATE(OF(Zen)).AMD_FCH_LOCK, ATOMIC_SEED);
 
