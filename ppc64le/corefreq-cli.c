@@ -12973,7 +12973,7 @@ void Layout_Header(Layer *layer, CUINT row)
 		hArch1.code[26] = (ASCII) Buffer[4];
 		hArch1.code[27] = (ASCII) Buffer[5];
 	}
-	if (StrFormat(Buffer, 10+10+1, "%-4u" "%-5u", L2U_Size, L3U_Size) > 0)
+	if (StrFormat(Buffer, 10+10+1, "%-4u" "%-6u", L2U_Size, L3U_Size) > 0)
 	{
 		hArch2.code[ 3] = (ASCII) Buffer[0];
 		hArch2.code[ 4] = (ASCII) Buffer[1];
@@ -12984,6 +12984,7 @@ void Layout_Header(Layer *layer, CUINT row)
 		hArch2.code[15] = (ASCII) Buffer[6];
 		hArch2.code[16] = (ASCII) Buffer[7];
 		hArch2.code[17] = (ASCII) Buffer[8];
+		hArch2.code[18] = (ASCII) Buffer[9];
 	}
 	len = CUMIN(xProc1 - (hProc0.origin.col + hProc0.length),
 			(CUINT) strlen(RO(Shm)->Proc.Brand));
