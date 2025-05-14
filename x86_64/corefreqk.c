@@ -6936,8 +6936,8 @@ static void AMD_Zen_UMC(struct pci_dev *dev,
 		[1] = UMC_BAR + CS_MASK[1][1]
 		}
 	};
-	unsigned short chip;
-    for (chip = 0; chip < 4; chip++)
+	unsigned short chip, ranks = 0;
+    for (chip = 0; chip < MC_MAX_DIMM; chip++)
     {
 	const unsigned short slot = chip & 1;
 	unsigned short sec;
@@ -6965,7 +6965,14 @@ static void AMD_Zen_UMC(struct pci_dev *dev,
 		Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
 				.AMD17h.CHIP[chip][sec].Chip,
 				addr[0], dev );
+
+		ranks += BITVAL(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
+				.AMD17h.CHIP[chip][sec].Chip.value, 0);
 	}
+    }
+    for (chip = 0; chip < MC_MAX_DIMM; chip++) {
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[chip].AMD17h.Ranks = \
+		ranks;
     }
    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.CONFIG,
 			UMC_BAR + 0x100, dev );

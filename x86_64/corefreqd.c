@@ -6604,11 +6604,7 @@ void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	+ RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.DAC.NumCol);
 
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
-	    RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.CONFIG.DdrType == 0 ?
-		RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[
-			slot
-		].AMD17h.CFG.OnDimmMirror ? 2 : 1
-	    : 2; /* DDR5 */
+	RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.Ranks;
 
 	DIMM_Size = 8LLU;
 	DIMM_Size *= RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks;
