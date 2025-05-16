@@ -3745,11 +3745,6 @@ static char *Arch_Tigerlake_U[] 	=	ZLIST("Tiger Lake/U");
 static char *Arch_Cometlake[]		=	ZLIST("Comet Lake");
 static char *Arch_Cometlake_UY[]	=	ZLIST("Comet Lake/UY");
 
-enum {
-	CN_ALDERLAKE_H,
-	CN_ARIZONA_BEACH
-};
-
 static char *Arch_Atom_Denverton[]	=	ZLIST("Atom/Denverton");
 
 static char *Arch_Tremont_Jacobsville[] =	ZLIST("Tremont/Jacobsville");
@@ -3766,11 +3761,29 @@ static char *Arch_Grand_Ridge[] 	=	ZLIST("Grand Ridge");
 static char *Arch_Rocketlake[]		=	ZLIST("Rocket Lake");
 static char *Arch_Rocketlake_U[]	=	ZLIST("Rocket Lake/U");
 static char *Arch_Alderlake_S[] 	=	ZLIST("Alder Lake");
+
+enum {
+	CN_ALDERLAKE_H,
+	CN_ARIZONA_BEACH
+};
+
 static char *Arch_Alderlake_H[] = ZLIST(
 		[CN_ALDERLAKE_H]	=	"Alder Lake/H",
 		[CN_ARIZONA_BEACH]	=	"Arizona Beach"
 );
-static char *Arch_Alderlake_N[] 	=	ZLIST("Alder Lake/N");
+
+enum {
+	CN_ALDERLAKE_N,
+	CN_TWIN_LAKE,
+	CN_AMSTON_LAKE
+};
+
+static char *Arch_Alderlake_N[] = ZLIST(
+		[CN_ALDERLAKE_N]	=	"Alder Lake/N",
+		[CN_TWIN_LAKE]		=	"Twin Lake",
+		[CN_AMSTON_LAKE]	=	"Amston Lake"
+);
+
 static char *Arch_Meteorlake_M[]	=	ZLIST("Meteor Lake/M");
 static char *Arch_Meteorlake_N[]	=	ZLIST("Meteor Lake/N");
 static char *Arch_Meteorlake_S[]	=	ZLIST("Meteor Lake/S");
@@ -4919,6 +4932,41 @@ static PROCESSOR_SPECIFIC Alderlake_H_Specific[] = {
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_TGT_RATIO_UNLOCK|LATCH_UNCORE_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{0}
+};
+
+static PROCESSOR_SPECIFIC Alderlake_N_Specific[] = {
+	{	/*		06_BE Stepping 0		*/
+	.Brand = ZLIST( "Intel(R) N150",		\
+			"Intel(R) N250",		\
+			"Intel(R) Core(TM) 3 N350",	\
+			"Intel(R) Core(TM) 3 N355"	),
+	.Boost = {0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_TWIN_LAKE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b00,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_TGT_RATIO_UNLOCK
+	},
+	{	/*		06_BE Stepping 0		*/
+	.Brand = ZLIST( "Intel(R) Atom(TM) x7211RE",	\
+			"Intel(R) Atom(TM) x7203C",	\
+			"Intel(R) Atom(TM) x7835RE",	\
+			"Intel(R) Atom(TM) x7433RE",	\
+			"Intel(R) Atom(TM) x7213RE",	\
+			"Intel(R) Atom(TM) x7405C",	\
+			"Intel(R) Atom(TM) x7809C"	),
+	.Boost = {0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_AMSTON_LAKE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b00,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_TGT_RATIO_UNLOCK
 	},
 	{0}
 };
@@ -12331,7 +12379,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = Stop_Uncore_Alderlake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
-	.Specific = Void_Specific,
+	.Specific = Alderlake_N_Specific,
 	.SystemDriver = SKL_Driver,
 	.Architecture = Arch_Alderlake_N
 	},
