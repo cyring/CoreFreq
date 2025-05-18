@@ -4153,7 +4153,7 @@ typedef union
 } ADL_IMC_CR_TC_ACT;
 
 typedef union
-{	/* Device: 0 - Function: 0 - Offset Channel0: E138h & Channel1: TODO */
+{	/* Device: 0 - Function: 0 - Offset Channel0: E138h & Channel1: E938h */
 	unsigned long long	value;
 	struct {
 		unsigned long long
@@ -4625,7 +4625,7 @@ typedef union
 		tCWL		: 32-24, /* LPDDR4: 4-64; DDR4: 5-64 @ 1N */
 		ReservedBits3	: 64-32;
 	};
-} MTL_IMC_CR_TC_ODT;	/* ODT timing parameters			*/
+} MTL_IMC_TC_CAS;	/* CAS timing parameters			*/
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 423Ch & Channel1: 463Ch */
@@ -4663,7 +4663,7 @@ typedef union
 } ADL_IMC_REFRESH_TC;	/* Refresh timing parameters			*/
 
 typedef union
-{	/* Device: 0 - Function: 0 - Offset Channel0: E4A0h & Channel1: TODO */
+{	/* Device: 0 - Function: 0 - Offset Channel0: E4A0h & Channel1: ECA0h */
 	unsigned long long	value;
 	struct {
 		unsigned long long

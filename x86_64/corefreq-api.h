@@ -606,7 +606,7 @@ typedef struct
 	/* E014h */		MTL_IMC_CR_TC_WRRD	WRRD;	/* 32 bits    */
 	/* E018h */		MTL_IMC_CR_TC_WRWR	WRWR;	/* 32 bits    */
 	/* E050h */		MTL_IMC_TC_PWDEN	PWDEN;	/* 64-bits    */
-	/* E070h */		MTL_IMC_CR_TC_ODT	ODT;	/* 64 bits    */
+	/* E070h */		MTL_IMC_TC_CAS		CAS;	/* 64 bits    */
 	/* E088h */		MTL_IMC_SC_GS_CFG	Sched;	/* 64 bits    */
 	/* E4A0h */		MTL_IMC_REFRESH_TC	Refresh; /*64 bits    */
 	/* E4C0h */		MTL_IMC_SREXITTP	SRExit;	/* 64 bits    */

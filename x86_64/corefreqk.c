@@ -5737,7 +5737,7 @@ static void Query_MTL_IMC(void __iomem *mchmap, unsigned short mc)
 	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].MTL.PWDEN.value = \
 					readq(mchmap + 0xe050 + 0x800 * cha);
 
-	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].MTL.ODT.value = \
+	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].MTL.CAS.value = \
 					readq(mchmap + 0xe070 + 0x800 * cha);
 
 	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].MTL.Refresh.value = \

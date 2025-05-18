@@ -6123,10 +6123,10 @@ void MTL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	unsigned short tWR_quantity;
 
 	TIMING(mc, cha).tCCD = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.ODT.tCCD;
+			RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.CAS.tCCD;
 
 	TIMING(mc, cha).tCL = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.ODT.tCL;
+			RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.CAS.tCL;
 
 	TIMING(mc, cha).tRCD_RD = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.ACT.tRCD;
@@ -6167,11 +6167,11 @@ void MTL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 		break;
 	}
       if (RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.Timing.tWRPRE >=
-	 (RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.ODT.tCWL + tWR_quantity))
+	 (RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.CAS.tCWL + tWR_quantity))
       {
 	TIMING(mc, cha).tWR = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.Timing.tWRPRE
-			- RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.ODT.tCWL
+			- RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.CAS.tCWL
 			- tWR_quantity;
       }
 
@@ -6185,7 +6185,7 @@ void MTL_IMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 			RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.ACT.tFAW;
 
 	TIMING(mc, cha).tCWL = \
-			RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.ODT.tCWL;
+			RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.CAS.tCWL;
 
 	TIMING(mc, cha).tRDRD_SG = \
 			RO(Proc)->Uncore.MC[mc].Channel[cha].MTL.RDRD.tRDRD_SG;
