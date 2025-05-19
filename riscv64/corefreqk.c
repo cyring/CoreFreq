@@ -839,6 +839,9 @@ static unsigned int Proc_Topology(void)
 	SoC.Family = PN & 0x00f;
 	SoC.ExtFamily = (PN & 0xff0) >> 4;
 
+	/* Source: arch/riscv/kernel/smp.c: smp_setup_processor_id()	*/
+	PUBLIC(RO(Core, AT(0)))->T.BSP = 1;
+
 	PUBLIC(RO(Proc))->Features.Hybrid = !(
 	    SoC.Family == PUBLIC(RO(Proc))->Features.Info.Signature.Family
 	 && SoC.ExtFamily == PUBLIC(RO(Proc))->Features.Info.Signature.ExtFamily

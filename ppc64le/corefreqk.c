@@ -42,6 +42,7 @@
 #ifdef CONFIG_ACPI_CPPC_LIB
 #include <acpi/cppc_acpi.h>
 #endif
+#include <asm/cputhreads.h>
 
 #ifdef CONFIG_HAVE_NMI
 enum {
@@ -767,7 +768,7 @@ static void Cache_Topology(CORE_RO *Core)
 
 static void Map_Generic_Topology(void *arg)
 {
-    if (arg != NULL) {
+  if (arg != NULL) {
 	CORE_RO *Core = (CORE_RO *) arg;
 
 	__asm__ volatile
@@ -777,30 +778,36 @@ static void Map_Generic_Topology(void *arg)
 		:
 		: "memory"
 	);
-/*TODO
-	if (MT) {
-		Core->T.BSP =
-		Core->T.Cluster.CMP =
-		Core->T.PackageID =
-		Core->T.CoreID =
-		Core->T.ThreadID =
-	} else {
-		Core->T.BSP =
-		Core->T.PackageID =
-		Core->T.Cluster.CMP =
-		Core->T.CoreID =
+	/* Source: arch/powerpc/include/asm/paca.h: struct paca_struct	*/
+	if (get_paca()->hw_cpu_id == boot_cpuid) {
+		Core->T.BSP = 1;
 	}
-*/
+	Core->T.PackageID = 0;
 #ifdef CONFIG_OF
+    {
 	struct device_node *cpu_node = of_cpu_device_node_get(Core->Bind);
-	if (cpu_node != NULL) {
-		of_property_read_u32(cpu_node, "reg", &Core->T.CoreID);
-		of_node_put(cpu_node);
+
+      if (cpu_node != NULL) {
+	int len;
+	const __be32 *prop = of_get_property(cpu_node, "ibm,chip-id", &len);
+
+	if ((prop != NULL) && len >= sizeof(u32)) {
+		Core->T.PackageID = be32_to_cpup(prop);
 	}
+	of_property_read_u32(cpu_node, "reg", &Core->T.CoreID);
+	of_node_put(cpu_node);
+      } else {
+	Core->T.CoreID = cpu_to_core_id(Core->Bind);
+      }
+    }
+#else
+	Core->T.CoreID = cpu_to_core_id(Core->Bind);
 #endif /* CONFIG_OF */
+	/* Source: arch/powerpc/include/asm/cputhreads.h		*/
+	Core->T.ThreadID = cpu_core_index_of_thread(Core->Bind);
 
 	Cache_Topology(Core);
-    }
+  }
 }
 
 static int Core_Topology(unsigned int cpu)
