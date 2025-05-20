@@ -3618,16 +3618,16 @@ static void PerCore_Intel_HWP_Notification(void *arg)
 	CORE_RO *Core = (CORE_RO *) arg;
 
     if ((arg != NULL) && PUBLIC(RO(Proc))->Features.Power.EAX.HWP_Int) {
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->HWP_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->HWP_Mask, Core->Bind);
 	/* HWP Notifications are fully disabled.			*/
 	Core->PowerThermal.HWP_Interrupt.value = 0;
 	WRMSR(Core->PowerThermal.HWP_Interrupt, MSR_HWP_INTERRUPT);
 
 	RDMSR(Core->PowerThermal.HWP_Interrupt, MSR_HWP_INTERRUPT);
 	if (Core->PowerThermal.HWP_Interrupt.value == 0) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->HWP, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->HWP, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->HWP, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->HWP, Core->Bind);
 	}
     }
 }
@@ -3683,7 +3683,7 @@ static void Intel_Hardware_Performance(void)
 		    }
 		  } while (cpu != 0) ;
 
-	    if (BITCMP_CC(LOCKLESS, \
+	    if (BITCMP_CC(BUS_LOCK, \
 			PUBLIC(RW(Proc))->HWP, PUBLIC(RO(Proc))->HWP_Mask) )
 	    {
 		/*	Enable the Hardware-controlled Performance States. */
@@ -5814,10 +5814,10 @@ static PCI_CALLBACK P35(struct pci_dev *dev)
 		break;							\
 	}								\
 	if (TCO1_CNT.TCO_TMR_HALT) {					\
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT,		\
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->WDT,		\
 				    PUBLIC(RO(Proc))->Service.Core);	\
 	} else {							\
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT,		\
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->WDT,		\
 				    PUBLIC(RO(Proc))->Service.Core);	\
 	}								\
 })
@@ -9439,20 +9439,20 @@ static void AMD_F17h_DCU_Technology(CORE_RO *Core)		/* Per Core */
 
     if (DC_Cfg1.L1_HW_Prefetch)
     {
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_Prefetch, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_HW_Prefetch, Core->Bind);
     } else {
-	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_Prefetch, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_HW_Prefetch, Core->Bind);
     }
     if (CU_Cfg3.L2_HW_Prefetch)
     {
-	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_Prefetch, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->L2_HW_Prefetch, Core->Bind);
     } else {
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_Prefetch, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L2_HW_Prefetch, Core->Bind);
     }
     if (IC_Cfg.HW_IP_Prefetch == 1) {
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch, Core->Bind);
     } else {
-	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch, Core->Bind);
     }
 
     if (PUBLIC(RO(Proc))->Features.ExtFeature2_EAX.PrefetchCtl_MSR == 1)
@@ -9502,36 +9502,36 @@ static void AMD_F17h_DCU_Technology(CORE_RO *Core)		/* Per Core */
 	}
 	if (PrefetchCtl.L1Stride)
 	{
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Stride_Pf, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_Stride_Pf, Core->Bind);
 	} else {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Stride_Pf, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_Stride_Pf, Core->Bind);
 	}
 	if (PrefetchCtl.L1Region)
 	{
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Region_Pf, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_Region_Pf, Core->Bind);
 	} else {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Region_Pf, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_Region_Pf, Core->Bind);
 	}
 	if (PrefetchCtl.L1Stream)
 	{
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Burst_Pf, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_Burst_Pf, Core->Bind);
 	} else {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Burst_Pf, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_Burst_Pf, Core->Bind);
 	}
 	if (PrefetchCtl.L2Stream)
 	{
-	    BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_Stream_HW_Pf, Core->Bind);
+	    BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L2_Stream_HW_Pf, Core->Bind);
 	} else {
-	    BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_Stream_HW_Pf, Core->Bind);
+	    BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->L2_Stream_HW_Pf, Core->Bind);
 	}
 	if (PrefetchCtl.UpDown)
 	{
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_UpDown_Pf, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L2_UpDown_Pf, Core->Bind);
 	} else {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_UpDown_Pf, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->L2_UpDown_Pf, Core->Bind);
 	}
     }
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->DCU_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->DCU_Mask, Core->Bind);
 }
 
 static void Intel_DCU_Technology(CORE_RO *Core) 		/*Per Core */
@@ -9576,26 +9576,26 @@ static void Intel_DCU_Technology(CORE_RO *Core) 		/*Per Core */
 	RDMSR(MiscFeatCtrl, MSR_MISC_FEATURE_CONTROL);
     }
     if (MiscFeatCtrl.L2_HW_Prefetch == 1) {
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_Prefetch, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L2_HW_Prefetch, Core->Bind);
     } else {
-	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_Prefetch, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->L2_HW_Prefetch, Core->Bind);
     }
     if (MiscFeatCtrl.L2_HW_CL_Prefetch == 1) {
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_CL_Prefetch, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L2_HW_CL_Prefetch, Core->Bind);
     } else {
-	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_CL_Prefetch, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->L2_HW_CL_Prefetch, Core->Bind);
     }
     if (MiscFeatCtrl.L1_HW_Prefetch == 1) {
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_Prefetch, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_HW_Prefetch, Core->Bind);
     } else {
-	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_Prefetch, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_HW_Prefetch, Core->Bind);
     }
     if (MiscFeatCtrl.L1_HW_IP_Prefetch == 1) {
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch, Core->Bind);
     } else {
-	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch, Core->Bind);
     }
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->DCU_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->DCU_Mask, Core->Bind);
 
     switch (Core->T.Cluster.Hybrid.CoreType) {
     case Hybrid_Atom:
@@ -9615,9 +9615,9 @@ static void Intel_DCU_Technology(CORE_RO *Core) 		/*Per Core */
 	break;
       }
       if (MLC_Ctrl.L2_DISABLE_NEXT_LINE_PREFETCH == 1) {
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_NLP_Prefetch, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L2_NLP_Prefetch, Core->Bind);
       } else {
-	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_NLP_Prefetch, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->L2_NLP_Prefetch, Core->Bind);
       }
 
       switch (LLC_Streamer_Disable) {
@@ -9629,11 +9629,11 @@ static void Intel_DCU_Technology(CORE_RO *Core) 		/*Per Core */
 	break;
       }
       if (LLC_Ctrl.LLC_STREAM_DISABLE == 1) {
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->LLC_Streamer, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->LLC_Streamer, Core->Bind);
       } else {
-	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->LLC_Streamer, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->LLC_Streamer, Core->Bind);
       }
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ECORE_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ECORE_Mask, Core->Bind);
      }
 	break;
     case Hybrid_Core:
@@ -9662,11 +9662,11 @@ static void Intel_Core_MicroArchControl(CORE_RO *Core)
 		break;
 	}
 	if (Core_Uarch_Ctl.L1_Scrubbing_En == 1) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Scrubbing, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_Scrubbing, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Scrubbing, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_Scrubbing, Core->Bind);
 	}
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->L1_Scrub_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->L1_Scrub_Mask, Core->Bind);
 }
 
 static void Intel_Core_MicroArchitecture(CORE_RO *Core) 	/* Per P-Core */
@@ -9692,12 +9692,12 @@ static void Intel_Core_MicroArchitecture(CORE_RO *Core) 	/* Per P-Core */
 		break;
 	}
 	if (MiscFeatCtrl.L2_AMP_Prefetch == 1) {
-	    BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_AMP_Prefetch, Core->Bind);
+	    BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->L2_AMP_Prefetch, Core->Bind);
 	} else {
-	    BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_AMP_Prefetch, Core->Bind);
+	    BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L2_AMP_Prefetch, Core->Bind);
 	}
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->L2_AMP_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->L2_AMP_Mask, Core->Bind);
 
 	Intel_Core_MicroArchControl(Core);
       }
@@ -9725,11 +9725,11 @@ static void Intel_Ultra7_MicroArchitecture(CORE_RO *Core)
 		break;
 	}
 	if (MiscFeatCtrl.L1_NPP_Prefetch == 1) {
-	    BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_NPP_Prefetch, Core->Bind);
+	    BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_NPP_Prefetch, Core->Bind);
 	} else {
-	    BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_NPP_Prefetch, Core->Bind);
+	    BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_NPP_Prefetch, Core->Bind);
 	}
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->DCU_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->DCU_Mask, Core->Bind);
 }
 
 static void SpeedStep_Technology(CORE_RO *Core) 		/*Per Package*/
@@ -9750,14 +9750,14 @@ static void SpeedStep_Technology(CORE_RO *Core) 		/*Per Package*/
 	}
 	if (MiscFeatures.EIST)
 	{
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SpeedStep, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->SpeedStep, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SpeedStep, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->SpeedStep, Core->Bind);
 	}
     } else {
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SpeedStep, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->SpeedStep, Core->Bind);
     }
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
   }
 }
 
@@ -9889,7 +9889,7 @@ static void TurboBoost_Technology(CORE_RO *Core,SET_TARGET SetTarget,
 	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 	UNUSED(GetTarget);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TurboBoost_Mask, Core->Bind);
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 
   if ( (MiscFeatures.Turbo_IDA == 0)
@@ -9917,12 +9917,12 @@ static void TurboBoost_Technology(CORE_RO *Core,SET_TARGET SetTarget,
     }
     if (Core->PowerThermal.PerfControl.Turbo_IDA == 0)
     {
-	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
     } else {
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
     }
   } else {
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
   }
 
   if (PUBLIC(RO(Proc))->Features.HWP_Enable)
@@ -9945,7 +9945,7 @@ static void TurboBoost_Technology(CORE_RO *Core,SET_TARGET SetTarget,
 		/*	Turbo is a function of the Target P-state	*/
 	    if (!CmpTarget(Core, ValidRatio))
 	    {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	    }
 	}
     }
@@ -9958,7 +9958,7 @@ static void TurboBoost_Technology(CORE_RO *Core,SET_TARGET SetTarget,
 	{
 	    if (!CmpTarget(Core, ValidRatio))
 	    {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	    }
 	}
   }
@@ -9977,8 +9977,8 @@ static void DynamicAcceleration(CORE_RO *Core)			/* Unique */
 				1 + Core->Boost[BOOST(MAX)],
 				1 + Core->Boost[BOOST(MAX)] );
     } else {
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TurboBoost_Mask, Core->Bind);
     }
   } else {
 	int ToggleFeature;
@@ -10027,11 +10027,11 @@ static void DynamicAcceleration(CORE_RO *Core)			/* Unique */
 	}
 	if (MiscFeatures.Turbo_IDA == 0)
 	{
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	}
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TurboBoost_Mask, Core->Bind);
   }
 }
 
@@ -10063,11 +10063,11 @@ static void SoC_Turbo_Override(CORE_RO *Core)
 	}
 	if (TurboCfg.TjMax_Turbo == 0x2)
 	{
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	}
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TurboBoost_Mask, Core->Bind);
 }
 
 typedef struct {
@@ -10298,11 +10298,11 @@ static void AMD_Watchdog(CORE_RO *Core)
 			break;
 		}
 		if (CPU_WDT_CFG.TmrCfgEn) {
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT, Core->Bind);
+			BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->WDT, Core->Bind);
 		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT, Core->Bind);
+			BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->WDT, Core->Bind);
 		}
-		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 	}
 }
 
@@ -10323,9 +10323,9 @@ static void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)	/* Per SMT */
 
 	/* Query the SMM. */
 	if (Core->SystemRegister.HWCR.Family_17h.SmmLock) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SMM, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->SMM, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SMM, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->SMM, Core->Bind);
 	}
 	/*		Enable or Disable the Core Performance Boost.	*/
 	switch (TurboBoost_Enable[0]) {
@@ -10348,11 +10348,11 @@ static void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)	/* Per SMT */
 	}
 	if (Core->SystemRegister.HWCR.Family_17h.CpbDis == 0)
 	{
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	}
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TurboBoost_Mask, Core->Bind);
 
 	/*	Enable or Disable the Core C6 State. Bit[22,14,16]	*/
 	RDMSR(CStateCfg, MSR_AMD_F17H_CSTATE_CONFIG);
@@ -10382,11 +10382,11 @@ static void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)	/* Per SMT */
 	if (CStateCfg.CCR2_CC6EN && CStateCfg.CCR1_CC6EN && CStateCfg.CCR0_CC6EN
 		&& Core->SystemRegister.HWCR.Family_17h.INVDWBINVD)
 	{
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CC6, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->CC6, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CC6, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->CC6, Core->Bind);
 	}
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
 	/*	Enable or Disable the Package C6 State . Bit[32]	*/
     if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
@@ -10413,11 +10413,11 @@ static void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)	/* Per SMT */
 	}
 	if (PmgtMisc.PC6En == 1)
 	{
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->PC6, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->PC6, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PC6, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->PC6, Core->Bind);
 	}
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->PC6_Mask, Core->Bind);
 
 	PUBLIC(RO(Proc))->PowerThermal.Events[eSTS] = EVENT_THERM_NONE;
 	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
@@ -10558,9 +10558,9 @@ static struct pci_device_id PCI_WDT_ids[] = {
 		{0, }
 	};
 	if (CoreFreqK_ProbePCI(PCI_WDT_ids, NULL, NULL) < RC_SUCCESS) {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->WDT, Core->Bind);
 	}
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 }
 
 static void Intel_Turbo_Activation_Ratio(CORE_RO *Core)
@@ -10663,11 +10663,11 @@ static void Query_Intel_C1E(CORE_RO *Core)			/*Per Package*/
 		}
 		if (PowerCtrl.C1E)
 		{
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1E, Core->Bind);
+			BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->C1E, Core->Bind);
 		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1E, Core->Bind);
+			BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->C1E, Core->Bind);
 		}
-		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1E_Mask, Core->Bind);
 	}
 }
 
@@ -10679,11 +10679,11 @@ static void Query_AMD_Family_0Fh_C1E(CORE_RO *Core)		/* Per Core */
 
 	if (IntPendingMsg.C1eOnCmpHalt & !IntPendingMsg.SmiOnCmpHalt)
 	{
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1E, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->C1E, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1E, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->C1E, Core->Bind);
 	}
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1E_Mask, Core->Bind);
 }
 
 static void ThermalMonitor2_Set(CORE_RO *Core, MISC_PROC_FEATURES MiscFeatures)
@@ -10718,10 +10718,10 @@ static void ThermalMonitor2_Set(CORE_RO *Core, MISC_PROC_FEATURES MiscFeatures)
 
 		if (Therm2Control.TM_SELECT)
 		{
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TM1, Core->Bind);
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TM2, Core->Bind);
+			BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TM1, Core->Bind);
+			BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->TM2, Core->Bind);
 		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TM2, Core->Bind);
+			BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TM2, Core->Bind);
 		}
 	}
 	break;
@@ -10736,18 +10736,18 @@ static void ThermalMonitor_IA32(CORE_RO *Core)
 	/*		Query the TM1 and TM2 features state.		*/
 	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 	if (MiscFeatures.TCC) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TM1, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->TM1, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TM1, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TM1, Core->Bind);
 	}
 	if (MiscFeatures.TM2_Enable) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TM2, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->TM2, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TM2, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TM2, Core->Bind);
 	}
 	ThermalMonitor2_Set(Core, MiscFeatures);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TM_Mask, Core->Bind);
 
     if (PUBLIC(RO(Proc))->Features.Std.EDX.ACPI)
     {	/*	Clear Thermal Events if requested by User.		*/
@@ -10989,24 +10989,24 @@ static void ThermalMonitor_IA32(CORE_RO *Core)
 			ThermInterrupt.Threshold2_Value);
 
 	if (ThermInterrupt.Threshold1_Int) {
-		BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State,
+		BITSET(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.State,
 				 THM_THRESHOLD_1);
 	} else {
-		BITCLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State,
+		BITCLR(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.State,
 				 THM_THRESHOLD_1);
 	}
-	BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask, THM_THRESHOLD_1);
-	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind, THM_THRESHOLD_1);
+	BITSET(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.Mask, THM_THRESHOLD_1);
+	BITCLR(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.Kind, THM_THRESHOLD_1);
 
 	if (ThermInterrupt.Threshold2_Int) {
-		BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State,
+		BITSET(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.State,
 				 THM_THRESHOLD_2);
 	} else {
-		BITCLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State,
+		BITCLR(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.State,
 				 THM_THRESHOLD_2);
 	}
-	BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask, THM_THRESHOLD_2);
-	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind, THM_THRESHOLD_2);
+	BITSET(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.Mask, THM_THRESHOLD_2);
+	BITCLR(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.Kind, THM_THRESHOLD_2);
 
 	if (ClearBit)
 	{
@@ -11480,11 +11480,11 @@ static	struct {
 	     break;
 	}
 	if (Core->PowerThermal.PwrManagement.Perf_BIAS_Enable)
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->PowerMgmt, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->PowerMgmt, Core->Bind);
 	else
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PowerMgmt, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->PowerMgmt, Core->Bind);
       } else
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PowerMgmt, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->PowerMgmt, Core->Bind);
 
       if ((PowerPolicy >= 0) && (PowerPolicy <= 15))
       {
@@ -11499,7 +11499,7 @@ static	struct {
       }
     }
     else {
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PowerMgmt, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->PowerMgmt, Core->Bind);
     }
     if ((PUBLIC(RO(Proc))->Features.Std.EDX.ACPI == 1)
      && (id < ids) && (allowList[id].grantODCM == 1))
@@ -11536,21 +11536,21 @@ static	struct {
 	Core->PowerThermal.ClockModulation.ECMD = Power.EAX.ECMD;
 	if (Core->PowerThermal.ClockModulation.ODCM_Enable)
 	{
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->ODCM, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->ODCM, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->ODCM, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->ODCM, Core->Bind);
 	}
     }
     else {
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->ODCM, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->ODCM, Core->Bind);
     }
   }
   else {
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PowerMgmt, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->ODCM, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->PowerMgmt, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->ODCM, Core->Bind);
   }
-  BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask, Core->Bind);
-  BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
+  BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ODCM_Mask, Core->Bind);
+  BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
 }
 
 #define UNSPEC 0b11111111
@@ -11847,15 +11847,15 @@ static void Control_CSTATES_NHM(struct CSTATES_ENCODING_ST Limit[],
 
 	if (CStateConfig.C3autoDemotion)
 	{
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C3A, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->C3A, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C3A, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->C3A, Core->Bind);
 	}
 	if (CStateConfig.C1autoDemotion)
 	{
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1A, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->C1A, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1A, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->C1A, Core->Bind);
 	}
 
 	Core->Query.CfgLock = CStateConfig.CFG_Lock;
@@ -11875,10 +11875,10 @@ static void Control_CSTATES_NHM(struct CSTATES_ENCODING_ST Limit[],
 		}
 	);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3A_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1A_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3U_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1U_Mask, Core->Bind);
 
 	Control_IO_MWAIT(IORedir, Core);
 }
@@ -11937,27 +11937,27 @@ static void Control_CSTATES_COMMON(	struct CSTATES_ENCODING_ST Limit[],
 
 	if (CStateConfig.C3autoDemotion)
 	{
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C3A, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->C3A, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C3A, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->C3A, Core->Bind);
 	}
 	if (CStateConfig.C1autoDemotion)
 	{
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1A, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->C1A, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1A, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->C1A, Core->Bind);
 	}
 	if (CStateConfig.C3undemotion)
 	{
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->C3U, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->C3U, Core->Bind);
 	}
 	if (CStateConfig.C1undemotion)
 	{
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->C1U, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->C1U, Core->Bind);
 	}
 
 	Core->Query.CfgLock = CStateConfig.CFG_Lock;
@@ -11977,10 +11977,10 @@ static void Control_CSTATES_COMMON(	struct CSTATES_ENCODING_ST Limit[],
 		}
 	);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3A_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1A_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3U_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1U_Mask, Core->Bind);
 
 	Control_IO_MWAIT(IORedir, Core);
 }
@@ -12060,10 +12060,10 @@ static void Control_CSTATES_SOC_ATOM(	struct CSTATES_ENCODING_ST Limit[],
 		}
 	);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3A_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1A_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3U_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1U_Mask, Core->Bind);
 
 	Control_IO_MWAIT(IORedir, Core);
 }
@@ -12093,18 +12093,18 @@ static void Control_CSTATES_SOC_SLM(	struct CSTATES_ENCODING_ST Limit[],
 
     if (CC6_Config.CC6demotion)
     {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CC6, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->CC6, Core->Bind);
     } else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CC6, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->CC6, Core->Bind);
     }
     if (MC6_Config.MC6demotion)
     {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->PC6, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->PC6, Core->Bind);
     } else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PC6, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->PC6, Core->Bind);
     }
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->PC6_Mask, Core->Bind);
 }
 
 static void Control_CSTATES_SOC_GDM(	struct CSTATES_ENCODING_ST Limit[],
@@ -12242,7 +12242,7 @@ static void SystemRegisters(CORE_RO *Core)
 		/*		Virtualization Technology.		*/
 		if (BITVAL(Core->SystemRegister.EFCR, EXFCR_VMX_IN_SMX)
 		  | BITVAL(Core->SystemRegister.EFCR, EXFCR_VMXOUT_SMX))
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);
+			BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->VM, Core->Bind);
 	}
 	else if ( (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
 		||(PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON) )
@@ -12252,7 +12252,7 @@ static void SystemRegisters(CORE_RO *Core)
 		if (!Core->SystemRegister.VMCR.SVME_Disable
 		  && Core->SystemRegister.VMCR.SVM_Lock)
 		{
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);
+			BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->VM, Core->Bind);
 		}
 		/*		System Configuration Register.		*/
 		__asm__ volatile
@@ -12270,7 +12270,7 @@ static void SystemRegisters(CORE_RO *Core)
 			: "%rax", "%rcx", "%rdx"
 		);
 	}
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->CR_Mask, Core->Bind);
 
 	if (PUBLIC(RO(Proc))->Features.Std.ECX.XSAVE
 	 && BITVAL(Core->SystemRegister.CR4, CR4_OSXSAVE)) {
@@ -12348,19 +12348,19 @@ static void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 		RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
 	}
 	if (Spec_Ctrl.IBRS) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->IBRS, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->IBRS, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IBRS, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->IBRS, Core->Bind);
 	}
 	if (Spec_Ctrl.STIBP) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->STIBP, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->STIBP, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->STIBP, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->STIBP, Core->Bind);
 	}
 	if (Spec_Ctrl.SSBD) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBD, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->SSBD, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBD, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->SSBD, Core->Bind);
 	}
 	if (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.IBRS_IBPB_Cap
 	&& ((Mech_IBPB == COREFREQ_TOGGLE_OFF)
@@ -12377,13 +12377,13 @@ static void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 		WRMSR(Flush_Cmd, MSR_IA32_FLUSH_CMD);
 	}
 
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSFD, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IPRED_DIS_U, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IPRED_DIS_S, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA_DIS_U, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA_DIS_S, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->DDPD_U_DIS, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BHI_DIS_S, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->PSFD, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->IPRED_DIS_U, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->IPRED_DIS_S, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->RRSBA_DIS_U, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->RRSBA_DIS_S, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->DDPD_U_DIS, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->BHI_DIS_S, Core->Bind);
 
     if (PUBLIC(RO(Proc))->Features.ExtFeature.EAX.MaxSubLeaf >= 2)
     {
@@ -12391,55 +12391,55 @@ static void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 		RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
 
 	    if (Spec_Ctrl.PSFD) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->PSFD, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->PSFD, Core->Bind);
 	    } else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSFD, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->PSFD, Core->Bind);
 	    }
 	}
 	if (PUBLIC(RO(Proc))->Features.ExtFeature_Leaf2_EDX.IPRED_SPEC_CTRL) {
 		RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
 
 	    if (Spec_Ctrl.IPRED_DIS_U) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->IPRED_DIS_U, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->IPRED_DIS_U, Core->Bind);
 	    } else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IPRED_DIS_U, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->IPRED_DIS_U, Core->Bind);
 	    }
 	    if (Spec_Ctrl.IPRED_DIS_S) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->IPRED_DIS_S, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->IPRED_DIS_S, Core->Bind);
 	    } else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IPRED_DIS_S, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->IPRED_DIS_S, Core->Bind);
 	    }
 	}
 	if (PUBLIC(RO(Proc))->Features.ExtFeature_Leaf2_EDX.RRSBA_SPEC_CTRL) {
 		RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
 
 	    if (Spec_Ctrl.RRSBA_DIS_U) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA_DIS_U, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->RRSBA_DIS_U, Core->Bind);
 	    } else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA_DIS_U, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->RRSBA_DIS_U, Core->Bind);
 	    }
 	    if (Spec_Ctrl.RRSBA_DIS_S) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA_DIS_S, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->RRSBA_DIS_S, Core->Bind);
 	    } else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA_DIS_S, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->RRSBA_DIS_S, Core->Bind);
 	    }
 	}
 	if (PUBLIC(RO(Proc))->Features.ExtFeature_Leaf2_EDX.DDPD_U_SPEC_CTRL) {
 		RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
 
 	    if (Spec_Ctrl.DDPD_U_DIS) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->DDPD_U_DIS, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->DDPD_U_DIS, Core->Bind);
 	    } else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->DDPD_U_DIS, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->DDPD_U_DIS, Core->Bind);
 	    }
 	}
 	if (PUBLIC(RO(Proc))->Features.ExtFeature_Leaf2_EDX.BHI_SPEC_CTRL) {
 		RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
 
 	    if (Spec_Ctrl.BHI_DIS_S) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->BHI_DIS_S, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->BHI_DIS_S, Core->Bind);
 	    } else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BHI_DIS_S, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->BHI_DIS_S, Core->Bind);
 	    }
 	}
     }
@@ -12450,77 +12450,77 @@ static void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 		RDMSR(Arch_Cap, MSR_IA32_ARCH_CAPABILITIES);
 
 	if (Arch_Cap.RDCL_NO) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->RDCL_NO, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->RDCL_NO, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RDCL_NO, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->RDCL_NO, Core->Bind);
 	}
 	if (Arch_Cap.IBRS_ALL) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->IBRS_ALL, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->IBRS_ALL, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IBRS_ALL, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->IBRS_ALL, Core->Bind);
 	}
 	if (Arch_Cap.RSBA) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->RSBA, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->RSBA, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RSBA, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->RSBA, Core->Bind);
 	}
 	if (Arch_Cap.L1DFL_VMENTRY_NO) {
-	    BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1DFL_VMENTRY_NO,Core->Bind);
+	    BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1DFL_VMENTRY_NO,Core->Bind);
 	} else {
-	    BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1DFL_VMENTRY_NO,Core->Bind);
+	    BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1DFL_VMENTRY_NO,Core->Bind);
 	}
 	if (Arch_Cap.SSB_NO) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SSB_NO, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->SSB_NO, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSB_NO, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->SSB_NO, Core->Bind);
 	}
 	if (Arch_Cap.MDS_NO) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->MDS_NO, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->MDS_NO, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->MDS_NO, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->MDS_NO, Core->Bind);
 	}
 	if (Arch_Cap.PSCHANGE_MC_NO) {
-	    BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->PSCHANGE_MC_NO, Core->Bind);
+	    BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->PSCHANGE_MC_NO, Core->Bind);
 	} else {
-	    BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSCHANGE_MC_NO, Core->Bind);
+	    BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->PSCHANGE_MC_NO, Core->Bind);
 	}
 	if (Arch_Cap.TAA_NO) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TAA_NO, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->TAA_NO, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TAA_NO, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TAA_NO, Core->Bind);
 	}
 	if (Arch_Cap.DOITM_UARCH_MISC_CTRL) {
 		UARCH_MISC_CTRL uARCH_Ctrl = {.value = 0};
 		RDMSR(uARCH_Ctrl, MSR_IA32_UARCH_MISC_CTRL);
 
 	    if (uARCH_Ctrl.DOITM) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->DOITM_EN, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->DOITM_EN, Core->Bind);
 	    } else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->DOITM_EN, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->DOITM_EN, Core->Bind);
 	    }
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->DOITM_MSR, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->DOITM_MSR, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->DOITM_MSR, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->DOITM_MSR, Core->Bind);
 	}
 	if (Arch_Cap.SBDR_SSDP_NO) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SBDR_SSDP_NO, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->SBDR_SSDP_NO, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SBDR_SSDP_NO, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->SBDR_SSDP_NO, Core->Bind);
 	}
 	if (Arch_Cap.FBSDP_NO) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->FBSDP_NO, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->FBSDP_NO, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->FBSDP_NO, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->FBSDP_NO, Core->Bind);
 	}
 	if (Arch_Cap.PSDP_NO) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->PSDP_NO, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->PSDP_NO, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSDP_NO, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->PSDP_NO, Core->Bind);
 	}
 	if (Arch_Cap.FB_CLEAR) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->FB_CLEAR, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->FB_CLEAR, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->FB_CLEAR, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->FB_CLEAR, Core->Bind);
 	}
 	if (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.SRBDS_CTRL) {
 	  if (Arch_Cap.FB_CLEAR_CTRL) {
@@ -12528,82 +12528,82 @@ static void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 		RDMSR(MCU_Ctrl, MSR_IA32_MCU_OPT_CTRL);
 
 	    if (MCU_Ctrl._RNGDS_MITG_DIS) {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RNGDS, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->RNGDS, Core->Bind);
 	    } else {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->RNGDS, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->RNGDS, Core->Bind);
 	    }
 	    if (MCU_Ctrl._RTM_ALLOW && !MCU_Ctrl._RTM_LOCKED) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->RTM, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->RTM, Core->Bind);
 	    } else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RTM, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->RTM, Core->Bind);
 	    }
 	    if (MCU_Ctrl._FB_CLEAR_DIS) {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->VERW, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->VERW, Core->Bind);
 	    } else {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->VERW, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->VERW, Core->Bind);
 	    }
 	  }
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SRBDS_MSR, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->SRBDS_MSR, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SRBDS_MSR, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->SRBDS_MSR, Core->Bind);
 	}
 	if (Arch_Cap.RRSBA) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->RRSBA, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->RRSBA, Core->Bind);
 	}
 	if (Arch_Cap.BHI_NO) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->BHI_NO, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->BHI_NO, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BHI_NO, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->BHI_NO, Core->Bind);
 	}
 	if (Arch_Cap.XAPIC_DISABLE_STATUS_MSR) {
 		XAPIC_DISABLE_STATUS xAPIC_Status = {.value = 0};
 		RDMSR(xAPIC_Status, MSR_IA32_XAPIC_DISABLE_STATUS);
 
 	    if (xAPIC_Status.LEGACY_XAPIC_DIS) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->XAPIC_DIS, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->XAPIC_DIS, Core->Bind);
 	    } else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->XAPIC_DIS, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->XAPIC_DIS, Core->Bind);
 	    }
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->XAPIC_MSR, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->XAPIC_MSR, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->XAPIC_MSR, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->XAPIC_MSR, Core->Bind);
 	}
 	if (Arch_Cap.PBRSB_NO) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->PBRSB_NO, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->PBRSB_NO, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PBRSB_NO, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->PBRSB_NO, Core->Bind);
 	}
 	if (Arch_Cap.OVERCLOCKING_STATUS_MSR) {
 		OVERCLOCKING_STATUS OC_Status = {.value = 0};
 		RDMSR(OC_Status, MSR_IA32_OVERCLOCKING_STATUS);
 
 	    if (OC_Status.OC_Utilized) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UTILIZED, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->OC_UTILIZED, Core->Bind);
 	    } else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UTILIZED, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->OC_UTILIZED, Core->Bind);
 	    }
 	    if (OC_Status.OC_Undervolt) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UNDERVOLT, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->OC_UNDERVOLT, Core->Bind);
 	    } else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UNDERVOLT, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->OC_UNDERVOLT, Core->Bind);
 	    }
 	    if (OC_Status.OC_Unlocked) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UNLOCKED, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->OC_UNLOCKED, Core->Bind);
 	    } else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UNLOCKED, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->OC_UNLOCKED, Core->Bind);
 	    }
 	}
 	if (Arch_Cap.GDS_NO) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->GDS_NO, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->GDS_NO, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->GDS_NO, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->GDS_NO, Core->Bind);
 	}
 	if (Arch_Cap.RFDS_NO) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->RFDS_NO, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->RFDS_NO, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RFDS_NO, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->RFDS_NO, Core->Bind);
 	}
     }
     if (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.IA32_CORE_CAP)
@@ -12613,29 +12613,29 @@ static void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 	RDMSR(Core_Cap, MSR_IA32_CORE_CAPABILITIES);
 
 	if (Core_Cap.STLB_SUPPORTED) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->STLB, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->STLB, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->STLB, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->STLB, Core->Bind);
 	}
 	if (Core_Cap.FUSA_SUPPORTED) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->FUSA, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->FUSA, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->FUSA, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->FUSA, Core->Bind);
 	}
 	if (Core_Cap.RSM_IN_CPL0_ONLY) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->RSM_CPL0, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->RSM_CPL0, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RSM_CPL0, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->RSM_CPL0, Core->Bind);
 	}
 	if (Core_Cap.SPLA_EXCEPTION) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SPLA, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->SPLA, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SPLA, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->SPLA, Core->Bind);
 	}
 	if (Core_Cap.SNOOP_FILTER_SUP) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SNOOP_FILTER, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->SNOOP_FILTER, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SNOOP_FILTER, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->SNOOP_FILTER, Core->Bind);
 	}
     } else {
 	/* Source: arch/x86/kernel/cpu/intel.c				*/
@@ -12654,13 +12654,13 @@ static void Intel_Mitigation_Mechanisms(CORE_RO *Core)
       && (allowList[id].ExtModel == PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
       && (allowList[id].Model == PUBLIC(RO(Proc))->Features.Std.EAX.Model))
       {
-	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SPLA, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->SPLA, Core->Bind);
 	break;
       }
      }
     }
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ARCH_CAP_Mask, Core->Bind);
 }
 
 static void AMD_Mitigation_Mechanisms(CORE_RO *Core)
@@ -12711,24 +12711,24 @@ static void AMD_Mitigation_Mechanisms(CORE_RO *Core)
 		RDMSR(Spec_Ctrl, MSR_AMD_SPEC_CTRL);
 	}
 	if (Spec_Ctrl.IBRS) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->IBRS, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->IBRS, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IBRS, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->IBRS, Core->Bind);
 	}
 	if (Spec_Ctrl.STIBP) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->STIBP, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->STIBP, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->STIBP, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->STIBP, Core->Bind);
 	}
 	if (Spec_Ctrl.SSBD) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBD, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->SSBD, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBD, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->SSBD, Core->Bind);
 	}
 	if (Spec_Ctrl.PSFD) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->PSFD, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->PSFD, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSFD, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->PSFD, Core->Bind);
 	}
     }
 	if (PUBLIC(RO(Proc))->Features.leaf80000008.EBX.IBPB
@@ -12788,18 +12788,18 @@ static void AMD_Mitigation_Mechanisms(CORE_RO *Core)
 		RDMSR(LS_CFG, MSR_AMD64_LS_CFG);
 	}
 	if (LS_CFG.F17h_SSBD_EN == 1) {
-	    BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->AMD_LS_CFG_SSBD, Core->Bind);
+	    BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->AMD_LS_CFG_SSBD, Core->Bind);
 	} else {
-	    BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->AMD_LS_CFG_SSBD, Core->Bind);
+	    BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->AMD_LS_CFG_SSBD, Core->Bind);
 	}
       } else {
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->AMD_LS_CFG_SSBD, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->AMD_LS_CFG_SSBD, Core->Bind);
       }
     } else {
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->AMD_LS_CFG_SSBD, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->AMD_LS_CFG_SSBD, Core->Bind);
     }
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ARCH_CAP_Mask, Core->Bind);
 
     switch (PUBLIC(RO(Proc))->ArchID) {
     case AMD_EPYC_Rome_CPK:
@@ -12825,9 +12825,9 @@ static void AMD_Mitigation_Mechanisms(CORE_RO *Core)
 		RDMSR(DE_CFG, MSR_AMD_DE_CFG2);
 	}
 	if (DE_CFG.SuppressBPOnNonBr) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->BTC_NOBR, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->BTC_NOBR, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BTC_NOBR, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->BTC_NOBR, Core->Bind);
 	}
 
 	RDMSR(LS_CFG, MSR_AMD64_LS_CFG);
@@ -12840,17 +12840,17 @@ static void AMD_Mitigation_Mechanisms(CORE_RO *Core)
 		RDMSR(LS_CFG, MSR_AMD64_LS_CFG);
 	}
 	if (LS_CFG.F17h_AgenPick == 1) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->AGENPICK, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->AGENPICK, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->AGENPICK, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->AGENPICK, Core->Bind);
 	}
       }
 	break;
     default:
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BTC_NOBR, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->BTC_NOBR, Core->Bind);
 	break;
     }
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->BTC_NOBR_Mask, Core->Bind);
 
     if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
       switch (PUBLIC(RO(Proc))->ArchID) {
@@ -12874,19 +12874,19 @@ static void AMD_Mitigation_Mechanisms(CORE_RO *Core)
 		RDMSR(DE_CFG, MSR_AMD64_DE_CFG);
 	}
 	if (DE_CFG.Cross_Proc_Leak) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->XPROC_LEAK, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->XPROC_LEAK, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->XPROC_LEAK, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->XPROC_LEAK, Core->Bind);
 	}
        }
 	break;
       default:
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->XPROC_LEAK, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->XPROC_LEAK, Core->Bind);
 	break;
       }
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->XPROC_LEAK_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->XPROC_LEAK_Mask, Core->Bind);
     } else {
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->XPROC_LEAK_Mask, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->XPROC_LEAK_Mask, Core->Bind);
     }
 }
 
@@ -12899,9 +12899,9 @@ static void Intel_VirtualMachine(CORE_RO *Core)
 
 		if (VMX_Basic.SMM_DualMon)
 		{
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SMM, Core->Bind);
+			BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->SMM, Core->Bind);
 		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SMM, Core->Bind);
+			BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->SMM, Core->Bind);
 		}
 	}
 }
@@ -12923,118 +12923,118 @@ static void AMD_Microcode(CORE_RO *Core)
 
 #define Pkg_Reset_ThermalPoint(Pkg)					\
 ({									\
-	BITWISECLR(LOCKLESS, Pkg->ThermalPoint.Mask);			\
-	BITWISECLR(LOCKLESS, Pkg->ThermalPoint.Kind);			\
-	BITWISECLR(LOCKLESS, Pkg->ThermalPoint.State);			\
+	BITWISECLR(BUS_LOCK, Pkg->ThermalPoint.Mask);			\
+	BITWISECLR(BUS_LOCK, Pkg->ThermalPoint.Kind);			\
+	BITWISECLR(BUS_LOCK, Pkg->ThermalPoint.State);			\
 })
 
 static void PerCore_Reset(CORE_RO *Core)
 {
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->DCU_Mask  , Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->L1_Scrub_Mask, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->L2_AMP_Mask, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->ECORE_Mask, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->HWP_Mask	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->DCU_Mask  , Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->L1_Scrub_Mask, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->L2_AMP_Mask, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->ECORE_Mask, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->HWP_Mask	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3A_Mask	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1A_Mask	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3U_Mask	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1U_Mask	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->CC6_Mask	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->PC6_Mask	, Core->Bind);
 
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->XPROC_LEAK_Mask,Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->XPROC_LEAK_Mask,Core->Bind);
 
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->CR_Mask	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->WDT_Mask	, Core->Bind);
 
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TM1	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TM2	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->ODCM	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_Prefetch	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch , Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_NPP_Prefetch	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Scrubbing	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_Prefetch	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_CL_Prefetch , Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_AMP_Prefetch	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Stride_Pf	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Region_Pf	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_Burst_Pf	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_Stream_HW_Pf	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_UpDown_Pf	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->LLC_Streamer	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PowerMgmt , Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SpeedStep , Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->HWP	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1E	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C3A	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1A	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CC6	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PC6	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TM1	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TM2	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->ODCM	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_HW_Prefetch	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch , Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_NPP_Prefetch	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_Scrubbing	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L2_HW_Prefetch	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L2_HW_CL_Prefetch , Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L2_AMP_Prefetch	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_Stride_Pf	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_Region_Pf	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1_Burst_Pf	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L2_Stream_HW_Pf	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L2_UpDown_Pf	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->LLC_Streamer	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->PowerMgmt , Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->SpeedStep , Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->HWP	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->C1E	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->C3A	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->C1A	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->C3U	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->C1U	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->CC6	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->PC6	, Core->Bind);
 
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IBRS	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->STIBP 	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBD	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSFD	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RDCL_NO	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IBRS_ALL	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RSBA	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1DFL_VMENTRY_NO,Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSB_NO	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->MDS_NO	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSCHANGE_MC_NO, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TAA_NO	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->STLB	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->FUSA	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RSM_CPL0	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SPLA	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SNOOP_FILTER, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->IBRS	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->STIBP 	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->SSBD	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->PSFD	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->RDCL_NO	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->IBRS_ALL	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->RSBA	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->L1DFL_VMENTRY_NO,Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->SSB_NO	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->MDS_NO	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->PSCHANGE_MC_NO, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TAA_NO	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->STLB	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->FUSA	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->RSM_CPL0	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->SPLA	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->SNOOP_FILTER, Core->Bind);
 
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SMM	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->VM	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->SMM	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->VM	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->WDT	, Core->Bind);
 
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->AMD_LS_CFG_SSBD, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->DOITM_EN	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->DOITM_MSR	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SBDR_SSDP_NO, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->FBSDP_NO	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSDP_NO 	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->FB_CLEAR	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SRBDS_MSR	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RNGDS	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RTM	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->VERW	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BHI_NO	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->XAPIC_MSR	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->XAPIC_DIS	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PBRSB_NO	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IPRED_DIS_U, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IPRED_DIS_S, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA_DIS_U, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RRSBA_DIS_S, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->DDPD_U_DIS, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BHI_DIS_S	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->BTC_NOBR	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->XPROC_LEAK, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UTILIZED, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UNDERVOLT, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->OC_UNLOCKED, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->GDS_NO	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RFDS_NO	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->AMD_LS_CFG_SSBD, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->DOITM_EN	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->DOITM_MSR	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->SBDR_SSDP_NO, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->FBSDP_NO	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->PSDP_NO 	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->FB_CLEAR	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->SRBDS_MSR	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->RNGDS	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->RTM	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->VERW	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->RRSBA	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->BHI_NO	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->XAPIC_MSR	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->XAPIC_DIS	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->PBRSB_NO	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->IPRED_DIS_U, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->IPRED_DIS_S, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->RRSBA_DIS_U, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->RRSBA_DIS_S, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->DDPD_U_DIS, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->BHI_DIS_S	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->BTC_NOBR	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->XPROC_LEAK, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->OC_UTILIZED, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->OC_UNDERVOLT, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->OC_UNLOCKED, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->GDS_NO	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->RFDS_NO	, Core->Bind);
 
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.Mask);
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.Kind);
@@ -13064,32 +13064,32 @@ static void PerCore_VirtualMachine(void *arg)
 			AMD_Microcode(Core);
 		}
 
-		BITSET_CC(LOCKLESS,PUBLIC(RO(Proc))->SpeedStep_Mask,Core->Bind);
-		BITSET_CC(LOCKLESS,PUBLIC(RO(Proc))->ODCM_Mask, Core->Bind);
-		BITSET_CC(LOCKLESS,PUBLIC(RO(Proc))->PowerMgmt_Mask,Core->Bind);
+		BITSET_CC(BUS_LOCK,PUBLIC(RO(Proc))->SpeedStep_Mask,Core->Bind);
+		BITSET_CC(BUS_LOCK,PUBLIC(RO(Proc))->ODCM_Mask, Core->Bind);
+		BITSET_CC(BUS_LOCK,PUBLIC(RO(Proc))->PowerMgmt_Mask,Core->Bind);
 	}
 
 	SystemRegisters(Core);
 
 	Dump_CPUID(Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3A_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1A_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3U_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1U_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->CC6_Mask	, Core->Bind);
 
-	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+	BITSET_CC(BUS_LOCK,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
-	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
+	BITSET_CC(BUS_LOCK,	PUBLIC(RO(Proc))->WDT_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 }
 
@@ -13109,22 +13109,22 @@ static void PerCore_Intel_Query(void *arg)
 
 	SpeedStep_Technology(Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3A_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1A_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3U_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1U_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->CC6_Mask	, Core->Bind);
 
-	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+	BITSET_CC(BUS_LOCK,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
-	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
+	BITSET_CC(BUS_LOCK,	PUBLIC(RO(Proc))->WDT_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 
 	PowerThermal(Core);
@@ -13145,25 +13145,25 @@ static void PerCore_AuthenticAMD_Query(void *arg)
 	}
 	Dump_CPUID(Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ODCM_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3A_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1A_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3U_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1U_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->CC6_Mask	, Core->Bind);
 
-	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+	BITSET_CC(BUS_LOCK,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 }
 
 static void PerCore_Core2_Query(void *arg)
@@ -13184,21 +13184,21 @@ static void PerCore_Core2_Query(void *arg)
 	DynamicAcceleration(Core);				/* Unique */
 	Compute_Intel_Core_Burst(Core->Bind);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1E_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3A_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1A_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3U_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1U_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
-	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+	BITSET_CC(BUS_LOCK,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
-	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
+	BITSET_CC(BUS_LOCK,	PUBLIC(RO(Proc))->WDT_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 
 	PowerThermal(Core);				/* Shared | Unique */
@@ -13224,21 +13224,21 @@ static void PerCore_Atom_Bonnell_Query(void *arg)
 	DynamicAcceleration(Core);				/* Unique */
 	Compute_Intel_Core_Burst(Core->Bind);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1E_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3A_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1A_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3U_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1U_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
-	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+	BITSET_CC(BUS_LOCK,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
-	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
+	BITSET_CC(BUS_LOCK,	PUBLIC(RO(Proc))->WDT_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 
 	PowerThermal(Core);				/* Shared | Unique */
@@ -13333,9 +13333,9 @@ static void PerCore_Silvermont_Query(void *arg)
 
 	Intel_CStatesConfiguration(CSTATES_SOC_SLM, Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
-	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
+	BITSET_CC(BUS_LOCK,	PUBLIC(RO(Proc))->WDT_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 
 	PowerThermal(Core);				/* Shared | Unique */
@@ -13402,12 +13402,12 @@ static void PerCore_Atom_Goldmont_Query(void *arg)
 	/*	Store the C-State Base Address used by I/O-MWAIT	*/
 		Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 	}
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
-	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+	BITSET_CC(BUS_LOCK,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
 	PowerThermal(Core);
 
@@ -13490,12 +13490,12 @@ static void PerCore_Nehalem_Same_Query(void *arg)
 	/*	Store the C-State Base Address used by I/O-MWAIT	*/
 		Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 	}
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
-	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+	BITSET_CC(BUS_LOCK,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
 	PowerThermal(Core);
 
@@ -13583,12 +13583,12 @@ static void PerCore_SandyBridge_Query(void *arg)
 	/*	Store the C-State Base Address used by I/O-MWAIT	*/
 		Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 	}
-	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK,	PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
-	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+	BITSET_CC(BUS_LOCK,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
 	PowerThermal(Core);
 
@@ -13615,7 +13615,7 @@ static void PerCore_SandyBridge_Query(void *arg)
 
 		Intel_Watchdog(Core);
 	    } else {
-		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 	    }
 	}
 }
@@ -13720,12 +13720,12 @@ static void PerCore_Haswell_EP_Query(void *arg)
 	/*	Store the C-State Base Address used by I/O-MWAIT	*/
 		Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 	}
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
-	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+	BITSET_CC(BUS_LOCK,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
 	PowerThermal(Core);
 
@@ -13796,12 +13796,12 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 	/*	Store the C-State Base Address used by I/O-MWAIT	*/
 		Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 	}
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
-	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+	BITSET_CC(BUS_LOCK,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
 	PowerThermal(Core);
 
@@ -13883,12 +13883,12 @@ static void PerCore_Skylake_Query(void *arg)
 	/*	Store the C-State Base Address used by I/O-MWAIT	*/
 		Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 	}
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
-	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+	BITSET_CC(BUS_LOCK,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
 	PowerThermal(Core);
 
@@ -13964,12 +13964,12 @@ static void PerCore_Skylake_X_Query(void *arg)
 	/*	Store the C-State Base Address used by I/O-MWAIT	*/
 		Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 	}
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
-	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+	BITSET_CC(BUS_LOCK,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 
 	PowerThermal(Core);
 
@@ -14003,7 +14003,7 @@ static void PerCore_Skylake_X_Query(void *arg)
 	    if (PUBLIC(RO(Proc))->Registration.Experimental) {
 		Intel_Watchdog(Core);
 	    } else {
-		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 	    }
 	}
 }
@@ -14080,24 +14080,24 @@ static void PerCore_AMD_Family_0Fh_Query(void *arg)
 
 	Query_AMD_Family_0Fh_C1E(Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3A_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1A_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3U_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1U_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->CC6_Mask	, Core->Bind);
 
-	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+	BITSET_CC(BUS_LOCK,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 }
 
 static void PerCore_AMD_Family_Same_Query(void *arg)
@@ -14113,27 +14113,27 @@ static void PerCore_AMD_Family_Same_Query(void *arg)
     if (PUBLIC(RO(Proc))->Registration.Experimental) {
 	Query_AMD_Family_0Fh_C1E(Core);
     } else {
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
     }
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3A_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1A_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3U_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1U_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->CC6_Mask	, Core->Bind);
 
-	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+	BITSET_CC(BUS_LOCK,	PUBLIC(RO(Proc))->PC6_Mask,
 				PUBLIC(RO(Proc))->Service.Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 }
 
 static void PerCore_AMD_Family_10h_Query(void *arg)
@@ -14238,22 +14238,22 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	PUBLIC(RO(Proc))->ThermalPoint.Value[THM_HTC_HYST] = HTC.HTC_HYST_LIMIT;
 
 	if (HTC.HTC_EN) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TM2, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->TM2, Core->Bind);
 
-		BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State,
+		BITSET(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.State,
 				 THM_HTC_LIMIT);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TM2, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TM2, Core->Bind);
 
-		BITCLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State,
+		BITCLR(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.State,
 				 THM_HTC_LIMIT);
 	}
-	BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask, THM_HTC_LIMIT);
-	BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind, THM_HTC_LIMIT);
+	BITSET(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.Mask, THM_HTC_LIMIT);
+	BITSET(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.Kind, THM_HTC_LIMIT);
 
-	BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State, THM_HTC_HYST);
-	BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask, THM_HTC_HYST);
-	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind, THM_HTC_HYST);
+	BITSET(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.State, THM_HTC_HYST);
+	BITSET(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.Mask, THM_HTC_HYST);
+	BITCLR(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.Kind, THM_HTC_HYST);
 
 	Core_AMD_SMN_Read(	ThermTrip,
 				SMU_AMD_THM_TCTL_REGISTER_F17H + 0x8,
@@ -14262,19 +14262,19 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	PUBLIC(RO(Proc))->ThermalPoint.Value[THM_TRIP_LIMIT] = \
 					ThermTrip.THERM_TP_LIMIT - 49;
 	if (ThermTrip.THERM_TP_EN) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TM1, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->TM1, Core->Bind);
 
-		BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State,
+		BITSET(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.State,
 				 THM_TRIP_LIMIT);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TM1, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TM1, Core->Bind);
 
-		BITCLR(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.State,
+		BITCLR(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.State,
 				 THM_TRIP_LIMIT);
 	}
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TM_Mask, Core->Bind);
-	BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Mask, THM_TRIP_LIMIT);
-	BITSET(LOCKLESS, PUBLIC(RO(Proc))->ThermalPoint.Kind, THM_TRIP_LIMIT);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TM_Mask, Core->Bind);
+	BITSET(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.Mask, THM_TRIP_LIMIT);
+	BITSET(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.Kind, THM_TRIP_LIMIT);
 	/*		Count CPB and XFR ratios			*/
 	if (CPB_State == true)
 	{
@@ -14375,35 +14375,35 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	}
 	if (PM.CStateEn.C1eToC2En)
 	{
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->C1U, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->C1U, Core->Bind);
 	}
 	if (PM.CStateEn.C1eToC3En)
 	{
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->C3U, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->C3U, Core->Bind);
 	}
 	if (PM.CStateEn.C1eToC2En || PM.CStateEn.C1eToC3En)
 	{
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1E, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->C1E, Core->Bind);
 	} else {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1E, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->C1E, Core->Bind);
 	}
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3A_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1A_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3U_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1U_Mask	, Core->Bind);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
 	/*	Per SMT, initialize with the saved thermal parameters	*/
     if (Core->PowerThermal.Sensor == 0) {
 	Core->PowerThermal.Param = PUBLIC(RO(Proc))->PowerThermal.Param;
@@ -21961,7 +21961,7 @@ static void Policy_Aggregate_Turbo(void)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
     if (PUBLIC(RO(Proc))->Registration.Driver.CPUfreq & REGISTRATION_ENABLE) {
 	CoreFreqK.FreqDriver.boost_enabled = (
-			BITWISEAND_CC(	LOCKLESS,
+			BITWISEAND_CC(	BUS_LOCK,
 					PUBLIC(RW(Proc))->TurboBoost,
 					PUBLIC(RO(Proc))->TurboBoost_Mask ) != 0
 	);
@@ -22084,9 +22084,9 @@ static void Policy_Core2_SetTarget(void *arg)
 	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA) {
 	    if (Cmp_Core2_Target(Core, 1 + Core->Boost[BOOST(MAX)]))
 	    {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	    } else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	    }
 	}
 	Core->Boost[BOOST(TGT)] = Get_Core2_Target(Core);
@@ -22111,9 +22111,9 @@ static void Policy_Nehalem_SetTarget(void *arg)
 	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA) {
 	    if (Cmp_Nehalem_Target(Core, 1 + Core->Boost[BOOST(MAX)]))
 	    {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	    } else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	    }
 	}
 	Core->Boost[BOOST(TGT)] = Get_Nehalem_Target(Core);
@@ -22138,9 +22138,9 @@ static void Policy_SandyBridge_SetTarget(void *arg)
 	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA) {
 	    if (Cmp_SandyBridge_Target(Core, Core->Boost[BOOST(MAX)]))
 	    {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	    } else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	    }
 	}
 	Core->Boost[BOOST(TGT)] = Get_SandyBridge_Target(Core);
@@ -22166,9 +22166,9 @@ static void Policy_Skylake_SetTarget(void *arg)
 	    if (Cmp_Skylake_Target(Core, Core->Boost[BOOST(TDP)] > 0 ?
 			Core->Boost[BOOST(TDP)] : Core->Boost[BOOST(MAX)]))
 	    {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	    } else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	    }
 	}
 	Core->Boost[BOOST(TGT)] = Get_SandyBridge_Target(Core);

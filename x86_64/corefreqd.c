@@ -1663,115 +1663,115 @@ void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 {	/*	Technologies aggregation.				*/
 	RO(Shm)->Proc.Technology.PowerNow = (RO(Shm)->Proc.PowerNow == 0b11);
 
-	RO(Shm)->Proc.Technology.ODCM = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.ODCM = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->ODCM,
 						RO(Proc)->ODCM_Mask);
 
-	RO(Shm)->Proc.Technology.L1_HW_Prefetch = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.L1_HW_Prefetch = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->L1_HW_Prefetch,
 						RO(Proc)->DCU_Mask);
 
-	RO(Shm)->Proc.Technology.L1_HW_IP_Prefetch = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.L1_HW_IP_Prefetch = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->L1_HW_IP_Prefetch,
 						RO(Proc)->DCU_Mask);
 
-	RO(Shm)->Proc.Technology.L1_NPP_Prefetch = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.L1_NPP_Prefetch = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->L1_NPP_Prefetch,
 						RO(Proc)->DCU_Mask);
 
-	RO(Shm)->Proc.Technology.L1_Scrubbing = BITWISEAND_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.L1_Scrubbing = BITWISEAND_CC(BUS_LOCK,
 						RW(Proc)->L1_Scrubbing,
 						RO(Proc)->L1_Scrub_Mask) != 0;
 
-	RO(Shm)->Proc.Technology.L2_HW_Prefetch = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.L2_HW_Prefetch = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->L2_HW_Prefetch,
 						RO(Proc)->DCU_Mask);
 
-	RO(Shm)->Proc.Technology.L2_HW_CL_Prefetch = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.L2_HW_CL_Prefetch = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->L2_HW_CL_Prefetch,
 						RO(Proc)->DCU_Mask);
 
-	RO(Shm)->Proc.Technology.L2_AMP_Prefetch = BITWISEAND_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.L2_AMP_Prefetch = BITWISEAND_CC(BUS_LOCK,
 						RW(Proc)->L2_AMP_Prefetch,
 						RO(Proc)->L2_AMP_Mask) != 0;
 
-	RO(Shm)->Proc.Technology.L2_NLP_Prefetch = BITWISEAND_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.L2_NLP_Prefetch = BITWISEAND_CC(BUS_LOCK,
 						RW(Proc)->L2_NLP_Prefetch,
 						RO(Proc)->ECORE_Mask) != 0;
 
-	RO(Shm)->Proc.Technology.L1_Stride_Pf	= BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.L1_Stride_Pf	= BITCMP_CC(BUS_LOCK,
 						RW(Proc)->L1_Stride_Pf,
 						RO(Proc)->DCU_Mask);
 
-	RO(Shm)->Proc.Technology.L1_Region_Pf	= BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.L1_Region_Pf	= BITCMP_CC(BUS_LOCK,
 						RW(Proc)->L1_Region_Pf,
 						RO(Proc)->DCU_Mask);
 
-	RO(Shm)->Proc.Technology.L1_Burst_Pf	= BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.L1_Burst_Pf	= BITCMP_CC(BUS_LOCK,
 						RW(Proc)->L1_Burst_Pf,
 						RO(Proc)->DCU_Mask);
 
-	RO(Shm)->Proc.Technology.L2_Stream_HW_Pf = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.L2_Stream_HW_Pf = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->L2_Stream_HW_Pf,
 						RO(Proc)->DCU_Mask);
 
-	RO(Shm)->Proc.Technology.L2_UpDown_Pf	= BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.L2_UpDown_Pf	= BITCMP_CC(BUS_LOCK,
 						RW(Proc)->L2_UpDown_Pf,
 						RO(Proc)->DCU_Mask);
 
-	RO(Shm)->Proc.Technology.LLC_Streamer = BITWISEAND_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.LLC_Streamer = BITWISEAND_CC(BUS_LOCK,
 						RW(Proc)->LLC_Streamer,
 						RO(Proc)->ECORE_Mask) != 0;
 
-	RO(Shm)->Proc.Technology.PowerMgmt = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.PowerMgmt = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->PowerMgmt,
 						RO(Proc)->PowerMgmt_Mask);
 
-	RO(Shm)->Proc.Technology.EIST = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.EIST = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->SpeedStep,
 						RO(Proc)->SpeedStep_Mask);
 
-	RO(Shm)->Proc.Technology.Turbo = BITWISEAND_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.Turbo = BITWISEAND_CC(BUS_LOCK,
 						RW(Proc)->TurboBoost,
 						RO(Proc)->TurboBoost_Mask) != 0;
 
-	RO(Shm)->Proc.Technology.C1E = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.C1E = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->C1E,
 						RO(Proc)->C1E_Mask);
 
-	RO(Shm)->Proc.Technology.C3A = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.C3A = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->C3A,
 						RO(Proc)->C3A_Mask);
 
-	RO(Shm)->Proc.Technology.C1A = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.C1A = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->C1A,
 						RO(Proc)->C1A_Mask);
 
-	RO(Shm)->Proc.Technology.C3U = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.C3U = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->C3U,
 						RO(Proc)->C3U_Mask);
 
-	RO(Shm)->Proc.Technology.C1U = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.C1U = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->C1U,
 						RO(Proc)->C1U_Mask);
 
-	RO(Shm)->Proc.Technology.CC6 = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.CC6 = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->CC6,
 						RO(Proc)->CC6_Mask);
 
-	RO(Shm)->Proc.Technology.PC6 = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.PC6 = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->PC6,
 						RO(Proc)->PC6_Mask);
 
-	RO(Shm)->Proc.Technology.SMM = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.SMM = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->SMM,
 						RO(Proc)->CR_Mask);
 
-	RO(Shm)->Proc.Technology.VM = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.VM = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->VM,
 						RO(Proc)->CR_Mask);
 
-	RO(Shm)->Proc.Technology.WDT = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.WDT = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->WDT,
 						RO(Proc)->WDT_Mask);
 
@@ -1779,7 +1779,7 @@ void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 	RO(Shm)->Proc.Technology.TM1 = RO(Proc)->Features.Std.EDX.TM1
 					| RO(Proc)->Features.AdvPower.EDX.TTP;
 								/* 00v0 */
-	RO(Shm)->Proc.Technology.TM1 |= BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.TM1 |= BITCMP_CC(BUS_LOCK,
 						RW(Proc)->TM1,
 						RO(Proc)->TM_Mask) << 1;
 
@@ -1787,7 +1787,7 @@ void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 	RO(Shm)->Proc.Technology.TM2 = RO(Proc)->Features.Std.ECX.TM2
 					| RO(Proc)->Features.AdvPower.EDX.TM;
 								/* 00v0 */
-	RO(Shm)->Proc.Technology.TM2 |= BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.TM2 |= BITCMP_CC(BUS_LOCK,
 						RW(Proc)->TM2,
 						RO(Proc)->TM_Mask) << 1;
 }
@@ -1795,23 +1795,23 @@ void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 void Mitigation_2nd_Stage(	RO(SHM_STRUCT) *RO(Shm),
 				RO(PROC) *RO(Proc), RW(PROC) *RW(Proc) )
 {
-	unsigned short	IBRS = BITCMP_CC(	LOCKLESS,
+	unsigned short	IBRS = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->IBRS,
 						RO(Proc)->SPEC_CTRL_Mask ),
 
-			STIBP = BITCMP_CC(	LOCKLESS,
+			STIBP = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->STIBP,
 						RO(Proc)->SPEC_CTRL_Mask ),
 
-			SSBD = BITCMP_CC(	LOCKLESS,
+			SSBD = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->SSBD,
 						RO(Proc)->SPEC_CTRL_Mask ),
 
-			AMD_LS_CFG_SSBD = BITCMP_CC(LOCKLESS,
+			AMD_LS_CFG_SSBD = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->AMD_LS_CFG_SSBD,
 						RO(Proc)->SPEC_CTRL_Mask ),
 
-			PSFD = BITCMP_CC(	LOCKLESS,
+			PSFD = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->PSFD,
 						RO(Proc)->SPEC_CTRL_Mask );
 
@@ -1826,155 +1826,155 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 {
     if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
-	unsigned short	RDCL_NO = BITCMP_CC(	LOCKLESS,
+	unsigned short	RDCL_NO = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->RDCL_NO,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			IBRS_ALL = BITCMP_CC(	LOCKLESS,
+			IBRS_ALL = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->RDCL_NO,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			RSBA = BITCMP_CC(	LOCKLESS,
+			RSBA = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->RSBA,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			L1DFL_NO = BITCMP_CC(	LOCKLESS,
+			L1DFL_NO = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->L1DFL_VMENTRY_NO,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			SSB_NO = BITCMP_CC(	LOCKLESS,
+			SSB_NO = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->SSB_NO,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			MDS_NO = BITCMP_CC(	LOCKLESS,
+			MDS_NO = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->MDS_NO,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			PSCHANGE_MC_NO=BITCMP_CC(LOCKLESS,
+			PSCHANGE_MC_NO=BITCMP_CC(BUS_LOCK,
 						RW(Proc)->PSCHANGE_MC_NO,
 						RO(Proc)->ARCH_CAP_Mask),
 
-			TAA_NO = BITCMP_CC(	LOCKLESS,
+			TAA_NO = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->TAA_NO,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			STLB = BITCMP_CC(	LOCKLESS,
+			STLB = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->STLB,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			FUSA = BITCMP_CC(	LOCKLESS,
+			FUSA = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->FUSA,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			RSM_CPL0 = BITCMP_CC(	LOCKLESS,
+			RSM_CPL0 = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->RSM_CPL0,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			SPLA = BITCMP_CC(	LOCKLESS,
+			SPLA = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->SPLA,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			SNOOP_FILTER =BITCMP_CC(LOCKLESS,
+			SNOOP_FILTER =BITCMP_CC(BUS_LOCK,
 						RW(Proc)->SNOOP_FILTER,
 						RO(Proc)->ARCH_CAP_Mask),
 
-			DOITM_MSR = BITCMP_CC(	LOCKLESS,
+			DOITM_MSR = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->DOITM_MSR,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			DOITM_EN = BITCMP_CC(	LOCKLESS,
+			DOITM_EN = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->DOITM_EN,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			SBDR_SSDP_NO = BITCMP_CC(LOCKLESS,
+			SBDR_SSDP_NO = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->SBDR_SSDP_NO,
 						RO(Proc)->ARCH_CAP_Mask),
 
-			FBSDP_NO = BITCMP_CC(	LOCKLESS,
+			FBSDP_NO = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->FBSDP_NO,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			PSDP_NO = BITCMP_CC(	LOCKLESS,
+			PSDP_NO = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->PSDP_NO,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			FB_CLEAR = BITCMP_CC(	LOCKLESS,
+			FB_CLEAR = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->FB_CLEAR,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			XAPIC_MSR = BITCMP_CC(	LOCKLESS,
+			XAPIC_MSR = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->XAPIC_MSR,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			XAPIC_DIS = BITCMP_CC(	LOCKLESS,
+			XAPIC_DIS = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->XAPIC_DIS,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			RNGDS = BITCMP_CC(	LOCKLESS,
+			RNGDS = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->RNGDS,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			RTM = BITCMP_CC(	LOCKLESS,
+			RTM = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->RTM,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			VERW = BITCMP_CC(	LOCKLESS,
+			VERW = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->VERW,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			RRSBA = BITCMP_CC(	LOCKLESS,
+			RRSBA = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->RRSBA,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			BHI_NO = BITCMP_CC(	LOCKLESS,
+			BHI_NO = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->BHI_NO,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			PBRSB_NO = BITCMP_CC(	LOCKLESS,
+			PBRSB_NO = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->PBRSB_NO,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			OC_UTILIZED = BITCMP_CC(LOCKLESS,
+			OC_UTILIZED = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->OC_UTILIZED,
 						RO(Proc)->ARCH_CAP_Mask),
 
-			OC_UNDERVOLT = BITCMP_CC(LOCKLESS,
+			OC_UNDERVOLT = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->OC_UNDERVOLT,
 						RO(Proc)->ARCH_CAP_Mask),
 
-			OC_UNLOCKED = BITCMP_CC(LOCKLESS,
+			OC_UNLOCKED = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->OC_UNLOCKED,
 						RO(Proc)->ARCH_CAP_Mask),
 
-			GDS_NO = BITCMP_CC(	LOCKLESS,
+			GDS_NO = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->GDS_NO,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			RFDS_NO = BITCMP_CC(	LOCKLESS,
+			RFDS_NO = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->RFDS_NO,
 						RO(Proc)->ARCH_CAP_Mask ),
 
-			IPRED_DIS_U = BITCMP_CC(LOCKLESS,
+			IPRED_DIS_U = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->IPRED_DIS_U,
 						RO(Proc)->SPEC_CTRL_Mask),
 
-			IPRED_DIS_S = BITCMP_CC(LOCKLESS,
+			IPRED_DIS_S = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->IPRED_DIS_S,
 						RO(Proc)->SPEC_CTRL_Mask),
 
-			RRSBA_DIS_U = BITCMP_CC(LOCKLESS,
+			RRSBA_DIS_U = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->RRSBA_DIS_U,
 						RO(Proc)->SPEC_CTRL_Mask),
 
-			RRSBA_DIS_S = BITCMP_CC(LOCKLESS,
+			RRSBA_DIS_S = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->RRSBA_DIS_S,
 						RO(Proc)->SPEC_CTRL_Mask),
 
-			DDPD_U_DIS = BITCMP_CC( LOCKLESS,
+			DDPD_U_DIS = BITCMP_CC( BUS_LOCK,
 						RW(Proc)->DDPD_U_DIS,
 						RO(Proc)->SPEC_CTRL_Mask ),
 
-			BHI_DIS_S = BITCMP_CC(	LOCKLESS,
+			BHI_DIS_S = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->BHI_DIS_S,
 						RO(Proc)->SPEC_CTRL_Mask );
 
@@ -2074,7 +2074,7 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 		+ (2 * BHI_NO)
 	);
 
-	RO(Shm)->Proc.Mechanisms.SRBDS = BITCMP_CC(LOCKLESS,
+	RO(Shm)->Proc.Mechanisms.SRBDS = BITCMP_CC(BUS_LOCK,
 						RW(Proc)->SRBDS_MSR,
 						RO(Proc)->ARCH_CAP_Mask);
 
@@ -2166,7 +2166,7 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
     else if (	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	||	(RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
     {
-	unsigned short	BTC_NOBR = BITCMP_CC(	LOCKLESS,
+	unsigned short	BTC_NOBR = BITCMP_CC(	BUS_LOCK,
 						RW(Proc)->BTC_NOBR,
 						RO(Proc)->BTC_NOBR_Mask );
 	RO(Shm)->Proc.Mechanisms.IBRS = (
@@ -2199,12 +2199,12 @@ void Mitigation_1st_Stage(	RO(SHM_STRUCT) *RO(Shm),
 		RO(Shm)->Proc.Mechanisms.BTC_NOBR += (2 * BTC_NOBR);
 
 		RO(Shm)->Proc.Mechanisms.XPROC_LEAK = \
-			BITCMP_CC(LOCKLESS,
+			BITCMP_CC(BUS_LOCK,
 				RW(Proc)->XPROC_LEAK,
 				RO(Proc)->XPROC_LEAK_Mask) ? 0b11 : 0b10;
 
 		RO(Shm)->Proc.Mechanisms.AGENPICK = \
-			BITCMP_CC(LOCKLESS,
+			BITCMP_CC(BUS_LOCK,
 				RW(Proc)->AGENPICK,
 				RO(Proc)->BTC_NOBR_Mask) ? 0b11 : 0b10;
 		break;
