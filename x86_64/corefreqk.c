@@ -4624,6 +4624,7 @@ static void Skylake_X_Platform_Info(unsigned int cpu)
 static void Probe_AMD_DataFabric(void)
 {
 #ifdef CONFIG_AMD_NB
+    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 0, 0)
 	if (PRIVATE(OF(Zen)).Device.DF == NULL)
 	{
 		struct pci_dev *dev;
@@ -4633,6 +4634,7 @@ static void Probe_AMD_DataFabric(void)
 			PRIVATE(OF(Zen)).Device.DF = dev;
 		}
 	}
+    #endif
 #endif /* CONFIG_AMD_NB */
 }
 
