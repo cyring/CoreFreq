@@ -80,53 +80,53 @@ MODULE_LICENSE ("GPL");
 MODULE_VERSION (COREFREQ_VERSION);
 
 static signed int ArchID = -1;
-module_param(ArchID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(ArchID, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ArchID, "Force an architecture (ID)");
 
 static signed int AutoClock = 0b11;
-module_param(AutoClock, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(AutoClock, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(AutoClock, "Estimate Clock Frequency 0:Spec; 1:Once; 2:Auto");
 
 static unsigned int SleepInterval = 0;
-module_param(SleepInterval, uint, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(SleepInterval, uint, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(SleepInterval, "Timer interval (ms)");
 
 static unsigned int TickInterval = 0;
-module_param(TickInterval, uint, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(TickInterval, uint, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(TickInterval, "System requested interval (ms)");
 
 static signed int Experimental = 0;
-module_param(Experimental, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Experimental, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Experimental, "Enable features under development");
 
 static signed int CPU_Count = -1;
-module_param(CPU_Count, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(CPU_Count, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(CPU_Count, "-1:Kernel(default); 0:Hardware; >0: User value");
 
 static signed short Target_Ratio_Unlock = -1;
-module_param(Target_Ratio_Unlock, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Target_Ratio_Unlock, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Target_Ratio_Unlock, "1:Target Ratio Unlock; 0:Lock");
 
 static signed short Clock_Ratio_Unlock = -1;
-module_param(Clock_Ratio_Unlock, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Clock_Ratio_Unlock, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Clock_Ratio_Unlock, "1:MinRatio; 2:MaxRatio; 3:Both Unlock");
 
 static signed short Turbo_Ratio_Unlock = -1;
-module_param(Turbo_Ratio_Unlock, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Turbo_Ratio_Unlock, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Turbo_Ratio_Unlock, "1:Turbo Ratio Unlock; 0:Lock");
 
 static signed short Uncore_Ratio_Unlock = -1;
-module_param(Uncore_Ratio_Unlock, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Uncore_Ratio_Unlock, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Uncore_Ratio_Unlock, "1:Uncore Ratio Unlock; 0:Lock");
 
 static signed int ServiceProcessor = -1; /* -1=ANY ; 0=BSP */
-module_param(ServiceProcessor, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(ServiceProcessor, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ServiceProcessor, "Select a CPU to run services with");
 
 static SERVICE_PROC DefaultSMT = RESET_SERVICE;
 
 static unsigned short NMI_Disable = 1;
-module_param(NMI_Disable, ushort, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(NMI_Disable, ushort, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(NMI_Disable, "Disable the NMI Handler");
 
 static enum RATIO_BOOST Ratio_Boost_Count = 0;
@@ -151,19 +151,19 @@ static signed int Ratio_Boost[BOOST(SIZE) - BOOST(18C)] = {
 	/*	 1C		*/	-1
 };
 module_param_array(Ratio_Boost, int, &Ratio_Boost_Count,	\
-				S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+				S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Ratio_Boost, "Turbo Boost Frequency ratios");
 
 static signed int Ratio_PPC = -1;
-module_param(Ratio_PPC, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Ratio_PPC, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Ratio_PPC, "Target Performance ratio");
 
 static signed short HWP_Enable = -1;
-module_param(HWP_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(HWP_Enable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(HWP_Enable, "Hardware-Controlled Performance States");
 
 static signed short HWP_EPP = -1;
-module_param(HWP_EPP, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(HWP_EPP, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(HWP_EPP, "Energy Performance Preference");
 
 static enum RATIO_BOOST Ratio_HWP_Count = 0;
@@ -173,48 +173,48 @@ static signed int Ratio_HWP[1 + (BOOST(HWP_TGT) - BOOST(HWP_MIN))] = {
 	/*	HWP_TGT 	*/	-1
 };
 module_param_array(Ratio_HWP, int, &Ratio_HWP_Count,	\
-				S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+				S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Ratio_HWP, "Hardware-Controlled Performance ratios");
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
 static unsigned long Clear_Events = 0;
-module_param(Clear_Events, ulong, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Clear_Events, ulong, S_IRUSR|S_IRGRP|S_IROTH);
 #else
 static unsigned long long Clear_Events = 0;
-module_param(Clear_Events, ullong, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Clear_Events, ullong, S_IRUSR|S_IRGRP|S_IROTH);
 #endif
 MODULE_PARM_DESC(Clear_Events, "Clear Thermal and Power Events");
 
 static int ThermalScope = -1;
-module_param(ThermalScope, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(ThermalScope, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ThermalScope, "[0:None; 1:SMT; 2:Core; 3:Package]");
 
 static int VoltageScope = -1;
-module_param(VoltageScope, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(VoltageScope, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(VoltageScope, "[0:None; 1:SMT; 2:Core; 3:Package]");
 
 static int PowerScope = -1;
-module_param(PowerScope, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(PowerScope, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PowerScope, "[0:None; 1:SMT; 2:Core; 3:Package]");
 
 static signed short Register_CPU_Idle = -1;
-module_param(Register_CPU_Idle, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Register_CPU_Idle, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Register_CPU_Idle, "Register the Kernel cpuidle driver");
 
 static signed short Register_CPU_Freq = -1;
-module_param(Register_CPU_Freq, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Register_CPU_Freq, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Register_CPU_Freq, "Register the Kernel cpufreq driver");
 
 static signed short Register_Governor = -1;
-module_param(Register_Governor, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Register_Governor, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Register_Governor, "Register the Kernel governor");
 
 static signed short Register_ClockSource = -1;
-module_param(Register_ClockSource, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Register_ClockSource, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Register_ClockSource, "Register Clock Source driver");
 
 static signed short Idle_Route = -1;
-module_param(Idle_Route, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Idle_Route, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Idle_Route, "[0:Default; 1:I/O; 2:HALT; 3:MWAIT]");
 
 static struct {

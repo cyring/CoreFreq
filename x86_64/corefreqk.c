@@ -79,57 +79,57 @@ MODULE_LICENSE ("GPL");
 MODULE_VERSION (COREFREQ_VERSION);
 
 static signed int ArchID = -1;
-module_param(ArchID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(ArchID, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ArchID, "Force an architecture (ID)");
 
 static signed int AutoClock = 0b11;
-module_param(AutoClock, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(AutoClock, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(AutoClock, "Estimate Clock Frequency 0:Spec; 1:Once; 2:Auto");
 
 static unsigned int SleepInterval = 0;
-module_param(SleepInterval, uint, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(SleepInterval, uint, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(SleepInterval, "Timer interval (ms)");
 
 static unsigned int TickInterval = 0;
-module_param(TickInterval, uint, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(TickInterval, uint, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(TickInterval, "System requested interval (ms)");
 
 static signed int Experimental = 0;
-module_param(Experimental, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Experimental, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Experimental, "Enable features under development");
 
 static signed int CPU_Count = -1;
-module_param(CPU_Count, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(CPU_Count, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(CPU_Count, "-1:Kernel(default); 0:Hardware; >0: User value");
 
 static signed short Target_Ratio_Unlock = -1;
-module_param(Target_Ratio_Unlock, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Target_Ratio_Unlock, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Target_Ratio_Unlock, "1:Target Ratio Unlock; 0:Lock");
 
 static signed short Clock_Ratio_Unlock = -1;
-module_param(Clock_Ratio_Unlock, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Clock_Ratio_Unlock, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Clock_Ratio_Unlock, "1:MinRatio; 2:MaxRatio; 3:Both Unlock");
 
 static signed short Turbo_Ratio_Unlock = -1;
-module_param(Turbo_Ratio_Unlock, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Turbo_Ratio_Unlock, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Turbo_Ratio_Unlock, "1:Turbo Ratio Unlock; 0:Lock");
 
 static signed short Uncore_Ratio_Unlock = -1;
-module_param(Uncore_Ratio_Unlock, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Uncore_Ratio_Unlock, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Uncore_Ratio_Unlock, "1:Uncore Ratio Unlock; 0:Lock");
 
 static signed int ServiceProcessor = -1; /* -1=ANY ; 0=BSP */
-module_param(ServiceProcessor, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(ServiceProcessor, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ServiceProcessor, "Select a CPU to run services with");
 
 static SERVICE_PROC DefaultSMT = RESET_SERVICE;
 
 static unsigned short RDPMC_Enable = 0;
-module_param(RDPMC_Enable, ushort, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(RDPMC_Enable, ushort, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(RDPMC_Enable, "Enable RDPMC bit in CR4 register");
 
 static unsigned short NMI_Disable = 1;
-module_param(NMI_Disable, ushort, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(NMI_Disable, ushort, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(NMI_Disable, "Disable the NMI Handler");
 
 static int Override_SubCstate_Depth = 0;
@@ -137,23 +137,23 @@ static unsigned short Override_SubCstate[CPUIDLE_STATE_MAX] = {
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 module_param_array(	Override_SubCstate,ushort, &Override_SubCstate_Depth, \
-			S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+			S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Override_SubCstate, "Override Sub C-States");
 
 static signed short PkgCStateLimit = -1;
-module_param(PkgCStateLimit, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(PkgCStateLimit, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PkgCStateLimit, "Package C-State Limit");
 
 static signed short IOMWAIT_Enable = -1;
-module_param(IOMWAIT_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(IOMWAIT_Enable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(IOMWAIT_Enable, "I/O MWAIT Redirection Enable");
 
 static signed short CStateIORedir = -1;
-module_param(CStateIORedir, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(CStateIORedir, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(CStateIORedir, "Power Mgmt IO Redirection C-State");
 
 static signed short Config_TDP_Level = -1;
-module_param(Config_TDP_Level, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Config_TDP_Level, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Config_TDP_Level, "Config TDP Control Level");
 
 static unsigned int Custom_TDP_Count = 0;
@@ -161,7 +161,7 @@ static signed short Custom_TDP_Offset[PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE)] = {
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 module_param_array(Custom_TDP_Offset, short, &Custom_TDP_Count ,	\
-					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+					S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Custom_TDP_Offset, "TDP Limit Offset (watt)");
 
 static unsigned int PowerTimeWindow_Count = 0;
@@ -169,7 +169,7 @@ static signed short PowerTimeWindow[PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE)] = {
 			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
 module_param_array(PowerTimeWindow, short, &PowerTimeWindow_Count,	\
-					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+					S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PowerTimeWindow, "Power Limit PL(n) Time Window");
 
 static unsigned int TDP_Limiting_Count = 0;
@@ -177,7 +177,7 @@ static signed short Activate_TDP_Limit[PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE)] = {
 			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
 module_param_array(Activate_TDP_Limit, short, &TDP_Limiting_Count,	\
-					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+					S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Activate_TDP_Limit, "Activate TDP Limiting");
 
 static unsigned int TDP_Clamping_Count = 0;
@@ -185,139 +185,139 @@ static signed short Activate_TDP_Clamp[PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE)] = {
 			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
 module_param_array(Activate_TDP_Clamp, short, &TDP_Clamping_Count,	\
-					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+					S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Activate_TDP_Clamp, "Activate TDP Clamping");
 
 static unsigned short Custom_TDC_Offset = 0;
-module_param(Custom_TDC_Offset, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Custom_TDC_Offset, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Custom_TDC_Offset, "TDC Limit Offset (amp)");
 
 static signed short Activate_TDC_Limit = -1;
-module_param(Activate_TDC_Limit, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Activate_TDC_Limit, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Activate_TDC_Limit, "Activate TDC Limiting");
 
 static signed short L1_HW_PREFETCH_Disable = -1;
-module_param(L1_HW_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(L1_HW_PREFETCH_Disable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L1_HW_PREFETCH_Disable, "Disable L1 HW Prefetcher");
 
 static signed short L1_HW_IP_PREFETCH_Disable = -1;
-module_param(L1_HW_IP_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(L1_HW_IP_PREFETCH_Disable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L1_HW_IP_PREFETCH_Disable, "Disable L1 HW IP Prefetcher");
 
 static signed short L1_NPP_PREFETCH_Disable = -1;
-module_param(L1_NPP_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(L1_NPP_PREFETCH_Disable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L1_NPP_PREFETCH_Disable, "Disable L1 NPP Prefetcher");
 
 static signed short L1_Scrubbing_Enable = -1;
-module_param(L1_Scrubbing_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(L1_Scrubbing_Enable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L1_Scrubbing_Enable, "Enable L1 Scrubbing");
 
 static signed short L2_HW_PREFETCH_Disable = -1;
-module_param(L2_HW_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(L2_HW_PREFETCH_Disable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L2_HW_PREFETCH_Disable, "Disable L2 HW Prefetcher");
 
 static signed short L2_HW_CL_PREFETCH_Disable = -1;
-module_param(L2_HW_CL_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(L2_HW_CL_PREFETCH_Disable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L2_HW_CL_PREFETCH_Disable, "Disable L2 HW CL Prefetcher");
 
 static signed short L2_AMP_PREFETCH_Disable = -1;
-module_param(L2_AMP_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(L2_AMP_PREFETCH_Disable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L2_AMP_PREFETCH_Disable, "Adaptive Multipath Probability");
 
 static signed short L2_NLP_PREFETCH_Disable = -1;
-module_param(L2_NLP_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(L2_NLP_PREFETCH_Disable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L2_NLP_PREFETCH_Disable, "Disable L2 NLP Prefetcher");
 
 static signed short L1_STRIDE_PREFETCH_Disable = -1;
-module_param(L1_STRIDE_PREFETCH_Disable, short,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(L1_STRIDE_PREFETCH_Disable, short,S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L1_STRIDE_PREFETCH_Disable, "Disable L1 Stride Prefetcher");
 
 static signed short L1_REGION_PREFETCH_Disable = -1;
-module_param(L1_REGION_PREFETCH_Disable, short,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(L1_REGION_PREFETCH_Disable, short,S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L1_REGION_PREFETCH_Disable, "Disable L1 Region Prefetcher");
 
 static signed short L1_BURST_PREFETCH_Disable = -1;
-module_param(L1_BURST_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(L1_BURST_PREFETCH_Disable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L1_BURST_PREFETCH_Disable, "Disable L1 Burst Prefetcher");
 
 static signed short L2_STREAM_PREFETCH_Disable = -1;
-module_param(L2_STREAM_PREFETCH_Disable, short,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(L2_STREAM_PREFETCH_Disable, short,S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L2_STREAM_PREFETCH_Disable, "Disable L2 Stream Prefetcher");
 
 static signed short L2_UPDOWN_PREFETCH_Disable = -1;
-module_param(L2_UPDOWN_PREFETCH_Disable, short,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(L2_UPDOWN_PREFETCH_Disable, short,S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L2_UPDOWN_PREFETCH_Disable, "Disable L2 Up/Down Prefetcher");
 
 static signed short LLC_Streamer_Disable = -1;
-module_param(LLC_Streamer_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(LLC_Streamer_Disable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(LLC_Streamer_Disable, "Disable LLC Streamer");
 
 static signed short SpeedStep_Enable = -1;
-module_param(SpeedStep_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(SpeedStep_Enable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(SpeedStep_Enable, "Enable SpeedStep");
 
 static signed short C1E_Enable = -1;
-module_param(C1E_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(C1E_Enable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(C1E_Enable, "Enable SpeedStep C1E");
 
 static unsigned int TurboBoost_Enable_Count = 1;
 static signed short TurboBoost_Enable[2] = {-1, -1};
 module_param_array(TurboBoost_Enable, short, &TurboBoost_Enable_Count,	\
-					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+					S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(TurboBoost_Enable, "Enable Turbo Boost");
 
 static signed short C3A_Enable = -1;
-module_param(C3A_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(C3A_Enable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(C3A_Enable, "Enable C3 Auto Demotion");
 
 static signed short C1A_Enable = -1;
-module_param(C1A_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(C1A_Enable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(C1A_Enable, "Enable C3 Auto Demotion");
 
 static signed short C3U_Enable = -1;
-module_param(C3U_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(C3U_Enable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(C3U_Enable, "Enable C3 UnDemotion");
 
 static signed short C1U_Enable = -1;
-module_param_named(C1U_Enable,C1U_Enable,short,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-module_param_named(C2U_Enable,C1U_Enable,short,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param_named(C1U_Enable,C1U_Enable,short,S_IRUSR|S_IRGRP|S_IROTH);
+module_param_named(C2U_Enable,C1U_Enable,short,S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(C1U_Enable, "Enable C1 UnDemotion");
 MODULE_PARM_DESC(C2U_Enable, "Enable C2 UnDemotion");
 
 static signed short CC6_Enable = -1;
-module_param(CC6_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(CC6_Enable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(CC6_Enable, "Enable Core C6 State");
 
 static signed short PC6_Enable = -1;
-module_param(PC6_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(PC6_Enable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PC6_Enable, "Enable Package C6 State");
 
 static signed short ODCM_Enable = -1;
-module_param(ODCM_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(ODCM_Enable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ODCM_Enable, "Enable On-Demand Clock Modulation");
 
 static signed short ODCM_DutyCycle = -1;
-module_param(ODCM_DutyCycle, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(ODCM_DutyCycle, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ODCM_DutyCycle, "ODCM DutyCycle [0-7] | [0-14]");
 
 static signed short PowerMGMT_Unlock = -1;
-module_param(PowerMGMT_Unlock, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(PowerMGMT_Unlock, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PowerMGMT_Unlock, "Unlock Power Management");
 
 static signed short PowerPolicy = -1;
-module_param(PowerPolicy, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(PowerPolicy, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PowerPolicy, "Power Policy Preference [0-15]");
 
 static signed short Turbo_Activation_Ratio = -1;
-module_param(Turbo_Activation_Ratio, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Turbo_Activation_Ratio, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Turbo_Activation_Ratio, "Turbo Activation Ratio");
 
 static signed int PState_FID = -1;
-module_param(PState_FID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(PState_FID, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PState_FID, "P-State Frequency Id");
 
 static signed int PState_VID = -1;
-module_param(PState_VID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(PState_VID, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PState_VID, "P-State Voltage Id");
 
 static enum RATIO_BOOST Ratio_Boost_Count = 0;
@@ -342,19 +342,19 @@ static signed int Ratio_Boost[BOOST(SIZE) - BOOST(18C)] = {
 	/*	 1C		*/	-1
 };
 module_param_array(Ratio_Boost, int, &Ratio_Boost_Count,	\
-				S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+				S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Ratio_Boost, "Turbo Boost Frequency ratios");
 
 static signed int Ratio_PPC = -1;
-module_param(Ratio_PPC, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Ratio_PPC, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Ratio_PPC, "Target Performance ratio");
 
 static signed short HWP_Enable = -1;
-module_param(HWP_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(HWP_Enable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(HWP_Enable, "Hardware-Controlled Performance States");
 
 static signed short HWP_EPP = -1;
-module_param(HWP_EPP, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(HWP_EPP, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(HWP_EPP, "Energy Performance Preference");
 
 static enum RATIO_BOOST Ratio_HWP_Count = 0;
@@ -364,27 +364,27 @@ static signed int Ratio_HWP[1 + (BOOST(HWP_TGT) - BOOST(HWP_MIN))] = {
 	/*	HWP_TGT 	*/	-1
 };
 module_param_array(Ratio_HWP, int, &Ratio_HWP_Count,	\
-				S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+				S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Ratio_HWP, "Hardware-Controlled Performance ratios");
 
 static signed short HDC_Enable = -1;
-module_param(HDC_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(HDC_Enable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(HDC_Enable, "Hardware Duty Cycling");
 
 static signed short EEO_Disable = -1;
-module_param(EEO_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(EEO_Disable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(EEO_Disable, "Disable Energy Efficiency Optimization");
 
 static signed short R2H_Disable = -1;
-module_param(R2H_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(R2H_Disable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(R2H_Disable, "Disable Race to Halt");
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
 static unsigned long Clear_Events = 0;
-module_param(Clear_Events, ulong, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Clear_Events, ulong, S_IRUSR|S_IRGRP|S_IROTH);
 #else
 static unsigned long long Clear_Events = 0;
-module_param(Clear_Events, ullong, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Clear_Events, ullong, S_IRUSR|S_IRGRP|S_IROTH);
 #endif
 MODULE_PARM_DESC(Clear_Events, "Clear Thermal and Power Events");
 
@@ -393,7 +393,7 @@ static signed short ThermalPoint[THM_POINTS_DIM] = {
 			-1, -1, -1, -1, -1
 };
 module_param_array(ThermalPoint, short, &ThermalPoint_Count,	\
-					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+					S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ThermalPoint, "Thermal Point");
 
 static unsigned int PkgThermalPoint_Count = 0;
@@ -401,91 +401,91 @@ static signed short PkgThermalPoint[THM_POINTS_DIM] = {
 			-1, -1, -1, -1, -1
 };
 module_param_array(PkgThermalPoint, short, &PkgThermalPoint_Count,	\
-					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+					S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PkgThermalPoint, "Package Thermal Point");
 
 static signed short ThermalOffset = 0;
-module_param(ThermalOffset, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(ThermalOffset, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ThermalOffset, "Thermal Offset");
 
 static int ThermalScope = -1;
-module_param(ThermalScope, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(ThermalScope, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ThermalScope, "[0:None; 1:SMT; 2:Core; 3:Package]");
 
 static int VoltageScope = -1;
-module_param(VoltageScope, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(VoltageScope, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(VoltageScope, "[0:None; 1:SMT; 2:Core; 3:Package]");
 
 static int PowerScope = -1;
-module_param(PowerScope, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(PowerScope, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PowerScope, "[0:None; 1:SMT; 2:Core; 3:Package]");
 
 static signed short Register_CPU_Idle = -1;
-module_param(Register_CPU_Idle, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Register_CPU_Idle, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Register_CPU_Idle, "Register the Kernel cpuidle driver");
 
 static signed short Register_CPU_Freq = -1;
-module_param(Register_CPU_Freq, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Register_CPU_Freq, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Register_CPU_Freq, "Register the Kernel cpufreq driver");
 
 static signed short Register_Governor = -1;
-module_param(Register_Governor, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Register_Governor, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Register_Governor, "Register the Kernel governor");
 
 static signed short Register_ClockSource = -1;
-module_param(Register_ClockSource, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Register_ClockSource, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Register_ClockSource, "Register Clock Source driver");
 
 static signed short Idle_Route = -1;
-module_param(Idle_Route, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Idle_Route, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Idle_Route, "[0:Default; 1:I/O; 2:HALT; 3:MWAIT]");
 
 static signed short Mech_IBRS = -1;
-module_param(Mech_IBRS, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Mech_IBRS, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Mech_IBRS, "Mitigation Mechanism IBRS");
 
 static signed short Mech_STIBP = -1;
-module_param(Mech_STIBP, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Mech_STIBP, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Mech_STIBP, "Mitigation Mechanism STIBP");
 
 static signed short Mech_SSBD = -1;
-module_param(Mech_SSBD, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Mech_SSBD, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Mech_SSBD, "Mitigation Mechanism SSBD");
 
 static signed short Mech_IBPB = -1;
-module_param(Mech_IBPB, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Mech_IBPB, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Mech_IBPB, "Mitigation Mechanism IBPB");
 
 static signed short Mech_SBPB = -1;
-module_param(Mech_SBPB, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Mech_SBPB, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Mech_SBPB, "Mitigation Mechanism SBPB");
 
 static signed short Mech_L1D_FLUSH = -1;
-module_param(Mech_L1D_FLUSH, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Mech_L1D_FLUSH, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Mech_L1D_FLUSH, "Mitigation Mechanism Cache L1D Flush");
 
 static signed short Mech_PSFD = -1;
-module_param(Mech_PSFD, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Mech_PSFD, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Mech_PSFD, "Mitigation Mechanism PSFD");
 
 static signed short Mech_BTC_NOBR = -1;
-module_param(Mech_BTC_NOBR, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Mech_BTC_NOBR, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Mech_BTC_NOBR, "Mitigation Mechanism BTC-NOBR");
 
 static signed short Mech_XPROC_LEAK = -1;
-module_param(Mech_XPROC_LEAK, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Mech_XPROC_LEAK, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Mech_XPROC_LEAK, "Mitigation Mech. Cross Processor Leak");
 
 static signed short Mech_AGENPICK = -1;
-module_param(Mech_AGENPICK, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(Mech_AGENPICK, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Mech_AGENPICK, "Mitigation Mech. LsCfgDisAgenPick");
 
 static signed short WDT_Enable = -1;
-module_param(WDT_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(WDT_Enable, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(WDT_Enable, "Watchdog Hardware Timer");
 
 static signed short HSMP_Attempt = -1;
-module_param(HSMP_Attempt, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(HSMP_Attempt, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(HSMP_Attempt, "Attempt the HSMP interface");
 
 static struct {
