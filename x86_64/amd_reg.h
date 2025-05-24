@@ -2370,3 +2370,19 @@ typedef union
 		VID		: 32-24;	/*	Voltage ID	*/
 	};
 } AMD_17_CORE_VID;
+
+typedef union
+{/*				--- SMU SVI [ Genoa ] ---
+ * ZEN4 [AF_11] 		[ 0x5a010 ]	[ 0x5a014 ]
+ *			Idle:	0x00009a81	0x00019a81
+ *			Load:	0x0000a401	0x0001a401
+ */
+	unsigned int		value;
+	struct {
+		unsigned int
+		SVI0		:  8-0,
+		SVI1		: 16-8,
+		PKG		: 17-16,  /* 1 for 2nd processor socket */
+		RSVD		: 32-17;
+	};
+} AMD_GNA_SVI;

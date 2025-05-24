@@ -20498,7 +20498,8 @@ static void Call_HSMP_ACCU(CORE_RO *Core)
       {
 	Core->Delta.RAM.ACCU = (unsigned long long) DIMM_PWR.mWatt;
 	Core->Delta.RAM.ACCU <<= PUBLIC(RO(Proc))->PowerThermal.Unit.ESU;
-	Core->Delta.RAM.ACCU = Core->Delta.RAM.ACCU / 1000LLU;
+	Core->Delta.RAM.ACCU *= PUBLIC(RO(Proc))->SleepInterval;
+	Core->Delta.RAM.ACCU = Core->Delta.RAM.ACCU / (1000LLU * 1000LLU);
       }
     }
     else if (IS_HSMP_OOO(rx))
@@ -20600,12 +20601,18 @@ static void Call_DFLT(	const unsigned int plane0, const unsigned int plane1,
 static void Call_Genoa( const unsigned int plane0, const unsigned int plane1,
 			const unsigned long long factor )
 {
-	UNUSED(plane0);
-	UNUSED(plane1);
+	AMD_GNA_SVI SVI = {.value = 0};
 	UNUSED(factor);
 
 	PUBLIC(RO(Proc))->PowerThermal.VID.CPU = \
 	PUBLIC(RO(Core,AT( PUBLIC(RO(Proc))->Service.Core )))->PowerThermal.VID;
+
+	Core_AMD_SMN_Read(SVI,
+	PUBLIC(RO(Core, AT(PUBLIC(RO(Proc))->Service.Core)))->T.PackageID == 0 ?
+			SMU_AMD_F17H_SVI(plane0) : SMU_AMD_F17H_SVI(plane1),
+				PRIVATE(OF(Zen)).Device.DF);
+
+	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.SVI1;
 }
 
 static enum hrtimer_restart Entry_AMD_F17h(struct hrtimer *pTimer,
@@ -20660,7 +20667,7 @@ static enum hrtimer_restart Cycle_AMD_Zen4_RPL(struct hrtimer *pTimer)
 }
 static enum hrtimer_restart Cycle_AMD_Zen4_Genoa(struct hrtimer *pTimer)
 {
-	return Entry_AMD_F17h(pTimer, Call_Genoa_ACCU, Call_Genoa, 0, 0, 0LLU);
+	return Entry_AMD_F17h(pTimer, Call_Genoa_ACCU, Call_Genoa, 1, 2, 0LLU);
 }
 static enum hrtimer_restart Cycle_AMD_F17h(struct hrtimer *pTimer)
 {
