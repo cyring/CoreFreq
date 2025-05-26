@@ -2798,7 +2798,8 @@ static void Intel_FlexRatio(void)
 		{_Arrowlake_H,		1, 1, 0, 0},	/* 06_C5 */
 		{_Arrowlake_U,		1, 1, 0, 0},	/* 06_B5 */
 		{_Pantherlake,		1, 1, 0, 0},	/* 06_CC */
-		{_Clearwater_Forest,	1, 1, 0, 0}	/* 06_DD */
+		{_Clearwater_Forest,	1, 1, 0, 0},	/* 06_DD */
+		{_Bartlettlake_S,	1, 1, 0, 0}	/* 06_D7 */
     };
 	const unsigned int ids = sizeof(list) / sizeof(list[0]);
 	unsigned int id;
@@ -11423,7 +11424,8 @@ static	struct {
 		{_Arrowlake_H,		1, 1, 0, 0},	/* 06_C5 */
 		{_Arrowlake_U,		1, 1, 0, 0},	/* 06_B5 */
 		{_Pantherlake,		1, 1, 1, 0},	/* 06_CC */
-		{_Clearwater_Forest,	1, 1, 1, 0}	/* 06_DD */
+		{_Clearwater_Forest,	1, 1, 1, 0},	/* 06_DD */
+		{_Bartlettlake_S,	1, 1, 1, 0}	/* 06_D7 */
 	};
 	const unsigned int ids = sizeof(allowList) / sizeof(allowList[0]);
 	unsigned int id;
