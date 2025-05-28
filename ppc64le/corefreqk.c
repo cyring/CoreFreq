@@ -3703,7 +3703,8 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 {
 	unsigned long reqSize = vma->vm_end - vma->vm_start;
     #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
-	vm_flags_t vm_ro = VM_READ;
+	vm_flags_t vm_ro = VM_READ | VM_DONTEXPAND;
+	vm_flags_t vm_rw = VM_READ | VM_WRITE | VM_DONTEXPAND;
     #endif
 	int rc = -EIO;
 	UNUSED(pfile);
@@ -3720,9 +3721,9 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
     #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
 	vm_flags_reset_once(vma, vm_ro);
     #else
-	vma->vm_flags = VM_READ;
+	vma->vm_flags = VM_READ | VM_DONTEXPAND;
     #endif
-/*	vma->vm_page_prot = PAGE_READONLY;	TODO*/
+	vma->vm_page_prot = PAGE_READONLY;
 
 	rc = remap_pfn_range(	vma,
 				vma->vm_start,
@@ -3738,6 +3739,14 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 		rc = -EAGAIN;
 		goto EXIT_PAGE;
 	}
+
+    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0) \
+     || (defined(RHEL_MAJOR) && (RHEL_MAJOR >= 9) && (RHEL_MINOR >= 5))
+	vm_flags_reset_once(vma, vm_rw);
+    #else
+	vma->vm_flags = VM_READ | VM_WRITE | VM_DONTEXPAND;
+    #endif
+	vma->vm_page_prot = PAGE_SHARED;
 
 	rc = remap_pfn_range(	vma,
 				vma->vm_start,
@@ -3762,9 +3771,9 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
 		vm_flags_reset_once(vma, vm_ro);
 	    #else
-		vma->vm_flags = VM_READ;
+		vma->vm_flags = VM_READ | VM_DONTEXPAND;
 	    #endif
-/*		vma->vm_page_prot = PAGE_READONLY;	TODO*/
+		vma->vm_page_prot = PAGE_READONLY;
 
 		rc = remap_pfn_range(	vma,
 					vma->vm_start,
@@ -3793,9 +3802,9 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
 		vm_flags_reset_once(vma, vm_ro);
 	    #else
-		vma->vm_flags = VM_READ;
+		vma->vm_flags = VM_READ | VM_DONTEXPAND;
 	    #endif
-/*		vma->vm_page_prot = PAGE_READONLY;	TODO*/
+		vma->vm_page_prot = PAGE_READONLY;
 
 		rc = remap_pfn_range(	vma,
 					vma->vm_start,
@@ -3819,6 +3828,14 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 			rc = -EAGAIN;
 			goto EXIT_PAGE;
 		}
+
+	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0) \
+	     || (defined(RHEL_MAJOR) && (RHEL_MAJOR >= 9) && (RHEL_MINOR >= 5))
+		vm_flags_reset_once(vma, vm_rw);
+	    #else
+		vma->vm_flags = VM_READ | VM_WRITE | VM_DONTEXPAND;
+	    #endif
+		vma->vm_page_prot = PAGE_SHARED;
 
 		rc = remap_pfn_range(	vma,
 					vma->vm_start,
