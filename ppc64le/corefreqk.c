@@ -1456,7 +1456,7 @@ static void SystemRegisters(CORE_RO *Core)
 		: "i" (0xfffffffffffffff9), "i" (0x7)
 		: "%14", "%15", "cc", "memory"
 	);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->CR_Mask, Core->Bind);
 }
 
 #define Pkg_Reset_ThermalPoint(Pkg)					\
@@ -1468,12 +1468,12 @@ static void SystemRegisters(CORE_RO *Core)
 
 static void PerCore_Reset(CORE_RO *Core)
 {
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->HWP_Mask	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->HWP_Mask	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->CR_Mask	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->HWP	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->VM	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->HWP	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->VM	, Core->Bind);
 
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.Mask);
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.Kind);
@@ -1500,7 +1500,7 @@ static void PerCore_GenericMachine(void *arg)
 
 	SystemRegisters(Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 56)

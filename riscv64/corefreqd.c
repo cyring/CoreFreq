@@ -679,7 +679,7 @@ void ThermalPoint(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 			RO(PROC) *RO(Proc), RW(PROC) *RW(Proc) )
 {	/*	Technologies aggregation.				*/
-	RO(Shm)->Proc.Technology.VM = BITWISEAND_CC(LOCKLESS,
+	RO(Shm)->Proc.Technology.VM = BITWISEAND_CC(BUS_LOCK,
 						RW(Proc)->VM,
 						RO(Proc)->CR_Mask) != 0;
 }
@@ -688,27 +688,27 @@ void Mitigation_Stage(	RO(SHM_STRUCT) *RO(Shm),
 			RO(PROC) *RO(Proc), RW(PROC) *RW(Proc) )
 {
 /*	const unsigned short
-		CLRBHB = BITWISEAND_CC( LOCKLESS,
+		CLRBHB = BITWISEAND_CC( BUS_LOCK,
 					RW(Proc)->CLRBHB,
 					RO(Proc)->SPEC_CTRL_Mask) != 0,
 
-		CSV2_1 = BITWISEAND_CC( LOCKLESS,
+		CSV2_1 = BITWISEAND_CC( BUS_LOCK,
 					RW(Proc)->CSV2_1,
 					RO(Proc)->SPEC_CTRL_Mask) != 0,
 
-		CSV2_2 = BITWISEAND_CC( LOCKLESS,
+		CSV2_2 = BITWISEAND_CC( BUS_LOCK,
 					RW(Proc)->CSV2_2,
 					RO(Proc)->SPEC_CTRL_Mask) != 0,
 
-		CSV2_3 = BITWISEAND_CC( LOCKLESS,
+		CSV2_3 = BITWISEAND_CC( BUS_LOCK,
 					RW(Proc)->CSV2_3,
 					RO(Proc)->SPEC_CTRL_Mask) != 0,
 
-		CSV3 = BITWISEAND_CC(	LOCKLESS,
+		CSV3 = BITWISEAND_CC(	BUS_LOCK,
 					RW(Proc)->CSV3,
 					RO(Proc)->SPEC_CTRL_Mask) != 0,
 
-		SSBS = BITCMP_CC(	LOCKLESS,
+		SSBS = BITCMP_CC(	BUS_LOCK,
 					RW(Proc)->SSBS,
 					RO(Proc)->SPEC_CTRL_Mask );
 */

@@ -2819,9 +2819,9 @@ static void SystemRegisters(CORE_RO *Core)
 		: "cc", "memory", "%x11", "%x12", "%x13", "%x14"
 	);
 	if (mmfr1.VH) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->VM, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->VM, Core->Bind);
 	}
 	Core->Query.SCTLRX = 0;
     if (Experimental) {
@@ -2836,9 +2836,9 @@ static void SystemRegisters(CORE_RO *Core)
 		);
 	}
 	if (isar2.CLRBHB == 0b0001) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CLRBHB, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->CLRBHB, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CLRBHB, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->CLRBHB, Core->Bind);
 	}
 	switch (pfr0.EL3) {
 	case 0b0010:
@@ -2879,38 +2879,38 @@ static void SystemRegisters(CORE_RO *Core)
 	}
 	switch (pfr0.CSV2) {
 	case 0b0001:
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_1, Core->Bind);
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_2, Core->Bind);
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_3, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->CSV2_1, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->CSV2_2, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->CSV2_3, Core->Bind);
 		break;
 	case 0b0010:
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_1, Core->Bind);
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_2, Core->Bind);
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_3, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->CSV2_1, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->CSV2_2, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->CSV2_3, Core->Bind);
 		break;
 	case 0b0011:
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_1, Core->Bind);
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_2, Core->Bind);
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_3, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->CSV2_1, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->CSV2_2, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->CSV2_3, Core->Bind);
 		break;
 	default:
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_1, Core->Bind);
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_2, Core->Bind);
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_3, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->CSV2_1, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->CSV2_2, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->CSV2_3, Core->Bind);
 	}
 	if (pfr0.CSV3) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV3, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->CSV3, Core->Bind);
 	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV3, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->CSV3, Core->Bind);
 	}
 	if (PUBLIC(RO(Proc))->Features.SSBS == 0b0010)
 	{
 		SSBS2 mrs_ssbs = {.value = SysRegRead(MRS_SSBS2)};
 
 	    if (mrs_ssbs.SSBS) {
-		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBS, Core->Bind);
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->SSBS, Core->Bind);
 	    } else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBS, Core->Bind);
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->SSBS, Core->Bind);
 	    }
 		Core->SystemRegister.FLAGS |= (1LLU << FLAG_SSBS);
 	}
@@ -2960,7 +2960,7 @@ static void SystemRegisters(CORE_RO *Core)
 		volatile unsigned long long fpmr = SysRegRead(MRS_FPMR);
 		UNUSED(fpmr);	/*TODO*/
 	}
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->CR_Mask, Core->Bind);
 }
 
 #define Pkg_Reset_ThermalPoint(Pkg)					\
@@ -2972,17 +2972,17 @@ static void SystemRegisters(CORE_RO *Core)
 
 static void PerCore_Reset(CORE_RO *Core)
 {
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->HWP_Mask	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->HWP_Mask	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->CR_Mask	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->HWP	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_1	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_2	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV2_3	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CSV3	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBS	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->VM	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->HWP	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->CSV2_1	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->CSV2_2	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->CSV2_3	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->CSV3	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->SSBS	, Core->Bind);
+	BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->VM	, Core->Bind);
 
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.Mask);
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.Kind);
@@ -3041,7 +3041,7 @@ static void PerCore_GenericMachine(void *arg)
 
 	SystemRegisters(Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 56)
