@@ -1363,7 +1363,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 		"\t%u\tMEM_ERR\t\tErreur de fonctionnement de la mémoire\n"\
 		"\t%u\tEXEC_ERR\tErreur d'exécution générale\n"		\
 		"\t%u\tSYS_CALL\tErreur d'appel système\n"		\
-		"\nSignaler toutes anomalies à labs[at]cyring.fr\n"
+		"\nSignaler toutes anomalies à labs[at]cyring[.]fr\n"
 
 #define RSC_ERROR_SHARED_MEM_CODE_FR					\
 	"Erreur code %d de connexion au démon.\n%s: '%s' @ ligne %d\n"

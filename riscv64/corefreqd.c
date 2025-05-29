@@ -2372,7 +2372,7 @@ REASON_CODE Help(REASON_CODE reason, ...)
 			"\t%u\tMEM_ERR\t\tMemory operation error\n"	\
 			"\t%u\tEXEC_ERR\tGeneral execution error\n"	\
 			"\t%u\tSYS_CALL\tSystem call error\n"		\
-			"\nReport bugs to labs[at]cyring.fr\n", appName,
+			"\nReport bugs to labs[at]cyring[.]fr\n", appName,
 			RC_SUCCESS,
 			RC_CMD_SYNTAX,
 			RC_SHM_FILE,

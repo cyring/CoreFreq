@@ -1698,7 +1698,7 @@
 		"\t%u\tMEM_ERR\t\tMemory operation error\n"		\
 		"\t%u\tEXEC_ERR\tGeneral execution error\n"		\
 		"\t%u\tSYS_CALL\tSystem call error\n"			\
-		"\nReport bugs to labs[at]cyring.fr\n"
+		"\nReport bugs to labs[at]cyring[.]fr\n"
 
 #define RSC_ERROR_SHARED_MEM_CODE_EN					\
 		"Daemon connection error code %d\n%s: '%s' @ line %d\n"
