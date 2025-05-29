@@ -167,7 +167,187 @@ corefreq-cli
 rmmod corefreqk.ko
 ```
 
-### Try
+## Command Line Usage
+### Client
+```sh
+corefreq-cli -h
+```
+```console
+CoreFreq.  Copyright (C) 2015-2025 CYRIL COURTIAT
+
+Usage:  corefreq-cli [-Option <argument>] [-Command <argument>]
+
+    Interface options
+        -Oa     Absolute frequency
+        -Op     Show Package C-States
+        -Ok     Memory unit in kilobyte
+        -Om     Memory unit in megabyte
+        -Og     Memory unit in gigabyte
+        -OW     Toggle Energy units
+        -OF     Temperature in Fahrenheit
+        -OJ #   SMBIOS string index number
+        -OE #   Color theme index number
+        -OY     Show Secret Data
+
+    Command options
+        -t <v>  Show Top (default) with optional <v>iew:
+                {       frequency, instructions, core, idle, package, tasks,
+                        interrupts, sensors, voltage, power, slices, custom }
+        -d      Show Dashboard
+        -C <#>  Monitor Sensors
+        -V <#>  Monitor Voltage
+        -W <#>  Monitor Power
+        -g <#>  Monitor Package
+        -c <#>  Monitor Counters
+        -i <#>  Monitor Instructions
+        -s      Print System Information
+        -j      Print System Information (json-encoded)
+        -z      Print Performance Capabilities
+        -M      Print Memory Controller
+        -R      Print System Registers
+        -m      Print Topology
+        -u      Print CPUID
+        -B      Print SMBIOS
+        -k      Print Kernel
+        -n      New line
+        -h      Print out this message
+        -v      Print the version number
+
+Exit status:
+        0       SUCCESS         Successful execution
+        3       CMD_SYNTAX      Command syntax error
+        4       SHM_FILE        Shared memory file error
+        5       SHM_MMAP        Shared memory mapping error
+        6       PERM_ERR        Execution not permitted
+        7       MEM_ERR         Memory operation error
+        8       EXEC_ERR        General execution error
+        9       SYS_CALL        System call error
+
+Report bugs to labs[at]cyring[.]fr
+```  
+
+### Daemon
+```sh
+corefreqd -h
+```
+```console
+Usage:  corefreqd [-option <arguments>]
+        -q              Quiet
+        -i              Info
+        -d              Debug
+        -gon            Enable SysGate
+        -goff           Disable SysGate
+        -U <decimal>    Set the effective user ID
+        -G <decimal>    Set the effective group ID
+        -M <oct>,<oct>  Shared Memories permission
+        -h              Print out this message
+        -v              Print the version number
+
+Exit status:
+        0       SUCCESS         Successful execution
+        3       CMD_SYNTAX      Command syntax error
+        4       SHM_FILE        Shared memory file error
+        5       SHM_MMAP        Shared memory mapping error
+        6       PERM_ERR        Execution not permitted
+        7       MEM_ERR         Memory operation error
+        8       EXEC_ERR        General execution error
+        9       SYS_CALL        System call error
+
+Report bugs to labs[at]cyring[.]fr
+```  
+
+### Driver
+```sh
+modinfo corefreqk.ko
+```
+```console
+parm:           ArchID:Force an architecture (ID) (int)
+parm:           AutoClock:Estimate Clock Frequency 0:Spec; 1:Once; 2:Auto (int)
+parm:           SleepInterval:Timer interval (ms) (uint)
+parm:           TickInterval:System requested interval (ms) (uint)
+parm:           Experimental:Enable features under development (int)
+parm:           CPU_Count:-1:Kernel(default); 0:Hardware; >0: User value (int)
+parm:           Target_Ratio_Unlock:1:Target Ratio Unlock; 0:Lock (short)
+parm:           Clock_Ratio_Unlock:1:MinRatio; 2:MaxRatio; 3:Both Unlock (short)
+parm:           Turbo_Ratio_Unlock:1:Turbo Ratio Unlock; 0:Lock (short)
+parm:           Uncore_Ratio_Unlock:1:Uncore Ratio Unlock; 0:Lock (short)
+parm:           ServiceProcessor:Select a CPU to run services with (int)
+parm:           RDPMC_Enable:Enable RDPMC bit in CR4 register (ushort)
+parm:           NMI_Disable:Disable the NMI Handler (ushort)
+parm:           Override_SubCstate:Override Sub C-States (array of ushort)
+parm:           PkgCStateLimit:Package C-State Limit (short)
+parm:           IOMWAIT_Enable:I/O MWAIT Redirection Enable (short)
+parm:           CStateIORedir:Power Mgmt IO Redirection C-State (short)
+parm:           Config_TDP_Level:Config TDP Control Level (short)
+parm:           Custom_TDP_Offset:TDP Limit Offset (watt) (array of short)
+parm:           Activate_TDP_Limit:Activate TDP Limiting (array of short)
+parm:           Activate_TDP_Clamp:Activate TDP Clamping (array of short)
+parm:           Custom_TDC_Offset:TDC Limit Offset (amp) (short)
+parm:           Activate_TDC_Limit:Activate TDC Limiting (short)
+parm:           L1_HW_PREFETCH_Disable:Disable L1 HW Prefetcher (short)
+parm:           L1_HW_IP_PREFETCH_Disable:Disable L1 HW IP Prefetcher (short)
+parm:           L1_NPP_PREFETCH_Disable:Disable L1 NPP Prefetcher (short)
+parm:           L1_Scrubbing_Enable:Enable L1 Scrubbing (short)
+parm:           L2_HW_PREFETCH_Disable:Disable L2 HW Prefetcher (short)
+parm:           L2_HW_CL_PREFETCH_Disable:Disable L2 HW CL Prefetcher (short)
+parm:           L2_AMP_PREFETCH_Disable:Adaptive Multipath Probability (short)
+parm:           L2_NLP_PREFETCH_Disable:Disable L2 NLP Prefetcher (short)
+parm:           L1_STRIDE_PREFETCH_Disable:Disable L1 Stride Prefetcher (short)
+parm:           L1_REGION_PREFETCH_Disable:Disable L1 Region Prefetcher (short)
+parm:           L1_BURST_PREFETCH_Disable:Disable L1 Burst Prefetcher (short)
+parm:           L2_STREAM_PREFETCH_Disable:Disable L2 Stream Prefetcher (short)
+parm:           L2_UPDOWN_PREFETCH_Disable:Disable L2 Up/Down Prefetcher (short)
+parm:           LLC_Streamer_Disable:Disable LLC Streamer (short)
+parm:           SpeedStep_Enable:Enable SpeedStep (short)
+parm:           C1E_Enable:Enable SpeedStep C1E (short)
+parm:           TurboBoost_Enable:Enable Turbo Boost (array of short)
+parm:           C3A_Enable:Enable C3 Auto Demotion (short)
+parm:           C1A_Enable:Enable C3 Auto Demotion (short)
+parm:           C3U_Enable:Enable C3 UnDemotion (short)
+parm:           C1U_Enable:Enable C1 UnDemotion (short)
+parm:           C2U_Enable:Enable C2 UnDemotion (short)
+parm:           CC6_Enable:Enable Core C6 State (short)
+parm:           PC6_Enable:Enable Package C6 State (short)
+parm:           ODCM_Enable:Enable On-Demand Clock Modulation (short)
+parm:           ODCM_DutyCycle:ODCM DutyCycle [0-7] | [0-14] (short)
+parm:           PowerMGMT_Unlock:Unlock Power Management (short)
+parm:           PowerPolicy:Power Policy Preference [0-15] (short)
+parm:           Turbo_Activation_Ratio:Turbo Activation Ratio (short)
+parm:           PState_FID:P-State Frequency Id (int)
+parm:           PState_VID:P-State Voltage Id (int)
+parm:           Ratio_Boost:Turbo Boost Frequency ratios (array of int)
+parm:           Ratio_PPC:Target Performance ratio (int)
+parm:           HWP_Enable:Hardware-Controlled Performance States (short)
+parm:           HWP_EPP:Energy Performance Preference (short)
+parm:           Ratio_HWP:Hardware-Controlled Performance ratios (array of int)
+parm:           HDC_Enable:Hardware Duty Cycling (short)
+parm:           EEO_Disable:Disable Energy Efficiency Optimization (short)
+parm:           R2H_Disable:Disable Race to Halt (short)
+parm:           Clear_Events:Clear Thermal and Power Events (ullong)
+parm:           ThermalOffset:Thermal Offset (short)
+parm:           ThermalScope:[0:None; 1:SMT; 2:Core; 3:Package] (int)
+parm:           VoltageScope:[0:None; 1:SMT; 2:Core; 3:Package] (int)
+parm:           PowerScope:[0:None; 1:SMT; 2:Core; 3:Package] (int)
+parm:           Register_CPU_Idle:Register the Kernel cpuidle driver (short)
+parm:           Register_CPU_Freq:Register the Kernel cpufreq driver (short)
+parm:           Register_Governor:Register the Kernel governor (short)
+parm:           Register_ClockSource:Register Clock Source driver (short)
+parm:           Idle_Route:[0:Default; 1:I/O; 2:HALT; 3:MWAIT] (short)
+parm:           Mech_IBRS:Mitigation Mechanism IBRS (short)
+parm:           Mech_STIBP:Mitigation Mechanism STIBP (short)
+parm:           Mech_SSBD:Mitigation Mechanism SSBD (short)
+parm:           Mech_IBPB:Mitigation Mechanism IBPB (short)
+parm:           Mech_SBPB:Mitigation Mechanism SBPB (short)
+parm:           Mech_L1D_FLUSH:Mitigation Mechanism Cache L1D Flush (short)
+parm:           Mech_PSFD:Mitigation Mechanism PSFD (short)
+parm:           Mech_BTC_NOBR:Mitigation Mechanism BTC-NOBR (short)
+parm:           Mech_XPROC_LEAK:Mitigation Mech. Cross Processor Leak (short)
+parm:           Mech_AGENPICK:Mitigation Mech. LsCfgDisAgenPick (short)
+parm:           WDT_Enable:Watchdog Hardware Timer (short)
+parm:           HSMP_Attempt:Attempt the HSMP interface (short)
+```  
+
+## Try
 Download the _CoreFreq_ Live CD from the [Wiki](http://github.com/cyring/CoreFreq/wiki/Live-CD)  
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_LiveCD_Step1.png "CoreFreq for ArchLinux")  
 
@@ -589,95 +769,9 @@ o---------------------------------------------------------------o
 
 * Q: What are the parameters of the _CoreFreq_ driver ?  
 
-  A: Use the `modinfo` command to list them:  
+  A: Use the `modinfo corefreqk.ko` command to list the parameters  
 
-```
-$ modinfo corefreqk.ko
-parm:           ArchID:Force an architecture (ID) (int)
-parm:           AutoClock:Estimate Clock Frequency 0:Spec; 1:Once; 2:Auto (int)
-parm:           SleepInterval:Timer interval (ms) (uint)
-parm:           TickInterval:System requested interval (ms) (uint)
-parm:           Experimental:Enable features under development (int)
-parm:           CPU_Count:-1:Kernel(default); 0:Hardware; >0: User value (int)
-parm:           Target_Ratio_Unlock:1:Target Ratio Unlock; 0:Lock (short)
-parm:           Clock_Ratio_Unlock:1:MinRatio; 2:MaxRatio; 3:Both Unlock (short)
-parm:           Turbo_Ratio_Unlock:1:Turbo Ratio Unlock; 0:Lock (short)
-parm:           Uncore_Ratio_Unlock:1:Uncore Ratio Unlock; 0:Lock (short)
-parm:           ServiceProcessor:Select a CPU to run services with (int)
-parm:           RDPMC_Enable:Enable RDPMC bit in CR4 register (ushort)
-parm:           NMI_Disable:Disable the NMI Handler (ushort)
-parm:           Override_SubCstate:Override Sub C-States (array of ushort)
-parm:           PkgCStateLimit:Package C-State Limit (short)
-parm:           IOMWAIT_Enable:I/O MWAIT Redirection Enable (short)
-parm:           CStateIORedir:Power Mgmt IO Redirection C-State (short)
-parm:           Config_TDP_Level:Config TDP Control Level (short)
-parm:           Custom_TDP_Offset:TDP Limit Offset (watt) (array of short)
-parm:           Activate_TDP_Limit:Activate TDP Limiting (array of short)
-parm:           Activate_TDP_Clamp:Activate TDP Clamping (array of short)
-parm:           Custom_TDC_Offset:TDC Limit Offset (amp) (short)
-parm:           Activate_TDC_Limit:Activate TDC Limiting (short)
-parm:           L1_HW_PREFETCH_Disable:Disable L1 HW Prefetcher (short)
-parm:           L1_HW_IP_PREFETCH_Disable:Disable L1 HW IP Prefetcher (short)
-parm:           L1_NPP_PREFETCH_Disable:Disable L1 NPP Prefetcher (short)
-parm:           L1_Scrubbing_Enable:Enable L1 Scrubbing (short)
-parm:           L2_HW_PREFETCH_Disable:Disable L2 HW Prefetcher (short)
-parm:           L2_HW_CL_PREFETCH_Disable:Disable L2 HW CL Prefetcher (short)
-parm:           L2_AMP_PREFETCH_Disable:Adaptive Multipath Probability (short)
-parm:           L2_NLP_PREFETCH_Disable:Disable L2 NLP Prefetcher (short)
-parm:           L1_STRIDE_PREFETCH_Disable:Disable L1 Stride Prefetcher (short)
-parm:           L1_REGION_PREFETCH_Disable:Disable L1 Region Prefetcher (short)
-parm:           L1_BURST_PREFETCH_Disable:Disable L1 Burst Prefetcher (short)
-parm:           L2_STREAM_PREFETCH_Disable:Disable L2 Stream Prefetcher (short)
-parm:           L2_UPDOWN_PREFETCH_Disable:Disable L2 Up/Down Prefetcher (short)
-parm:           LLC_Streamer_Disable:Disable LLC Streamer (short)
-parm:           SpeedStep_Enable:Enable SpeedStep (short)
-parm:           C1E_Enable:Enable SpeedStep C1E (short)
-parm:           TurboBoost_Enable:Enable Turbo Boost (array of short)
-parm:           C3A_Enable:Enable C3 Auto Demotion (short)
-parm:           C1A_Enable:Enable C3 Auto Demotion (short)
-parm:           C3U_Enable:Enable C3 UnDemotion (short)
-parm:           C1U_Enable:Enable C1 UnDemotion (short)
-parm:           C2U_Enable:Enable C2 UnDemotion (short)
-parm:           CC6_Enable:Enable Core C6 State (short)
-parm:           PC6_Enable:Enable Package C6 State (short)
-parm:           ODCM_Enable:Enable On-Demand Clock Modulation (short)
-parm:           ODCM_DutyCycle:ODCM DutyCycle [0-7] | [0-14] (short)
-parm:           PowerMGMT_Unlock:Unlock Power Management (short)
-parm:           PowerPolicy:Power Policy Preference [0-15] (short)
-parm:           Turbo_Activation_Ratio:Turbo Activation Ratio (short)
-parm:           PState_FID:P-State Frequency Id (int)
-parm:           PState_VID:P-State Voltage Id (int)
-parm:           Ratio_Boost:Turbo Boost Frequency ratios (array of int)
-parm:           Ratio_PPC:Target Performance ratio (int)
-parm:           HWP_Enable:Hardware-Controlled Performance States (short)
-parm:           HWP_EPP:Energy Performance Preference (short)
-parm:           Ratio_HWP:Hardware-Controlled Performance ratios (array of int)
-parm:           HDC_Enable:Hardware Duty Cycling (short)
-parm:           EEO_Disable:Disable Energy Efficiency Optimization (short)
-parm:           R2H_Disable:Disable Race to Halt (short)
-parm:           Clear_Events:Clear Thermal and Power Events (ullong)
-parm:           ThermalOffset:Thermal Offset (short)
-parm:           ThermalScope:[0:None; 1:SMT; 2:Core; 3:Package] (int)
-parm:           VoltageScope:[0:None; 1:SMT; 2:Core; 3:Package] (int)
-parm:           PowerScope:[0:None; 1:SMT; 2:Core; 3:Package] (int)
-parm:           Register_CPU_Idle:Register the Kernel cpuidle driver (short)
-parm:           Register_CPU_Freq:Register the Kernel cpufreq driver (short)
-parm:           Register_Governor:Register the Kernel governor (short)
-parm:           Register_ClockSource:Register Clock Source driver (short)
-parm:           Idle_Route:[0:Default; 1:I/O; 2:HALT; 3:MWAIT] (short)
-parm:           Mech_IBRS:Mitigation Mechanism IBRS (short)
-parm:           Mech_STIBP:Mitigation Mechanism STIBP (short)
-parm:           Mech_SSBD:Mitigation Mechanism SSBD (short)
-parm:           Mech_IBPB:Mitigation Mechanism IBPB (short)
-parm:           Mech_SBPB:Mitigation Mechanism SBPB (short)
-parm:           Mech_L1D_FLUSH:Mitigation Mechanism Cache L1D Flush (short)
-parm:           Mech_PSFD:Mitigation Mechanism PSFD (short)
-parm:           Mech_BTC_NOBR:Mitigation Mechanism BTC-NOBR (short)
-parm:           Mech_XPROC_LEAK:Mitigation Mech. Cross Processor Leak (short)
-parm:           Mech_AGENPICK:Mitigation Mech. LsCfgDisAgenPick (short)
-parm:           WDT_Enable:Watchdog Hardware Timer (short)
-parm:           HSMP_Attempt:Attempt the HSMP interface (short)
-```  
+----
 
 ## Arm [AArch64]
 ### Screenshots
