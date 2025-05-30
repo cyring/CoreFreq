@@ -8363,9 +8363,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.HSMP_Capable = 1,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
-		|LATCH_HSMP_CAPABLE
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 7 PRO 7745", 	\
@@ -8377,9 +8376,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.HSMP_Capable = 1,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
-		|LATCH_HSMP_CAPABLE
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 5 PRO 7645", 	\
@@ -8391,9 +8389,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.HSMP_Capable = 1,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
-		|LATCH_HSMP_CAPABLE
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen 9 7950X3D"),
@@ -8404,9 +8401,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.HSMP_Capable = 1,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
-		|LATCH_HSMP_CAPABLE
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen 9 7900X3D"),
@@ -8417,9 +8413,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.HSMP_Capable = 1,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
-		|LATCH_HSMP_CAPABLE
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen 7 7800X3D"),
@@ -8430,9 +8425,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.HSMP_Capable = 1,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
-		|LATCH_HSMP_CAPABLE
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen 9 7950X"),
@@ -8443,9 +8437,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.HSMP_Capable = 1,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
-		|LATCH_HSMP_CAPABLE
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 9 7900X",		\
@@ -8459,9 +8452,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.HSMP_Capable = 1,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
-		|LATCH_HSMP_CAPABLE
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen 5 7600X3D"),
@@ -8472,9 +8464,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.HSMP_Capable = 1,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
-		|LATCH_HSMP_CAPABLE
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 5 7600X",		\
@@ -8486,9 +8477,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.HSMP_Capable = 1,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
-		|LATCH_HSMP_CAPABLE
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen 9 7900"),
@@ -8499,9 +8489,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.HSMP_Capable = 1,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
-		|LATCH_HSMP_CAPABLE
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen 7 7700"),
@@ -8512,9 +8501,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.HSMP_Capable = 1,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
-		|LATCH_HSMP_CAPABLE
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 5 7600",	\
@@ -8526,9 +8514,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
-	.HSMP_Capable = 1,
-	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
-		|LATCH_HSMP_CAPABLE
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen 9 7945HX3D"),
