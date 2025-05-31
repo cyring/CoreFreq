@@ -942,6 +942,26 @@ static PROCESSOR_SPECIFIC *LookupProcessor(void)
 	return NULL;
 }
 
+#ifdef CONFIG_CPU_FREQ
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+static int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu)
+{
+	struct cpufreq_policy *cpu_policy __free(put_cpufreq_policy);
+
+	if (!policy)
+		return -EINVAL;
+
+	cpu_policy = cpufreq_cpu_get(cpu);
+	if (!cpu_policy)
+		return -EINVAL;
+
+	memcpy(policy, cpu_policy, sizeof(*policy));
+
+	return 0;
+}
+#endif
+#endif /* CONFIG_CPU_FREQ */
+
 static void Query_DeviceTree(unsigned int cpu)
 {
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
@@ -952,7 +972,7 @@ static void Query_DeviceTree(unsigned int cpu)
 	unsigned int max_freq = 0, min_freq = 0, cur_freq = 0;
 	COF_ST COF;
 #ifdef CONFIG_CPU_FREQ
-  if (cpufreq_get_policy(pFreqPolicy,cpu) == 0)
+  if (cpufreq_get_policy(pFreqPolicy, cpu) == 0)
   {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
 	struct cpufreq_frequency_table *table;
@@ -2277,7 +2297,7 @@ static long Sys_OS_Driver_Query(void)
 		StrCopy(PUBLIC(RO(Proc))->OS.FreqDriver.Name,
 			pFreqDriver, CPUFREQ_NAME_LEN);
 	}
-  if ((rc=cpufreq_get_policy(pFreqPolicy,PUBLIC(RO(Proc))->Service.Core)) == 0)
+  if ((rc=cpufreq_get_policy(pFreqPolicy, PUBLIC(RO(Proc))->Service.Core)) == 0)
   {
 	struct cpufreq_governor *pGovernor = pFreqPolicy->governor;
 	if (pGovernor != NULL) {

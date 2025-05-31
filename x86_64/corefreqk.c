@@ -53,8 +53,12 @@
 #endif /* CONFIG_XEN */
 #include <asm/mwait.h>
 #ifdef CONFIG_AMD_NB
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+#include <asm/amd/nb.h>
+#else
 #include <asm/amd_nb.h>
 #endif
+#endif /* CONFIG_AMD_NB */
 #ifdef CONFIG_ACPI
 #include <linux/acpi.h>
 #include <acpi/processor.h>
@@ -20825,6 +20829,26 @@ static void Stop_Uncore_AMD_Family_17h(void *arg)
 		MSR_AMD_F17H_DF_PERF_CTL );
 }
 
+
+#ifdef CONFIG_CPU_FREQ
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+static int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu)
+{
+	struct cpufreq_policy *cpu_policy __free(put_cpufreq_policy);
+
+	if (!policy)
+		return -EINVAL;
+
+	cpu_policy = cpufreq_cpu_get(cpu);
+	if (!cpu_policy)
+		return -EINVAL;
+
+	memcpy(policy, cpu_policy, sizeof(*policy));
+
+	return 0;
+}
+#endif
+#endif /* CONFIG_CPU_FREQ */
 
 static long Sys_OS_Driver_Query(void)
 {
