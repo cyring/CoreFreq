@@ -20521,7 +20521,7 @@ static void Call_Genoa_ACCU(CORE_RO *Core)
 	Call_HSMP_ACCU(Core);
 }
 
-static void SoC_RAPL(AMD_17_SVI SVI, const unsigned long long factor)
+static void SoC_RAPL(AMD_F17H_SVI SVI, const unsigned long long factor)
 {
 	unsigned long long VCC, ICC, ACCU;
 	/*	PLATFORM RAPL workaround to provide the SoC power	*/
@@ -20537,7 +20537,7 @@ static void SoC_RAPL(AMD_17_SVI SVI, const unsigned long long factor)
 static void Call_SVI(	const unsigned int plane0, const unsigned int plane1,
 			const unsigned long long factor )
 {
-	AMD_17_SVI SVI = {.value = 0};
+	AMD_F17H_SVI SVI = {.value = 0};
 
 	Core_AMD_SMN_Read(	SVI,
 				SMU_AMD_F17H_SVI(plane0),
@@ -20557,7 +20557,7 @@ static void Call_SVI(	const unsigned int plane0, const unsigned int plane1,
 static void Call_SVI_APU(const unsigned int plane0, const unsigned int plane1,
 			const unsigned long long factor)
 {
-	AMD_17_SVI SVI = {.value = 0};
+	AMD_F17H_SVI SVI = {.value = 0};
 
 	Core_AMD_SMN_Read(	SVI,
 				SMU_AMD_F17_60H_SVI(plane0),
@@ -20604,14 +20604,27 @@ static void Call_DFLT(	const unsigned int plane0, const unsigned int plane1,
 	PUBLIC(RO(Core,AT( PUBLIC(RO(Proc))->Service.Core )))->PowerThermal.VID;
 }
 
+static void Call_Raphael(const unsigned int plane0, const unsigned int plane1,
+			const unsigned long long factor)
+{
+	AMD_F19H_SVI SVI = {.value = 0};
+
+	Call_DFLT(plane0, plane1, factor);
+
+	Core_AMD_SMN_Read(SVI,
+	PUBLIC(RO(Core, AT(PUBLIC(RO(Proc))->Service.Core)))->T.PackageID == 0 ?
+			SMU_AMD_F19H_SVI(plane0) : SMU_AMD_F19H_SVI(plane1),
+				PRIVATE(OF(Zen)).Device.DF);
+
+	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.SVI1;
+}
+
 static void Call_Genoa( const unsigned int plane0, const unsigned int plane1,
 			const unsigned long long factor )
 {
-	AMD_GNA_SVI SVI = {.value = 0};
-	UNUSED(factor);
+	AMD_F19H_SVI SVI = {.value = 0};
 
-	PUBLIC(RO(Proc))->PowerThermal.VID.CPU = \
-	PUBLIC(RO(Core,AT( PUBLIC(RO(Proc))->Service.Core )))->PowerThermal.VID;
+	Call_DFLT(plane0, plane1, factor);
 
 	Core_AMD_SMN_Read(SVI,
 	PUBLIC(RO(Core, AT(PUBLIC(RO(Proc))->Service.Core)))->T.PackageID == 0 ?
@@ -20669,7 +20682,7 @@ static enum hrtimer_restart Cycle_AMD_Zen3Plus_RMB(struct hrtimer *pTimer)
 }
 static enum hrtimer_restart Cycle_AMD_Zen4_RPL(struct hrtimer *pTimer)
 {
-	return Entry_AMD_F17h(pTimer, Call_MSR_ACCU, Call_DFLT, 0, 0, 0LLU);
+	return Entry_AMD_F17h(pTimer, Call_MSR_ACCU, Call_Raphael, 1, 2, 0LLU);
 }
 static enum hrtimer_restart Cycle_AMD_Zen4_Genoa(struct hrtimer *pTimer)
 {

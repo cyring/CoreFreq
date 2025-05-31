@@ -2314,6 +2314,10 @@ typedef union
 	#define SMU_AMD_RMB_SVI(_plane) 	(0x0006f010 + (_plane << 2))
 #endif
 
+#ifndef SMU_AMD_F19H_SVI
+	#define SMU_AMD_F19H_SVI(_plane)	(0x0007300c + (_plane << 2))
+#endif
+
 typedef union
 {/*		--- SMU SVI [ 0x5a00c ; 0x5a010 ; 0x5a014 ; 0x6f038] ---
  *				[ CPU addr]	[ SoC addr]
@@ -2333,7 +2337,7 @@ typedef union
 		VID		: 24-16, /* Voltage: SVI{0,1}_PLANE0_VDDCOR */
 		ReservedBits2	: 32-24;
 	};
-} AMD_17_SVI;
+} AMD_F17H_SVI;
 
 typedef union
 {/*				--- SMU SVI [ Rembrandt ] ---
@@ -2369,13 +2373,16 @@ typedef union
 		ReservedBits	: 24-0, 	/*	MTS: All zeros	*/
 		VID		: 32-24;	/*	Voltage ID	*/
 	};
-} AMD_17_CORE_VID;
+} AMD_F17H_CORE_VID;
 
 typedef union
-{/*				--- SMU SVI [ Genoa ] ---
- * ZEN4 [AF_11] 		[ 0x5a010 ]	[ 0x5a014 ]
+{/*				--- SMU SVI [ ZEN4 ] ---
+ * Genoa [AF_11] 		[ 0x5a010 ]	[ 0x5a014 ]
  *			Idle:	0x00009a81	0x00019a81
  *			Load:	0x0000a401	0x0001a401
+ * Raphael [AF_61]		[ 0x73010 ]	[ 0x73014 ]
+ *			Idle:	0x0000bd41	0x0001bd41
+ *			Load:	0x0000b9c1	0x0001b901
  */
 	unsigned int		value;
 	struct {
@@ -2385,4 +2392,4 @@ typedef union
 		PKG		: 17-16,  /* 1 for 2nd processor socket */
 		RSVD		: 32-17;
 	};
-} AMD_GNA_SVI;
+} AMD_F19H_SVI;
