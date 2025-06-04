@@ -1785,7 +1785,7 @@ static void Query_AMD_F19h_61h_PerCluster(unsigned int cpu) ;
 static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 
 #define     Query_AMD_F19h_74h_PerSocket Query_AMD_F19h_61h_PerCluster
-#define     InitTimer_AMD_Zen4_PHX InitTimer_AMD_Zen4_RPL
+#define     InitTimer_AMD_Zen4_PHX InitTimer_AMD_Zen3Plus_RMB
 
 static void InitTimer_AMD_Zen4_Genoa(unsigned int cpu) ;
 
