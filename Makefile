@@ -4,7 +4,7 @@
 
 COREFREQ_MAJOR = 2
 COREFREQ_MINOR = 0
-COREFREQ_REV = 6
+COREFREQ_REV = 7
 HW = $(shell uname -m)
 CC ?= cc
 WARNING ?= -Wall -Wfatal-errors

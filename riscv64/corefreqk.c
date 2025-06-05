@@ -943,7 +943,7 @@ static PROCESSOR_SPECIFIC *LookupProcessor(void)
 }
 
 #ifdef CONFIG_CPU_FREQ
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 16, 0)
 static int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu)
 {
 	struct cpufreq_policy *cpu_policy __free(put_cpufreq_policy);
