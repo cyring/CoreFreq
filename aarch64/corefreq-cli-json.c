@@ -921,6 +921,14 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 		json_key(&s, "Technology");
 		{
 			json_start_object(&s);
+			json_key(&s, "DSU");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.DSU);
+			json_key(&s, "CMN");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.CMN);
+			json_key(&s, "CCI");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.CCI);
+			json_key(&s, "CCN");
+			json_literal(&s, "%llu", RO(Shm)->Proc.Technology.CCN);
 			json_key(&s, "Hybrid");
 			json_literal(&s, "%llu", RO(Shm)->Proc.Features.Hybrid);
 			json_key(&s, "VM");

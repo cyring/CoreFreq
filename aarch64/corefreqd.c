@@ -682,6 +682,11 @@ void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 	RO(Shm)->Proc.Technology.VM = BITWISEAND_CC(BUS_LOCK,
 						RW(Proc)->VM,
 						RO(Proc)->CR_Mask) != 0;
+	/* If both cluster registers are implemented then DSU is present */
+	if (RO(Proc)->Uncore.ClusterCfg.value != 0
+	 && RO(Proc)->Uncore.ClusterRev.value != 0) {
+		RO(Shm)->Proc.Technology.DSU = 1;
+	}
 }
 
 void Mitigation_Stage(	RO(SHM_STRUCT) *RO(Shm),
@@ -766,11 +771,6 @@ void Uncore_Update(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 	memcpy( RO(Shm)->Uncore.Boost,
 		RO(Proc)->Uncore.Boost,
 		(UNCORE_BOOST(SIZE)) * sizeof(COF_ST) );
-	/* If both cluster registers are implemented then DSU is present */
-	if (RO(Proc)->Uncore.ClusterCfg.value != 0
-	 && RO(Proc)->Uncore.ClusterRev.value != 0) {
-		RO(Shm)->Proc.Features.DSU = 1;
-	}
 }
 
 void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),

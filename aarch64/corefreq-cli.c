@@ -14265,10 +14265,10 @@ void Layout_Footer(Layer *layer, CUINT row)
 	hTech0.attr[26] = hTech0.attr[27] = EN[RO(Shm)->Proc.Features.Hybrid];
 	/*	D		S		U			*/
 	hTech0.attr[29] = hTech0.attr[30] = hTech0.attr[31] = \
-						EN[RO(Shm)->Proc.Features.DSU];
+					EN[RO(Shm)->Proc.Technology.DSU];
 	/*	C		M		N			*/
 	hTech0.attr[33] = hTech0.attr[34] = hTech0.attr[35] = \
-						EN[RO(Shm)->Proc.Features.CMN];
+					EN[RO(Shm)->Proc.Technology.CMN];
 
 	LayerCopyAt(	layer, hTech0.origin.col, hTech0.origin.row,
 			hTech0.length, hTech0.attr, hTech0.code );

@@ -241,7 +241,11 @@ typedef struct
 
 	struct {
 		unsigned long long
-				_Unused1_	: 13-0,
+				DSU		:  1-0,
+				CMN		:  2-1,
+				CCI		:  3-2,
+				CCN		:  4-3,
+				_Unused1_	: 13-4,
 				VM		: 14-13,
 				IOMMU		: 15-14,
 				_Unused2_	: 20-15,
