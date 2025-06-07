@@ -14219,7 +14219,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 	size_t len;
 	CUINT col = 0;
 
-	LayerDeclare(	LAYOUT_FOOTER_TECH_TSC, RSZ(LAYOUT_FOOTER_TECH_TSC),
+	LayerDeclare(	LAYOUT_FOOTER_TECH_ARM, RSZ(LAYOUT_FOOTER_TECH_ARM),
 			0, row, hTech0 );
 
 	LayerDeclare(	LAYOUT_FOOTER_VOLT_TEMP, RSZ(LAYOUT_FOOTER_VOLT_TEMP),
@@ -14227,6 +14227,11 @@ void Layout_Footer(Layer *layer, CUINT row)
 	/* Pre-compute right-aligned position of Voltage & Temperature items */
 	Draw.Area.Footer.VoltTemp.Hot[0] = hVoltTemp0.origin.col + 2;
 
+	const ATTRIBUTE EN[] = {
+		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_ENABLE_0],
+		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_ENABLE_1],
+		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_ENABLE_2]
+	};
 	const struct { ASCII *code; ATTRIBUTE attr; } TSC[] = {
 		{RSC(LAYOUT_FOOTER_TSC_NONE).CODE(),
 				RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TSC_NONE]},
@@ -14243,10 +14248,21 @@ void Layout_Footer(Layer *layer, CUINT row)
 	hTech0.code[10] = TSC[RO(Shm)->Proc.Features.InvariantTSC].code[4];
 	hTech0.code[11] = TSC[RO(Shm)->Proc.Features.InvariantTSC].code[5];
 	hTech0.code[12] = TSC[RO(Shm)->Proc.Features.InvariantTSC].code[6];
-
+	/*	T		S		C			*/
 	hTech0.attr[ 6] = hTech0.attr[ 7] = hTech0.attr[ 8] = \
+	/*	-		I		N			*/
 	hTech0.attr[ 9] = hTech0.attr[10] = hTech0.attr[11] = \
+	/*	V							*/
 	hTech0.attr[12] = TSC[RO(Shm)->Proc.Features.InvariantTSC].attr;
+	/*	S		M		T			*/
+	hTech0.attr[14] = hTech0.attr[15] = hTech0.attr[16] = \
+				EN[RO(Shm)->Proc.Features.HyperThreading];
+	/*	b		i		g		.	*/
+	hTech0.attr[18] = hTech0.attr[19] = hTech0.attr[20] = hTech0.attr[21] =\
+	/*	L		I		T		T	*/
+	hTech0.attr[22] = hTech0.attr[23] = hTech0.attr[24] = hTech0.attr[25] =\
+	/*	L		E					*/
+	hTech0.attr[26] = hTech0.attr[27] = EN[RO(Shm)->Proc.Features.Hybrid];
 
 	LayerCopyAt(	layer, hTech0.origin.col, hTech0.origin.row,
 			hTech0.length, hTech0.attr, hTech0.code );
