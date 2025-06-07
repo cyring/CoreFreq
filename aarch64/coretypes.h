@@ -1065,7 +1065,9 @@ typedef struct	/* BSP features.					*/
 			OSPM_EPP	: 55-54,
 			ACPI_CST_CAP	: 56-55,
 			ACPI_CST	: 60-56, /* 15 CState sub-packages */
-			_Unused2_	: 64-60;
+			DSU		: 61-60,
+			CMN		: 62-61,
+			_Unused2_	: 64-62;
 	};
 	struct
 	{

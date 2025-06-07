@@ -541,7 +541,8 @@
 #define RSC_LAYOUT_FOOTER_TECH_ARM_CODE_EN				\
 {									\
 	'T','e','c','h',' ','[',' ',' ','T','S','C',' ',' ',',',	\
-	'S','M','T',',','b','i','g','.','L','I','T','T','L','E',']' 	\
+	'S','M','T',',','b','i','g','.','L','I','T','T','L','E',',',	\
+	'D','S','U',',','C','M','N',']' 			 	\
 }
 
 #define RSC_LAYOUT_FOOTER_VOLT_TEMP_CODE_EN				\
