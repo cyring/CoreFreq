@@ -397,12 +397,14 @@ typedef struct
 } ARCH;
 
 static CLOCK BaseClock_GenericMachine(unsigned int ratio) ;
+static void Query_CMN(unsigned int cpu) ;
 static void Query_GenericMachine(unsigned int cpu) ;
 static void PerCore_GenericMachine(void *arg) ;
 static void Start_GenericMachine(void *arg) ;
 static void Stop_GenericMachine(void *arg) ;
 static void InitTimer_GenericMachine(unsigned int cpu) ;
 static void Query_DynamIQ(unsigned int cpu) ;
+static void Query_DynamIQ_CMN(unsigned int cpu) ;
 /*	[Void]								*/
 #define _Void_Signature {.ExtFamily=0x00, .Family=0x0, .ExtModel=0x0, .Model=0x0}
 #define _Cortex_A34	{.ExtFamily=0xd0, .Family=0x2, .ExtModel=0x0, .Model=0x8}
@@ -1346,7 +1348,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Neoverse_E1] = {
 	.Signature = _Neoverse_E1,
-	.Query = Query_GenericMachine,
+	.Query = Query_CMN,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -1374,7 +1376,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Neoverse_N1] = {
 	.Signature = _Neoverse_N1,
-	.Query = Query_GenericMachine,
+	.Query = Query_CMN,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -1402,7 +1404,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Neoverse_N2] = {
 	.Signature = _Neoverse_N2,
-	.Query = Query_GenericMachine,
+	.Query = Query_CMN,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -1430,7 +1432,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Neoverse_V1] = {
 	.Signature = _Neoverse_V1,
-	.Query = Query_DynamIQ,
+	.Query = Query_DynamIQ_CMN,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -1458,7 +1460,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Neoverse_V2] = {
 	.Signature = _Neoverse_V2,
-	.Query = Query_GenericMachine,
+	.Query = Query_CMN,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,

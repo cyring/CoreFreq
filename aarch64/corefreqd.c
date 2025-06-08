@@ -687,6 +687,9 @@ void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 	 && RO(Proc)->Uncore.ClusterRev.value != 0) {
 		RO(Shm)->Proc.Technology.DSU = 1;
 	}
+	if (RO(Proc)->Uncore.CMN_Type != CMN_NONE) {
+		RO(Shm)->Proc.Technology.CMN = 1;
+	}
 }
 
 void Mitigation_Stage(	RO(SHM_STRUCT) *RO(Shm),
