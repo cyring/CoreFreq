@@ -2871,13 +2871,28 @@ static void Query_DynamIQ(unsigned int cpu)
 {
 	Query_GenericMachine(cpu);
 
-    if (PUBLIC(RO(Proc))->HypervisorID == BARE_METAL) {
+  if (PUBLIC(RO(Proc))->HypervisorID == BARE_METAL) {
 	/* Query the Cluster Configuration on Bare Metal only		*/
 	PUBLIC(RO(Proc))->Uncore.ClusterCfg.value = SysRegRead(CLUSTERCFR_EL1);
 	PUBLIC(RO(Proc))->Uncore.ClusterRev.value = SysRegRead(CLUSTERIDR_EL1);
 
-	PUBLIC(RO(Proc))->Uncore.DSU_Type = DSU_100;
+    if (PUBLIC(RO(Proc))->Uncore.ClusterCfg.value != 0
+     && PUBLIC(RO(Proc))->Uncore.ClusterRev.value != 0)
+    {
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Architecture.CN > ARMv9_A)
+	{
+		PUBLIC(RO(Proc))->Uncore.DSU_Type = DSU_120;
+	}
+	else if (Arch[PUBLIC(RO(Proc))->ArchID].Architecture.CN > ARMv8_2_A)
+	{
+		PUBLIC(RO(Proc))->Uncore.DSU_Type = DSU_110;
+	} else {
+		PUBLIC(RO(Proc))->Uncore.DSU_Type = DSU_100;
+	}
     } else {
+		PUBLIC(RO(Proc))->Uncore.DSU_Type = DSU_NONE;
+    }
+  } else {
 	enum DSU_TYPE DSU_Type[2] = {DSU_NONE, DSU_NONE};
 
 #if defined(CONFIG_OF)

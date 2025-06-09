@@ -683,9 +683,7 @@ void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 						RW(Proc)->VM,
 						RO(Proc)->CR_Mask) != 0;
 	/* If both cluster registers are implemented then DSU is present */
-	if ((RO(Proc)->Uncore.ClusterCfg.value != 0
-	  && RO(Proc)->Uncore.ClusterRev.value != 0)
-	 || RO(Proc)->Uncore.DSU_Type != DSU_NONE) {
+	if (RO(Proc)->Uncore.DSU_Type != DSU_NONE) {
 		RO(Shm)->Proc.Technology.DSU = 1;
 	}
 	if (RO(Proc)->Uncore.CMN_Type != CMN_NONE) {
