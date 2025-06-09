@@ -103,6 +103,21 @@ enum MECH_CSV2 {
 	CSV2_3p0
 };
 
+enum DSU_TYPE {
+	DSU_NONE,
+	DSU_100,		/* X1, A78, A77, A76, A75, A65, A55	*/
+	DSU_AE, 		/* A78AE, A76AE, A65AE			*/
+	DSU_110,		/* X3, X2, A715, A710, A510		*/
+	DSU_120,		/* X925, X4, A725, A720, A520		*/
+	DSU_120AE		/* A720AE, A520AE			*/
+};
+
+enum CCN_TYPE {
+	CCN_502,		/* A72					*/
+	CCN_504,		/* A15 (32-bits), Freescale FSL-2080A	*/
+	CCN_512
+};
+
 enum CMN_TYPE {
 	CMN_NONE,
 	CMN_600,

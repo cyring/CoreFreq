@@ -2761,184 +2761,36 @@ static int CoreFreqK_ProbePCI(	struct pci_device_id PCI_ids[],
 }
 
 #if defined(CONFIG_OF)
-static const struct of_device_id CMN_of_match[] = {
-	{ .compatible = "arm,cmn-600",	.data = (void *) CMN_600	},
-	{ .compatible = "arm,cmn-650",	.data = (void *) CMN_650	},
-	{ .compatible = "arm,cmn-700",	.data = (void *) CMN_700	},
-	{ .compatible = "arm,cmn-s3",	.data = (void *) CMN_S3 	},
-	{ .compatible = "arm,ci-700",	.data = (void *) CMN_CI700	},
-	{ /* EOL */ }
-};
-
-static enum CMN_TYPE Detect_CMN_From_DeviceTree(void)
+static uintptr_t Match_From_DeviceTree(const struct of_device_id of_match[])
 {
 	struct device_node *node = of_find_all_nodes(NULL);
 	while (node != NULL) {
 		const struct of_device_id *match;
-		match = of_match_node(CMN_of_match, node);
+		match = of_match_node(of_match, node);
 		if (match) {
 			of_node_put(node);
-			return (enum CMN_TYPE) (uintptr_t) match->data;
+			return (uintptr_t) match->data;
 		}
 		node = of_find_all_nodes(node);
 	}
-	return CMN_NONE;
+	return 0;
 }
 #endif /* CONFIG_OF */
 
 #if defined(CONFIG_ACPI)
-/* Source: drivers/acpi/bus.c						*/
-#define ACPI_DT_NAMESPACE_HID	"PRP0001"
-
-static bool Zacpi_of_match_device(struct acpi_device *adev,
-				 const struct of_device_id *of_match_table,
-				 const struct of_device_id **of_id)
-{
-	const union acpi_object *of_compatible, *obj;
-	int i, nval;
-
-	if (!adev)
-		return false;
-
-	of_compatible = adev->data.of_compatible;
-	if (!of_match_table || !of_compatible)
-		return false;
-
-	if (of_compatible->type == ACPI_TYPE_PACKAGE) {
-		nval = of_compatible->package.count;
-		obj = of_compatible->package.elements;
-	} else {
-		nval = 1;
-		obj = of_compatible;
-	}
-	for (i = 0; i < nval; i++, obj++) {
-		const struct of_device_id *id;
-
-		for (id = of_match_table; id->compatible[0]; id++)
-			if (!strcasecmp(obj->string.pointer, id->compatible)) {
-				if (of_id)
-					*of_id = id;
-				return true;
-			}
-	}
-	return false;
-}
-
-static bool Z__acpi_match_device_cls(const struct acpi_device_id *id,
-				    struct acpi_hardware_id *hwid)
-{
-	int i, msk, byte_shift;
-	char buf[3];
-
-	if (!id->cls)
-		return false;
-
-	for (i = 1; i <= 3; i++) {
-		byte_shift = 8 * (3 - i);
-		msk = (id->cls_msk >> byte_shift) & 0xFF;
-		if (!msk)
-			continue;
-
-		sprintf(buf, "%02x", (id->cls >> byte_shift) & msk);
-		if (strncmp(buf, &hwid->id[(i - 1) * 2], 2))
-			return false;
-	}
-	return true;
-}
-
-static bool Z__acpi_match_device(struct acpi_device *device,
-				const struct acpi_device_id *acpi_ids,
-				const struct of_device_id *of_ids,
-				const struct acpi_device_id **acpi_id,
-				const struct of_device_id **of_id)
-{
-	const struct acpi_device_id *id;
-	struct acpi_hardware_id *hwid;
-
-	if (!device || !device->status.present)
-		return false;
-
-    list_for_each_entry(hwid, &device->pnp.ids, list) {
-	if (acpi_ids) {
-		for (id = acpi_ids; id->id[0] || id->cls; id++) {
-			if (id->id[0] && !strcmp((char *)id->id, hwid->id))
-				goto out_acpi_match;
-			if (id->cls && Z__acpi_match_device_cls(id, hwid))
-				goto out_acpi_match;
-		}
-	}
-	if (!strcmp(ACPI_DT_NAMESPACE_HID, hwid->id))
-		return Zacpi_of_match_device(device, of_ids, of_id);
-    }
-	return false;
-
-out_acpi_match:
-	if (acpi_id)
-		*acpi_id = id;
-	return true;
-}
-
-static struct acpi_device_id CMN_ACPI_ID[] = {
-	{ "ARMHC600",	CMN_600 	},
-	{ "ARMHC650",	CMN_650 	},
-	{ "ARMHC700",	CMN_700 	},
-	{ "ARMHC003",	CMN_S3		},
-	{ "ARMHC701",	CMN_CI700	},
-	{ "",		0		}
-};
-
-static int CMN_Match(	struct acpi_device *adev,
-			const struct acpi_device_id *ids,
-			const struct acpi_device_id **id )
-{
-	int rc = Z__acpi_match_device(adev, ids, NULL, id, NULL) ? 0 : -ENOENT;
-	return rc;
-}
-
-static acpi_status CMN_Compare( acpi_handle handle,
-				u32 level,
-				void *data,
-				void **return_value )
-{
-	struct acpi_device_id *ids;
-	struct acpi_device *adev, **rdev;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 17, 0)
-	if ((adev = acpi_fetch_acpi_dev(handle)) == NULL) {
-		return AE_OK;
-	}
-#else
-	if (acpi_bus_get_device(handle, &adev)) {
-		return AE_OK;
-	}
-#endif
-	rdev = data;
-
-	for (ids = CMN_ACPI_ID; ids->id[0] || ids->cls; ids++) {
-		const struct acpi_device_id *id = NULL;
-		if (CMN_Match(adev, ids, &id) == 0) {
-			*rdev = adev;
-			(*rdev)->driver_data = (void*) id->driver_data;
-			break;
-		}
-	}
-	return AE_OK;
-}
-
-static enum CMN_TYPE Detect_CMN_From_ACPI(void)
+static uintptr_t Match_From_ACPI(acpi_status(*Callback)(acpi_handle,u32,void*,void**))
 {
 	struct acpi_device *rdev = NULL;
 	acpi_status status;
 	status = acpi_walk_namespace(ACPI_TYPE_DEVICE, ACPI_ROOT_OBJECT,
-			ACPI_UINT32_MAX, CMN_Compare, NULL, &rdev, NULL);
+			ACPI_UINT32_MAX, Callback, NULL, &rdev, NULL);
 
 	if (!ACPI_FAILURE(status) && (rdev != NULL)) {
-		return (enum CMN_TYPE) rdev->driver_data;
+		return (uintptr_t) rdev->driver_data;
 	} else {
-		return CMN_NONE;
+		return 0;
 	}
 }
-
-#undef ACPI_DT_NAMESPACE_HID
 #endif /* CONFIG_ACPI */
 
 static void Query_Same_Genuine_Features(void)
@@ -2978,6 +2830,43 @@ static void Query_GenericMachine(unsigned int cpu)
 	For_All_ACPI_CPPC(Read_ACPI_CPPC_Registers, NULL);
 }
 
+#if defined(CONFIG_OF)
+static const struct of_device_id DSU_of_match[] = DSU_DEVICE_TREE_LIST;
+#endif
+
+#if defined(CONFIG_ACPI)
+static struct acpi_device_id DSU_hid_match[] = DSU_ACPI_HID_LIST;
+
+static acpi_status DSU_Compare( acpi_handle handle,
+				u32 level,
+				void *data,
+				void **return_value )
+{
+	struct acpi_device_id *ids;
+	struct acpi_device *adev, **rdev;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 17, 0)
+	if ((adev = acpi_fetch_acpi_dev(handle)) == NULL) {
+		return AE_OK;
+	}
+#else
+	if (acpi_bus_get_device(handle, &adev)) {
+		return AE_OK;
+	}
+#endif
+	rdev = data;
+
+	for (ids = DSU_hid_match; ids->id[0] || ids->cls; ids++) {
+		const struct acpi_device_id *id = NULL;
+		if (ACPI_Match(adev, ids, &id) == 0) {
+			*rdev = adev;
+			(*rdev)->driver_data = (void*) id->driver_data;
+			break;
+		}
+	}
+	return AE_OK;
+}
+#endif /* CONFIG_ACPI */
+
 static void Query_DynamIQ(unsigned int cpu)
 {
 	Query_GenericMachine(cpu);
@@ -2986,8 +2875,58 @@ static void Query_DynamIQ(unsigned int cpu)
 	/* Query the Cluster Configuration on Bare Metal only		*/
 	PUBLIC(RO(Proc))->Uncore.ClusterCfg.value = SysRegRead(CLUSTERCFR_EL1);
 	PUBLIC(RO(Proc))->Uncore.ClusterRev.value = SysRegRead(CLUSTERIDR_EL1);
+
+	PUBLIC(RO(Proc))->Uncore.DSU_Type = DSU_100;
+    } else {
+	enum DSU_TYPE DSU_Type[2] = {DSU_NONE, DSU_NONE};
+
+#if defined(CONFIG_OF)
+	DSU_Type[0] = (enum DSU_TYPE) Match_From_DeviceTree(DSU_of_match);
+#endif
+#if defined(CONFIG_ACPI)
+	DSU_Type[1] = (enum DSU_TYPE) Match_From_ACPI(DSU_Compare);
+#endif
+	PUBLIC(RO(Proc))->Uncore.DSU_Type = \
+		DSU_Type[0] == DSU_NONE ? DSU_Type[1] : DSU_Type[0];
     }
 }
+
+#if defined(CONFIG_OF)
+static const struct of_device_id CMN_of_match[] = CMN_DEVICE_TREE_LIST;
+#endif
+
+#if defined(CONFIG_ACPI)
+static struct acpi_device_id CMN_hid_match[] = CMN_ACPI_HID_LIST;
+
+static acpi_status CMN_Compare( acpi_handle handle,
+				u32 level,
+				void *data,
+				void **return_value )
+{
+	struct acpi_device_id *ids;
+	struct acpi_device *adev, **rdev;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 17, 0)
+	if ((adev = acpi_fetch_acpi_dev(handle)) == NULL) {
+		return AE_OK;
+	}
+#else
+	if (acpi_bus_get_device(handle, &adev)) {
+		return AE_OK;
+	}
+#endif
+	rdev = data;
+
+	for (ids = CMN_hid_match; ids->id[0] || ids->cls; ids++) {
+		const struct acpi_device_id *id = NULL;
+		if (ACPI_Match(adev, ids, &id) == 0) {
+			*rdev = adev;
+			(*rdev)->driver_data = (void*) id->driver_data;
+			break;
+		}
+	}
+	return AE_OK;
+}
+#endif /* CONFIG_ACPI */
 
 static void Query_CMN(unsigned int cpu)
 {
@@ -2995,10 +2934,10 @@ static void Query_CMN(unsigned int cpu)
 
 	Query_GenericMachine(cpu);
 #if defined(CONFIG_OF)
-	CMN_Type[0] = Detect_CMN_From_DeviceTree();
+	CMN_Type[0] = (enum CMN_TYPE) Match_From_DeviceTree(CMN_of_match);
 #endif
 #if defined(CONFIG_ACPI)
-	CMN_Type[1] = Detect_CMN_From_ACPI();
+	CMN_Type[1] = (enum CMN_TYPE) Match_From_ACPI(CMN_Compare);
 #endif
 	PUBLIC(RO(Proc))->Uncore.CMN_Type = \
 		CMN_Type[0] == CMN_NONE ? CMN_Type[1] : CMN_Type[0];

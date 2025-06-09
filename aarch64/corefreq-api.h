@@ -318,6 +318,7 @@ typedef struct
 	struct {
 		CLUSTERCFR	ClusterCfg;
 		CLUSTERIDR	ClusterRev;
+		enum DSU_TYPE	DSU_Type;
 		enum CMN_TYPE	CMN_Type;
 
 		unsigned int	Boost[UNCORE_BOOST(SIZE)];
