@@ -14269,6 +14269,12 @@ void Layout_Footer(Layer *layer, CUINT row)
 	/*	C		M		N			*/
 	hTech0.attr[33] = hTech0.attr[34] = hTech0.attr[35] = \
 					EN[RO(Shm)->Proc.Technology.CMN];
+	/*	C		C		N			*/
+	hTech0.attr[37] = hTech0.attr[38] = hTech0.attr[39] = \
+					EN[RO(Shm)->Proc.Technology.CCN];
+	/*	C		C		I			*/
+	hTech0.attr[41] = hTech0.attr[42] = hTech0.attr[43] = \
+					EN[RO(Shm)->Proc.Technology.CCI];
 
 	LayerCopyAt(	layer, hTech0.origin.col, hTech0.origin.row,
 			hTech0.length, hTech0.attr, hTech0.code );

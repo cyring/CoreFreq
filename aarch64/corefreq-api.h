@@ -320,6 +320,8 @@ typedef struct
 		CLUSTERIDR	ClusterRev;
 		enum DSU_TYPE	DSU_Type;
 		enum CMN_TYPE	CMN_Type;
+		enum CCN_TYPE	CCN_Type;
+		enum CCI_TYPE	CCI_Type;
 
 		unsigned int	Boost[UNCORE_BOOST(SIZE)];
 		BUS_REGISTERS	Bus;

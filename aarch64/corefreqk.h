@@ -18,14 +18,6 @@
 	{ "",		0		}				\
 }
 
-#define CCN_DEVICE_TREE_LIST						\
-{									\
-	{ .compatible = "arm,ccn-502",	.data = (void *) CCN_502 },	\
-	{ .compatible = "arm,ccn-504",	.data = (void *) CCN_504 },	\
-	{ .compatible = "arm,ccn-512",	.data = (void *) CCN_512 },	\
-	{ /* EOL */ }							\
-}
-
 #define CMN_DEVICE_TREE_LIST						\
 {									\
 	{ .compatible = "arm,cmn-600",	.data = (void *) CMN_600  },	\
@@ -44,6 +36,23 @@
 	{ "ARMHC003",	CMN_S3		},				\
 	{ "ARMHC701",	CMN_CI700	},				\
 	{ "",		0		}				\
+}
+
+#define CCN_DEVICE_TREE_LIST						\
+{									\
+	{ .compatible = "arm,ccn-502",	.data = (void *) CCN_502 },	\
+	{ .compatible = "arm,ccn-504",	.data = (void *) CCN_504 },	\
+	{ .compatible = "arm,ccn-508",	.data = (void *) CCN_508 },	\
+	{ .compatible = "arm,ccn-512",	.data = (void *) CCN_512 },	\
+	{ /* EOL */ }							\
+}
+
+#define CCI_DEVICE_TREE_LIST						\
+{									\
+	{ .compatible = "arm,cci-400",	.data = (void *) CCI_400 },	\
+	{ .compatible = "arm,cci-500",	.data = (void *) CCI_500 },	\
+	{ .compatible = "arm,cci-550",	.data = (void *) CCI_550 },	\
+	{ /* EOL */ }							\
 }
 
 #if defined(CONFIG_OF) && LINUX_VERSION_CODE < KERNEL_VERSION(6, 4, 0)
@@ -543,14 +552,14 @@ typedef struct
 } ARCH;
 
 static CLOCK BaseClock_GenericMachine(unsigned int ratio) ;
-static void Query_CMN(unsigned int cpu) ;
-#define     Query_CCN Query_GenericMachine
 static void Query_GenericMachine(unsigned int cpu) ;
 static void PerCore_GenericMachine(void *arg) ;
 static void Start_GenericMachine(void *arg) ;
 static void Stop_GenericMachine(void *arg) ;
 static void InitTimer_GenericMachine(unsigned int cpu) ;
 static void Query_DynamIQ(unsigned int cpu) ;
+static void Query_CoherentMesh(unsigned int cpu) ;
+static void Query_CacheCoherent(unsigned int cpu) ;
 static void Query_DynamIQ_CMN(unsigned int cpu) ;
 /*	[Void]								*/
 #define _Void_Signature {.ExtFamily=0x00, .Family=0x0, .ExtModel=0x0, .Model=0x0}
@@ -790,7 +799,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Cortex_A35] = {
 	.Signature = _Cortex_A35,
-	.Query = Query_GenericMachine,
+	.Query = Query_CacheCoherent,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -902,7 +911,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Cortex_A53] = {
 	.Signature = _Cortex_A53,
-	.Query = Query_GenericMachine,
+	.Query = Query_CacheCoherent,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -958,7 +967,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Cortex_A57] = {
 	.Signature = _Cortex_A57,
-	.Query = Query_GenericMachine,
+	.Query = Query_CacheCoherent,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -1098,7 +1107,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Cortex_A72] = {
 	.Signature = _Cortex_A72,
-	.Query = Query_CCN,
+	.Query = Query_CacheCoherent,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -1686,7 +1695,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Neoverse_E1] = {
 	.Signature = _Neoverse_E1,
-	.Query = Query_CMN,
+	.Query = Query_CoherentMesh,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -1714,7 +1723,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Neoverse_N1] = {
 	.Signature = _Neoverse_N1,
-	.Query = Query_CMN,
+	.Query = Query_CoherentMesh,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -1742,7 +1751,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Neoverse_N2] = {
 	.Signature = _Neoverse_N2,
-	.Query = Query_CMN,
+	.Query = Query_CoherentMesh,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,
@@ -1826,7 +1835,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Neoverse_V2] = {
 	.Signature = _Neoverse_V2,
-	.Query = Query_CMN,
+	.Query = Query_CoherentMesh,
 	.Update = PerCore_GenericMachine,
 	.Start = Start_GenericMachine,
 	.Stop = Stop_GenericMachine,

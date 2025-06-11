@@ -689,6 +689,12 @@ void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 	if (RO(Proc)->Uncore.CMN_Type != CMN_NONE) {
 		RO(Shm)->Proc.Technology.CMN = 1;
 	}
+	if (RO(Proc)->Uncore.CCN_Type != CCN_NONE) {
+		RO(Shm)->Proc.Technology.CCN = 1;
+	}
+	if (RO(Proc)->Uncore.CCI_Type != CCI_NONE) {
+		RO(Shm)->Proc.Technology.CCI = 1;
+	}
 }
 
 void Mitigation_Stage(	RO(SHM_STRUCT) *RO(Shm),

@@ -126,12 +126,6 @@ enum DSU_TYPE {
 	DSU_120AE		/* A720AE, A520AE			*/
 };
 
-enum CCN_TYPE {
-	CCN_502,		/* A72					*/
-	CCN_504,		/* A15 (32-bits), Freescale FSL-2080A	*/
-	CCN_512
-};
-
 enum CMN_TYPE {
 	CMN_NONE,
 	CMN_600,
@@ -139,6 +133,21 @@ enum CMN_TYPE {
 	CMN_700,
 	CMN_S3,
 	CMN_CI700
+};
+
+enum CCN_TYPE {
+	CCN_NONE,
+	CCN_502,		/* A72					*/
+	CCN_504,		/* A15 (32-bits), Freescale FSL-2080A	*/
+	CCN_508,		/* A53, A57				*/
+	CCN_512 		/* A53, A57				*/
+};
+
+enum CCI_TYPE {
+	CCI_NONE,
+	CCI_400,		/* A53, A57				*/
+	CCI_500,		/* A53, A57, A72			*/
+	CCI_550 		/* A35, A53, A57, A72			*/
 };
 
 enum HYPERVISOR {

@@ -243,8 +243,8 @@ typedef struct
 		unsigned long long
 				DSU		:  1-0,
 				CMN		:  2-1,
-				CCI		:  3-2,
-				CCN		:  4-3,
+				CCN		:  3-2,
+				CCI		:  4-3,
 				_Unused1_	: 13-4,
 				VM		: 14-13,
 				IOMMU		: 15-14,

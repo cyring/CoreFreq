@@ -2867,10 +2867,8 @@ static acpi_status DSU_Compare( acpi_handle handle,
 }
 #endif /* CONFIG_ACPI */
 
-static void Query_DynamIQ(unsigned int cpu)
+static void Query_DSU(unsigned int cpu)
 {
-	Query_GenericMachine(cpu);
-
   if (PUBLIC(RO(Proc))->HypervisorID == BARE_METAL) {
 	/* Query the Cluster Configuration on Bare Metal only		*/
 	PUBLIC(RO(Proc))->Uncore.ClusterCfg.value = SysRegRead(CLUSTERCFR_EL1);
@@ -2947,7 +2945,6 @@ static void Query_CMN(unsigned int cpu)
 {
 	enum CMN_TYPE CMN_Type[2] = {CMN_NONE, CMN_NONE};
 
-	Query_GenericMachine(cpu);
 #if defined(CONFIG_OF)
 	CMN_Type[0] = (enum CMN_TYPE) Match_From_DeviceTree(CMN_of_match);
 #endif
@@ -2958,9 +2955,57 @@ static void Query_CMN(unsigned int cpu)
 		CMN_Type[0] == CMN_NONE ? CMN_Type[1] : CMN_Type[0];
 }
 
+#if defined(CONFIG_OF)
+static const struct of_device_id CCN_of_match[] = CCN_DEVICE_TREE_LIST;
+#endif
+
+static void Query_CCN(unsigned int cpu)
+{
+	enum CCN_TYPE CCN_Type = CCN_NONE;
+
+#if defined(CONFIG_OF)
+	CCN_Type = (enum CCN_TYPE) Match_From_DeviceTree(CCN_of_match);
+#endif
+	PUBLIC(RO(Proc))->Uncore.CCN_Type = CCN_Type;
+}
+
+#if defined(CONFIG_OF)
+static const struct of_device_id CCI_of_match[] = CCI_DEVICE_TREE_LIST;
+#endif
+
+static void Query_CCI(unsigned int cpu)
+{
+	enum CCI_TYPE CCI_Type = CCI_NONE;
+
+#if defined(CONFIG_OF)
+	CCI_Type = (enum CCI_TYPE) Match_From_DeviceTree(CCI_of_match);
+#endif
+	PUBLIC(RO(Proc))->Uncore.CCI_Type = CCI_Type;
+}
+
+static void Query_DynamIQ(unsigned int cpu)
+{
+	Query_GenericMachine(cpu);
+	Query_DSU(cpu);
+}
+
+static void Query_CoherentMesh(unsigned int cpu)
+{
+	Query_GenericMachine(cpu);
+	Query_CMN(cpu);
+}
+
+static void Query_CacheCoherent(unsigned int cpu)
+{
+	Query_GenericMachine(cpu);
+	Query_CCN(cpu);
+	Query_CCI(cpu);
+}
+
 static void Query_DynamIQ_CMN(unsigned int cpu)
 {
-	Query_DynamIQ(cpu);
+	Query_GenericMachine(cpu);
+	Query_DSU(cpu);
 	Query_CMN(cpu);
 }
 
