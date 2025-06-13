@@ -1012,6 +1012,11 @@
 #define RSC_TECHNOLOGIES_HYPERV_CODE_EN "Hypervisor"
 #define RSC_TECHNOLOGIES_VM_COMM_CODE_EN " Virtual Machine Hypervisor "
 #define RSC_TECHNOLOGIES_IOMMU_COMM_CODE_EN " I/O MMU virtualization  "
+#define RSC_TECHNOLOGIES_ICN_CODE_EN	"Interconnect Technology"
+#define RSC_TECHNOLOGIES_DYNAMIQ_CODE_EN "DynamIQ Shared Unit"
+#define RSC_TECHNOLOGIES_CMN_CODE_EN	"Coherent Mesh Network"
+#define RSC_TECHNOLOGIES_CCN_CODE_EN	"CoreLink Network Interconnect"
+#define RSC_TECHNOLOGIES_CCI_CODE_EN	"Cache Coherent Interconnect"
 
 #define RSC_PERF_MON_TITLE_CODE_EN	" Performance Monitoring "
 #define RSC_PERF_CAPS_TITLE_CODE_EN	" Performance Capabilities "
@@ -1880,6 +1885,31 @@
 #define RSC_TECH_HYPERV_KBOX_CODE	"  KVM/VBox"
 #define RSC_TECH_HYPERV_VMWARE_CODE	"    VMware"
 #define RSC_TECH_HYPERV_HYPERV_CODE	"MS Hyper-V"
+
+#define RSC_TECH_DSU_NONE_CODE		"      DSU"
+#define RSC_TECH_DSU_100_CODE		"  DSU-100"
+#define RSC_TECH_DSU_AE_CODE		"   DSU-AE"
+#define RSC_TECH_DSU_110_CODE		"  DSU-110"
+#define RSC_TECH_DSU_120_CODE		"  DSU-120"
+#define RSC_TECH_DSU_120AE_CODE 	"DSU-120AE"
+
+#define RSC_TECH_CMN_NONE_CODE		"      CMN"
+#define RSC_TECH_CMN_600_CODE		"  CMN-600"
+#define RSC_TECH_CMN_650_CODE		"  CMN-650"
+#define RSC_TECH_CMN_700_CODE		"  CMN-700"
+#define RSC_TECH_CMN_S3_CODE		"   CMN-S3"
+#define RSC_TECH_CMN_CI700_CODE 	"CMN-CI700"
+
+#define RSC_TECH_CCN_NONE_CODE		"      CCN"
+#define RSC_TECH_CCN_502_CODE		"  CCN-502"
+#define RSC_TECH_CCN_504_CODE		"  CCN-504"
+#define RSC_TECH_CCN_508_CODE		"  CCN-508"
+#define RSC_TECH_CCN_512_CODE		"  CCN-512"
+
+#define RSC_TECH_CCI_NONE_CODE		"      CCI"
+#define RSC_TECH_CCI_400_CODE		"  CCI-400"
+#define RSC_TECH_CCI_500_CODE		"  CCI-500"
+#define RSC_TECH_CCI_550_CODE		"  CCI-550"
 
 #define RSC_PERF_LABEL_VER_CODE 	"PM"
 #define RSC_PERF_LABEL_HWCF_CODE	"MPERF/APERF"

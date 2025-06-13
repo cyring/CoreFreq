@@ -682,17 +682,17 @@ void Technology_Update( RO(SHM_STRUCT) *RO(Shm),
 	RO(Shm)->Proc.Technology.VM = BITWISEAND_CC(BUS_LOCK,
 						RW(Proc)->VM,
 						RO(Proc)->CR_Mask) != 0;
-	/* If both cluster registers are implemented then DSU is present */
-	if (RO(Proc)->Uncore.DSU_Type != DSU_NONE) {
+
+	if (RO(Proc)->Uncore.ICN.DSU_Type != DSU_NONE) {
 		RO(Shm)->Proc.Technology.DSU = 1;
 	}
-	if (RO(Proc)->Uncore.CMN_Type != CMN_NONE) {
+	if (RO(Proc)->Uncore.ICN.CMN_Type != CMN_NONE) {
 		RO(Shm)->Proc.Technology.CMN = 1;
 	}
-	if (RO(Proc)->Uncore.CCN_Type != CCN_NONE) {
+	if (RO(Proc)->Uncore.ICN.CCN_Type != CCN_NONE) {
 		RO(Shm)->Proc.Technology.CCN = 1;
 	}
-	if (RO(Proc)->Uncore.CCI_Type != CCI_NONE) {
+	if (RO(Proc)->Uncore.ICN.CCI_Type != CCI_NONE) {
 		RO(Shm)->Proc.Technology.CCI = 1;
 	}
 }
@@ -768,8 +768,8 @@ void Uncore_Update(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 	RO(Shm)->Uncore.CtrlCount = RO(Proc)->Uncore.CtrlCount;
 	/*	Decode the Memory Controller for each found vendor:device */
 	Chipset[IC_CHIPSET] = RO(Proc)->Features.Info.Vendor.ID;
-	RO(Shm)->Uncore.ChipID	=  RO(Proc)->Uncore.ClusterRev.Revision
-				| (RO(Proc)->Uncore.ClusterRev.Variant << 4);
+	RO(Shm)->Uncore.ChipID	=  RO(Proc)->Uncore.ICN.ClusterRev.Revision
+				| (RO(Proc)->Uncore.ICN.ClusterRev.Variant <<4);
 	RO(Shm)->Uncore.Chipset.ArchID = IC_CHIPSET;
 	/*	Copy the chipset codename.				*/
 	StrCopy(RO(Shm)->Uncore.Chipset.CodeName,
@@ -779,6 +779,11 @@ void Uncore_Update(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 	memcpy( RO(Shm)->Uncore.Boost,
 		RO(Proc)->Uncore.Boost,
 		(UNCORE_BOOST(SIZE)) * sizeof(COF_ST) );
+
+	RO(Shm)->Uncore.ICN.DSU_Type = RO(Proc)->Uncore.ICN.DSU_Type;
+	RO(Shm)->Uncore.ICN.CMN_Type = RO(Proc)->Uncore.ICN.CMN_Type;
+	RO(Shm)->Uncore.ICN.CCN_Type = RO(Proc)->Uncore.ICN.CCN_Type;
+	RO(Shm)->Uncore.ICN.CCI_Type = RO(Proc)->Uncore.ICN.CCI_Type;
 }
 
 void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),

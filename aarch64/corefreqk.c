@@ -2871,24 +2871,24 @@ static void Query_DSU(unsigned int cpu)
 {
   if (PUBLIC(RO(Proc))->HypervisorID == BARE_METAL) {
 	/* Query the Cluster Configuration on Bare Metal only		*/
-	PUBLIC(RO(Proc))->Uncore.ClusterCfg.value = SysRegRead(CLUSTERCFR_EL1);
-	PUBLIC(RO(Proc))->Uncore.ClusterRev.value = SysRegRead(CLUSTERIDR_EL1);
-
-    if (PUBLIC(RO(Proc))->Uncore.ClusterCfg.value != 0
-     && PUBLIC(RO(Proc))->Uncore.ClusterRev.value != 0)
+    PUBLIC(RO(Proc))->Uncore.ICN.ClusterCfg.value = SysRegRead(CLUSTERCFR_EL1);
+    PUBLIC(RO(Proc))->Uncore.ICN.ClusterRev.value = SysRegRead(CLUSTERIDR_EL1);
+    /* If both cluster registers are implemented then DSU is present	*/
+    if (PUBLIC(RO(Proc))->Uncore.ICN.ClusterCfg.value != 0
+     && PUBLIC(RO(Proc))->Uncore.ICN.ClusterRev.value != 0)
     {
 	if (Arch[PUBLIC(RO(Proc))->ArchID].Architecture.CN > ARMv9_A)
 	{
-		PUBLIC(RO(Proc))->Uncore.DSU_Type = DSU_120;
+		PUBLIC(RO(Proc))->Uncore.ICN.DSU_Type = DSU_120;
 	}
 	else if (Arch[PUBLIC(RO(Proc))->ArchID].Architecture.CN > ARMv8_2_A)
 	{
-		PUBLIC(RO(Proc))->Uncore.DSU_Type = DSU_110;
+		PUBLIC(RO(Proc))->Uncore.ICN.DSU_Type = DSU_110;
 	} else {
-		PUBLIC(RO(Proc))->Uncore.DSU_Type = DSU_100;
+		PUBLIC(RO(Proc))->Uncore.ICN.DSU_Type = DSU_100;
 	}
     } else {
-		PUBLIC(RO(Proc))->Uncore.DSU_Type = DSU_NONE;
+		PUBLIC(RO(Proc))->Uncore.ICN.DSU_Type = DSU_NONE;
     }
   } else {
 	enum DSU_TYPE DSU_Type[2] = {DSU_NONE, DSU_NONE};
@@ -2899,7 +2899,7 @@ static void Query_DSU(unsigned int cpu)
 #if defined(CONFIG_ACPI)
 	DSU_Type[1] = (enum DSU_TYPE) Match_From_ACPI(DSU_Compare);
 #endif
-	PUBLIC(RO(Proc))->Uncore.DSU_Type = \
+	PUBLIC(RO(Proc))->Uncore.ICN.DSU_Type = \
 		DSU_Type[0] == DSU_NONE ? DSU_Type[1] : DSU_Type[0];
     }
 }
@@ -2951,7 +2951,7 @@ static void Query_CMN(unsigned int cpu)
 #if defined(CONFIG_ACPI)
 	CMN_Type[1] = (enum CMN_TYPE) Match_From_ACPI(CMN_Compare);
 #endif
-	PUBLIC(RO(Proc))->Uncore.CMN_Type = \
+	PUBLIC(RO(Proc))->Uncore.ICN.CMN_Type = \
 		CMN_Type[0] == CMN_NONE ? CMN_Type[1] : CMN_Type[0];
 }
 
@@ -2966,7 +2966,7 @@ static void Query_CCN(unsigned int cpu)
 #if defined(CONFIG_OF)
 	CCN_Type = (enum CCN_TYPE) Match_From_DeviceTree(CCN_of_match);
 #endif
-	PUBLIC(RO(Proc))->Uncore.CCN_Type = CCN_Type;
+	PUBLIC(RO(Proc))->Uncore.ICN.CCN_Type = CCN_Type;
 }
 
 #if defined(CONFIG_OF)
@@ -2980,7 +2980,7 @@ static void Query_CCI(unsigned int cpu)
 #if defined(CONFIG_OF)
 	CCI_Type = (enum CCI_TYPE) Match_From_DeviceTree(CCI_of_match);
 #endif
-	PUBLIC(RO(Proc))->Uncore.CCI_Type = CCI_Type;
+	PUBLIC(RO(Proc))->Uncore.ICN.CCI_Type = CCI_Type;
 }
 
 static void Query_DynamIQ(unsigned int cpu)

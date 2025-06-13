@@ -480,8 +480,8 @@ typedef struct
 		unsigned short		SlotCount, ChannelCount;
 	    } MC[MC_MAX_CTRL];
 
-	unsigned long long		CtrlSpeed;
-	unsigned short			CtrlCount,
+		unsigned long long	CtrlSpeed;
+		unsigned short		CtrlCount,
 					ChipID;
 
 	    struct {
@@ -498,6 +498,13 @@ typedef struct
 		enum CHIPSET		ArchID;
 		char			CodeName[CODENAME_LEN];
 	    } Chipset;
+
+	    struct {
+		enum DSU_TYPE	DSU_Type;
+		enum CMN_TYPE	CMN_Type;
+		enum CCN_TYPE	CCN_Type;
+		enum CCI_TYPE	CCI_Type;
+	    } ICN;
 	} Uncore;
 
 	SMBIOS_ST		SMB;

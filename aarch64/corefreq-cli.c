@@ -3169,6 +3169,31 @@ REASON_CODE SysInfoTech(Window *win,
 		[HYPERV_KBOX]	= RSC(TECH_HYPERV_KBOX).CODE(),
 		[HYPERV_VMWARE] = RSC(TECH_HYPERV_VMWARE).CODE(),
 		[HYPERV_HYPERV] = RSC(TECH_HYPERV_HYPERV).CODE()
+	}, *DynamIQ[DSU_TYPES] = {
+		[DSU_NONE]	= RSC(TECH_DSU_NONE).CODE(),
+		[DSU_100]	= RSC(TECH_DSU_100).CODE(),
+		[DSU_AE]	= RSC(TECH_DSU_AE).CODE(),
+		[DSU_110]	= RSC(TECH_DSU_110).CODE(),
+		[DSU_120]	= RSC(TECH_DSU_120).CODE(),
+		[DSU_120AE]	= RSC(TECH_DSU_120AE).CODE()
+	}, *CMN[CMN_TYPES] = {
+		[CMN_NONE]	= RSC(TECH_CMN_NONE).CODE(),
+		[CMN_600]	= RSC(TECH_CMN_600).CODE(),
+		[CMN_650]	= RSC(TECH_CMN_650).CODE(),
+		[CMN_700]	= RSC(TECH_CMN_700).CODE(),
+		[CMN_S3]	= RSC(TECH_CMN_S3).CODE(),
+		[CMN_CI700]	= RSC(TECH_CMN_CI700).CODE()
+	}, *CCN[CCN_TYPES] = {
+		[CCN_NONE]	= RSC(TECH_CCN_NONE).CODE(),
+		[CCN_502]	= RSC(TECH_CCN_502).CODE(),
+		[CCN_504]	= RSC(TECH_CCN_504).CODE(),
+		[CCN_508]	= RSC(TECH_CCN_508).CODE(),
+		[CCN_512]	= RSC(TECH_CCN_512).CODE()
+	}, *CCI[] = {
+		[CCI_NONE]	= RSC(TECH_CCI_NONE).CODE(),
+		[CCI_400]	= RSC(TECH_CCI_400).CODE(),
+		[CCI_500]	= RSC(TECH_CCI_500).CODE(),
+		[CCI_550]	= RSC(TECH_CCI_550).CODE()
 	};
 	ATTRIBUTE *attrib[2] = {
 		RSC(SYSINFO_TECH_COND0).ATTR(),
@@ -3224,6 +3249,16 @@ REASON_CODE SysInfoTech(Window *win,
 	},
 	{
 		NULL,
+	     RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Query.CStateBaseAddr != 0,
+		2, "%s%.*sCCx   [%3s]",
+		RSC(PERF_MON_CORE_CSTATE).CODE(), NULL,
+		width - 14 - RSZ(PERF_MON_CORE_CSTATE),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		NULL,
 		RO(Shm)->Proc.Features.HyperThreading == 1,
 		2, "%s%.*sSMT   [%3s]",
 		RSC(TECHNOLOGIES_SMT).CODE(), NULL,
@@ -3244,11 +3279,51 @@ REASON_CODE SysInfoTech(Window *win,
 	},
 	{
 		NULL,
-	     RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Query.CStateBaseAddr != 0,
-		2, "%s%.*sCCx   [%3s]",
-		RSC(PERF_MON_CORE_CSTATE).CODE(), NULL,
-		width - 14 - RSZ(PERF_MON_CORE_CSTATE),
+		0,
+		2, "%s%.*s",
+		RSC(TECHNOLOGIES_ICN).CODE(), NULL,
+		width - 3 - RSZ(TECHNOLOGIES_ICN),
 		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Technology.DSU == 1,
+		3, "%s%.*s""%10s   [%3s]",
+		RSC(TECHNOLOGIES_DYNAMIQ).CODE(), NULL,
+		width - (OutFunc ? 22 : 24) - RSZ(TECHNOLOGIES_DYNAMIQ),
+		(char*) DynamIQ[RO(Shm)->Uncore.ICN.DSU_Type],
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Technology.CMN == 1,
+		3, "%s%.*s""%10s   [%3s]",
+		RSC(TECHNOLOGIES_CMN).CODE(), NULL,
+		width - (OutFunc ? 22 : 24) - RSZ(TECHNOLOGIES_CMN),
+		(char*) CMN[RO(Shm)->Uncore.ICN.CMN_Type],
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Technology.CCN == 1,
+		3, "%s%.*s""%10s   [%3s]",
+		RSC(TECHNOLOGIES_CCN).CODE(), NULL,
+		width - (OutFunc ? 22 : 24) - RSZ(TECHNOLOGIES_CCN),
+		(char*) CCN[RO(Shm)->Uncore.ICN.CCN_Type],
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		NULL,
+		RO(Shm)->Proc.Technology.CCI == 1,
+		3, "%s%.*s""%10s   [%3s]",
+		RSC(TECHNOLOGIES_CCI).CODE(), NULL,
+		width - (OutFunc ? 22 : 24) - RSZ(TECHNOLOGIES_CCI),
+		(char*) CCI[RO(Shm)->Uncore.ICN.CCI_Type],
 		SCANKEY_NULL,
 		NULL
 	},
@@ -7679,7 +7754,7 @@ Window *CreateSysInfo(unsigned long long id)
 	case SCANKEY_t:
 		{
 		winOrigin.col = 23;
-		matrixSize.hth = 10;
+		matrixSize.hth = 12;
 		winOrigin.row = TOP_HEADER_ROW + 5;
 		winWidth = 60;
 		SysInfoFunc = SysInfoTech;

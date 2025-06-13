@@ -316,13 +316,6 @@ typedef struct
 	signed int		ArchID;
 
 	struct {
-		CLUSTERCFR	ClusterCfg;
-		CLUSTERIDR	ClusterRev;
-		enum DSU_TYPE	DSU_Type;
-		enum CMN_TYPE	CMN_Type;
-		enum CCN_TYPE	CCN_Type;
-		enum CCI_TYPE	CCI_Type;
-
 		unsigned int	Boost[UNCORE_BOOST(SIZE)];
 		BUS_REGISTERS	Bus;
 		MC_REGISTERS	MC[MC_MAX_CTRL];
@@ -330,6 +323,15 @@ typedef struct
 	    struct CHIP_ST {
 		unsigned short	VID, DID;
 	    } Chip[CHIP_MAX_PCI];
+
+	    struct {
+		CLUSTERCFR	ClusterCfg;
+		CLUSTERIDR	ClusterRev;
+		enum DSU_TYPE	DSU_Type;
+		enum CMN_TYPE	CMN_Type;
+		enum CCN_TYPE	CCN_Type;
+		enum CCI_TYPE	CCI_Type;
+	    } ICN;
 	} Uncore;
 
 	struct {
