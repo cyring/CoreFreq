@@ -518,20 +518,17 @@ static void Query_Features(void *pArg)
 	volatile CNTPCT cntpct;
 	volatile PMCR pmcr;
 	volatile AA64DFR0 dfr0;
-	volatile AA64DFR1 dfr1;
 	volatile AA64ISAR0 isar0;
 	volatile AA64ISAR1 isar1;
-	volatile AA64ISAR2 isar2;
 	volatile AA64ISAR3 isar3;
 	volatile AA64MMFR0 mmfr0;
 	volatile AA64MMFR1 mmfr1;
-	volatile AA64MMFR2 mmfr2;
 	volatile AA64PFR0 pfr0;
 	volatile AA64PFR1 pfr1;
-	volatile AA64PFR2 pfr2;
 	volatile MVFR0 mvfr0;
 	volatile MVFR1 mvfr1;
 	volatile MVFR2 mvfr2;
+	volatile Bit64 FLAGS;
 
 	iArg->Features->Info.Vendor.CRC = CRC_RESERVED;
 	iArg->SMT_Count = 1;
@@ -542,7 +539,6 @@ static void Query_Features(void *pArg)
 		"mrs	%[cntfrq],	cntfrq_el0"	"\n\t"
 		"mrs	%[cntpct],	cntpct_el0"	"\n\t"
 		"mrs	%[dfr0] ,	id_aa64dfr0_el1""\n\t"
-		"mrs	%[dfr1] ,	id_aa64dfr1_el1""\n\t"
 		"mrs	%[isar0],	id_aa64isar0_el1""\n\t"
 		"mrs	%[isar1],	id_aa64isar1_el1""\n\t"
 		"mrs	%[mmfr0],	id_aa64mmfr0_el1""\n\t"
@@ -552,12 +548,12 @@ static void Query_Features(void *pArg)
 		"mrs	%[mvfr0],	mvfr0_el1"	"\n\t"
 		"mrs	%[mvfr1],	mvfr1_el1"	"\n\t"
 		"mrs	%[mvfr2],	mvfr2_el1"	"\n\t"
+		"mrs	%[flags],	currentel"	"\n\t"
 		"isb"
 		: [midr]	"=r" (midr),
 		  [cntfrq]	"=r" (cntfrq),
 		  [cntpct]	"=r" (cntpct),
 		  [dfr0]	"=r" (dfr0),
-		  [dfr1]	"=r" (dfr1),
 		  [isar0]	"=r" (isar0),
 		  [isar1]	"=r" (isar1),
 		  [mmfr0]	"=r" (mmfr0),
@@ -566,14 +562,13 @@ static void Query_Features(void *pArg)
 		  [pfr1]	"=r" (pfr1),
 		  [mvfr0]	"=r" (mvfr0),
 		  [mvfr1]	"=r" (mvfr1),
-		  [mvfr2]	"=r" (mvfr2)
+		  [mvfr2]	"=r" (mvfr2),
+		  [flags]	"=r" (FLAGS)
 		:
-		: "memory"
+		: "cc", "memory"
 	);
 
-	isar2.value = SysRegRead(ID_AA64ISAR2_EL1);
 	isar3.value = SysRegRead(ID_AA64ISAR3_EL1);
-	mmfr2.value = SysRegRead(ID_AA64MMFR2_EL1);
 
 #if defined(CONFIG_ACPI)
 	iArg->Features->ACPI = acpi_disabled == 0;
@@ -617,23 +612,6 @@ static void Query_Features(void *pArg)
 	iArg->Features->Factory.Freq = cntfrq.ClockFreq_Hz;
 	iArg->Features->Factory.Freq = iArg->Features->Factory.Freq / 10000;
 
-	switch (dfr1.PMICNTR) { /* Performance Monitors Instruction Counter */
-	case 0b0001:
-		iArg->Features->PerfMon.FixCtrs++;
-		break;
-	case 0b0000:
-	default:
-		break;
-	}
-	switch (dfr1.EBEP) {
-	case 0b0001:
-		iArg->Features->EBEP = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->EBEP = 0;
-		break;
-	}
 	switch (isar0.AES) {
 	case 0b0010:
 		iArg->Features->PMULL = 1;
@@ -941,161 +919,6 @@ static void Query_Features(void *pArg)
 		iArg->Features->DPB = 0;
 		break;
 	}
-	switch (isar2.GPA3) {
-	case 0b0001:
-		iArg->Features->PACQARMA3 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->PACQARMA3 = 0;
-		break;
-	}
-
-	iArg->Features->PAuth = (isar2.APA3 == 0b0001) || (isar1.API == 0b0001)
-				|| (isar1.APA == 0b0001);
-
-	iArg->Features->EPAC = (isar2.APA3 == 0b0010) || (isar1.API == 0b0010)
-				|| (isar1.APA == 0b0010);
-
-	iArg->Features->PAuth2 = (isar2.APA3 == 0b0011) || (isar1.API == 0b0011)
-				|| (isar1.APA == 0b0011);
-
-	iArg->Features->FPAC = (isar2.APA3 == 0b0100) || (isar1.API == 0b0100)
-				|| (isar1.APA == 0b0100);
-
-	iArg->Features->FPACCOMBINE = (isar2.APA3 == 0b0101)
-				|| (isar1.API == 0b0101)||(isar1.APA == 0b0101);
-
-	iArg->Features->PAuth_LR = (isar2.APA3 == 0b0110)
-				|| (isar1.API == 0b0110)||(isar1.APA == 0b0110);
-
-	switch (isar2.WFxT) {
-	case 0b0001:
-		iArg->Features->WFxT = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->WFxT = 0;
-		break;
-	}
-	switch (isar2.RPRES) {
-	case 0b0001:
-		iArg->Features->RPRES = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->RPRES = 0;
-		break;
-	}
-	switch (isar2.MOPS) {
-	case 0b0001:
-		iArg->Features->MOPS = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->MOPS = 0;
-		break;
-	}
-	switch (isar2.BC) {
-	case 0b0001:
-		iArg->Features->HBC = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->HBC = 0;
-		break;
-	}
-	switch (isar2.CLRBHB) {
-	case 0b0001:
-		iArg->Features->CLRBHB = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->CLRBHB = 0;
-		break;
-	}
-	switch (isar2.SYSREG_128) {
-	case 0b0001:
-		iArg->Features->SYSREG128 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SYSREG128 = 0;
-		break;
-	}
-	switch (isar2.SYSINSTR_128) {
-	case 0b0001:
-		iArg->Features->SYSINSTR128 = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->SYSINSTR128 = 0;
-		break;
-	}
-	switch (isar2.PRFMSLC) {
-	case 0b0001:
-		iArg->Features->PRFMSLC = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->PRFMSLC = 0;
-		break;
-	}
-	switch (isar2.PCDPHINT) {
-	case 0b0001:
-		iArg->Features->PCDPHINT = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->PCDPHINT = 0;
-		break;
-	}
-	switch (isar2.RPRFM) {
-	case 0b0001:
-		iArg->Features->RPRFM = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->RPRFM = 0;
-		break;
-	}
-	switch (isar2.CSSC) {
-	case 0b0001:
-		iArg->Features->CSSC = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->CSSC = 0;
-		break;
-	}
-	switch (isar2.LUT) {
-	case 0b0001:
-		iArg->Features->LUT = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->LUT = 0;
-		break;
-	}
-	switch (isar2.ATS1A) {
-	case 0b0001:
-		iArg->Features->ATS1A = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->ATS1A = 0;
-		break;
-	}
-	switch (isar2.PAC_frac) {
-	case 0b0001:
-		iArg->Features->CONSTPACFIELD = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->CONSTPACFIELD = 0;
-		break;
-	}
-
 	switch (isar3.CPA) {
 	case 0b0010:
 	case 0b0001:
@@ -1251,21 +1074,6 @@ static void Query_Features(void *pArg)
 	default:
 		iArg->Features->ECBHB = 0;
 		break;
-	}
-
-	switch (mmfr2.UAO) {
-	case 0b0001:
-		iArg->Features->UAO = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->UAO = 0;
-		break;
-	}
-	if (mmfr2.VARange < 0b0011) {
-		iArg->Features->VARange = mmfr2.VARange;
-	} else {
-		iArg->Features->VARange = 0b11;
 	}
 
 	switch (pfr0.FP) {
@@ -1514,54 +1322,275 @@ static void Query_Features(void *pArg)
 		break;
 	}
 
-	pfr2.value = SysRegRead(ID_AA64PFR2_EL1);
+    if (BITEXTRZ(FLAGS, FLAG_EL, 2) >= 2)
+    {
+		volatile unsigned long long HCR;
+		__asm__ __volatile__(
+			"mrs	%[hcr]	,	hcr_el2""\n\t"
+			"isb"
+			: [hcr] 	"=r" (HCR)
+			:
+			: "cc", "memory"
+		);
+	if ((iArg->Features->FGT== 0) && (BITEXTRZ(HCR, HYPCR_TID3, 1) == 0))
+	{
+		volatile AA64DFR1 dfr1;
+		volatile AA64ISAR2 isar2;
+		volatile AA64MMFR2 mmfr2;
+		volatile AA64PFR2 pfr2;
 
-	switch(pfr2.FPMR) {
-	case 0b0001:
-		iArg->Features->FPMR = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->FPMR = 0;
-		break;
-	}
-	switch(pfr2.UINJ) {
-	case 0b0001:
-		iArg->Features->UINJ = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->UINJ = 0;
-		break;
-	}
-	switch(pfr2.MTEFAR) {
-	case 0b0001:
-		iArg->Features->MTE_FAR = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->MTE_FAR = 0;
-		break;
-	}
-	switch(pfr2.MTESTOREONLY) {
-	case 0b0001:
-		iArg->Features->MTE_STOREONLY = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->MTE_STOREONLY = 0;
-		break;
-	}
-	switch(pfr2.MTEPERM) {
-	case 0b0001:
-		iArg->Features->MTE_PERM = 1;
-		break;
-	case 0b0000:
-	default:
-		iArg->Features->MTE_PERM = 0;
-		break;
-	}
+		__asm__ __volatile__(
+			"mrs	%[dfr1] ,	id_aa64dfr1_el1""\n\t"
+			"isb"
+			: [dfr1]	"=r" (dfr1)
+			:
+			: "memory"
+		);
+		/*	Performance Monitors Instruction Counter	*/
+		switch (dfr1.PMICNTR) {
+		case 0b0001:
+			iArg->Features->PerfMon.FixCtrs++;
+			break;
+		case 0b0000:
+		default:
+			break;
+		}
+		switch (dfr1.EBEP) {
+		case 0b0001:
+			iArg->Features->EBEP = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->EBEP = 0;
+			break;
+		}
 
+		isar2.value = SysRegRead(ID_AA64ISAR2_EL1);
+		switch (isar2.GPA3) {
+		case 0b0001:
+			iArg->Features->PACQARMA3 = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->PACQARMA3 = 0;
+			break;
+		}
+
+		iArg->Features->PAuth = (isar2.APA3 == 0b0001)
+					|| (isar1.API == 0b0001)
+					|| (isar1.APA == 0b0001);
+
+		iArg->Features->EPAC = (isar2.APA3 == 0b0010)
+					|| (isar1.API == 0b0010)
+					|| (isar1.APA == 0b0010);
+
+		iArg->Features->PAuth2 = (isar2.APA3 == 0b0011)
+					|| (isar1.API == 0b0011)
+					|| (isar1.APA == 0b0011);
+
+		iArg->Features->FPAC = (isar2.APA3 == 0b0100)
+					|| (isar1.API == 0b0100)
+					|| (isar1.APA == 0b0100);
+
+		iArg->Features->FPACCOMBINE = (isar2.APA3 == 0b0101)
+					|| (isar1.API == 0b0101)
+					||(isar1.APA == 0b0101);
+
+		iArg->Features->PAuth_LR = (isar2.APA3 == 0b0110)
+					|| (isar1.API == 0b0110)
+					||(isar1.APA == 0b0110);
+
+		switch (isar2.WFxT) {
+		case 0b0001:
+			iArg->Features->WFxT = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->WFxT = 0;
+			break;
+		}
+		switch (isar2.RPRES) {
+		case 0b0001:
+			iArg->Features->RPRES = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->RPRES = 0;
+			break;
+		}
+		switch (isar2.MOPS) {
+		case 0b0001:
+			iArg->Features->MOPS = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->MOPS = 0;
+			break;
+		}
+		switch (isar2.BC) {
+		case 0b0001:
+			iArg->Features->HBC = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->HBC = 0;
+			break;
+		}
+		switch (isar2.CLRBHB) {
+		case 0b0001:
+			iArg->Features->CLRBHB = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->CLRBHB = 0;
+			break;
+		}
+		switch (isar2.SYSREG_128) {
+		case 0b0001:
+			iArg->Features->SYSREG128 = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->SYSREG128 = 0;
+			break;
+		}
+		switch (isar2.SYSINSTR_128) {
+		case 0b0001:
+			iArg->Features->SYSINSTR128 = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->SYSINSTR128 = 0;
+			break;
+		}
+		switch (isar2.PRFMSLC) {
+		case 0b0001:
+			iArg->Features->PRFMSLC = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->PRFMSLC = 0;
+			break;
+		}
+		switch (isar2.PCDPHINT) {
+		case 0b0001:
+			iArg->Features->PCDPHINT = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->PCDPHINT = 0;
+			break;
+		}
+		switch (isar2.RPRFM) {
+		case 0b0001:
+			iArg->Features->RPRFM = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->RPRFM = 0;
+			break;
+		}
+		switch (isar2.CSSC) {
+		case 0b0001:
+			iArg->Features->CSSC = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->CSSC = 0;
+			break;
+		}
+		switch (isar2.LUT) {
+		case 0b0001:
+			iArg->Features->LUT = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->LUT = 0;
+			break;
+		}
+		switch (isar2.ATS1A) {
+		case 0b0001:
+			iArg->Features->ATS1A = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->ATS1A = 0;
+			break;
+		}
+		switch (isar2.PAC_frac) {
+		case 0b0001:
+			iArg->Features->CONSTPACFIELD = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->CONSTPACFIELD = 0;
+			break;
+		}
+
+		mmfr2.value = SysRegRead(ID_AA64MMFR2_EL1);
+		switch (mmfr2.UAO) {
+		case 0b0001:
+			iArg->Features->UAO = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->UAO = 0;
+			break;
+		}
+		if (mmfr2.VARange < 0b0011) {
+			iArg->Features->VARange = mmfr2.VARange;
+		} else {
+			iArg->Features->VARange = 0b11;
+		}
+
+		pfr2.value = SysRegRead(ID_AA64PFR2_EL1);
+		switch(pfr2.FPMR) {
+		case 0b0001:
+			iArg->Features->FPMR = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->FPMR = 0;
+			break;
+		}
+		switch(pfr2.UINJ) {
+		case 0b0001:
+			iArg->Features->UINJ = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->UINJ = 0;
+			break;
+		}
+		switch(pfr2.MTEFAR) {
+		case 0b0001:
+			iArg->Features->MTE_FAR = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->MTE_FAR = 0;
+			break;
+		}
+		switch(pfr2.MTESTOREONLY) {
+		case 0b0001:
+			iArg->Features->MTE_STOREONLY = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->MTE_STOREONLY = 0;
+			break;
+		}
+		switch(pfr2.MTEPERM) {
+		case 0b0001:
+			iArg->Features->MTE_PERM = 1;
+			break;
+		case 0b0000:
+		default:
+			iArg->Features->MTE_PERM = 0;
+			break;
+		}
+	}
+    }
     if (iArg->Features->SVE | iArg->Features->SME)
     {
 	volatile AA64ZFR0 zfr0 = {.value = SysRegRead(ID_AA64ZFR0_EL1)};
@@ -2070,7 +2099,6 @@ static void Cache_Level(CORE_RO *Core, unsigned int level, unsigned int select)
 		[2] = { .InD = 0, .Level = 1, .TnD = 0, .RES0 = 0 }, /* L2  */
 		[3] = { .InD = 0, .Level = 2, .TnD = 0, .RES0 = 0 }  /* L3  */
 	};
-	volatile AA64MMFR2 mmfr2;
 
 	__asm__ volatile
 	(
@@ -2081,8 +2109,15 @@ static void Cache_Level(CORE_RO *Core, unsigned int level, unsigned int select)
 		: [cssel]	"r"  (cssel[select])
 		: "memory"
 	);
-	mmfr2.value = SysRegRead(ID_AA64MMFR2_EL1);
+
+    if ((PUBLIC(RO(Proc))->Features.FGT == 0)
+     && (BITEXTRZ(Core->SystemRegister.HCR, HYPCR_TID3, 1) == 0))
+    {
+	volatile AA64MMFR2 mmfr2 = {.value = SysRegRead(ID_AA64MMFR2_EL1)};
 	Core->T.Cache[level].ccsid.FEAT_CCIDX = mmfr2.CCIDX == 0b0001 ? 1 : 0;
+    } else {
+	Core->T.Cache[level].ccsid.FEAT_CCIDX = 0;
+    }
 }
 
 static void Cache_Topology(CORE_RO *Core)
@@ -3011,11 +3046,8 @@ static void Query_DynamIQ_CMN(unsigned int cpu)
 
 static void SystemRegisters(CORE_RO *Core)
 {
-	volatile AA64ISAR2 isar2;
 	volatile AA64MMFR1 mmfr1;
 	volatile AA64PFR0 pfr0;
-
-	isar2.value = SysRegRead(ID_AA64ISAR2_EL1);
 
 	__asm__ __volatile__(
 		"mrs	%[sctlr],	sctlr_el1"	"\n\t"
@@ -3051,11 +3083,6 @@ static void SystemRegisters(CORE_RO *Core)
 		Core->SystemRegister.FLAGS |= (
 			SysRegRead(MRS_DIT) & (1LLU << FLAG_DIT)
 		);
-	}
-	if (isar2.CLRBHB == 0b0001) {
-		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->CLRBHB, Core->Bind);
-	} else {
-		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->CLRBHB, Core->Bind);
 	}
 	switch (pfr0.EL3) {
 	case 0b0010:
@@ -3168,16 +3195,23 @@ static void SystemRegisters(CORE_RO *Core)
 		);
 
 		Core->Query.SCTLRX = 0;
-	    if ((PUBLIC(RO(Proc))->Features.FGT == 0)
-	     && (BITEXTRZ(Core->SystemRegister.HCR, HYPCR_TID3, 1) == 0))
-	    {
+	  if ((PUBLIC(RO(Proc))->Features.FGT == 0)
+	   && (BITEXTRZ(Core->SystemRegister.HCR, HYPCR_TID3, 1) == 0))
+	  {
+		volatile AA64ISAR2 isar2;
 		volatile AA64MMFR3 mmfr3 = {
 			.value = SysRegRead(ID_AA64MMFR3_EL1)
 		};
-		if ((Core->Query.SCTLRX = mmfr3.SCTLRX) == 0b0001) {
-			Core->SystemRegister.SCTLR2 = SysRegRead(SCTLR2_EL1);
-		}
+	    if ((Core->Query.SCTLRX = mmfr3.SCTLRX) == 0b0001) {
+		Core->SystemRegister.SCTLR2 = SysRegRead(SCTLR2_EL1);
 	    }
+		isar2.value = SysRegRead(ID_AA64ISAR2_EL1);
+	    if (isar2.CLRBHB == 0b0001) {
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->CLRBHB, Core->Bind);
+	    } else {
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->CLRBHB, Core->Bind);
+	    }
+	  }
 	}
 	__asm__ __volatile__(
 		"mrs	%[cpacr],	cpacr_el1"
