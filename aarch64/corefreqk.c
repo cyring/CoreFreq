@@ -3047,13 +3047,6 @@ static void SystemRegisters(CORE_RO *Core)
 	} else {
 		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->VM, Core->Bind);
 	}
-	Core->Query.SCTLRX = 0;
-    if (Experimental) {
-	volatile AA64MMFR3 mmfr3 = {.value = SysRegRead(ID_AA64MMFR3_EL1)};
-	if ((Core->Query.SCTLRX = mmfr3.SCTLRX) == 0b0001) {
-		Core->SystemRegister.SCTLR2 = SysRegRead(SCTLR2_EL1);
-	}
-    }
 	if (PUBLIC(RO(Proc))->Features.DIT) {
 		Core->SystemRegister.FLAGS |= (
 			SysRegRead(MRS_DIT) & (1LLU << FLAG_DIT)
@@ -3173,6 +3166,18 @@ static void SystemRegisters(CORE_RO *Core)
 			:
 			: "cc", "memory"
 		);
+
+		Core->Query.SCTLRX = 0;
+	    if ((PUBLIC(RO(Proc))->Features.FGT == 0)
+	     && (BITEXTRZ(Core->SystemRegister.HCR, HYPCR_TID3, 1) == 0))
+	    {
+		volatile AA64MMFR3 mmfr3 = {
+			.value = SysRegRead(ID_AA64MMFR3_EL1)
+		};
+		if ((Core->Query.SCTLRX = mmfr3.SCTLRX) == 0b0001) {
+			Core->SystemRegister.SCTLR2 = SysRegRead(SCTLR2_EL1);
+		}
+	    }
 	}
 	__asm__ __volatile__(
 		"mrs	%[cpacr],	cpacr_el1"
