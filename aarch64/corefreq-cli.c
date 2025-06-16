@@ -2192,17 +2192,17 @@ REASON_CODE SysInfoISA( Window *win,
 /* Row Mark */
 	{
 		NULL,
+		RSC(ISA_PMULL).CODE(), RSC(ISA_PMULL_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.PMULL },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.PMULL },
+	},
+	{
+		NULL,
 		RSC(ISA_PRFMSLC).CODE(), RSC(ISA_PRFMSLC_COMM).CODE(),
 		{ 0, RO(Shm)->Proc.Features.PRFMSLC },
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.PRFMSLC },
-	},
-	{
-		NULL,
-		RSC(ISA_PMULL).CODE(), RSC(ISA_AES_COMM).CODE(),
-		{ 0, RO(Shm)->Proc.Features.PMULL },
-		(unsigned short[])
-		{ RO(Shm)->Proc.Features.PMULL },
 	},
 	{
 		NULL,

@@ -906,6 +906,7 @@
 #define RSC_ISA_PAUTH2_COMM_CODE_EN	" Enhanced Pointer Authentication "
 #define RSC_ISA_PAUTH_LR_COMM_CODE_EN	" Pointer Authentication Link Register "
 #define RSC_ISA_PCDPHINT_COMM_CODE_EN " Producer-Consumer Data Placement Hints "
+#define RSC_ISA_PMULL_COMM_CODE_EN    " Multi-vector Polynomial Multiply Long "
 #define RSC_ISA_PRFMSLC_COMM_CODE_EN	" PRFM instructions support SLC target "
 #define RSC_ISA_FPRCVT_COMM_CODE_EN	\
 			" Floating-point to/from integer in scalar FP register "
