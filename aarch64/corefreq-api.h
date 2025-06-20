@@ -171,14 +171,12 @@ typedef struct
 	{
 		struct {
 		unsigned long long
-					CfgLock :  1-0,  /* Core	*/
-					IORedir :  2-1,  /* Core	*/
+					WFI	:  1-0,  /* Thread	*/
+					WFE	:  2-1,  /* Thread	*/
 					SCTLRX	:  3-2,  /* Thread	*/
 					Unused	: 32-3,
 					Revision: 64-32;
 		};
-		unsigned short int	CStateLimit;
-		unsigned short int	CStateBaseAddr; /* Any I/O BAR	*/
 	} Query;
 
 	CACHE_TOPOLOGY			T;

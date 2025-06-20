@@ -36,13 +36,11 @@ typedef struct
 		unsigned int		Revision;
 
 		struct {
-		unsigned short int	CfgLock :  1-0,
-					IORedir :  2-1,
+		unsigned short int	WFI	:  1-0,
+					WFE	:  2-1,
 					SCTLRX	:  3-2,
 					Unused	: 16-3;
 		};
-		unsigned short int	CStateLimit;
-		unsigned short int	CStateBaseAddr; /* Any I/O BAR	*/
 	} Query;
 
 	struct {

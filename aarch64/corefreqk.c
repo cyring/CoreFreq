@@ -1324,14 +1324,14 @@ static void Query_Features(void *pArg)
 
     if (BITEXTRZ(FLAGS, FLAG_EL, 2) >= 2)
     {
-		volatile unsigned long long HCR;
-		__asm__ __volatile__(
-			"mrs	%[hcr]	,	hcr_el2""\n\t"
-			"isb"
-			: [hcr] 	"=r" (HCR)
-			:
-			: "cc", "memory"
-		);
+	volatile unsigned long long HCR;
+	__asm__ __volatile__(
+		"mrs	%[hcr]	,	hcr_el2""\n\t"
+		"isb"
+		: [hcr] 	"=r" (HCR)
+		:
+		: "cc", "memory"
+	);
 	if ((iArg->Features->FGT== 0) && (BITEXTRZ(HCR, HYPCR_TID3, 1) == 0))
 	{
 		volatile AA64DFR1 dfr1;
@@ -3254,7 +3254,6 @@ static void PerCore_Reset(CORE_RO *Core)
 
 static void PerCore_GenericMachine(void *arg)
 {
-	volatile CPUPWRCTLR cpuPwrCtl;
 	volatile PMUSERENR pmuser;
 	volatile PMCNTENSET enset;
 	volatile PMCNTENCLR enclr;
@@ -3267,10 +3266,6 @@ static void PerCore_GenericMachine(void *arg)
 	Core->T.Cluster.Hybrid_ID = \
 	  Core->Boost[BOOST(MAX)].Q < PUBLIC(RO(Proc))->Features.Factory.Ratio ?
 		Hybrid_Secondary : Hybrid_Primary;
-    }
-    if (Experimental && (PUBLIC(RO(Proc))->HypervisorID == BARE_METAL)) {
-	cpuPwrCtl.value = SysRegRead(CPUPWRCTLR_EL1);
-	Core->Query.CStateBaseAddr = cpuPwrCtl.WFI_RET_CTRL;
     }
     if (PUBLIC(RO(Proc))->Features.PerfMon.Version > 0) {
 	__asm__ __volatile__(

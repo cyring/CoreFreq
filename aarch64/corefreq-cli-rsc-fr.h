@@ -735,8 +735,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_PERF_MON_CPC_CODE_FR	RSC_PERF_MON_CPC_CODE_EN
 #define RSC_PERF_MON_CST_CODE_FR	RSC_PERF_MON_CST_CODE_EN
 #define RSC_PERF_MON_HWP_CODE_FR	"Hardware-Controlled Performance States"
-#define RSC_PERF_MON_CORE_CSTATE_CODE_FR "Core C-States"
-#define RSC_PERF_MON_CSTATE_BAR_CODE_FR "Adresse Base C-States"
+#define RSC_PERF_MON_LOW_PWR_CODE_FR	"M""\xa9""thodes de Basse Consommation"
+#define RSC_PERF_MON_WFI_CODE_FR	"Attente d'Interruption"
+#define RSC_PERF_MON_WFE_CODE_FR	"Attente d'""\x89""v""\xa9""nement"
 
 #define RSC_PERF_MON_MONITOR_MWAIT_CODE_FR	"MONITOR/MWAIT"
 #define RSC_PERF_MON_MWAIT_IDX_CSTATE_CODE_FR	"State index"

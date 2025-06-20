@@ -832,16 +832,16 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 }
 
 void CStates(RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core), unsigned int cpu)
-{	/*	Copy the C-State Configuration Control			*/
-	RO(Shm)->Cpu[cpu].Query.CfgLock = RO(Core, AT(cpu))->Query.CfgLock;
+{
+	/* Guess C-States capability from HCR_EL2.TWI or HCR_EL2.TWE	*/
+    if (BITEXTRZ(RO(Core, AT(cpu))->SystemRegister.FLAGS, FLAG_EL, 2) >= 2)
+    {
+	RO(Shm)->Cpu[cpu].Query.WFI = \
+		!BITEXTRZ(RO(Core, AT(cpu))->SystemRegister.HCR, HYPCR_TWI, 1);
 
-	RO(Shm)->Cpu[cpu].Query.CStateLimit = \
-					RO(Core, AT(cpu))->Query.CStateLimit;
-	/*	Copy the Max C-State Inclusion				*/
-	RO(Shm)->Cpu[cpu].Query.IORedir = RO(Core, AT(cpu))->Query.IORedir;
-	/*	Copy any architectural C-States I/O Base Address	*/
-	RO(Shm)->Cpu[cpu].Query.CStateBaseAddr = \
-					RO(Core, AT(cpu))->Query.CStateBaseAddr;
+	RO(Shm)->Cpu[cpu].Query.WFE = \
+		!BITEXTRZ(RO(Core, AT(cpu))->SystemRegister.HCR, HYPCR_TWE, 1);
+    }
 }
 
 void PowerThermal(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
@@ -1200,11 +1200,11 @@ void PerCore_Update(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 
 	Topology(RO(Shm), RO(Proc), RO(Core), cpu);
 
-	CStates(RO(Shm), RO(Core), cpu);
-
 	PowerThermal(RO(Shm), RO(Proc), RO(Core), cpu);
 
 	SystemRegisters(RO(Shm), RO(Core), cpu);
+
+	CStates(RO(Shm), RO(Core), cpu);
 }
 
 #define SysOnce(drv)	ioctl(drv, COREFREQ_IOCTL_SYSONCE)

@@ -1033,8 +1033,9 @@
 #define RSC_PERF_MON_CPC_CODE_EN	"Continuous Performance Control"
 #define RSC_PERF_MON_CST_CODE_EN	"ACPI Processor C-States"
 #define RSC_PERF_MON_HWP_CODE_EN	"Hardware-Controlled Performance States"
-#define RSC_PERF_MON_CORE_CSTATE_CODE_EN "Core C-States"
-#define RSC_PERF_MON_CSTATE_BAR_CODE_EN "C-States Base Address"
+#define RSC_PERF_MON_LOW_PWR_CODE_EN	"Low Power Methods"
+#define RSC_PERF_MON_WFI_CODE_EN	"Wait for Interrupt"
+#define RSC_PERF_MON_WFE_CODE_EN	"Wait for Event"
 
 #define RSC_PERF_MON_MONITOR_MWAIT_CODE_EN	"MONITOR/MWAIT"
 #define RSC_PERF_MON_MWAIT_IDX_CSTATE_CODE_EN	"State index"
@@ -1921,7 +1922,8 @@
 #define RSC_PERF_LABEL_CPC_CODE 	"_CPC"
 #define RSC_PERF_LABEL_CST_CODE 	"_CST"
 #define RSC_PERF_LABEL_HWP_CODE 	"HWP"
-#define RSC_PERF_LABEL_CST_BAR_CODE	"BAR"
+#define RSC_PERF_LABEL_WFI_CODE 	"WFI"
+#define RSC_PERF_LABEL_WFE_CODE 	"WFE"
 #define RSC_PERF_LABEL_MWAIT_IDX_CODE	\
 				"#0    #1    #2    #3    #4    #5    #6    #7"
 

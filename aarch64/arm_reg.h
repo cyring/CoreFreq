@@ -259,7 +259,8 @@ typedef union
 		RES0		:  4-1,
 		WFI_RET_CTRL	:  7-4,
 		WFE_RET_CTRL	: 10-7,
-		RES1		: 32-10,
+		SIMD_RET_CTRL	: 13-10,
+		RES1		: 32-13,
 		RES2		: 64-32;
 	};
 } CPUPWRCTLR;

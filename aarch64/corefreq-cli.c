@@ -3249,10 +3249,11 @@ REASON_CODE SysInfoTech(Window *win,
 	},
 	{
 		NULL,
-	     RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Query.CStateBaseAddr != 0,
-		2, "%s%.*sCCx   [%3s]",
-		RSC(PERF_MON_CORE_CSTATE).CODE(), NULL,
-		width - 14 - RSZ(PERF_MON_CORE_CSTATE),
+		RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Query.WFI
+		| RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Query.WFE,
+		2, "%s%.*sWFx   [%3s]",
+		RSC(PERF_MON_LOW_PWR).CODE(), NULL,
+		width - 14 - RSZ(PERF_MON_LOW_PWR),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -3533,7 +3534,6 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 		RSC(SYSINFO_PERFMON_COND3).ATTR(),
 		RSC(SYSINFO_PERFMON_COND4).ATTR()
 	};
-	unsigned int bix;
 /* Section Mark */
     if (RO(Shm)->Proc.PM_version > 0)
     {
@@ -3580,18 +3580,25 @@ REASON_CODE SysInfoPerfMon(	Window *win,
     }
 /* Section Mark */
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
-		"%s", RSC(PERF_MON_CORE_CSTATE).CODE() );
+		"%s", RSC(PERF_MON_LOW_PWR).CODE() );
 
 	PUT(	SCANKEY_NULL,
-		attrib[ !RO(Shm)->Cpu[
-				RO(Shm)->Proc.Service.Core
-			].Query.CStateBaseAddr ? 0 : 3 ],
+		attrib[RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Query.WFI ?3:2],
 		width, 3,
-		"%s%.*s%s   [ 0x%-4X]", RSC(PERF_MON_CSTATE_BAR).CODE(),
-		width - (OutFunc == NULL ? 21 : 19)
-		- RSZ(PERF_MON_CSTATE_BAR), hSpace,
-		RSC(PERF_LABEL_CST_BAR).CODE(),
-		RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Query.CStateBaseAddr );
+		"%s%.*s%s   [%7s]", RSC(PERF_MON_WFI).CODE(),
+		width - (OutFunc == NULL ? 21 : 19) - RSZ(PERF_MON_WFI), hSpace,
+		RSC(PERF_LABEL_WFI).CODE(),
+		RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Query.WFI ?
+		RSC(ENABLE).CODE() : RSC(PRESENT).CODE() );
+
+	PUT(	SCANKEY_NULL,
+		attrib[RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Query.WFE ?3:2],
+		width, 3,
+		"%s%.*s%s   [%7s]", RSC(PERF_MON_WFE).CODE(),
+		width - (OutFunc == NULL ? 21 : 19) - RSZ(PERF_MON_WFE), hSpace,
+		RSC(PERF_LABEL_WFE).CODE(),
+		RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Query.WFE ?
+		RSC(ENABLE).CODE() : RSC(PRESENT).CODE() );
 /* Section Mark */
       if (RO(Shm)->Proc.Features.ACPI_CST_CAP) {
 	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.ACPI_CST ? 3 : 0],
@@ -3627,17 +3634,19 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 		RO(Shm)->Proc.Features.MWait.SubCstate_MWAIT6,
 		RO(Shm)->Proc.Features.MWait.SubCstate_MWAIT7 );
 /* Section Mark */
-	bix = RO(Shm)->Proc.Features.PerfMon.CoreCycles == 1 ? 2 : 0;
-
-	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+	PUT(	SCANKEY_NULL,
+		attrib[RO(Shm)->Proc.Features.PerfMon.CoreCycles ? 2 : 0],
+		width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_CORE_CYCLE).CODE(),
-		width - 12 - RSZ(PERF_MON_CORE_CYCLE), hSpace, POWERED(bix) );
+		width - 12 - RSZ(PERF_MON_CORE_CYCLE), hSpace,
+		POWERED(RO(Shm)->Proc.Features.PerfMon.CoreCycles) );
 
-	bix = RO(Shm)->Proc.Features.PerfMon.InstrRetired == 1 ? 2 : 0;
-
-	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+	PUT(	SCANKEY_NULL,
+		attrib[RO(Shm)->Proc.Features.PerfMon.InstrRetired ? 2 : 0],
+		width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_INST_RET).CODE(),
-		width - 12 - RSZ(PERF_MON_INST_RET), hSpace, POWERED(bix) );
+		width - 12 - RSZ(PERF_MON_INST_RET), hSpace,
+		POWERED(RO(Shm)->Proc.Features.PerfMon.InstrRetired) );
 /* Section Mark */
 	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.ACPI_PCT_CAP ? 3:0],
 		width, 2,
