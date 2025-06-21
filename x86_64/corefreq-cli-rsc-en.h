@@ -1315,7 +1315,7 @@
 #define RSC_PERF_MON_BRANCH_RET_CODE_EN "Branch Instructions Retired"
 #define RSC_PERF_MON_BRANCH_MIS_CODE_EN "Branch Mispredicts Retired"
 #define RSC_PERF_MON_TOPDOWN_SLOTS_CODE_EN "Top-down slots Counter"
-#define RSC_PERF_MON_TSC_CODE_EN	"Global Time Stamp Counter"
+#define RSC_PERF_MON_TSC_CODE_EN	"TSC for Performance Profiling"
 #define RSC_PERF_MON_NB_DF_CODE_EN	"Data Fabric Performance Counter"
 #define RSC_PERF_MON_CORE_CODE_EN	"Core Performance Counter"
 
