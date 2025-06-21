@@ -893,8 +893,12 @@ int CheckDuplicateKey(void)			\
 #define CHECK_DUPLICATE_KEY(_val)
 #endif /* FEAT_DBG */
 
-#define POWERED(bit)	( (bit) ? (char*) RSC(PRESENT).CODE()		\
-				: (char*) RSC(MISSING).CODE() )
+#define _F4(bit)	((!!((bit) & (~1U))) << 1) | ((bit) & 0b1)
+
+#define POWERED(bit)	( (char*[]) {	(char*) RSC(MISSING).CODE(),	\
+					(char*) RSC(PRESENT).CODE(),	\
+					(char*) RSC(UNKNOWN).CODE(),	\
+					(char*) RSC(UNKNOWN).CODE() })[_F4(bit)]
 
 #define ENABLED(bit)	( (bit) ? (char*) RSC(ON).CODE()		\
 				: (char*) RSC(OFF).CODE() )

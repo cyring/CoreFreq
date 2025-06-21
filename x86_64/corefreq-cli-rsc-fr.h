@@ -593,6 +593,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_UNABLE_CODE_FR		"Indispo"
 #define RSC_MISSING_CODE_FR		"Absent"
 #define RSC_PRESENT_CODE_FR		"Capable"
+#define RSC_UNKNOWN_CODE_FR		"Inconnu"
 #define RSC_VARIANT_CODE_FR		"Variant"
 #define RSC_INVARIANT_CODE_FR		"Invariant"
 #define RSC_FEATURES_1GB_PAGES_CODE_FR	"1 GB Pages Support"

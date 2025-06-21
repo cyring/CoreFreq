@@ -5127,77 +5127,77 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 		RO(Shm)->Proc.Features.MWait.EDX.SubCstate_MWAIT6,
 		RO(Shm)->Proc.Features.MWait.EDX.SubCstate_MWAIT7 );
 
-	bix = RO(Shm)->Proc.Features.MWait.ECX.EMX_MWAIT == 1 ? 2 : 0;
+	bix = RO(Shm)->Proc.Features.MWait.ECX.EMX_MWAIT == 1;
 
-	PUT(	SCANKEY_NULL, attrib[bix], width, 3, "%s%.*s%s   [%7s]",
-		RSC(PERF_MON_MWAIT_EMX_MWAIT).CODE(),
+	PUT(	SCANKEY_NULL, attrib[bix ? 2 : 0], width, 3,
+		"%s%.*s%s   [%7s]", RSC(PERF_MON_MWAIT_EMX_MWAIT).CODE(),
 		width - (OutFunc == NULL ? 21 : 19 )
 		- RSZ(PERF_MON_MWAIT_EMX_MWAIT), hSpace,
 		RSC(PERF_LABEL_EMX).CODE(), POWERED(bix) );
 
-	bix = RO(Shm)->Proc.Features.MWait.ECX.IBE_MWAIT == 1 ? 2 : 0;
+	bix = RO(Shm)->Proc.Features.MWait.ECX.IBE_MWAIT == 1;
 
-	PUT(	SCANKEY_NULL, attrib[bix], width, 3, "%s%.*s%s   [%7s]",
-		RSC(PERF_MON_MWAIT_IBE_MWAIT).CODE(),
+	PUT(	SCANKEY_NULL, attrib[bix ? 2 : 0], width, 3,
+		"%s%.*s%s   [%7s]", RSC(PERF_MON_MWAIT_IBE_MWAIT).CODE(),
 		width - (OutFunc == NULL ? 21 : 19 )
 		- RSZ(PERF_MON_MWAIT_IBE_MWAIT), hSpace,
 		RSC(PERF_LABEL_IBE).CODE(), POWERED(bix) );
 /* Section Mark */
 	bix = (RO(Shm)->Proc.Features.PerfMon.EBX.CoreCycles == 0)
-	   || (RO(Shm)->Proc.Features.PerfMon.EAX.VectorSz > 0) ? 2 : 0;
+	   || (RO(Shm)->Proc.Features.PerfMon.EAX.VectorSz > 0);
 
-	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+	PUT(	SCANKEY_NULL, attrib[bix ? 2 : 0], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_CORE_CYCLE).CODE(),
 		width - 12 - RSZ(PERF_MON_CORE_CYCLE), hSpace, POWERED(bix) );
 
 	bix = (RO(Shm)->Proc.Features.PerfMon.EBX.InstrRetired == 0)
-	   || (RO(Shm)->Proc.Features.PerfMon.EAX.VectorSz >= 1) ? 2 : 0;
+	   || (RO(Shm)->Proc.Features.PerfMon.EAX.VectorSz >= 1);
 
-	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+	PUT(	SCANKEY_NULL, attrib[bix ? 2 : 0], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_INST_RET).CODE(),
 		width - 12 - RSZ(PERF_MON_INST_RET), hSpace, POWERED(bix) );
 
 	bix = (RO(Shm)->Proc.Features.PerfMon.EBX.RefCycles == 0)
-	   || (RO(Shm)->Proc.Features.PerfMon.EAX.VectorSz >= 2) ? 2 : 0;
+	   || (RO(Shm)->Proc.Features.PerfMon.EAX.VectorSz >= 2);
 
-	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+	PUT(	SCANKEY_NULL, attrib[bix ? 2 : 0], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_REF_CYCLE).CODE(),
 		width - 12 - RSZ(PERF_MON_REF_CYCLE), hSpace, POWERED(bix) );
 
 	bix = (RO(Shm)->Proc.Features.PerfMon.EBX.LLC_Ref == 0)
-	   || (RO(Shm)->Proc.Features.PerfMon.EAX.VectorSz >= 3) ? 2 : 0;
+	   || (RO(Shm)->Proc.Features.PerfMon.EAX.VectorSz >= 3);
 
-	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+	PUT(	SCANKEY_NULL, attrib[bix ? 2 : 0], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_REF_LLC).CODE(),
 		width - 12 - RSZ(PERF_MON_REF_LLC), hSpace, POWERED(bix) );
 
     if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	bix = (RO(Shm)->Proc.Features.PerfMon.EBX.LLC_Misses == 0)
-	   || (RO(Shm)->Proc.Features.PerfMon.EAX.VectorSz >= 4) ? 2 : 0;
+	   || (RO(Shm)->Proc.Features.PerfMon.EAX.VectorSz >= 4);
 
-	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+	PUT(	SCANKEY_NULL, attrib[bix ? 2 : 0], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_MISS_LLC).CODE(),
 		width - 12 - RSZ(PERF_MON_MISS_LLC), hSpace, POWERED(bix) );
 
 	bix = (RO(Shm)->Proc.Features.PerfMon.EBX.BranchRetired == 0)
-	   || (RO(Shm)->Proc.Features.PerfMon.EAX.VectorSz >= 5) ? 2 : 0;
+	   || (RO(Shm)->Proc.Features.PerfMon.EAX.VectorSz >= 5);
 
-	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+	PUT(	SCANKEY_NULL, attrib[bix ? 2 : 0], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_BRANCH_RET).CODE(),
 		width - 12 - RSZ(PERF_MON_BRANCH_RET), hSpace, POWERED(bix) );
 
 	bix = (RO(Shm)->Proc.Features.PerfMon.EBX.BranchMispred == 0)
-	   || (RO(Shm)->Proc.Features.PerfMon.EAX.VectorSz >= 6) ? 2 : 0;
+	   || (RO(Shm)->Proc.Features.PerfMon.EAX.VectorSz >= 6);
 
-	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+	PUT(	SCANKEY_NULL, attrib[bix ? 2 : 0], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_BRANCH_MIS).CODE(),
 		width - 12 - RSZ(PERF_MON_BRANCH_MIS), hSpace, POWERED(bix) );
 
 	bix = (RO(Shm)->Proc.Features.PerfMon.EBX.TopdownSlots == 0)
-	   || (RO(Shm)->Proc.Features.PerfMon.EAX.VectorSz >= 7) ? 2 : 0;
+	   || (RO(Shm)->Proc.Features.PerfMon.EAX.VectorSz >= 7);
 
-	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+	PUT(	SCANKEY_NULL, attrib[bix ? 2 : 0], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_TOPDOWN_SLOTS).CODE(),
 		width - 12 - RSZ(PERF_MON_TOPDOWN_SLOTS), hSpace, POWERED(bix));
     }
@@ -5212,22 +5212,22 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 		],
 		RSC(PERF_MON_UNIT_BIT).CODE(),
 		width - 18 - RSZ(PERF_MON_TSC) - RSZ(PERF_MON_UNIT_BIT),
-		hSpace, POWERED(2) );
+		hSpace, POWERED(1) );
       } else {
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_TSC).CODE(),
 		width - 12 - RSZ(PERF_MON_TSC), hSpace, POWERED(0) );
       }
 
-	bix = RO(Shm)->Proc.Features.ExtInfo.ECX.PerfNB == 1 ? 2 : 0;
+	bix = RO(Shm)->Proc.Features.ExtInfo.ECX.PerfNB == 1;
 
-	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+	PUT(	SCANKEY_NULL, attrib[bix ? 2 : 0], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_NB_DF).CODE(),
 		width - 12 - RSZ(PERF_MON_NB_DF), hSpace, POWERED(bix) );
 
-	bix = RO(Shm)->Proc.Features.ExtInfo.ECX.PerfCore == 1 ? 2 : 0;
+	bix = RO(Shm)->Proc.Features.ExtInfo.ECX.PerfCore == 1;
 
-	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+	PUT(	SCANKEY_NULL, attrib[bix ? 2 : 0], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_CORE).CODE(),
 		width - 12 - RSZ(PERF_MON_CORE), hSpace, POWERED(bix) );
     }

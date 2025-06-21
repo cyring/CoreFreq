@@ -1117,6 +1117,7 @@
 #define RSC_UNABLE_CODE_EN		"Unable"
 #define RSC_MISSING_CODE_EN		"Missing"
 #define RSC_PRESENT_CODE_EN		"Capable"
+#define RSC_UNKNOWN_CODE_EN		"Unknown"
 #define RSC_VARIANT_CODE_EN		"Variant"
 #define RSC_INVARIANT_CODE_EN		"Invariant"
 #define RSC_FEATURES_1GB_PAGES_CODE_EN	"1 GB Pages Support"
