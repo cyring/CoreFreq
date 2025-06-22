@@ -37,6 +37,8 @@ ifneq ($(findstring s,$(firstword -$(MAKEFLAGS))),)
 	SILENT = 1
 else
 	ifneq ($(V),)
+		SYMLINK += -v
+		MKDIR += -v
 		RMDIR += -v
 		RM += -v
 	endif
@@ -131,8 +133,51 @@ ifneq ($(UI_RULER_MAXIMUM),)
 LAYOUT += -D UI_RULER_MAXIMUM=$(UI_RULER_MAXIMUM)
 endif
 
+ifneq ($(filter clean,$(MAKECMDGOALS)),)
+ifneq ($(words $(MAKECMDGOALS)),1)
+$(error Target 'clean' must be run alone: See 'make help')
+endif
+endif
+
+ifneq ($(filter prepare,$(MAKECMDGOALS)),)
+$(error Target 'prepare' is internal. See 'make help')
+endif
+
 .PHONY: all
-all: prepare corefreqd corefreq-cli | prepare
+all: prepare corefreqd corefreq-cli corefreqk.ko | prepare
+
+.PHONY: prepare
+prepare:
+	@if [ ! -d $(BUILD) ]; then \
+		if [ ${SILENT} -eq 0 ]; then \
+			echo "  MD [$(BUILD)]"; \
+		fi; \
+		$(MKDIR) -m +t $(BUILD); \
+	fi; \
+	if [ ! -d $(BUILD)/module ]; then \
+		if [ ${SILENT} -eq 0 ]; then \
+			echo "  MD [$(BUILD)/module]"; \
+		fi; \
+		$(MKDIR) $(BUILD)/module; \
+	fi; \
+	if [ ! -e $(BUILD)/Makefile ]; then \
+		cd $(BUILD); \
+		if [ ${SILENT} -eq 0 ]; then \
+			echo "  LN [$(BUILD)/Makefile]"; \
+		fi; \
+		$(SYMLINK) ../Makefile Makefile; \
+		cd ..; \
+	fi; \
+	if [ ! -e $(BUILD)/module/corefreqk.c ]; then \
+		cd $(BUILD)/module; \
+		if [ ${SILENT} -eq 0 ]; then \
+			echo "  LN [$(BUILD)/module/corefreqk.c]"; \
+		fi; \
+		$(SYMLINK) ../../$(HW)/corefreqk.c corefreqk.c; \
+		cd ../..; \
+	fi
+
+$(BUILD)/corefreqk.ko: prepare
 	@if [ -e $(BUILD)/Makefile ]; then \
 	    if [ -z ${V} ]; then \
 		$(MAKE) --no-print-directory -C $(KERNELDIR) \
@@ -142,24 +187,8 @@ all: prepare corefreqd corefreq-cli | prepare
 	    fi \
 	fi
 
-.PHONY: prepare
-prepare:
-	@if [ ! -d $(BUILD) ]; then \
-		$(MKDIR) -m +t $(BUILD); \
-	fi
-	@if [ ! -d $(BUILD)/module ]; then \
-		$(MKDIR) $(BUILD)/module; \
-	fi
-	@if [ ! -e $(BUILD)/Makefile ]; then \
-		cd $(BUILD); \
-		$(SYMLINK) ../Makefile Makefile; \
-		cd ..; \
-	fi
-	@if [ ! -e $(BUILD)/module/corefreqk.c ]; then \
-		cd $(BUILD)/module; \
-		$(SYMLINK) ../../$(HW)/corefreqk.c corefreqk.c; \
-		cd ../..; \
-	fi
+.PHONY: corefreqk.ko
+corefreqk.ko: $(BUILD)/corefreqk.ko
 
 .PHONY: uninstall
 uninstall:
@@ -212,45 +241,45 @@ clean:
 	@if [ -e $(BUILD)/Makefile ]; then \
 	    if [ -z ${V} ]; then \
 		if [ ${SILENT} -eq 0 ]; then \
-			echo "  CLEAN [M] $(PWD)/$(BUILD)"; \
+			echo "  RM [M] $(PWD)/$(BUILD)"; \
 		fi; \
 		$(MAKE) -s -C $(KERNELDIR) M=$(PWD)/$(BUILD) clean; \
 	    else \
 		$(MAKE) -C $(KERNELDIR) M=$(PWD)/$(BUILD) clean; \
 	    fi \
-	fi
-	@if [ -e $(BUILD)/corefreqd ]; then \
+	fi; \
+	if [ -e $(BUILD)/corefreqd ]; then \
 		if [ ${SILENT} -eq 0 ]; then \
-			echo "  CLEAN [$(BUILD)/corefreqd]"; \
+			echo "  RM [$(BUILD)/corefreqd]"; \
 		fi; \
 		$(RM) $(BUILD)/corefreqd; \
-	fi
-	@if [ -e $(BUILD)/corefreq-cli ]; then \
+	fi; \
+	if [ -e $(BUILD)/corefreq-cli ]; then \
 		if [ ${SILENT} -eq 0 ]; then \
-			echo "  CLEAN [$(BUILD)/corefreq-cli]"; \
+			echo "  RM [$(BUILD)/corefreq-cli]"; \
 		fi; \
 		$(RM) $(BUILD)/corefreq-cli; \
-	fi
-	@if [ -e $(BUILD)/module/corefreqk.c ]; then \
+	fi; \
+	if [ -e $(BUILD)/module/corefreqk.c ]; then \
 		if [ ${SILENT} -eq 0 ]; then \
-			echo "  CLEAN [$(BUILD)/module/corefreqk.c]"; \
+			echo "  RM [$(BUILD)/module/corefreqk.c]"; \
 		fi; \
 		$(RM) $(BUILD)/module/corefreqk.c; \
-	fi
-	@if [ -e $(BUILD)/Makefile ]; then \
+	fi; \
+	if [ -e $(BUILD)/Makefile ]; then \
 		if [ ${SILENT} -eq 0 ]; then \
-			echo "  CLEAN [$(BUILD)/Makefile]"; \
+			echo "  RM [$(BUILD)/Makefile]"; \
 		fi; \
 		$(RM) $(BUILD)/Makefile; \
-	fi
-	@if [ -d $(BUILD)/module ]; then \
+	fi; \
+	if [ -d $(BUILD)/module ]; then \
 		if [ ${SILENT} -eq 0 ]; then \
-			echo "  RMDIR [$(BUILD)/module]"; \
+			echo "  RD [$(BUILD)/module]"; \
 		fi; \
 		$(RMDIR) $(BUILD)/module; \
-	fi
-	@if [ -d $(BUILD) ] && [ -z "$(ls -A $(BUILD))" ]; then \
-		if [ ${SILENT} -eq 0 ]; then echo "  RMDIR [$(BUILD)]"; fi; \
+	fi; \
+	if [ -d $(BUILD) ] && [ -z "$(ls -A $(BUILD))" ]; then \
+		if [ ${SILENT} -eq 0 ]; then echo "  RD [$(BUILD)]"; fi; \
 		$(RMDIR) $(BUILD); \
 	fi
 
@@ -264,7 +293,7 @@ $(BUILD)/corefreqd.o: $(HW)/corefreqd.c
 	$(CC)) $(OPTIM_FLG) $(WARNING) -pthread $(DEFINITIONS) \
 	  -c $(HW)/corefreqd.c -o $(BUILD)/corefreqd.o
 
-$(BUILD)/corefreqd: $(BUILD)/corefreqd.o $(BUILD)/corefreqm.o
+$(BUILD)/corefreqd: prepare $(BUILD)/corefreqd.o $(BUILD)/corefreqm.o
 	$(if $(V), $(CC), @if [ ${SILENT} -eq 0 ]; then echo "  LD [$@]"; fi; \
 	$(CC)) $(OPTIM_FLG) -o $(BUILD)/corefreqd \
 	  $(BUILD)/corefreqd.o $(BUILD)/corefreqm.o -lpthread -lm -lrt -lc
@@ -297,7 +326,8 @@ $(BUILD)/corefreq-cli-extra.o: $(HW)/corefreq-cli-extra.c
 	$(CC)) $(OPTIM_FLG) $(WARNING) $(DEFINITIONS) \
 	  -c $(HW)/corefreq-cli-extra.c -o $(BUILD)/corefreq-cli-extra.o
 
-$(BUILD)/corefreq-cli:	$(BUILD)/corefreq-cli.o \
+$(BUILD)/corefreq-cli:	prepare \
+			$(BUILD)/corefreq-cli.o \
 			$(BUILD)/corefreq-ui.o \
 			$(BUILD)/corefreq-cli-rsc.o \
 			$(BUILD)/corefreq-cli-json.o \
