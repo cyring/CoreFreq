@@ -8130,8 +8130,7 @@ static void Query_AMD_Family_15h(unsigned int cpu)
 		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_EXCAVATOR],
 		CODENAME_LEN);
 	/*	One thermal sensor through the SMU interface		*/
-	PUBLIC(RO(Proc))->thermalFormula = \
-				CoreFreqK_Thermal_Scope(FORMULA_SCOPE_PKG);
+	CoreFreqK_Thermal_Scope(FORMULA_SCOPE_PKG);
       }
 	break;
     }
