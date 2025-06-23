@@ -13154,6 +13154,7 @@ static void PerCore_AuthenticAMD_Query(void *arg)
 
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ODCM_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->DCU_Mask	, Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
@@ -13171,6 +13172,7 @@ static void PerCore_AuthenticAMD_Query(void *arg)
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->XPROC_LEAK_Mask, Core->Bind);
 }
 
 static void PerCore_Core2_Query(void *arg)
@@ -14089,6 +14091,7 @@ static void PerCore_AMD_Family_0Fh_Query(void *arg)
 
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->DCU_Mask	, Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
@@ -14105,6 +14108,7 @@ static void PerCore_AMD_Family_0Fh_Query(void *arg)
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->XPROC_LEAK_Mask, Core->Bind);
 }
 
 static void PerCore_AMD_Family_Same_Query(void *arg)
@@ -14125,6 +14129,7 @@ static void PerCore_AMD_Family_Same_Query(void *arg)
 
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->DCU_Mask	, Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
@@ -14141,6 +14146,7 @@ static void PerCore_AMD_Family_Same_Query(void *arg)
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->BTC_NOBR_Mask , Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->XPROC_LEAK_Mask, Core->Bind);
 }
 
 static void PerCore_AMD_Family_10h_Query(void *arg)
