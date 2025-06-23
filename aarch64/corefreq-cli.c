@@ -3639,14 +3639,14 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 		width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_CORE_CYCLE).CODE(),
 		width - 12 - RSZ(PERF_MON_CORE_CYCLE), hSpace,
-		POWERED(RO(Shm)->Proc.Features.PerfMon.CoreCycles) );
+		POWERED(RO(Shm)->Proc.Features.PerfMon.CoreCycles == 1) );
 
 	PUT(	SCANKEY_NULL,
 		attrib[RO(Shm)->Proc.Features.PerfMon.InstrRetired ? 2 : 0],
 		width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_INST_RET).CODE(),
 		width - 12 - RSZ(PERF_MON_INST_RET), hSpace,
-		POWERED(RO(Shm)->Proc.Features.PerfMon.InstrRetired) );
+		POWERED(RO(Shm)->Proc.Features.PerfMon.InstrRetired == 1) );
 /* Section Mark */
 	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.ACPI_PCT_CAP ? 3:0],
 		width, 2,

@@ -3551,15 +3551,15 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 		RO(Shm)->Proc.Features.MWait.SubCstate_MWAIT6,
 		RO(Shm)->Proc.Features.MWait.SubCstate_MWAIT7 );
 /* Section Mark */
-	bix = RO(Shm)->Proc.Features.PerfMon.CoreCycles == 1 ? 2 : 0;
+	bix = RO(Shm)->Proc.Features.PerfMon.CoreCycles == 1;
 
-	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+	PUT(	SCANKEY_NULL, attrib[bix ? 2 : 0], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_CORE_CYCLE).CODE(),
 		width - 12 - RSZ(PERF_MON_CORE_CYCLE), hSpace, POWERED(bix) );
 
-	bix = RO(Shm)->Proc.Features.PerfMon.InstrRetired == 1 ? 2 : 0;
+	bix = RO(Shm)->Proc.Features.PerfMon.InstrRetired == 1;
 
-	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+	PUT(	SCANKEY_NULL, attrib[bix ? 2 : 0], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_INST_RET).CODE(),
 		width - 12 - RSZ(PERF_MON_INST_RET), hSpace, POWERED(bix) );
 /* Section Mark */
