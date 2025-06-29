@@ -7880,7 +7880,8 @@ static void Query_AMD_Family_0Fh(unsigned int cpu)
 	OverrideCodeNameString(PRIVATE(OF(Specific)));
 	OverrideUnlockCapability(PRIVATE(OF(Specific)));
     } else {
-	PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
+	PUBLIC(RO(Proc))->PowerThermal.Param = \
+					(THERMAL_PARAM){.Offset = {90, 0, 0}};
     }
 	Default_Unlock_Reset();
 
@@ -7916,7 +7917,8 @@ static void Query_AMD_Family_10h(unsigned int cpu)
 	OverrideCodeNameString(PRIVATE(OF(Specific)));
 	OverrideUnlockCapability(PRIVATE(OF(Specific)));
     } else {
-	PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
+	PUBLIC(RO(Proc))->PowerThermal.Param = \
+					(THERMAL_PARAM){.Offset = {90, 0, 0}};
     }
 	Default_Unlock_Reset();
 
@@ -7954,7 +7956,8 @@ static void Query_AMD_Family_11h(unsigned int cpu)
 	OverrideCodeNameString(PRIVATE(OF(Specific)));
 	OverrideUnlockCapability(PRIVATE(OF(Specific)));
     } else {
-	PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
+	PUBLIC(RO(Proc))->PowerThermal.Param = \
+					(THERMAL_PARAM){.Offset = {85, 0, 0}};
     }
 	Default_Unlock_Reset();
 
@@ -7992,7 +7995,8 @@ static void Query_AMD_Family_12h(unsigned int cpu)
 	OverrideCodeNameString(PRIVATE(OF(Specific)));
 	OverrideUnlockCapability(PRIVATE(OF(Specific)));
     } else {
-	PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
+	PUBLIC(RO(Proc))->PowerThermal.Param = \
+					(THERMAL_PARAM){.Offset = {90, 0, 0}};
     }
 	Default_Unlock_Reset();
 
@@ -8037,7 +8041,8 @@ static void Query_AMD_Family_14h(unsigned int cpu)
 	OverrideCodeNameString(PRIVATE(OF(Specific)));
 	OverrideUnlockCapability(PRIVATE(OF(Specific)));
     } else {
-	PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
+	PUBLIC(RO(Proc))->PowerThermal.Param = \
+					(THERMAL_PARAM){.Offset = {85, 0, 0}};
     }
 	Default_Unlock_Reset();
 
@@ -8102,6 +8107,8 @@ static void Query_AMD_Family_15h(unsigned int cpu)
 		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_PILEDRIVER],
 		CODENAME_LEN);
       }
+	PUBLIC(RO(Proc))->PowerThermal.Param = \
+					(THERMAL_PARAM){.Offset = {85, 0, 0}};
 	break;
     case 0x1:
       if ( (PUBLIC(RO(Proc))->Features.Std.EAX.Model >= 0x0)
@@ -8111,6 +8118,8 @@ static void Query_AMD_Family_15h(unsigned int cpu)
 		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_PILEDRIVER],
 		CODENAME_LEN);
       }
+	PUBLIC(RO(Proc))->PowerThermal.Param = \
+					(THERMAL_PARAM){.Offset = {74, 0, 0}};
 	break;
     case 0x3:
       if ( (PUBLIC(RO(Proc))->Features.Std.EAX.Model >= 0x0)
@@ -8120,6 +8129,8 @@ static void Query_AMD_Family_15h(unsigned int cpu)
 		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_STEAMROLLER],
 		CODENAME_LEN);
       }
+	PUBLIC(RO(Proc))->PowerThermal.Param = \
+					(THERMAL_PARAM){.Offset = {90, 0, 0}};
 	break;
     case 0x6:
     case 0x7:
@@ -8132,6 +8143,12 @@ static void Query_AMD_Family_15h(unsigned int cpu)
 	/*	One thermal sensor through the SMU interface		*/
 	CoreFreqK_Thermal_Scope(FORMULA_SCOPE_PKG);
       }
+	PUBLIC(RO(Proc))->PowerThermal.Param = \
+					(THERMAL_PARAM){.Offset = {90, 0, 0}};
+	break;
+    default:
+	PUBLIC(RO(Proc))->PowerThermal.Param = \
+					(THERMAL_PARAM){.Offset = {90, 0, 0}};
 	break;
     }
     if (PRIVATE(OF(Specific)) != NULL)
@@ -8139,8 +8156,6 @@ static void Query_AMD_Family_15h(unsigned int cpu)
 	PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
 	OverrideCodeNameString(PRIVATE(OF(Specific)));
 	OverrideUnlockCapability(PRIVATE(OF(Specific)));
-    } else {
-	PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
     }
 	Default_Unlock_Reset();
 }
