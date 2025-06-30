@@ -9638,7 +9638,8 @@ static PROCESSOR_SPECIFIC AMD_Zen5_STXH_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD RYZEN AI MAX PRO 385"),
+	.Brand = ZLIST( "AMD RYZEN AI MAX PRO 385",	\
+			"AMD RYZEN AI MAX 385"		),
 	.Boost = {+14, 0},
 	.Param.Offset = {100, 0, 0},
 	.CodeNameIdx = CN_STRIX_HALO,
