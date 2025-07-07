@@ -424,6 +424,7 @@ typedef struct
 #ifdef CONFIG_CPU_FREQ
 		struct cpufreq_policy	FreqPolicy;
 #endif /* CONFIG_CPU_FREQ */
+		struct thermal_zone_device *ThermalZone;
 #ifdef CONFIG_PM_OPP
 		struct {
 			signed int	VID;
@@ -948,7 +949,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.BaseClock = BaseClock_GenericMachine,
 	.ClockMod = NULL,
 	.TurboClock = NULL,
-	.thermalFormula = THERMAL_FORMULA_NONE,
+	.thermalFormula = THERMAL_FORMULA_CELSIUS,
 #ifdef CONFIG_PM_OPP
 	.voltageFormula = VOLTAGE_FORMULA_OPP,
 #else
@@ -1284,7 +1285,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.BaseClock = BaseClock_GenericMachine,
 	.ClockMod = NULL,
 	.TurboClock = NULL,
-	.thermalFormula = THERMAL_FORMULA_NONE,
+	.thermalFormula = THERMAL_FORMULA_CELSIUS,
 #ifdef CONFIG_PM_OPP
 	.voltageFormula = VOLTAGE_FORMULA_OPP,
 #else
