@@ -424,7 +424,9 @@ typedef struct
 #ifdef CONFIG_CPU_FREQ
 		struct cpufreq_policy	FreqPolicy;
 #endif /* CONFIG_CPU_FREQ */
+#ifdef CONFIG_THERMAL
 		struct thermal_zone_device *ThermalZone;
+#endif /* CONFIG_THERMAL */
 #ifdef CONFIG_PM_OPP
 		struct {
 			signed int	VID;

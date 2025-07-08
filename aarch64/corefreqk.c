@@ -48,7 +48,9 @@
 #ifdef CONFIG_ACPI_CPPC_LIB
 #include <acpi/cppc_acpi.h>
 #endif
+#ifdef CONFIG_THERMAL
 #include <linux/thermal.h>
+#endif
 
 #ifdef CONFIG_HAVE_NMI
 enum {
@@ -3255,6 +3257,7 @@ static void PerCore_Reset(CORE_RO *Core)
 
 static void PerCore_ThermalZone(CORE_RO *Core)
 {
+#ifdef CONFIG_THERMAL
 	struct thermal_zone_device *tz = NULL;
 
 	switch (Core->T.Cluster.Hybrid_ID) {
@@ -3270,6 +3273,7 @@ static void PerCore_ThermalZone(CORE_RO *Core)
 		break;
 	}
 	PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone = tz;
+#endif /* CONFIG_THERMAL */
 }
 
 static void PerCore_GenericMachine(void *arg)
@@ -3993,6 +3997,7 @@ static COF_ST Compute_COF_From_PMU_Counter(	unsigned long long deltaCounter,
 
 static void Core_Thermal_Temp(CORE_RO *Core)
 {
+#ifdef CONFIG_THERMAL
   if (!IS_ERR(PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone)) {
 	int mcelsius;
     if (thermal_zone_get_temp(PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone,
@@ -4001,6 +4006,7 @@ static void Core_Thermal_Temp(CORE_RO *Core)
 	Core->PowerThermal.Sensor = mcelsius;
     }
   }
+#endif /* CONFIG_THERMAL */
 }
 
 static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
