@@ -89,21 +89,26 @@ cd CoreFreq
 make -j
 ```
 ```console
+  MD [build]
+  MD [build/module]
+  LN [build/Makefile]
+  LN [build/module/corefreqk.c]
   CC [build/corefreqd.o]
   CC [build/corefreqm.o]
+  LD [build/corefreqd]
   CC [build/corefreq-cli.o]
   CC [build/corefreq-ui.o]
   CC [build/corefreq-cli-rsc.o]
   CC [build/corefreq-cli-json.o]
   CC [build/corefreq-cli-extra.o]
-  LD [build/corefreqd]
   LD [build/corefreq-cli]
-  CC [M]  CoreFreq/build/module/corefreqk.o
-  LD [M]  CoreFreq/build/corefreqk.o
-  MODPOST CoreFreq/build/Module.symvers
-  CC [M]  CoreFreq/build/corefreqk.mod.o
-  LD [M]  CoreFreq/build/corefreqk.ko
-  BTF [M] CoreFreq/build/corefreqk.ko
+  CC [M]  module/corefreqk.o
+  LD [M]  corefreqk.o
+  MODPOST Module.symvers
+  CC [M]  corefreqk.mod.o
+  CC [M]  .module-common.o
+  LD [M]  corefreqk.ko
+  BTF [M] corefreqk.ko
 ```
 4. (Optionally) Sign the driver
 If module signature verification is enabled into Kernel, you will have to sign the `corefreqk.ko` driver.  
@@ -688,7 +693,14 @@ gmake CC=clang
 
 ```
 o---------------------------------------------------------------o
-|  make [all] [clean] [info] [help] [install] [module-install]  |
+|  make [corefreqd] [corefreq-cli] [corefreqk.ko] [all]         |
+|  make [install] [module-install] [uninstall]                  |
+|  make [info] [help] [version]                                 |
+|  make [clean]                                                 |
+|                                                               |
+|  Options:                                                     |
+|     -j [N], --jobs[=N]                                        |
+|     -s, --silent, --quiet                                     |
 |                                                               |
 |  V=<n>                                                        |
 |    where <n> is the verbose build level                       |

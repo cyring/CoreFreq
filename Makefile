@@ -234,7 +234,9 @@ install: module-install
 
 .PHONY: module-install
 module-install:
-	$(MAKE) -C $(KERNELDIR) M=$(PWD)/$(BUILD) modules_install
+	@if [ -e $(BUILD)/corefreqk.ko ]; then \
+		$(MAKE) -C $(KERNELDIR) M=$(PWD)/$(BUILD) modules_install; \
+	fi
 
 .PHONY: clean
 clean:
@@ -367,13 +369,25 @@ info:
 	$(info NO_UPPER [$(NO_UPPER)])
 	$(info NO_LOWER [$(NO_LOWER)])
 	$(info SILENT [$(SILENT)])
-	@echo -n
+	@:
+
+.PHONY: version
+version:
+	$(info $(COREFREQ_MAJOR).$(COREFREQ_MINOR).$(COREFREQ_REV))
+	@:
 
 .PHONY: help
 help:
 	@echo -e \
 	"o---------------------------------------------------------------o\n"\
-	"|  make [all] [clean] [info] [help] [install] [module-install]  |\n"\
+	"|  make [corefreqd] [corefreq-cli] [corefreqk.ko] [all]         |\n"\
+	"|  make [install] [module-install] [uninstall]                  |\n"\
+	"|  make [info] [help] [version]                                 |\n"\
+	"|  make [clean]                                                 |\n"\
+	"|                                                               |\n"\
+	"|  Options:                                                     |\n"\
+	"|     -j [N], --jobs[=N]                                        |\n"\
+	"|     -s, --silent, --quiet                                     |\n"\
 	"|                                                               |\n"\
 	"|  V=<n>                                                        |\n"\
 	"|    where <n> is the verbose build level                       |\n"\
