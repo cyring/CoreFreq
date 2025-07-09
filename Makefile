@@ -139,15 +139,14 @@ $(error Target 'clean' must be run alone: See 'make help')
 endif
 endif
 
-ifneq ($(filter prepare,$(MAKECMDGOALS)),)
-$(error Target 'prepare' is internal. See 'make help')
+ifneq ($(filter $(BUILD)/.prepare-stamp,$(MAKECMDGOALS)),)
+$(error Target '$(BUILD)/.prepare-stamp' is internal. See 'make help')
 endif
 
 .PHONY: all
-all: prepare corefreqd corefreq-cli corefreqk.ko | prepare
+all: $(BUILD)/.prepare-stamp corefreqd corefreq-cli corefreqk.ko | $(BUILD)/.prepare-stamp
 
-.PHONY: prepare
-prepare:
+$(BUILD)/.prepare-stamp:
 	@if [ ! -d $(BUILD) ]; then \
 		if [ ${SILENT} -eq 0 ]; then \
 			echo "  MD [$(BUILD)]"; \
@@ -175,9 +174,10 @@ prepare:
 		fi; \
 		$(SYMLINK) ../../$(HW)/corefreqk.c corefreqk.c; \
 		cd ../..; \
-	fi
+	fi; \
+	touch $@
 
-$(BUILD)/corefreqk.ko: prepare
+$(BUILD)/corefreqk.ko: $(BUILD)/.prepare-stamp
 	@if [ -e $(BUILD)/Makefile ]; then \
 	    if [ -z ${V} ]; then \
 		$(MAKE) --no-print-directory -C $(KERNELDIR) \
@@ -281,6 +281,7 @@ clean:
 		$(RMDIR) $(BUILD)/module; \
 	fi; \
 	if [ -d $(BUILD) ] && [ -z "$(ls -A $(BUILD))" ]; then \
+		$(RM) $(BUILD)/.prepare-stamp; \
 		if [ ${SILENT} -eq 0 ]; then echo "  RD [$(BUILD)]"; fi; \
 		$(RMDIR) $(BUILD); \
 	fi
@@ -295,7 +296,7 @@ $(BUILD)/corefreqd.o: $(HW)/corefreqd.c
 	$(CC)) $(OPTIM_FLG) $(WARNING) -pthread $(DEFINITIONS) \
 	  -c $(HW)/corefreqd.c -o $(BUILD)/corefreqd.o
 
-$(BUILD)/corefreqd: prepare $(BUILD)/corefreqd.o $(BUILD)/corefreqm.o
+$(BUILD)/corefreqd: $(BUILD)/.prepare-stamp $(BUILD)/corefreqd.o $(BUILD)/corefreqm.o
 	$(if $(V), $(CC), @if [ ${SILENT} -eq 0 ]; then echo "  LD [$@]"; fi; \
 	$(CC)) $(OPTIM_FLG) -o $(BUILD)/corefreqd \
 	  $(BUILD)/corefreqd.o $(BUILD)/corefreqm.o -lpthread -lm -lrt -lc
@@ -328,7 +329,7 @@ $(BUILD)/corefreq-cli-extra.o: $(HW)/corefreq-cli-extra.c
 	$(CC)) $(OPTIM_FLG) $(WARNING) $(DEFINITIONS) \
 	  -c $(HW)/corefreq-cli-extra.c -o $(BUILD)/corefreq-cli-extra.o
 
-$(BUILD)/corefreq-cli:	prepare \
+$(BUILD)/corefreq-cli:	$(BUILD)/.prepare-stamp \
 			$(BUILD)/corefreq-cli.o \
 			$(BUILD)/corefreq-ui.o \
 			$(BUILD)/corefreq-cli-rsc.o \
