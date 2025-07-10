@@ -3517,6 +3517,11 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 		PCI_VDEVICE(AMD, DID_AMD_1AH_STX_DF_UMC),
 		.driver_data = (kernel_ulong_t) AMD_DataFabric_Strix_Point
 	},
+	/*			Strix Halo				*/
+	{
+		PCI_VDEVICE(AMD, DID_AMD_1AH_STXH_DF_UMC),
+		.driver_data = (kernel_ulong_t) AMD_DataFabric_Strix_Point
+	},
 	{0, }
 };
 

@@ -1646,3 +1646,5 @@ typedef struct
 /* Source: lspci - Ryzen AI 9 HX 370					*/
 #define DID_AMD_1AH_ZEN5_STX_IOMMU	0x1508	/*	Strix Point	*/
 #define DID_AMD_1AH_STX_DF_UMC		0x16f8	/*	Strix Point	*/
+/* Source: lspci - RYZEN AI MAX+ 395					*/
+#define DID_AMD_1AH_STXH_DF_UMC		0x12b8	/*	Strix Halo	*/
