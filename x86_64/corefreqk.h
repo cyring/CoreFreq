@@ -1799,6 +1799,8 @@ static void InitTimer_AMD_Zen4_Genoa(unsigned int cpu) ;
 #define     Start_Uncore_AMD_Family_1Ah Start_Uncore_AMD_Family_19h
 #define     Stop_Uncore_AMD_Family_1Ah Stop_Uncore_AMD_Family_19h
 
+#define     InitTimer_AMD_Zen5_STX InitTimer_AMD_Zen4_RPL
+
 /*	[Void]								*/
 #define _Void_Signature {.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
 
@@ -13365,7 +13367,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Start = Start_AMD_Family_1Ah,
 	.Stop = Stop_AMD_Family_1Ah,
 	.Exit = Exit_AMD_F1Ah,
-	.Timer = InitTimer_AMD_Zen4_PHX,
+	.Timer = InitTimer_AMD_Zen5_STX,
 	.BaseClock = BaseClock_AMD_Family_1Ah,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
@@ -13469,7 +13471,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Start = Start_AMD_Family_1Ah,
 	.Stop = Stop_AMD_Family_1Ah,
 	.Exit = Exit_AMD_F1Ah,
-	.Timer = InitTimer_AMD_Zen4_PHX,
+	.Timer = InitTimer_AMD_Zen5_STX,
 	.BaseClock = BaseClock_AMD_Family_1Ah,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
@@ -13493,7 +13495,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Start = Start_AMD_Family_1Ah,
 	.Stop = Stop_AMD_Family_1Ah,
 	.Exit = Exit_AMD_F1Ah,
-	.Timer = InitTimer_AMD_Zen4_PHX,
+	.Timer = InitTimer_AMD_Zen5_STX,
 	.BaseClock = BaseClock_AMD_Family_1Ah,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
