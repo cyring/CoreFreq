@@ -19,10 +19,10 @@ jobs:
             distro: debian-testing
             base_image: amd64/debian:testing
             packages: linux-headers-amd64
-          - arch: amd64
-            distro: debian-10-buster
-            base_image: amd64/debian:10
-            packages: linux-headers-amd64
+          #- arch: amd64
+          #  distro: debian-10-buster
+          #  base_image: amd64/debian:10
+          #  packages: linux-headers-amd64
           - arch: amd64
             distro: ubuntu-rolling
             base_image: amd64/ubuntu:rolling
@@ -55,15 +55,14 @@ jobs:
           #   distro: fedora-26
           #   base_image: amd64/fedora:26
           #   packages: kernel-devel
-
           #- arch: aarch64
           #  distro: debian-testing
           #  base_image: arm64v8/debian:testing
           #  packages: linux-headers-arm64
-          - arch: aarch64
-            distro: debian-10-buster
-            base_image: arm64v8/debian:10
-            packages: linux-headers-arm64
+          #- arch: aarch64
+          #  distro: debian-10-buster
+          #  base_image: arm64v8/debian:10
+          #  packages: linux-headers-arm64
           #- arch: aarch64
           #  distro: ubuntu-rolling
           #  base_image: arm64v8/ubuntu:rolling
