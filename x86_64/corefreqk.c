@@ -8304,10 +8304,7 @@ static bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	AMD_17_ZEN2_COF XtraCOF = {.value = 0};
 
 	switch (PUBLIC(RO(Proc))->ArchID) {
-	case AMD_Zen5_STXH:
-	case AMD_Zen5_KRK:
 	case AMD_Zen5_Eldora:
-	case AMD_Zen5_STX:
 	case AMD_Zen4_HWK:
 	case AMD_Zen4_PHX2:
 	case AMD_Zen4_PHXR:
@@ -8328,6 +8325,9 @@ static bool Compute_AMD_Zen_Boost(unsigned int cpu)
 				SMU_AMD_F17H_ZEN2_MCM_COF,
 				PRIVATE(OF(Zen)).Device.DF);
 		break;
+	case AMD_Zen5_STXH:
+	case AMD_Zen5_KRK:
+	case AMD_Zen5_STX:
 	case AMD_Zen4_Genoa:
 		break;
 	}
@@ -9318,6 +9318,25 @@ static void Query_AMD_F19h_61h_PerCluster(unsigned int cpu)
 
 	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
 		Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
+		if (AMD_F17h_CPPC() == -ENODEV) {
+			For_All_ACPI_CPPC(Read_ACPI_CPPC_Registers, NULL);
+		}
+		Read_ACPI_PCT_Registers(cpu);
+		Read_ACPI_PSS_Registers(cpu);
+		Read_ACPI_PPC_Registers(cpu);
+		Read_ACPI_CST_Registers(cpu);
+	}
+}
+
+static void Query_AMD_F1Ah_24h_60h_70h_PerSocket(unsigned int cpu)
+{
+	Core_AMD_Family_17h_Temp = CTL_AMD_Family_17h_Temp;
+
+	Probe_AMD_DataFabric();
+
+	Query_AMD_Family_17h(cpu);
+
+	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
 		if (AMD_F17h_CPPC() == -ENODEV) {
 			For_All_ACPI_CPPC(Read_ACPI_CPPC_Registers, NULL);
 		}
@@ -20751,6 +20770,11 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu)
 static void InitTimer_AMD_Zen4_Genoa(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_AMD_Zen4_Genoa, 1);
+}
+
+static void InitTimer_AMD_Zen5_STX(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h, 1);
 }
 
 static void Start_AMD_Family_17h(void *arg)

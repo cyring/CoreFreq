@@ -1790,7 +1790,6 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 static void InitTimer_AMD_Zen4_Genoa(unsigned int cpu) ;
 
 #define     Exit_AMD_F1Ah Exit_AMD_F19h
-#define     Query_AMD_F1Ah_PerSocket Query_AMD_F19h_PerSocket
 #define     Query_AMD_F1Ah_PerCluster Query_AMD_F19h_PerCluster
 #define     PerCore_AMD_Family_1Ah_Query PerCore_AMD_Family_19h_Query
 #define     Start_AMD_Family_1Ah Start_AMD_Family_19h
@@ -1799,7 +1798,8 @@ static void InitTimer_AMD_Zen4_Genoa(unsigned int cpu) ;
 #define     Start_Uncore_AMD_Family_1Ah Start_Uncore_AMD_Family_19h
 #define     Stop_Uncore_AMD_Family_1Ah Stop_Uncore_AMD_Family_19h
 
-#define     InitTimer_AMD_Zen5_STX InitTimer_AMD_Zen4_RPL
+static void Query_AMD_F1Ah_24h_60h_70h_PerSocket(unsigned int cpu) ;
+static void InitTimer_AMD_Zen5_STX(unsigned int cpu) ;
 
 /*	[Void]								*/
 #define _Void_Signature {.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
@@ -13362,7 +13362,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen5_STX] = {							/*124*/
 	.Signature = _AMD_Zen5_STX,
-	.Query = Query_AMD_F1Ah_PerSocket,
+	.Query = Query_AMD_F1Ah_24h_60h_70h_PerSocket,
 	.Update = PerCore_AMD_Family_1Ah_Query,
 	.Start = Start_AMD_Family_1Ah,
 	.Stop = Stop_AMD_Family_1Ah,
@@ -13466,7 +13466,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen5_KRK] = {							/*128*/
 	.Signature = _AMD_Zen5_KRK,
-	.Query = Query_AMD_F1Ah_PerSocket,
+	.Query = Query_AMD_F1Ah_24h_60h_70h_PerSocket,
 	.Update = PerCore_AMD_Family_1Ah_Query,
 	.Start = Start_AMD_Family_1Ah,
 	.Stop = Stop_AMD_Family_1Ah,
@@ -13490,7 +13490,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen5_STXH] = {							/*129*/
 	.Signature = _AMD_Zen5_STXH,
-	.Query = Query_AMD_F1Ah_PerSocket,
+	.Query = Query_AMD_F1Ah_24h_60h_70h_PerSocket,
 	.Update = PerCore_AMD_Family_1Ah_Query,
 	.Start = Start_AMD_Family_1Ah,
 	.Stop = Stop_AMD_Family_1Ah,
