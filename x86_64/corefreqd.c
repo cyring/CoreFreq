@@ -6963,6 +6963,72 @@ void AMD_17h_IOMMU(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 			RO(Proc)->Uncore.Bus.IOMMU_HDR.CapRev & 0b01111;
 }
 
+void AMD_1Ah_STX_CAP(	RO(SHM_STRUCT) *RO(Shm),
+			RO(PROC) *RO(Proc), RO(CORE) *RO(Core) )
+{
+	unsigned short mc, clock_done = 0;
+  for (mc = 0; mc < RO(Shm)->Uncore.CtrlCount && !clock_done; mc++)
+  {
+	unsigned short cha;
+   for (cha = 0;
+	cha < RO(Shm)->Uncore.MC[mc].ChannelCount && !clock_done;
+		cha++)
+   {
+	const AMD_ZEN_UMC_CFG_MISC MISC = \
+		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.MISC;
+
+	unsigned short slot;
+
+    if (MISC.DDR5.MEMCLK)
+    {
+	const unsigned int correction = \
+		BITEXTRZ((unsigned long long)MISC.value, 0, 3) == 0 ? 0 : 2;
+
+	RO(Shm)->Uncore.Bus.Rate = 4U * MISC.DDR5.MEMCLK;
+	RO(Shm)->Uncore.Bus.Rate = RO(Shm)->Uncore.Bus.Rate + correction;
+
+	RO(Shm)->Uncore.Bus.Speed =(unsigned long long)RO(Shm)->Uncore.Bus.Rate;
+	RO(Shm)->Uncore.Bus.Speed = \
+		( RO(Shm)->Uncore.Bus.Speed * RO(Core)->Clock.Hz )
+		/ RO(Shm)->Proc.Features.Factory.Clock.Hz;
+
+	RO(Shm)->Uncore.CtrlSpeed = 2LLU * RO(Shm)->Uncore.Bus.Rate;
+
+	clock_done = 1;
+    }
+    switch(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.CONFIG.BurstLength) {
+    case 0x0:	/* BL2 */
+    case 0x1:	/* BL4 */
+    case 0x2:	/* BL8 */
+	RO(Shm)->Uncore.Unit.DDR_Ver = 4;
+	RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_LPDDR;
+	break;
+    case 0x3:	/* BL16 */
+	RO(Shm)->Uncore.Unit.DDR_Ver = 5;
+	RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_LPDDR;
+	break;
+    }
+    for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
+    {
+     if (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h\
+	.CFG.value != 0xffffffff)
+     {
+	if (RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.CFG.RDIMM
+	 || RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.CFG.LRDIMM)
+	{
+		RO(Shm)->Uncore.Unit.DDR_Std = RAM_STD_RDIMM;
+		break;
+	}
+     }
+    }
+   }
+  }
+	RO(Shm)->Uncore.Unit.Bus_Rate = MC_MHZ;
+	RO(Shm)->Uncore.Unit.BusSpeed = MC_MHZ;
+	RO(Shm)->Uncore.Unit.DDR_Rate = MC_NIL;
+	RO(Shm)->Uncore.Unit.DDRSpeed = MC_MTS;
+}
+
 #undef TIMING
 
 static char *Chipset[CHIPSETS] = {
@@ -7710,10 +7776,14 @@ void PCI_AMD(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) *RO(Core),
 	case DID_AMD_19H_GENOA_DF_UMC:
 	case DID_AMD_19H_PHOENIX_DF_UMC:
 	case DID_AMD_1AH_TURIN_DF_UMC:
+		AMD_17h_UMC(RO(Shm), RO(Proc));
+		AMD_17h_CAP(RO(Shm), RO(Proc), RO(Core));
+		SET_CHIPSET(IC_ZEN);
+		break;
 	case DID_AMD_1AH_STX_DF_UMC:
 	case DID_AMD_1AH_STXH_DF_UMC:
 		AMD_17h_UMC(RO(Shm), RO(Proc));
-		AMD_17h_CAP(RO(Shm), RO(Proc), RO(Core));
+		AMD_1Ah_STX_CAP(RO(Shm), RO(Proc), RO(Core));
 		SET_CHIPSET(IC_ZEN);
 		break;
 	}
