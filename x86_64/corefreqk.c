@@ -2211,6 +2211,7 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Zen5_Eldora:
 	case AMD_Zen5_Turin:
 	case AMD_Zen5_Turin_Dense:
+	case AMD_Zen5_SHP:
 	case AMD_Family_17h:
 	case Hygon_Family_18h:
 	case AMD_Family_19h:
@@ -8317,6 +8318,7 @@ static bool Compute_AMD_Zen_Boost(unsigned int cpu)
 				SMU_AMD_F17H_MATISSE_COF,
 				PRIVATE(OF(Zen)).Device.DF);
 		break;
+	case AMD_Zen5_SHP:
 	case AMD_Zen5_Turin:
 	case AMD_Zen5_Turin_Dense:
 	case AMD_Zen4_Bergamo:

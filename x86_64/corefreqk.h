@@ -2122,7 +2122,8 @@ static void InitTimer_AMD_Zen5_STX(unsigned int cpu) ;
 	[Zen5/Turin]		BF_02h Stepping 1	 4 nm	SP5
 	[Zen5c/Turin]		BF_11h Stepping 0	 3 nm	SP5
 	[Zen5/5c/Krackan Point] BF_60h Stepping 0	 4 nm	[KRK]/FP8
-	[Zen5/Strix Halo]	BF_70h Stepping 0	 4 nm	[STXH]/FP11 */
+	[Zen5/Strix Halo]	BF_70h Stepping 0	 4 nm	[STXH]/FP11
+	[Zen5/Shimada Peak]	BF_08h Stepping 1	 4 nm	HEDT/sTR5 */
 #define _AMD_Family_19h {.ExtFamily=0xA, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 #define _AMD_Zen3_VMR	{.ExtFamily=0xA, .Family=0xF, .ExtModel=0x2, .Model=0x1}
 #define _AMD_Zen3_CZN	{.ExtFamily=0xA, .Family=0xF, .ExtModel=0x5, .Model=0x0}
@@ -2156,6 +2157,7 @@ static void InitTimer_AMD_Zen5_STX(unsigned int cpu) ;
 
 #define _AMD_Zen5_KRK	{.ExtFamily=0xB, .Family=0xF, .ExtModel=0x6, .Model=0x0}
 #define _AMD_Zen5_STXH	{.ExtFamily=0xB, .Family=0xF, .ExtModel=0x7, .Model=0x0}
+#define _AMD_Zen5_SHP	{.ExtFamily=0xB, .Family=0xF, .ExtModel=0x0, .Model=0x8}
 
 typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
 
@@ -3951,6 +3953,10 @@ enum {
 	CN_STRIX_HALO
 };
 
+enum {
+	CN_SHIMADA_PEAK
+};
+
 static char *Arch_AMD_Zen[] = ZLIST(
 		[CN_SUMMIT_RIDGE]	=	"Zen/Summit Ridge",
 		[CN_WHITEHAVEN] 	=	"Zen/Whitehaven",
@@ -4065,6 +4071,9 @@ static char *Arch_AMD_Zen5_KRK[] = ZLIST(
 );
 static char *Arch_AMD_Zen5_STXH[] = ZLIST(
 		[CN_STRIX_HALO] 	=	"Zen5/Strix Halo"
+);
+static char *Arch_AMD_Zen5_SHP[] = ZLIST(
+		[CN_SHIMADA_PEAK] 	=	"Zen5/Shimada Peak"
 );
 
 static char *Arch_AMD_Family_17h[]	=	ZLIST("AMD Family 17h");
@@ -9671,6 +9680,90 @@ static PROCESSOR_SPECIFIC AMD_Zen5_STXH_Specific[] = {
 	},
 	{0}
 };
+static PROCESSOR_SPECIFIC AMD_Zen5_SHP_Specific[] = {
+	{
+	.Brand = ZLIST("AMD Ryzen Threadripper PRO 9995WX"),
+	.Boost = {+29, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_SHIMADA_PEAK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen Threadripper PRO 9985WX",	\
+			"AMD Ryzen Threadripper 9980X"		),
+	.Boost = {+22, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_SHIMADA_PEAK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen Threadripper PRO 9975WX",	\
+			"AMD Ryzen Threadripper 9970X"		),
+	.Boost = {+14, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_SHIMADA_PEAK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen Threadripper PRO 9965WX",	\
+			"AMD Ryzen Threadripper 9960X"		),
+	.Boost = {+12, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_SHIMADA_PEAK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Threadripper PRO 9955WX"),
+	.Boost = {+9, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_SHIMADA_PEAK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Threadripper PRO 9945WX"),
+	.Boost = {+7, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_SHIMADA_PEAK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{0}
+};
 
 static PROCESSOR_SPECIFIC Misc_Specific_Processor[] = {
 	{0}
@@ -13511,5 +13604,29 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Specific = AMD_Zen5_STXH_Specific,
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen5_STXH
+	},
+[AMD_Zen5_SHP] = {							/*130*/
+	.Signature = _AMD_Zen5_SHP,
+	.Query = Query_AMD_F1Ah_PerCluster,
+	.Update = PerCore_AMD_Family_1Ah_Query,
+	.Start = Start_AMD_Family_1Ah,
+	.Stop = Stop_AMD_Family_1Ah,
+	.Exit = Exit_AMD_F1Ah,
+	.Timer = InitTimer_AMD_Family_1Ah,
+	.BaseClock = BaseClock_AMD_Family_1Ah,
+	.ClockMod = ClockMod_AMD_Zen,
+	.TurboClock = TurboClock_AMD_Zen,
+	.thermalFormula = THERMAL_FORMULA_AMD_1Ah,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_1Ah,
+	.powerFormula   = POWER_FORMULA_AMD_1Ah,
+	.PCI_ids = PCI_AMD_1Ah_ids,
+	.Uncore = {
+		.Start = Start_Uncore_AMD_Family_1Ah,
+		.Stop = Stop_Uncore_AMD_Family_1Ah,
+		.ClockMod = NULL
+		},
+	.Specific = AMD_Zen5_SHP_Specific,
+	.SystemDriver = AMD_Zen_Driver,
+	.Architecture = Arch_AMD_Zen5_SHP
 	}
 };

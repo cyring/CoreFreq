@@ -7854,6 +7854,7 @@ void Topology(Window *win, CELL_FUNC OutFunc, unsigned int *cellPadding)
 	case AMD_Zen5_Eldora:
 	case AMD_Zen5_Turin:
 	case AMD_Zen5_Turin_Dense:
+	case AMD_Zen5_SHP:
 		TopologyFunc = Topology_CCD;
 		OffLineItem = RSC(TOPOLOGY_OFF_2).CODE();
 		TopologySubHeader[1] = TopologyAltSubHeader[2];
