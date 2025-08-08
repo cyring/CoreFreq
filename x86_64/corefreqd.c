@@ -8867,7 +8867,12 @@ static void Pkg_ComputeVoltage_Intel_SNB(struct PKG_FLIP_FLOP *PFlip)
 			PFlip->Voltage.VID.CPU);
 }
 
-#define Pkg_ComputeVoltage_Intel_SKL_X	Pkg_ComputeVoltage_None
+static void Pkg_ComputeVoltage_Intel_SKL_X(struct PKG_FLIP_FLOP *PFlip)
+{
+	COMPUTE_VOLTAGE(INTEL_SKL_X,
+			PFlip->Voltage.CPU,
+			PFlip->Voltage.VID.CPU);
+}
 
 static void Pkg_ComputeVoltage_Intel_SAV(struct PKG_FLIP_FLOP *PFlip)
 {
