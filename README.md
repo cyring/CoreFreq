@@ -431,6 +431,9 @@ yum install kernel-devel
 yum group install "Development Tools"
 ```
 
+## Fedora
+* In [Fedora Copr](https://copr.fedorainfracloud.org/coprs/sunnyyang/corefreq) repository, please contact [Sunny Yang](https://github.com/sunnyyangyangyang)  
+
 ## AlmaLinux, Rocky Linux
 ```sh
 ## as root, install kernel development package and dependencies
