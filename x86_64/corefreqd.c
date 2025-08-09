@@ -8889,7 +8889,12 @@ static void Pkg_ComputeVoltage_Intel_SAV(struct PKG_FLIP_FLOP *PFlip)
 
 #define Pkg_ComputeVoltage_AMD_0Fh	Pkg_ComputeVoltage_None
 
-#define Pkg_ComputeVoltage_AMD_15h	Pkg_ComputeVoltage_None
+static void Pkg_ComputeVoltage_AMD_15h(struct PKG_FLIP_FLOP *PFlip)
+{
+	COMPUTE_VOLTAGE(AMD_15h,
+			PFlip->Voltage.CPU,
+			PFlip->Voltage.VID.CPU);
+}
 
 static void Pkg_ComputeVoltage_AMD_17h(struct PKG_FLIP_FLOP *PFlip)
 {
