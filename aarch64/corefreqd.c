@@ -2117,15 +2117,17 @@ REASON_CODE Child_Manager(REF *Ref)
 			Arg[cpu].TID = 0;
 		}
 	} else {
+		volatile unsigned long long seed64;
 		unsigned int seed32;
 		__asm__ volatile
 		(
 			"isb"			"\n\t"
 			"mrs %0, cntvct_el0"
-			: "=r" (seed32)
+			: "=r" (seed64)
 			:
 			:
 		);
+		seed32 = (unsigned int) seed64;
 	    #ifdef __GLIBC__
 		initstate_r(	seed32,
 				RO(Shm)->Cpu[cpu].Slice.Random.state,

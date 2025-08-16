@@ -553,19 +553,19 @@ static void Query_Features(void *pArg)
 		"mrs	%[mvfr2],	mvfr2_el1"	"\n\t"
 		"mrs	%[flags],	currentel"	"\n\t"
 		"isb"
-		: [midr]	"=r" (midr),
-		  [cntfrq]	"=r" (cntfrq),
-		  [cntpct]	"=r" (cntpct),
-		  [dfr0]	"=r" (dfr0),
-		  [isar0]	"=r" (isar0),
-		  [isar1]	"=r" (isar1),
-		  [mmfr0]	"=r" (mmfr0),
-		  [mmfr1]	"=r" (mmfr1),
-		  [pfr0]	"=r" (pfr0),
-		  [pfr1]	"=r" (pfr1),
-		  [mvfr0]	"=r" (mvfr0),
-		  [mvfr1]	"=r" (mvfr1),
-		  [mvfr2]	"=r" (mvfr2),
+		: [midr]	"=r" (midr.value),
+		  [cntfrq]	"=r" (cntfrq.value),
+		  [cntpct]	"=r" (cntpct.value),
+		  [dfr0]	"=r" (dfr0.value),
+		  [isar0]	"=r" (isar0.value),
+		  [isar1]	"=r" (isar1.value),
+		  [mmfr0]	"=r" (mmfr0.value),
+		  [mmfr1]	"=r" (mmfr1.value),
+		  [pfr0]	"=r" (pfr0.value),
+		  [pfr1]	"=r" (pfr1.value),
+		  [mvfr0]	"=r" (mvfr0.value),
+		  [mvfr1]	"=r" (mvfr1.value),
+		  [mvfr2]	"=r" (mvfr2.value),
 		  [flags]	"=r" (FLAGS)
 		:
 		: "cc", "memory"
@@ -589,7 +589,7 @@ static void Query_Features(void *pArg)
 	__asm__ __volatile__(
 		"mrs	%[pmcr] ,	pmcr_el0"	"\n\t"
 		"isb"
-		: [pmcr]	"=r" (pmcr)
+		: [pmcr]	"=r" (pmcr.value)
 		:
 		: "memory"
 	);
@@ -1345,7 +1345,7 @@ static void Query_Features(void *pArg)
 		__asm__ __volatile__(
 			"mrs	%[dfr1] ,	id_aa64dfr1_el1""\n\t"
 			"isb"
-			: [dfr1]	"=r" (dfr1)
+			: [dfr1]	"=r" (dfr1.value)
 			:
 			: "memory"
 		);
@@ -2108,8 +2108,8 @@ static void Cache_Level(CORE_RO *Core, unsigned int level, unsigned int select)
 		"msr	csselr_el1,	%[cssel]"	"\n\t"
 		"mrs	%[ccsid],	ccsidr_el1"	"\n\t"
 		"isb"
-		: [ccsid]	"=r" (Core->T.Cache[level].ccsid)
-		: [cssel]	"r"  (cssel[select])
+		: [ccsid]	"=r" (Core->T.Cache[level].ccsid.value)
+		: [cssel]	"r"  (cssel[select].value)
 		: "memory"
 	);
 
@@ -2130,7 +2130,7 @@ static void Cache_Topology(CORE_RO *Core)
 	(
 		"mrs	%[clidr],	clidr_el1"	"\n\t"
 		"isb"
-		: [clidr]	"=r" (clidr)
+		: [clidr]	"=r" (clidr.value)
 		:
 		: "memory"
 	);
@@ -2165,8 +2165,8 @@ static void Map_Generic_Topology(void *arg)
 		"mrs	%[midr] ,	midr_el1"	"\n\t"
 		"mrs	%[mpid] ,	mpidr_el1"	"\n\t"
 		"isb"
-		: [midr]	"=r" (midr),
-		  [mpid]	"=r" (mpid)
+		: [midr]	"=r" (midr.value),
+		  [mpid]	"=r" (mpid.value)
 		:
 		: "memory"
 	);
@@ -2422,7 +2422,7 @@ static void Query_DeviceTree(unsigned int cpu)
 	__asm__ __volatile__(
 		"mrs	%[cntfrq],	cntfrq_el0"	"\n\t"
 		"isb"
-		: [cntfrq]	"=r" (cntfrq)
+		: [cntfrq]	"=r" (cntfrq.value)
 		:
 		: "memory"
 	);
@@ -3069,8 +3069,8 @@ static void SystemRegisters(CORE_RO *Core)
 		"orr	%[flags],	%[flags], x12"	"\n\t"
 		"orr	%[flags],	%[flags], x11"
 		: [sctlr]	"=r" (Core->SystemRegister.SCTLR),
-		  [mmfr1]	"=r" (mmfr1),
-		  [pfr0]	"=r" (pfr0),
+		  [mmfr1]	"=r" (mmfr1.value),
+		  [pfr0]	"=r" (pfr0.value),
 		  [fpcr]	"=r" (Core->SystemRegister.FPCR),
 		  [fpsr]	"=r" (Core->SystemRegister.FPSR),
 		  [flags]	"=r" (Core->SystemRegister.FLAGS)
@@ -3297,9 +3297,9 @@ static void PerCore_GenericMachine(void *arg)
 		"mrs	%[enset],	pmcntenset_el0" "\n\t"
 		"mrs	%[enclr],	pmcntenclr_el0" "\n\t"
 		"isb"
-		: [pmuser]	"=r" (pmuser),
-		  [enset]	"=r" (enset),
-		  [enclr]	"=r" (enclr)
+		: [pmuser]	"=r" (pmuser.value),
+		  [enset]	"=r" (enset.value),
+		  [enclr]	"=r" (enclr.value)
 		:
 		: "memory"
 	);
@@ -3315,7 +3315,7 @@ static void PerCore_GenericMachine(void *arg)
 	__asm__ __volatile__(
 		"mrs	%[revid],	revidr_el1"	"\n\t"
 		"isb"
-		: [revid]	"=r" (revid)
+		: [revid]	"=r" (revid.value)
 		:
 		: "memory"
 	);
@@ -3614,20 +3614,20 @@ static void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 		"mov	x12	,	%[CTRL]"	"\n\t"
 		"msr	pmcr_el0,	x12"		"\n\t"
 		"isb"
-		: [PMCR]	"+m" (Save->PMCR),
-		  [PMSELR]	"+m" (Save->PMSELR),
-		  [PMTYPE3]	"+m" (Save->PMTYPE[2]),
-		  [PMTYPE2]	"+m" (Save->PMTYPE[1]),
-		  [PMTYPE1]	"+m" (Save->PMTYPE[0]),
-		  [PMCCFILTR]	"+m" (Save->PMCCFILTR),
-		  [PMCNTEN]	"+m" (Save->PMCNTEN),
-		  [PMUSER]	"+m" (Save->PMUSER)
-		: [EVENT3]	"r" (0x0008),
-		  [EVENT2]	"r" (0x0011),
-		  [FILTR1]	"r" (0x0),
-		  [ENSET]	"r" (0b10000000000000000000000000001100),
-		  [ENUSR]	"r" (0b0000101),
-		  [CTRL]	"i" (0b0000000010000111)
+		: [PMCR]	"+m" (Save->PMCR.value),
+		  [PMSELR]	"+m" (Save->PMSELR.value),
+		  [PMTYPE3]	"+m" (Save->PMTYPE[2].value),
+		  [PMTYPE2]	"+m" (Save->PMTYPE[1].value),
+		  [PMTYPE1]	"+m" (Save->PMTYPE[0].value),
+		  [PMCCFILTR]	"+m" (Save->PMCCFILTR.value),
+		  [PMCNTEN]	"+m" (Save->PMCNTEN.value),
+		  [PMUSER]	"+m" (Save->PMUSER.value)
+		: [EVENT3]	"r" (0x0008LLU),
+		  [EVENT2]	"r" (0x0011LLU),
+		  [FILTR1]	"r" (0x0LLU),
+		  [ENSET]	"r" (0x8000000cLLU),
+		  [ENUSR]	"r" (0x5LLU),
+		  [CTRL]	"i" (0x87LLU)
 		: "memory", "%x12"
 	);
     }
@@ -3670,14 +3670,14 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 
 		"isb"
 		:
-		: [PMCR]	"r" (Save->PMCR),
-		  [PMSELR]	"m" (Save->PMSELR),
-		  [PMTYPE3]	"m" (Save->PMTYPE[2]),
-		  [PMTYPE2]	"m" (Save->PMTYPE[1]),
-		  [PMTYPE1]	"m" (Save->PMTYPE[0]),
-		  [PMCCFILTR]	"r" (Save->PMCCFILTR),
-		  [PMCNTEN]	"r" (Save->PMCNTEN),
-		  [PMUSER]	"r" (Save->PMUSER)
+		: [PMCR]	"r" (Save->PMCR.value),
+		  [PMSELR]	"m" (Save->PMSELR.value),
+		  [PMTYPE3]	"m" (Save->PMTYPE[2].value),
+		  [PMTYPE2]	"m" (Save->PMTYPE[1].value),
+		  [PMTYPE1]	"m" (Save->PMTYPE[0].value),
+		  [PMCCFILTR]	"r" (Save->PMCCFILTR.value),
+		  [PMCNTEN]	"r" (Save->PMCNTEN.value),
+		  [PMUSER]	"r" (Save->PMUSER.value)
 		: "memory", "%x12"
 	);
     }
@@ -3794,7 +3794,7 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 	__asm__ volatile						\
 	(								\
 		"mrs	%[cntpct],	cntpct_el0"			\
-		: [cntpct]	"=r" (cntpct) 				\
+		: [cntpct]	"=r" (cntpct.value)			\
 		:							\
 		: "cc", "memory"					\
 	);								\

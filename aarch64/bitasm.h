@@ -174,7 +174,7 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 		_BITSET_POST_INST_##_lock				\
 		: [ret] "=m" (_ret)					\
 		: [addr] "r" (&_base),					\
-		  [offset] "r" (_offset)				\
+		  [offset] "r" ((Bit64)(_offset))			\
 		_BITSET_CLOBBERS_##_lock				\
 	);								\
 	_ret;								\
@@ -239,7 +239,7 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 		_BITCLR_POST_INST_##_lock				\
 		: [ret] "=m" (_ret)					\
 		: [addr] "r" (&_base),					\
-		  [offset] "r" (_offset)				\
+		  [offset] "r" ((Bit64)(_offset))			\
 		_BITCLR_CLOBBERS_##_lock				\
 	);								\
 	_ret;								\
@@ -303,7 +303,7 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 		_BIT_TEST_POST_INST_##_lock				\
 		: [ret] "=m" (_ret)					\
 		: [addr] "r" (&_base),					\
-		  [offset] "r" (_offset)				\
+		  [offset] "r" ((Bit64)(_offset))			\
 		_BIT_TEST_CLOBBERS_##_lock				\
 	);								\
 	_ret;								\
