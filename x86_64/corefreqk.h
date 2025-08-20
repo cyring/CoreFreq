@@ -9412,7 +9412,8 @@ static PROCESSOR_SPECIFIC AMD_Zen5_Eldora_Specific[] = {
 };
 static PROCESSOR_SPECIFIC AMD_Zen5_Turin_Specific[] = {
 	{
-	.Brand = ZLIST("AMD EPYC 9965"),	/* Model: 17	*/
+	.Brand = ZLIST( "AMD EPYC Embedded 9965",\
+			"AMD EPYC 9965" 	),	/* Model: 17	*/
 	.Boost = {+15, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_TURIN_DENSE,
@@ -9425,7 +9426,8 @@ static PROCESSOR_SPECIFIC AMD_Zen5_Turin_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 9845"),
+	.Brand = ZLIST( "AMD EPYC Embedded 9845",\
+			"AMD EPYC 9845" 	),
 	.Boost = {+16, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_TURIN_DENSE,
@@ -9464,8 +9466,10 @@ static PROCESSOR_SPECIFIC AMD_Zen5_Turin_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 9755",	/* Model: 2	*/	\
-			"AMD EPYC 9335" 	),
+	.Brand = ZLIST( "AMD EPYC Embedded 9755",	\
+			"AMD EPYC Embedded 9335",	\
+			"AMD EPYC 9755", /* Model: 2 */ \
+			"AMD EPYC 9335" 		),
 	.Boost = {+14, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_TURIN,
@@ -9478,7 +9482,8 @@ static PROCESSOR_SPECIFIC AMD_Zen5_Turin_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 9745"),
+	.Brand = ZLIST( "AMD EPYC Embedded 9745",\
+			"AMD EPYC 9745" 	),
 	.Boost = {+13, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_TURIN_DENSE,
@@ -9504,7 +9509,9 @@ static PROCESSOR_SPECIFIC AMD_Zen5_Turin_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 9455P"	\
+	.Brand = ZLIST( "AMD EPYC Embedded 9455P",\
+			"AMD EPYC Embedded 9455",\
+			"AMD EPYC 9455P"	\
 			"AMD EPYC 9455" 	),
 	.Boost = {+13, 0},
 	.Param.Offset = {0, 0, 0},
@@ -9518,7 +9525,9 @@ static PROCESSOR_SPECIFIC AMD_Zen5_Turin_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 9655P",	\
+	.Brand = ZLIST( "AMD EPYC Embedded 9655P",\
+			"AMD EPYC Embedded 9655",\
+			"AMD EPYC 9655P",	\
 			"AMD EPYC 9655",	\
 			"AMD EPYC 9535" 	),
 	.Boost = {+19, 0},
@@ -9546,7 +9555,9 @@ static PROCESSOR_SPECIFIC AMD_Zen5_Turin_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 9565",	\
+	.Brand = ZLIST( "AMD EPYC Embedded 9555P",\
+			"AMD EPYC Embedded 9555",\
+			"AMD EPYC 9565",	\
 			"AMD EPYC 9555P",	\
 			"AMD EPYC 9555",	\
 			"AMD EPYC 9475F"	),
@@ -9575,7 +9586,9 @@ static PROCESSOR_SPECIFIC AMD_Zen5_Turin_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 9365",	\
+	.Brand = ZLIST( "AMD EPYC Embedded 9355P",\
+			"AMD EPYC Embedded 9355",\
+			"AMD EPYC 9365",	\
 			"AMD EPYC 9355P",	\
 			"AMD EPYC 9355" 	),
 	.Boost = {+9, 0},
@@ -9590,7 +9603,8 @@ static PROCESSOR_SPECIFIC AMD_Zen5_Turin_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST( "AMD EPYC 9275F",	\
+	.Brand = ZLIST( "AMD EPYC Embedded 9135",\
+			"AMD EPYC 9275F",	\
 			"AMD EPYC 9135" 	),
 	.Boost = {+7, 0},
 	.Param.Offset = {0, 0, 0},
@@ -9604,7 +9618,8 @@ static PROCESSOR_SPECIFIC AMD_Zen5_Turin_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 9255"),
+	.Brand = ZLIST( "AMD EPYC Embedded 9255",\
+			"AMD EPYC 9255" 	),
 	.Boost = {+11, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_TURIN,
@@ -9630,7 +9645,8 @@ static PROCESSOR_SPECIFIC AMD_Zen5_Turin_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 9015"),
+	.Brand = ZLIST( "AMD EPYC Embedded 9015",\
+			"AMD EPYC 9015" 	),
 	.Boost = {+5, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_TURIN,
