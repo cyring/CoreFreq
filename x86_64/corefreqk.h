@@ -8546,7 +8546,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 9 7945HX"),
+	.Brand = ZLIST( "AMD Ryzen 9 7945HX",	\
+			"AMD Ryzen 9 8945HX"	),
 	.Boost = {+29, +1},
 	.Param.Offset = {100, 0, 0},
 	.CodeNameIdx = CN_DRAGON_RANGE,
@@ -8558,7 +8559,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 9 7940HX"),
+	.Brand = ZLIST( "AMD Ryzen 9 7940HX",	\
+			"AMD Ryzen 9 8940HX"	),
 	.Boost = {+28, +1},
 	.Param.Offset = {100, 0, 0},
 	.CodeNameIdx = CN_DRAGON_RANGE,
@@ -8571,7 +8573,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 9 7845HX",	\
-			"AMD Ryzen 9 7840HX"	),
+			"AMD Ryzen 9 7840HX",	\
+			"AMD Ryzen 9 8840HX"	),
 	.Boost = {+22, +1},
 	.Param.Offset = {100, 0, 0},
 	.CodeNameIdx = CN_DRAGON_RANGE,
@@ -8583,7 +8586,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 7 7745HX"),
+	.Brand = ZLIST( "AMD Ryzen 7 7745HX",	\
+			"AMD Ryzen 7 8745HX"	),
 	.Boost = {+15, +1},
 	.Param.Offset = {100, 0, 0},
 	.CodeNameIdx = CN_DRAGON_RANGE,
@@ -8801,6 +8805,19 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHXR_Specific[] = {
 			"AMD Ryzen 7 8840U",		\
 			"AMD Ryzen Embedded 8840U"	),
 	.Boost = {+18, 0},
+	.Param.Offset = {100, 0, 0},
+	.CodeNameIdx = CN_HAWK_POINT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 7 8745HS",/* zh-cn */\
+			"AMD Ryzen 7 8745H"  /* zh-cn */),
+	.Boost = {+11, 0},
 	.Param.Offset = {100, 0, 0},
 	.CodeNameIdx = CN_HAWK_POINT,
 	.TgtRatioUnlocked = 1,
