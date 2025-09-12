@@ -3868,7 +3868,8 @@ enum {
 	CN_MATISSE
 };
 enum {
-	CN_VANGOGH
+	CN_VANGOGH,
+	CN_VANGOGH_HANDHELD
 };
 enum {
 	CN_MENDOCINO
@@ -3997,7 +3998,8 @@ static char *Arch_AMD_Zen2_MTS[] = ZLIST(
 static char *Arch_AMD_Zen2_Ariel[]	=	ZLIST("Zen2/Ariel");
 
 static char *Arch_AMD_Zen2_Jupiter[] = ZLIST(
-		[CN_VANGOGH]		=	"Zen2/Van Gogh/Aerith"
+		[CN_VANGOGH]		=	"Zen2/Van Gogh/Aerith",
+		[CN_VANGOGH_HANDHELD]	=	"Zen2/Van Gogh/Handheld"
 );
 static char *Arch_AMD_Zen2_Galileo[] = ZLIST(
 		[CN_VANGOGH]		=	"Zen2/Van Gogh/Sephiroth"
@@ -7055,6 +7057,18 @@ static PROCESSOR_SPECIFIC AMD_Zen2_Jupiter_Specific[] = {
 	.HSMP_Capable = 0,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
+	{
+	.Brand = ZLIST("AMD Ryzen Z2 A"),
+	.Boost = {+10, 0},
+	.Param.Offset = {100, 0, 0},
+	.CodeNameIdx = CN_VANGOGH_HANDHELD,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
 	{0}
 };
 static PROCESSOR_SPECIFIC AMD_Zen2_MDN_Specific[] = {
@@ -9256,7 +9270,8 @@ static PROCESSOR_SPECIFIC AMD_Zen5_STX_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen Z2 Extreme"),
+	.Brand = ZLIST( "AMD Ryzen AI Z2 Extreme",	\
+			"AMD Ryzen Z2 Extreme"		),
 	.Boost = {+30, 0},
 	.Param.Offset = {100, 0, 0},
 	.CodeNameIdx = CN_STX_HANDHELD,
