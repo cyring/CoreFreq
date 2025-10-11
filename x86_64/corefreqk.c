@@ -22005,7 +22005,12 @@ static int CoreFreqK_Policy_Init(struct cpufreq_policy *policy)
 					 * Core->Clock.Hz) / 1000LLU;
 
 		/*		MANDATORY Per-CPU Initialization	*/
+	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 18, 0)
+		policy->cpuinfo.transition_latency = \
+					CPUFREQ_DEFAULT_TRANSITION_LATENCY_NS;
+	    #else
 		policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+	    #endif
 		policy->cur = policy->cpuinfo.max_freq;
 		policy->min = policy->cpuinfo.min_freq;
 		policy->max = policy->cpuinfo.max_freq;
