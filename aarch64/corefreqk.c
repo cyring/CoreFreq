@@ -3999,12 +3999,21 @@ static void Core_Thermal_Temp(CORE_RO *Core)
 {
 #ifdef CONFIG_THERMAL
   if (!IS_ERR(PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone)) {
-	int mcelsius;
+   #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 3, 0)
+	unsigned int mcelsius;
     if (thermal_zone_get_temp(PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone,
-				&mcelsius) == 0)
+				(int*) &mcelsius) == 0)
     {
 	Core->PowerThermal.Sensor = mcelsius;
     }
+   #else
+	unsigned long mcelsius;
+    if (thermal_zone_get_temp(PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone,
+				&mcelsius) == 0)
+    {
+	Core->PowerThermal.Sensor = (unsigned int) mcelsius;
+    }
+   #endif
   }
 #endif /* CONFIG_THERMAL */
 }
