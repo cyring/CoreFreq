@@ -13119,6 +13119,7 @@ static void PerCore_VirtualMachine(void *arg)
 	Dump_CPUID(Core);
 
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TM_Mask	, Core->Bind);
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->DCU_Mask	, Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->C3A_Mask	, Core->Bind);
