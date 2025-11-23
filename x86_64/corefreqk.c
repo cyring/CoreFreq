@@ -2218,8 +2218,8 @@ static void Map_AMD_Topology(void *arg)
 	case Hygon_Family_18h:
 	case AMD_Family_19h:
 	case AMD_Family_1Ah:
-	    if (PUBLIC(RO(Proc))->Features.ExtInfo.ECX.ExtApicId == 1)
-	    {
+	  if (PUBLIC(RO(Proc))->Features.ExtInfo.ECX.ExtApicId == 1)
+	  {
 		struct CACHE_INFO CacheInfo = {
 			.AX = 0, .BX = 0, .CX = 0, .DX = 0, .Size = 0
 		};
@@ -2274,20 +2274,19 @@ static void Map_AMD_Topology(void *arg)
 		Core->T.CoreID    = leaf8000001e.EBX.CoreId;
 		Core->T.PackageID = leaf8000001e.ECX.NodeId;
 
-	      if (leaf8000001e.EBX.ThreadsPerCore > 0)
-	      { 	/*		SMT is enabled .		*/
-			Core->T.ThreadID  = leaf8000001e.EAX.ExtApicId & 1;
-
-	      }
-	      else
-	      { 	/*		SMT is disabled.		*/
-			Core->T.ThreadID  = 0;
-	      }
+	    if (leaf8000001e.EBX.ThreadsPerCore > 0)
+	    {		/*		SMT is enabled .		*/
+		Core->T.ThreadID = leaf8000001e.EAX.ExtApicId & 1;
+	    }
+	    else
+	    {		/*		SMT is disabled.		*/
+		Core->T.ThreadID = 0;
+	    }
 
 		Core->T.Cluster.Node = leaf8000001e.ECX.NodeId;
 
-	      if (PUBLIC(RO(Proc))->Features.Info.LargestExtFunc >= 0x80000026)
-	      {
+	    if (PUBLIC(RO(Proc))->Features.Info.LargestExtFunc >= 0x80000026)
+	    {
 		CPUID_0x80000026 leaf80000026 = {
 			.EAX = {0}, .EBX = {0}, .ECX = {0}, .EDX = {0}
 		};
@@ -2309,29 +2308,35 @@ static void Map_AMD_Topology(void *arg)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
-	       if ( ((PUBLIC(RO(Proc))->ArchID == AMD_Zen5_Turin)
-	          || (PUBLIC(RO(Proc))->ArchID == AMD_Zen5_Turin_Dense))
-	          && (leaf80000008.ECX.F1Ah.NC > 0xff) )
-	       {
+	      if ( ((PUBLIC(RO(Proc))->ArchID == AMD_Zen5_Turin)
+	         || (PUBLIC(RO(Proc))->ArchID == AMD_Zen5_Turin_Dense))
+	         && (leaf80000008.ECX.F1Ah.NC > 0xff) )
+	      {
 		Core->T.Cluster.CCD=(leaf80000026.EDX.Extended_APIC_ID & 0xf00);
 		Core->T.Cluster.CCD= Core->T.Cluster.CCD >> 8;
-	       }
-	       else
-	       {
+	      }
+	      else
+	      {
 		Core->T.Cluster.CCD=(leaf80000026.EDX.Extended_APIC_ID & 0xf0);
 
 		if (leaf80000008.ECX.NC >= 0x7f) {
-			Core->T.Cluster.CCD= Core->T.Cluster.CCD >> 6;
+			Core->T.Cluster.CCD = Core->T.Cluster.CCD >> 6;
 		} else if (leaf80000008.ECX.NC >= 0x3f) {
-			Core->T.Cluster.CCD= Core->T.Cluster.CCD >> 5;
+			Core->T.Cluster.CCD = Core->T.Cluster.CCD >> 5;
 		} else {
-			Core->T.Cluster.CCD= Core->T.Cluster.CCD >> 4;
+			Core->T.Cluster.CCD = Core->T.Cluster.CCD >> 4;
 		}
-	       }
-	      } else {
-		Core->T.Cluster.CCD = (Core->T.ApicID & 0xf0) >> 4;
 	      }
-	      if (CPU_Complex == true ) {
+	    } else {
+		Core->T.Cluster.CCD = (Core->T.ApicID & 0xf0) >> 4;
+
+		if ( (leaf80000008.ECX.NC == 0x2f)
+		  || (leaf80000008.ECX.NC == 0x17) )
+		{
+			Core->T.Cluster.CCD = Core->T.Cluster.CCD << 1;
+		}
+	    }
+	    if (CPU_Complex == true ) {
 		if (leaf80000008.ECX.NC >= 0x7f) {
 			Core->T.Cluster.CCX = Core->T.CoreID >> 4;
 		} else if (leaf80000008.ECX.NC >= 0x3f) {
@@ -2339,8 +2344,8 @@ static void Map_AMD_Topology(void *arg)
 		} else {
 			Core->T.Cluster.CCX = Core->T.CoreID >> 2;
 		}
-	      }
-	    } else {	/*	Fallback algorithm.			*/
+	    }
+	  } else {	/*	Fallback algorithm.			*/
 		Core->T.ApicID    = leaf1_ebx.Init_APIC_ID;
 		Core->T.PackageID = leaf1_ebx.Init_APIC_ID
 				  >> leaf80000008.ECX.ApicIdCoreIdSize;
@@ -2348,7 +2353,7 @@ static void Map_AMD_Topology(void *arg)
 				  - (Core->T.PackageID
 					<< leaf80000008.ECX.ApicIdCoreIdSize);
 		Core->T.ThreadID  = 0;
-	    }
+	  }
 	    break;
 	}
     }
