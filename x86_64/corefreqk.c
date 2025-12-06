@@ -12390,10 +12390,16 @@ static void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 		WrRdMSR = 1;
 	}
 	if (WrRdMSR == 1)
-	{
+	{ /* Source: arch/x86/kernel/cpu/bugs.c (Intel Mitigation)	*/
+	  #if defined(MSR_IA32_SPEC_CTRL)
 	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 11)
+	      #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 18, 0)
+		this_cpu_write(x86_spec_ctrl_current, Spec_Ctrl.value);
+	      #else
 		x86_spec_ctrl_base = Spec_Ctrl.value;
+	      #endif
 	    #endif
+	  #endif
 		WRMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
 		RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
 	}
@@ -12754,9 +12760,6 @@ static void AMD_Mitigation_Mechanisms(CORE_RO *Core)
 	}
 	if (WrRdMSR == 1)
 	{
-	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 11)
-		x86_spec_ctrl_base = Spec_Ctrl.value;
-	    #endif
 		WRMSR(Spec_Ctrl, MSR_AMD_SPEC_CTRL);
 		RDMSR(Spec_Ctrl, MSR_AMD_SPEC_CTRL);
 	}
