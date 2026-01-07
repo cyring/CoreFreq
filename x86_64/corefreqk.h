@@ -3930,7 +3930,8 @@ enum {
 
 enum {
 	CN_STRIX_POINT,
-	CN_STX_HANDHELD
+	CN_STX_HANDHELD,
+	CN_GORGON_POINT
 };
 
 enum {
@@ -4052,11 +4053,12 @@ static char *Arch_AMD_Zen4_Bergamo[] = ZLIST(
 		[CN_SIENA]		=	"Zen4c/Siena"
 );
 static char *Arch_AMD_Zen4_STP[] = ZLIST(
-		[CN_STORM_PEAK]		=	"Zen4/Storm Peak"
+		[CN_STORM_PEAK] 	=	"Zen4/Storm Peak"
 );
 static char *Arch_AMD_Zen5_STX[] = ZLIST(
 		[CN_STRIX_POINT]	=	"Zen5/Strix Point",
-		[CN_STX_HANDHELD]	=	"Zen5/Strix Point/Handheld"
+		[CN_STX_HANDHELD]	=	"Zen5/Strix Point/Handheld",
+		[CN_GORGON_POINT]	=	"Zen5/Gorgon Point"
 );
 static char *Arch_AMD_Zen5_Eldora[] = ZLIST(
 		[CN_ELDORA]		=	"Zen5/Granite Ridge",
@@ -9275,6 +9277,33 @@ static PROCESSOR_SPECIFIC AMD_Zen5_STX_Specific[] = {
 	.Boost = {+30, 0},
 	.Param.Offset = {100, 0, 0},
 	.CodeNameIdx = CN_STX_HANDHELD,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen AI 9 HX PRO 475",	\
+			"AMD Ryzen AI 9 HX 475",	\
+			"AMD Ryzen AI 9 HX 470" 	),
+	.Boost = {+32, 0},
+	.Param.Offset = {100, 0, 0},
+	.CodeNameIdx = CN_GORGON_POINT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen AI 9 PRO 465",	\
+			"AMD Ryzen AI 9 465"		),
+	.Boost = {+30, 0},
+	.Param.Offset = {100, 0, 0},
+	.CodeNameIdx = CN_GORGON_POINT,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
