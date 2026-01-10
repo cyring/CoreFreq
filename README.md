@@ -178,7 +178,7 @@ rmmod corefreqk.ko
 corefreq-cli -h
 ```
 ```console
-CoreFreq.  Copyright (C) 2015-2025 CYRIL COURTIAT
+CoreFreq.  Copyright (C) 2015-2026 CYRIL COURTIAT
 
 Usage:  corefreq-cli [-Option <argument>] [-Command <argument>]
 
@@ -366,7 +366,7 @@ CoreFreq(14:30:-1): Processor [ 8F_71] Architecture [Zen2/Matisse] SMT [32/32]
 ### Daemon
 
 ```console
-CoreFreq Daemon #.##.#  Copyright (C) 2015-2025 CYRIL COURTIAT
+CoreFreq Daemon #.##.#  Copyright (C) 2015-2026 CYRIL COURTIAT
 
   Processor [AMD Ryzen 9 3950X 16-Core Processor]
   Architecture [Zen2/Matisse] 32/32 CPU Online.
@@ -807,5 +807,5 @@ o---------------------------------------------------------------o
 # About
 [CyrIng](https://github.com/cyring)
 
-Copyright (C) 2015-2025 CYRIL COURTIAT  
+Copyright (C) 2015-2026 CYRIL COURTIAT  
  -------

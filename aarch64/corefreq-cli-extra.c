@@ -1,5 +1,5 @@
 /*
- * CoreFreq (C) 2015-2025 CYRIL COURTIAT
+ * CoreFreq (C) 2015-2026 CYRIL COURTIAT
  * Contributors: Andrew Gurinovich ; CyrIng
  * Licenses: GPL2
  *

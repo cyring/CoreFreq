@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2025 CYRIL COURTIAT
+ * Copyright (C) 2015-2026 CYRIL COURTIAT
  * Licenses: GPL2
  */
 
@@ -2215,7 +2215,7 @@ REASON_CODE Shm_Manager(FD *fd, RO(PROC) *RO(Proc), RW(PROC) *RW(Proc),
 		/*	Welcomes with brand and per CPU base clock.	*/
 	      if (Quiet & 0x001) {
 		printf( "CoreFreq Daemon %s"				\
-			"  Copyright (C) 2015-2025 CYRIL COURTIAT\n",
+			"  Copyright (C) 2015-2026 CYRIL COURTIAT\n",
 			COREFREQ_VERSION );
 	      }
 	      if (Quiet & 0x010) {

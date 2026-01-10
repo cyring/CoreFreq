@@ -1,12 +1,12 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2025 CYRIL COURTIAT
+ * Copyright (C) 2015-2026 CYRIL COURTIAT
  * Licenses: GPL2
  */
 
 #define RSC_COPY0_CODE_EN "      by CyrIng                                     "
 #define RSC_COPY1_CODE_EN "                                                    "
-#define RSC_COPY2_CODE_EN "            (C)2015-2025 CYRIL COURTIAT             "
+#define RSC_COPY2_CODE_EN "            (C)2015-2026 CYRIL COURTIAT             "
 
 #define RSC_LAYOUT_LCD_RESET_CODE	"::::"
 
@@ -1664,7 +1664,7 @@
 
 #define RSC_ERROR_CMD_SYNTAX_CODE_EN					\
 		"CoreFreq."						\
-		"  Copyright (C) 2015-2025 CYRIL COURTIAT\n\n"	\
+		"  Copyright (C) 2015-2026 CYRIL COURTIAT\n\n"	\
 		"Usage:\t%s [-Option <argument>] [-Command <argument>]\n"\
 		"\n    Interface options\n"				\
 		"\t-Oa\tAbsolute frequency\n"				\
