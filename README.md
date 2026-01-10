@@ -1,8 +1,8 @@
 # _CoreFreq_
 ## Purpose
-_CoreFreq_, CPU monitoring software with BIOS like functionalities, is designed for the 64-bits Processors of architecture Intel Atom, Core2, Nehalem, SandyBridge and superiors; AMD Families from 0Fh ... up to 17h (Zen , Zen+ , Zen 2), 18h (Hygon Dhyana), 19h (Zen 3, Zen 3+, Zen 4, Zen 4c), 1Ah (Zen 5, Zen 5c); Arm A64  
+_CoreFreq_, CPU monitoring software with BIOS like functionalities, is designed for the 64-bit Processors of architecture Intel Atom, Core2, Nehalem, SandyBridge and superiors; AMD Families from 0Fh ... up to 17h (Zen , Zen+ , Zen 2), 18h (Hygon Dhyana), 19h (Zen 3, Zen 3+, Zen 4, Zen 4c), 1Ah (Zen 5, Zen 5c); Arm A64; RISC-V RV64; PowerPC64 (LE)  
 
-![alt text](http://blog.cyring.free.fr/images/CoreFreq_Top.gif "CoreFreq Top")
+![alt text](.assets/CoreFreq_Top.gif "CoreFreq Top")
 
 _CoreFreq_ provides a framework to retrieve CPU data with a high degree of precision:
 
@@ -354,7 +354,7 @@ parm:           HSMP_Attempt:Attempt the HSMP interface (short)
 
 ## Try
 Download the _CoreFreq_ Live CD from the [Wiki](http://github.com/cyring/CoreFreq/wiki/Live-CD)  
-![alt text](http://blog.cyring.free.fr/images/CoreFreq_LiveCD_Step1.png "CoreFreq for ArchLinux")  
+![alt text](.assets/CoreFreq_LiveCD_Step1.png "CoreFreq for ArchLinux")  
 
 ## Screenshots
 ### Linux kernel module
@@ -375,20 +375,20 @@ CoreFreq Daemon #.##.#  Copyright (C) 2015-2026 CYRIL COURTIAT
 ### Client
 
 Without arguments, the corefreq-cli program displays Top Monitoring  
-![alt text](http://blog.cyring.free.fr/images/CoreFreq_Tour_2017-12-06.gif "CoreFreq UI")  
+![alt text](.assets/CoreFreq_Tour_2017-12-06.gif "CoreFreq UI")  
   _Remark_: Drawing will stall if the terminal width is lower than 80 columns, or its height is less than required.  
 
 * Memory Controller  
 
-![alt text](http://blog.cyring.free.fr/images/CoreFreq_MC.png "IMC")
+![alt text](.assets/CoreFreq_MC.png "IMC")
 
 * With the option `-c`, the client traces counters  
 
-![alt text](http://blog.cyring.free.fr/images/CoreFreq_Counters.gif "CoreFreq Counters")
+![alt text](.assets/CoreFreq_Counters.gif "CoreFreq Counters")
 
 * Using option `-m` corefreq-cli shows the CPU topology  
 
-![alt text](http://blog.cyring.free.fr/images/CoreFreq_Topology.png "CoreFreq CPU & caches topology")
+![alt text](.assets/CoreFreq_Topology.png "CoreFreq CPU & caches topology")
 
 * With the option `-i` corefreq-cli traces the number of instructions per second / cycle  
 
@@ -406,7 +406,7 @@ CPU     IPS            IPC            CPI
 
 * Use the option `-s` to show the Processor information (BSP)  
 
-![alt text](http://blog.cyring.free.fr/images/CoreFreq_SysInfo.png "CoreFreq System Info")
+![alt text](.assets/CoreFreq_SysInfo.png "CoreFreq System Info")
 
 ## ArchLinux
 * [![corefreq](https://img.shields.io/aur/version/corefreq-dkms?style=flat-square)](https://aur.archlinux.org/pkgbase/corefreq/) follows released tags
@@ -661,10 +661,10 @@ gmake CC=clang
   4. Define _CoreFreq_ as the System clock source  
   `echo "corefreq" > /sys/devices/system/clocksource/clocksource0/current_clocksource`  
   5. Start the Daemon then the Client  
-![alt text](http://blog.cyring.free.fr/images/CoreFreq_Zen_VPMC.png "CoreFreq for AMD Zen")  
+![alt text](.assets/CoreFreq_Zen_VPMC.png "CoreFreq for AMD Zen")  
   - The registration is confirmed into the `Settings` window  
   - The idle limit can be changed at any time in the `Kernel` window  
-![alt text](http://blog.cyring.free.fr/images/CoreFreq_Idle_Limit.png "Idle Limit")  
+![alt text](.assets/CoreFreq_Idle_Limit.png "Idle Limit")  
 
 * Q: How does _CoreFreq_ work with `cgroups` ?  
 
@@ -791,7 +791,7 @@ o---------------------------------------------------------------o
 ## Arm [AArch64]
 ### Screenshots
 
-![alt text](http://blog.cyring.free.fr/images/CoreFreq_RK3588.png "RK3588 OPi 5 Plus")
+![alt text](.assets/CoreFreq_RK3588.png "RK3588 OPi 5 Plus")
 
 ### Q&A
 
@@ -802,7 +802,7 @@ o---------------------------------------------------------------o
 ----
 
 ## Algorithm
-![alt text](http://blog.cyring.free.fr/images/CoreFreq-algorithm.png "CoreFreq algorithm")
+![alt text](.assets/CoreFreq-algorithm.png "CoreFreq algorithm")
 
 # About
 [CyrIng](https://github.com/cyring)

@@ -3,8 +3,8 @@
 # Licenses: GPL2
 
 COREFREQ_MAJOR = 2
-COREFREQ_MINOR = 0
-COREFREQ_REV = 9
+COREFREQ_MINOR = 1
+COREFREQ_REV = 0
 HW = $(shell uname -m)
 CC ?= cc
 WARNING ?= -Wall -Wfatal-errors
