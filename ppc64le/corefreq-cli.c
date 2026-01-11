@@ -6097,6 +6097,8 @@ int ByteReDim(unsigned long ival, int constraint, unsigned long *oval)
     if (r > 0) {							\
 	int p = d - ((int) log10(r)) - 2 ;				\
 	StrFormat(pStr, d+1, "%*.*f", d, p, r) ;			\
+    } else if (r == 0) {						\
+	StrFormat(pStr, d+1, "%.*f", d - 2, 0.f);			\
     } else {								\
 	StrFormat(pStr, d+1, "%.*s", d, HSPACE);			\
     }									\
