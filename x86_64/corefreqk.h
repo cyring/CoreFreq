@@ -3912,6 +3912,9 @@ enum {
 	CN_PHOENIX_R,
 	CN_HAWK_POINT
 };
+enum {
+	CN_HAWK_POINT2
+};
 
 enum {
 	CN_DHYANA,
@@ -4043,10 +4046,13 @@ static char *Arch_AMD_Zen4_PHX[] = ZLIST(
 );
 static char *Arch_AMD_Zen4_PHXR[] = ZLIST(
 		[CN_PHOENIX_R]		=	"Zen4/Phoenix Point-R",
-		[CN_HAWK_POINT]		=	"Zen4/Hawk Point"
+		[CN_HAWK_POINT] 	=	"Zen4/Hawk Point"
 );
 static char *Arch_AMD_Zen4_PHX2[] = ZLIST(
 		[CN_PHOENIX2]		=	"Zen4/Phoenix2"
+);
+static char *Arch_AMD_Zen4_HWK2[] = ZLIST(
+		[CN_HAWK_POINT2]	=	"Zen4/Hawk Point 2"
 );
 static char *Arch_AMD_Zen4_Bergamo[] = ZLIST(
 		[CN_BERGAMO]		=	"Zen4c/Bergamo",
@@ -7436,7 +7442,8 @@ static PROCESSOR_SPECIFIC AMD_Zen3_CZN_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 7 PRO 5750G"),
+	.Brand = ZLIST( "AMD Ryzen 7 PRO 5750G",	\
+			"AMD Ryzen 7 PRO 5755G" 	),
 	.Boost = {+8, 0},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_CEZANNE,
@@ -7961,7 +7968,8 @@ static PROCESSOR_SPECIFIC AMD_Zen3Plus_RMB_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 3 7335U",			\
 			"AMD Ryzen 5 7535HS",			\
 			"AMD Ryzen 5 7535H",	/* zh-cn */	\
-			"AMD Ryzen 3 PRO 7335U" 		),
+			"AMD Ryzen 3 PRO 7335U",		\
+			"AMD Ryzen 5 150"			),
 	.Boost = {+13, 0},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_REMBRANDT_R,
@@ -7987,7 +7995,8 @@ static PROCESSOR_SPECIFIC AMD_Zen3Plus_RMB_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 5 7535U",	\
-			"AMD Ryzen 5 PRO 7535U" ),
+			"AMD Ryzen 5 PRO 7535U",\
+			"AMD Ryzen 5 130"	),
 	.Boost = {+17, 0},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_REMBRANDT_R,
@@ -8012,8 +8021,9 @@ static PROCESSOR_SPECIFIC AMD_Zen3Plus_RMB_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD Ryzen 7 7735HS",	\
-			"AMD Ryzen 7 7735H"	),	/* zh-cn */
+	.Brand = ZLIST( "AMD Ryzen 7 7735HS",				\
+			"AMD Ryzen 7 7735H",		/* zh-cn */	\
+			"AMD Ryzen 7 170"				),
 	.Boost = {+16, 0},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_REMBRANDT_R,
@@ -8025,7 +8035,8 @@ static PROCESSOR_SPECIFIC AMD_Zen3Plus_RMB_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 7 7735U"),
+	.Brand = ZLIST( "AMD Ryzen 7 7735U",	\
+			"AMD Ryzen 7 160"	),
 	.Boost = {+21, 0},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_REMBRANDT_R,
@@ -8803,7 +8814,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHXR_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 7 PRO 8845HS",	\
 			"AMD Ryzen 7 8845HS",		\
 			"AMD Ryzen 7 8845H", /* zh-cn */\
-			"AMD Ryzen Embedded 8845HS" ),
+			"AMD Ryzen Embedded 8845HS",	\
+			"AMD Ryzen 7 260"		),
 	.Boost = {+13, 0},
 	.Param.Offset = {100, 0, 0},
 	.CodeNameIdx = CN_HAWK_POINT,
@@ -8820,7 +8832,10 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHXR_Specific[] = {
 			"AMD Ryzen 7 8840HS",		\
 			"AMD Ryzen 7 8840H", /* zh-cn */\
 			"AMD Ryzen 7 8840U",		\
-			"AMD Ryzen Embedded 8840U"	),
+			"AMD Ryzen Embedded 8840U",	\
+			"AMD Ryzen 7 PRO 250",		\
+			"AMD Ryzen 7 255",		\
+			"AMD Ryzen 7 250"		),
 	.Boost = {+18, 0},
 	.Param.Offset = {100, 0, 0},
 	.CodeNameIdx = CN_HAWK_POINT,
@@ -8848,7 +8863,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHXR_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 5 PRO 8645HS",	\
 			"AMD Ryzen 5 8645HS",		\
 			"AMD Ryzen 5 8645H", /* zh-cn */\
-			"AMD Ryzen Embedded 8645HS"	),
+			"AMD Ryzen Embedded 8645HS",	\
+			"AMD Ryzen 5 240"		),
 	.Boost = {+7, 0},
 	.Param.Offset = {100, 0, 0},
 	.CodeNameIdx = CN_HAWK_POINT,
@@ -8864,7 +8880,9 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHXR_Specific[] = {
 			"AMD Ryzen 5 PRO 8640U",	\
 			"AMD Ryzen 5 8640HS",		\
 			"AMD Ryzen 5 8640U",		\
-			"AMD Ryzen Embedded 8640U"	),
+			"AMD Ryzen Embedded 8640U",	\
+			"AMD Ryzen 5 PRO 230"		\
+			"AMD Ryzen 5 230"		),
 	.Boost = {+14, 0},
 	.Param.Offset = {100, 0, 0},
 	.CodeNameIdx = CN_HAWK_POINT,
@@ -9028,6 +9046,34 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHX2_Specific[] = {
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{0}
+};
+static PROCESSOR_SPECIFIC AMD_Zen4_HWK2_Specific[] = {
+	{
+	.Brand = ZLIST( "AMD Ryzen 5 PRO 220",		\
+			"AMD Ryzen 5 220"		),
+	.Boost = {+17, 0},
+	.Param.Offset = {100, 0, 0},
+	.CodeNameIdx = CN_HAWK_POINT2,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 5 PRO 215"),
+	.Boost = {+15, 0},
+	.Param.Offset = {100, 0, 0},
+	.CodeNameIdx = CN_HAWK_POINT2,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.HSMP_Capable = 0,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
@@ -13492,9 +13538,9 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = Stop_Uncore_AMD_Family_19h,
 		.ClockMod = NULL
 		},
-	.Specific = AMD_Zen4_PHXR_Specific,
+	.Specific = AMD_Zen4_HWK2_Specific,
 	.SystemDriver = AMD_Zen_Driver,
-	.Architecture = Arch_AMD_Zen4_PHXR
+	.Architecture = Arch_AMD_Zen4_HWK2
 	},
 [AMD_Zen4_Bergamo] = {							/*122*/
 	.Signature = _AMD_Zen4_Bergamo,
