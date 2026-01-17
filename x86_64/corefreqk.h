@@ -2122,6 +2122,7 @@ static void InitTimer_AMD_Zen5_STX(unsigned int cpu) ;
 	[Zen5/Turin]		BF_02h Stepping 1	 4 nm	SP5
 	[Zen5c/Turin]		BF_11h Stepping 0	 3 nm	SP5
 	[Zen5/5c/Krackan Point] BF_60h Stepping 0	 4 nm	[KRK]/FP8
+	[Zen5/5c/Gorgon Point]	BF_68h Stepping 0	 4 nm	[GRP]/FP8
 	[Zen5/Strix Halo]	BF_70h Stepping 0	 4 nm	[STXH]/FP11
 	[Zen5/Shimada Peak]	BF_08h Stepping 1	 4 nm	HEDT/sTR5 */
 #define _AMD_Family_19h {.ExtFamily=0xA, .Family=0xF, .ExtModel=0x0, .Model=0x0}
@@ -2156,6 +2157,7 @@ static void InitTimer_AMD_Zen5_STX(unsigned int cpu) ;
 			{.ExtFamily=0xB, .Family=0xF, .ExtModel=0x1, .Model=0x1}
 
 #define _AMD_Zen5_KRK	{.ExtFamily=0xB, .Family=0xF, .ExtModel=0x6, .Model=0x0}
+#define _AMD_Zen5_GRP	{.ExtFamily=0xB, .Family=0xF, .ExtModel=0x6, .Model=0x8}
 #define _AMD_Zen5_STXH	{.ExtFamily=0xB, .Family=0xF, .ExtModel=0x7, .Model=0x0}
 #define _AMD_Zen5_SHP	{.ExtFamily=0xB, .Family=0xF, .ExtModel=0x0, .Model=0x8}
 
@@ -3934,7 +3936,7 @@ enum {
 enum {
 	CN_STRIX_POINT,
 	CN_STX_HANDHELD,
-	CN_GORGON_POINT
+	CN_GORGON_POINT1
 };
 
 enum {
@@ -3951,7 +3953,8 @@ enum {
 };
 
 enum {
-	CN_KRACKAN_POINT
+	CN_KRACKAN_POINT,
+	CN_GORGON_POINT2
 };
 
 enum {
@@ -3960,6 +3963,10 @@ enum {
 
 enum {
 	CN_SHIMADA_PEAK
+};
+
+enum {
+	CN_GORGON_POINT
 };
 
 static char *Arch_AMD_Zen[] = ZLIST(
@@ -4064,7 +4071,7 @@ static char *Arch_AMD_Zen4_STP[] = ZLIST(
 static char *Arch_AMD_Zen5_STX[] = ZLIST(
 		[CN_STRIX_POINT]	=	"Zen5/Strix Point",
 		[CN_STX_HANDHELD]	=	"Zen5/Strix Point/Handheld",
-		[CN_GORGON_POINT]	=	"Zen5/Gorgon Point"
+		[CN_GORGON_POINT1]	=	"Zen5/Strix/Gorgon Point"
 );
 static char *Arch_AMD_Zen5_Eldora[] = ZLIST(
 		[CN_ELDORA]		=	"Zen5/Granite Ridge",
@@ -4077,13 +4084,17 @@ static char *Arch_AMD_Zen5_Turin_Dense[] = ZLIST(
 		[CN_TURIN_DENSE]	=	"Zen5/Turin-Dense"
 );
 static char *Arch_AMD_Zen5_KRK[] = ZLIST(
-		[CN_KRACKAN_POINT]	=	"Zen5/Krackan Point"
+		[CN_KRACKAN_POINT]	=	"Zen5/Krackan Point",
+		[CN_GORGON_POINT2]	=	"Zen5/Krackan/Gorgon Point"
 );
 static char *Arch_AMD_Zen5_STXH[] = ZLIST(
 		[CN_STRIX_HALO] 	=	"Zen5/Strix Halo"
 );
 static char *Arch_AMD_Zen5_SHP[] = ZLIST(
 		[CN_SHIMADA_PEAK] 	=	"Zen5/Shimada Peak"
+);
+static char *Arch_AMD_Zen5_GRP[] = ZLIST(
+		[CN_GORGON_POINT]	=	"Zen5/Gorgon Point"
 );
 
 static char *Arch_AMD_Family_17h[]	=	ZLIST("AMD Family 17h");
@@ -9332,11 +9343,12 @@ static PROCESSOR_SPECIFIC AMD_Zen5_STX_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen AI 9 HX PRO 475",	\
+			"AMD Ryzen AI 9 HX PRO 470",	\
 			"AMD Ryzen AI 9 HX 475",	\
 			"AMD Ryzen AI 9 HX 470" 	),
 	.Boost = {+32, 0},
 	.Param.Offset = {100, 0, 0},
-	.CodeNameIdx = CN_GORGON_POINT,
+	.CodeNameIdx = CN_GORGON_POINT1,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
@@ -9345,11 +9357,12 @@ static PROCESSOR_SPECIFIC AMD_Zen5_STX_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD Ryzen AI 9 PRO 465",	\
-			"AMD Ryzen AI 9 465"		),
+	.Brand = ZLIST( "AMD Ryzen AI 9 H PRO 465", /* zh-cn */	\
+			"AMD Ryzen AI 9 PRO 465",		\
+			"AMD Ryzen AI 9 465"			),
 	.Boost = {+30, 0},
 	.Param.Offset = {100, 0, 0},
-	.CodeNameIdx = CN_GORGON_POINT,
+	.CodeNameIdx = CN_GORGON_POINT1,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
@@ -9381,6 +9394,21 @@ static PROCESSOR_SPECIFIC AMD_Zen5_KRK_Specific[] = {
 	.Boost = {+28, 0},
 	.Param.Offset = {100, 0, 0},
 	.CodeNameIdx = CN_KRACKAN_POINT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen AI 7 H PRO 450",		\
+			"AMD Ryzen AI 7 PRO 450",		\
+			"AMD Ryzen AI 7 H 450", /* zh-cn */	\
+			"AMD Ryzen AI 7 450"			),
+	.Boost = {+31, 0},
+	.Param.Offset = {100, 0, 0},
+	.CodeNameIdx = CN_GORGON_POINT2,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
@@ -9778,7 +9806,8 @@ static PROCESSOR_SPECIFIC AMD_Zen5_STXH_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD RYZEN AI MAX PRO 390",	\
+	.Brand = ZLIST( "AMD RYZEN AI MAX+ 392",	\
+			"AMD RYZEN AI MAX PRO 390",	\
 			"AMD RYZEN AI MAX 390"		),
 	.Boost = {+18, 0},
 	.Param.Offset = {100, 0, 0},
@@ -9791,7 +9820,8 @@ static PROCESSOR_SPECIFIC AMD_Zen5_STXH_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD RYZEN AI MAX PRO 385",	\
+	.Brand = ZLIST( "AMD RYZEN AI MAX+ 388", 	\
+			"AMD RYZEN AI MAX PRO 385",	\
 			"AMD RYZEN AI MAX 385"		),
 	.Boost = {+14, 0},
 	.Param.Offset = {100, 0, 0},
@@ -9898,6 +9928,54 @@ static PROCESSOR_SPECIFIC AMD_Zen5_SHP_Specific[] = {
 	.HSMP_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
 		|LATCH_HSMP_CAPABLE
+	},
+	{0}
+};
+static PROCESSOR_SPECIFIC AMD_Zen5_GRP_Specific[] = {
+	{
+	.Brand = ZLIST( "AMD Ryzen AI 5 H PRO 440", /* zh-cn */ \
+			"AMD Ryzen AI 5 PRO 440"		),
+	.Boost = {+28, 0},
+	.Param.Offset = {100, 0, 0},
+	.CodeNameIdx = CN_GORGON_POINT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen AI 7 H 445", /* zh-cn */	\
+			"AMD Ryzen AI 7 445"			),
+	.Boost = {+26, 0},
+	.Param.Offset = {100, 0, 0},
+	.CodeNameIdx = CN_GORGON_POINT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen AI 5 H PRO 435",		\
+			"AMD Ryzen AI 5 PRO 435",		\
+			"AMD Ryzen AI 5 H 435", /* zh-cn */	\
+			"AMD Ryzen AI 5 435",			\
+			"AMD Ryzen AI 5 H 430", /* zh-cn */	\
+			"AMD Ryzen AI 5 430",			\
+			"AMD Ryzen AI 5 H 330", /* zh-cn */	\
+			"AMD Ryzen AI 5 330"			),
+	.Boost = {+25, 0},
+	.Param.Offset = {100, 0, 0},
+	.CodeNameIdx = CN_GORGON_POINT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{0}
 };
@@ -13765,5 +13843,29 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Specific = AMD_Zen5_SHP_Specific,
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen5_SHP
+	},
+[AMD_Zen5_GRP] = {							/*131*/
+	.Signature = _AMD_Zen5_GRP,
+	.Query = Query_AMD_F1Ah_24h_60h_70h_PerSocket,
+	.Update = PerCore_AMD_Family_1Ah_Query,
+	.Start = Start_AMD_Family_1Ah,
+	.Stop = Stop_AMD_Family_1Ah,
+	.Exit = Exit_AMD_F1Ah,
+	.Timer = InitTimer_AMD_Zen5_STX,
+	.BaseClock = BaseClock_AMD_Family_1Ah,
+	.ClockMod = ClockMod_AMD_Zen,
+	.TurboClock = TurboClock_AMD_Zen,
+	.thermalFormula = THERMAL_FORMULA_AMD_1Ah,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_ZEN4,
+	.powerFormula   = POWER_FORMULA_AMD_1Ah,
+	.PCI_ids = PCI_AMD_1Ah_ids,
+	.Uncore = {
+		.Start = Start_Uncore_AMD_Family_1Ah,
+		.Stop = Stop_Uncore_AMD_Family_1Ah,
+		.ClockMod = NULL
+		},
+	.Specific = AMD_Zen5_GRP_Specific,
+	.SystemDriver = AMD_Zen_Driver,
+	.Architecture = Arch_AMD_Zen5_GRP
 	}
 };

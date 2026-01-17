@@ -154,6 +154,7 @@ enum {	GenuineArch = 0,
 	AMD_Zen5_KRK,
 	AMD_Zen5_STXH,
 	AMD_Zen5_SHP,
+	AMD_Zen5_GRP,
 	ARCHITECTURES
 };
 

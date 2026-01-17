@@ -2195,6 +2195,7 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Zen5_STX:
 	case AMD_Zen5_KRK:
 	case AMD_Zen5_STXH:
+	case AMD_Zen5_GRP:
 		CPU_Complex = false;
 		fallthrough;
 	/* Zen CPU Complex */
@@ -8334,6 +8335,7 @@ static bool Compute_AMD_Zen_Boost(unsigned int cpu)
 				SMU_AMD_F17H_ZEN2_MCM_COF,
 				PRIVATE(OF(Zen)).Device.DF);
 		break;
+	case AMD_Zen5_GRP:
 	case AMD_Zen5_STXH:
 	case AMD_Zen5_KRK:
 	case AMD_Zen5_STX:

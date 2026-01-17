@@ -7998,6 +7998,7 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
     case AMD_Zen5_KRK:
     case AMD_Zen5_STXH:
     case AMD_Zen5_SHP:
+    case AMD_Zen5_GRP:
     case AMD_Family_17h:
     case Hygon_Family_18h:
     case AMD_Family_19h:
