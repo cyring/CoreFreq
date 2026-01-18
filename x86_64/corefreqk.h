@@ -8942,6 +8942,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHXR_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 7 PRO 8700GE",	\
+			"AMD Ryzen 7 PRO 8705GE",	\
 			"AMD Ryzen 5 8505G",		\
 			"AMD Ryzen 3 8305G"		),
 	.Boost = {+15, 0},
@@ -8956,6 +8957,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHXR_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 7 PRO 8700G",	\
+			"AMD Ryzen 7 PRO 8705G",	\
 			"AMD Ryzen 7 8700F",		\
 			"AMD Ryzen 7 8700G",		\
 			"AMD Ryzen 7 8705G"		),
@@ -8970,7 +8972,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHXR_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 5 PRO 8600GE"),
+	.Brand = ZLIST( "AMD Ryzen 5 PRO 8600GE",	\
+			"AMD Ryzen 5 PRO 8605GE"	),
 	.Boost = {+11, 0},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_PHOENIX_R,
@@ -8983,6 +8986,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHXR_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 5 PRO 8600G",	\
+			"AMD Ryzen 5 PRO 8605G",	\
 			"AMD Ryzen 5 8600G",		\
 			"AMD Ryzen 5 8605G"		),
 	.Boost = {+7, 0},
@@ -8996,8 +9000,21 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHXR_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 5 8505GE"),
+	.Brand = ZLIST( "AMD Ryzen 5 PRO 8505GE",	\
+			"AMD Ryzen 5 8505GE"		),
 	.Boost = {+16, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_PHOENIX_R,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 5 PRO 8505G"),
+	.Boost = {+15, 0},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_PHOENIX_R,
 	.TgtRatioUnlocked = 1,
@@ -9020,8 +9037,21 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHXR_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 3 8305GE"),
+	.Brand = ZLIST( "AMD Ryzen 3 PRO 8305GE",	\
+			"AMD Ryzen 3 8305GE"		),
 	.Boost = {+14, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_PHOENIX_R,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 3 PRO 8305G"),
+	.Boost = {+15, 0},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_PHOENIX_R,
 	.TgtRatioUnlocked = 1,
