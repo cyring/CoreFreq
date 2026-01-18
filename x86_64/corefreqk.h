@@ -7094,7 +7094,8 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MDN_Specific[] = {
 /*	[Zen2/Mendocino]						*/
 	{
 	.Brand = ZLIST( "AMD Ryzen 5 7520C",	\
-			"AMD Ryzen 5 7520U"	),
+			"AMD Ryzen 5 7520U",	\
+			"AMD Ryzen 5 40"	),
 	.Boost = {+15, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MENDOCINO,
@@ -7107,7 +7108,8 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MDN_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 3 7320C",	\
-			"AMD Ryzen 3 7320U"	),
+			"AMD Ryzen 3 7320U",	\
+			"AMD Ryzen 3 30"	),
 	.Boost = {+17, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MENDOCINO,
@@ -7120,7 +7122,8 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MDN_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD Athlon Gold 7220C", \
-			"AMD Athlon Gold 7220U" ),
+			"AMD Athlon Gold 7220U", \
+			"AMD Athlon Gold 20"	),
 	.Boost = {+13, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MENDOCINO,
@@ -7133,7 +7136,8 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MDN_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD Athlon Silver 7120C", \
-			"AMD Athlon Silver 7120U" ),
+			"AMD Athlon Silver 7120U", \
+			"Athlon Silver 10"	),
 	.Boost = {+11, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MENDOCINO,
@@ -7980,7 +7984,8 @@ static PROCESSOR_SPECIFIC AMD_Zen3Plus_RMB_Specific[] = {
 			"AMD Ryzen 5 7535HS",			\
 			"AMD Ryzen 5 7535H",	/* zh-cn */	\
 			"AMD Ryzen 3 PRO 7335U",		\
-			"AMD Ryzen 5 150"			),
+			"AMD Ryzen 5 150",			\
+			"AMD Ryzen 3 110"			),
 	.Boost = {+13, 0},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_REMBRANDT_R,
