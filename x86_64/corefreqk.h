@@ -9567,6 +9567,45 @@ static PROCESSOR_SPECIFIC AMD_Zen5_Eldora_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
+	.Brand = ZLIST("AMD Ryzen 9 PRO 9945"),
+	.Boost = {+20, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_ELDORA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 7 PRO 9745"),
+	.Boost = {+16, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_ELDORA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 5 PRO 9645"),
+	.Boost = {+15, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_ELDORA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
 	.Brand = ZLIST( "AMD Ryzen 9 9955HX3D", \
 			"AMD Ryzen 9 9955HX"	),
 	.Boost = {+29, 0},
