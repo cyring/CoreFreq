@@ -9066,7 +9066,9 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHX2_Specific[] = {
 static PROCESSOR_SPECIFIC AMD_Zen4_HWK2_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD Ryzen 5 PRO 220",		\
-			"AMD Ryzen 5 220"		),
+			"AMD Ryzen 3 PRO 210",		\
+			"AMD Ryzen 5 220",		\
+			"AMD Ryzen 3 210"		),
 	.Boost = {+17, 0},
 	.Param.Offset = {100, 0, 0},
 	.CodeNameIdx = CN_HAWK_POINT2,
