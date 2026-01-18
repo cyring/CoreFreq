@@ -5826,8 +5826,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD Athlon Silver 3050GE",	\
-			"AMD Athlon Silver PRO 3125GE", \
+	.Brand = ZLIST( "AMD Athlon Silver PRO 3125GE", \
 			"AMD Athlon PRO 300GE"		),
 	.Boost = {+0, 0},
 	.Param.Offset = {95, 0, 0},
@@ -5835,6 +5834,18 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Athlon Silver 3050GE",	\
+			"AMD Athlon 300GE"		),
+	.Boost = {+0, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_PICASSO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
