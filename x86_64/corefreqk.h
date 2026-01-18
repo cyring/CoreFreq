@@ -7366,7 +7366,8 @@ static PROCESSOR_SPECIFIC AMD_Zen3_CZN_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 3 5300GE"),
+	.Brand = ZLIST( "AMD Ryzen 3 5300GE",	\
+			"AMD Ryzen 3 5305GE"	),
 	.Boost = {+6, +1},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_CEZANNE,
@@ -7377,7 +7378,8 @@ static PROCESSOR_SPECIFIC AMD_Zen3_CZN_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 3 5300G"),
+	.Brand = ZLIST( "AMD Ryzen 3 5300G",	\
+			"AMD Ryzen 3 5305G"	),
 	.Boost = {+2, +1},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_CEZANNE,
@@ -7413,7 +7415,8 @@ static PROCESSOR_SPECIFIC AMD_Zen3_CZN_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 5 5600GE",	\
-			"AMD Ryzen 5 5600GT"	),
+			"AMD Ryzen 5 5600GT",	\
+			"AMD Ryzen 5 5605GE"	),
 	.Boost = {+10, +1},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_CEZANNE,
@@ -7424,7 +7427,8 @@ static PROCESSOR_SPECIFIC AMD_Zen3_CZN_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 5 5600G"),
+	.Brand = ZLIST( "AMD Ryzen 5 5600G",	\
+			"AMD Ryzen 5 5605G"	),
 	.Boost = {+5, +1},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_CEZANNE,
@@ -7480,7 +7484,8 @@ static PROCESSOR_SPECIFIC AMD_Zen3_CZN_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 7 5700GE"),
+	.Brand = ZLIST( "AMD Ryzen 7 5700GE",	\
+			"AMD Ryzen 7 5705GE"	),
 	.Boost = {+14, +1},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_CEZANNE,
@@ -7493,6 +7498,7 @@ static PROCESSOR_SPECIFIC AMD_Zen3_CZN_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD Ryzen 7 5700G"	\
 			"AMD Ryzen 7 5700",	\
+			"AMD Ryzen 7 5705G",	\
 			"AMD Ryzen 5 5500GT"	),
 	.Boost = {+8, +1},
 	.Param.Offset = {95, 0, 0},
