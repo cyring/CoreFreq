@@ -7472,6 +7472,17 @@ static PROCESSOR_SPECIFIC AMD_Zen3_CZN_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
+	.Brand = ZLIST("AMD Ryzen 7 PRO 5755GE"),
+	.Boost = {+14, +1},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_CEZANNE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
 	.Brand = ZLIST( "AMD Ryzen 7 PRO 5750G",	\
 			"AMD Ryzen 7 PRO 5755G" 	),
 	.Boost = {+8, 0},
