@@ -9513,7 +9513,8 @@ static PROCESSOR_SPECIFIC AMD_Zen5_Eldora_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 9 9900X"),
+	.Brand = ZLIST( "AMD Ryzen 9 9900X",	\
+			"AMD Ryzen 5 9500F"	),
 	.Boost = {+12, 0},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_ELDORA,
@@ -9552,7 +9553,8 @@ static PROCESSOR_SPECIFIC AMD_Zen5_Eldora_Specific[] = {
 		|LATCH_HSMP_CAPABLE
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 7 9700X"),
+	.Brand = ZLIST( "AMD Ryzen 7 9700X",	\
+			"AMD Ryzen 7 9700F"	),
 	.Boost = {+17, 0},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_ELDORA,
