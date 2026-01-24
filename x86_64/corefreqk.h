@@ -7180,7 +7180,8 @@ static PROCESSOR_SPECIFIC AMD_Zen3_VMR_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD Ryzen 5 5600XT",	\
 			"AMD Ryzen 5 5600X",	\
-			"AMD Ryzen 5 5600T"	),
+			"AMD Ryzen 5 5600T",	\
+			"AMD Ryzen 5 5600F"	),
 	.Boost = {+9, +1},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_VERMEER,
@@ -8481,6 +8482,18 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
+	.Brand = ZLIST("AMD Ryzen 5 PRO 7445"),
+	.Boost = {+10, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_RAPHAEL,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
 	.Brand = ZLIST("AMD Ryzen 9 7950X3D"),
 	.Boost = {+15, +1},
 	.Param.Offset = {89, 0, 0},
@@ -8532,7 +8545,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 9 7900X",		\
 			"AMD Ryzen 7 7700X",		\
 			"AMD Ryzen Embedded 7700X",	\
-			"AMD Ryzen 5 7400F"		),
+			"AMD Ryzen 5 7400F",		\
+			"AMD Ryzen 5 7400"		),
 	.Boost = {+9, +1},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_RAPHAEL,
