@@ -8672,7 +8672,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_RPL_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD Ryzen 9 7845HX",	\
 			"AMD Ryzen 9 7840HX",	\
-			"AMD Ryzen 9 8840HX"	),
+			"AMD Ryzen 7 8840HX"	),
 	.Boost = {+22, +1},
 	.Param.Offset = {100, 0, 0},
 	.CodeNameIdx = CN_DRAGON_RANGE,
