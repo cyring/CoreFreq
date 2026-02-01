@@ -5693,7 +5693,7 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 	}
 
     #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
-	vm_flags_reset_once(vma, vm_ro);
+	vm_flags_set(vma, vm_ro);
     #else
 	vma->vm_flags = VM_READ | VM_DONTEXPAND;
     #endif
@@ -5716,7 +5716,7 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 
     #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0) \
      || (defined(RHEL_MAJOR) && (RHEL_MAJOR >= 9) && (RHEL_MINOR >= 5))
-	vm_flags_reset_once(vma, vm_rw);
+	vm_flags_set(vma, vm_rw);
     #else
 	vma->vm_flags = VM_READ | VM_WRITE | VM_DONTEXPAND;
     #endif
@@ -5743,7 +5743,7 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 		}
 
 	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
-		vm_flags_reset_once(vma, vm_ro);
+		vm_flags_set(vma, vm_ro);
 	    #else
 		vma->vm_flags = VM_READ | VM_DONTEXPAND;
 	    #endif
@@ -5774,7 +5774,7 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 		}
 
 	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
-		vm_flags_reset_once(vma, vm_ro);
+		vm_flags_set(vma, vm_ro);
 	    #else
 		vma->vm_flags = VM_READ | VM_DONTEXPAND;
 	    #endif
@@ -5805,7 +5805,7 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 
 	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0) \
 	     || (defined(RHEL_MAJOR) && (RHEL_MAJOR >= 9) && (RHEL_MINOR >= 5))
-		vm_flags_reset_once(vma, vm_rw);
+		vm_flags_set(vma, vm_rw);
 	    #else
 		vma->vm_flags = VM_READ | VM_WRITE | VM_DONTEXPAND;
 	    #endif
