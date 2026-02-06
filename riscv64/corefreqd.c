@@ -126,6 +126,51 @@ static void (*ComputeThermal_None_Matrix[4])( struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeThermal_None_PerPkg
 };
 
+static void ComputeThermal_Celsius( struct FLIP_FLOP *CFlip,
+					RO(SHM_STRUCT) *RO(Shm),
+					unsigned int cpu )
+{
+	COMPUTE_THERMAL(CELSIUS,
+			CFlip->Thermal.Temp,
+			CFlip->Thermal.Param,
+			CFlip->Thermal.Sensor);
+
+	Core_ComputeThermalLimits(&RO(Shm)->Cpu[cpu], CFlip);
+}
+
+#define ComputeThermal_Celsius_PerSMT	ComputeThermal_Celsius
+
+static void ComputeThermal_Celsius_PerCore( struct FLIP_FLOP *CFlip,
+						RO(SHM_STRUCT) *RO(Shm),
+						unsigned int cpu )
+{
+	if ((RO(Shm)->Cpu[cpu].Topology.ThreadID == 0)
+	 || (RO(Shm)->Cpu[cpu].Topology.ThreadID == -1))
+	{
+		ComputeThermal_Celsius(CFlip, RO(Shm), cpu);
+	}
+}
+
+static void ComputeThermal_Celsius_PerPkg( struct FLIP_FLOP *CFlip,
+						RO(SHM_STRUCT) *RO(Shm),
+						unsigned int cpu )
+{
+	if (cpu == RO(Shm)->Proc.Service.Core)
+	{
+		ComputeThermal_Celsius(CFlip, RO(Shm), cpu);
+	}
+}
+
+static void (*ComputeThermal_Celsius_Matrix[4])(struct FLIP_FLOP*,
+						RO(SHM_STRUCT)*,
+						unsigned int ) = \
+{
+	[FORMULA_SCOPE_NONE] = ComputeThermal_None,
+	[FORMULA_SCOPE_SMT ] = ComputeThermal_Celsius_PerSMT,
+	[FORMULA_SCOPE_CORE] = ComputeThermal_Celsius_PerCore,
+	[FORMULA_SCOPE_PKG ] = ComputeThermal_Celsius_PerPkg
+};
+
 void Core_ComputeVoltageLimits(CPU_STRUCT *Cpu, struct FLIP_FLOP *CFlip)
 {	/* Per Core, computes the Min CPU voltage.			*/
 	TEST_AND_SET_SENSOR( VOLTAGE, LOWEST,	CFlip->Voltage.Vcore,
@@ -282,6 +327,9 @@ static void *Core_Cycle(void *arg)
 					unsigned int );
 
 	switch (KIND_OF_FORMULA(RO(Shm)->Proc.thermalFormula)) {
+	case THERMAL_KIND_CELSIUS:
+		ComputeThermalFormula = ComputeThermal_Celsius_Matrix;
+		break;
 	case THERMAL_KIND_NONE:
 	default:
 		ComputeThermalFormula = ComputeThermal_None_Matrix;

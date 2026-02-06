@@ -43,6 +43,9 @@
 #ifdef CONFIG_ACPI_CPPC_LIB
 #include <acpi/cppc_acpi.h>
 #endif
+#ifdef CONFIG_THERMAL
+#include <linux/thermal.h>
+#endif
 
 #ifdef CONFIG_HAVE_NMI
 enum {
@@ -1487,6 +1490,27 @@ static void PerCore_Reset(CORE_RO *Core)
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.State);
 }
 
+static void PerCore_ThermalZone(CORE_RO *Core)
+{
+#ifdef CONFIG_THERMAL
+	struct thermal_zone_device *tz = NULL;
+
+	switch (Core->T.Cluster.Hybrid_ID) {
+	case Hybrid_Secondary:
+		tz = thermal_zone_get_zone_by_name("cluster1_thermal");
+		break;
+	case Hybrid_Primary:
+	    if (Core->T.CoreID & 1) {
+		tz = thermal_zone_get_zone_by_name("cluster1_thermal");
+	    } else {
+		tz = thermal_zone_get_zone_by_name("cluster0_thermal");
+	    }
+		break;
+	}
+	PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone = tz;
+#endif /* CONFIG_THERMAL */
+}
+
 static void PerCore_GenericMachine(void *arg)
 {
 	CORE_RO *Core = (CORE_RO *) arg;
@@ -1506,6 +1530,8 @@ static void PerCore_GenericMachine(void *arg)
 	Core->Query.Revision = riscv_cached_marchid(Core->Bind);
 
 	SystemRegisters(Core);
+
+	PerCore_ThermalZone(Core);
 
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 }
@@ -2075,6 +2101,29 @@ static COF_ST Compute_COF_From_PMU_Counter(	unsigned long long deltaCounter,
 	return ratio;
 }
 
+static void Core_Thermal_Temp(CORE_RO *Core)
+{
+#ifdef CONFIG_THERMAL
+  if (!IS_ERR(PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone)) {
+   #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 3, 0)
+	unsigned int mcelsius;
+    if (thermal_zone_get_temp(PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone,
+				(int*) &mcelsius) == 0)
+    {
+	Core->PowerThermal.Sensor = mcelsius;
+    }
+   #else
+	unsigned long mcelsius;
+    if (thermal_zone_get_temp(PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone,
+				&mcelsius) == 0)
+    {
+	Core->PowerThermal.Sensor = (unsigned int) mcelsius;
+    }
+   #endif
+  }
+#endif /* CONFIG_THERMAL */
+}
+
 static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
 {
 	CORE_RO *Core;
@@ -2098,11 +2147,30 @@ static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
 	{
 		PKG_Counters_Generic(Core, 1);
 
+		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+		case FORMULA_SCOPE_PKG:
+			Core_Thermal_Temp(Core);
+			break;
+		}
+
 		Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
 
 		Save_PTSC(PUBLIC(RO(Proc)));
 
 		Sys_Tick(PUBLIC(RO(Proc)));
+	}
+
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
+	    {
+		Core_Thermal_Temp(Core);
+		break;
+	    }
+		fallthrough;
+	case FORMULA_SCOPE_SMT:
+		Core_Thermal_Temp(Core);
+		break;
 	}
 
 	Delta_INST(Core);
