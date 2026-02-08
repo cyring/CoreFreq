@@ -118,6 +118,7 @@
 
 typedef struct {
 	char			**Brand;
+	bool			(*Match)(unsigned int cpu);
 	unsigned int		Boost[2];
 	THERMAL_PARAM		Param;
 	unsigned int		CodeNameIdx	:  8-0,
@@ -347,11 +348,65 @@ static char *Arch_Andes[]	=	ZLIST("Andes");
 static char *Arch_SiFive[]	=	ZLIST("SiFive");
 static char *Arch_T_Head[]	=	ZLIST("T-Head");
 static char *Arch_Veyron[]	=	ZLIST("Veyron");
-static char *Arch_SpacemiT[]	=	ZLIST("SpacemiT");
+
+enum {
+	CN_KEY_STONE,
+	CN_KEY_STONE_X60,
+	CN_KEY_STONE_X100
+};
+
+static char *Arch_SpacemiT[] = ZLIST(
+	[CN_KEY_STONE]		=	"SpacemiT",
+	[CN_KEY_STONE_X60]	=	"SpacemiT/X60",
+	[CN_KEY_STONE_X100]	=	"SpacemiT/X100"
+);
 
 static PROCESSOR_SPECIFIC Void_Specific[] = { {0} };
 
 static PROCESSOR_SPECIFIC Misc_Specific_Processor[] = {
+	{0}
+};
+
+static bool Match_K1_X60(unsigned int cpu)
+{
+	return riscv_cached_marchid(cpu) == 0x8000000058000001;
+}
+
+static bool Match_K3_X100(unsigned int cpu)
+{
+	return riscv_cached_marchid(cpu) == 0x8000000058000002
+	    || riscv_cached_marchid(cpu) == 0x8000000041000002;
+}
+
+static PROCESSOR_SPECIFIC SpacemiT_Specific[] = {
+	{
+	.Brand = ZLIST("Key Stone K1"),
+	.Match = Match_K1_X60,
+	.Boost = {+0, 0},
+	.Param.Offset = {100, 0, 0},
+	.CodeNameIdx = CN_KEY_STONE_X60,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Other_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_OTHER_CAPABLE
+	},
+	{
+	.Brand = ZLIST("Key Stone K3"),
+	.Match = Match_K3_X100,
+	.Boost = {+0, 0},
+	.Param.Offset = {100, 0, 0},
+	.CodeNameIdx = CN_KEY_STONE_X100,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Other_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_OTHER_CAPABLE
+	},
 	{0}
 };
 
@@ -580,7 +635,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
-	.Specific = Void_Specific,
+	.Specific = SpacemiT_Specific,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_SpacemiT
 	}

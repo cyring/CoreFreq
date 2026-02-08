@@ -728,39 +728,42 @@ static CLOCK BaseClock_GenericMachine(unsigned int ratio)
 	UNUSED(ratio);
 	return clock;
 };
-/*
-static void Cache_Level(CORE_RO *Core, unsigned int level, unsigned int select)
-{
-	const CSSELR cssel[CACHE_MAX_LEVEL] = {
-		[0] = { .InD = 1, .Level = 0 }, **	L1I	**
-		[1] = { .InD = 0, .Level = 0 }, **	L1D	**
-		[2] = { .InD = 0, .Level = 1 }, **	L2	**
-		[3] = { .InD = 0, .Level = 2 }	**	L3	**
-	};
-}
-*/
-static void Cache_Topology(CORE_RO *Core)
-{
-/*
-	volatile unsigned long long clidr;
 
-	if (clidr.Ctype1 == 0b011) {
-		Cache_Level(Core, 0, 0);	**	L1I		**
-		Cache_Level(Core, 1, 1);	**	L1D		**
-	} else if (clidr.Ctype1 == 0b010) {
-						**	Skip L1I	**
-		Cache_Level(Core, 1, 1);	**	L1D		**
-	} else if (clidr.Ctype1 == 0b001) {
-		Cache_Level(Core, 0, 0);	**	L1I		**
-						**	Skip L1D	**
-	}
-	if (clidr.Ctype2 == 0b100) {		**	L2		**
-		Cache_Level(Core, 2, 2);
-	}
-	if (clidr.Ctype3 == 0b100) {		**	L3		**
-		Cache_Level(Core, 3, 3);
-	}
-*/
+static void Cache_Topology(CORE_RO *Core, struct device_node *cpu_node)
+{
+	struct device_node *l2_node;
+
+    if (of_property_present(cpu_node, "i-cache-block-size")) {
+	of_property_read_u32(cpu_node, "i-cache-block-size",
+					&Core->T.Cache[0].LineSz);
+    }
+    if (of_property_present(cpu_node, "d-cache-block-size")) {
+	of_property_read_u32(cpu_node, "d-cache-block-size",
+					&Core->T.Cache[1].LineSz);
+    }
+    if (of_property_present(cpu_node, "i-cache-sets")) {
+	of_property_read_u32(cpu_node, "i-cache-sets", &Core->T.Cache[0].Set);
+    }
+    if (of_property_present(cpu_node, "d-cache-sets")) {
+	of_property_read_u32(cpu_node, "d-cache-sets", &Core->T.Cache[1].Set);
+    }
+    if (of_property_present(cpu_node, "i-cache-size")) {
+	of_property_read_u32(cpu_node, "i-cache-size", &Core->T.Cache[0].Size);
+    }
+    if (of_property_present(cpu_node, "d-cache-size")) {
+	of_property_read_u32(cpu_node, "d-cache-size", &Core->T.Cache[1].Size);
+    }
+    if ((l2_node = of_parse_phandle(cpu_node, "next-level-cache", 0)) != NULL)
+    {
+	of_property_read_u32(l2_node, "cache-block-size",
+					&Core->T.Cache[2].LineSz);
+
+	of_property_read_u32(l2_node, "cache-sets", &Core->T.Cache[2].Set);
+
+	of_property_read_u32(l2_node, "cache-size", &Core->T.Cache[2].Size);
+
+	of_node_put(l2_node);
+    }
 }
 
 static void Map_Generic_Topology(void *arg)
@@ -773,24 +776,25 @@ static void Map_Generic_Topology(void *arg)
 		Core->T.BSP =
 		Core->T.Cluster.CMP =
 		Core->T.PackageID =
-		Core->T.CoreID =
-		Core->T.ThreadID =
 	} else {
 		Core->T.BSP =
 		Core->T.PackageID =
 		Core->T.Cluster.CMP =
-		Core->T.CoreID =
 	}
 */
 #ifdef CONFIG_OF
-	struct device_node *cpu_node = of_cpu_device_node_get(Core->Bind);
+	unsigned int threadID;
+
+	struct device_node *cpu_node = of_get_cpu_node(Core->Bind, &threadID);
 	if (cpu_node != NULL) {
 		of_property_read_u32(cpu_node, "reg", &Core->T.CoreID);
+
+		Core->T.ThreadID = threadID;
+		Cache_Topology(Core, cpu_node);
+
 		of_node_put(cpu_node);
 	}
 #endif /* CONFIG_OF */
-
-	Cache_Topology(Core);
     }
 }
 
@@ -808,10 +812,10 @@ static int Core_Topology(unsigned int cpu)
 	return rc;
 }
 
-static unsigned int Proc_Topology(void)
-{
-	unsigned int cpu, PN = 0, CountEnabledCPU = 0;
-	struct SIGNATURE SoC;
+static unsigned int Proc_Topology(unsigned int _cpu)
+{	/* Helpers: arch/riscv/include/asm/sbi.h			*/
+	unsigned long marchid = riscv_cached_marchid(_cpu);
+	unsigned int cpu, CountEnabledCPU = 0;
 
     for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++) {
 	PUBLIC(RO(Core, AT(cpu)))->T.PN 	= 0;
@@ -836,25 +840,18 @@ static unsigned int Proc_Topology(void)
 		BITCLR(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine, OS);
 	    }
 	}
-	PN =	( PN ^ PUBLIC(RO(Core, AT(cpu)))->T.PN )
-		| PUBLIC(RO(Core, AT(cpu)))->T.PN;
+	if (marchid != riscv_cached_marchid(cpu))
+		PUBLIC(RO(Proc))->Features.Hybrid = 1;
     }
-	SoC.Family = PN & 0x00f;
-	SoC.ExtFamily = (PN & 0xff0) >> 4;
-
 	/* Source: arch/riscv/kernel/smp.c: smp_setup_processor_id()	*/
 	PUBLIC(RO(Core, AT(0)))->T.BSP = 1;
 
-	PUBLIC(RO(Proc))->Features.Hybrid = !(
-	    SoC.Family == PUBLIC(RO(Proc))->Features.Info.Signature.Family
-	 && SoC.ExtFamily == PUBLIC(RO(Proc))->Features.Info.Signature.ExtFamily
-	);
 	return CountEnabledCPU;
 }
 
-#define HyperThreading_Technology()					\
+#define HyperThreading_Technology(_cpu)					\
 (									\
-	PUBLIC(RO(Proc))->CPU.OnLine = Proc_Topology()			\
+	PUBLIC(RO(Proc))->CPU.OnLine = Proc_Topology(_cpu)		\
 )
 
 static void Package_Init_Reset(void)
@@ -900,10 +897,20 @@ static void Default_Unlock_Reset(void)
 
 static void OverrideCodeNameString(PROCESSOR_SPECIFIC *pSpecific)
 {
+	char **brands = pSpecific->Brand, *brand = NULL;
+
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
 		Arch[
 			PUBLIC(RO(Proc))->ArchID
 		].Architecture[pSpecific->CodeNameIdx], CODENAME_LEN);
+
+	for (brands = pSpecific->Brand; *brands != NULL; brands++) {
+		brand = *brands;
+	}
+	if (brand != NULL) {
+		StrCopy(PUBLIC(RO(Proc))->Features.Info.Brand,
+			brand, BRAND_SIZE);
+	}
 }
 
 static void OverrideUnlockCapability(PROCESSOR_SPECIFIC *pSpecific)
@@ -925,22 +932,15 @@ static void OverrideUnlockCapability(PROCESSOR_SPECIFIC *pSpecific)
     }
 }
 
-static PROCESSOR_SPECIFIC *LookupProcessor(void)
+static PROCESSOR_SPECIFIC *LookupProcessor(unsigned int cpu)
 {
 	PROCESSOR_SPECIFIC *pSpecific;
     for (pSpecific = Arch[PUBLIC(RO(Proc))->ArchID].Specific;
 		(pSpecific != NULL) && (pSpecific->Brand != NULL);
 			pSpecific++)
     {
-	char **brands, *brand;
-	for (brands = pSpecific->Brand, brand = *brands;
-		brand != NULL;
-			brands++, brand = *brands)
-	{
-		if (strstr(PUBLIC(RO(Proc))->Features.Info.Brand, brand)) {
-			return pSpecific;
-		}
-	}
+	if (pSpecific->Match != NULL && pSpecific->Match(cpu) == true)
+		return pSpecific;
     }
 	return NULL;
 }
@@ -1401,9 +1401,9 @@ static int CoreFreqK_ProbePCI(	struct pci_device_id PCI_ids[],
 	return rc;
 }
 
-static void Query_Same_Genuine_Features(void)
+static void Query_Same_Genuine_Features(unsigned int cpu)
 {
-	if ((PRIVATE(OF(Specific)) = LookupProcessor()) != NULL)
+	if ((PRIVATE(OF(Specific)) = LookupProcessor(cpu)) != NULL)
 	{
 		OverrideCodeNameString(PRIVATE(OF(Specific)));
 		OverrideUnlockCapability(PRIVATE(OF(Specific)));
@@ -1423,7 +1423,7 @@ static void Query_Same_Genuine_Features(void)
 
 static void Query_GenericMachine(unsigned int cpu)
 {
-	Query_Same_Genuine_Features();
+	Query_Same_Genuine_Features(cpu);
 
 	Query_DeviceTree(cpu);
 
@@ -1433,7 +1433,7 @@ static void Query_GenericMachine(unsigned int cpu)
     } else {
 	PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
     }
-	HyperThreading_Technology();
+	HyperThreading_Technology(cpu);
 
 	For_All_ACPI_CPPC(Read_ACPI_CPPC_Registers, NULL);
 }

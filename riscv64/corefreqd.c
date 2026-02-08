@@ -840,28 +840,25 @@ void Topology(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc), RO(CORE) **RO(Core),
 	RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID = \
 					RO(Core, AT(cpu))->T.Cluster.Hybrid_ID;
 	/*	Aggregate the Caches topology.				*/
-  for (level = 0; level < CACHE_MAX_LEVEL; level++)
-    if (RO(Core, AT(cpu))->T.Cache[level].ccsid.value != 0) {
-	RO(Shm)->Cpu[cpu].Topology.Cache[level].LineSz = \
-			RO(Core, AT(cpu))->T.Cache[level].ccsid.LineSz + 4;
+	for (level = 0; level < CACHE_MAX_LEVEL; level++) {
+		unsigned int divisor = \
+				RO(Shm)->Cpu[cpu].Topology.Cache[level].LineSz
+				* RO(Shm)->Cpu[cpu].Topology.Cache[level].Set;
 
-	RO(Shm)->Cpu[cpu].Topology.Cache[level].Set = \
-			RO(Core, AT(cpu))->T.Cache[level].ccsid.Set + 1;
+		RO(Shm)->Cpu[cpu].Topology.Cache[level].LineSz = \
+			RO(Core, AT(cpu))->T.Cache[level].LineSz;
 
-	RO(Shm)->Cpu[cpu].Topology.Cache[level].Way = \
-			RO(Core, AT(cpu))->T.Cache[level].ccsid.Assoc + 1;
+		RO(Shm)->Cpu[cpu].Topology.Cache[level].Set = \
+			RO(Core, AT(cpu))->T.Cache[level].Set;
 
-	RO(Shm)->Cpu[cpu].Topology.Cache[level].Size = \
-			RO(Shm)->Cpu[cpu].Topology.Cache[level].Way
-			<< RO(Shm)->Cpu[cpu].Topology.Cache[level].LineSz;
+		RO(Shm)->Cpu[cpu].Topology.Cache[level].Size = \
+			RO(Core, AT(cpu))->T.Cache[level].Size;
 
-	RO(Shm)->Cpu[cpu].Topology.Cache[level].Size = \
-			RO(Shm)->Cpu[cpu].Topology.Cache[level].Set
-			* RO(Shm)->Cpu[cpu].Topology.Cache[level].Size;
-
-	RO(Shm)->Cpu[cpu].Topology.Cache[level].Feature.WriteBack = \
-			RO(Core, AT(cpu))->T.Cache[level].ccsid.WrBack;
-    }
+	    if (divisor != 0) {
+		RO(Shm)->Cpu[cpu].Topology.Cache[level].Way = \
+			RO(Shm)->Cpu[cpu].Topology.Cache[level].Size / divisor;
+	    }
+	}
 }
 
 void CStates(RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core), unsigned int cpu)
