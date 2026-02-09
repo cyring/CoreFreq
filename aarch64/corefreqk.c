@@ -6086,9 +6086,9 @@ static struct notifier_block CoreFreqK_notifier_block = {
 #endif /* KERNEL_VERSION(4, 10, 0) */
 #endif /* CONFIG_HOTPLUG_CPU */
 
+#ifdef CONFIG_DMI
 static void SMBIOS_Collect(void)
 {
-#ifdef CONFIG_DMI
 	struct {
 		enum dmi_field field;
 		char *recipient;
@@ -6119,10 +6119,8 @@ static void SMBIOS_Collect(void)
 			StrCopy(dmi_collect[idx].recipient, pInfo, MAX_UTS_LEN);
 		}
 	}
-#endif /* CONFIG_DMI */
 }
 
-#ifdef CONFIG_DMI
 static char *SMBIOS_String(const struct dmi_header *dh, u8 id)
 {
 	char *pStr = (char *) dh;
@@ -6195,15 +6193,13 @@ static void SMBIOS_Entries(const struct dmi_header *dh, void *priv)
     }
 }
 #undef safe_strim
-#endif /* CONFIG_DMI */
 
 static void SMBIOS_Decoder(void)
 {
-#ifdef CONFIG_DMI
 	size_t count = 0;
 	dmi_walk(SMBIOS_Entries, &count);
-#endif /* CONFIG_DMI */
 }
+#endif /* CONFIG_DMI */
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 2, 0) \
  || ((RHEL_MAJOR == 8) && ((RHEL_MINOR < 3) || (RHEL_MINOR > 8))) \
@@ -6733,8 +6729,10 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 	CoreFreqK_Power_Scope(PowerScope);
 
 	/*	Copy various SMBIOS data [version 3.2]			*/
+	#ifdef CONFIG_DMI
 	SMBIOS_Collect();
 	SMBIOS_Decoder();
+	#endif /* CONFIG_DMI */
 	/*	Guess virtualization from SMBIOS strings		*/
 	if ((strncmp(	PUBLIC(RO(Proc))->SMB.System.Vendor,
 			"QEMU",
