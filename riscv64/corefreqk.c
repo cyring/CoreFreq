@@ -729,42 +729,50 @@ static CLOCK BaseClock_GenericMachine(unsigned int ratio)
 	return clock;
 };
 
-static void Cache_Topology(CORE_RO *Core, struct device_node *cpu_node)
+#ifdef CONFIG_OF
+static struct {
+	const char *LineSz, *Set, *Size;
+} Cache_Property[CACHE_MAX_LEVEL] = {
+	{ "i-cache-block-size", "i-cache-sets", "i-cache-size"	},
+	{ "d-cache-block-size", "d-cache-sets", "d-cache-size"	},
+	{ "cache-block-size",	"cache-sets",	"cache-size"	},
+	{ "cache-block-size",	"cache-sets",	"cache-size"	}
+};
+
+static void Cache_Topology(	CORE_RO *Core,
+				struct device_node *cache_node,
+				unsigned int level )
 {
-	struct device_node *l2_node;
-
-    if (of_property_present(cpu_node, "i-cache-block-size")) {
-	of_property_read_u32(cpu_node, "i-cache-block-size",
-					&Core->T.Cache[0].LineSz);
-    }
-    if (of_property_present(cpu_node, "d-cache-block-size")) {
-	of_property_read_u32(cpu_node, "d-cache-block-size",
-					&Core->T.Cache[1].LineSz);
-    }
-    if (of_property_present(cpu_node, "i-cache-sets")) {
-	of_property_read_u32(cpu_node, "i-cache-sets", &Core->T.Cache[0].Set);
-    }
-    if (of_property_present(cpu_node, "d-cache-sets")) {
-	of_property_read_u32(cpu_node, "d-cache-sets", &Core->T.Cache[1].Set);
-    }
-    if (of_property_present(cpu_node, "i-cache-size")) {
-	of_property_read_u32(cpu_node, "i-cache-size", &Core->T.Cache[0].Size);
-    }
-    if (of_property_present(cpu_node, "d-cache-size")) {
-	of_property_read_u32(cpu_node, "d-cache-size", &Core->T.Cache[1].Size);
-    }
-    if ((l2_node = of_parse_phandle(cpu_node, "next-level-cache", 0)) != NULL)
+    if (level < CACHE_MAX_LEVEL)
     {
-	of_property_read_u32(l2_node, "cache-block-size",
-					&Core->T.Cache[2].LineSz);
+	if (0 != of_property_read_u32(cache_node, Cache_Property[level].LineSz,
+					&Core->T.Cache[level].LineSz)) {
+		Core->T.Cache[level].LineSz = 0;
+	}
+	if (0 != of_property_read_u32(cache_node, Cache_Property[level].Set,
+					&Core->T.Cache[level].Set)) {
+		Core->T.Cache[level].Set = 0;
+	}
+	if (0 != of_property_read_u32(cache_node, Cache_Property[level].Size,
+					&Core->T.Cache[level].Size)) {
+		Core->T.Cache[level].Size = 0;
+	}
+	if (level == 0) {
+		Cache_Topology(Core, cache_node, level + 1);
+	}
+	else {
+		struct device_node *next_node = \
+			of_parse_phandle(cache_node, "next-level-cache", 0);
 
-	of_property_read_u32(l2_node, "cache-sets", &Core->T.Cache[2].Set);
+		if (next_node != NULL) {
+			Cache_Topology(Core, next_node, level + 1);
 
-	of_property_read_u32(l2_node, "cache-size", &Core->T.Cache[2].Size);
-
-	of_node_put(l2_node);
+			of_node_put(next_node);
+		}
+	}
     }
 }
+#endif /* CONFIG_OF */
 
 static void Map_Generic_Topology(void *arg)
 {
@@ -790,7 +798,7 @@ static void Map_Generic_Topology(void *arg)
 		of_property_read_u32(cpu_node, "reg", &Core->T.CoreID);
 
 		Core->T.ThreadID = threadID;
-		Cache_Topology(Core, cpu_node);
+		Cache_Topology(Core, cpu_node, 0);
 
 		of_node_put(cpu_node);
 	}
