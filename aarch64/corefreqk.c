@@ -6086,6 +6086,18 @@ static struct notifier_block CoreFreqK_notifier_block = {
 #endif /* KERNEL_VERSION(4, 10, 0) */
 #endif /* CONFIG_HOTPLUG_CPU */
 
+#ifdef CONFIG_OF
+static void DeviceTree_Collect(void)
+{
+    if (strlen(PUBLIC(RO(Proc))->SMB.Board.Name) == 0) {
+	const char *modelName;
+	if (of_property_read_string(of_root, "model", &modelName) == 0) {
+	    StrCopy(PUBLIC(RO(Proc))->SMB.Board.Name, modelName, MAX_UTS_LEN);
+	}
+    }
+}
+#endif /* CONFIG_OF */
+
 #ifdef CONFIG_DMI
 static void SMBIOS_Collect(void)
 {
@@ -6733,6 +6745,9 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 	SMBIOS_Collect();
 	SMBIOS_Decoder();
 	#endif /* CONFIG_DMI */
+	#ifdef CONFIG_OF
+	DeviceTree_Collect();
+	#endif /* CONFIG_OF */
 	/*	Guess virtualization from SMBIOS strings		*/
 	if ((strncmp(	PUBLIC(RO(Proc))->SMB.System.Vendor,
 			"QEMU",
