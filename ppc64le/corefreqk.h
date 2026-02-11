@@ -4,7 +4,15 @@
  * Licenses: GPL2
  */
 
-#if defined(CONFIG_OF) && LINUX_VERSION_CODE < KERNEL_VERSION(6, 4, 0)
+#if defined(CONFIG_OF)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
+#define of_root allnodes
+#elif LINUX_VERSION_CODE < KERNEL_VERSION(3, 19, 0)
+#define of_root of_allnodes
+#endif
+#endif /* CONFIG_OF */
+
+#if defined(CONFIG_OF) && LINUX_VERSION_CODE < KERNEL_VERSION(3, 12, 0)
 #define of_cpu_device_node_get(cpu)					\
 ({									\
 	struct device_node *cpu_node;					\
@@ -19,7 +27,7 @@
 })
 #endif
 
-#if defined(CONFIG_OF) && LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0)
+#if defined(CONFIG_OF) && LINUX_VERSION_CODE < KERNEL_VERSION(4, 8, 0)
 #define of_device_compatible_match(_device_, _compat_)			\
 ({									\
 	const struct device_node *device = _device_;			\
