@@ -4212,7 +4212,8 @@ static void DeviceTree_Collect(void)
   if (strlen(PUBLIC(RO(Proc))->SMB.System.Vendor) == 0) {
 	const char *systemVendor;
     if (of_property_read_string(of_root, "compatible", &systemVendor) == 0) {
-	StrCopy(PUBLIC(RO(Proc))->SMB.System.Vendor, systemVendor, MAX_UTS_LEN);
+	StrChrCopy(	PUBLIC(RO(Proc))->SMB.System.Vendor,
+			systemVendor, MAX_UTS_LEN, ',' );
     }
   }
 }

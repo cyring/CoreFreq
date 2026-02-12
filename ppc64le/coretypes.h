@@ -1599,6 +1599,14 @@ typedef union {
 	_ret = lret > 0 ? ( __typeof__ (_ret) ) lret : 0;		\
 })
 
+static inline void StrChrCopy(char *dest, const char *src, size_t max, char chr)
+{
+	while (--max && *src && *src != chr) {
+		*dest++ = *src++;
+	}
+	*dest = '\0';
+}
+
 #define ZLIST( ... ) (char *[]) { __VA_ARGS__ , NULL }
 
 #define TIMESPEC(nsec)							\
