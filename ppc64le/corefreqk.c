@@ -4140,12 +4140,18 @@ static struct notifier_block CoreFreqK_notifier_block = {
 #ifdef CONFIG_OF
 static void DeviceTree_Collect(void)
 {
-    if (strlen(PUBLIC(RO(Proc))->SMB.Board.Name) == 0) {
+  if (strlen(PUBLIC(RO(Proc))->SMB.Board.Name) == 0) {
 	const char *modelName;
-	if (of_property_read_string(of_root, "model", &modelName) == 0) {
-	    StrCopy(PUBLIC(RO(Proc))->SMB.Board.Name, modelName, MAX_UTS_LEN);
-	}
+    if (of_property_read_string(of_root, "model", &modelName) == 0) {
+	StrCopy(PUBLIC(RO(Proc))->SMB.Board.Name, modelName, MAX_UTS_LEN);
     }
+  }
+  if (strlen(PUBLIC(RO(Proc))->SMB.System.Vendor) == 0) {
+	const char *systemVendor;
+    if (of_property_read_string(of_root, "compatible", &systemVendor) == 0) {
+	StrCopy(PUBLIC(RO(Proc))->SMB.System.Vendor, systemVendor, MAX_UTS_LEN);
+    }
+  }
 }
 #endif /* CONFIG_OF */
 

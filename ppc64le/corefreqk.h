@@ -27,7 +27,7 @@
 })
 #endif
 
-#if defined(CONFIG_OF) && LINUX_VERSION_CODE < KERNEL_VERSION(4, 8, 0)
+#if defined(CONFIG_OF) && LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0)
 #define of_device_compatible_match(_device_, _compat_)			\
 ({									\
 	const struct device_node *device = _device_;			\
