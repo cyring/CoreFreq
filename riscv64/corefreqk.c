@@ -4203,10 +4203,36 @@ static struct notifier_block CoreFreqK_notifier_block = {
 #ifdef CONFIG_OF
 static void DeviceTree_Collect(void)
 {
+  if (strlen(PUBLIC(RO(Proc))->SMB.BIOS.Vendor) == 0) {
+	const char *firmware;
+	struct device_node *chosen_node;
+    #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
+	chosen_node = of_chosen;
+    #else
+	chosen_node = of_find_node_by_path("/chosen");
+    #endif
+    if (chosen_node
+     && of_property_read_string(chosen_node, "u-boot,version", &firmware) == 0)
+    {
+	StrCopy(PUBLIC(RO(Proc))->SMB.BIOS.Vendor, "U-Boot", MAX_UTS_LEN);
+	StrCopy(PUBLIC(RO(Proc))->SMB.BIOS.Version, firmware, MAX_UTS_LEN);
+    }
+    #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0)
+    if (chosen_node) {
+	of_node_put(chosen_node);
+    }
+    #endif
+  }
   if (strlen(PUBLIC(RO(Proc))->SMB.Board.Name) == 0) {
 	const char *modelName;
     if (of_property_read_string(of_root, "model", &modelName) == 0) {
 	StrCopy(PUBLIC(RO(Proc))->SMB.Board.Name, modelName, MAX_UTS_LEN);
+    }
+  }
+  if (strlen(PUBLIC(RO(Proc))->SMB.Board.Serial) == 0) {
+	const char *serialNum;
+    if (of_property_read_string(of_root, "serial-number", &serialNum) == 0) {
+	StrCopy(PUBLIC(RO(Proc))->SMB.Board.Serial, serialNum, MAX_UTS_LEN);
     }
   }
   if (strlen(PUBLIC(RO(Proc))->SMB.System.Vendor) == 0) {
