@@ -1777,6 +1777,13 @@ static void Controller_Exit(void)
 static void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 {
 	register SCOUNTEREN ctr_en_reg;
+	struct sbiret ret;
+	/*			rdcycle[CY]				*/
+	ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_START,
+			/*ctr_id*/ 0, /*enable*/ 1, 0, 0, 0, 0);
+	/*			rdinstret[IR]				*/
+	ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_START,
+			/*ctr_id*/ 2, /*enable*/ 1, 0, 0, 0, 0);
 	__asm__ volatile
 	(
 		"csrr %0, scounteren"
@@ -1813,9 +1820,7 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 	RDTSC64(Core->Counter[T].TSC);					\
 	RDINST64(Core->Counter[T].INST);				\
 	RDPMC64(Core->Counter[T].C0.UCC);				\
-	Core->Counter[T].C0.UCC &= PMU_COUNTER_OVERFLOW;		\
 	Core->Counter[T].C0.URC = Core->Counter[T].C0.UCC;		\
-	Core->Counter[T].INST &= PMU_COUNTER_OVERFLOW;			\
 	/* Normalize frequency: */					\
 	Core->Counter[T].C1 = ( 					\
 		Core->Counter[T].TSC					\
@@ -1898,21 +1903,14 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 })
 
 #define Delta_INST(Core)						\
-({									\
-	if (Core->Counter[1].INST >= Core->Counter[0].INST) {		\
-		Core->Delta.INST  =  Core->Counter[1].INST		\
-				  -  Core->Counter[0].INST;		\
-	} else {							\
-		Core->Delta.INST  = (PMU_COUNTER_OVERFLOW + 0x1)	\
-				  - Core->Counter[0].INST;		\
-		Core->Delta.INST += Core->Counter[1].INST;		\
-	}								\
+({	/* Delta of Retired Instructions */				\
+	Core->Delta.INST = Core->Counter[1].INST			\
+			 - Core->Counter[0].INST;			\
 })
 
 #define PKG_Counters_Generic(Core, T)					\
 ({									\
 	RDTSC64(PUBLIC(RO(Proc))->Counter[T].PCLK);			\
-	PUBLIC(RO(Proc))->Counter[T].PCLK &= PMU_COUNTER_OVERFLOW;	\
 })
 
 #define Pkg_OVH(Pkg, Core)						\
