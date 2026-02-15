@@ -84,7 +84,7 @@ static signed int ArchID = -1;
 module_param(ArchID, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ArchID, "Force an architecture (ID)");
 
-static signed int AutoClock = 0b11;
+static signed int AutoClock = 0b00;	/* TODO(0b11) */
 module_param(AutoClock, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(AutoClock, "Estimate Clock Frequency 0:Spec; 1:Once; 2:Auto");
 
@@ -541,11 +541,6 @@ static void Query_Features(void *pArg)
 	VendorFromMainID(midr, iArg->Features->Info.Vendor.ID,
 			&iArg->Features->Info.Vendor.CRC, &iArg->HypervisorID);
 */
-	if (iArg->Features->PerfMon.CoreCycles) {
-		iArg->Features->Factory.Freq = 1000 | (perfctr & 0x3ffLLU);
-	} else {
-		iArg->Features->Factory.Freq = 1000;
-	}
 #if defined(CONFIG_ACPI)
 	iArg->Features->ACPI = acpi_disabled == 0;
 #else
@@ -726,6 +721,11 @@ static CLOCK BaseClock_GenericMachine(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 100, .R = 0, .Hz = 100000000L};
 	UNUSED(ratio);
+#ifdef CONFIG_OF
+	clock.Q = (riscv_timebase) / UNIT_MHz(1);
+	clock.R = (riscv_timebase) - (clock.Q * UNIT_MHz(1));
+	clock.Hz = riscv_timebase;
+#endif /* CONFIG_OF */
 	return clock;
 };
 
@@ -1821,16 +1821,8 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 	RDINST64(Core->Counter[T].INST);				\
 	RDPMC64(Core->Counter[T].C0.UCC);				\
 	Core->Counter[T].C0.URC = Core->Counter[T].C0.UCC;		\
-	/* Normalize frequency: */					\
-	Core->Counter[T].C1 = ( 					\
-		Core->Counter[T].TSC					\
-		* PUBLIC(RO(Proc))->Features.Factory.Clock.Q		\
-		* Core->Boost[BOOST(MAX)].Q				\
-	)	/ PUBLIC(RO(Proc))->Features.Factory.Ratio;		\
 	/* Derive C1: */						\
-	Core->Counter[T].C1 =						\
-	  (Core->Counter[T].C1 > Core->Counter[T].C0.URC) ?		\
-	    Core->Counter[T].C1 - Core->Counter[T].C0.URC : 0;		\
+	Core->Counter[T].C1 = 0;					\
 })
 
 #define Mark_OVH(Core)							\

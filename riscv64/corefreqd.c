@@ -433,7 +433,7 @@ static void *Core_Cycle(void *arg)
 
 	/* Relative Frequency = Relative Ratio x Bus Clock Frequency	*/
 	CFlip->Relative.Ratio	= (double)CFlip->Delta.C0.URC
-			/ (double)UNIT_KHz(RO(Shm)->Sleep.Interval * PRECISION);
+				/ (double)CFlip->Delta.TSC;
 
 	CFlip->Relative.Freq	= REL_FREQ_MHz( double,
 						CFlip->Relative.Ratio,

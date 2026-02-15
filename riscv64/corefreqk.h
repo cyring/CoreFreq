@@ -272,13 +272,19 @@ struct SMBIOS17
 	u32	extended_conf_speed;	/*	0x58	DWORD		*/
 } __attribute__((__packed__));
 
+#ifdef CONFIG_OF
+	#define UNIT_FREQ (riscv_timebase / UNIT_KHz(1))
+#else
+	#define UNIT_FREQ UNIT_KHz(PRECISION)
+#endif /* CONFIG_OF */
+
 #define FREQ2COF(_frequency, _COF)					\
 ({									\
-	_COF.Q = (_frequency) / UNIT_KHz(PRECISION),			\
-	_COF.R = (_frequency) - (_COF.Q * UNIT_KHz(PRECISION)); 	\
+	_COF.Q = (_frequency) / UNIT_FREQ,				\
+	_COF.R = (_frequency) - (_COF.Q * UNIT_FREQ);		 	\
 })
 
-#define COF2FREQ(_COF)	( (_COF.Q * UNIT_KHz(PRECISION)) + _COF.R )
+#define COF2FREQ(_COF)	( (_COF.Q * UNIT_FREQ) + _COF.R )
 
 #if !defined(RHEL_MAJOR)
 	#define RHEL_MAJOR 0
