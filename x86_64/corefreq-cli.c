@@ -18127,8 +18127,12 @@ void Layout_Ruler_Load(Layer *layer, CUINT row)
 			  / Ruler.Maximum;
 	CUINT hPos = (CUINT) fPos;
 
+	const unsigned int tabFreq = (
+		RO(Shm)->Proc.Features.Factory.Clock.Hz * Ruler.Uniq[idx]
+	) / UNIT_MHz(100);
+
 	ASCII tabStop[10+1] = "00";
-    if ((StrFormat(tabStop, 10+1, "%2u", Ruler.Uniq[idx]) > 0) && (hPos < lPos))
+    if ((StrFormat(tabStop, 10+1, "%2u", tabFreq) > 0) && (hPos < lPos))
     {
 	hPos = hLoad0.origin.col + hPos + 2;
       if (tabStop[0] != 0x20) {
