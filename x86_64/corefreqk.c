@@ -23027,21 +23027,21 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		Controller_Stop(1);
 		PUBLIC(RO(Proc))->Registration.Experimental = prm.dl.lo;
 		Controller_Start(1);
-	    if (PUBLIC(RO(Proc))->Registration.Experimental)
-	    {
-	      if ( !PUBLIC(RO(Proc))->Registration.PCI ) {
+		rc = RC_SUCCESS;
+		break;
+	}
+	break;
+
+      case MACHINE_PCI_PROBING:
+	switch (prm.dl.lo)
+	{
+	    case COREFREQ_TOGGLE_ON:
 		PUBLIC(RO(Proc))->Registration.PCI = \
 			CoreFreqK_ProbePCI(
 				Arch[PUBLIC(RO(Proc))->ArchID].PCI_ids,
 				CoreFreqK_ResetChip, CoreFreqK_AppendChip
 			) == 0;
 		rc = RC_OK_COMPUTE;
-	     } else {
-		rc = RC_SUCCESS;
-	     }
-	    } else {
-		rc = RC_SUCCESS;
-	    }
 		break;
 	}
 	break;

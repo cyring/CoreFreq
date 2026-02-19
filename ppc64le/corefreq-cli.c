@@ -10124,6 +10124,11 @@ int Shortcut(SCANKEY *scan)
     case SCANKEY_AST:
 	if (!RING_FULL(RW(Shm)->Ring[0])) {
 		RING_WRITE(RW(Shm)->Ring[0], COREFREQ_IOCTL_SYSUPDT);
+
+		RING_WRITE(	RW(Shm)->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				COREFREQ_TOGGLE_ON,
+				MACHINE_PCI_PROBING );
 	}
     break;
 
