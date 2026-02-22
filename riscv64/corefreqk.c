@@ -84,7 +84,7 @@ static signed int ArchID = -1;
 module_param(ArchID, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ArchID, "Force an architecture (ID)");
 
-static signed int AutoClock = 0b00;	/* TODO(0b11) */
+static signed int AutoClock = 0b11;
 module_param(AutoClock, int, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(AutoClock, "Estimate Clock Frequency 0:Spec; 1:Once; 2:Auto");
 
@@ -719,7 +719,7 @@ static CLOCK Compute_Clock(unsigned int cpu, COMPUTE_ARG *pCompute)
 
 static CLOCK BaseClock_GenericMachine(unsigned int ratio)
 {
-	CLOCK clock = {.Q = 100, .R = 0, .Hz = 100000000L};
+	CLOCK clock = {.Q = 10, .R = 0, .Hz = 10000000L};
 	UNUSED(ratio);
 #ifdef CONFIG_OF
 	clock.Q = (riscv_timebase) / UNIT_MHz(1);
@@ -1029,16 +1029,12 @@ static void Query_DeviceTree(unsigned int cpu)
   }
 #endif /* CONFIG_CPU_FREQ */
     if (max_freq > 0) {
+	PUBLIC(RO(Proc))->Features.Factory.Freq = CLOCK_KHz(	unsigned int,
+								max_freq );
 	FREQ2COF(max_freq, COF);
     } else {
-	volatile unsigned long long cntfrq;
-	RDPMC64(cntfrq);
-	if (cntfrq) {
-		COF.Q = 10;
-		COF.R = (10 | (cntfrq & 0x3LLU)) - 10;
-	} else {
-		FREQ2COF((10LLU * UNIT_KHz(PRECISION)), COF);
-	}
+	COF.Q = 100;
+	COF.R = 0;
     }
 	Core->Boost[BOOST(MAX)].Q = COF.Q;
 	Core->Boost[BOOST(MAX)].R = COF.R;
@@ -1046,7 +1042,7 @@ static void Query_DeviceTree(unsigned int cpu)
     if (min_freq > 0) {
 	FREQ2COF(min_freq, COF);
     } else {
-	COF.Q = 4;
+	COF.Q = 10;
 	COF.R = 0;
     }
 	Core->Boost[BOOST(MIN)].Q = COF.Q;
@@ -1646,10 +1642,10 @@ static void Controller_Init(void)
     {
 	sClock = Arch[PUBLIC(RO(Proc))->ArchID].BaseClock(ratio);
     }
-    if (sClock.Hz == 0) {	/*	Fallback to 100 MHz		*/
-	sClock.Q = 100;
+    if (sClock.Hz == 0) {	/*	Fallback to 10 MHz (QEMU)	*/
+	sClock.Q = 10;
 	sClock.R = 0;
-	sClock.Hz = 100000000LLU;
+	sClock.Hz = 10000000LLU;
     }
 	ratio = FixMissingRatioAndFrequency(ratio, &sClock);
 
@@ -1675,7 +1671,7 @@ static void Controller_Init(void)
 		Compute.TSC[1] = kmem_cache_alloc(hwCache, GFP_ATOMIC);
 	    if (Compute.TSC[1] != NULL)
 	    {
-		if (ratio != 0)
+	/*TODO	if (ratio != 0)
 		{
 		Compute.Clock.Q = ratio;
 		Compute.Clock.R = 0;
@@ -1695,7 +1691,14 @@ static void Controller_Init(void)
 		vClock = Compute_Clock(cpu, &Compute);
 
 		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)].Q = vClock.Q;
-		}
+		}*/
+		Compute.Clock.Q = PRECISION;
+		Compute.Clock.R = 0;
+		Compute.Clock.Hz = 0;
+
+		PUBLIC(RO(Core, AT(cpu)))->Clock = Compute_Clock(cpu,&Compute);
+
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)].Q = ratio;
 		/*		Release memory resources.		*/
 		kmem_cache_free(hwCache, Compute.TSC[1]);
 	    }
@@ -1848,9 +1851,7 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 		Core_OVH(Core); 					\
 									\
 		REL_BCLK(Core->Clock,					\
-			(PUBLIC(RO(Proc))->Features.Hybrid == 1 ?	\
-				PUBLIC(RO(Proc))->Features.Factory.Ratio\
-			:	Core->Boost[BOOST(MAX)].Q),		\
+			PRECISION,					\
 			Core->Delta.TSC,				\
 			PUBLIC(RO(Proc))->SleepInterval);		\
 	}								\
@@ -4037,11 +4038,7 @@ static int CoreFreqK_HotPlug_CPU_Online(unsigned int cpu)
 	COMPUTE_ARG Compute = {
 		.TSC = {NULL, NULL},
 		.Clock = {
-			.Q = PUBLIC(RO(Proc))->Features.Hybrid == 1 ?
-				PUBLIC(RO(Proc))->Features.Factory.Ratio
-			: PUBLIC(
-				RO(Core, AT(PUBLIC(RO(Proc))->Service.Core))
-			)->Boost[BOOST(MAX)].Q,
+			.Q = PRECISION,
 			.R = 0, .Hz = 0
 		}
 	};

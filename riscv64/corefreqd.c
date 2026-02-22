@@ -393,10 +393,12 @@ static void *Core_Cycle(void *arg)
 	memcpy(Cpu->Boost, RO(Core)->Boost, (BOOST(SIZE)) * sizeof(COF_ST));
 
 	const double FSF = UNIT_KHz(1.0)
-			 / ( (double)(RO(Shm)->Sleep.Interval * CFlip->Clock.Hz)
-			 * COF2FLOAT(Cpu->Boost[BOOST(MAX)]) );
+			 / ( (double)(RO(Shm)->Sleep.Interval)
+			 * COF_FREQ_MHz(Cpu->Boost[BOOST(MAX)], CFlip->Clock) );
 
-	CFlip->Absolute.Ratio.Perf = COF2FLOAT(RO(Core)->Ratio);
+	CFlip->Absolute.Ratio.Perf = (double)RO(Core)->Ratio.Q;
+	CFlip->Absolute.Ratio.Perf +=(double)RO(Core)->Ratio.R
+					/ (CFlip->Clock.Hz / UNIT_KHz(1));
 
 	/* Compute IPS=Instructions per Hz				*/
 	CFlip->State.IPS = (double)CFlip->Delta.INST * FSF;
@@ -1816,8 +1818,9 @@ REASON_CODE Core_Manager(REF *Ref)
 	    }
 	    if (Quiet & 0x100) {
 		printf( "    CPU #%03u @ %.2f MHz\n", cpu,
-		  ABS_FREQ_MHz(double , RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)].Q,
-					RO(Core, AT(cpu))->Clock) );
+			CLOCK_MHz(double,
+			  COF_FREQ_MHz(	RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)],
+					RO(Core, AT(cpu))->Clock)) );
 	    }
 		/*	Notify a CPU has been brought up		*/
 		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_NTFY);
