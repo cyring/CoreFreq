@@ -3323,8 +3323,6 @@ static void PerCore_GenericMachine(void *arg)
 
 	SystemRegisters(Core);
 
-	PerCore_ThermalZone(Core);
-
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 }
 
@@ -3520,6 +3518,8 @@ static void Controller_Start(int wait)
 	if ((BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, CREATED) == 1)
 	 && (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED) == 0))
 	{
+		PerCore_ThermalZone(PUBLIC(RO(Core, AT(cpu))));
+
 		smp_call_function_single(cpu,
 					Arch[PUBLIC(RO(Proc))->ArchID].Start,
 					NULL, wait);
@@ -4019,18 +4019,20 @@ static void Core_Thermal_Temp(CORE_RO *Core)
   if (!IS_ERR(PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone)) {
    #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 3, 0)
 	unsigned int mcelsius;
-    if (thermal_zone_get_temp(PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone,
-				(int*) &mcelsius) == 0)
-    {
+
+	PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone->ops->get_temp(
+		PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone,
+		(int*) &mcelsius
+	);
 	Core->PowerThermal.Sensor = mcelsius;
-    }
    #else
 	unsigned long mcelsius;
-    if (thermal_zone_get_temp(PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone,
-				&mcelsius) == 0)
-    {
+
+	PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone->ops->get_temp(
+		PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone,
+		&mcelsius
+	);
 	Core->PowerThermal.Sensor = (unsigned int) mcelsius;
-    }
    #endif
   }
 #endif /* CONFIG_THERMAL */
@@ -5998,6 +6000,8 @@ static int CoreFreqK_HotPlug_CPU_Online(unsigned int cpu)
     }
     if ((BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED) == 0)
      && (Arch[PUBLIC(RO(Proc))->ArchID].Start != NULL)) {
+		PerCore_ThermalZone(PUBLIC(RO(Core, AT(cpu))));
+
 		smp_call_function_single(cpu,
 					Arch[PUBLIC(RO(Proc))->ArchID].Start,
 					NULL, 0);
@@ -6058,6 +6062,8 @@ static int CoreFreqK_HotPlug_CPU_Offline(unsigned int cpu)
 	}
 	if ((BITVAL(PRIVATE(OF(Core, AT(alt)))->Join.TSM, STARTED) == 0)
 	 && (Arch[PUBLIC(RO(Proc))->ArchID].Start != NULL)) {
+		PerCore_ThermalZone(PUBLIC(RO(Core, AT(alt))));
+
 		smp_call_function_single(alt,
 					Arch[PUBLIC(RO(Proc))->ArchID].Start,
 					NULL, 0);
