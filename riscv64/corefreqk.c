@@ -779,17 +779,7 @@ static void Map_Generic_Topology(void *arg)
     if (arg != NULL) {
 	CORE_RO *Core = (CORE_RO *) arg;
 	Core->T.PN = riscv_cached_mvendorid(Core->Bind);
-/*TODO
-	if (MT) {
-		Core->T.BSP =
-		Core->T.Cluster.CMP =
-		Core->T.PackageID =
-	} else {
-		Core->T.BSP =
-		Core->T.PackageID =
-		Core->T.Cluster.CMP =
-	}
-*/
+/* TODO(Core->T.PackageID) */
 #ifdef CONFIG_OF
 	unsigned int threadID;
 
@@ -802,6 +792,41 @@ static void Map_Generic_Topology(void *arg)
 
 		of_node_put(cpu_node);
 	}
+#ifdef CONFIG_SOC_SPACEMIT_K1
+      {
+	struct device_node *cpu_map;
+	if ((cpu_map = of_find_node_by_path("/cpus/cpu-map")) != NULL) {
+		struct device_node *cluster_node, *core_handle;
+		bool exit_of_loop = false;
+	    for_each_child_of_node(cpu_map, cluster_node)
+	    {
+		int clusterID;
+		if (sscanf(cluster_node->name, "cluster%d", &clusterID) != 1)
+			continue;
+
+		for_each_child_of_node(cluster_node, core_handle)
+		{
+			struct device_node *ref_node;
+			ref_node = of_parse_phandle(core_handle, "cpu", 0);
+			if (!ref_node)
+				continue;
+
+			if (ref_node == cpu_node) {
+				Core->T.Cluster.CMP = clusterID;
+				exit_of_loop = true;
+			}
+			of_node_put(ref_node);
+
+			if (exit_of_loop)
+				break;
+		}
+		if (exit_of_loop)
+			break;
+	    }
+		of_node_put(cpu_map);
+	}
+      }
+#endif /* CONFIG_SOC_SPACEMIT_K1 */
 #endif /* CONFIG_OF */
     }
 }
