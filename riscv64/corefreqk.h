@@ -205,7 +205,9 @@ typedef struct
 #endif /* CONFIG_CPU_FREQ */
 #ifdef CONFIG_THERMAL
 		struct thermal_zone_device *ThermalZone;
+		unsigned int mCelsius;
 #endif /* CONFIG_THERMAL */
+		struct delayed_work	ThermalWork;
 #ifdef CONFIG_PM_OPP
 		struct {
 			signed int	VID;
