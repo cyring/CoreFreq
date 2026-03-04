@@ -3288,14 +3288,28 @@ static void Core_Thermal_Worker(struct work_struct *work)
 
     if (thermal_zone_get_temp(PrivateCore->ThermalZone, (int*) &mcelsius) == 0)
     {
+     #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 18, 13)
 	WRITE_ONCE(PrivateCore->mCelsius, mcelsius);
+     #else
+	barrier();
+	__builtin_memcpy(&PrivateCore->mCelsius, &mcelsius,
+			sizeof(PrivateCore->mCelsius));
+	barrier();
+     #endif
     }
    #else
 	unsigned long mcelsius;
 
     if (thermal_zone_get_temp(PrivateCore->ThermalZone, &mcelsius) == 0)
     {
+     #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 18, 13)
 	WRITE_ONCE(PrivateCore->mCelsius, (unsigned int) mcelsius);
+     #else
+	barrier();
+	__builtin_memcpy(&PrivateCore->mCelsius, &mcelsius,
+			sizeof(PrivateCore->mCelsius));
+	barrier();
+     #endif
     }
    #endif
   }
@@ -4057,11 +4071,22 @@ static COF_ST Compute_COF_From_PMU_Counter(	unsigned long long deltaCounter,
 	return ratio;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 18, 13)
 #define Core_Thermal_Temp(Core) 					\
 ({									\
 	Core->PowerThermal.Sensor =					\
 		READ_ONCE(PRIVATE(OF(Core, AT(Core->Bind)))->mCelsius); \
 })
+#else
+#define Core_Thermal_Temp(Core) 					\
+({									\
+	barrier();							\
+	__builtin_memcpy(&Core->PowerThermal.Sensor,			\
+			&PRIVATE(OF(Core, AT(Core->Bind)))->mCelsius,	\
+			sizeof(Core->PowerThermal.Sensor));		\
+	barrier();							\
+})
+#endif
 
 static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
 {
