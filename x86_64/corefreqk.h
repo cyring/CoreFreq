@@ -1784,7 +1784,7 @@ static void Query_AMD_F19h_11h_PerCluster(unsigned int cpu) ;
 static void Query_AMD_F19h_61h_PerCluster(unsigned int cpu) ;
 static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 
-#define     Query_AMD_F19h_74h_PerSocket Query_AMD_F19h_61h_PerCluster
+#define     Query_AMD_F19h_78h_PerSocket Query_AMD_F19h_61h_PerCluster
 #define     InitTimer_AMD_Zen4_PHX InitTimer_AMD_Zen3Plus_RMB
 
 static void InitTimer_AMD_Zen4_Genoa(unsigned int cpu) ;
@@ -13686,7 +13686,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen4_PHX] = {							/*118*/
 	.Signature = _AMD_Zen4_PHX,
-	.Query = Query_AMD_F19h_74h_PerSocket,
+	.Query = Query_AMD_F19h_PerSocket,
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
@@ -13734,7 +13734,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen4_PHX2] = {							/*120*/
 	.Signature = _AMD_Zen4_PHX2,
-	.Query = Query_AMD_F19h_74h_PerSocket,
+	.Query = Query_AMD_F19h_78h_PerSocket,
 	.Update = PerCore_AMD_Family_19h_Query,
 	.Start = Start_AMD_Family_19h,
 	.Stop = Stop_AMD_Family_19h,
