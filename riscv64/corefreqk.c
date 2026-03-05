@@ -1540,6 +1540,52 @@ static void PerCore_ThermalZone(CORE_RO *Core)
 #endif /* CONFIG_THERMAL */
 }
 
+static void Core_Thermal_Worker(struct work_struct *work)
+{
+	struct PRIV_CORE_ST *PrivateCore = \
+		container_of(work, struct PRIV_CORE_ST, ThermalWork.work);
+
+#ifdef CONFIG_THERMAL
+  if (!IS_ERR(PrivateCore->ThermalZone)) {
+   #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 3, 0)
+	unsigned int mcelsius;
+
+    if (thermal_zone_get_temp(PrivateCore->ThermalZone, (int*) &mcelsius) == 0)
+    {
+     #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 18, 13)
+	WRITE_ONCE(PrivateCore->mCelsius, mcelsius);
+     #else
+	barrier();
+	__builtin_memcpy(&PrivateCore->mCelsius, &mcelsius,
+			sizeof(PrivateCore->mCelsius));
+	barrier();
+     #endif
+    }
+   #else
+	unsigned long mcelsius;
+
+    if (thermal_zone_get_temp(PrivateCore->ThermalZone, &mcelsius) == 0)
+    {
+     #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 18, 13)
+	WRITE_ONCE(PrivateCore->mCelsius, (unsigned int) mcelsius);
+     #else
+	barrier();
+	__builtin_memcpy(&PrivateCore->mCelsius, &mcelsius,
+			sizeof(PrivateCore->mCelsius));
+	barrier();
+     #endif
+    }
+   #endif
+  }
+#endif /* CONFIG_THERMAL */
+	if (BITVAL(PrivateCore->Join.TSM, MUSTFWD) == 1) {
+		schedule_delayed_work(
+			&PrivateCore->ThermalWork,
+			msecs_to_jiffies(PUBLIC(RO(Proc))->SleepInterval)
+		);
+	}
+}
+
 static void PerCore_GenericMachine(void *arg)
 {
 	CORE_RO *Core = (CORE_RO *) arg;
@@ -1748,6 +1794,10 @@ static void Controller_Init(void)
 			{
 				Arch[PUBLIC(RO(Proc))->ArchID].Timer(cpu);
 			}
+			INIT_DEFERRABLE_WORK(
+				&PRIVATE(OF(Core, AT(cpu)))->ThermalWork,
+				Core_Thermal_Worker
+			);
 		}
 	}
 }
@@ -1764,6 +1814,10 @@ static void Controller_Start(int wait)
 	{
 		PerCore_ThermalZone(PUBLIC(RO(Core, AT(cpu))));
 
+		schedule_delayed_work(
+			&PRIVATE(OF(Core, AT(cpu)))->ThermalWork,
+			msecs_to_jiffies(PUBLIC(RO(Proc))->SleepInterval)
+		);
 		smp_call_function_single(cpu,
 					Arch[PUBLIC(RO(Proc))->ArchID].Start,
 					NULL, wait);
@@ -1784,6 +1838,10 @@ static void Controller_Stop(int wait)
 		smp_call_function_single(cpu,
 					Arch[PUBLIC(RO(Proc))->ArchID].Stop,
 					NULL, wait);
+
+		cancel_delayed_work_sync(
+				&PRIVATE(OF(Core, AT(cpu)))->ThermalWork
+		);
 	    }
     }
 }
@@ -2125,30 +2183,22 @@ static COF_ST Compute_COF_From_PMU_Counter(	unsigned long long deltaCounter,
 	return ratio;
 }
 
-static void Core_Thermal_Temp(CORE_RO *Core)
-{
-#ifdef CONFIG_THERMAL
-  if (!IS_ERR(PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone)) {
-   #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 3, 0)
-	unsigned int mcelsius;
-
-	PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone->ops->get_temp(
-		PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone,
-		(int*) &mcelsius
-	);
-	Core->PowerThermal.Sensor = mcelsius;
-   #else
-	unsigned long mcelsius;
-
-	PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone->ops->get_temp(
-		PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone,
-		&mcelsius
-	);
-	Core->PowerThermal.Sensor = (unsigned int) mcelsius;
-   #endif
-  }
-#endif /* CONFIG_THERMAL */
-}
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 18, 13)
+#define Core_Thermal_Temp(Core) 					\
+({									\
+	Core->PowerThermal.Sensor =					\
+		READ_ONCE(PRIVATE(OF(Core, AT(Core->Bind)))->mCelsius); \
+})
+#else
+#define Core_Thermal_Temp(Core) 					\
+({									\
+	barrier();							\
+	__builtin_memcpy(&Core->PowerThermal.Sensor,			\
+			&PRIVATE(OF(Core, AT(Core->Bind)))->mCelsius,	\
+			sizeof(Core->PowerThermal.Sensor));		\
+	barrier();							\
+})
+#endif
 
 static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
 {
@@ -4106,10 +4156,17 @@ static int CoreFreqK_HotPlug_CPU_Online(unsigned int cpu)
     if (Arch[PUBLIC(RO(Proc))->ArchID].Timer != NULL) {
 	Arch[PUBLIC(RO(Proc))->ArchID].Timer(cpu);
     }
+	INIT_DEFERRABLE_WORK(	&PRIVATE(OF(Core, AT(cpu)))->ThermalWork,
+				Core_Thermal_Worker );
+
     if ((BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED) == 0)
      && (Arch[PUBLIC(RO(Proc))->ArchID].Start != NULL)) {
 		PerCore_ThermalZone(PUBLIC(RO(Core, AT(cpu))));
 
+		schedule_delayed_work(
+			&PRIVATE(OF(Core, AT(cpu)))->ThermalWork,
+			msecs_to_jiffies(PUBLIC(RO(Proc))->SleepInterval)
+		);
 		smp_call_function_single(cpu,
 					Arch[PUBLIC(RO(Proc))->ArchID].Start,
 					NULL, 0);
@@ -4142,6 +4199,8 @@ static int CoreFreqK_HotPlug_CPU_Offline(unsigned int cpu)
 	smp_call_function_single(cpu,
 				Arch[PUBLIC(RO(Proc))->ArchID].Stop,
 				NULL, 1);
+
+	cancel_delayed_work_sync(&PRIVATE(OF(Core, AT(cpu)))->ThermalWork);
     }
 	PUBLIC(RO(Proc))->CPU.OnLine--;
 	BITSET(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine, OS);
@@ -4170,8 +4229,6 @@ static int CoreFreqK_HotPlug_CPU_Offline(unsigned int cpu)
 	}
 	if ((BITVAL(PRIVATE(OF(Core, AT(alt)))->Join.TSM, STARTED) == 0)
 	 && (Arch[PUBLIC(RO(Proc))->ArchID].Start != NULL)) {
-		PerCore_ThermalZone(PUBLIC(RO(Core, AT(alt))));
-
 		smp_call_function_single(alt,
 					Arch[PUBLIC(RO(Proc))->ArchID].Start,
 					NULL, 0);
