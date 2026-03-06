@@ -53,6 +53,8 @@ typedef unsigned int		Bit32;
 #define InitCC(_val)		{[0 ... CORE_WORD_TOP(CORE_COUNT) - 1] = _val}
 #endif
 
+#define ATOMIC_SEED 0x436f726546726571LLU
+
 #define LOCKLESS LOCK_LESS
 #define BUS_LOCK FULL_LOCK
 
@@ -616,6 +618,19 @@ ASM_RDTSC_PMCx1(x14, x15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 	unsigned long long _dest = ((1 << _length) - 1) 		\
 				 & (_src >> _offset);			\
 	_dest;								\
+})
+
+#define BIT_ATOM_INIT(atom, seed)	atomic64_set(&(atom), (seed))
+
+#define BIT_ATOM_TRYLOCK(_lock, atom, seed)				\
+({									\
+	atomic64_cmpxchg(&(atom), (seed), 0) == (seed); 		\
+})
+
+#define BIT_ATOM_UNLOCK(_lock, atom, seed)				\
+({									\
+	atomic64_set(&(atom), (seed));					\
+	0ULL;								\
 })
 
 #define _BITWISESET_PRE_INST_FULL_LOCK					\

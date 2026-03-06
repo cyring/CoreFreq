@@ -224,6 +224,7 @@ module_param(Idle_Route, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Idle_Route, "[0:Default; 1:I/O; 2:HALT; 3:MWAIT]");
 
 static struct {
+	atomic64_t		InstanceLock __attribute__ ((aligned (8)));
 	signed int		Major;
 	struct cdev		*kcdev;
 	dev_t			nmdev, mkdev;
@@ -5894,14 +5895,12 @@ EXIT_PAGE:
 	return rc;
 }
 
-static DEFINE_MUTEX(CoreFreqK_mutex);		/* Only one driver instance. */
-
 static int CoreFreqK_open(struct inode *inode, struct file *pfile)
 {
 	UNUSED(inode);
 	UNUSED(pfile);
 
-	if (!mutex_trylock(&CoreFreqK_mutex))
+	if (!BIT_ATOM_TRYLOCK(BUS_LOCK, CoreFreqK.InstanceLock, ATOMIC_SEED))
 		return -EBUSY;
 	else
 		return 0;
@@ -5912,7 +5911,7 @@ static int CoreFreqK_release(struct inode *inode, struct file *pfile)
 	UNUSED(inode);
 	UNUSED(pfile);
 
-	mutex_unlock(&CoreFreqK_mutex);
+	BIT_ATOM_UNLOCK(BUS_LOCK, CoreFreqK.InstanceLock, ATOMIC_SEED);
 	return 0;
 }
 
@@ -7127,6 +7126,7 @@ static int CoreFreqK_StartUp(void)
 	};
 	int rc = 0;
 
+	BIT_ATOM_INIT(CoreFreqK.InstanceLock, ATOMIC_SEED);
 	do
 	{
 		rc = LevelFunc[RunLevel](&iArg);

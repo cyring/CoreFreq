@@ -495,6 +495,7 @@ module_param(HSMP_Attempt, short, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(HSMP_Attempt, "Attempt the HSMP interface");
 
 static struct {
+	Bit64			InstanceLock __attribute__ ((aligned (8)));
 	signed int		Major;
 	struct cdev		*kcdev;
 	dev_t			nmdev, mkdev;
@@ -12228,20 +12229,29 @@ static void SystemRegisters(CORE_RO *Core)
 		"# Zero Flag"			"\n\t"
 		"movq	%%rax, %1"		"\n\t"
 		"cmpxchg8b %1"			"\n\t"
-		"# Direction Flag"		"\n\t"
+		"# Raise Direction Flag"	"\n\t"
 		"std"				"\n\t"
-		"# Interrupt Flag"		"\n\t"
-		"sti"				"\n\t"
 		"# Save all RFLAGS"		"\n\t"
 		"pushfq"			"\n\t"
-		"popq	%0"			"\n\t"
-		"# Reset Flags"			"\n\t"
-		"cli"				"\n\t"
-		"cld"
+		"popq	%0"
 		: "=r" (Core->SystemRegister.RFLAGS)
 		: "m" (mem64)
 		: "%rax", "%rbx", "%rcx", "%rdx", "cc"
 	);
+
+	native_irq_enable();
+	Core->SystemRegister.RFLAGS |= native_save_fl();
+	native_irq_disable();
+
+	__asm__ volatile
+	(
+		"# Reset Direction Flag"	"\n\t"
+		"cld"
+		:
+		:
+		: "cc"
+	);
+
 	if (RDPMC_Enable) {
 		__asm__ volatile
 		(
@@ -24188,14 +24198,12 @@ EXIT_PAGE:
 	return rc;
 }
 
-static DEFINE_MUTEX(CoreFreqK_mutex);		/* Only one driver instance. */
-
 static int CoreFreqK_open(struct inode *inode, struct file *pfile)
 {
 	UNUSED(inode);
 	UNUSED(pfile);
 
-	if (!mutex_trylock(&CoreFreqK_mutex))
+	if (!BIT_ATOM_TRYLOCK(BUS_LOCK, CoreFreqK.InstanceLock, ATOMIC_SEED))
 		return -EBUSY;
 	else
 		return 0;
@@ -24206,7 +24214,7 @@ static int CoreFreqK_release(struct inode *inode, struct file *pfile)
 	UNUSED(inode);
 	UNUSED(pfile);
 
-	mutex_unlock(&CoreFreqK_mutex);
+	BIT_ATOM_UNLOCK(BUS_LOCK, CoreFreqK.InstanceLock, ATOMIC_SEED);
 	return 0;
 }
 
@@ -25485,6 +25493,7 @@ static int CoreFreqK_StartUp(void)
 	};
 	int rc = 0;
 
+	BIT_ATOM_INIT(CoreFreqK.InstanceLock, ATOMIC_SEED);
 	do
 	{
 		rc = LevelFunc[RunLevel](&iArg);
