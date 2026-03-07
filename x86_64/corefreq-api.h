@@ -1179,9 +1179,9 @@ typedef struct
 #define DID_INTEL_Q45_HB		0x2e10
 #define DID_INTEL_G45_HB		0x2e20
 #define DID_INTEL_G41_HB		0x2e30
-/* Source: Intel Atom Processor N400 & N500 Series Datasheet– Volume 2	*/
+/* Source: Intel Atom Processor N400 & N500 Series Datasheet-Volume 2	*/
 #define DID_INTEL_BONNELL_HB		0xa010
-/* Source: Intel Atom Processor D2000 & N2000 Series Datasheet– Volume 2 */
+/* Source: Intel Atom Processor D2000 & N2000 Series Datasheet-Volume 2 */
 #define DID_INTEL_SALTWELL_HB		0x0bf1
 /* Source: SoC / Silvermont / Processor Transaction Router		*/
 #define DID_INTEL_SLM_PTR		0x0f00
@@ -1559,7 +1559,7 @@ typedef struct
 /* Source: 13th Gen and 14th Gen Processors Datasheet, Vol 1 Rev 012	*/
 #define DID_INTEL_RAPTORLAKE_PX_6P_8E_HB 0xa709
 #define DID_INTEL_RAPTORLAKE_PX_4P_8E_HB 0xa70a
-/* Source: PCH Controller Device IDs—Intel 700 Series Chipset Family PCH */
+/* Source: PCH Controller Device IDs-Intel 700 Series Chipset Family PCH */
 #define DID_INTEL_RAPTORLAKE_Z790_PCH	0x7a04
 #define DID_INTEL_RAPTORLAKE_H770_PCH	0x7a05
 #define DID_INTEL_RAPTORLAKE_B760_PCH	0x7a06

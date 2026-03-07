@@ -3,6 +3,7 @@
  * Copyright (C) 2015-2026 CYRIL COURTIAT
  * Licenses: GPL2
  *
+ * Golimumab [03.06.2026]
  * Rizankizumab [08.11.2025]
  *
  * Time Capsule[12.24.2024]

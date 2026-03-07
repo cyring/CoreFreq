@@ -449,7 +449,7 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Std.EBX.Init_APIC_ID);
 					json_end_object(&s);
 				}
-				json_key(&s, "EСX");
+				json_key(&s, "ECX");
 				{
 					json_start_object(&s);
 					json_key(&s, "SSE3");

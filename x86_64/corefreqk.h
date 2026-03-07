@@ -1166,8 +1166,8 @@ typedef struct
 
 
 /* Sources:
- * Intel 64 and IA-32 Architectures Software Developer’s Manual; Vol. 2A
- * AMD64 Architecture Programmer’s Manual; Vol. 3
+ * Intel 64 and IA-32 Architectures Software Developer's Manual; Vol. 2A
+ * AMD64 Architecture Programmer's Manual; Vol. 3
 */
 
 static const CPUID_STRUCT CpuIDforVendor[CPUID_MAX_FUNC] = {
@@ -1358,7 +1358,7 @@ static const CPUID_STRUCT CpuIDforVendor[CPUID_MAX_FUNC] = {
 	= {.func = 0x80000021, .sub = 0x00000000},
 	[CPUID_80000022_00000000_EXT_PERF_MON_DEBUG]
 	= {.func = 0x80000022, .sub = 0x00000000},
-/* AMD64 Architecture Programmer’s Manual rev 4.05 */
+/* AMD64 Architecture Programmer's Manual rev 4.05 */
 	[CPUID_80000023_00000000_MULTIKEY_ENCRYPTED_MEM]
 	= {.func = 0x80000023, .sub = 0x00000000},
 	[CPUID_80000026_00000000_EXTENDED_CPU_TOPOLOGY_L0]
@@ -7915,7 +7915,7 @@ static PROCESSOR_SPECIFIC AMD_Zen3Plus_RMB_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD Ryzen 5 PRO 6650HS",	\
 			"AMD Ryzen 5 PRO 6650H",	\
-			"AMD Ryzen 5 6600HS​",		\
+			"AMD Ryzen 5 6600HS",		\
 			"AMD Ryzen 5 6600H"		),
 	.Boost = {+12, 0},
 	.Param.Offset = {95, 0, 0},
@@ -7944,7 +7944,7 @@ static PROCESSOR_SPECIFIC AMD_Zen3Plus_RMB_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 7 PRO 6850U",	\
-			"AMD Ryzen 7 6800U​",		\
+			"AMD Ryzen 7 6800U",		\
 			"AMD Ryzen 7 PRO 6860Z"		),
 	.Boost = {+20, 0},
 	.Param.Offset = {95, 0, 0},
@@ -7959,7 +7959,7 @@ static PROCESSOR_SPECIFIC AMD_Zen3Plus_RMB_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD Ryzen 9 PRO 6950HS",	/* zh-cn */	\
 			"AMD Ryzen 9 PRO 6950H",	/* zh-cn */	\
-			"AMD Ryzen 9 6900HS​",				\
+			"AMD Ryzen 9 6900HS",				\
 			"AMD Ryzen 5 PRO 6650U",			\
 			"AMD Ryzen 5 6600U"				),
 	.Boost = {+16, 0},
@@ -10093,6 +10093,58 @@ static PROCESSOR_SPECIFIC AMD_Zen5_SHP_Specific[] = {
 };
 static PROCESSOR_SPECIFIC AMD_Zen5_GRP_Specific[] = {
 	{
+	.Brand = ZLIST( "AMD Ryzen AI 7 PRO 450GE",		\
+			"AMD Ryzen AI 7 PRO 450G"		),
+	.Boost = {+31, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_GORGON_POINT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen AI 7 450GE", 		\
+			"AMD Ryzen AI 7 450G"			),
+	.Boost = {+31, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_GORGON_POINT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen AI 5 PRO 440GE",		\
+			"AMD Ryzen AI 5 PRO 440G"		),
+	.Boost = {+28, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_GORGON_POINT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen AI 5 440GE", 		\
+			"AMD Ryzen AI 5 440G"			),
+	.Boost = {+28, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_GORGON_POINT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
 	.Brand = ZLIST( "AMD Ryzen AI 5 H PRO 440", /* zh-cn */ \
 			"AMD Ryzen AI 5 PRO 440"		),
 	.Boost = {+28, 0},
@@ -10114,6 +10166,32 @@ static PROCESSOR_SPECIFIC AMD_Zen5_GRP_Specific[] = {
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen AI 5 PRO 435GE",		\
+			"AMD Ryzen AI 5 PRO 435G"		),
+	.Boost = {+25, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_GORGON_POINT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen AI 5 435GE", 		\
+			"AMD Ryzen AI 5 435G"			),
+	.Boost = {+25, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_GORGON_POINT,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
 	.HSMP_Capable = 0,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK

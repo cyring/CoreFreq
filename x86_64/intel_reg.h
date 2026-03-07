@@ -1363,7 +1363,7 @@ typedef union
 	*MSR_MISC_PWR_MGMT
 	Per Thread:	Nehalem, Sandy Bridge
 	Perf_BIAS_Enable bit makes the IA32_ENERGY_PERF_BIAS register (MSR 1B0h)
-	visible to software with Ring 0 privileges. This bit’s status (1 or 0)
+	visible to software with Ring 0 privileges. This bit's status (1 or 0)
 	is also reflected by CPUID.(EAX=06h):ECX[3]
 */
 
