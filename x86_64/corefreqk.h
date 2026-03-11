@@ -698,6 +698,18 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
     }									\
 })
 
+#define Core_AMD_SMN_Read_2xPARAM(SMN_Register, SMN_Address)		\
+	PCI_AMD_SMN_Read(	SMN_Register,				\
+				SMN_Address,				\
+				SMU_AMD_INDEX_REGISTER_F17H,		\
+				SMU_AMD_DATA_REGISTER_F17H )
+
+#define Core_AMD_SMN_Write_2xPARAM(SMN_Register, SMN_Address)		\
+	PCI_AMD_SMN_Write(	SMN_Register,				\
+				SMN_Address,				\
+				SMU_AMD_INDEX_REGISTER_F17H,		\
+				SMU_AMD_DATA_REGISTER_F17H )
+
 #if defined(CONFIG_AMD_NB) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0) /* asm/amd_node.h */
@@ -795,40 +807,37 @@ static u16 amd_pci_dev_to_node_id(struct pci_dev *pdev)
     }									\
 })
 
-#define Core_AMD_SMN_Read(SMN_Register, SMN_Address, UMC_device)	\
-	if (UMC_device) {						\
-		AMD_SMN_Read(SMN_Register, SMN_Address, UMC_device);	\
-	} else {							\
-		PCI_AMD_SMN_Read(SMN_Register,				\
-				SMN_Address,				\
-				SMU_AMD_INDEX_REGISTER_F17H,		\
-				SMU_AMD_DATA_REGISTER_F17H);		\
-}
+#define Core_AMD_SMN_Read_3xPARAM(SMN_Register, SMN_Address, UMC_device)\
+	AMD_SMN_Read(SMN_Register, SMN_Address, UMC_device)
 
-#define Core_AMD_SMN_Write(SMN_Register, SMN_Address, UMC_device)	\
-	if (UMC_device) {						\
-		AMD_SMN_Write(SMN_Register, SMN_Address, UMC_device);	\
-	} else {							\
-		PCI_AMD_SMN_Write(SMN_Register,				\
-				SMN_Address,				\
-				SMU_AMD_INDEX_REGISTER_F17H,		\
-				SMU_AMD_DATA_REGISTER_F17H);		\
-}
+#define Core_AMD_SMN_Write_3xPARAM(SMN_Register, SMN_Address, UMC_device)\
+	AMD_SMN_Write(SMN_Register, SMN_Address, UMC_device)
 
 #else /* CONFIG_AMD_NB */
 
-#define Core_AMD_SMN_Read(SMN_Register, SMN_Address, UMC_device)	\
-	PCI_AMD_SMN_Read(	SMN_Register,				\
-				SMN_Address,				\
-				SMU_AMD_INDEX_REGISTER_F17H,		\
-				SMU_AMD_DATA_REGISTER_F17H )
+#define Core_AMD_SMN_Read_3xPARAM(SMN_Register, SMN_Address, UMC_device)\
+	Core_AMD_SMN_Read_2xPARAM(SMN_Register, SMN_Address)
 
-#define Core_AMD_SMN_Write(SMN_Register, SMN_Address, UMC_device)	\
-	PCI_AMD_SMN_Write(	SMN_Register,				\
-				SMN_Address,				\
-				SMU_AMD_INDEX_REGISTER_F17H,		\
-				SMU_AMD_DATA_REGISTER_F17H )
+#define Core_AMD_SMN_Write_3xPARAM(SMN_Register, SMN_Address, UMC_device)\
+	Core_AMD_SMN_Write_2xPARAM(SMN_Register, SMN_Address)
+
 #endif /* CONFIG_AMD_NB */
+
+#define Core_AMD_SMN_Read_DISPATCH(_1,_2,_3,Core_AMD_SMN_Read_CURSOR,...)\
+	Core_AMD_SMN_Read_CURSOR
+
+#define Core_AMD_SMN_Read(...)						\
+	Core_AMD_SMN_Read_DISPATCH( __VA_ARGS__,Core_AMD_SMN_Read_3xPARAM,\
+						Core_AMD_SMN_Read_2xPARAM,\
+						NULL)( __VA_ARGS__ )
+
+#define Core_AMD_SMN_Write_DISPATCH(_1,_2,_3,Core_AMD_SMN_Write_CURSOR,...)\
+	Core_AMD_SMN_Write_CURSOR
+
+#define Core_AMD_SMN_Write(...)						\
+	Core_AMD_SMN_Write_DISPATCH(__VA_ARGS__,Core_AMD_SMN_Write_3xPARAM,\
+						Core_AMD_SMN_Write_2xPARAM,\
+						NULL)( __VA_ARGS__ )
 
 typedef union
 {
@@ -907,6 +916,23 @@ typedef union
   }									\
 	MSG_RSP.value;							\
 })
+
+#define PCI_HSMP_Exec(MSG_FUNC, MSG_ARG)				\
+({									\
+	const unsigned int rx = 					\
+	PCI_HSMP_Mailbox(MSG_FUNC,					\
+			MSG_ARG,					\
+			PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily < 0xB ?\
+				SMU_HSMP_CMD : SMU_HSMP_CMD_F1A,	\
+			SMU_HSMP_ARG,					\
+			SMU_HSMP_RSP,					\
+			AMD_HSMP_INDEX_REGISTER,			\
+			AMD_HSMP_DATA_REGISTER);			\
+	rx;								\
+})
+
+#define AMD_HSMP_Exec_2xPARAM(MSG_FUNC, MSG_ARG)			\
+	PCI_HSMP_Exec(MSG_FUNC, MSG_ARG)
 
 #if defined(CONFIG_AMD_NB) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
 
@@ -990,46 +1016,33 @@ typedef union
 	res == 0 ? MSG_RSP.value : HSMP_UNSPECIFIED;			\
 })
 
-#define AMD_HSMP_Exec(MSG_FUNC, MSG_ARG)				\
+#define AMD_HSMP_Exec_3xPARAM(Device_DF, MSG_FUNC, MSG_ARG)		\
 ({									\
-	unsigned int rx;						\
-	if (PRIVATE(OF(Zen)).Device.DF) {				\
-		rx = AMD_HSMP_Mailbox(	MSG_FUNC,			\
-					MSG_ARG,			\
-		PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily < 0xB ?	\
-					SMU_HSMP_CMD : SMU_HSMP_CMD_F1A,\
-					SMU_HSMP_ARG,			\
-					SMU_HSMP_RSP,			\
-					PRIVATE(OF(Zen)).Device.DF );	\
-	} else {							\
-		rx = PCI_HSMP_Mailbox(	MSG_FUNC,			\
-					MSG_ARG,			\
-		PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily < 0xB ?	\
-					SMU_HSMP_CMD : SMU_HSMP_CMD_F1A,\
-					SMU_HSMP_ARG,			\
-					SMU_HSMP_RSP,			\
-					AMD_HSMP_INDEX_REGISTER,	\
-					AMD_HSMP_DATA_REGISTER );	\
-	}								\
+	const unsigned int rx = 					\
+	AMD_HSMP_Mailbox(MSG_FUNC,					\
+			MSG_ARG,					\
+			PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily < 0xB ?\
+				SMU_HSMP_CMD : SMU_HSMP_CMD_F1A,	\
+			SMU_HSMP_ARG,					\
+			SMU_HSMP_RSP,					\
+			Device_DF);					\
 	rx;								\
 })
 
-#else
+#else /* CONFIG_AMD_NB */
 
-#define AMD_HSMP_Exec(MSG_FUNC, MSG_ARG)				\
-({									\
-	unsigned int rx=PCI_HSMP_Mailbox(MSG_FUNC,			\
-					MSG_ARG,			\
-		PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily < 0xB ?	\
-					SMU_HSMP_CMD : SMU_HSMP_CMD_F1A,\
-					SMU_HSMP_ARG,			\
-					SMU_HSMP_RSP,			\
-					AMD_HSMP_INDEX_REGISTER,	\
-					AMD_HSMP_DATA_REGISTER );	\
-	rx;								\
-})
+#define AMD_HSMP_Exec_3xPARAM(Device_DF, MSG_FUNC, MSG_ARG)		\
+	AMD_HSMP_Exec_2xPARAM(MSG_FUNC, MSG_ARG)
 
 #endif /* CONFIG_AMD_NB */
+
+#define AMD_HSMP_Exec_DISPATCH(_1,_2,_3,AMD_HSMP_Exec_CURSOR, ...)	\
+	AMD_HSMP_Exec_CURSOR
+
+#define AMD_HSMP_Exec(...)						\
+	AMD_HSMP_Exec_DISPATCH( __VA_ARGS__ ,	AMD_HSMP_Exec_3xPARAM , \
+						AMD_HSMP_Exec_2xPARAM , \
+						NULL)( __VA_ARGS__ )
 
 /* Driver' private and public data definitions.				*/
 enum CSTATES_CLASS {
@@ -1127,11 +1140,6 @@ typedef struct
 
 	union {
 		struct {
-		    struct {
-			#ifdef CONFIG_AMD_NB
-			struct pci_dev	*DF;
-			#endif
-		    } Device;
 			Bit64	AMD_HSMP_LOCK __attribute__ ((aligned (8)));
 			Bit64	AMD_SMN_LOCK __attribute__ ((aligned (8)));
 			Bit64	AMD_FCH_LOCK __attribute__ ((aligned (8)));
@@ -1466,13 +1474,29 @@ typedef struct {
 	void			(*SetTarget)(void *arg);
 } SYSTEM_DRIVER;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0)
+	#define PROT_SMP_FUNC(fn)	int fn(void *arg)
+#else
+	#define smp_call_on_cpu(cpu, fn, par, phys) work_on_cpu(cpu, fn, par)
+	#define PROT_SMP_FUNC(fn)	long fn(void *arg)
+#endif
+
+#define DECL_SMP_FUNC(fn)	static PROT_SMP_FUNC(fn)
+
+#define IMPL_SMP_FUNC(fn, ...)						\
+	DECL_SMP_FUNC(fn)						\
+	{								\
+		__VA_ARGS__						\
+		return 0;						\
+	}
+
 typedef struct
 {
 	struct	SIGNATURE	Signature;
 	void			(*Query)(unsigned int cpu);
 	void			(*Update)(void *arg);	/* Must be static */
-	void			(*Start)(void *arg);	/* Must be static */
-	void			(*Stop)(void *arg);	/* Must be static */
+	PROT_SMP_FUNC(		(*Start));	/* Must be static */
+	PROT_SMP_FUNC(		(*Stop));	/* Must be static */
 	void			(*Exit)(void);
 	void			(*Timer)(unsigned int cpu);
 	CLOCK			(*BaseClock)(unsigned int ratio);
@@ -1528,20 +1552,20 @@ static long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod) ;
 
 static void Query_GenuineIntel(unsigned int cpu) ;
 static void PerCore_Intel_Query(void *arg) ;
-static void Start_GenuineIntel(void *arg) ;
-static void Stop_GenuineIntel(void *arg) ;
+DECL_SMP_FUNC(Start_GenuineIntel) ;
+DECL_SMP_FUNC(Stop_GenuineIntel) ;
 static void InitTimer_GenuineIntel(unsigned int cpu) ;
 
 static void Query_AuthenticAMD(unsigned int cpu) ;
 static void PerCore_AuthenticAMD_Query(void *arg) ;
-static void Start_AuthenticAMD(void *arg) ;
-static void Stop_AuthenticAMD(void *arg) ;
+DECL_SMP_FUNC(Start_AuthenticAMD) ;
+DECL_SMP_FUNC(Stop_AuthenticAMD) ;
 static void InitTimer_AuthenticAMD(unsigned int cpu) ;
 
 static void Query_Core2(unsigned int cpu) ;
 static void PerCore_Core2_Query(void *arg) ;
-static void Start_Core2(void *arg) ;
-static void Stop_Core2(void *arg) ;
+DECL_SMP_FUNC(Start_Core2) ;
+DECL_SMP_FUNC(Stop_Core2) ;
 static void InitTimer_Core2(unsigned int cpu) ;
 
 static void Query_Atom_Bonnell(unsigned int cpu) ;
@@ -1552,14 +1576,14 @@ static void PerCore_Atom_Bonnell_Query(void *arg) ;
 
 static void Query_Silvermont(unsigned int cpu) ;
 static void PerCore_Silvermont_Query(void *arg) ;
-static void Start_Silvermont(void *arg) ;
-static void Stop_Silvermont(void *arg) ;
+DECL_SMP_FUNC(Start_Silvermont) ;
+DECL_SMP_FUNC(Stop_Silvermont) ;
 static void InitTimer_Silvermont(unsigned int cpu) ;
 
 static void Query_Goldmont(unsigned int cpu) ;
 static void PerCore_Goldmont_Query(void *arg) ;
-static void Start_Goldmont(void *arg) ;
-static void Stop_Goldmont(void *arg) ;
+DECL_SMP_FUNC(Start_Goldmont) ;
+DECL_SMP_FUNC(Stop_Goldmont) ;
 static void InitTimer_Goldmont(unsigned int cpu) ;
 
 static void Query_Airmont(unsigned int cpu) ;
@@ -1571,8 +1595,8 @@ static void PerCore_Tremont_Query(void *arg) ;
 static void Query_Nehalem(unsigned int cpu) ;
 static void PerCore_Nehalem_Query(void *arg) ;
 static void PerCore_Nehalem_EX_Query(void *arg) ;
-static void Start_Nehalem(void *arg) ;
-static void Stop_Nehalem(void *arg) ;
+DECL_SMP_FUNC(Start_Nehalem) ;
+DECL_SMP_FUNC(Stop_Nehalem) ;
 static void InitTimer_Nehalem(unsigned int cpu) ;
 static void Start_Uncore_Nehalem(void *arg) ;
 static void Stop_Uncore_Nehalem(void *arg) ;
@@ -1584,16 +1608,16 @@ static void PerCore_Avoton_Query(void *arg) ;
 
 static void Query_SandyBridge(unsigned int cpu) ;
 static void PerCore_SandyBridge_Query(void *arg) ;
-static void Start_SandyBridge(void *arg) ;
-static void Stop_SandyBridge(void *arg) ;
+DECL_SMP_FUNC(Start_SandyBridge) ;
+DECL_SMP_FUNC(Stop_SandyBridge) ;
 static void InitTimer_SandyBridge(unsigned int cpu) ;
 static void Start_Uncore_SandyBridge(void *arg) ;
 static void Stop_Uncore_SandyBridge(void *arg) ;
 
 static void Query_SandyBridge_EP(unsigned int cpu) ;
 static void PerCore_SandyBridge_EP_Query(void *arg) ;
-static void Start_SandyBridge_EP(void *arg) ;
-static void Stop_SandyBridge_EP(void *arg) ;
+DECL_SMP_FUNC(Start_SandyBridge_EP) ;
+DECL_SMP_FUNC(Stop_SandyBridge_EP) ;
 static void InitTimer_SandyBridge_EP(unsigned int cpu) ;
 static void Start_Uncore_SandyBridge_EP(void *arg) ;
 static void Stop_Uncore_SandyBridge_EP(void *arg) ;
@@ -1603,7 +1627,7 @@ static void PerCore_IvyBridge_Query(void *arg) ;
 
 static void Query_IvyBridge_EP(unsigned int cpu) ;
 static void PerCore_IvyBridge_EP_Query(void *arg) ;
-static void Start_IvyBridge_EP(void *arg) ;
+DECL_SMP_FUNC(Start_IvyBridge_EP) ;
 #define     Stop_IvyBridge_EP Stop_SandyBridge_EP
 static void InitTimer_IvyBridge_EP(unsigned int cpu) ;
 static void Start_Uncore_IvyBridge_EP(void *arg) ;
@@ -1614,16 +1638,16 @@ static void PerCore_Haswell_Query(void *arg) ;
 
 static void Query_Haswell_EP(unsigned int cpu) ;
 static void PerCore_Haswell_EP_Query(void *arg) ;
-static void Start_Haswell_EP(void *arg) ;
-static void Stop_Haswell_EP(void *arg) ;
+DECL_SMP_FUNC(Start_Haswell_EP) ;
+DECL_SMP_FUNC(Stop_Haswell_EP) ;
 static void InitTimer_Haswell_EP(unsigned int cpu) ;
 static void Start_Uncore_Haswell_EP(void *arg) ;
 static void Stop_Uncore_Haswell_EP(void *arg) ;
 
 static void Query_Haswell_ULT(unsigned int cpu) ;
 static void PerCore_Haswell_ULT_Query(void *arg) ;
-static void Start_Haswell_ULT(void *arg) ;
-static void Stop_Haswell_ULT(void *arg) ;
+DECL_SMP_FUNC(Start_Haswell_ULT) ;
+DECL_SMP_FUNC(Stop_Haswell_ULT) ;
 static void InitTimer_Haswell_ULT(unsigned int cpu) ;
 static void Start_Uncore_Haswell_ULT(void *arg) ;
 static void Stop_Uncore_Haswell_ULT(void *arg) ;
@@ -1643,28 +1667,28 @@ static void Query_Broadwell_EP(unsigned int cpu) ;
 
 static void Query_Skylake(unsigned int cpu) ;
 static void PerCore_Skylake_Query(void *arg) ;
-static void Start_Skylake(void *arg) ;
-static void Stop_Skylake(void *arg) ;
+DECL_SMP_FUNC(Start_Skylake) ;
+DECL_SMP_FUNC(Stop_Skylake) ;
 static void InitTimer_Skylake(unsigned int cpu) ;
 static void Start_Uncore_Skylake(void *arg) ;
 static void Stop_Uncore_Skylake(void *arg) ;
 
 static void Query_Skylake_X(unsigned int cpu) ;
 static void PerCore_Skylake_X_Query(void *arg) ;
-static void Start_Skylake_X(void *arg) ;
-static void Stop_Skylake_X(void *arg) ;
+DECL_SMP_FUNC(Start_Skylake_X) ;
+DECL_SMP_FUNC(Stop_Skylake_X) ;
 static void InitTimer_Skylake_X(unsigned int cpu) ;
 static void Start_Uncore_Skylake_X(void *arg) ;
 static void Stop_Uncore_Skylake_X(void *arg) ;
 
 static void InitTimer_Alderlake(unsigned int cpu) ;
-static void Start_Alderlake(void *arg) ;
+DECL_SMP_FUNC(Start_Alderlake) ;
 #define     Stop_Alderlake Stop_Skylake
 static void Start_Uncore_Alderlake(void *arg) ;
 static void Stop_Uncore_Alderlake(void *arg) ;
 
 static void InitTimer_Arrowlake(unsigned int cpu) ;
-static void Start_Arrowlake(void *arg) ;
+DECL_SMP_FUNC(Start_Arrowlake) ;
 #define     Stop_Arrowlake Stop_Skylake
 static void Start_Uncore_Arrowlake(void *arg) ;
 static void Stop_Uncore_Arrowlake(void *arg) ;
@@ -1690,37 +1714,37 @@ static void PerCore_Meteorlake_Query(void *arg) ;
 
 static void Query_AMD_Family_0Fh(unsigned int cpu) ;
 static void PerCore_AMD_Family_0Fh_Query(void *arg) ;
-static void Start_AMD_Family_0Fh(void *arg) ;
-static void Stop_AMD_Family_0Fh(void *arg) ;
+DECL_SMP_FUNC(Start_AMD_Family_0Fh) ;
+DECL_SMP_FUNC(Stop_AMD_Family_0Fh) ;
 static void InitTimer_AMD_Family_0Fh(unsigned int cpu) ;
 
 static void Query_AMD_Family_10h(unsigned int cpu) ;
 static void PerCore_AMD_Family_10h_Query(void *arg) ;
-static void Start_AMD_Family_10h(void *arg) ;
-static void Stop_AMD_Family_10h(void *arg) ;
+DECL_SMP_FUNC(Start_AMD_Family_10h) ;
+DECL_SMP_FUNC(Stop_AMD_Family_10h) ;
 #define     InitTimer_AMD_Family_10h InitTimer_AuthenticAMD
 
 static void Query_AMD_Family_11h(unsigned int cpu) ;
 static void PerCore_AMD_Family_11h_Query(void *arg) ;
-static void Start_AMD_Family_11h(void *arg) ;
+DECL_SMP_FUNC(Start_AMD_Family_11h) ;
 #define     Stop_AMD_Family_11h Stop_AMD_Family_10h
 #define     InitTimer_AMD_Family_11h InitTimer_AuthenticAMD
 
 static void Query_AMD_Family_12h(unsigned int cpu) ;
 static void PerCore_AMD_Family_12h_Query(void *arg) ;
-static void Start_AMD_Family_12h(void *arg) ;
+DECL_SMP_FUNC(Start_AMD_Family_12h) ;
 #define     Stop_AMD_Family_12h Stop_AMD_Family_10h
 #define     InitTimer_AMD_Family_12h InitTimer_AuthenticAMD
 
 static void Query_AMD_Family_14h(unsigned int cpu) ;
 static void PerCore_AMD_Family_14h_Query(void *arg) ;
-static void Start_AMD_Family_14h(void *arg) ;
+DECL_SMP_FUNC(Start_AMD_Family_14h) ;
 #define     Stop_AMD_Family_14h Stop_AMD_Family_10h
 #define     InitTimer_AMD_Family_14h InitTimer_AuthenticAMD
 
 static void Query_AMD_Family_15h(unsigned int cpu) ;
 static void PerCore_AMD_Family_15h_Query(void *arg) ;
-static void Start_AMD_Family_15h(void *arg) ;
+DECL_SMP_FUNC(Start_AMD_Family_15h) ;
 #define     Stop_AMD_Family_15h Stop_AMD_Family_10h
 static void InitTimer_AMD_Family_15h(unsigned int cpu) ;
 
@@ -1730,12 +1754,12 @@ static void PerCore_AMD_Family_16h_Query(void *arg) ;
 #define     Stop_AMD_Family_16h Stop_AMD_Family_15h
 #define     InitTimer_AMD_Family_16h InitTimer_AuthenticAMD
 
-static void Exit_AMD_F17h(void) ;
+#define     Exit_AMD_F17h NULL
 static void Query_AMD_F17h_PerSocket(unsigned int cpu) ;
 static void Query_AMD_F17h_PerCluster(unsigned int cpu) ;
 static void PerCore_AMD_Family_17h_Query(void *arg) ;
-static void Start_AMD_Family_17h(void *arg) ;
-static void Stop_AMD_Family_17h(void *arg) ;
+DECL_SMP_FUNC(Start_AMD_Family_17h) ;
+DECL_SMP_FUNC(Stop_AMD_Family_17h) ;
 static void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 static void InitTimer_AMD_F17h_Zen(unsigned int cpu) ;
 static void InitTimer_AMD_F17h_Zen2_SP(unsigned int cpu) ;

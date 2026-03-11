@@ -4637,23 +4637,6 @@ static void Skylake_X_Platform_Info(unsigned int cpu)
     }
 }
 
-static void Probe_AMD_DataFabric(void)
-{
-#ifdef CONFIG_AMD_NB
-    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 0, 0)
-	if (PRIVATE(OF(Zen)).Device.DF == NULL)
-	{
-		struct pci_dev *dev;
-		dev = pci_get_domain_bus_and_slot(0x0,0x0,PCI_DEVFN(0x18, 0x0));
-		if (dev != NULL)
-		{
-			PRIVATE(OF(Zen)).Device.DF = dev;
-		}
-	}
-    #endif
-#endif /* CONFIG_AMD_NB */
-}
-
 typedef void (*ROUTER)(void __iomem *mchmap, unsigned short mc);
 
 static PCI_CALLBACK Router(	struct pci_dev *dev, unsigned int offset,
@@ -8324,18 +8307,14 @@ static bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	case AMD_Zen3Plus_RMB:
 	case AMD_Zen3_VMR:
 	case AMD_Zen2_MTS:
-		Core_AMD_SMN_Read(XtraCOF,
-				SMU_AMD_F17H_MATISSE_COF,
-				PRIVATE(OF(Zen)).Device.DF);
+		Core_AMD_SMN_Read(XtraCOF, SMU_AMD_F17H_MATISSE_COF);
 		break;
 	case AMD_Zen5_SHP:
 	case AMD_Zen5_Turin:
 	case AMD_Zen5_Turin_Dense:
 	case AMD_Zen4_Bergamo:
 	case AMD_EPYC_Rome_CPK:
-		Core_AMD_SMN_Read(XtraCOF,
-				SMU_AMD_F17H_ZEN2_MCM_COF,
-				PRIVATE(OF(Zen)).Device.DF);
+		Core_AMD_SMN_Read(XtraCOF, SMU_AMD_F17H_ZEN2_MCM_COF);
 		break;
 	case AMD_Zen5_GRP:
 	case AMD_Zen5_STXH:
@@ -9040,22 +9019,16 @@ static long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 
 static void Query_AMD_F17h_Power_Limits(PROC_RO *Pkg)
 {	/*		Package Power Tracking				*/
-	Core_AMD_SMN_Read( Pkg->PowerThermal.Zen.PWR,
-				SMU_AMD_F17H_ZEN2_MCM_PWR,
-				PRIVATE(OF(Zen)).Device.DF );
+	Core_AMD_SMN_Read(Pkg->PowerThermal.Zen.PWR, SMU_AMD_F17H_ZEN2_MCM_PWR);
 	/*		Junction Temperature				*/
 	if (Pkg->PowerThermal.Zen.PWR.TjMax > 0) {
 		Pkg->PowerThermal.Param.Offset[THERMAL_TARGET] = \
 					Pkg->PowerThermal.Zen.PWR.TjMax;
 	}
 	/*		Thermal Design Power				*/
-	Core_AMD_SMN_Read( Pkg->PowerThermal.Zen.TDP,
-				SMU_AMD_F17H_ZEN2_MCM_TDP,
-				PRIVATE(OF(Zen)).Device.DF );
+	Core_AMD_SMN_Read(Pkg->PowerThermal.Zen.TDP, SMU_AMD_F17H_ZEN2_MCM_TDP);
 	/*		Electric Design Current				*/
-	Core_AMD_SMN_Read( Pkg->PowerThermal.Zen.EDC,
-				SMU_AMD_F17H_ZEN2_MCM_EDC,
-				PRIVATE(OF(Zen)).Device.DF );
+	Core_AMD_SMN_Read(Pkg->PowerThermal.Zen.EDC, SMU_AMD_F17H_ZEN2_MCM_EDC);
 }
 
 static unsigned int Query_AMD_HSMP_Interface(void)
@@ -9249,22 +9222,9 @@ static void Query_AMD_Family_17h(unsigned int cpu)
 	Query_AMD_HSMP_Interface();
 }
 
-static void Exit_AMD_F17h(void)
-{
-#ifdef CONFIG_AMD_NB
-	if (PRIVATE(OF(Zen)).Device.DF != NULL)
-	{
-		pci_dev_put(PRIVATE(OF(Zen)).Device.DF);
-		PRIVATE(OF(Zen)).Device.DF = NULL;
-	}
-#endif /* CONFIG_AMD_NB */
-}
-
 static void Query_AMD_F17h_PerSocket(unsigned int cpu)
 {
 	Core_AMD_Family_17h_Temp = CTL_AMD_Family_17h_Temp;
-
-	Probe_AMD_DataFabric();
 
 	Query_AMD_Family_17h(cpu);
 
@@ -9283,8 +9243,6 @@ static void Query_AMD_F17h_PerSocket(unsigned int cpu)
 static void Query_AMD_F17h_PerCluster(unsigned int cpu)
 {
 	Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Zen2_Temp;
-
-	Probe_AMD_DataFabric();
 
 	Query_AMD_Family_17h(cpu);
 
@@ -9305,8 +9263,6 @@ static void Query_AMD_F19h_11h_PerCluster(unsigned int cpu)
 	Core_AMD_Family_17h_Temp = CCD_AMD_Family_19h_Genoa_Temp;
 	Pkg_AMD_Family_17h_Temp = Pkg_AMD_Family_19h_Genoa_Temp;
 
-	Probe_AMD_DataFabric();
-
 	Query_AMD_Family_17h(cpu);
 
 	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
@@ -9325,8 +9281,6 @@ static void Query_AMD_F19h_61h_PerCluster(unsigned int cpu)
 {
 	Core_AMD_Family_17h_Temp = CCD_AMD_Family_19h_Zen4_Temp;
 
-	Probe_AMD_DataFabric();
-
 	Query_AMD_Family_17h(cpu);
 
 	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
@@ -9344,8 +9298,6 @@ static void Query_AMD_F19h_61h_PerCluster(unsigned int cpu)
 static void Query_AMD_F1Ah_24h_60h_70h_PerSocket(unsigned int cpu)
 {
 	Core_AMD_Family_17h_Temp = CTL_AMD_Family_17h_Temp;
-
-	Probe_AMD_DataFabric();
 
 	Query_AMD_Family_17h(cpu);
 
@@ -12234,24 +12186,15 @@ static void SystemRegisters(CORE_RO *Core)
 		"std"				"\n\t"
 		"# Save all RFLAGS"		"\n\t"
 		"pushfq"			"\n\t"
-		"popq	%0"
+		"popq	%0"			"\n\t"
+		"# Reset Direction Flag"	"\n\t"
+		"cld"
 		: "=r" (Core->SystemRegister.RFLAGS)
 		: "m" (mem64)
 		: "%rax", "%rbx", "%rcx", "%rdx", "cc"
 	);
 
-	native_irq_enable();
 	Core->SystemRegister.RFLAGS |= native_save_fl();
-	native_irq_disable();
-
-	__asm__ volatile
-	(
-		"# Reset Direction Flag"	"\n\t"
-		"cld"
-		:
-		:
-		: "cc"
-	);
 
 	if (RDPMC_Enable) {
 		__asm__ volatile
@@ -14303,9 +14246,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	HSMP_ARG arg[8];
 
 	/*	Query the HTC and THERM_TRIP features from SMUTHM	*/
-	Core_AMD_SMN_Read(	HTC,
-				SMU_AMD_THM_TCTL_REGISTER_F17H + 0x4,
-				PRIVATE(OF(Zen)).Device.DF );
+	Core_AMD_SMN_Read(HTC, SMU_AMD_THM_TCTL_REGISTER_F17H + 0x4);
 
 	PUBLIC(RO(Proc))->ThermalPoint.Value[THM_HTC_LIMIT] = HTC.HTC_TMP_LIMIT;
 	PUBLIC(RO(Proc))->ThermalPoint.Value[THM_HTC_HYST] = HTC.HTC_HYST_LIMIT;
@@ -14328,9 +14269,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	BITSET(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.Mask, THM_HTC_HYST);
 	BITCLR(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.Kind, THM_HTC_HYST);
 
-	Core_AMD_SMN_Read(	ThermTrip,
-				SMU_AMD_THM_TCTL_REGISTER_F17H + 0x8,
-				PRIVATE(OF(Zen)).Device.DF );
+	Core_AMD_SMN_Read(ThermTrip, SMU_AMD_THM_TCTL_REGISTER_F17H + 0x8);
 
 	PUBLIC(RO(Proc))->ThermalPoint.Value[THM_TRIP_LIMIT] = \
 					ThermTrip.THERM_TP_LIMIT - 49;
@@ -14807,9 +14746,9 @@ static void Controller_Start(int wait)
 	if ((BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, CREATED) == 1)
 	 && (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED) == 0))
 	{
-		smp_call_function_single(cpu,
-					Arch[PUBLIC(RO(Proc))->ArchID].Start,
-					NULL, wait);
+		smp_call_on_cpu(cpu,
+				Arch[PUBLIC(RO(Proc))->ArchID].Start,
+				NULL, false);
 	}
       }
     }
@@ -14824,9 +14763,9 @@ static void Controller_Stop(int wait)
 	    if ((BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, CREATED) == 1)
 	     && (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED) == 1))
 	    {
-		smp_call_function_single(cpu,
-					Arch[PUBLIC(RO(Proc))->ArchID].Stop,
-					NULL, wait);
+		smp_call_on_cpu(cpu,
+				Arch[PUBLIC(RO(Proc))->ArchID].Stop,
+				NULL, false);
 	    }
     }
 }
@@ -15783,12 +15722,10 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 	};								\
 									\
 	Core_AMD_SMN_Write(	Zen_UMC_PerfControl,			\
-				SMU_AMD_ZEN_UMC_PERF_CTL(cha, slot),	\
-				PRIVATE(OF(Zen)).Device.DF );		\
+				SMU_AMD_ZEN_UMC_PERF_CTL(cha, slot) );	\
     }									\
 	Core_AMD_SMN_Write(	Zen_UMC_PerfCtlClk,			\
-				SMU_AMD_UMC_PERF_CTL_CLK(cha),		\
-				PRIVATE(OF(Zen)).Device.DF );		\
+				SMU_AMD_UMC_PERF_CTL_CLK(cha) );	\
    }									\
   }									\
 })
@@ -15824,12 +15761,10 @@ static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
 	ZEN_UMC_PERF_CTL Zen_UMC_PerfControl = { .value = 0 };		\
 									\
 	Core_AMD_SMN_Write(	Zen_UMC_PerfControl,			\
-				SMU_AMD_ZEN_UMC_PERF_CTL(cha, slot),	\
-				PRIVATE(OF(Zen)).Device.DF );		\
+				SMU_AMD_ZEN_UMC_PERF_CTL(cha, slot) );	\
     }									\
 	Core_AMD_SMN_Write(	Zen_UMC_PerfCtlClk,			\
-				SMU_AMD_UMC_PERF_CTL_CLK(cha),		\
-				PRIVATE(OF(Zen)).Device.DF );		\
+				SMU_AMD_UMC_PERF_CTL_CLK(cha) );	\
    }									\
   }									\
 })
@@ -16203,11 +16138,9 @@ static void Power_ACCU_SKL_PLATFORM(PROC_RO *Pkg, unsigned int T)
 	} data; 							\
 									\
 	/*			48-bits UMC counter		*/	\
-	Core_AMD_SMN_Read(data.low32,	SMU_AMD_ZEN_UMC_PERF_CLK_LOW(cha),\
-					PRIVATE(OF(Zen)).Device.DF);	\
+	Core_AMD_SMN_Read(data.low32,SMU_AMD_ZEN_UMC_PERF_CLK_LOW(cha));\
 									\
-	Core_AMD_SMN_Read(data.high16,	SMU_AMD_ZEN_UMC_PERF_CLK_HIGH(cha),\
-					PRIVATE(OF(Zen)).Device.DF);	\
+	Core_AMD_SMN_Read(data.high16,SMU_AMD_ZEN_UMC_PERF_CLK_HIGH(cha));\
 	data.high16.value &= 0xffff;					\
 									\
 	Pkg->Counter[_T].CTR[idx] = data.ctr48 ;			\
@@ -16507,9 +16440,7 @@ static void Core_AMD_Family_17h_ThermTrip(CORE_RO *Core)
 {
 	TCTL_THERM_TRIP ThermTrip = {.value = 0};
 
-	Core_AMD_SMN_Read(	ThermTrip,
-				SMU_AMD_THM_TCTL_REGISTER_F17H + 0x8,
-				PRIVATE(OF(Zen)).Device.DF );
+	Core_AMD_SMN_Read(ThermTrip, SMU_AMD_THM_TCTL_REGISTER_F17H + 0x8);
 
 	if (ThermTrip.THERM_TP_EN) {
 		Core->PowerThermal.Events[eSTS] = \
@@ -16554,9 +16485,7 @@ static void CTL_AMD_Family_17h_Temp(CORE_RO *Core)
 {
 	TCTL_REGISTER TctlSensor = {.value = 0};
 
-	Core_AMD_SMN_Read(	TctlSensor,
-				SMU_AMD_THM_TCTL_REGISTER_F17H,
-				PRIVATE(OF(Zen)).Device.DF );
+	Core_AMD_SMN_Read(TctlSensor, SMU_AMD_THM_TCTL_REGISTER_F17H);
 
 	Core_AMD_Zen_Filter_Temp( Core, TctlSensor.CurTmp,
 					TctlSensor.CurTempRangeSel == 1 );
@@ -16570,8 +16499,7 @@ static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 
 	Core_AMD_SMN_Read(	TccdSensor,
 				(SMU_AMD_THM_TCTL_CCD_REGISTER_F17H
-				+ (Core->T.Cluster.CCD << 2)),
-				PRIVATE(OF(Zen)).Device.DF );
+				+ (Core->T.Cluster.CCD << 2)) );
 
 	Core_AMD_Zen_Filter_Temp( Core, TccdSensor.CurTmp,
 					TccdSensor.CurTempRangeSel == 1 );
@@ -16592,8 +16520,7 @@ static void CCD_AMD_Family_19h_Genoa_Temp(CORE_RO *Core)
 
 	Core_AMD_SMN_Read(	TccdSensor,
 				(SMU_AMD_THM_TCTL_CCD_REGISTER_F19H_11H
-				+ (Core->T.Cluster.CCD << 2)),
-				PRIVATE(OF(Zen)).Device.DF );
+				+ (Core->T.Cluster.CCD << 2)) );
 
 	Core_AMD_Zen_Filter_Temp( Core, TccdSensor.CurTmp,
 					TccdSensor.CurTempRangeSel == 1 );
@@ -16607,8 +16534,7 @@ static void CCD_AMD_Family_19h_Zen4_Temp(CORE_RO *Core)
 
 	Core_AMD_SMN_Read(	TccdSensor,
 				(SMU_AMD_THM_TCTL_CCD_REGISTER_F19H_61H
-				+ (Core->T.Cluster.CCD << 2)),
-				PRIVATE(OF(Zen)).Device.DF );
+				+ (Core->T.Cluster.CCD << 2)) );
 
 	Core_AMD_Zen_Filter_Temp( Core, TccdSensor.CurTmp,
 					TccdSensor.CurTempRangeSel == 1 );
@@ -16673,8 +16599,8 @@ static void InitTimer_VirtualMachine(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_VirtualMachine, 1);
 }
 
-static void Start_VirtualMachine(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_VirtualMachine, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	UNUSED(arg);
@@ -16699,7 +16625,7 @@ static void Start_VirtualMachine(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
 static enum hrtimer_restart Cycle_Safe_VirtualMachine(struct hrtimer *pTimer)
 {
@@ -16757,8 +16683,8 @@ static void InitTimer_Safe_VirtualMachine(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_Safe_VirtualMachine, 1);
 }
 
-static void Start_Safe_VirtualMachine(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_Safe_VirtualMachine, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	UNUSED(arg);
@@ -16783,10 +16709,10 @@ static void Start_Safe_VirtualMachine(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
-static void Stop_VirtualMachine(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Stop_VirtualMachine, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	UNUSED(arg);
@@ -16804,7 +16730,7 @@ static void Stop_VirtualMachine(void *arg)
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
 static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 {
@@ -16882,8 +16808,8 @@ static void InitTimer_GenuineIntel(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_GenuineIntel, 1);
 }
 
-static void Start_GenuineIntel(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_GenuineIntel, /*body: */ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	UNUSED(arg);
@@ -16908,10 +16834,10 @@ static void Start_GenuineIntel(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
-static void Stop_GenuineIntel(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Stop_GenuineIntel, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	UNUSED(arg);
@@ -16929,7 +16855,7 @@ static void Stop_GenuineIntel(void *arg)
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
 static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
 {
@@ -16987,8 +16913,8 @@ static void InitTimer_AuthenticAMD(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_AuthenticAMD, 1);
 }
 
-static void Start_AuthenticAMD(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_AuthenticAMD, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	UNUSED(arg);
@@ -17013,10 +16939,10 @@ static void Start_AuthenticAMD(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
-static void Stop_AuthenticAMD(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Stop_AuthenticAMD, /*boby:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	UNUSED(arg);
@@ -17034,7 +16960,7 @@ static void Stop_AuthenticAMD(void *arg)
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
 static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 {
@@ -17145,8 +17071,8 @@ static void InitTimer_Core2(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_Core2, 1);
 }
 
-static void Start_Core2(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_Core2, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -17173,10 +17099,10 @@ static void Start_Core2(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
-static void Stop_Core2(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Stop_Core2, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -17197,7 +17123,7 @@ static void Stop_Core2(void *arg)
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
 static enum hrtimer_restart Cycle_Silvermont(struct hrtimer *pTimer)
 {
@@ -17348,8 +17274,8 @@ static void InitTimer_Silvermont(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_Silvermont, 1);
 }
 
-static void Start_Silvermont(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_Silvermont, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -17384,10 +17310,10 @@ static void Start_Silvermont(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
-static void Stop_Silvermont(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Stop_Silvermont, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -17408,7 +17334,7 @@ static void Stop_Silvermont(void *arg)
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
 static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 {
@@ -17561,8 +17487,8 @@ static void InitTimer_Nehalem(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_Nehalem, 1);
 }
 
-static void Start_Nehalem(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_Nehalem, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -17591,10 +17517,10 @@ static void Start_Nehalem(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
-static void Stop_Nehalem(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Stop_Nehalem, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -17615,7 +17541,7 @@ static void Stop_Nehalem(void *arg)
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
 static void Start_Uncore_Nehalem(void *arg)
 {
@@ -17787,8 +17713,8 @@ static void InitTimer_SandyBridge(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_SandyBridge, 1);
 }
 
-static void Start_SandyBridge(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_SandyBridge, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -17818,10 +17744,10 @@ static void Start_SandyBridge(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
-static void Stop_SandyBridge(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Stop_SandyBridge, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -17842,7 +17768,7 @@ static void Stop_SandyBridge(void *arg)
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
 static void Start_Uncore_SandyBridge(void *arg)
 {
@@ -18054,8 +17980,8 @@ static void Entry_Intel_Xeon_EP(void *arg,
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
 }
 
-static void Stop_SandyBridge_EP(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Stop_SandyBridge_EP, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -18076,12 +18002,11 @@ static void Stop_SandyBridge_EP(void *arg)
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
-static void Start_SandyBridge_EP(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_SandyBridge_EP, /*body:*/ {
 	Entry_Intel_Xeon_EP(arg, PKG_Counters_SandyBridge_EP);
-}
+});
 
 /*	SandyBridge/EP Uncore PMU MSR for Xeon family 06_2Dh		*/
 static void Start_Uncore_SandyBridge_EP(void *arg)
@@ -18142,10 +18067,9 @@ static void InitTimer_IvyBridge_EP(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_IvyBridge_EP, 1);
 }
 
-static void Start_IvyBridge_EP(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_IvyBridge_EP, /*body:*/ {
 	Entry_Intel_Xeon_EP(arg, PKG_Counters_IvyBridge_EP);
-}
+});
 
 /*	IvyBridge/EP Uncore PMU MSR for Xeon family 06_3E		*/
 static void Start_Uncore_IvyBridge_EP(void *arg)
@@ -18355,8 +18279,8 @@ static void InitTimer_Haswell_ULT(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_Haswell_ULT, 1);
 }
 
-static void Start_Haswell_ULT(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_Haswell_ULT, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -18386,10 +18310,10 @@ static void Start_Haswell_ULT(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
-static void Stop_Haswell_ULT(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Stop_Haswell_ULT, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -18410,7 +18334,7 @@ static void Stop_Haswell_ULT(void *arg)
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
 static void Start_Uncore_Haswell_ULT(void *arg)
 {
@@ -18582,8 +18506,8 @@ static void InitTimer_Goldmont(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_Goldmont, 1);
 }
 
-static void Start_Goldmont(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_Goldmont, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -18613,10 +18537,10 @@ static void Start_Goldmont(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
-static void Stop_Goldmont(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Stop_Goldmont, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -18637,7 +18561,7 @@ static void Stop_Goldmont(void *arg)
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
 
 static enum hrtimer_restart Cycle_Haswell_EP(struct hrtimer *pTimer)
@@ -18794,8 +18718,8 @@ static void InitTimer_Haswell_EP(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_Haswell_EP, 1);
 }
 
-static void Start_Haswell_EP(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_Haswell_EP, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -18825,10 +18749,10 @@ static void Start_Haswell_EP(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
-static void Stop_Haswell_EP(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Stop_Haswell_EP, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -18849,7 +18773,7 @@ static void Stop_Haswell_EP(void *arg)
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
 static void Start_Uncore_Haswell_EP(void *arg)
 {
@@ -19059,8 +18983,8 @@ static void InitTimer_Skylake(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_Skylake, 1);
 }
 
-static void Start_Skylake(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_Skylake, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -19092,10 +19016,10 @@ static void Start_Skylake(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
-static void Stop_Skylake(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Stop_Skylake, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -19116,7 +19040,7 @@ static void Stop_Skylake(void *arg)
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
 static void Start_Uncore_Skylake(void *arg)
 {
@@ -19302,8 +19226,8 @@ static void InitTimer_Skylake_X(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_Skylake_X, 1);
 }
 
-static void Start_Skylake_X(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_Skylake_X, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -19334,10 +19258,10 @@ static void Start_Skylake_X(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
-static void Stop_Skylake_X(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Stop_Skylake_X, /*body;*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -19358,7 +19282,7 @@ static void Stop_Skylake_X(void *arg)
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
 static void Start_Uncore_Skylake_X(void *arg)
 {
@@ -19683,8 +19607,8 @@ static void InitTimer_Alderlake(unsigned int cpu)
     }
 }
 
-static void Start_Alderlake(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_Alderlake, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -19732,7 +19656,7 @@ static void Start_Alderlake(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
 static void Start_Uncore_Alderlake(void *arg)
 {
@@ -19936,8 +19860,8 @@ static void InitTimer_Arrowlake(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_Arrowlake, 1);
 }
 
-static void Start_Arrowlake(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_Arrowlake, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -19969,7 +19893,7 @@ static void Start_Arrowlake(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
 static void Start_Uncore_Arrowlake(void *arg)
 {
@@ -20087,8 +20011,8 @@ static void InitTimer_AMD_Family_0Fh(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_0Fh, 1);
 }
 
-static void Start_AMD_Family_0Fh(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_AMD_Family_0Fh, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	UNUSED(arg);
@@ -20111,10 +20035,10 @@ static void Start_AMD_Family_0Fh(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
-static void Stop_AMD_Family_0Fh(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Stop_AMD_Family_0Fh, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	UNUSED(arg);
@@ -20132,10 +20056,10 @@ static void Stop_AMD_Family_0Fh(void *arg)
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
-static void Start_AMD_Family_10h(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_AMD_Family_10h, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	UNUSED(arg);
@@ -20160,10 +20084,10 @@ static void Start_AMD_Family_10h(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
-static void Stop_AMD_Family_10h(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Stop_AMD_Family_10h, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	UNUSED(arg);
@@ -20181,10 +20105,10 @@ static void Stop_AMD_Family_10h(void *arg)
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
-static void Start_AMD_Family_11h(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_AMD_Family_11h, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	UNUSED(arg);
@@ -20209,10 +20133,10 @@ static void Start_AMD_Family_11h(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
-static void Start_AMD_Family_12h(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_AMD_Family_12h, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	UNUSED(arg);
@@ -20237,10 +20161,9 @@ static void Start_AMD_Family_12h(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+})
 
-static void Start_AMD_Family_14h(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_AMD_Family_14h, /*body:*/ {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	UNUSED(arg);
@@ -20265,7 +20188,7 @@ static void Start_AMD_Family_14h(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
 static enum hrtimer_restart Cycle_AMD_Family_15h(struct hrtimer *pTimer)
 {
@@ -20385,8 +20308,7 @@ static void InitTimer_AMD_Family_15h(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_15h, 1);
 }
 
-static void Start_AMD_Family_15h(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_AMD_Family_15h, /*body:*/ {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	UNUSED(arg);
@@ -20411,7 +20333,7 @@ static void Start_AMD_Family_15h(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
 static void Cycle_AMD_Family_17h(CORE_RO *Core,
 			void (*Call_PWR)(CORE_RO *Core),
@@ -20604,15 +20526,11 @@ static void Call_SVI(	const unsigned int plane0, const unsigned int plane1,
 {
 	AMD_F17H_SVI SVI = {.value = 0};
 
-	Core_AMD_SMN_Read(	SVI,
-				SMU_AMD_F17H_SVI(plane0),
-				PRIVATE(OF(Zen)).Device.DF );
+	Core_AMD_SMN_Read(SVI, SMU_AMD_F17H_SVI(plane0));
 
 	PUBLIC(RO(Proc))->PowerThermal.VID.CPU = SVI.VID;
 
-	Core_AMD_SMN_Read(	SVI,
-				SMU_AMD_F17H_SVI(plane1),
-				PRIVATE(OF(Zen)).Device.DF );
+	Core_AMD_SMN_Read(SVI, SMU_AMD_F17H_SVI(plane1));
 
 	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.VID;
 
@@ -20624,15 +20542,11 @@ static void Call_SVI_APU(const unsigned int plane0, const unsigned int plane1,
 {
 	AMD_F17H_SVI SVI = {.value = 0};
 
-	Core_AMD_SMN_Read(	SVI,
-				SMU_AMD_F17_60H_SVI(plane0),
-				PRIVATE(OF(Zen)).Device.DF );
+	Core_AMD_SMN_Read(SVI, SMU_AMD_F17_60H_SVI(plane0));
 
 	PUBLIC(RO(Proc))->PowerThermal.VID.CPU = SVI.VID;
 
-	Core_AMD_SMN_Read(	SVI,
-				SMU_AMD_F17_60H_SVI(plane1),
-				PRIVATE(OF(Zen)).Device.DF );
+	Core_AMD_SMN_Read(SVI, SMU_AMD_F17_60H_SVI(plane1));
 
 	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.VID;
 
@@ -20645,15 +20559,11 @@ static void Call_SVI_RMB(const unsigned int plane0, const unsigned int plane1,
 	AMD_RMB_SVI SVI = {.value = 0};
 	UNUSED(factor);
 
-	Core_AMD_SMN_Read(	SVI,
-				SMU_AMD_RMB_SVI(plane0),
-				PRIVATE(OF(Zen)).Device.DF );
+	Core_AMD_SMN_Read(SVI, SMU_AMD_RMB_SVI(plane0));
 
 	PUBLIC(RO(Proc))->PowerThermal.VID.CPU = SVI.SVI1;
 
-	Core_AMD_SMN_Read(	SVI,
-				SMU_AMD_RMB_SVI(plane1),
-				PRIVATE(OF(Zen)).Device.DF );
+	Core_AMD_SMN_Read(SVI, SMU_AMD_RMB_SVI(plane1));
 
 	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.SVI0;
 }
@@ -20678,8 +20588,7 @@ static void Call_Raphael(const unsigned int plane0, const unsigned int plane1,
 
 	Core_AMD_SMN_Read(SVI,
 	PUBLIC(RO(Core, AT(PUBLIC(RO(Proc))->Service.Core)))->T.PackageID == 0 ?
-			SMU_AMD_F19H_SVI(plane0) : SMU_AMD_F19H_SVI(plane1),
-				PRIVATE(OF(Zen)).Device.DF);
+			SMU_AMD_F19H_SVI(plane0) : SMU_AMD_F19H_SVI(plane1));
 
 	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.SVI1;
 }
@@ -20693,8 +20602,7 @@ static void Call_Genoa( const unsigned int plane0, const unsigned int plane1,
 
 	Core_AMD_SMN_Read(SVI,
 	PUBLIC(RO(Core, AT(PUBLIC(RO(Proc))->Service.Core)))->T.PackageID == 0 ?
-			SMU_AMD_F17H_SVI(plane0) : SMU_AMD_F17H_SVI(plane1),
-				PRIVATE(OF(Zen)).Device.DF);
+			SMU_AMD_F17H_SVI(plane0) : SMU_AMD_F17H_SVI(plane1));
 
 	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.SVI1;
 }
@@ -20803,8 +20711,8 @@ static void InitTimer_AMD_Zen5_STX(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h, 1);
 }
 
-static void Start_AMD_Family_17h(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Start_AMD_Family_17h, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -20854,10 +20762,10 @@ static void Start_AMD_Family_17h(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
-static void Stop_AMD_Family_17h(void *arg)
-{
+IMPL_SMP_FUNC(/*func:*/ Stop_AMD_Family_17h, /*body:*/ {
+
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	union SAVE_AREA_CORE *Save = &PRIVATE(OF(Core, AT(cpu)))->SaveArea;
@@ -20883,7 +20791,7 @@ static void Stop_AMD_Family_17h(void *arg)
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED);
-}
+});
 
 static void Start_Uncore_AMD_Family_17h(void *arg)
 {
@@ -24354,9 +24262,9 @@ static int CoreFreqK_HotPlug_CPU_Online(unsigned int cpu)
     }
     if ((BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED) == 0)
      && (Arch[PUBLIC(RO(Proc))->ArchID].Start != NULL)) {
-		smp_call_function_single(cpu,
-					Arch[PUBLIC(RO(Proc))->ArchID].Start,
-					NULL, 0);
+	smp_call_on_cpu(cpu,
+			Arch[PUBLIC(RO(Proc))->ArchID].Start,
+			NULL, false);
     }
    }
 #if defined(CONFIG_CPU_IDLE) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
@@ -24387,9 +24295,9 @@ static int CoreFreqK_HotPlug_CPU_Offline(unsigned int cpu)
     if ((BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, CREATED) == 1)
      && (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, STARTED) == 1)
      && (Arch[PUBLIC(RO(Proc))->ArchID].Stop != NULL)) {
-	smp_call_function_single(cpu,
-				Arch[PUBLIC(RO(Proc))->ArchID].Stop,
-				NULL, 1);
+	smp_call_on_cpu(cpu,
+			Arch[PUBLIC(RO(Proc))->ArchID].Stop,
+			NULL, false);
     }
 	PUBLIC(RO(Proc))->CPU.OnLine--;
 	BITSET(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine, OS);
@@ -24412,15 +24320,15 @@ static int CoreFreqK_HotPlug_CPU_Offline(unsigned int cpu)
       {
 	if ((BITVAL(PRIVATE(OF(Core, AT(alt)))->Join.TSM, STARTED) == 1)
 	 && (Arch[PUBLIC(RO(Proc))->ArchID].Stop != NULL)) {
-		smp_call_function_single(alt,
-					Arch[PUBLIC(RO(Proc))->ArchID].Stop,
-					NULL, 1);
+		smp_call_on_cpu(alt,
+				Arch[PUBLIC(RO(Proc))->ArchID].Stop,
+				NULL, false);
 	}
 	if ((BITVAL(PRIVATE(OF(Core, AT(alt)))->Join.TSM, STARTED) == 0)
 	 && (Arch[PUBLIC(RO(Proc))->ArchID].Start != NULL)) {
-		smp_call_function_single(alt,
-					Arch[PUBLIC(RO(Proc))->ArchID].Start,
-					NULL, 0);
+		smp_call_on_cpu(alt,
+				Arch[PUBLIC(RO(Proc))->ArchID].Start,
+				NULL, false);
 	}
       }
      }
