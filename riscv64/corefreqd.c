@@ -1819,7 +1819,7 @@ REASON_CODE Core_Manager(REF *Ref)
 	    if (Quiet & 0x100) {
 		printf( "    CPU #%03u @ %.2f MHz\n", cpu,
 			CLOCK_MHz(double,
-			  COF_FREQ_MHz(	RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)],
+			  COF_FREQ_MHz( RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)],
 					RO(Core, AT(cpu))->Clock)) );
 	    }
 		/*	Notify a CPU has been brought up		*/

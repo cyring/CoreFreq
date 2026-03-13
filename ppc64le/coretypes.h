@@ -537,12 +537,10 @@ enum OFFLINE
 	OS
 };
 
-typedef union {
-	struct
-	{
-		unsigned int	Q :  8-0,
-				R : 32-8;
-	};
+typedef struct
+{
+	unsigned short	Q,
+			R;
 } COF_ST;
 
 typedef struct
@@ -554,7 +552,8 @@ typedef struct
 
 #define REL_BCLK(clock, ratio, delta_tsc, interval)			\
 ({	/*		Compute Clock (Hertz)			*/	\
-	clock.Hz= (1000LLU * delta_tsc) / (interval * ratio);		\
+	clock.Hz= (1000LLU * PRECISION * delta_tsc)			\
+		/ (interval * ratio);					\
 	/*		Compute Quotient (MHz)			*/	\
 	clock.Q = clock.Hz / (1000LLU * 1000LLU);			\
 	/*		Compute Remainder (MHz) 		*/	\
@@ -570,6 +569,11 @@ typedef struct
 #define ABS_FREQ_MHz(this_type, this_ratio, this_clock) 		\
 (									\
 	CLOCK_MHz(this_type, this_ratio * this_clock.Hz)		\
+)
+
+#define COF_FREQ_MHz(this_ratio, this_clock)				\
+(									\
+	UNIT_KHz(1) * this_ratio.R + this_ratio.Q * this_clock.Hz	\
 )
 
 typedef union {

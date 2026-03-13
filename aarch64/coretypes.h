@@ -803,8 +803,8 @@ enum OFFLINE
 typedef union {
 	struct
 	{
-		unsigned int	Q :  8-0,
-				R : 32-8;
+		unsigned short	Q,
+				R;
 	};
 } COF_ST;
 
@@ -834,6 +834,11 @@ typedef struct
 #define ABS_FREQ_MHz(this_type, this_ratio, this_clock) 		\
 (									\
 	CLOCK_MHz(this_type, this_ratio * this_clock.Hz)		\
+)
+
+#define COF_FREQ_MHz(this_ratio, this_clock)				\
+(									\
+	UNIT_KHz(1) * this_ratio.R + this_ratio.Q * this_clock.Hz	\
 )
 
 typedef union {

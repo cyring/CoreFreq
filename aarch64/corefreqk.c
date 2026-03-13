@@ -2082,15 +2082,9 @@ static CLOCK Compute_Clock(unsigned int cpu, COMPUTE_ARG *pCompute)
 	return pCompute->Clock;
 }
 
-#define ClockToHz(clock)						\
-({									\
-	clock->Hz  = clock->Q * 1000000L;				\
-	clock->Hz += clock->R * PRECISION;				\
-})
-
 static CLOCK BaseClock_GenericMachine(unsigned int ratio)
 {
-	CLOCK clock = {.Q = 100, .R = 0, .Hz = 100000000L};
+	CLOCK clock = {.Q = 24, .R = 0, .Hz = 24000000L};
 	UNUSED(ratio);
 	return clock;
 };
@@ -2382,7 +2376,7 @@ static void Query_DeviceTree(unsigned int cpu)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
    cpufreq_for_each_valid_entry(table, pFreqPolicy->freq_table)
    {
-	FREQ2COF(table->frequency, COF);
+	CPUFREQ2COF(Core->Clock, table->frequency, COF);
 
 	if (table->frequency != min_freq) {
 		if (boost < (BOOST(SIZE) - BOOST(18C)))
@@ -2394,7 +2388,8 @@ static void Query_DeviceTree(unsigned int cpu)
 		}
 	}
     if ((table->flags & CPUFREQ_BOOST_FREQ) == CPUFREQ_BOOST_FREQ) {
-	if (COF2FREQ(COF) > COF2FREQ(Core->Boost[BOOST(TBH)]))
+	if (COF2CPUFREQ(Core->Clock, COF) \
+		> COF2CPUFREQ(Core->Clock, Core->Boost[BOOST(TBH)]))
 	{
 		Core->Boost[BOOST(TBO)].Q = Core->Boost[BOOST(TBH)].Q;
 		Core->Boost[BOOST(TBO)].R = Core->Boost[BOOST(TBH)].R;
@@ -2416,34 +2411,27 @@ static void Query_DeviceTree(unsigned int cpu)
   }
 #endif /* CONFIG_CPU_FREQ */
     if (max_freq > 0) {
-	FREQ2COF(max_freq, COF);
+	PUBLIC(RO(Proc))->Features.Factory.Freq = CLOCK_KHz(	unsigned int,
+								max_freq );
+	CPUFREQ2COF(Core->Clock, max_freq, COF);
     } else {
-	volatile CNTFRQ cntfrq;
-
-	__asm__ __volatile__(
-		"mrs	%[cntfrq],	cntfrq_el0"	"\n\t"
-		"isb"
-		: [cntfrq]	"=r" (cntfrq.value)
-		:
-		: "memory"
-	);
-	cntfrq.ClockFreq_Hz = cntfrq.ClockFreq_Hz / 10U;
-	FREQ2COF(cntfrq.ClockFreq_Hz, COF);
+	COF.Q = 100;
+	COF.R = 0;
     }
 	Core->Boost[BOOST(MAX)].Q = COF.Q;
 	Core->Boost[BOOST(MAX)].R = COF.R;
 
     if (min_freq > 0) {
-	FREQ2COF(min_freq, COF);
+	CPUFREQ2COF(Core->Clock, min_freq, COF);
     } else {
-	COF.Q = 4;
+	COF.Q = 10;
 	COF.R = 0;
     }
 	Core->Boost[BOOST(MIN)].Q = COF.Q;
 	Core->Boost[BOOST(MIN)].R = COF.R;
 
     if (cur_freq > 0) {
-	FREQ2COF(cur_freq, COF);
+	CPUFREQ2COF(Core->Clock, cur_freq, COF);
     }
 	Core->Boost[BOOST(TGT)].Q = COF.Q;
 	Core->Boost[BOOST(TGT)].R = COF.R;
@@ -2493,15 +2481,16 @@ static void Query_Voltage_From_OPP(void)
 {
 	unsigned int cpu;
   for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++) {
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	enum RATIO_BOOST boost = BOOST(MIN);
 
 	Store_Voltage_Identifier(cpu, boost,
-			COF2FREQ(PUBLIC(RO(Core,AT(cpu)))->Boost[boost]));
+				COF2CPUFREQ(Core->Clock, Core->Boost[boost]));
 
     for (; boost < BOOST(SIZE) - BOOST(18C); boost++)
     {
 	Store_Voltage_Identifier(cpu, boost,
-		COF2FREQ(PUBLIC(RO(Core,AT(cpu)))->Boost[BOOST(18C) + boost]));
+		COF2CPUFREQ(Core->Clock, Core->Boost[BOOST(18C) + boost]));
     }
   }
 }
@@ -2510,10 +2499,14 @@ static enum RATIO_BOOST Find_OPP_From_Ratio(CORE_RO *Core, COF_ST ratio)
 {
 	enum RATIO_BOOST boost = BOOST(MIN), last;
 
-	if (COF2FREQ(ratio) <= COF2FREQ(Core->Boost[boost])) {
+	if (COF2CPUFREQ(Core->Clock, ratio) \
+		<= COF2CPUFREQ(Core->Clock, Core->Boost[boost]))
+	{
 		last = boost;
 	} else for (; boost < BOOST(SIZE) - BOOST(18C); boost++) {
-	    if (COF2FREQ(Core->Boost[BOOST(18C) + boost]) <= COF2FREQ(ratio)) {
+	    if (COF2CPUFREQ(Core->Clock, Core->Boost[BOOST(18C) + boost]) \
+		<= COF2CPUFREQ(Core->Clock, ratio))
+	    {
 		last = boost;
 		continue;
 	    }
@@ -3467,7 +3460,6 @@ static void Controller_Init(void)
     {
 	Arch[PUBLIC(RO(Proc))->ArchID].Query(PUBLIC(RO(Proc))->Service.Core);
     }
-
 	ratio = PUBLIC(RO(Core, AT(PUBLIC(RO(Proc))->Service.Core)))\
 		->Boost[BOOST(MAX)].Q;
 
@@ -3475,16 +3467,13 @@ static void Controller_Init(void)
     {
 	sClock = Arch[PUBLIC(RO(Proc))->ArchID].BaseClock(ratio);
     }
-    if (sClock.Hz == 0) {	/*	Fallback to 100 MHz		*/
-	sClock.Q = 100;
-	sClock.R = 0;
-	sClock.Hz = 100000000LLU;
+    if (sClock.Hz == 0) {	/*	Fallback to Specifications	*/
+	sClock = PUBLIC(RO(Proc))->Features.Factory.Clock;
     }
 	ratio = FixMissingRatioAndFrequency(ratio, &sClock);
 
-  if ((AutoClock & 0b01) || PUBLIC(RO(Proc))->Features.Hyperv)
+  if (AutoClock & 0b01)
   {
-	CLOCK vClock = {.Q = 0, .R =0, .Hz = 0};
 	COMPUTE_ARG Compute;
 	struct kmem_cache *hwCache = NULL;
 	/* Allocate Cache aligned resources. */
@@ -3504,27 +3493,13 @@ static void Controller_Init(void)
 		Compute.TSC[1] = kmem_cache_alloc(hwCache, GFP_ATOMIC);
 	    if (Compute.TSC[1] != NULL)
 	    {
-		if (ratio != 0)
-		{
-		Compute.Clock.Q = ratio;
+		Compute.Clock.Q = PRECISION;
 		Compute.Clock.R = 0;
 		Compute.Clock.Hz = 0;
 
-		PUBLIC(RO(Core, AT(cpu)))->Clock = Compute_Clock(cpu,&Compute);
+		PUBLIC(RO(Core, AT(cpu)))->Clock = Compute_Clock(cpu, &Compute);
 
 		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)].Q = ratio;
-		}
-		else
-		{
-		vClock.Q = 0; vClock.R = 0; vClock.Hz = 0;
-		Compute.Clock.Q = sClock.Q;
-		Compute.Clock.R = 0;
-		Compute.Clock.Hz = 0;
-
-		vClock = Compute_Clock(cpu, &Compute);
-
-		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)].Q = vClock.Q;
-		}
 		/*		Release memory resources.		*/
 		kmem_cache_free(hwCache, Compute.TSC[1]);
 	    }
@@ -3535,9 +3510,6 @@ static void Controller_Init(void)
 
 	kmem_cache_destroy(hwCache);
     }
-	if ((ratio == 0) && (vClock.Hz != 0)) {
-		ratio = FixMissingRatioAndFrequency(vClock.Q, &sClock);
-	}
   }
 	/*	Launch a high resolution timer per online CPU.		*/
 	for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++)
@@ -3807,9 +3779,7 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 		Core_OVH(Core); 					\
 									\
 		REL_BCLK(Core->Clock,					\
-			(PUBLIC(RO(Proc))->Features.Hybrid == 1 ?	\
-				PUBLIC(RO(Proc))->Features.Factory.Ratio\
-			:	Core->Boost[BOOST(MAX)].Q),		\
+			PRECISION,					\
 			Core->Delta.TSC,				\
 			PUBLIC(RO(Proc))->SleepInterval);		\
 	}								\
@@ -4051,22 +4021,23 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 })
 
 #ifdef CONFIG_CPU_FREQ
-static COF_ST Compute_COF_From_CPU_Freq(struct cpufreq_policy *pFreqPolicy)
+static COF_ST Compute_COF_From_CPU_Freq(struct cpufreq_policy *pFreqPolicy,
+					CLOCK clock)
 {
 	COF_ST ratio;
-	FREQ2COF(pFreqPolicy->cur, ratio);
+	CPUFREQ2COF(clock, pFreqPolicy->cur, ratio);
 	return ratio;
 }
 #endif /* CONFIG_CPU_FREQ */
 
 static COF_ST Compute_COF_From_PMU_Counter(	unsigned long long deltaCounter,
-						CLOCK clk,
+						CLOCK clock,
 						COF_ST lowestRatio )
 {
 	COF_ST ratio;
 	deltaCounter /= PUBLIC(RO(Proc))->SleepInterval;
-	FREQ2COF(deltaCounter, ratio);
-	if (COF2FREQ(ratio) < COF2FREQ(lowestRatio)) {
+	CPUFREQ2COF(clock, deltaCounter, ratio);
+	if (COF2CPUFREQ(clock, ratio) < COF2CPUFREQ(clock, lowestRatio)) {
 		ratio = lowestRatio;
 	}
 	return ratio;
@@ -4158,7 +4129,7 @@ static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
 	pFreqPolicy = &PRIVATE(OF(Core, AT(cpu)))->FreqPolicy;
     if (cpufreq_get_policy(pFreqPolicy, cpu) == 0)
     {
-	Core->Ratio = Compute_COF_From_CPU_Freq(pFreqPolicy);
+	Core->Ratio = Compute_COF_From_CPU_Freq(pFreqPolicy, Core->Clock);
     }
     else
     {
@@ -6002,11 +5973,7 @@ static int CoreFreqK_HotPlug_CPU_Online(unsigned int cpu)
 	COMPUTE_ARG Compute = {
 		.TSC = {NULL, NULL},
 		.Clock = {
-			.Q = PUBLIC(RO(Proc))->Features.Hybrid == 1 ?
-				PUBLIC(RO(Proc))->Features.Factory.Ratio
-			: PUBLIC(
-				RO(Core, AT(PUBLIC(RO(Proc))->Service.Core))
-			)->Boost[BOOST(MAX)].Q,
+			.Q = PRECISION,
 			.R = 0, .Hz = 0
 		}
 	};
