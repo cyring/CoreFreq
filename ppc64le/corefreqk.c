@@ -38,11 +38,17 @@
 #ifdef CONFIG_ACPI
 #include <linux/acpi.h>
 #include <acpi/processor.h>
-#endif
+#endif /* CONFIG_ACPI */
 #ifdef CONFIG_ACPI_CPPC_LIB
 #include <acpi/cppc_acpi.h>
-#endif
+#endif /* CONFIG_ACPI_CPPC_LIB */
 #include <asm/cputhreads.h>
+#ifdef CONFIG_OF
+#include <linux/of.h>
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 4, 0)
+#include <linux/of_device.h>
+#endif
+#endif /* CONFIG_OF */
 
 #ifdef CONFIG_HAVE_NMI
 enum {
