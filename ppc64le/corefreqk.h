@@ -170,12 +170,13 @@ typedef struct
 	struct PRIV_CORE_ST {
 		JOIN		Join;
 
-		union SAVE_AREA_CORE {
-		    struct
-		    {
-			unsigned long long MMCR0;
-		    };
-		} SaveArea;
+	    union SAVE_AREA_CORE {
+		struct
+		{
+		unsigned long long	MMCR0,
+					MMCR1;
+		};
+	    } SaveArea;
 #ifdef CONFIG_CPU_FREQ
 		struct cpufreq_policy	FreqPolicy;
 #endif /* CONFIG_CPU_FREQ */

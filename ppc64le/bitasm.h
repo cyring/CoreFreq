@@ -111,34 +111,50 @@ typedef unsigned int		Bit32;
 })
 
 #define RDINST64(_mem64)						\
-_mem64 = 0
-/*TODO(Debug PMC6) __asm__ volatile					\
-(									\
-	"mfspr %0	, 0x318"					\
-	: "=r" (_mem64) 						\
-	:								\
-	: "memory"							\
-)*/
-
-#define RDPMC64(_mem64) 						\
 ({									\
-	register unsigned long long hi64;				\
 	__asm__ volatile						\
 	(								\
-		"mfspr %0	, 0x10d"				\
-		: "=r" (hi64)						\
-		:							\
-		: "memory"						\
-	);								\
-		hi64 = hi64 << 32;					\
-	__asm__ volatile						\
-	(								\
-		"mfspr %0	, 0x10c"				\
+		"mfspr %0	, 0x318"				\
 		: "=r" (_mem64) 					\
 		:							\
 		: "memory"						\
 	);								\
-	_mem64 = _mem64 | hi64; 					\
+	_mem64; 							\
+})
+
+#define RDPMC64(_mem64) 						\
+({									\
+	__asm__ volatile						\
+	(								\
+		"mfspr %0	, 0x319"				\
+		: "=r" (_mem64) 					\
+		:							\
+		: "memory"						\
+	);								\
+	_mem64; 							\
+})
+
+#define RDPURR64(_mem64) 						\
+({									\
+	__asm__ volatile						\
+	(								\
+		"mfspr %0	, 0x25c"				\
+		: "=r" (_mem64) 					\
+		:							\
+		: "memory"						\
+	);								\
+	_mem64; 							\
+})
+
+#define RDSPURR64(_mem64) 						\
+({									\
+	__asm__ volatile						\
+	(								\
+		"mfspr %0	, 0x25d"				\
+		: "=r" (_mem64) 					\
+		:							\
+		: "memory"						\
+	);								\
 	_mem64; 							\
 })
 

@@ -1738,24 +1738,33 @@ static void Controller_Exit(void)
 
 static void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 {
-	register unsigned long long MMCR0;
+	register unsigned long long MMCR0, MMCR1;
 	__asm__ volatile
 	(
-		"mfspr %0,	0x31b"
-		: "=r" (Save->MMCR0)
+		"mfspr %0,	0x31b"		"\n\t"
+		"mfspr %1,	0x392"
+		: "=r" (Save->MMCR0),
+		  "=r" (Save->MMCR1)
 		:
 		: "memory"
 	);
+
 	MMCR0 = Save->MMCR0;
-	MMCR0 = MMCR0 & ~0x80000000LU; 	/* Unfreeze counters		*/
-	MMCR0 = MMCR0 | 0x600fa;	/* Instructions Retired event	*/
-/*	__asm__ volatile
+	MMCR0 = MMCR0 & ~0x80000000LU;	/* Unfreeze counters		*/
+	MMCR0 = MMCR0 | 0x00000001UL;	/* Enable counters globally	*/
+	MMCR1 = 0;
+	MMCR1 = MMCR1 | (0x08 << 0);	/* PMC1 event instructions retired */
+	MMCR1 = MMCR1 | (0x11 << 16);	/* PMC2 event processor cycles	*/
+
+	__asm__ volatile
 	(
-		"mtspr 0x31b,	%0"
+		"mtspr 0x31b,	%0"		"\n\t"
+		"mtspr 0x392,	%1"
 		:
-		: "r" (MMCR0)
+		: "r" (MMCR0),
+		  "r" (MMCR1)
 		: "memory"
-	);				TODO(Debug PMU/IR)		*/
+	);
 }
 
 static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
@@ -1763,9 +1772,11 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 {
 	__asm__ volatile
 	(
-		"mtspr 0x31b,	%0"
+		"mtspr 0x31b,	%0"		"\n\t"
+		"mtspr 0x392,	%1"
 		:
-		: "r" (Save->MMCR0)
+		: "r" (Save->MMCR0),
+		  "r" (Save->MMCR1)
 		: "memory"
 	);
 }
@@ -1774,10 +1785,8 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 ({									\
 	RDTSC64(Core->Counter[T].TSC);					\
 	RDINST64(Core->Counter[T].INST);				\
-	RDPMC64(Core->Counter[T].C0.UCC);				\
-	Core->Counter[T].C0.UCC &= PMU_COUNTER_OVERFLOW;		\
-	Core->Counter[T].C0.URC = Core->Counter[T].C0.UCC;		\
-	Core->Counter[T].INST &= PMU_COUNTER_OVERFLOW;			\
+	RDSPURR64(Core->Counter[T].C0.UCC);				\
+	RDPURR64(Core->Counter[T].C0.URC);				\
 	/* Derive C1: */						\
 	Core->Counter[T].C1 =						\
 	  (Core->Counter[T].C1 > Core->Counter[T].C0.URC) ?		\
@@ -1852,19 +1861,13 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 })
 
 #define Delta_INST(Core)						\
-({									\
-	if (Core->Counter[1].INST >= Core->Counter[0].INST) {		\
-		Core->Delta.INST  =  Core->Counter[1].INST		\
-				  -  Core->Counter[0].INST;		\
-	} else {							\
-		Core->Delta.INST  = (PMU_COUNTER_OVERFLOW + 0x1)	\
-				  - Core->Counter[0].INST;		\
-		Core->Delta.INST += Core->Counter[1].INST;		\
-	}								\
+({	/* Delta of Retired Instructions */				\
+	Core->Delta.INST = Core->Counter[1].INST			\
+			 - Core->Counter[0].INST;			\
 })
 
 #define PKG_Counters_Generic(Core, T)					\
-({									\
+({	/*	PCL (Processor Clock/Package clock)	*/		\
 	__asm__ volatile						\
 	(								\
 		"mfspr %0	, 0x351"				\
@@ -1872,7 +1875,6 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 		:							\
 		: "cc", "memory"					\
 	);								\
-	PUBLIC(RO(Proc))->Counter[T].PCLK &= PMU_COUNTER_OVERFLOW;	\
 })
 
 #define Pkg_OVH(Pkg, Core)						\
