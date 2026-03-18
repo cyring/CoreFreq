@@ -334,23 +334,26 @@ static long CoreFreqK_Power_Scope(int scope)
     }
 }
 
-static unsigned int FixMissingRatioAndFrequency(unsigned int r32, CLOCK *pClock)
+static COF_ST FixMissingRatioAndFrequency(COF_ST r32, CLOCK *pClock)
 {
-	unsigned long long r64 = r32;
+	COF_ST r64 = r32;
   if (PUBLIC(RO(Proc))->Features.Factory.Freq != 0)
   {
-   if ((r32 == 0) && (pClock->Q > 0))
+   if ((r32.Q == 0) && (pClock->Q > 0))
    {	/*	Fix missing ratio.					*/
-      r64=DIV_ROUND_CLOSEST(PUBLIC(RO(Proc))->Features.Factory.Freq, pClock->Q);
-      PUBLIC(RO(Core,AT(PUBLIC(RO(Proc))->Service.Core)))->Boost[BOOST(MAX)].Q=\
-		(unsigned int) r64;
+	CPUFREQ2COF((*pClock),
+		PUBLIC(RO(Proc))->Features.Factory.Freq * 1000000LLU, r64);
+
+	PUBLIC(RO(Core,AT(PUBLIC(RO(Proc))->Service.Core)))->Boost[BOOST(MAX)] \
+	= r64;
    }
   }
-  else if (r32 > 0)
+  else if (r32.Q > 0)
   {	/*	Fix the Factory frequency (unit: MHz)			*/
-	r64 = pClock->Hz * r32;
-	r64 = r64 / 1000000LLU;
-	PUBLIC(RO(Proc))->Features.Factory.Freq = (unsigned int) r64;
+	unsigned long long l64 = COF2CPUFREQ((*pClock), r32);
+	l64 = l64 / 1000000LLU;
+	PUBLIC(RO(Proc))->Features.Factory.Freq = (unsigned int) l64;
+	r64 = r32;
   }
 	PUBLIC(RO(Proc))->Features.Factory.Clock.Q  = pClock->Q;
 	PUBLIC(RO(Proc))->Features.Factory.Clock.R  = pClock->R;
@@ -358,11 +361,12 @@ static unsigned int FixMissingRatioAndFrequency(unsigned int r32, CLOCK *pClock)
 
   if (PUBLIC(RO(Proc))->Features.Factory.Clock.Hz > 0)
   {
-    r64 = PUBLIC(RO(Proc))->Features.Factory.Freq * 1000000LLU;
-    r64 = DIV_ROUND_CLOSEST(r64, PUBLIC(RO(Proc))->Features.Factory.Clock.Hz);
-    PUBLIC(RO(Proc))->Features.Factory.Ratio = (unsigned int) r64;
+	CPUFREQ2COF(	PUBLIC(RO(Proc))->Features.Factory.Clock,
+		PUBLIC(RO(Proc))->Features.Factory.Freq * 1000000LLU, r64 );
+
+	PUBLIC(RO(Proc))->Features.Factory.Ratio = r64.Q;
   }
-	return (unsigned int) r64;
+	return r64;
 }
 
 static unsigned long long CoreFreqK_Read_CS_From_TSC(struct clocksource *cs)
@@ -999,7 +1003,18 @@ static int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu)
 #endif
 #endif /* CONFIG_CPU_FREQ */
 
-static void Query_DeviceTree(unsigned int cpu)
+inline COF_ST Factory2COF(CORE_RO *Core) {
+	unsigned long long \
+	_freq_Hz = 1000000LLU * PUBLIC(RO(Proc))->Features.Factory.Freq, _rem;
+	COF_ST _COF;
+	_COF.Q = _freq_Hz / Core->Clock.Hz;
+	_rem = _freq_Hz % Core->Clock.Hz;
+	_COF.R = (_rem << 16) / Core->Clock.Hz;
+
+	return _COF;
+}
+
+static void Query_DeviceTree(CLOCK clock, unsigned int cpu)
 {
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 #ifdef CONFIG_CPU_FREQ
@@ -1021,25 +1036,22 @@ static void Query_DeviceTree(unsigned int cpu)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
    cpufreq_for_each_valid_entry(table, pFreqPolicy->freq_table)
    {
-	CPUFREQ2COF(Core->Clock, table->frequency, COF);
+	CPUFREQ2COF(clock, table->frequency * 1000LLU, COF);
 
 	if (table->frequency != min_freq) {
 		if (boost < (BOOST(SIZE) - BOOST(18C)))
 		{
-			Core->Boost[BOOST(18C) + boost].Q = COF.Q;
-			Core->Boost[BOOST(18C) + boost].R = COF.R;
+			Core->Boost[BOOST(18C) + boost] = COF;
 
 			boost++;
 		}
 	}
     if ((table->flags & CPUFREQ_BOOST_FREQ) == CPUFREQ_BOOST_FREQ) {
-	if (COF2CPUFREQ(Core->Clock, COF) \
-		> COF2CPUFREQ(Core->Clock, Core->Boost[BOOST(TBH)]))
+	if (COF2CPUFREQ(clock, COF) \
+		> COF2CPUFREQ(clock, Core->Boost[BOOST(TBH)]))
 	{
-		Core->Boost[BOOST(TBO)].Q = Core->Boost[BOOST(TBH)].Q;
-		Core->Boost[BOOST(TBO)].R = Core->Boost[BOOST(TBH)].R;
-		Core->Boost[BOOST(TBH)].Q = COF.Q;
-		Core->Boost[BOOST(TBH)].R = COF.R;
+		Core->Boost[BOOST(TBO)] = Core->Boost[BOOST(TBH)];
+		Core->Boost[BOOST(TBH)] = COF;
 	}
 	PUBLIC(RO(Proc))->Features.Turbo_OPP = 1;
     }
@@ -1056,30 +1068,25 @@ static void Query_DeviceTree(unsigned int cpu)
   }
 #endif /* CONFIG_CPU_FREQ */
     if (max_freq > 0) {
-	PUBLIC(RO(Proc))->Features.Factory.Freq = CLOCK_KHz(	unsigned int,
-								max_freq );
-	CPUFREQ2COF(Core->Clock, max_freq, COF);
+	CPUFREQ2COF(clock, max_freq * 1000LLU, COF);
     } else {
-	COF.Q = 100;
-	COF.R = 0;
+	COF = Factory2COF(Core);
     }
-	Core->Boost[BOOST(MAX)].Q = COF.Q;
-	Core->Boost[BOOST(MAX)].R = COF.R;
+	Core->Boost[BOOST(MAX)] = COF;
 
     if (min_freq > 0) {
-	CPUFREQ2COF(Core->Clock, min_freq, COF);
+	CPUFREQ2COF(clock, min_freq * 1000LLU, COF);
     } else {
-	COF.Q = 10;
-	COF.R = 0;
+	COF = Factory2COF(Core);
     }
-	Core->Boost[BOOST(MIN)].Q = COF.Q;
-	Core->Boost[BOOST(MIN)].R = COF.R;
+	Core->Boost[BOOST(MIN)] = COF;
 
     if (cur_freq > 0) {
-	CPUFREQ2COF(Core->Clock, cur_freq, COF);
+	CPUFREQ2COF(clock, cur_freq * 1000LLU, COF);
+    } else {
+	COF = Factory2COF(Core);
     }
-	Core->Boost[BOOST(TGT)].Q = COF.Q;
-	Core->Boost[BOOST(TGT)].R = COF.R;
+	Core->Boost[BOOST(TGT)] = COF;
 }
 
 #ifdef CONFIG_PM_OPP
@@ -1461,7 +1468,7 @@ static void Query_GenericMachine(unsigned int cpu)
 {
 	Query_Same_Genuine_Features(cpu);
 
-	Query_DeviceTree(cpu);
+	Query_DeviceTree(Arch[PUBLIC(RO(Proc))->ArchID].BaseClock(0), cpu);
 
     if (PRIVATE(OF(Specific)) != NULL) {
 	/*	Save the thermal parameters if specified		*/
@@ -1597,7 +1604,7 @@ static void PerCore_GenericMachine(void *arg)
 {
 	CORE_RO *Core = (CORE_RO *) arg;
 
-	Query_DeviceTree(Core->Bind);
+	Query_DeviceTree(Core->Clock, Core->Bind);
 
     if (PUBLIC(RO(Proc))->Features.Hybrid) {
 	Core->T.Cluster.Hybrid_ID = \
@@ -1702,7 +1709,8 @@ static void InitTimer(void *Cycle_Function)
 static void Controller_Init(void)
 {
 	CLOCK sClock = {.Q = 0, .R = 0, .Hz = 0};
-	unsigned int cpu = PUBLIC(RO(Proc))->CPU.Count, ratio = 0;
+	unsigned int cpu = PUBLIC(RO(Proc))->CPU.Count;
+	COF_ST ratio = {.Q = 0, .R = 0};
 
 	Package_Init_Reset();
 
@@ -1710,12 +1718,13 @@ static void Controller_Init(void)
     {
 	Arch[PUBLIC(RO(Proc))->ArchID].Query(PUBLIC(RO(Proc))->Service.Core);
     }
-	ratio = PUBLIC(RO(Core, AT(PUBLIC(RO(Proc))->Service.Core)))\
-		->Boost[BOOST(MAX)].Q;
+	ratio = PUBLIC(
+			RO(Core, AT(PUBLIC(RO(Proc))->Service.Core))
+		)->Boost[BOOST(MAX)];
 
     if (Arch[PUBLIC(RO(Proc))->ArchID].BaseClock != NULL)
     {
-	sClock = Arch[PUBLIC(RO(Proc))->ArchID].BaseClock(ratio);
+	sClock = Arch[PUBLIC(RO(Proc))->ArchID].BaseClock(ratio.Q);
     }
     if (sClock.Hz == 0) {	/*	Fallback to Specifications	*/
 	sClock = PUBLIC(RO(Proc))->Features.Factory.Clock;
@@ -1749,7 +1758,7 @@ static void Controller_Init(void)
 
 		PUBLIC(RO(Core, AT(cpu)))->Clock = Compute_Clock(cpu, &Compute);
 
-		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)].Q = ratio;
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = ratio;
 		/*		Release memory resources.		*/
 		kmem_cache_free(hwCache, Compute.TSC[1]);
 	    }
@@ -2145,7 +2154,7 @@ static COF_ST Compute_COF_From_CPU_Freq(struct cpufreq_policy *pFreqPolicy,
 					CLOCK clock)
 {
 	COF_ST ratio;
-	CPUFREQ2COF(clock, pFreqPolicy->cur, ratio);
+	CPUFREQ2COF(clock, pFreqPolicy->cur * 1000LLU, ratio);
 	return ratio;
 }
 #endif /* CONFIG_CPU_FREQ */

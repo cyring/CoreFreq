@@ -274,14 +274,16 @@ struct SMBIOS17
 	u32	extended_conf_speed;	/*	0x58	DWORD		*/
 } __attribute__((__packed__));
 
-#define CPUFREQ2COF(_clock, _freq_kHz, _COF)				\
+#define CPUFREQ2COF(_clock, _freq_Hz, _COF)				\
 ({									\
-	_COF.Q = (_freq_kHz) / (_clock.Hz / UNIT_KHz(1)),		\
-	_COF.R = (_freq_kHz) - (_COF.Q * (_clock.Hz / UNIT_KHz(1)));	\
+	unsigned long long _rem;					\
+	(_COF.Q) = (_freq_Hz) / (_clock.Hz);				\
+	_rem = (_freq_Hz) % (_clock.Hz);				\
+	(_COF.R) = (_rem << 16) / (_clock.Hz);				\
 })
 
 #define COF2CPUFREQ(_clock, _COF)					\
-	( (_COF.Q * (_clock.Hz / UNIT_KHz(1))) + _COF.R )
+	( ((_clock.Hz) * (_COF.Q)) + (((_clock.Hz) * (_COF.R)) >> 16) )
 
 #if !defined(RHEL_MAJOR)
 	#define RHEL_MAJOR 0

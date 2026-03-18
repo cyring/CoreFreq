@@ -349,8 +349,7 @@ static void *Core_Cycle(void *arg)
 			 * COF_FREQ_MHz(Cpu->Boost[BOOST(MAX)], CFlip->Clock) );
 
 	CFlip->Absolute.Ratio.Perf = (double)RO(Core)->Ratio.Q;
-	CFlip->Absolute.Ratio.Perf +=(double)RO(Core)->Ratio.R
-					/ (CFlip->Clock.Hz / UNIT_KHz(1));
+	CFlip->Absolute.Ratio.Perf +=(RO(Core)->Ratio.R / 65536.0);
 
 	/* Compute IPS=Instructions per Hz				*/
 	CFlip->State.IPS = (double)CFlip->Delta.INST * FSF;

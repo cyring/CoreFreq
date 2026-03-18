@@ -736,7 +736,8 @@ typedef struct
 
 #define COF_FREQ_MHz(this_ratio, this_clock)				\
 (									\
-	UNIT_KHz(1) * this_ratio.R + this_ratio.Q * this_clock.Hz	\
+	( ((this_clock.Hz) * (this_ratio.Q))				\
+	+ (((this_clock.Hz) * (this_ratio.R)) >> 16) )			\
 )
 
 typedef union {
