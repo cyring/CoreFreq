@@ -8794,10 +8794,9 @@ void Pkg_Fmt_Freq(	ASCII *item, ASCII *code, CLOCK *clock,
 			code, RSC(AUTOMATIC).CODE(),
 			unlock ? '<' : '[', ratio.Q, unlock ? '>' : ']');
     } else {
-	const CLOCK clk = {.Q = clock->Q, .R = clock->R, .Hz = clock->Hz};
 	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1,
 			"%s" "%7.2f MHz %c%4u %c ",
-			code, CLOCK_MHz(double, COF_FREQ_MHz(ratio, clk)),
+			code, CLOCK_MHz(double, COF_FREQ_MHz(ratio, (*clock))),
 			unlock ? '<' : '[', ratio.Q, unlock ? '>' : ']');
     }
 }

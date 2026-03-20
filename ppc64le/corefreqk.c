@@ -1110,13 +1110,10 @@ static unsigned long GetVoltage_From_OPP(unsigned int cpu,
 
 static void Store_Voltage_Identifier	(unsigned int cpu,
 					enum RATIO_BOOST boost,
-					unsigned long kHz )
+					unsigned long freq_Hz )
 {
-    if (kHz > 0) {
-	unsigned long freq_Hz = 1000LU * kHz,
-
-	u_volt = GetVoltage_From_OPP(cpu, freq_Hz);
-	u_volt = u_volt >> 5;
+    if (freq_Hz > 0) {
+	unsigned long u_volt = GetVoltage_From_OPP(cpu, freq_Hz) >> 5;
 
 	PRIVATE(OF(Core, AT(cpu)))->OPP[boost].VID = (signed int) u_volt;
     }

@@ -2475,13 +2475,10 @@ static unsigned long GetVoltage_From_OPP(unsigned int cpu,
 
 static void Store_Voltage_Identifier	(unsigned int cpu,
 					enum RATIO_BOOST boost,
-					unsigned long kHz )
+					unsigned long freq_Hz )
 {
-    if (kHz > 0) {
-	unsigned long freq_Hz = 1000LU * kHz,
-
-	u_volt = GetVoltage_From_OPP(cpu, freq_Hz);
-	u_volt = u_volt >> 5;
+    if (freq_Hz > 0) {
+	unsigned long u_volt = GetVoltage_From_OPP(cpu, freq_Hz) >> 5;
 
 	PRIVATE(OF(Core, AT(cpu)))->OPP[boost].VID = (signed int) u_volt;
     }
@@ -3328,9 +3325,6 @@ static void Core_Thermal_Worker(struct work_struct *work)
 
 static void PerCore_GenericMachine(void *arg)
 {
-	volatile PMUSERENR pmuser;
-	volatile PMCNTENSET enset;
-	volatile PMCNTENCLR enclr;
 	volatile REVIDR revid;
 	CORE_RO *Core = (CORE_RO *) arg;
 
@@ -3340,27 +3334,6 @@ static void PerCore_GenericMachine(void *arg)
 	Core->T.Cluster.Hybrid_ID = \
 	  Core->Boost[BOOST(MAX)].Q < PUBLIC(RO(Proc))->Features.Factory.Ratio ?
 		Hybrid_Secondary : Hybrid_Primary;
-    }
-    if (PUBLIC(RO(Proc))->Features.PerfMon.Version > 0) {
-	__asm__ __volatile__(
-		"mrs	%[pmuser],	pmuserenr_el0"	"\n\t"
-		"mrs	%[enset],	pmcntenset_el0" "\n\t"
-		"mrs	%[enclr],	pmcntenclr_el0" "\n\t"
-		"isb"
-		: [pmuser]	"=r" (pmuser.value),
-		  [enset]	"=r" (enset.value),
-		  [enclr]	"=r" (enclr.value)
-		:
-		: "memory"
-	);
-    }
-    if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
-	PUBLIC(RO(Proc))->Features.PerfMon.CoreCycles	= pmuser.CR
-							| enset.C
-							| enclr.C;
-	PUBLIC(RO(Proc))->Features.PerfMon.InstrRetired = pmuser.IR
-							| enset.F0
-							| enclr.F0;
     }
 	__asm__ __volatile__(
 		"mrs	%[revid],	revidr_el1"	"\n\t"
@@ -3664,6 +3637,11 @@ static void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 		"str	x12	,	%[PMCR]"	"\n\t"
 		"mov	x12	,	%[CTRL]"	"\n\t"
 		"msr	pmcr_el0,	x12"		"\n\t"
+		"isb"					"\n\t"
+
+		"# Writing 1 to PMCR_EL0.C sets CCNT to 0\n\t"
+		"mov	x12	,	#1"		"\n\t"
+		"msr	pmccntr_el0,	x12"		"\n\t"
 		"isb"
 		: [PMCR]	"+m" (Save->PMCR.value),
 		  [PMSELR]	"+m" (Save->PMSELR.value),
@@ -3683,6 +3661,28 @@ static void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 		  [CTRL]	"i" (0x87LLU)
 		: "memory", "%x12"
 	);
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		volatile PMUSERENR pmuser;
+		volatile PMCNTENSET enset;
+		volatile unsigned long long ccntr, icntr;
+		__asm__ __volatile__(
+			"mrs	%[pmuser],	pmuserenr_el0"	"\n\t"
+			"mrs	%[enset],	pmcntenset_el0" "\n\t"
+			"mrs	%[ccntr],	pmccntr_el0"	"\n\t"
+			"mrs	%[icntr],	pmevcntr3_el0"	"\n\t"
+			"isb"
+			: [pmuser]	"=r" (pmuser.value),
+			  [enset]	"=r" (enset.value),
+			  [ccntr]	"=r" (ccntr),
+			  [icntr]	"=r" (icntr)
+			:
+			: "memory"
+		);
+		PUBLIC(RO(Proc))->Features.PerfMon.CoreCycles	= (pmuser.CR
+								| enset.C)
+								&& (ccntr > 0);
+		PUBLIC(RO(Proc))->Features.PerfMon.InstrRetired = (icntr > 0);
+	}
     }
 }
 
@@ -3754,11 +3754,9 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 									\
 	Core->Counter[T].INST &= INST_COUNTER_OVERFLOW;			\
 	/* Normalize frequency: */					\
-	Core->Counter[T].C1 = ( 					\
-		Core->Counter[T].TSC					\
-		* PUBLIC(RO(Proc))->Features.Factory.Clock.Q		\
-		* Core->Boost[BOOST(MAX)].Q				\
-	)	/ PUBLIC(RO(Proc))->Features.Factory.Ratio;		\
+	Core->Counter[T].C1 =						\
+		(Core->Counter[T].TSC * Core->Boost[BOOST(MAX)].Q)	\
+	+ ((Core->Counter[T].TSC * (Core->Boost[BOOST(MAX)].R)) >> 16); \
 	/* Derive C1: */						\
 	Core->Counter[T].C1 =						\
 	  (Core->Counter[T].C1 > Core->Counter[T].C0.URC) ?		\
