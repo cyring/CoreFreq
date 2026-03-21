@@ -8461,9 +8461,9 @@ Window *CreateRatioClock(unsigned long long id,
 	const CUINT hthMax = 1 + lowestShift + highestShift;
 	CUINT	oRow = CUMAX(1 + TOP_HEADER_ROW + TOP_FOOTER_ROW, 2);
 	CUINT hthWin = CUMIN(Draw.Size.height - oRow, hthMax);
-	if (hthWin < oRow) {
+	if (hthMax > Draw.Size.height - 1) {
 		oRow = 1;
-		hthWin = Draw.Size.height - 2;
+		hthWin = hthMax;
 	}
 	Window *wCK = CreateWindow(	wLayer, id,
 					1, hthWin,
