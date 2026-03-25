@@ -10752,7 +10752,7 @@ Window *CreateRatioClock(unsigned long long id,
 	CUINT hthWin = CUMIN(Draw.Size.height - oRow, hthMax);
 	if (hthMax > Draw.Size.height - 1) {
 		oRow = 1;
-		hthWin = hthMax;
+		hthWin = CUMIN(Draw.Size.height - oRow, hthMax);
 	}
 	Window *wCK = CreateWindow(	wLayer, id,
 					1, hthWin,

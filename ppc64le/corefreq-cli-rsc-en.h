@@ -1562,10 +1562,10 @@
 #define RSC_MECH_SSBS_CODE_EN		"Speculative Store Bypass Safe"
 
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_EN	"  %3s       Processor     " \
-						"   %s     %c%4u %c "
+						"   %s     %c%5.1f%c "
 
 #define RSC_CREATE_SELECT_FREQ_TURBO_CODE_EN	"  %3s       Processor     " \
-						"%7.2f MHz %c%4u %c "
+						"%7.2f MHz %c%5.1f%c "
 
 #define RSC_CREATE_SELECT_FREQ_TGT_CODE_EN	"  TGT       Processor     "
 #define RSC_CREATE_SELECT_FREQ_HWP_TGT_CODE_EN	"  HWP-TGT   Processor     "

@@ -110,8 +110,7 @@ struct RULER_ST Ruler = {
 	.Count = 0
 };
 
-#define GetTopOfRuler() \
-	(RO(Shm)->Cpu[Ruler.TopOf.Top].Boost[Ruler.TopOf.Boost].Q)
+#define GetTopOfRuler() (RO(Shm)->Cpu[Ruler.TopOf.Top].Boost[Ruler.TopOf.Boost])
 
 #define SetTopOfRuler(_cpu, _boost)					\
 (									\
@@ -124,23 +123,23 @@ void SetTopOftheTop(	unsigned int cpu, enum RATIO_BOOST rb,
   switch (rb) {
   case BOOST(HWP_MIN):
   case BOOST(MIN):
-    if (RO(Shm)->Cpu[cpu].Boost[rb].Q < RO(Shm)->Cpu[Ruler.Top[rb]].Boost[rb].Q)
+    if (RO(Shm)->Cpu[cpu].Boost[rb].N < RO(Shm)->Cpu[Ruler.Top[rb]].Boost[rb].N)
     {
 	Ruler.Top[rb] = cpu;
     }
-    if (RO(Shm)->Cpu[cpu].Boost[rb].Q < (*lowest))
+    if (RO(Shm)->Cpu[cpu].Boost[rb].N < (*lowest))
     {
-	(*lowest) = RO(Shm)->Cpu[cpu].Boost[rb].Q;
+	(*lowest) = RO(Shm)->Cpu[cpu].Boost[rb].N;
     }
 	break;
   default:
-    if (RO(Shm)->Cpu[cpu].Boost[rb].Q > RO(Shm)->Cpu[Ruler.Top[rb]].Boost[rb].Q)
+    if (RO(Shm)->Cpu[cpu].Boost[rb].N > RO(Shm)->Cpu[Ruler.Top[rb]].Boost[rb].N)
     {
 	Ruler.Top[rb] = cpu;
     }
-    if (RO(Shm)->Cpu[cpu].Boost[rb].Q > (*highest))
+    if (RO(Shm)->Cpu[cpu].Boost[rb].N > (*highest))
     {
-	(*highest) = RO(Shm)->Cpu[cpu].Boost[rb].Q;
+	(*highest) = RO(Shm)->Cpu[cpu].Boost[rb].N;
 	SetTopOfRuler(Ruler.Top[rb], rb);
     }
 	break;
@@ -173,15 +172,15 @@ void AggregateRatio(void)
 		unsigned int, RO(Shm)->Proc.Features.Factory.Clock.Hz
 	);
 	enum RATIO_BOOST lt, rt, min_boost = BOOST(MIN);
-    if ((RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(HWP_MIN)].Q > 0)
-     && (RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(HWP_MIN)].Q
-	< RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(MIN)].Q))
+    if ((RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(HWP_MIN)].N > 0)
+     && (RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(HWP_MIN)].N
+	< RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(MIN)].N))
     {
 	min_boost = BOOST(HWP_MIN);
     }
 	unsigned int cpu,
-	lowest = RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(MAX)].Q,
-	highest = RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[min_boost].Q;
+	lowest = RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(MAX)].N,
+	highest = RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[min_boost].N;
 
 	Ruler.Count = 0;
 	SetTopOfRuler(RO(Shm)->Proc.Service.Core, BOOST(MIN));
@@ -197,20 +196,20 @@ void AggregateRatio(void)
 			&& (Ruler.Count < dimension);
 		cpu++)
 	{
-	    if ((RO(Shm)->Cpu[cpu].Boost[lt].Q > 0)
-	     && (RO(Shm)->Cpu[cpu].Boost[lt].Q <= highestFactory) )
+	    if ((RO(Shm)->Cpu[cpu].Boost[lt].N > 0)
+	     && (RO(Shm)->Cpu[cpu].Boost[lt].N <= highestFactory) )
 	    {
 		SetTopOftheTop(cpu, lt, &lowest, &highest);
 
 		for (rt = BOOST(MIN); rt < Ruler.Count; rt++)
 		{
-			if (Ruler.Uniq[rt] == RO(Shm)->Cpu[cpu].Boost[lt].Q)
+			if (Ruler.Uniq[rt] == RO(Shm)->Cpu[cpu].Boost[lt].N)
 			{
 				break;
 			}
 		}
 		if (rt == Ruler.Count) {
-			Ruler.Uniq[Ruler.Count] = RO(Shm)->Cpu[cpu].Boost[lt].Q;
+			Ruler.Uniq[Ruler.Count] = RO(Shm)->Cpu[cpu].Boost[lt].N;
 			Ruler.Count++;
 		}
 	    }
@@ -237,7 +236,7 @@ void AggregateRatio(void)
     {
 	const double median = (double) RO(Shm)->Cpu[
 						Ruler.Top[BOOST(ACT)]
-					].Boost[BOOST(ACT)].Q;
+					].Boost[BOOST(ACT)].N;
 
 	if ((median > Ruler.Minimum) && (median < Ruler.Maximum)) {
 		Ruler.Median = median;
@@ -1225,29 +1224,28 @@ TGrid *PrintRatioFreq(	Window *win,
 {
 	TGrid *pGrid = NULL;
 
-    if ((( pRatio->Q > 0 || pRatio->R > 0 )  && !zerobase) || (zerobase))
+    if (( (pRatio->N > 0)  && !zerobase) || (zerobase))
     {
-	const COF_ST COF = (*pRatio);
-      const double Freq_MHz = CLOCK_MHz(double,COF_FREQ_MHz(COF, CFlop->Clock));
+	const double Freq_MHz = CLOCK_MHz(double, pRatio->N * CFlop->Clock.Hz);
 
 	if ((Freq_MHz > 0.0) && (Freq_MHz < CLOCK_MHz(double, UNIT_GHz(10.0))))
 	{
 		pGrid = PUT(_key, attrib, width, 0,
-			"%.*s""%s""%.*s""%7.2f""%.*s""%c%4d %c",
+			"%.*s""%s""%.*s""%7.2f""%.*s""%c%7.2f %c",
 		(int) (20 - strlen(pfx)), hSpace, pfx, 3, hSpace,
 			Freq_MHz,
-			20, hSpace,
+			18, hSpace,
 			SymbUnlock[syc][0],
-			pRatio->Q,
+			pRatio->N,
 			SymbUnlock[syc][1]);
 	} else {
 		pGrid = PUT(_key, attrib, width, 0,
-			"%.*s""%s""%.*s""%7s""%.*s""%c%4d %c",
+			"%.*s""%s""%.*s""%7s""%.*s""%c%7.2f %c",
 		(int) (20 - strlen(pfx)), hSpace, pfx, 3, hSpace,
 			RSC(AUTOMATIC).CODE(),
-			20, hSpace,
+			18, hSpace,
 			SymbUnlock[syc][0],
-			pRatio->Q,
+			pRatio->N,
 			SymbUnlock[syc][1]);
 	}
     }
@@ -1284,35 +1282,38 @@ void RefreshFactoryFreq(TGrid *grid, DATA_TYPE data[])
 	char item[11+11+1];
 	UNUSED(data);
 
-	StrFormat(item, 11+11+1, "%5u" "%4u",
+	StrFormat(item, 11+11+1, "%5u" "%7u",
 		RO(Shm)->Proc.Features.Factory.Freq,
 		RO(Shm)->Proc.Features.Factory.Ratio);
 
 	memcpy(&grid->cell.item[22], &item[0], 5);
-	memcpy(&grid->cell.item[51], &item[5], 4);
+	memcpy(&grid->cell.item[49], &item[5], 7);
 }
 
-void RefreshItemFreq(TGrid *grid, unsigned int ratio, double Freq_MHz)
+void RefreshItemFreq(TGrid *grid, COF_ST ratio, double Freq_MHz)
 {
-	char item[11+8+1];
+	char item[8+8+1];
 
     if ((Freq_MHz > 0.0) && (Freq_MHz < CLOCK_MHz(double, UNIT_GHz(10.0)))) {
-	StrFormat(item,11+8+1, "%4u%7.2f", ratio, Freq_MHz);
+	StrFormat(item,8+8+1, "%7.2f%7.2f", ratio.N, Freq_MHz);
     } else {
-	StrFormat(item,11+7+1, "%4u%7s", ratio, RSC(AUTOMATIC).CODE());
+	StrFormat(item,8+7+1, "%7.2f%7s", ratio.N, RSC(AUTOMATIC).CODE());
     }
-	memcpy(&grid->cell.item[23], &item[4], 7);
-	memcpy(&grid->cell.item[51], &item[0], 4);
+	memcpy(&grid->cell.item[23], &item[7], 7);
+	memcpy(&grid->cell.item[49], &item[0], 7);
 }
 
-void RefreshRatioFreq(TGrid *grid, DATA_TYPE data[])
+void RefreshUncoreFreq(TGrid *grid, DATA_TYPE data[])
 {
+	enum RATIO_BOOST boost = data[0].uint[0];
+	COF_ST COF = RO(Shm)->Uncore.Boost[boost];
+
 	struct FLIP_FLOP *CFlop = \
 		&RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].FlipFlop[
 			!RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Toggle
 		];
 	RefreshItemFreq(grid,
-			(*data[0].puint),
+			COF,
 			ABS_FREQ_MHz(double, (*data[0].puint), CFlop->Clock));
 }
 
@@ -1325,8 +1326,7 @@ void RefreshTopFreq(TGrid *grid, DATA_TYPE data[])
 	struct FLIP_FLOP *CFlop = &RO(Shm)->Cpu[top].FlipFlop[
 					!RO(Shm)->Cpu[top].Toggle
 				];
-	RefreshItemFreq(grid, COF.Q,
-			CLOCK_MHz(double, COF_FREQ_MHz(COF, CFlop->Clock)));
+	RefreshItemFreq(grid, COF, CLOCK_MHz(double, COF.N * CFlop->Clock.Hz));
 }
 
 void RefreshPrimaryFreq(TGrid *grid, DATA_TYPE data[])
@@ -1341,8 +1341,7 @@ void RefreshPrimaryFreq(TGrid *grid, DATA_TYPE data[])
 						RO(Shm)->Proc.Service.Core
 					].Toggle
 				];
-	RefreshItemFreq(grid, COF.Q,
-			CLOCK_MHz(double, COF_FREQ_MHz(COF, CFlop->Clock)));
+	RefreshItemFreq(grid, COF, CLOCK_MHz(double, COF.N * CFlop->Clock.Hz));
 }
 
 void RefreshHybridFreq(TGrid *grid, DATA_TYPE data[])
@@ -1357,8 +1356,7 @@ void RefreshHybridFreq(TGrid *grid, DATA_TYPE data[])
 						RO(Shm)->Proc.Service.Hybrid
 					].Toggle
 				];
-	RefreshItemFreq(grid, COF.Q,
-			CLOCK_MHz(double, COF_FREQ_MHz(COF, CFlop->Clock)));
+	RefreshItemFreq(grid, COF, CLOCK_MHz(double, COF.N * CFlop->Clock.Hz));
 }
 
 void RefreshConfigTDP(TGrid *grid, DATA_TYPE data[])
@@ -1500,9 +1498,9 @@ REASON_CODE SysInfoProc(Window *win,
 		RefreshFactoryClock );
 
 	GridCall( PUT(	SCANKEY_NULL, attrib[3], width, 0,
-			"%.*s""%5u""%.*s""[%4d ]",
+			"%.*s""%5u""%.*s""[%7d ]",
 			22, hSpace, RO(Shm)->Proc.Features.Factory.Freq,
-			23, hSpace, RO(Shm)->Proc.Features.Factory.Ratio ),
+			21, hSpace, RO(Shm)->Proc.Features.Factory.Ratio ),
 		RefreshFactoryFreq );
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2, "%s", RSC(PERFORMANCE).CODE());
@@ -1700,7 +1698,7 @@ REASON_CODE SysInfoProc(Window *win,
 				&RO(Shm)->Uncore.Boost[UNCORE_BOOST(MIN)],
 				1, uncoreClock.ullong,
 				width, OutFunc, cellPadding, attrib[3] ),
-		RefreshRatioFreq, &RO(Shm)->Uncore.Boost[UNCORE_BOOST(MIN)] );
+		RefreshUncoreFreq, UNCORE_BOOST(MIN) );
 
 	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | CLOCK_MOD_MAX;
 	GridCall( PrintRatioFreq(win, CFlop,
@@ -1708,21 +1706,21 @@ REASON_CODE SysInfoProc(Window *win,
 				&RO(Shm)->Uncore.Boost[UNCORE_BOOST(MAX)],
 				1, uncoreClock.ullong,
 				width, OutFunc, cellPadding, attrib[3]),
-		RefreshRatioFreq, &RO(Shm)->Uncore.Boost[UNCORE_BOOST(MAX)] );
+		RefreshUncoreFreq, UNCORE_BOOST(MAX) );
     } else {
 	GridCall( PrintRatioFreq(win, CFlop,
 				0, (char*) uncoreLabel[0],
 				&RO(Shm)->Uncore.Boost[UNCORE_BOOST(MIN)],
 				0, SCANKEY_NULL,
 				width, OutFunc, cellPadding, attrib[3]),
-		RefreshRatioFreq, &RO(Shm)->Uncore.Boost[UNCORE_BOOST(MIN)] );
+		RefreshUncoreFreq, UNCORE_BOOST(MIN) );
 
 	GridCall( PrintRatioFreq(win, CFlop,
 				0, (char*) uncoreLabel[1],
 				&RO(Shm)->Uncore.Boost[UNCORE_BOOST(MAX)],
 				0, SCANKEY_NULL,
 				width, OutFunc, cellPadding, attrib[3]),
-		RefreshRatioFreq, &RO(Shm)->Uncore.Boost[UNCORE_BOOST(MAX)] );
+		RefreshUncoreFreq, UNCORE_BOOST(MAX) );
     }
 	return reason;
 }
@@ -8469,13 +8467,15 @@ void TitleForUncoreClock(unsigned int NC, ASCII *title)
 			(NC == CLOCK_MOD_MIN) ? RSC(MIN).CODE() : (ASCII*) "");
 }
 
-void ComputeRatioShifts(unsigned int COF,
+void ComputeRatioShifts(COF_ST COF,
 			unsigned int lowestOperating,
 			unsigned int highestOperating,
 			signed int *lowestShift,
 			signed int *highestShift)
 {
 	unsigned int minRatio, maxRatio;
+	unsigned int thisRatio = (unsigned int)COF.N;
+
 	if (highestOperating < lowestOperating) {
 		minRatio = highestOperating;
 		maxRatio = lowestOperating;
@@ -8483,14 +8483,14 @@ void ComputeRatioShifts(unsigned int COF,
 		minRatio = lowestOperating;
 		maxRatio = highestOperating;
 	}
-	if (COF < minRatio) {
-		minRatio = COF;
+	if (thisRatio < minRatio) {
+		minRatio = thisRatio;
 	}
-	if (COF > maxRatio) {
-		maxRatio = COF;
+	if (thisRatio > maxRatio) {
+		maxRatio = thisRatio;
 	}
-	(*lowestShift)	= (int) COF - (int) minRatio;
-	(*highestShift) = (int) maxRatio - (int) COF;
+	(*lowestShift)	= (int)thisRatio - (int)minRatio;
+	(*highestShift) = (int)maxRatio - (int)thisRatio;
 }
 
 unsigned int MultiplierIsRatio(unsigned int cpu, unsigned int multiplier)
@@ -8503,7 +8503,7 @@ unsigned int MultiplierIsRatio(unsigned int cpu, unsigned int multiplier)
 		case BOOST(TBH):
 			fallthrough;
 		default:
-		    if (RO(Shm)->Cpu[cpu].Boost[boost].Q == multiplier)
+		    if (RO(Shm)->Cpu[cpu].Boost[boost].N == multiplier)
 		    {
 			return 1;
 		    }
@@ -8517,7 +8517,7 @@ unsigned int MultiplierIsRatio(unsigned int cpu, unsigned int multiplier)
 }
 
 Window *CreateRatioClock(unsigned long long id,
-			unsigned int COF,
+			COF_ST COF,
 			signed short any,
 			unsigned int NC,
 			signed int lowestShift,
@@ -8548,7 +8548,7 @@ Window *CreateRatioClock(unsigned long long id,
 	CUINT hthWin = CUMIN(Draw.Size.height - oRow, hthMax);
 	if (hthMax > Draw.Size.height - 1) {
 		oRow = 1;
-		hthWin = hthMax;
+		hthWin = CUMIN(Draw.Size.height - oRow, hthMax);
 	}
 	Window *wCK = CreateWindow(	wLayer, id,
 					1, hthWin,
@@ -8562,7 +8562,7 @@ Window *CreateRatioClock(unsigned long long id,
 	{
 		ATTRIBUTE *attr = attrib[3];
 
-		multiplier = (int) COF + offset;
+		multiplier = (int) COF.N + offset;
 
 		clockMod.NC = NC | boxKey;
 		clockMod.cpu = any;
@@ -8613,7 +8613,7 @@ Window *CreateRatioClock(unsigned long long id,
 		wCK->matrix.select.row  = lowestShift
 					- wCK->matrix.scroll.vert;
 	} else {
-		wCK->matrix.select.row  = COF > 0 ? lowestShift : 0;
+		wCK->matrix.select.row  = COF.N > 0 ? lowestShift : 0;
 	}
 	StoreWindow(wCK,	.key.Enter,	MotionEnter_Cell);
 	StoreWindow(wCK,	.key.Down,	MotionDown_Win);
@@ -8766,21 +8766,21 @@ Window *CreateSelectCPU(unsigned long long id)
 	return wUSR;
 }
 
-void Pkg_Fmt_Turbo(ASCII *item, CLOCK *clock, unsigned int ratio, char *NC)
+void Pkg_Fmt_Turbo(ASCII *item, CLOCK *clock, COF_ST ratio, char *NC)
 {
-    if (ratio == 0) {
+    if (ratio.N == 0) {
 	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+1,
 			(char *) RSC(CREATE_SELECT_AUTO_TURBO).CODE(),
 			NC, RSC(AUTOMATIC).CODE(),
 			RO(Shm)->Proc.Features.Turbo_Unlock ? '<' : '[',
-			ratio,
+			ratio.N,
 			RO(Shm)->Proc.Features.Turbo_Unlock ? '>' : ']');
     } else {
 	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1,
 			(char *) RSC(CREATE_SELECT_FREQ_TURBO).CODE(),
-			NC, ABS_FREQ_MHz(double, ratio, (*clock)),
+			NC, ABS_FREQ_MHz(double, ratio.N, (*clock)),
 			RO(Shm)->Proc.Features.Turbo_Unlock ? '<' : '[',
-			ratio,
+			ratio.N,
 			RO(Shm)->Proc.Features.Turbo_Unlock ? '>' : ']');
     }
 }
@@ -8788,31 +8788,35 @@ void Pkg_Fmt_Turbo(ASCII *item, CLOCK *clock, unsigned int ratio, char *NC)
 void Pkg_Fmt_Freq(	ASCII *item, ASCII *code, CLOCK *clock,
 			COF_ST ratio, unsigned char unlock )
 {
-    if (ratio.Q == 0) {
+    if (ratio.N == 0) {
 	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+1,
-			"%s" "   %s     %c%4u %c ",
+			"%s" "   %s     %c%5.1f%c ",
 			code, RSC(AUTOMATIC).CODE(),
-			unlock ? '<' : '[', ratio.Q, unlock ? '>' : ']');
+			unlock ? '<' : '[',
+			ratio.N,
+			unlock ? '>' : ']');
     } else {
 	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1,
-			"%s" "%7.2f MHz %c%4u %c ",
-			code, CLOCK_MHz(double, COF_FREQ_MHz(ratio, (*clock))),
-			unlock ? '<' : '[', ratio.Q, unlock ? '>' : ']');
+			"%s" "%7.2f MHz %c%5.1f%c ",
+			code, CLOCK_MHz(double, ratio.N * clock->Hz),
+			unlock ? '<' : '[',
+			ratio.N,
+			unlock ? '>' : ']');
     }
 }
 
-void CPU_Item_Auto_Freq(unsigned int cpu, unsigned int ratio,
+void CPU_Item_Auto_Freq(unsigned int cpu, COF_ST ratio,
 			unsigned char unlock, ASCII *item)
 {
 	StrFormat(item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+10+1,
-			"  %03u  %4d%6d%6d   " "   %s     %c%4u %c ",
+			"  %03u  %4d%6d%6d   " "   %s     %c%5.1f%c ",
 			cpu,
 			RO(Shm)->Cpu[cpu].Topology.PackageID,
 			RO(Shm)->Cpu[cpu].Topology.CoreID,
 			RO(Shm)->Cpu[cpu].Topology.ThreadID,
 			RSC(AUTOMATIC).CODE(),
 			unlock ? '<' : '[',
-			ratio,
+			ratio.N,
 			unlock ? '>' : ']');
 }
 
@@ -8825,7 +8829,7 @@ void Pkg_Item_Turbo_##_NC(ASCII *item)					\
 			&RO(Shm)->Cpu[top].FlipFlop[			\
 					!RO(Shm)->Cpu[top].Toggle	\
 					].Clock,			\
-			RO(Shm)->Cpu[top].Boost[BOOST(_NC)].Q,		\
+			RO(Shm)->Cpu[top].Boost[BOOST(_NC)],		\
 			COREFREQ_STRINGIFY(_NC) );			\
 }
 DECLARE_Pkg_Item_Turbo( 1C)
@@ -8859,7 +8863,7 @@ void Pkg_Update_Turbo_##_NC(TGrid *grid, DATA_TYPE data[])		\
 			&RO(Shm)->Cpu[top].FlipFlop[			\
 					!RO(Shm)->Cpu[top].Toggle	\
 					].Clock,			\
-			RO(Shm)->Cpu[top].Boost[BOOST(_NC)].Q,		\
+			RO(Shm)->Cpu[top].Boost[BOOST(_NC)],		\
 			COREFREQ_STRINGIFY(_NC) );			\
 									\
 	memcpy(grid->cell.item, item, grid->cell.length);		\
@@ -8888,8 +8892,8 @@ DECLARE_Pkg_Update_Turbo(18C)
 #define DECLARE_CPU_Item_Turbo(_NC)					\
 void CPU_Item_Turbo_##_NC(unsigned int cpu, ASCII *item)		\
 {									\
-    if (RO(Shm)->Cpu[cpu].Boost[BOOST(_NC)].Q == 0) {			\
-	CPU_Item_Auto_Freq(cpu, RO(Shm)->Cpu[cpu].Boost[BOOST(_NC)].Q,	\
+    if (RO(Shm)->Cpu[cpu].Boost[BOOST(_NC)].N == 0) {			\
+	CPU_Item_Auto_Freq(cpu, RO(Shm)->Cpu[cpu].Boost[BOOST(_NC)],	\
 			   RO(Shm)->Proc.Features.Turbo_Unlock, item);	\
     } else {								\
 	struct FLIP_FLOP *CFlop = &RO(Shm)->Cpu[cpu].FlipFlop[		\
@@ -8897,15 +8901,15 @@ void CPU_Item_Turbo_##_NC(unsigned int cpu, ASCII *item)		\
 				];					\
 	StrFormat(item ,						\
 		RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,	\
-		"  %03u  %4d%6d%6d   " "%7.2f MHz %c%4u %c ",		\
+		"  %03u  %4d%6d%6d   " "%7.2f MHz %c%5.1f%c ",		\
 		cpu,							\
 		RO(Shm)->Cpu[cpu].Topology.PackageID,			\
 		RO(Shm)->Cpu[cpu].Topology.CoreID,			\
 		RO(Shm)->Cpu[cpu].Topology.ThreadID,			\
-		ABS_FREQ_MHz(double, RO(Shm)->Cpu[cpu].Boost[BOOST(_NC)].Q,\
+		ABS_FREQ_MHz(double, RO(Shm)->Cpu[cpu].Boost[BOOST(_NC)].N,\
 				     CFlop->Clock),			\
 		RO(Shm)->Proc.Features.Turbo_Unlock ? '<' : '[',	\
-		RO(Shm)->Cpu[cpu].Boost[BOOST(_NC)].Q,			\
+		RO(Shm)->Cpu[cpu].Boost[BOOST(_NC)].N,			\
 		RO(Shm)->Proc.Features.Turbo_Unlock ? '>' : ']');	\
     }									\
 }
@@ -9019,13 +9023,13 @@ void CPU_Item_Target_Freq(unsigned int cpu, ASCII *item)
 	struct FLIP_FLOP *CFlop;
 	CFlop = &RO(Shm)->Cpu[cpu].FlipFlop[ !RO(Shm)->Cpu[cpu].Toggle ];
 
-    if (RO(Shm)->Cpu[cpu].Boost[BOOST(TGT)].Q == 0) {
-	CPU_Item_Auto_Freq(	cpu, RO(Shm)->Cpu[cpu].Boost[BOOST(TGT)].Q,
+    if (RO(Shm)->Cpu[cpu].Boost[BOOST(TGT)].N == 0) {
+	CPU_Item_Auto_Freq(	cpu, RO(Shm)->Cpu[cpu].Boost[BOOST(TGT)],
 				RO(Shm)->Proc.Features.TgtRatio_Unlock, item );
     } else {
 	StrFormat(item,
 		RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+4+6+10+1,
-		"  %03u  %4d%6d  %-3d" "[%3.0f ]%5.0f MHz %c%4u %c ",
+		"  %03u  %4d%6d  %-3d" "[%3.0f ]%5.0f MHz %c%5.1f%c ",
 		cpu,
 		RO(Shm)->Cpu[cpu].Topology.PackageID,
 		RO(Shm)->Cpu[cpu].Topology.CoreID,
@@ -9033,7 +9037,7 @@ void CPU_Item_Target_Freq(unsigned int cpu, ASCII *item)
 		CFlop->Absolute.Ratio.Perf,
 		CFlop->Absolute.Freq,
 		RO(Shm)->Proc.Features.TgtRatio_Unlock ? '<' : '[',
-		RO(Shm)->Cpu[cpu].Boost[BOOST(TGT)].Q,
+		RO(Shm)->Cpu[cpu].Boost[BOOST(TGT)].N,
 		RO(Shm)->Proc.Features.TgtRatio_Unlock ? '>' : ']');
     }
 }
@@ -9118,9 +9122,10 @@ void CPU_Item_HWP_Target_Freq(unsigned int cpu, ASCII *item)
 				|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1);
 
     if (RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf == 0) {
-	CPU_Item_Auto_Freq(	cpu,
-			RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf,
-				isEnable, item );
+	const COF_ST COF = {
+		.N = RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf
+	};
+	CPU_Item_Auto_Freq(cpu, COF, isEnable, item);
     } else {
 	StrFormat(item,
 			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
@@ -9219,9 +9224,10 @@ void CPU_Item_HWP_Max_Freq(unsigned int cpu, ASCII *item)
 				|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1);
 
     if (RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Maximum_Perf == 0) {
-	CPU_Item_Auto_Freq(	cpu,
-			RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Maximum_Perf,
-				isEnable, item );
+	const COF_ST COF = {
+		.N = RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Maximum_Perf
+	};
+	CPU_Item_Auto_Freq(cpu, COF, isEnable, item);
     } else {
 	StrFormat(item,
 			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
@@ -9320,9 +9326,10 @@ void CPU_Item_HWP_Min_Freq(unsigned int cpu, ASCII *item)
 				|| (RO(Shm)->Proc.Features.ACPI_CPPC == 1);
 
     if (RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Minimum_Perf == 0) {
-	CPU_Item_Auto_Freq(	cpu,
-			RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Minimum_Perf,
-				isEnable, item );
+	const COF_ST COF = {
+		.N = RO(Shm)->Cpu[cpu].PowerThermal.HWP.Request.Minimum_Perf
+	};
+	CPU_Item_Auto_Freq(cpu, COF, isEnable, item);
     } else {
 	StrFormat(item,
 			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
@@ -9414,24 +9421,23 @@ void CPU_Item_Max_Freq(unsigned int cpu, ASCII *item)
 	struct FLIP_FLOP *CFlop;
 	CFlop = &RO(Shm)->Cpu[cpu].FlipFlop[ !RO(Shm)->Cpu[cpu].Toggle ];
 
-    if (RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)].Q == 0) {
-	CPU_Item_Auto_Freq(	cpu, RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)].Q,
+    if (RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)].N == 0) {
+	CPU_Item_Auto_Freq(	cpu, RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)],
 			(RO(Shm)->Proc.Features.ClkRatio_Unlock & 0b10) == 0b10,
 				item );
     } else {
 	StrFormat(item,
 		RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
-		"  %03u  %4d%6d%6d   " "%7.2f MHz %c%4u %c ",
+		"  %03u  %4d%6d%6d   " "%7.2f MHz %c%5.1f%c ",
 		cpu,
 		RO(Shm)->Cpu[cpu].Topology.PackageID,
 		RO(Shm)->Cpu[cpu].Topology.CoreID,
 		RO(Shm)->Cpu[cpu].Topology.ThreadID,
-		CLOCK_MHz(double,
-			COF_FREQ_MHz(	RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)],
-					CFlop->Clock )),
+		CLOCK_MHz(double, RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)].N
+				* CFlop->Clock.Hz),
 		(RO(Shm)->Proc.Features.ClkRatio_Unlock & 0b10) == 0b10 ?
 			'<' : '[',
-		RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)].Q,
+		RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)].N,
 		(RO(Shm)->Proc.Features.ClkRatio_Unlock & 0b10) == 0b10 ?
 			'>' : ']');
     }
@@ -9510,24 +9516,23 @@ void CPU_Item_Min_Freq(unsigned int cpu, ASCII *item)
 	struct FLIP_FLOP *CFlop;
 	CFlop = &RO(Shm)->Cpu[cpu].FlipFlop[ !RO(Shm)->Cpu[cpu].Toggle ];
 
-    if (RO(Shm)->Cpu[cpu].Boost[BOOST(MIN)].Q == 0) {
-	CPU_Item_Auto_Freq(	cpu, RO(Shm)->Cpu[cpu].Boost[BOOST(MIN)].Q,
+    if (RO(Shm)->Cpu[cpu].Boost[BOOST(MIN)].N == 0) {
+	CPU_Item_Auto_Freq(	cpu, RO(Shm)->Cpu[cpu].Boost[BOOST(MIN)],
 			(RO(Shm)->Proc.Features.ClkRatio_Unlock & 0b01) == 0b01,
 				item );
     } else {
 	StrFormat(item,
 		RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
-		"  %03u  %4d%6d%6d   " "%7.2f MHz %c%4u %c ",
+		"  %03u  %4d%6d%6d   " "%7.2f MHz %c%5.1f%c ",
 		cpu,
 		RO(Shm)->Cpu[cpu].Topology.PackageID,
 		RO(Shm)->Cpu[cpu].Topology.CoreID,
 		RO(Shm)->Cpu[cpu].Topology.ThreadID,
-		CLOCK_MHz(double,
-			COF_FREQ_MHz(	RO(Shm)->Cpu[cpu].Boost[BOOST(MIN)],
-					CFlop->Clock )),
+		CLOCK_MHz(double, RO(Shm)->Cpu[cpu].Boost[BOOST(MIN)].N
+				* CFlop->Clock.Hz),
 		(RO(Shm)->Proc.Features.ClkRatio_Unlock & 0b01) == 0b01 ?
 			'<' : '[',
-		RO(Shm)->Cpu[cpu].Boost[BOOST(MIN)].Q,
+		RO(Shm)->Cpu[cpu].Boost[BOOST(MIN)].N,
 		(RO(Shm)->Proc.Features.ClkRatio_Unlock & 0b01) == 0b01 ?
 			'>' : ']');
     }
@@ -12693,21 +12698,21 @@ int Shortcut(SCANKEY *scan)
 	const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 
 	signed int lowestShift, highestShift;
-	ComputeRatioShifts(	SProc->Boost[BOOST(ACT)].Q,
+	ComputeRatioShifts(	SProc->Boost[BOOST(ACT)],
 				0,
 				MAXCLOCK_TO_RATIO(unsigned int,CFlop->Clock.Hz),
 				&lowestShift,
 				&highestShift );
 	AppendWindow(
 		CreateRatioClock(scan->key,
-			SProc->Boost[BOOST(ACT)].Q,
+			SProc->Boost[BOOST(ACT)],
 			-1,
 			NC,
 			lowestShift,
 			highestShift,
 
-		(int)	((SProc->Boost[BOOST(MIN)].Q
-			+ RO(Shm)->Proc.Features.Factory.Ratio) >> 1),
+		(int)	((SProc->Boost[BOOST(MIN)].N
+			+ RO(Shm)->Proc.Features.Factory.Ratio) / 2),
 
 		(int)	(RO(Shm)->Proc.Features.Factory.Ratio
 			+ ((MAXCLOCK_TO_RATIO(unsigned int, CFlop->Clock.Hz)
@@ -12736,21 +12741,21 @@ int Shortcut(SCANKEY *scan)
 	const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 
 	signed int lowestShift, highestShift;
-	ComputeRatioShifts(	RO(Shm)->Uncore.Boost[BOOST(MAX)].Q,
-				RO(Shm)->Uncore.Boost[BOOST(MIN)].Q,
+	ComputeRatioShifts(	RO(Shm)->Uncore.Boost[BOOST(MAX)],
+				RO(Shm)->Uncore.Boost[BOOST(MIN)].N,
 				MAXCLOCK_TO_RATIO(unsigned int,CFlop->Clock.Hz),
 				&lowestShift,
 				&highestShift );
 	AppendWindow(
 		CreateRatioClock(scan->key,
-			RO(Shm)->Uncore.Boost[BOOST(MAX)].Q,
+			RO(Shm)->Uncore.Boost[BOOST(MAX)],
 			-1,
 			NC,
 			lowestShift,
 			highestShift,
 
-		(int)	((RO(Shm)->Uncore.Boost[BOOST(MIN)].Q
-			+ RO(Shm)->Proc.Features.Factory.Ratio ) >> 1),
+		(int)	((RO(Shm)->Uncore.Boost[BOOST(MIN)].N
+			+ RO(Shm)->Proc.Features.Factory.Ratio ) / 2),
 
 		(int)	(RO(Shm)->Proc.Features.Factory.Ratio
 			+ ((MAXCLOCK_TO_RATIO(unsigned int, CFlop->Clock.Hz)
@@ -12773,17 +12778,17 @@ int Shortcut(SCANKEY *scan)
 	CLOCK_ARG clockMod  = {.ullong = scan->key};
 	const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK,
 		highestOperating = KMAX(RO(Shm)->Proc.Features.Factory.Ratio,
-					RO(Shm)->Uncore.Boost[BOOST(MAX)].Q);
+					RO(Shm)->Uncore.Boost[BOOST(MAX)].N);
 
 	signed int lowestShift, highestShift;
-	ComputeRatioShifts(	RO(Shm)->Uncore.Boost[BOOST(MIN)].Q,
+	ComputeRatioShifts(	RO(Shm)->Uncore.Boost[BOOST(MIN)],
 				1,
 				highestOperating,
 				&lowestShift,
 				&highestShift );
 	AppendWindow(
 		CreateRatioClock(scan->key,
-				RO(Shm)->Uncore.Boost[BOOST(MIN)].Q,
+				RO(Shm)->Uncore.Boost[BOOST(MIN)],
 				-1,
 				NC,
 				lowestShift,
@@ -13137,7 +13142,7 @@ int Shortcut(SCANKEY *scan)
 	    {
 		struct FLIP_FLOP *CFlop;
 		CLOCK_ARG clockMod = {.ullong = scan->key};
-		unsigned int COF;
+		COF_ST COF;
 		const unsigned int lowestOperating = 1;
 		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 		const enum RATIO_BOOST boost = BOOST(SIZE) - NC;
@@ -13147,12 +13152,12 @@ int Shortcut(SCANKEY *scan)
 			(scan->key & RATIO_MASK) ^ CORE_COUNT
 		);
 	    if (cpu == -1) {
-		COF = RO(Shm)->Cpu[ Ruler.Top[boost] ].Boost[boost].Q;
+		COF = RO(Shm)->Cpu[ Ruler.Top[boost] ].Boost[boost];
 		CFlop = &RO(Shm)->Cpu[ Ruler.Top[boost] ].FlipFlop[
 				!RO(Shm)->Cpu[ Ruler.Top[boost] ].Toggle
 			];
 	    } else {
-		COF = RO(Shm)->Cpu[cpu].Boost[boost].Q;
+		COF = RO(Shm)->Cpu[cpu].Boost[boost];
 		CFlop = &RO(Shm)->Cpu[cpu].FlipFlop[!RO(Shm)->Cpu[cpu].Toggle];
 	    }
 		ComputeRatioShifts(COF,
@@ -13193,7 +13198,8 @@ int Shortcut(SCANKEY *scan)
 	   if (win == NULL)
 	   {
 		CLOCK_ARG clockMod = {.ullong = scan->key};
-		unsigned int COF, lowestOperating, highestOperating;
+		COF_ST COF;
+		unsigned int lowestOperating, highestOperating;
 		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 		signed int lowestShift, highestShift;
 
@@ -13201,21 +13207,21 @@ int Shortcut(SCANKEY *scan)
 			(scan->key & RATIO_MASK) ^ CORE_COUNT
 		);
 	    if (cpu == -1) {
-		COF = RO(Shm)->Cpu[ Ruler.Top[BOOST(TGT)] ].Boost[BOOST(TGT)].Q;
+		COF = RO(Shm)->Cpu[ Ruler.Top[BOOST(TGT)] ].Boost[BOOST(TGT)];
 		lowestOperating = RO(Shm)->Cpu[
 						Ruler.Top[ BOOST(TGT) ]
-					].Boost[ BOOST(MIN) ].Q;
+					].Boost[ BOOST(MIN) ].N;
 		highestOperating = RO(Shm)->Cpu[
 						Ruler.Top[ BOOST(TGT) ]
-					].Boost[ BOOST(MAX) ].Q;
+					].Boost[ BOOST(MAX) ].N;
 	    } else {
-		COF = RO(Shm)->Cpu[cpu].Boost[BOOST(TGT)].Q;
-		lowestOperating = RO(Shm)->Cpu[cpu].Boost[BOOST(MIN)].Q;
-		highestOperating = RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)].Q;
+		COF = RO(Shm)->Cpu[cpu].Boost[BOOST(TGT)];
+		lowestOperating = RO(Shm)->Cpu[cpu].Boost[BOOST(MIN)].N;
+		highestOperating = RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)].N;
 	    }
 		ComputeRatioShifts(	COF,
 					0,	/*	AUTO Frequency	*/
-					GetTopOfRuler(),
+					GetTopOfRuler().N,
 					&lowestShift,
 					&highestShift );
 
@@ -13231,7 +13237,7 @@ int Shortcut(SCANKEY *scan)
 					+ highestOperating) >> 1),
 
 			(int)	(CUMIN( RO(Shm)->Proc.Features.Factory.Ratio,
-					GetTopOfRuler() )),
+					GetTopOfRuler().N )),
 
 					BOXKEY_RATIO_CLOCK,
 					TitleForRatioClock,
@@ -13254,7 +13260,7 @@ int Shortcut(SCANKEY *scan)
 		CLOCK_ARG clockMod = {.ullong = scan->key};
 		struct HWP_STRUCT *pHWP;
 		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
-		unsigned int COF;
+		COF_ST COF;
 		signed int lowestShift, highestShift;
 
 		const signed short cpu = (signed short) (
@@ -13264,14 +13270,14 @@ int Shortcut(SCANKEY *scan)
 		pHWP = &RO(Shm)->Cpu[
 				Ruler.Top[BOOST(HWP_TGT)]
 			].PowerThermal.HWP;
-		COF = pHWP->Request.Desired_Perf;
+		COF.N = (float)pHWP->Request.Desired_Perf;
 
 		CFlop = &RO(Shm)->Cpu[Ruler.Top[ BOOST(MAX)] ].FlipFlop[
 					!RO(Shm)->Cpu[Ruler.Top[BOOST(MAX)]
 					].Toggle];
 	      } else {
 		pHWP = &RO(Shm)->Cpu[cpu].PowerThermal.HWP;
-		COF = pHWP->Request.Desired_Perf;
+		COF.N = (float)pHWP->Request.Desired_Perf;
 		CFlop = &RO(Shm)->Cpu[cpu].FlipFlop[!RO(Shm)->Cpu[cpu].Toggle];
 	      }
 		ComputeRatioShifts(COF,
@@ -13314,7 +13320,7 @@ int Shortcut(SCANKEY *scan)
 		CLOCK_ARG clockMod = {.ullong = scan->key};
 		struct HWP_STRUCT *pHWP;
 		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
-		unsigned int COF;
+		COF_ST COF;
 		signed int lowestShift, highestShift;
 
 		const signed short cpu = (signed short) (
@@ -13324,14 +13330,14 @@ int Shortcut(SCANKEY *scan)
 		pHWP = &RO(Shm)->Cpu[
 				Ruler.Top[BOOST(HWP_MAX)]
 			].PowerThermal.HWP;
-		COF = pHWP->Request.Maximum_Perf;
+		COF.N = (float)pHWP->Request.Maximum_Perf;
 
 		CFlop = &RO(Shm)->Cpu[Ruler.Top[ BOOST(MAX)] ].FlipFlop[
 					!RO(Shm)->Cpu[Ruler.Top[BOOST(MAX)]
 					].Toggle];
 	      } else {
 		pHWP = &RO(Shm)->Cpu[cpu].PowerThermal.HWP;
-		COF = pHWP->Request.Maximum_Perf;
+		COF.N = (float)pHWP->Request.Maximum_Perf;
 		CFlop = &RO(Shm)->Cpu[cpu].FlipFlop[!RO(Shm)->Cpu[cpu].Toggle];
 	      }
 		ComputeRatioShifts(COF,
@@ -13374,7 +13380,7 @@ int Shortcut(SCANKEY *scan)
 		CLOCK_ARG clockMod = {.ullong = scan->key};
 		struct HWP_STRUCT *pHWP;
 		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
-		unsigned int COF;
+		COF_ST COF;
 		signed int lowestShift, highestShift;
 
 		const signed short cpu = (signed short) (
@@ -13384,14 +13390,14 @@ int Shortcut(SCANKEY *scan)
 		pHWP = &RO(Shm)->Cpu[
 				Ruler.Top[BOOST(HWP_MIN)]
 			].PowerThermal.HWP;
-		COF = pHWP->Request.Minimum_Perf;
+		COF.N = (float)pHWP->Request.Minimum_Perf;
 
 		CFlop = &RO(Shm)->Cpu[Ruler.Top[ BOOST(MAX)] ].FlipFlop[
 					!RO(Shm)->Cpu[Ruler.Top[BOOST(MAX)]
 					].Toggle];
 	      } else {
 		pHWP = &RO(Shm)->Cpu[cpu].PowerThermal.HWP;
-		COF = pHWP->Request.Minimum_Perf;
+		COF.N = (float)pHWP->Request.Minimum_Perf;
 		CFlop = &RO(Shm)->Cpu[cpu].FlipFlop[!RO(Shm)->Cpu[cpu].Toggle];
 	      }
 		ComputeRatioShifts(COF,
@@ -13432,26 +13438,27 @@ int Shortcut(SCANKEY *scan)
 		struct FLIP_FLOP *CFlop;
 		CLOCK_ARG clockMod  = {.ullong = scan->key};
 		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
-		unsigned int COF, lowestOperating;
+		COF_ST COF;
+		unsigned int lowestOperating;
 		signed int lowestShift, highestShift;
 
 		const signed short cpu = (signed short) (
 			(scan->key & RATIO_MASK) ^ CORE_COUNT
 		);
 	      if (cpu == -1) {
-		COF = RO(Shm)->Cpu[ Ruler.Top[BOOST(MAX)] ].Boost[BOOST(MAX)].Q;
+		COF = RO(Shm)->Cpu[ Ruler.Top[BOOST(MAX)] ].Boost[BOOST(MAX)];
 
 		lowestOperating = KMIN( RO(Shm)->Cpu[
 						Ruler.Top[BOOST(MAX)]
-					].Boost[BOOST(MIN)].Q,
+					].Boost[BOOST(MIN)].N,
 					RO(Shm)->Proc.Features.Factory.Ratio );
 
 		CFlop = &RO(Shm)->Cpu[Ruler.Top[ BOOST(MAX)] ].FlipFlop[
 					!RO(Shm)->Cpu[Ruler.Top[BOOST(MAX)]
 					].Toggle];
 	      } else {
-		COF = RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)].Q;
-		lowestOperating = KMIN( RO(Shm)->Cpu[cpu].Boost[BOOST(MIN)].Q,
+		COF = RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)];
+		lowestOperating = KMIN( RO(Shm)->Cpu[cpu].Boost[BOOST(MIN)].N,
 					RO(Shm)->Proc.Features.Factory.Ratio );
 		CFlop = &RO(Shm)->Cpu[cpu].FlipFlop[!RO(Shm)->Cpu[cpu].Toggle];
 	      }
@@ -13493,21 +13500,22 @@ int Shortcut(SCANKEY *scan)
 	    {
 		CLOCK_ARG clockMod  = {.ullong = scan->key};
 		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
-		unsigned int COF, lowestOperating;
+		COF_ST COF;
+		unsigned int lowestOperating;
 		signed int lowestShift, highestShift;
 
 		const signed short cpu = (signed short) (
 			(scan->key & RATIO_MASK) ^ CORE_COUNT
 		);
 	      if (cpu == -1) {
-		COF = RO(Shm)->Cpu[ Ruler.Top[BOOST(MIN)] ].Boost[BOOST(MIN)].Q;
+		COF = RO(Shm)->Cpu[ Ruler.Top[BOOST(MIN)] ].Boost[BOOST(MIN)];
 		lowestOperating = KMIN( RO(Shm)->Cpu[
 						Ruler.Top[BOOST(MIN)]
-					].Boost[BOOST(MIN)].Q,
+					].Boost[BOOST(MIN)].N,
 					RO(Shm)->Proc.Features.Factory.Ratio );
 	      } else {
-		COF = RO(Shm)->Cpu[cpu].Boost[BOOST(MIN)].Q;
-		lowestOperating = KMIN( RO(Shm)->Cpu[cpu].Boost[BOOST(MIN)].Q,
+		COF = RO(Shm)->Cpu[cpu].Boost[BOOST(MIN)];
+		lowestOperating = KMIN( RO(Shm)->Cpu[cpu].Boost[BOOST(MIN)].N,
 					RO(Shm)->Proc.Features.Factory.Ratio );
 	      }
 		ComputeRatioShifts(COF,
@@ -17087,8 +17095,8 @@ void Layout_Card_Uncore(Layer *layer, Card *card)
 			card->origin.col, (card->origin.row + 3),
 			hUncore);
 
-	StrFormat(Buffer, 10+1, "x%2u",
-			RO(Shm)->Uncore.Boost[UNCORE_BOOST(MAX)].Q);
+	StrFormat(Buffer, 10+1, "x%2.0f",
+			RO(Shm)->Uncore.Boost[UNCORE_BOOST(MAX)].N);
 
 	hUncore.code[ 8] = (ASCII) Buffer[0];
 	hUncore.code[ 9] = (ASCII) Buffer[1];

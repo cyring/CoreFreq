@@ -390,14 +390,18 @@ static void *Core_Cycle(void *arg)
 	CFlip->Delta.C1 	= RO(Core)->Delta.C1;
 
 	/* Update all clock ratios.					*/
-	memcpy(Cpu->Boost, RO(Core)->Boost, (BOOST(SIZE)) * sizeof(COF_ST));
+	enum RATIO_BOOST boost;
+	for (boost = BOOST(MIN); boost < BOOST(SIZE); boost++) {
+		const float _N = COF_TO_NBR(float, RO(Core)->Boost[boost]);
+		Cpu->Boost[boost].N = _N;
+	}
+	/* Precompute inverse to replace division with a multiplication */
+	const double
+	_inv_freq = 1.0 / (double)(CFlip->Clock.Hz * Cpu->Boost[BOOST(MAX)].N),
+	FSF = UNIT_KHz(1.0) * _inv_freq / (double)(RO(Shm)->Sleep.Interval);
 
-	const double FSF = UNIT_KHz(1.0)
-			 / ( (double)(RO(Shm)->Sleep.Interval)
-			 * COF_FREQ_MHz(Cpu->Boost[BOOST(MAX)], CFlip->Clock) );
-
-	CFlip->Absolute.Ratio.Perf = (double)RO(Core)->Ratio.Q;
-	CFlip->Absolute.Ratio.Perf +=(RO(Core)->Ratio.R / 65536.0);
+	/* Convert absolute frequency ratio to floating-point		*/
+	CFlip->Absolute.Ratio.Perf = COF_TO_NBR(double, RO(Core)->Ratio);
 
 	/* Compute IPS=Instructions per Hz				*/
 	CFlip->State.IPS = (double)CFlip->Delta.INST * FSF;
@@ -1242,8 +1246,11 @@ void PerCore_Update(	RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc),
 		BITCLR(LOCKLESS, RO(Shm)->Cpu[cpu].OffLine, HW);
 	}
 	/*	Initialize all clock ratios.				*/
-	memcpy( RO(Shm)->Cpu[cpu].Boost, RO(Core, AT(cpu))->Boost,
-		(BOOST(SIZE)) * sizeof(COF_ST) );
+	enum RATIO_BOOST boost;
+    for (boost = BOOST(MIN); boost < BOOST(SIZE); boost++) {
+	const float _N = COF_TO_NBR(float, RO(Core, AT(cpu))->Boost[boost]);
+	RO(Shm)->Cpu[cpu].Boost[boost].N = _N;
+    }
 
 	RO(Shm)->Cpu[cpu].Query.Revision = RO(Core, AT(cpu))->Query.Revision;
 
@@ -1304,7 +1311,7 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 		/*		Start SysGate				*/
 		BITSET(LOCKLESS, Ref->RO(Shm)->SysGate.Operation, 0);
 		/*		Notify					*/
-		BITWISESET(LOCKLESS, PendingSync,BIT_MASK_NTFY);
+		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_NTFY);
 	    }
 	}
     }
@@ -1856,9 +1863,8 @@ REASON_CODE Core_Manager(REF *Ref)
 	    }
 	    if (Quiet & 0x100) {
 		printf( "    CPU #%03u @ %.2f MHz\n", cpu,
-			CLOCK_MHz(double,
-			  COF_FREQ_MHz( RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)],
-					RO(Core, AT(cpu))->Clock)) );
+			CLOCK_MHz(double, RO(Shm)->Cpu[cpu].Boost[BOOST(MAX)].N
+					* RO(Core, AT(cpu))->Clock.Hz) );
 	    }
 		/*	Notify a CPU has been brought up		*/
 		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_NTFY);

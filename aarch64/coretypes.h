@@ -801,6 +801,7 @@ enum OFFLINE
 };
 
 typedef union {
+		float		N;
 	struct
 	{
 		unsigned short	Q,
@@ -841,6 +842,10 @@ typedef struct
 	( ((this_clock.Hz) * (this_ratio.Q))				\
 	+ (((this_clock.Hz) * (this_ratio.R)) >> 16) )			\
 )
+
+#define COF_SCALE_F	(1.0f / 65536.0f)
+
+#define COF_TO_NBR(_t, _COF) ((_t)(_COF).Q + (_t)(_COF).R * (_t)COF_SCALE_F)
 
 typedef union {
 	signed long long	sllong;
