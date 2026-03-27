@@ -106,6 +106,8 @@ int ClientFollowService(SERVICE_PROC *pPeer, SERVICE_PROC *pMain, pid_t pid)
 	return 0;
 }
 
+#define Ruler_Round(_N) (unsigned int)lroundf((_N))
+
 struct RULER_ST Ruler = {
 	.Count = 0
 };
@@ -120,31 +122,31 @@ struct RULER_ST Ruler = {
 void SetTopOftheTop(	unsigned int cpu, enum RATIO_BOOST rb,
 			unsigned int *lowest, unsigned int *highest )
 {
-    unsigned int ratio = (unsigned int)lroundf(RO(Shm)->Cpu[cpu].Boost[rb].N);
-  switch (rb) {
-  case BOOST(HWP_MIN):
-  case BOOST(MIN):
-    if (ratio < (unsigned int)lroundf(RO(Shm)->Cpu[Ruler.Top[rb]].Boost[rb].N))
-    {
-	Ruler.Top[rb] = cpu;
-    }
-    if (ratio < (*lowest))
-    {
-	(*lowest) = ratio;
-    }
-	break;
-  default:
-    if (ratio > (unsigned int)lroundf(RO(Shm)->Cpu[Ruler.Top[rb]].Boost[rb].N))
-    {
-	Ruler.Top[rb] = cpu;
-    }
-    if (ratio > (*highest))
-    {
-	(*highest) = ratio;
-	SetTopOfRuler(Ruler.Top[rb], rb);
-    }
-	break;
-  }
+	unsigned int ratio = Ruler_Round(RO(Shm)->Cpu[cpu].Boost[rb].N);
+	switch (rb) {
+	case BOOST(HWP_MIN):
+	case BOOST(MIN):
+	    if (ratio < Ruler_Round(RO(Shm)->Cpu[Ruler.Top[rb]].Boost[rb].N))
+	    {
+		Ruler.Top[rb] = cpu;
+	    }
+	    if (ratio < (*lowest))
+	    {
+		(*lowest) = ratio;
+	    }
+		break;
+	default:
+	    if (ratio > Ruler_Round(RO(Shm)->Cpu[Ruler.Top[rb]].Boost[rb].N))
+	    {
+		Ruler.Top[rb] = cpu;
+	    }
+	    if (ratio > (*highest))
+	    {
+		(*highest) = ratio;
+		SetTopOfRuler(Ruler.Top[rb], rb);
+	    }
+		break;
+	}
 }
 
 void InsertionSortRuler(unsigned int base[],
@@ -180,10 +182,10 @@ void AggregateRatio(void)
 	min_boost = BOOST(HWP_MIN);
     }
 	unsigned int cpu,
-	lowest = (unsigned int)lroundf(
+	lowest = Ruler_Round(
 		RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(MAX)].N
 	),
-	highest = (unsigned int)lroundf(
+	highest = Ruler_Round(
 		RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[min_boost].N
 	);
 	Ruler.Count = 0;
@@ -200,25 +202,24 @@ void AggregateRatio(void)
 			&& (Ruler.Count < dimension);
 		cpu++)
 	{
-		float _N = RO(Shm)->Cpu[cpu].Boost[lt].N;
-	  if ((_N > 0) && (_N <= highestFactory))
-	  {
-		unsigned int ratio = (unsigned int)lroundf(_N);
+		unsigned int ratio = Ruler_Round(RO(Shm)->Cpu[cpu].Boost[lt].N);
 
-		SetTopOftheTop(cpu, lt, &lowest, &highest);
-
-	    for (rt = BOOST(MIN); rt < Ruler.Count; rt++)
-	    {
-		if (Ruler.Uniq[rt] == ratio)
+		if ((ratio > 0) && (ratio <= highestFactory))
 		{
-			break;
+			SetTopOftheTop(cpu, lt, &lowest, &highest);
+
+			for (rt = BOOST(MIN); rt < Ruler.Count; rt++)
+			{
+				if (Ruler.Uniq[rt] == ratio)
+				{
+					break;
+				}
+			}
+			if (rt == Ruler.Count) {
+				Ruler.Uniq[Ruler.Count] = ratio;
+				Ruler.Count++;
+			}
 		}
-	    }
-	    if (rt == Ruler.Count) {
-		Ruler.Uniq[Ruler.Count] = ratio;
-		Ruler.Count++;
-	    }
-	  }
 	}
 	lt = lt + 1;
     }
@@ -13706,7 +13707,12 @@ void Layout_Ruler_Load(Layer *layer, CUINT row)
 	unsigned int idx = Ruler.Count, bright = 1;
 	const CUINT margin = 4;
 	CUINT lPos = Draw.Area.LoadWidth + margin;
-
+	struct {
+		unsigned int Prev;
+		unsigned int Freq;
+	} tab = {
+		.Prev = 0
+	};
 	LayerCopyAt(layer, hLoad0.origin.col, hLoad0.origin.row,
 			hLoad0.length, hLoad0.attr, hLoad0.code);
 
@@ -13718,14 +13724,17 @@ void Layout_Ruler_Load(Layer *layer, CUINT row)
 			  / Ruler.Maximum;
 	CUINT hPos = (CUINT) fPos;
 
-	const unsigned int tabFreq = (
+	tab.Freq = (
 		RO(Shm)->Proc.Features.Factory.Clock.Hz * Ruler.Uniq[idx]
 	) / UNIT_MHz(100);
 
-	ASCII tabStop[10+1] = "00";
-    if ((StrFormat(tabStop, 10+1, "%2u", tabFreq) > 0) && (hPos < lPos))
+    if ((tab.Freq != tab.Prev) && (hPos < lPos))
     {
+	ASCII tabStop[10+1] = "00";
+     if (StrFormat(tabStop, 10+1, "%2u", tab.Freq) > 0)
+     {
 	hPos = hLoad0.origin.col + hPos + 2;
+
       if (tabStop[0] != 0x20) {
 	LayerAt(layer,code, hPos, hLoad0.origin.row) = tabStop[0];
 	LayerAt(layer,attr, hPos, hLoad0.origin.row) = attr[bright];
@@ -13734,8 +13743,10 @@ void Layout_Ruler_Load(Layer *layer, CUINT row)
 	LayerAt(layer, attr, (hPos + 1), hLoad0.origin.row) = attr[bright];
 
 	bright = !bright;
-    }
+     }
+	tab.Prev = tab.Freq;
 	lPos = hPos >= margin ? hPos - margin : margin;
+    }
    }
 	LayerCopyAt(layer, hLoad1.origin.col, hLoad1.origin.row, hLoad1.length,
 			hLoad1.attr[Draw.Load], hLoad1.code[Draw.Load]);
