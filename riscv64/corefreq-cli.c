@@ -120,26 +120,27 @@ struct RULER_ST Ruler = {
 void SetTopOftheTop(	unsigned int cpu, enum RATIO_BOOST rb,
 			unsigned int *lowest, unsigned int *highest )
 {
+    unsigned int ratio = (unsigned int)lroundf(RO(Shm)->Cpu[cpu].Boost[rb].N);
   switch (rb) {
   case BOOST(HWP_MIN):
   case BOOST(MIN):
-    if (RO(Shm)->Cpu[cpu].Boost[rb].N < RO(Shm)->Cpu[Ruler.Top[rb]].Boost[rb].N)
+    if (ratio < (unsigned int)lroundf(RO(Shm)->Cpu[Ruler.Top[rb]].Boost[rb].N))
     {
 	Ruler.Top[rb] = cpu;
     }
-    if (RO(Shm)->Cpu[cpu].Boost[rb].N < (*lowest))
+    if (ratio < (*lowest))
     {
-	(*lowest) = RO(Shm)->Cpu[cpu].Boost[rb].N;
+	(*lowest) = ratio;
     }
 	break;
   default:
-    if (RO(Shm)->Cpu[cpu].Boost[rb].N > RO(Shm)->Cpu[Ruler.Top[rb]].Boost[rb].N)
+    if (ratio > (unsigned int)lroundf(RO(Shm)->Cpu[Ruler.Top[rb]].Boost[rb].N))
     {
 	Ruler.Top[rb] = cpu;
     }
-    if (RO(Shm)->Cpu[cpu].Boost[rb].N > (*highest))
+    if (ratio > (*highest))
     {
-	(*highest) = RO(Shm)->Cpu[cpu].Boost[rb].N;
+	(*highest) = ratio;
 	SetTopOfRuler(Ruler.Top[rb], rb);
     }
 	break;
@@ -179,9 +180,12 @@ void AggregateRatio(void)
 	min_boost = BOOST(HWP_MIN);
     }
 	unsigned int cpu,
-	lowest = RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(MAX)].N,
-	highest = RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[min_boost].N;
-
+	lowest = (unsigned int)lroundf(
+		RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(MAX)].N
+	),
+	highest = (unsigned int)lroundf(
+		RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[min_boost].N
+	);
 	Ruler.Count = 0;
 	SetTopOfRuler(RO(Shm)->Proc.Service.Core, BOOST(MIN));
 
@@ -196,23 +200,25 @@ void AggregateRatio(void)
 			&& (Ruler.Count < dimension);
 		cpu++)
 	{
-	    if ((RO(Shm)->Cpu[cpu].Boost[lt].N > 0)
-	     && (RO(Shm)->Cpu[cpu].Boost[lt].N <= highestFactory) )
-	    {
+		float _N = RO(Shm)->Cpu[cpu].Boost[lt].N;
+	  if ((_N > 0) && (_N <= highestFactory))
+	  {
+		unsigned int ratio = (unsigned int)lroundf(_N);
+
 		SetTopOftheTop(cpu, lt, &lowest, &highest);
 
-		for (rt = BOOST(MIN); rt < Ruler.Count; rt++)
+	    for (rt = BOOST(MIN); rt < Ruler.Count; rt++)
+	    {
+		if (Ruler.Uniq[rt] == ratio)
 		{
-			if (Ruler.Uniq[rt] == RO(Shm)->Cpu[cpu].Boost[lt].N)
-			{
-				break;
-			}
-		}
-		if (rt == Ruler.Count) {
-			Ruler.Uniq[Ruler.Count] = RO(Shm)->Cpu[cpu].Boost[lt].N;
-			Ruler.Count++;
+			break;
 		}
 	    }
+	    if (rt == Ruler.Count) {
+		Ruler.Uniq[Ruler.Count] = ratio;
+		Ruler.Count++;
+	    }
+	  }
 	}
 	lt = lt + 1;
     }
