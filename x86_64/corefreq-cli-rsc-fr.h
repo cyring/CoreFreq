@@ -361,6 +361,14 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_OC_BINS_COMM_CODE_FR	\
 		" OC_BINS [0:d""\xa9""sactiv""\xa9"" ... 7:illimit""\xa9""] "
 
+#define RSC_BOOST_CTRL_HWP_COMM_CODE_FR \
+	" HWP (Speed Shift) actif : les ""\xa9""critures MSR Boost peuvent " \
+	"\xaa""tre ignor""\xa9""es "
+
+#define RSC_BOOST_CTRL_CPPC_COMM_CODE_FR \
+	" ACPI/CPPC pr""\xa9""sent : Boost peut ""\xaa""tre g" \
+	"\xa9""r""\xa9"" par le firmware "
+
 #define RSC_PERFORMANCE_CODE_FR 	"Performance"
 #define RSC_TARGET_CODE_FR		"Cible"
 #define RSC_LEVEL_CODE_FR		"Niveau"

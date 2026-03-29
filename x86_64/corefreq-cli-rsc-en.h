@@ -856,6 +856,14 @@
 #define RSC_FACTORY_CODE_EN		"Factory"
 #define RSC_OVERCLOCK_CODE_EN		"Overclock"
 #define RSC_OC_BINS_COMM_CODE_EN	" OC_BINS [0:disabled ... 7:unlimited] "
+
+#define RSC_BOOST_CTRL_HWP_COMM_CODE_EN \
+		" HWP (Speed Shift) active: Boost MSR writes may be ignored "
+
+#define RSC_BOOST_CTRL_CPPC_COMM_CODE_EN \
+		" ACPI/CPPC present: Boost may be firmware controlled "
+
+#define RSC_UNLOCK_CPPC_COMM_CODE_EN
 #define RSC_PERFORMANCE_CODE_EN 	"Performance"
 #define RSC_TARGET_CODE_EN		"Target"
 #define RSC_LEVEL_CODE_EN		"Level"

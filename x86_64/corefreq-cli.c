@@ -1477,11 +1477,16 @@ REASON_CODE SysInfoProc(Window *win,
     {
       if (RO(Shm)->Proc.Technology.Turbo == 1)
       {
-	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.Turbo_Unlock],
+	GridHover(
+	    PUT(SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.Turbo_Unlock],
 		width, 3, "%s%.*s[%7.*s]", RSC(BOOST).CODE(),
 		width - (OutFunc == NULL ? 15 : 13) - RSZ(BOOST), hSpace, 6,
 		RO(Shm)->Proc.Features.Turbo_Unlock ?
-			RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
+			RSC(UNLOCK).CODE() : RSC(LOCK).CODE()),
+	    (RO(Shm)->Proc.Features.HWP_Enable == 1) ?
+		(char *) RSC(BOOST_CTRL_HWP_COMM).CODE()
+	  : (RO(Shm)->Proc.Features.ACPI_CPPC == 1) ?
+		(char *) RSC(BOOST_CTRL_CPPC_COMM).CODE() : NULL);
       }
       if (RO(Shm)->Proc.Features.XtraCOF >= 2)
       {
@@ -1519,12 +1524,15 @@ REASON_CODE SysInfoProc(Window *win,
       }
 	PUT(SCANKEY_NULL, attrib[0], width, 3, "%s", RSC(PSTATE).CODE());
     } else {
-	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.Turbo_Unlock],
+	GridHover(
+	    PUT(SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.Turbo_Unlock],
 		width, 2, "%s %s%.*s[%7.*s]",
 		RSC(TURBO).CODE(), RSC(BOOST).CODE(),
 		width - 13 - RSZ(TURBO) - RSZ(BOOST), hSpace, 6,
 		RO(Shm)->Proc.Features.Turbo_Unlock ?
-			RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
+			RSC(UNLOCK).CODE() : RSC(LOCK).CODE()),
+	    (RO(Shm)->Proc.Features.HWP_Enable == 1) ?
+		(char *) RSC(BOOST_CTRL_HWP_COMM).CODE() : NULL);
     }
     for(boost = BOOST(1C), activeCores = 1;
       boost > BOOST(1C)-(enum RATIO_BOOST)RO(Shm)->Proc.Features.SpecTurboRatio;
@@ -1556,11 +1564,16 @@ REASON_CODE SysInfoProc(Window *win,
     }
     if (RO(Shm)->Proc.Features.ExtFeature.EDX.Hybrid == 1)
     {
-	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.Turbo_Unlock],
+	GridHover(
+	    PUT(SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.Turbo_Unlock],
 		width, 2, "%s%.*s[%7.*s]", RSC(HYBRID).CODE(),
 		width - 12 - RSZ(HYBRID), hSpace, 6,
 		RO(Shm)->Proc.Features.Turbo_Unlock ?
-			RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
+			RSC(UNLOCK).CODE() : RSC(LOCK).CODE()),
+	    (RO(Shm)->Proc.Features.HWP_Enable == 1) ?
+		(char *) RSC(BOOST_CTRL_HWP_COMM).CODE()
+	  : (RO(Shm)->Proc.Features.ACPI_CPPC == 1) ?
+		(char *) RSC(BOOST_CTRL_CPPC_COMM).CODE() : NULL);
 
       for(boost = BOOST(1C), activeCores = 1;
       boost > BOOST(1C)-(enum RATIO_BOOST)RO(Shm)->Proc.Features.SpecTurboRatio;
@@ -1586,11 +1599,16 @@ REASON_CODE SysInfoProc(Window *win,
       }
     }
 
-	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.Uncore_Unlock],
+	GridHover(
+	    PUT(SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.Uncore_Unlock],
 		width, 2, "%s%.*s[%7.*s]", RSC(UNCORE).CODE(),
 		width - 18, hSpace, 6,
 		RO(Shm)->Proc.Features.Uncore_Unlock ?
-			RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
+			RSC(UNLOCK).CODE() : RSC(LOCK).CODE()),
+	    (RO(Shm)->Proc.Features.HWP_Enable == 1) ?
+		(char *) RSC(BOOST_CTRL_HWP_COMM).CODE()
+	  : (RO(Shm)->Proc.Features.ACPI_CPPC == 1) ?
+		(char *) RSC(BOOST_CTRL_CPPC_COMM).CODE() : NULL);
 
 	ASCII *uncoreLabel[2];
 
@@ -1673,11 +1691,14 @@ REASON_CODE SysInfoProc(Window *win,
 			6, RO(Shm)->Proc.Features.TDP_Cfg_Lock == 1 ?
 				RSC(LOCK).CODE() : RSC(UNLOCK).CODE() );
 
-	PUT( SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.TurboActiv_Lock == 0],
+	GridHover(
+	  PUT(SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.TurboActiv_Lock == 0],
 		width, 3, "%s%.*s[%7.*s]", RSC(TURBO_ACTIVATION).CODE(),
 		width - (OutFunc == NULL ? 15:13)-RSZ(TURBO_ACTIVATION), hSpace,
 			6, RO(Shm)->Proc.Features.TurboActiv_Lock == 1 ?
-				RSC(LOCK).CODE() : RSC(UNLOCK).CODE() );
+				RSC(LOCK).CODE() : RSC(UNLOCK).CODE()),
+	  (RO(Shm)->Proc.Features.HWP_Enable == 1) ?
+	  (char *) RSC(BOOST_CTRL_HWP_COMM).CODE() : NULL);
 
 	CFlop = &RO(Shm)->Cpu[
 			Ruler.Top[ BOOST(TDP) ]
