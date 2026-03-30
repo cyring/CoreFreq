@@ -8893,7 +8893,9 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHXR_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 9 PRO 8945HS",	\
 			"AMD Ryzen 9 8945HS",		\
 			"AMD Ryzen 9 8945H", /* zh-cn */\
-			"AMD Ryzen 9 8940H"		),
+			"AMD Ryzen 9 8940H",		\
+			"AMD Ryzen 9 H 270", /* zh-cn */\
+			"AMD Ryzen 9 270"		),
 	.Boost = {+12, 0},
 	.Param.Offset = {100, 0, 0},
 	.CodeNameIdx = CN_HAWK_POINT,
@@ -8909,6 +8911,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHXR_Specific[] = {
 			"AMD Ryzen 7 8845HS",		\
 			"AMD Ryzen 7 8845H", /* zh-cn */\
 			"AMD Ryzen Embedded 8845HS",	\
+			"AMD Ryzen 7 H 260", /* zh-cn */\
 			"AMD Ryzen 7 260"		),
 	.Boost = {+13, 0},
 	.Param.Offset = {100, 0, 0},
@@ -8928,7 +8931,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHXR_Specific[] = {
 			"AMD Ryzen 7 8840U",		\
 			"AMD Ryzen Embedded 8840U",	\
 			"AMD Ryzen 7 PRO 250",		\
-			"AMD Ryzen 7 255",		\
+			"AMD Ryzen 7 H 250", /* zh-cn */\
 			"AMD Ryzen 7 250"		),
 	.Boost = {+18, 0},
 	.Param.Offset = {100, 0, 0},
@@ -8942,7 +8945,9 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHXR_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD Ryzen 7 8745HS",/* zh-cn */\
-			"AMD Ryzen 7 8745H"  /* zh-cn */),
+			"AMD Ryzen 7 8745H", /* zh-cn */\
+			"AMD Ryzen 7 H 255", /* zh-cn */\
+			"AMD Ryzen 7 255"		),
 	.Boost = {+11, 0},
 	.Param.Offset = {100, 0, 0},
 	.CodeNameIdx = CN_HAWK_POINT,
@@ -8958,6 +8963,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHXR_Specific[] = {
 			"AMD Ryzen 5 8645HS",		\
 			"AMD Ryzen 5 8645H", /* zh-cn */\
 			"AMD Ryzen Embedded 8645HS",	\
+			"AMD Ryzen 5 H 240", /* zh-cn */\
 			"AMD Ryzen 5 240"		),
 	.Boost = {+7, 0},
 	.Param.Offset = {100, 0, 0},
@@ -8975,7 +8981,8 @@ static PROCESSOR_SPECIFIC AMD_Zen4_PHXR_Specific[] = {
 			"AMD Ryzen 5 8640HS",		\
 			"AMD Ryzen 5 8640U",		\
 			"AMD Ryzen Embedded 8640U",	\
-			"AMD Ryzen 5 PRO 230"		\
+			"AMD Ryzen 5 PRO 230",		\
+			"AMD Ryzen 5 H 230", /* zh-cn */\
 			"AMD Ryzen 5 230"		),
 	.Boost = {+14, 0},
 	.Param.Offset = {100, 0, 0},
@@ -9208,6 +9215,7 @@ static PROCESSOR_SPECIFIC AMD_Zen4_HWK2_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD Ryzen 5 PRO 220",		\
 			"AMD Ryzen 3 PRO 210",		\
+			"AMD Ryzen 5 H 220", /* zh-cn */\
 			"AMD Ryzen 5 220",		\
 			"AMD Ryzen 3 210"		),
 	.Boost = {+17, 0},
