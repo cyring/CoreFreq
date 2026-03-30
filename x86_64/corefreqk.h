@@ -9508,8 +9508,9 @@ static PROCESSOR_SPECIFIC AMD_Zen5_STX_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD Ryzen AI 9 H PRO 465", /* zh-cn */	\
+	.Brand = ZLIST( "AMD Ryzen AI 9 H PRO 465", /* zh-cn */ \
 			"AMD Ryzen AI 9 PRO 465",		\
+			"AMD Ryzen AI 9 H 465",     /* zh-cn */ \
 			"AMD Ryzen AI 9 465"			),
 	.Boost = {+30, 0},
 	.Param.Offset = {100, 0, 0},
