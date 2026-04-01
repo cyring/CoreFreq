@@ -6396,7 +6396,7 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_CPK_Specific[] = {
 			"AMD EPYC 7542",		\
 			"AMD EPYC 7F72" 		),
 	.Boost = {+5, 0},
-	.Param.Offset = {0, 0, 0},
+	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -7084,7 +7084,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 9 3950X"),
 	.Boost = {+11, +1},
-	.Param.Offset = {95, 0, 0},
+	.Param.Offset = {0, 0, 0},	/*	TjMax from SMU = 95	*/
 	.CodeNameIdx = CN_MATISSE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
