@@ -6794,6 +6794,17 @@ static PROCESSOR_SPECIFIC AMD_Zen2_Renoir_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
+	.Brand = ZLIST("AMD Ryzen 7 4700LE"),
+	.Boost = {+6, 0},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = CN_RENOIR,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
 	.Brand = ZLIST("AMD Ryzen 7 PRO 4750G"),
 	.Boost = {+8, 0},
 	.Param.Offset = {95, 0, 0},
