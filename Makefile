@@ -306,7 +306,7 @@ corefreqd: $(BUILD)/corefreqd
 
 $(BUILD)/corefreq-ui.o: $(HW)/corefreq-ui.c
 	$(if $(V), $(CC), @if [ ${SILENT} -eq 0 ]; then echo "  CC [$@]"; fi; \
-	$(CC)) $(OPTIM_FLG) $(WARNING) $(DEFINITIONS) \
+	$(CC)) $(OPTIM_FLG) $(WARNING) $(DEFINITIONS) $(LAYOUT) \
 	  -c $(HW)/corefreq-ui.c -o $(BUILD)/corefreq-ui.o
 
 $(BUILD)/corefreq-cli.o: $(HW)/corefreq-cli.c
