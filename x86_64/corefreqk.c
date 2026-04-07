@@ -1161,8 +1161,8 @@ static void Query_Features(void *pArg)
 		"mov	%%ebx, %1		\n\t"
 		"mov	%%ecx, %2		\n\t"
 		"mov	%%edx, %3"
-		: "=r" (eax),
-		  "=r" (ebx),
+		: "=r" (iArg->Features->ExtInfo.EAX),
+		  "=r" (iArg->Features->ExtInfo.EBX),
 		  "=r" (iArg->Features->ExtInfo.ECX),
 		  "=r" (iArg->Features->ExtInfo.EDX)
 		:
@@ -2231,6 +2231,8 @@ static void Map_AMD_Topology(void *arg)
 		};
 		/*	Fn8000_001D Cache Properties.			*/
 		unsigned long idx, level[CACHE_MAX_LEVEL] = {1, 0, 2, 3};
+		/* CPUID 0x8000001e,0x80000026 leaves for AMD Zen topology */
+		unsigned short ApicID_SHR, ApicID_SHL;
 
 		for (idx = 0; idx < CACHE_MAX_LEVEL; idx++ ) {
 		    __asm__ volatile
@@ -2315,30 +2317,53 @@ static void Map_AMD_Topology(void *arg)
 	         || (PUBLIC(RO(Proc))->ArchID == AMD_Zen5_Turin_Dense))
 	         && (leaf80000008.ECX.F1Ah.NC > 0xff) )
 	      {
-		Core->T.Cluster.CCD=(leaf80000026.EDX.Extended_APIC_ID & 0xf00);
-		Core->T.Cluster.CCD= Core->T.Cluster.CCD >> 8;
+		Core->T.Cluster.CCD = leaf80000026.EDX.Extended_APIC_ID & 0xf00;
+
+		ApicID_SHR = 8;
+		ApicID_SHL = 0;
 	      }
 	      else
 	      {
-		Core->T.Cluster.CCD=(leaf80000026.EDX.Extended_APIC_ID & 0xf0);
+		Core->T.Cluster.CCD = leaf80000026.EDX.Extended_APIC_ID & 0xf0;
 
 		if (leaf80000008.ECX.NC >= 0x7f) {
-			Core->T.Cluster.CCD = Core->T.Cluster.CCD >> 6;
+			ApicID_SHR = 6;
 		} else if (leaf80000008.ECX.NC >= 0x3f) {
-			Core->T.Cluster.CCD = Core->T.Cluster.CCD >> 5;
+			ApicID_SHR = 5;
 		} else {
-			Core->T.Cluster.CCD = Core->T.Cluster.CCD >> 4;
+			ApicID_SHR = 4;
 		}
+		ApicID_SHL = 0;
 	      }
 	    } else {
-		Core->T.Cluster.CCD = (Core->T.ApicID & 0xf0) >> 4;
+		Core->T.Cluster.CCD = Core->T.ApicID & 0xf0;
 
-		if ( (leaf80000008.ECX.NC == 0x2f)
-		  || (leaf80000008.ECX.NC == 0x17) )
-		{
-			Core->T.Cluster.CCD = Core->T.Cluster.CCD << 1;
+		ApicID_SHR = 4;
+
+	      switch (PUBLIC(RO(Proc))->ArchID) {
+	      case AMD_EPYC_Rome_CPK:
+		switch (leaf80000008.ECX.NC) {
+		case 0x2f:
+		case 0x17: /* Type[4:EPYC Rome; 7:ThreadRipper Castle Peak] */
+		case 0x0b:
+		    ApicID_SHL = \
+			PUBLIC(RO(Proc))->Features.ExtInfo.EBX.PackageType == 4
+			    ? 0
+			    : 1;
+			break;
+		default:
+			ApicID_SHL = 0;
+			break;
 		}
+		break;
+	      default:
+			ApicID_SHL = 0;
+		break;
+	      }
 	    }
+		Core->T.Cluster.CCD = Core->T.Cluster.CCD >> ApicID_SHR;
+		Core->T.Cluster.CCD = Core->T.Cluster.CCD << ApicID_SHL;
+
 	    if (CPU_Complex == true ) {
 		if (leaf80000008.ECX.NC >= 0x7f) {
 			Core->T.Cluster.CCX = Core->T.CoreID >> 4;
@@ -9244,8 +9269,14 @@ static void Query_AMD_F17h_PerSocket(unsigned int cpu)
 
 static void Query_AMD_F17h_PerCluster(unsigned int cpu)
 {
+    if (strncmp(PUBLIC(RO(Proc))->Architecture,
+		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_ROME_7F_2],
+		CODENAME_LEN) == 0)
+    {
+	Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_7Fx2_Temp;
+    } else {
 	Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Zen2_Temp;
-
+    }
 	Query_AMD_Family_17h(cpu);
 
 	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
@@ -16502,6 +16533,30 @@ static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 	Core_AMD_SMN_Read(	TccdSensor,
 				(SMU_AMD_THM_TCTL_CCD_REGISTER_F17H
 				+ (Core->T.Cluster.CCD << 2)) );
+
+	Core_AMD_Zen_Filter_Temp( Core, TccdSensor.CurTmp,
+					TccdSensor.CurTempRangeSel == 1 );
+
+	Core_AMD_Family_17h_ThermTrip(Core);
+}
+
+static void CCD_AMD_Family_17h_7Fx2_Temp(CORE_RO *Core)
+{
+	TCCD_REGISTER TccdSensor = {.value = 0};
+	const unsigned short CCD_Enable[8] = {
+		[0]	=	0,
+		[1]	=	1,
+		[2]	=	2,
+		[3]	=	4,
+		[4]	=	6,
+		[5]	=	7,
+		[6]	=	0,
+		[7]	=	0
+	}, CCD_Remap = CCD_Enable[Core->T.Cluster.CCD & 0b111];
+
+	Core_AMD_SMN_Read(	TccdSensor,
+				(SMU_AMD_THM_TCTL_CCD_REGISTER_F17H
+				+ (CCD_Remap << 2)) );
 
 	Core_AMD_Zen_Filter_Temp( Core, TccdSensor.CurTmp,
 					TccdSensor.CurTempRangeSel == 1 );
