@@ -9251,9 +9251,9 @@ static void Query_AMD_Family_17h(unsigned int cpu)
 
 static void Query_AMD_F17h_PerSocket(unsigned int cpu)
 {
-	Core_AMD_Family_17h_Temp = CTL_AMD_Family_17h_Temp;
-
 	Query_AMD_Family_17h(cpu);
+
+	Core_AMD_Family_17h_Temp = CTL_AMD_Family_17h_Temp;
 
 	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
 		Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
@@ -9269,6 +9269,8 @@ static void Query_AMD_F17h_PerSocket(unsigned int cpu)
 
 static void Query_AMD_F17h_PerCluster(unsigned int cpu)
 {
+	Query_AMD_Family_17h(cpu);
+
     if (strncmp(PUBLIC(RO(Proc))->Architecture,
 		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_ROME_7F_2],
 		CODENAME_LEN) == 0)
@@ -9277,8 +9279,6 @@ static void Query_AMD_F17h_PerCluster(unsigned int cpu)
     } else {
 	Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Zen2_Temp;
     }
-	Query_AMD_Family_17h(cpu);
-
 	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
 		Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
 		if (AMD_F17h_CPPC() == -ENODEV) {
@@ -9293,10 +9293,10 @@ static void Query_AMD_F17h_PerCluster(unsigned int cpu)
 
 static void Query_AMD_F19h_11h_PerCluster(unsigned int cpu)
 {
+	Query_AMD_Family_17h(cpu);
+
 	Core_AMD_Family_17h_Temp = CCD_AMD_Family_19h_Genoa_Temp;
 	Pkg_AMD_Family_17h_Temp = Pkg_AMD_Family_19h_Genoa_Temp;
-
-	Query_AMD_Family_17h(cpu);
 
 	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
 		Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
@@ -9312,9 +9312,9 @@ static void Query_AMD_F19h_11h_PerCluster(unsigned int cpu)
 
 static void Query_AMD_F19h_61h_PerCluster(unsigned int cpu)
 {
-	Core_AMD_Family_17h_Temp = CCD_AMD_Family_19h_Zen4_Temp;
-
 	Query_AMD_Family_17h(cpu);
+
+	Core_AMD_Family_17h_Temp = CCD_AMD_Family_19h_Zen4_Temp;
 
 	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
 		Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
@@ -9330,9 +9330,9 @@ static void Query_AMD_F19h_61h_PerCluster(unsigned int cpu)
 
 static void Query_AMD_F1Ah_24h_60h_70h_PerSocket(unsigned int cpu)
 {
-	Core_AMD_Family_17h_Temp = CTL_AMD_Family_17h_Temp;
-
 	Query_AMD_Family_17h(cpu);
+
+	Core_AMD_Family_17h_Temp = CTL_AMD_Family_17h_Temp;
 
 	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
 		if (AMD_F17h_CPPC() == -ENODEV) {
