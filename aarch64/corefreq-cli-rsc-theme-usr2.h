@@ -5,7 +5,7 @@
  */
 
 #define RSC_THEME_USR2_CODE		/* 72 chars */			\
-"        Transparent theme by leaty.  Updated by CyrIng - March 2026     "
+"        Transparent theme by leaty.  Updated by CyrIng - April 2026     "
 
 #define RSC_UI_THM_USR2_ATTR						\
 {									\
@@ -277,7 +277,7 @@
 		.fg = MAGENTA, .un = 0, .bg = BLACK, .bf = 0		\
 	},								\
 	[UI_WIN_MENU_TITLE_UNFOCUS] =  {				\
-		.fg = BLACK, .un = 0, .bg = WHITE, .bf = 0		\
+		.fg = MAGENTA, .un = 0, .bg = BLACK, .bf = 0		\
 	},								\
 	[UI_WIN_MENU_TITLE_FOCUS] = {					\
 		.fg = BLACK, .un = 0, .bg = WHITE, .bf = 1		\
