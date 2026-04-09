@@ -741,12 +741,13 @@ static const struct {
 		enum CRC_MANUFACTURER	mfrCRC;
 		enum HYPERVISOR 	hypervisor;
     } mfrTbl[] = {
-	{VENDOR_INTEL ,__builtin_strlen(VENDOR_INTEL) ,CRC_INTEL ,  BARE_METAL},
-	{VENDOR_AMD   ,__builtin_strlen(VENDOR_AMD)   ,CRC_AMD   ,  BARE_METAL},
-	{VENDOR_HYGON ,__builtin_strlen(VENDOR_HYGON) ,CRC_HYGON ,  BARE_METAL},
-	{VENDOR_KVM   ,__builtin_strlen(VENDOR_KVM)   ,CRC_KVM   ,  HYPERV_KVM},
-	{VENDOR_VBOX  ,__builtin_strlen(VENDOR_VBOX)  ,CRC_VBOX  , HYPERV_VBOX},
-	{VENDOR_KBOX  ,__builtin_strlen(VENDOR_KBOX)  ,CRC_KBOX  , HYPERV_KBOX},
+      { VENDOR_INTEL , __builtin_strlen(VENDOR_INTEL) , CRC_INTEL,  BARE_METAL},
+      { VENDOR_AMD   , __builtin_strlen(VENDOR_AMD)   , CRC_AMD  ,  BARE_METAL},
+      { VENDOR_HYGON , __builtin_strlen(VENDOR_HYGON) , CRC_HYGON,  BARE_METAL},
+      {VENDOR_ZHAOXIN, __builtin_strlen(VENDOR_ZHAOXIN),CRC_INTEL,  BARE_METAL},
+      {	VENDOR_KVM   , __builtin_strlen(VENDOR_KVM)   , CRC_KVM  ,  HYPERV_KVM},
+      { VENDOR_VBOX  , __builtin_strlen(VENDOR_VBOX)  , CRC_VBOX , HYPERV_VBOX},
+      { VENDOR_KBOX  , __builtin_strlen(VENDOR_KBOX)  , CRC_KBOX , HYPERV_KBOX},
       {VENDOR_VMWARE ,__builtin_strlen(VENDOR_VMWARE),CRC_VMWARE,HYPERV_VMWARE},
       {VENDOR_HYPERV ,__builtin_strlen(VENDOR_HYPERV),CRC_HYPERV,HYPERV_HYPERV}
     };

@@ -517,6 +517,7 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 #define VENDOR_INTEL	"GenuineIntel"
 #define VENDOR_AMD	"AuthenticAMD"
 #define VENDOR_HYGON	"HygonGenuine"
+#define VENDOR_ZHAOXIN	"CentaurHauls"
 #define VENDOR_KVM	"TCGTGTCGCGTC"
 #define VENDOR_VBOX	"VBoxVBoxVBox"
 #define VENDOR_KBOX	"KVMKM"
