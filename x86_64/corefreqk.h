@@ -10578,11 +10578,15 @@ static unsigned int Policy_GetFreq(unsigned int cpu) ;
 static void Policy_Core2_SetTarget(void *arg) ;
 static void Policy_Nehalem_SetTarget(void *arg) ;
 static void Policy_SandyBridge_SetTarget(void *arg) ;
+#ifdef CONFIG_CPU_FREQ
 static void Policy_HWP_SetTarget(void *arg) ;
+#endif
 #define Policy_Broadwell_EP_SetTarget	Policy_SandyBridge_SetTarget
 static void Policy_Skylake_SetTarget(void *arg) ;
 static void Policy_Zen_SetTarget(void *arg) ;
+#ifdef CONFIG_CPU_FREQ
 static void Policy_Zen_CPPC_SetTarget(void *arg) ;
+#endif
 
 #define VOID_Driver {							\
 	.IdleState	= NULL ,					\

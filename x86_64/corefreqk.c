@@ -22265,9 +22265,9 @@ static void Policy_Skylake_SetTarget(void *arg)
 #endif /* CONFIG_CPU_FREQ */
 }
 
+#ifdef CONFIG_CPU_FREQ
 static void Policy_HWP_SetTarget(void *arg)
 {
-#ifdef CONFIG_CPU_FREQ
   if (PUBLIC(RO(Proc))->Features.HWP_Enable)
   {
 	unsigned int *ratio = (unsigned int*) arg;
@@ -22291,8 +22291,8 @@ static void Policy_HWP_SetTarget(void *arg)
 		Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.SetTarget(arg);
 	}
   }
-#endif /* CONFIG_CPU_FREQ */
 }
+#endif /* CONFIG_CPU_FREQ */
 
 static void Policy_Zen_SetTarget(void *arg)
 {
@@ -22341,9 +22341,9 @@ static void Policy_Zen_SetTarget(void *arg)
 #endif /* CONFIG_CPU_FREQ */
 }
 
+#ifdef CONFIG_CPU_FREQ
 static void Policy_Zen_CPPC_SetTarget(void *arg)
 {
-#ifdef CONFIG_CPU_FREQ
   if (PUBLIC(RO(Proc))->Features.HWP_Enable)
   {
 	unsigned int *ratio = (unsigned int*) arg;
@@ -22391,8 +22391,8 @@ static void Policy_Zen_CPPC_SetTarget(void *arg)
 		Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.SetTarget(arg);
 	}
   }
-#endif /* CONFIG_CPU_FREQ */
 }
+#endif /* CONFIG_CPU_FREQ */
 
 static int CoreFreqK_FreqDriver_UnInit(void)
 {
