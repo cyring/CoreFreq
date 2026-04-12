@@ -996,7 +996,7 @@ static int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu)
 #endif
 #endif /* CONFIG_CPU_FREQ */
 
-inline COF_ST Factory2COF(CORE_RO *Core) {
+static COF_ST Factory2COF(CORE_RO *Core) {
 	unsigned long long \
 	_freq_Hz = 1000000LLU * PUBLIC(RO(Proc))->Features.Factory.Freq, _rem;
 	COF_ST _COF;
