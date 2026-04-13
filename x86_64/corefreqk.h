@@ -710,10 +710,10 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 				SMN_Address,				\
 				SMU_AMD_INDEX_REGISTER_F17H,		\
 				SMU_AMD_DATA_REGISTER_F17H )
-
+/*TODO(CONFIG_AMD_NB)
 #if defined(CONFIG_AMD_NB) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0) /* asm/amd_node.h */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
 static u16 amd_pci_dev_to_node_id(struct pci_dev *pdev)
 {
 	return PCI_SLOT(pdev->devfn) - AMD_NODE0_PCI_SLOT;
@@ -814,15 +814,15 @@ static u16 amd_pci_dev_to_node_id(struct pci_dev *pdev)
 #define Core_AMD_SMN_Write_3xPARAM(SMN_Register, SMN_Address, UMC_device)\
 	AMD_SMN_Write(SMN_Register, SMN_Address, UMC_device)
 
-#else /* CONFIG_AMD_NB */
-
+#else
+TODO(CONFIG_AMD_NB)*/
 #define Core_AMD_SMN_Read_3xPARAM(SMN_Register, SMN_Address, UMC_device)\
 	Core_AMD_SMN_Read_2xPARAM(SMN_Register, SMN_Address)
 
 #define Core_AMD_SMN_Write_3xPARAM(SMN_Register, SMN_Address, UMC_device)\
 	Core_AMD_SMN_Write_2xPARAM(SMN_Register, SMN_Address)
 
-#endif /* CONFIG_AMD_NB */
+/* #endif CONFIG_AMD_NB */
 
 #define Core_AMD_SMN_Read_DISPATCH(_1,_2,_3,Core_AMD_SMN_Read_CURSOR,...)\
 	Core_AMD_SMN_Read_CURSOR
