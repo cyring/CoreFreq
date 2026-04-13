@@ -710,119 +710,12 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 				SMN_Address,				\
 				SMU_AMD_INDEX_REGISTER_F17H,		\
 				SMU_AMD_DATA_REGISTER_F17H )
-/*TODO(CONFIG_AMD_NB)
-#if defined(CONFIG_AMD_NB) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
-static u16 amd_pci_dev_to_node_id(struct pci_dev *pdev)
-{
-	return PCI_SLOT(pdev->devfn) - AMD_NODE0_PCI_SLOT;
-}
-
-#define GetRootFromNode(_node)	pci_get_domain_bus_and_slot( 0x0, 0x0,	\
-							PCI_DEVFN(0x0, 0x0) )
-#else
-#define GetRootFromNode(_node)	node_to_amd_nb(_node)->root
-#endif
-
-#define AMD_SMN_RW(node, address, value, write, indexPort, dataPort)	\
-({									\
-	struct pci_dev *root;						\
-	signed int res = 0;						\
-									\
-  if (node < amd_nb_num())						\
-  {									\
-    if ((root = GetRootFromNode(node)) != NULL) 			\
-    {									\
-	res = pci_write_config_dword(root, indexPort, address);		\
-									\
-      if (write == true) {						\
-	res = pci_write_config_dword(root, dataPort, value);		\
-      } else {								\
-	res = pci_read_config_dword(root, dataPort, &value);		\
-      } 								\
-    } else {								\
-	res = -ENXIO;							\
-    }									\
-  } else {								\
-	res = -EINVAL;							\
-  }									\
-	res;								\
-})
-
-#define AMD_SMN_Read(SMN_Register, SMN_Address, UMC_device)		\
-({									\
-	unsigned int tries = BIT_IO_RETRIES_COUNT;			\
-	unsigned char ret;						\
-    do {								\
-	ret = BIT_ATOM_TRYLOCK( BUS_LOCK,				\
-				PRIVATE(OF(Zen)).AMD_SMN_LOCK,		\
-				ATOMIC_SEED );				\
-	if ( ret == 0 ) {						\
-		udelay(BIT_IO_DELAY_INTERVAL);				\
-	} else {							\
-		if (AMD_SMN_RW( amd_pci_dev_to_node_id(UMC_device),	\
-				SMN_Address, SMN_Register.value, false,	\
-				SMU_AMD_INDEX_PORT_F17H,		\
-				SMU_AMD_DATA_PORT_F17H ) != 0) {	\
-			tries = 1;					\
-		}							\
-		BIT_ATOM_UNLOCK(BUS_LOCK,				\
-				PRIVATE(OF(Zen)).AMD_SMN_LOCK,		\
-				ATOMIC_SEED);				\
-	}								\
-	tries--;							\
-    } while ( (tries != 0) && (ret != 1) );				\
-    if (tries == 0) {							\
-	pr_warn("CoreFreq: AMD_SMN_Read(%x, %x) TryLock\n",		\
-		SMN_Register.value, SMN_Address);			\
-    }									\
-})
-
-#define AMD_SMN_Write(SMN_Register, SMN_Address, UMC_device)		\
-({									\
-	unsigned int tries = BIT_IO_RETRIES_COUNT;			\
-	unsigned char ret;						\
-    do {								\
-	ret = BIT_ATOM_TRYLOCK( BUS_LOCK,				\
-				PRIVATE(OF(Zen)).AMD_SMN_LOCK,		\
-				ATOMIC_SEED );				\
-	if ( ret == 0 ) {						\
-		udelay(BIT_IO_DELAY_INTERVAL);				\
-	} else {							\
-		if (AMD_SMN_RW( amd_pci_dev_to_node_id(UMC_device),	\
-				SMN_Address, SMN_Register.value, true,	\
-				SMU_AMD_INDEX_PORT_F17H,		\
-				SMU_AMD_DATA_PORT_F17H ) != 0) {	\
-			tries = 1;					\
-		}							\
-		BIT_ATOM_UNLOCK(BUS_LOCK,				\
-				PRIVATE(OF(Zen)).AMD_SMN_LOCK,		\
-				ATOMIC_SEED);				\
-	}								\
-	tries--;							\
-    } while ( (tries != 0) && (ret != 1) );				\
-    if (tries == 0) {							\
-	pr_warn("CoreFreq: AMD_SMN_Write(%x, %x) TryLock\n",		\
-		SMN_Register.value, SMN_Address);			\
-    }									\
-})
-
-#define Core_AMD_SMN_Read_3xPARAM(SMN_Register, SMN_Address, UMC_device)\
-	AMD_SMN_Read(SMN_Register, SMN_Address, UMC_device)
-
-#define Core_AMD_SMN_Write_3xPARAM(SMN_Register, SMN_Address, UMC_device)\
-	AMD_SMN_Write(SMN_Register, SMN_Address, UMC_device)
-
-#else
-TODO(CONFIG_AMD_NB)*/
 #define Core_AMD_SMN_Read_3xPARAM(SMN_Register, SMN_Address, UMC_device)\
 	Core_AMD_SMN_Read_2xPARAM(SMN_Register, SMN_Address)
 
 #define Core_AMD_SMN_Write_3xPARAM(SMN_Register, SMN_Address, UMC_device)\
 	Core_AMD_SMN_Write_2xPARAM(SMN_Register, SMN_Address)
-
-/* #endif CONFIG_AMD_NB */
 
 #define Core_AMD_SMN_Read_DISPATCH(_1,_2,_3,Core_AMD_SMN_Read_CURSOR,...)\
 	Core_AMD_SMN_Read_CURSOR
@@ -918,7 +811,7 @@ typedef union
 	MSG_RSP.value;							\
 })
 
-#define PCI_HSMP_Exec(MSG_FUNC, MSG_ARG)				\
+#define AMD_HSMP_Exec(MSG_FUNC, MSG_ARG)				\
 ({									\
 	const unsigned int rx = 					\
 	PCI_HSMP_Mailbox(MSG_FUNC,					\
@@ -931,119 +824,6 @@ typedef union
 			AMD_HSMP_DATA_REGISTER);			\
 	rx;								\
 })
-
-#define AMD_HSMP_Exec_2xPARAM(MSG_FUNC, MSG_ARG)			\
-	PCI_HSMP_Exec(MSG_FUNC, MSG_ARG)
-
-#if defined(CONFIG_AMD_NB) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
-
-#define AMD_HSMP_Mailbox(	MSG_FUNC,				\
-				MSG_ARG,				\
-				HSMP_CmdRegister,			\
-				HSMP_ArgRegister,			\
-				HSMP_RspRegister,			\
-				UMC_device )				\
-({									\
-	HSMP_ARG MSG_RSP = {.value = 0x0};				\
-	HSMP_ARG MSG_ID = {.value = MSG_FUNC};				\
-	unsigned int tries = BIT_IO_RETRIES_COUNT;			\
-	signed int res = 0;						\
-	unsigned char ret;						\
-  do {									\
-	ret = BIT_ATOM_TRYLOCK( BUS_LOCK,				\
-				PRIVATE(OF(Zen)).AMD_HSMP_LOCK, 	\
-				ATOMIC_SEED );				\
-    if ( ret == 0 ) {							\
-	udelay(BIT_IO_DELAY_INTERVAL);					\
-    }									\
-    else								\
-    {									\
-	unsigned int idx;						\
-	unsigned char wait;						\
-									\
-	res = AMD_SMN_RW(amd_pci_dev_to_node_id(UMC_device),		\
-			HSMP_RspRegister, MSG_RSP.value, true,		\
-			AMD_HSMP_INDEX_PORT, AMD_HSMP_DATA_PORT);	\
-									\
-	for (idx = 0; (idx < 8) && (res == 0); idx++) { 		\
-		res = AMD_SMN_RW(amd_pci_dev_to_node_id(UMC_device),	\
-				HSMP_ArgRegister + (idx << 2),		\
-				MSG_ARG[idx].value, true,		\
-				AMD_HSMP_INDEX_PORT, AMD_HSMP_DATA_PORT);\
-	}								\
-      if ( (res == 0)							\
-      && ( (res = AMD_SMN_RW(amd_pci_dev_to_node_id(UMC_device),	\
-			HSMP_CmdRegister, MSG_ID.value, true,		\
-			AMD_HSMP_INDEX_PORT, AMD_HSMP_DATA_PORT)) == 0))\
-      { 								\
-	idx = BIT_IO_RETRIES_COUNT;					\
-	do {								\
-		res = AMD_SMN_RW(amd_pci_dev_to_node_id(UMC_device),	\
-				HSMP_RspRegister, MSG_RSP.value, false, \
-				AMD_HSMP_INDEX_PORT,AMD_HSMP_DATA_PORT);\
-									\
-		idx--;							\
-		wait=(idx != 0) && (MSG_RSP.value == 0x0) && (res == 0) ? 1:0;\
-		if (wait == 1) {					\
-			udelay(BIT_IO_DELAY_INTERVAL);			\
-		}							\
-	} while (wait == 1);						\
-	if ((idx == 0) || (res != 0)) {					\
-		pr_warn("CoreFreq: AMD_HSMP_Mailbox(%x) Timeout\n",	\
-			MSG_FUNC);					\
-	}								\
-	else if (MSG_RSP.value == 0x1)					\
-	{								\
-	    for (idx = 0; (idx < 8) && (res == 0); idx++) {		\
-		res = AMD_SMN_RW(amd_pci_dev_to_node_id(UMC_device),	\
-				HSMP_ArgRegister + (idx << 2),		\
-				MSG_ARG[idx].value, false,		\
-				AMD_HSMP_INDEX_PORT, AMD_HSMP_DATA_PORT);\
-	    }								\
-	}								\
-      }									\
-	BIT_ATOM_UNLOCK(BUS_LOCK,					\
-			PRIVATE(OF(Zen)).AMD_HSMP_LOCK, 		\
-			ATOMIC_SEED);					\
-    }									\
-	if (res != 0) { 						\
-		tries = 1;						\
-	}								\
-	tries--;							\
-  } while ( (tries != 0) && (ret != 1) );				\
-  if (tries == 0) {							\
-	pr_warn("CoreFreq: AMD_HSMP_Mailbox(%x) TryLock\n", MSG_FUNC);	\
-  }									\
-	res == 0 ? MSG_RSP.value : HSMP_UNSPECIFIED;			\
-})
-
-#define AMD_HSMP_Exec_3xPARAM(Device_DF, MSG_FUNC, MSG_ARG)		\
-({									\
-	const unsigned int rx = 					\
-	AMD_HSMP_Mailbox(MSG_FUNC,					\
-			MSG_ARG,					\
-			PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily < 0xB ?\
-				SMU_HSMP_CMD : SMU_HSMP_CMD_F1A,	\
-			SMU_HSMP_ARG,					\
-			SMU_HSMP_RSP,					\
-			Device_DF);					\
-	rx;								\
-})
-
-#else /* CONFIG_AMD_NB */
-
-#define AMD_HSMP_Exec_3xPARAM(Device_DF, MSG_FUNC, MSG_ARG)		\
-	AMD_HSMP_Exec_2xPARAM(MSG_FUNC, MSG_ARG)
-
-#endif /* CONFIG_AMD_NB */
-
-#define AMD_HSMP_Exec_DISPATCH(_1,_2,_3,AMD_HSMP_Exec_CURSOR, ...)	\
-	AMD_HSMP_Exec_CURSOR
-
-#define AMD_HSMP_Exec(...)						\
-	AMD_HSMP_Exec_DISPATCH( __VA_ARGS__ ,	AMD_HSMP_Exec_3xPARAM , \
-						AMD_HSMP_Exec_2xPARAM , \
-						NULL)( __VA_ARGS__ )
 
 /* Driver' private and public data definitions.				*/
 enum CSTATES_CLASS {
