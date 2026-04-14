@@ -2975,16 +2975,16 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		NULL,
 		RO(Shm)->Proc.Features.ExtFeature.EBX.PQE == 1,
 		attr_Feat,
-		2, "%s%.*sRDT-A   [%7s]", RSC(FEATURES_RDT_PQE).CODE(),
-		width - 20 - RSZ(FEATURES_RDT_PQE),
+		2, "%s%.*sRDT-A | PQE   [%7s]", RSC(FEATURES_RDT_PQE).CODE(),
+		width - 26 - RSZ(FEATURES_RDT_PQE),
 		NULL
 	},
 	{
 		NULL,
 		RO(Shm)->Proc.Features.ExtFeature.EBX.PQM == 1,
 		attr_Feat,
-		2, "%s%.*sRDT-M   [%7s]", RSC(FEATURES_RDT_PQM).CODE(),
-		width - 20 - RSZ(FEATURES_RDT_PQM),
+		2, "%s%.*sRDT-M | PQM   [%7s]", RSC(FEATURES_RDT_PQM).CODE(),
+		width - 26 - RSZ(FEATURES_RDT_PQM),
 		NULL
 	},
 	{
