@@ -1659,6 +1659,34 @@ typedef struct	/* Extended CPUID Function.				*/
 		unsigned int LargestExtFunc, EBX, ECX, EDX;
 } CPUID_0x80000000;
 
+enum {	/*	AMD BrandId Identifier Leaf : PackageType values	*/
+	/* 5F_0Xh(F14h:FT1), 6F_1Xh(F15h:FP2),
+	 * 6F_3Xh(F15h:FP3), 6F_6X-7Xh(F15h:FP4),
+	 * 7F_0Xh(F16h:FT3), 7F_3Xh(F16h:FT3B), 8F_1Xh(FP5), BF_44h(AM5)*/
+	CPUID_80000001_AMD_PKGTYPE_FT1_FP2_FP3_FP4_FT3_AM5_FP5_FP6 = 0x0,
+
+	/* 3F_0Xh(F12h:FS1), 6F_1Xh(F15h:FS1R2), 6F_3Xh(F15h:FM2R2),
+	 * 7F_0Xh(F16h:FS1B), BF_44h(FL1)				*/
+	CPUID_80000001_AMD_PKGTYPE_FS1_FM2R2_FL1		= 0x1,
+
+	/* 3F_0Xh(F12h:FM1), 6F_1Xh(F15:FM2), 6F_6X-7Xh(F15h:AM4),
+	 * 8F_11-82h(F17h:AM4)						*/
+	CPUID_80000001_AMD_PKGTYPE_FM1_FM2_AM4			= 0x2,
+
+	/* 6F_6X(F15h:FM2R2), 6F_7Xh(F15h:FT4), 7F_30h(F16h:FP4)	*/
+	CPUID_80000001_AMD_PKGTYPE_FM2R2_FT4_FP4		= 0x3,
+
+	/* 8F_11-12h(F17h:SP3, SP3R2), AF_0X-6Xh(F19h:SP3),
+	 * AF_1Xh(F19h:SP5), AF_AXh(F19h:SP6), BF_0X-4Xh(F1Ah:SP5)
+	 * AF_7Xh(F19h:FP7)						*/
+	CPUID_80000001_AMD_PKGTYPE_SP3_SP5_FP7			= 0x4,
+
+	/* AF_7Xh(F19h:FP7R2)					*/
+	CPUID_80000001_AMD_PKGTYPE_FP7R2			= 0x5,
+
+	CPUID_80000001_AMD_PKGTYPE_TRX4 			= 0x7
+};
+
 typedef struct
 {
 	struct { /* AMD reserved, compatible with CPUID(0x00000001)	*/

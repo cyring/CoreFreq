@@ -2348,7 +2348,8 @@ static void Map_AMD_Topology(void *arg)
 		case 0x17: /* Type[4:EPYC Rome; 7:ThreadRipper Castle Peak] */
 		case 0x0b:
 		    ApicID_SHL = \
-			PUBLIC(RO(Proc))->Features.ExtInfo.EBX.PackageType == 4
+			PUBLIC(RO(Proc))->Features.ExtInfo.EBX.PackageType == \
+			CPUID_80000001_AMD_PKGTYPE_SP3_SP5_FP7
 			    ? 0
 			    : 1;
 			break;
