@@ -2,7 +2,7 @@ name: Build Multi Arch
 
 on:
   push:
-  # Allows you to run this workflow manually from the Actions tab    
+  # GitHub-Actions tab
   workflow_dispatch:
 
 jobs:
@@ -15,17 +15,12 @@ jobs:
 
     strategy:
       fail-fast: false
-      # base_image: https://hub.docker.com
       matrix:
         include:
           - arch: amd64
             distro: debian-testing
             base_image: amd64/debian:testing
             packages: linux-headers-amd64
-          #- arch: amd64
-          #  distro: debian-10-buster
-          #  base_image: amd64/debian:10
-          #  packages: linux-headers-amd64
           - arch: amd64
             distro: ubuntu-rolling
             base_image: amd64/ubuntu:rolling
@@ -42,34 +37,6 @@ jobs:
             distro: alpine-latest
             base_image: amd64/alpine:latest
             packages: linux-virt-dev
-          #- arch: amd64
-          #  distro: alpine-3.10
-          #  base_image: amd64/alpine:3.10
-          #  packages: linux-virt-dev
-          # - arch: amd64
-          #   distro: centos7
-          #   base_image: amd64/centos:7
-          #   packages: kernel-devel
-          # - arch: amd64
-          #   distro: fedora-latest
-          #   base_image: amd64/fedora:latest
-          #   packages: kernel-devel
-          # - arch: amd64
-          #   distro: fedora-26
-          #   base_image: amd64/fedora:26
-          #   packages: kernel-devel
-          #- arch: aarch64
-          #  distro: debian-testing
-          #  base_image: arm64v8/debian:testing
-          #  packages: linux-headers-arm64
-          #- arch: aarch64
-          #  distro: debian-10-buster
-          #  base_image: arm64v8/debian:10
-          #  packages: linux-headers-arm64
-          #- arch: aarch64
-          #  distro: ubuntu-rolling
-          #  base_image: arm64v8/ubuntu:rolling
-          #  packages: linux-headers-generic
           - arch: aarch64
             distro: ubuntu-16.04-xenial
             base_image: arm64v8/ubuntu:16.04
@@ -78,32 +45,75 @@ jobs:
             distro: ubuntu-14.04-trusty
             base_image: arm64v8/ubuntu:14.04
             packages: linux-headers-generic
-          #- arch: aarch64
-          #  distro: alpine-latest
-          #  base_image: arm64v8/alpine:latest
-          #  packages: linux-virt-dev
-          #- arch: aarch64
-          #  distro: alpine-3.10
-          #  base_image: arm64v8/alpine:3.10
-          #  packages: linux-virt-dev
-          # - arch: aarch64
-          #   distro: centos7
-          #   base_image: arm64v8/centos:7
-          #   packages: kernel-devel
-          # - arch: aarch64
-          #   distro: fedora-latest
-          #   base_image: arm64v8/fedora:latest
-          #   packages: kernel-devel
-          # - arch: aarch64
-          #   distro: fedora-26
-          #   base_image: arm64v8/fedora:26
-          #   packages: kernel-devel
+          - arch: riscv64
+            distro: debian-testing
+            base_image: debian:testing
+            packages: linux-headers-generic
+            use_run_on_arch_action: "false"
+          - arch: ppc64le
+            distro: debian-testing
+            base_image: debian:testing
+            packages: linux-headers-generic
+            use_run_on_arch_action: "false"
 
     steps:
       - uses: actions/checkout@v4
+      # === START: riscv64/ppc64le ===
+      - name: Set up QEMU (binfmt) for cross-arch containers
+        if: matrix.use_run_on_arch_action == 'false'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: all
+
+      - name: Set up Docker Buildx
+        if: matrix.use_run_on_arch_action == 'false'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build (riscv64/ppc64le via docker --platform)
+        if: matrix.use_run_on_arch_action == 'false'
+        env:
+          artifact_name: git-${{ matrix.distro }}_${{ matrix.arch }}
+        run: |
+          set -eux
+
+          mkdir -p "${PWD}/artifacts"
+
+          case "${{ matrix.arch }}" in
+            riscv64) DOCKER_ARCH=riscv64 ;;
+            ppc64le) DOCKER_ARCH=ppc64le ;;
+            *) echo "Unexpected arch for docker --platform path: ${{ matrix.arch }}"; exit 1 ;;
+          esac
+
+          docker run --rm --platform "linux/${DOCKER_ARCH}" \
+            --volume "${PWD}:${PWD}" \
+            --volume "${PWD}/artifacts:/artifacts" \
+            --workdir "${PWD}" \
+            -e artifact_name="${artifact_name}" \
+            "${{ matrix.base_image }}" \
+            /bin/sh -lc '
+              echo "--------------------------------------------------------------------------------"
+              cat /etc/os-release
+              echo "--------------------------------------------------------------------------------"
+              uname -a
+              echo "--------------------------------------------------------------------------------"
+              lscpu || true
+              echo "--------------------------------------------------------------------------------"
+              gcc -E -v - </dev/null || true
+              echo "--------------------------------------------------------------------------------"
+              apt-get update -q -y
+              apt-get install -q -y util-linux build-essential ${{ matrix.packages }}
+              KERNELREL=$(ls -td /lib/modules/* 2>/dev/null | head -n 1 || true)
+              echo "${KERNELREL}"
+              echo "--------------------------------------------------------------------------------"
+              make "KERNELREL=${KERNELREL}"
+            '
+      # === END: riscv64/ppc64le ===
+
+      # === START: amd64/aarch64 path (existing run-on-arch-action) ====
       - uses: uraimo/run-on-arch-action@v3
         name: Build
         id: build
+        if: matrix.use_run_on_arch_action != 'false'
         with:
           arch: ${{ matrix.arch }}
           distro: ${{ matrix.distro }}
@@ -159,7 +169,6 @@ jobs:
                 ;;
             esac
 
-
           # Produce a binary artifact and place it in the mounted volume
           run: |
             echo "--------------------------------------------------------------------------------"
@@ -177,3 +186,4 @@ jobs:
             make "KERNELREL=${KERNELREL}"
             # cp $(which git) "/artifacts/${artifact_name}"
             # echo "Produced artifact at /artifacts/${artifact_name}"
+      # === END: amd64/aarch64 path (existing run-on-arch-action) ===
