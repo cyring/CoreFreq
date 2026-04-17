@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-22.04
     name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
 
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
     strategy:
       fail-fast: false
       # base_image: https://hub.docker.com
