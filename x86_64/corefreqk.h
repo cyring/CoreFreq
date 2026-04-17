@@ -4689,7 +4689,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Latch = LATCH_TGT_RATIO_UNLOCK|LATCH_UNCORE_UNLOCK
 	},
 	{		/*		06_9E		*/
-	.Brand = ZLIST( "Intel(R) Core(TM) i7-770"	\
+	.Brand = ZLIST( "Intel(R) Core(TM) i7-770",	\
 			"Intel(R) Core(TM) i5-760",	\
 			"Intel(R) Core(TM) i5-750",	\
 			"Intel(R) Core(TM) i5-740"	),
@@ -4745,21 +4745,6 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Latch = LATCH_TGT_RATIO_UNLOCK|LATCH_UNCORE_UNLOCK
 	},
 	{		/*		06_9E		*/
-	.Brand = ZLIST( "Intel(R) Pentium(R) Gold G56", \
-			"Intel(R) Pentium(R) Gold G55", \
-			"Intel(R) Pentium(R) Gold G54", \
-			"Intel(R) Celeron(R) G49",	\
-			"Intel(R) Xeon(R) E-2"		),
-	.Boost = {0, 0},
-	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_COFFEELAKE_S,
-	.TgtRatioUnlocked = 1,
-	.ClkRatioUnlocked = 0b00,
-	.TurboUnlocked = 0,
-	.UncoreUnlocked = 1,
-	.Latch = LATCH_TGT_RATIO_UNLOCK|LATCH_UNCORE_UNLOCK
-	},
-	{		/*		06_9E		*/
 	.Brand = ZLIST( "Intel(R) Core(TM) i9-8950H",	\
 			"Intel(R) Core(TM) i7-8850H",	\
 			"Intel(R) Core(TM) i7-8750H",	\
@@ -4769,7 +4754,9 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 			"Intel(R) Core(TM) i5-8400H",	\
 			"Intel(R) Core(TM) i5-8300H",	\
 			"Intel(R) Core(TM) i3-8100B",	\
-			"Intel(R) Core(TM) i3-8100H"	),
+			"Intel(R) Core(TM) i3-8100H",	\
+			"Intel(R) Xeon(R) E-2186M",	\
+			"Intel(R) Xeon(R) E-2176M"	),
 	.Boost = {0, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_H,
@@ -4780,12 +4767,27 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Latch = LATCH_TGT_RATIO_UNLOCK|LATCH_UNCORE_UNLOCK
 	},
 	{		/*		06_9E		*/
-	.Brand = ZLIST( "Intel(R) Core(TM) i7-8086K",	\
-			"Intel(R) Core(TM) i7-8700",	\
+	.Brand = ZLIST( "Intel(R) Core(TM) i7-9700K",	\
+			"Intel(R) Core(TM) i5-9600K",	\
+			"Intel(R) Core(TM) i3-9350K",	\
+			"Intel(R) Core(TM) i7-8086K",	\
+			"Intel(R) Core(TM) i7-8700K",	\
+			"Intel(R) Core(TM) i5-8600K",	\
+			"Intel(R) Core(TM) i3-8350K"	),
+	.Boost = {0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_S,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b00,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_TGT_RATIO_UNLOCK|LATCH_UNCORE_UNLOCK
+	},
+	{		/*		06_9E		*/
+	.Brand = ZLIST( "Intel(R) Core(TM) i7-8700",	\
 			"Intel(R) Core(TM) i5-8600",	\
 			"Intel(R) Core(TM) i5-8500",	\
 			"Intel(R) Core(TM) i5-8400",	\
-			"Intel(R) Core(TM) i3-8350K",	\
 			"Intel(R) Core(TM) i3-8300",	\
 			"Intel(R) Core(TM) i3-8100"	),
 	.Boost = {0, 0},
@@ -4826,6 +4828,27 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_R,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b00,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_TGT_RATIO_UNLOCK|LATCH_UNCORE_UNLOCK
+	},
+	{		/*		06_9E		*/
+	.Brand = ZLIST( "Intel(R) Pentium(R) Gold G56", \
+			"Intel(R) Pentium(R) Gold G55", \
+			"Intel(R) Pentium(R) Gold G54", \
+			"Intel(R) Celeron(R) G49",	\
+			"Intel(R) Core(TM) i7-97",	\
+			"Intel(R) Core(TM) i5-96",	\
+			"Intel(R) Core(TM) i5-95",	\
+			"Intel(R) Core(TM) i5-94",	\
+			"Intel(R) Core(TM) i3-93",	\
+			"Intel(R) Core(TM) i3-91",	\
+			"Intel(R) Xeon(R) E-2"		),
+	.Boost = {0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_S,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
 	.TurboUnlocked = 0,
@@ -4954,10 +4977,11 @@ static PROCESSOR_SPECIFIC Kabylake_UY_Specific[] = {
 			"Intel(R) Core(TM) i7-8565U",	\
 			"Intel(R) Core(TM) i5-8365U",	\
 			"Intel(R) Core(TM) i5-8265U",	\
+			"Intel(R) Core(TM) i5-8260U",	\
 			"Intel(R) Core(TM) i3-8145U",	\
 			"Intel(R) Pentium(R) CPU 5405U",\
 			"Intel(R) Celeron(R) CPU 4305U",\
-			"Intel(R) Celeron(R) CPU 4205U"	),
+			"Intel(R) Celeron(R) CPU 4205U" ),
 	.Boost = {0, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_WHISKEYLAKE_U,
@@ -4976,7 +5000,8 @@ static PROCESSOR_SPECIFIC Kabylake_UY_Specific[] = {
 			"Intel(R) Core(TM) i5-8310Y" ,	\
 			"Intel(R) Core(TM) i5-8210Y" ,	\
 			"Intel(R) Core(TM) i5-8200Y" ,	\
-			"Intel(R) Core(TM) m3-8100Y"	),
+			"Intel(R) Core(TM) m3-8100Y" ,	\
+			"Intel(R) Pentium(R) CPU GOLD 6500Y"),
 	.Boost = {0, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_AMBERLAKE_Y,
