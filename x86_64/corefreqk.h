@@ -4781,7 +4781,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.ClkRatioUnlocked = 0b00,
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 1,
-	.Latch = LATCH_TGT_RATIO_UNLOCK|LATCH_UNCORE_UNLOCK
+	.Latch = LATCH_TGT_RATIO_UNLOCK|LATCH_TURBO_UNLOCK|LATCH_UNCORE_UNLOCK
 	},
 	{		/*		06_9E		*/
 	.Brand = ZLIST( "Intel(R) Core(TM) i7-8700",	\
