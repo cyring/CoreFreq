@@ -2337,9 +2337,10 @@ static void Map_AMD_Topology(void *arg)
 		ApicID_SHL = 0;
 	      }
 	    } else {
-		Core->T.Cluster.CCD = Core->T.ApicID & 0xf0;
+		Core->T.Cluster.CCD = Core->T.ApicID & 0x70;
 
 		ApicID_SHR = 4;
+		ApicID_SHL = 0;
 
 	      switch (PUBLIC(RO(Proc))->ArchID) {
 	      case AMD_EPYC_Rome_CPK:
@@ -2353,13 +2354,7 @@ static void Map_AMD_Topology(void *arg)
 			    ? 0
 			    : 1;
 			break;
-		default:
-			ApicID_SHL = 0;
-			break;
 		}
-		break;
-	      default:
-			ApicID_SHL = 0;
 		break;
 	      }
 	    }
@@ -4641,18 +4636,15 @@ static void Skylake_X_Platform_Info(unsigned int cpu)
     case 11:
     case 10:
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
-		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_COOPERLAKE_X],
-		CODENAME_LEN);
+		Arch[Skylake_X].Architecture[CN_COOPERLAKE_X], CODENAME_LEN);
 	break;
     case 7:
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
-		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_CASCADELAKE_X],
-		CODENAME_LEN);
+		Arch[Skylake_X].Architecture[CN_CASCADELAKE_X], CODENAME_LEN);
 	break;
     case 4:
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
-		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_SKYLAKE_X],
-		CODENAME_LEN);
+		Arch[Skylake_X].Architecture[CN_SKYLAKE_X], CODENAME_LEN);
 	break;
     }
 
@@ -7186,8 +7178,7 @@ static void AMD_UMC_Normalize_Channels(void)
 static PCI_CALLBACK AMD_DataFabric_Zeppelin(struct pci_dev *pdev)
 {
     if (strncmp(PUBLIC(RO(Proc))->Architecture,
-		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_WHITEHAVEN],
-		CODENAME_LEN) == 0)
+		Arch[AMD_Zen].Architecture[CN_WHITEHAVEN], CODENAME_LEN) == 0)
     {		/*		Two controllers 			*/
 	return AMD_17h_DataFabric(	pdev,
 					(const unsigned int[2][2]) {
@@ -7200,8 +7191,7 @@ static PCI_CALLBACK AMD_DataFabric_Zeppelin(struct pci_dev *pdev)
 					PCI_DEVFN(0x19, 0x0)} );
     }
     else if (strncmp(PUBLIC(RO(Proc))->Architecture,
-			Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_NAPLES],
-			CODENAME_LEN) == 0)
+		Arch[AMD_Zen].Architecture[CN_NAPLES], CODENAME_LEN) == 0)
     {		/*		Four controllers			*/
 	return AMD_17h_DataFabric(	pdev,
 					(const unsigned int[2][2]) {
@@ -8125,8 +8115,7 @@ static void Query_AMD_Family_15h(unsigned int cpu)
 	&& (PUBLIC(RO(Proc))->Features.Std.EAX.Model <= 0xf) )
       {
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
-		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_PILEDRIVER],
-		CODENAME_LEN);
+		Arch[AMD_Family_15h].Architecture[CN_PILEDRIVER], CODENAME_LEN);
       }
 	PUBLIC(RO(Proc))->PowerThermal.Param = \
 					(THERMAL_PARAM){.Offset = {85, 0, 0}};
@@ -8136,8 +8125,7 @@ static void Query_AMD_Family_15h(unsigned int cpu)
 	&& (PUBLIC(RO(Proc))->Features.Std.EAX.Model <= 0xf) )
       {
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
-		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_PILEDRIVER],
-		CODENAME_LEN);
+		Arch[AMD_Family_15h].Architecture[CN_PILEDRIVER], CODENAME_LEN);
       }
 	PUBLIC(RO(Proc))->PowerThermal.Param = \
 					(THERMAL_PARAM){.Offset = {74, 0, 0}};
@@ -8147,8 +8135,7 @@ static void Query_AMD_Family_15h(unsigned int cpu)
 	&& (PUBLIC(RO(Proc))->Features.Std.EAX.Model <= 0xf) )
       {
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
-		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_STEAMROLLER],
-		CODENAME_LEN);
+		Arch[AMD_Family_15h].Architecture[CN_STEAMROLLER],CODENAME_LEN);
       }
 	PUBLIC(RO(Proc))->PowerThermal.Param = \
 					(THERMAL_PARAM){.Offset = {90, 0, 0}};
@@ -8159,8 +8146,7 @@ static void Query_AMD_Family_15h(unsigned int cpu)
 	&& (PUBLIC(RO(Proc))->Features.Std.EAX.Model <= 0xf) )
       {
 	StrCopy(PUBLIC(RO(Proc))->Architecture,
-		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_EXCAVATOR],
-		CODENAME_LEN);
+		Arch[AMD_Family_15h].Architecture[CN_EXCAVATOR], CODENAME_LEN);
 	/*	One thermal sensor through the SMU interface		*/
 	CoreFreqK_Thermal_Scope(FORMULA_SCOPE_PKG);
       }
@@ -9274,23 +9260,31 @@ static void Query_AMD_F17h_PerCluster(unsigned int cpu)
 	Query_AMD_Family_17h(cpu);
 
     if (strncmp(PUBLIC(RO(Proc))->Architecture,
-		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_ROME_7F_2],
+		Arch[AMD_EPYC_Rome_CPK].Architecture[CN_ROME_2_THM],
 		CODENAME_LEN) == 0)
     {
-	Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_7Fx2_Temp;
-    } else {
+	Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Two_ThermalSensor;
+    }
+    else if (strncmp(PUBLIC(RO(Proc))->Architecture,
+		Arch[AMD_EPYC_Rome_CPK].Architecture[CN_ROME_6_THM],
+		CODENAME_LEN) == 0)
+    {
+	Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Six_ThermalSensor;
+    }
+    else
+    {
 	Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Zen2_Temp;
     }
-	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
-		Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
-		if (AMD_F17h_CPPC() == -ENODEV) {
-			For_All_ACPI_CPPC(Read_ACPI_CPPC_Registers, NULL);
-		}
-		Read_ACPI_PCT_Registers(cpu);
-		Read_ACPI_PSS_Registers(cpu);
-		Read_ACPI_PPC_Registers(cpu);
-		Read_ACPI_CST_Registers(cpu);
+    if (cpu == PUBLIC(RO(Proc))->Service.Core) {
+	Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
+	if (AMD_F17h_CPPC() == -ENODEV) {
+		For_All_ACPI_CPPC(Read_ACPI_CPPC_Registers, NULL);
 	}
+	Read_ACPI_PCT_Registers(cpu);
+	Read_ACPI_PSS_Registers(cpu);
+	Read_ACPI_PPC_Registers(cpu);
+	Read_ACPI_CST_Registers(cpu);
+    }
 }
 
 static void Query_AMD_F19h_11h_PerCluster(unsigned int cpu)
@@ -16528,13 +16522,15 @@ static void CTL_AMD_Family_17h_Temp(CORE_RO *Core)
 	Core_AMD_Family_17h_ThermTrip(Core);
 }
 
-static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
+static void CCD_AMD_Family_17h_Thermal_Monitor(CORE_RO *Core,
+					const unsigned short TM_Remap[8])
 {
 	TCCD_REGISTER TccdSensor = {.value = 0};
+	const unsigned short TM = TM_Remap[Core->T.Cluster.CCD & 0b111];
 
 	Core_AMD_SMN_Read(	TccdSensor,
 				(SMU_AMD_THM_TCTL_CCD_REGISTER_F17H
-				+ (Core->T.Cluster.CCD << 2)) );
+				+ (TM << 2)) );
 
 	Core_AMD_Zen_Filter_Temp( Core, TccdSensor.CurTmp,
 					TccdSensor.CurTempRangeSel == 1 );
@@ -16542,28 +16538,52 @@ static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 	Core_AMD_Family_17h_ThermTrip(Core);
 }
 
-static void CCD_AMD_Family_17h_7Fx2_Temp(CORE_RO *Core)
+static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 {
-	TCCD_REGISTER TccdSensor = {.value = 0};
-	const unsigned short CCD_Enable[8] = {
-		[0]	=	0,
-		[1]	=	1,
-		[2]	=	2,
-		[3]	=	4,
-		[4]	=	6,
-		[5]	=	7,
-		[6]	=	0,
-		[7]	=	0
-	}, CCD_Remap = CCD_Enable[Core->T.Cluster.CCD & 0b111];
+	CCD_AMD_Family_17h_Thermal_Monitor(Core,
+					(const unsigned short[8])
+					{
+						[0]	=	0,
+						[1]	=	1,
+						[2]	=	2,
+						[3]	=	3,
+						[4]	=	4,
+						[5]	=	5,
+						[6]	=	6,
+						[7]	=	7
+					} );
+}
 
-	Core_AMD_SMN_Read(	TccdSensor,
-				(SMU_AMD_THM_TCTL_CCD_REGISTER_F17H
-				+ (CCD_Remap << 2)) );
+static void CCD_AMD_Family_17h_Two_ThermalSensor(CORE_RO *Core)
+{
+	CCD_AMD_Family_17h_Thermal_Monitor(Core,
+					(const unsigned short[8])
+					{
+						[0]	=	2,
+						[1]	=	2,
+						[2]	=	2,
+						[3]	=	2,
+						[4]	=	4,
+						[5]	=	4,
+						[6]	=	4,
+						[7]	=	4
+					} );
+}
 
-	Core_AMD_Zen_Filter_Temp( Core, TccdSensor.CurTmp,
-					TccdSensor.CurTempRangeSel == 1 );
-
-	Core_AMD_Family_17h_ThermTrip(Core);
+static void CCD_AMD_Family_17h_Six_ThermalSensor(CORE_RO *Core)
+{
+	CCD_AMD_Family_17h_Thermal_Monitor(Core,
+					(const unsigned short[8])
+					{
+						[0]	=	0,
+						[1]	=	1,
+						[2]	=	2,
+						[3]	=	4,
+						[4]	=	6,
+						[5]	=	7,
+						[6]	=	0,
+						[7]	=	0
+					} );
 }
 
 static void Pkg_AMD_Family_19h_Genoa_Temp(PROC_RO *Pkg, CORE_RO* Core)

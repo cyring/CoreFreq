@@ -1569,7 +1569,8 @@ static void Core_AMD_F17h_No_Thermal(CORE_RO *Core)
 }
 static void CTL_AMD_Family_17h_Temp(CORE_RO *Core) ;
 static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core) ;
-static void CCD_AMD_Family_17h_7Fx2_Temp(CORE_RO *Core) ;
+static void CCD_AMD_Family_17h_Two_ThermalSensor(CORE_RO *Core) ;
+static void CCD_AMD_Family_17h_Six_ThermalSensor(CORE_RO *Core) ;
 static void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 
 static void Pkg_AMD_Family_17h_Thermal(PROC_RO *Pkg, CORE_RO* Core)
@@ -3698,7 +3699,8 @@ enum {
 enum {
 	CN_ROME,
 	CN_CASTLE_PEAK,
-	CN_ROME_7F_2
+	CN_ROME_2_THM,
+	CN_ROME_6_THM
 };
 enum {
 	CN_RENOIR,
@@ -3836,7 +3838,8 @@ static char *Arch_AMD_Zen_Dali[] = ZLIST(
 static char *Arch_AMD_EPYC_Rome_CPK[] = ZLIST(
 		[CN_ROME]		=	"Zen2/EPYC/Rome",
 		[CN_CASTLE_PEAK]	=	"Zen2/Castle Peak",
-		[CN_ROME_7F_2]		=	"Zen2/EPYC/Rome/7Fx2"
+		[CN_ROME_2_THM]		=	"Zen2/EPYC/Rome/Two Thermal",
+		[CN_ROME_6_THM]		=	"Zen2/EPYC/Rome/Six Thermal"
 );
 static char *Arch_AMD_Zen2_Renoir[] = ZLIST(
 		[CN_RENOIR]		=	"Zen2/Renoir",
@@ -6155,8 +6158,20 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_CPK_Specific[] = {
 	},
 	{
 	.Brand = ZLIST( "AMD EPYC Embedded 7282",	\
-			"AMD EPYC Embedded 7F52",	\
-			"AMD EPYC 7282",		\
+			"AMD EPYC 7282" 		),
+	.Boost = {+4, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_ROME_2_THM,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC Embedded 7F52",	\
 			"AMD EPYC 7F52" 		),
 	.Boost = {+4, 0},
 	.Param.Offset = {0, 0, 0},
@@ -6252,7 +6267,7 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_CPK_Specific[] = {
 			"AMD EPYC 7F72" 		),
 	.Boost = {+5, 0},
 	.Param.Offset = {95, 0, 0},
-	.CodeNameIdx = CN_ROME_7F_2,
+	.CodeNameIdx = CN_ROME_6_THM,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
@@ -6379,7 +6394,7 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_CPK_Specific[] = {
 	.Brand = ZLIST("AMD EPYC 7K62"),
 	.Boost = {+7, 0},
 	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_ROME,
+	.CodeNameIdx = CN_ROME_6_THM,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
