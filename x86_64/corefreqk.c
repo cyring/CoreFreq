@@ -2233,7 +2233,7 @@ static void Map_AMD_Topology(void *arg)
 		/*	Fn8000_001D Cache Properties.			*/
 		unsigned long idx, level[CACHE_MAX_LEVEL] = {1, 0, 2, 3};
 		/* CPUID 0x8000001e,0x80000026 leaves for AMD Zen topology */
-		unsigned short ApicID_SHR, ApicID_SHL;
+		unsigned short ApicID_SHR, ApicID_SHL, ApicID_SMT = 0;
 
 		for (idx = 0; idx < CACHE_MAX_LEVEL; idx++ ) {
 		    __asm__ volatile
@@ -2283,6 +2283,8 @@ static void Map_AMD_Topology(void *arg)
 	    if (leaf8000001e.EBX.ThreadsPerCore > 0)
 	    {		/*		SMT is enabled .		*/
 		Core->T.ThreadID = leaf8000001e.EAX.ExtApicId & 1;
+			/*	Add one to the right shift operand	*/
+		ApicID_SMT = 1;
 	    }
 	    else
 	    {		/*		SMT is disabled.		*/
@@ -2318,28 +2320,28 @@ static void Map_AMD_Topology(void *arg)
 	         || (PUBLIC(RO(Proc))->ArchID == AMD_Zen5_Turin_Dense))
 	         && (leaf80000008.ECX.F1Ah.NC > 0xff) )
 	      {
-		Core->T.Cluster.CCD = leaf80000026.EDX.Extended_APIC_ID & 0xf00;
+		Core->T.Cluster.CCD = leaf80000026.EDX.Extended_APIC_ID & 0xfff;
 
-		ApicID_SHR = 8;
+		ApicID_SHR = 7;
 		ApicID_SHL = 0;
 	      }
 	      else
 	      {
-		Core->T.Cluster.CCD = leaf80000026.EDX.Extended_APIC_ID & 0xf0;
+		Core->T.Cluster.CCD = leaf80000026.EDX.Extended_APIC_ID & 0xff;
 
 		if (leaf80000008.ECX.NC >= 0x7f) {
-			ApicID_SHR = 6;
-		} else if (leaf80000008.ECX.NC >= 0x3f) {
 			ApicID_SHR = 5;
-		} else {
+		} else if (leaf80000008.ECX.NC >= 0x3f) {
 			ApicID_SHR = 4;
+		} else {
+			ApicID_SHR = 3;
 		}
 		ApicID_SHL = 0;
 	      }
 	    } else {
-		Core->T.Cluster.CCD = Core->T.ApicID & 0x70;
+		Core->T.Cluster.CCD = Core->T.ApicID & 0x7f;
 
-		ApicID_SHR = 4;
+		ApicID_SHR = 3;
 		ApicID_SHL = 0;
 
 	      switch (PUBLIC(RO(Proc))->ArchID) {
@@ -2358,6 +2360,7 @@ static void Map_AMD_Topology(void *arg)
 		break;
 	      }
 	    }
+		ApicID_SHR = ApicID_SHR + ApicID_SMT;
 		Core->T.Cluster.CCD = Core->T.Cluster.CCD >> ApicID_SHR;
 		Core->T.Cluster.CCD = Core->T.Cluster.CCD << ApicID_SHL;
 
