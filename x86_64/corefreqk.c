@@ -8307,7 +8307,8 @@ static bool Compute_AMD_Zen_Boost(unsigned int cpu)
 
 	/*	If CPB is enabled then add Boost + XFR to the P0 ratio. */
 	RDMSR(PUBLIC(RO(Core, AT(cpu)))->SystemRegister.HWCR, MSR_K7_HWCR);
-    if (PUBLIC(RO(Core, AT(cpu)))->SystemRegister.HWCR.Family_17h.CpbDis == 0)
+    if ( (PUBLIC(RO(Core, AT(cpu)))->SystemRegister.HWCR.Family_17h.CpbDis == 0)
+      && (PUBLIC(RO(Proc))->Features.AdvPower.EDX.CPB == 1) )
     {
 	AMD_17_ZEN2_COF XtraCOF = {.value = 0};
 
@@ -8370,9 +8371,14 @@ static bool Compute_AMD_Zen_Boost(unsigned int cpu)
 						PRIVATE(OF(Specific))->Boost[1];
 	    }
 	}
-	return true;	/* Have CPB: inform to add the Xtra Boost ratios */
+	/* CPB is enabled then inform to add the Xtra Boost ratios	*/
+	return true;
     } else {
-	return false;	/* CPB is disabled				*/
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(CPB)] = \
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(XFR)] = \
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)];
+
+	return false;	/* CPUID:CPB or HWCR:CPB state are disabled	*/
     }
 }
 
@@ -10387,8 +10393,12 @@ static void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)	/* Per SMT */
 	} else {
 		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	}
-	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TurboBoost_Mask, Core->Bind);
-
+	if (PUBLIC(RO(Proc))->Features.AdvPower.EDX.CPB == 1)
+	{
+	    BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TurboBoost_Mask, Core->Bind);
+	} else {
+	    BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->TurboBoost_Mask, Core->Bind);
+	}
 	/*	Enable or Disable the Core C6 State. Bit[22,14,16]	*/
 	RDMSR(CStateCfg, MSR_AMD_F17H_CSTATE_CONFIG);
 
