@@ -22000,7 +22000,7 @@ static long CoreFreqK_Limit_Idle(int target)
 #ifdef CONFIG_CPU_FREQ
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0) \
  || (defined(RHEL_MAJOR) && (RHEL_MAJOR >= 9) \
- && (RHEL_MINOR >= 7) && (RHEL_MINOR < 99))
+ && (RHEL_MINOR >= 6) && (RHEL_MINOR < 99))
 static void CoreFreqK_Policy_Exit(struct cpufreq_policy *policy)
 {
 	UNUSED(policy);

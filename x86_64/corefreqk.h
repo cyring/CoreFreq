@@ -10366,7 +10366,9 @@ static PROCESSOR_SPECIFIC Misc_Specific_Processor[] = {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 4, 19)
 #define CPUFREQ_POLICY_UNKNOWN		(0)
 #endif
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0) \
+ || (defined(RHEL_MAJOR) && (RHEL_MAJOR >= 9) \
+ && (RHEL_MINOR >= 6) && (RHEL_MINOR < 99))
 static void CoreFreqK_Policy_Exit(struct cpufreq_policy *policy) ;
 #else
 static int CoreFreqK_Policy_Exit(struct cpufreq_policy*) ;
