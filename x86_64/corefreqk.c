@@ -4279,9 +4279,12 @@ static signed int Get_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 			.Minimum	= CPPC_Caps.lowest_perf,
 			#endif
 			.Maximum	= CPPC_Caps.highest_perf,
-			#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0)
+			#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0) \
+			 && LINUX_VERSION_CODE < KERNEL_VERSION(7, 0, 0)
 			.Desired	= CPPC_Perf.reference_perf,
-			#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
+			#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0) \
+			    && LINUX_VERSION_CODE < KERNEL_VERSION(7, 0, 0)) \
+			    || LINUX_VERSION_CODE >= KERNEL_VERSION(7, 0, 0)
 			.Desired	= CPPC_Caps.reference_perf,
 			#else
 			.Desired	= 0,
@@ -8628,7 +8631,8 @@ static signed int Put_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 	    #else
 		.min_perf = CPPC_Caps.lowest_perf,
 	    #endif
-	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0)
+	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0) \
+	     && LINUX_VERSION_CODE < KERNEL_VERSION(7, 0, 0)
 		.desired_perf = CPPC_Perf.reference_perf
 	    #else
 		.desired_perf = CPPC_Caps.reference_perf
