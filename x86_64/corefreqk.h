@@ -3784,7 +3784,8 @@ enum {
 
 enum {
 	CN_ELDORA,
-	CN_FIRE_RANGE
+	CN_FIRE_RANGE,
+	CN_EPYC_ELDORA
 };
 
 enum {
@@ -3891,7 +3892,7 @@ static char *Arch_AMD_Zen4_Genoa[] = ZLIST(
 static char *Arch_AMD_Zen4_RPL[] = ZLIST(
 		[CN_RAPHAEL]		=	"Zen4/Raphael",
 		[CN_DRAGON_RANGE]	=	"Zen4/Dragon Range",
-		[CN_EPYC_RAPHAEL]	=	"Zen4/EPYC/Raphael"
+		[CN_EPYC_RAPHAEL]	=	"Zen4/EPYC 4004 Series"
 );
 static char *Arch_AMD_Zen4_PHX[] = ZLIST(
 		[CN_PHOENIX]		=	"Zen4/Phoenix Point"
@@ -3920,7 +3921,8 @@ static char *Arch_AMD_Zen5_STX[] = ZLIST(
 );
 static char *Arch_AMD_Zen5_Eldora[] = ZLIST(
 		[CN_ELDORA]		=	"Zen5/Granite Ridge",
-		[CN_FIRE_RANGE] 	=	"Zen5/Fire Range"
+		[CN_FIRE_RANGE] 	=	"Zen5/Fire Range",
+		[CN_EPYC_ELDORA]	=	"Zen5/EPYC 4005 Series"
 );
 static char *Arch_AMD_Zen5_Turin[] = ZLIST(
 		[CN_TURIN]		=	"Zen5/Turin"
@@ -9821,6 +9823,72 @@ static PROCESSOR_SPECIFIC AMD_Zen5_Eldora_Specific[] = {
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC 4585PX",	\
+			"AMD EPYC 4565P"	),
+	.Boost = {+14, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_EPYC_ELDORA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 4545P"),
+	.Boost = {+24, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_EPYC_ELDORA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 4465P"),
+	.Boost = {+20, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_EPYC_ELDORA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 4345P"),
+	.Boost = {+17, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_EPYC_ELDORA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 4245P"),
+	.Boost = {+15, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_EPYC_ELDORA,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.HSMP_Capable = 1,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
