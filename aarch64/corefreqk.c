@@ -2622,11 +2622,11 @@ static signed int Get_ACPI_CPPC_Registers(unsigned int cpu, void *arg)
 			#endif
 			.Maximum	= CPPC_Caps.highest_perf,
 			#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0) \
-			 && LINUX_VERSION_CODE < KERNEL_VERSION(7, 0, 0)
+			 && LINUX_VERSION_CODE < KERNEL_VERSION(7, 1, 0)
 			.Desired	= CPPC_Perf.reference_perf,
 			#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0) \
-			    && LINUX_VERSION_CODE < KERNEL_VERSION(7, 0, 0)) \
-			    || LINUX_VERSION_CODE >= KERNEL_VERSION(7, 0, 0)
+			    && LINUX_VERSION_CODE < KERNEL_VERSION(7, 1, 0)) \
+			    || LINUX_VERSION_CODE >= KERNEL_VERSION(7, 1, 0)
 			.Desired	= CPPC_Caps.reference_perf,
 			#else
 			.Desired	= 0,
