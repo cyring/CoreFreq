@@ -1465,7 +1465,7 @@ typedef union
 		TmpSlewDnEn	:  8-7,  /* Family: 12h, 14h, 15h	*/
 		PerStepTimeDn	: 13-8,  /* Family: 12h, 14h, 15h	*/
 		ReservedBits	: 16-13,
-		CurTempTJselect : 18-16, /* Family: 15h, 16h		*/
+		CurTempTJselect : 18-16, /* Family: 15h, 16h, 1Ah_01h	*/
 		CurTempTJslewSel: 19-18,
 		CurTempRangeSel : 20-19, /* Family: 17h 		*/
 		MCM_EN		: 21-20,

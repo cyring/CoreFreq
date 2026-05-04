@@ -1609,8 +1609,11 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 
 static void InitTimer_AMD_Zen4_Genoa(unsigned int cpu) ;
 
+static void CTL_AMD_Family_1Ah_Temp(CORE_RO *Core) ;
+static void Pkg_AMD_Family_1Ah_Temp(PROC_RO *Pkg, CORE_RO* Core) ;
+
 #define     Exit_AMD_F1Ah Exit_AMD_F19h
-#define     Query_AMD_F1Ah_PerCluster Query_AMD_F19h_PerCluster
+static void Query_AMD_F1Ah_PerCluster(unsigned int cpu) ;
 #define     PerCore_AMD_Family_1Ah_Query PerCore_AMD_Family_19h_Query
 #define     Start_AMD_Family_1Ah Start_AMD_Family_19h
 #define     Stop_AMD_Family_1Ah Stop_AMD_Family_19h
@@ -10425,6 +10428,22 @@ static PROCESSOR_SPECIFIC AMD_Zen5_GRP_Specific[] = {
 	},
 	{0}
 };
+static PROCESSOR_SPECIFIC AMD_Zen5_F1Ah_Specific[] = {
+	{
+	.Brand = ZLIST("AMD Eng Sample"),
+	.Boost = {+14, +1},
+	.Param.Offset = {95, 0, 0},
+	.CodeNameIdx = 0,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 1,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK\
+		|LATCH_HSMP_CAPABLE
+	},
+	{0}
+};
 
 static PROCESSOR_SPECIFIC Misc_Specific_Processor[] = {
 	{0}
@@ -11319,7 +11338,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = Stop_Uncore_AMD_Family_1Ah,
 		.ClockMod = NULL
 		},
-	.Specific = Void_Specific,
+	.Specific = AMD_Zen5_F1Ah_Specific,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_AMD_Family_1Ah
 	},

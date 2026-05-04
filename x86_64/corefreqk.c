@@ -9348,6 +9348,24 @@ static void Query_AMD_F19h_61h_PerCluster(unsigned int cpu)
 	}
 }
 
+static void Query_AMD_F1Ah_PerCluster(unsigned int cpu)
+{
+	Query_AMD_Family_17h(cpu);
+
+	Core_AMD_Family_17h_Temp = CTL_AMD_Family_1Ah_Temp;
+	Pkg_AMD_Family_17h_Temp = Pkg_AMD_Family_1Ah_Temp;
+
+	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
+		if (AMD_F17h_CPPC() == -ENODEV) {
+			For_All_ACPI_CPPC(Read_ACPI_CPPC_Registers, NULL);
+		}
+		Read_ACPI_PCT_Registers(cpu);
+		Read_ACPI_PSS_Registers(cpu);
+		Read_ACPI_PPC_Registers(cpu);
+		Read_ACPI_CST_Registers(cpu);
+	}
+}
+
 static void Query_AMD_F1Ah_24h_60h_70h_PerSocket(unsigned int cpu)
 {
 	Query_AMD_Family_17h(cpu);
@@ -16647,6 +16665,26 @@ static void CCD_AMD_Family_19h_Zen4_Temp(CORE_RO *Core)
 					TccdSensor.CurTempRangeSel == 1 );
 
 	Core_AMD_Family_17h_ThermTrip(Core);
+}
+
+static void CTL_AMD_Family_1Ah_Temp(CORE_RO *Core)
+{
+	TCTL_REGISTER TctlSensor = {.value = 0};
+
+	Core_AMD_SMN_Read(TctlSensor, SMU_AMD_THM_TCTL_REGISTER_F17H);
+
+	Core_AMD_Zen_Filter_Temp( Core, TctlSensor.CurTmp,
+					(TctlSensor.CurTempRangeSel == 1)
+				    ||	(TctlSensor.CurTempTJselect == 0b11) );
+
+	Core_AMD_Family_17h_ThermTrip(Core);
+}
+
+static void Pkg_AMD_Family_1Ah_Temp(PROC_RO *Pkg, CORE_RO* Core)
+{
+	CTL_AMD_Family_1Ah_Temp(Core);
+
+	Pkg->PowerThermal.Sensor = Core->PowerThermal.Sensor;
 }
 
 
