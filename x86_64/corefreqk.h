@@ -1579,7 +1579,6 @@ static void Pkg_AMD_Family_17h_Thermal(PROC_RO *Pkg, CORE_RO* Core)
 
 	Pkg->PowerThermal.Sensor = Core->PowerThermal.Sensor;
 }
-static void Pkg_AMD_Family_19h_Genoa_Temp(PROC_RO *Pkg, CORE_RO* Core) ;
 static void (*Pkg_AMD_Family_17h_Temp)(PROC_RO*, CORE_RO*) = \
 	Pkg_AMD_Family_17h_Thermal;
 
@@ -1600,6 +1599,7 @@ static void Query_Hygon_F18h(unsigned int cpu);
 
 static void CCD_AMD_Family_19h_Genoa_Temp(CORE_RO *Core) ;
 static void CCD_AMD_Family_19h_Zen4_Temp(CORE_RO *Core) ;
+static void Pkg_AMD_Family_19h_Genoa_Temp(PROC_RO *Pkg, CORE_RO* Core) ;
 static void Query_AMD_F19h_11h_PerCluster(unsigned int cpu) ;
 static void Query_AMD_F19h_61h_PerCluster(unsigned int cpu) ;
 static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
@@ -1610,9 +1610,11 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu) ;
 static void InitTimer_AMD_Zen4_Genoa(unsigned int cpu) ;
 
 static void CTL_AMD_Family_1Ah_Temp(CORE_RO *Core) ;
+static void CCD_AMD_Family_1Ah_Temp(CORE_RO *Core) ;
 static void Pkg_AMD_Family_1Ah_Temp(PROC_RO *Pkg, CORE_RO* Core) ;
 
 #define     Exit_AMD_F1Ah Exit_AMD_F19h
+static void Query_AMD_F1Ah_PerSocket(unsigned int cpu) ;
 static void Query_AMD_F1Ah_PerCluster(unsigned int cpu) ;
 #define     PerCore_AMD_Family_1Ah_Query PerCore_AMD_Family_19h_Query
 #define     Start_AMD_Family_1Ah Start_AMD_Family_19h
@@ -11320,7 +11322,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Family_1Ah] = {							/* 11*/
 	.Signature = _AMD_Family_1Ah,
-	.Query = Query_AMD_F1Ah_PerCluster,
+	.Query = Query_AMD_F1Ah_PerSocket,
 	.Update = PerCore_AMD_Family_1Ah_Query,
 	.Start = Start_AMD_Family_1Ah,
 	.Stop = Stop_AMD_Family_1Ah,
@@ -14247,7 +14249,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.BaseClock = BaseClock_AMD_Family_1Ah,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
-	.thermalFormula = THERMAL_FORMULA_AMD_1Ah,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN5,
 	.voltageFormula = VOLTAGE_FORMULA_AMD_ZEN4,
 	.powerFormula   = POWER_FORMULA_AMD_1Ah,
 	.PCI_ids = PCI_AMD_1Ah_ids,
@@ -14262,7 +14264,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Zen5_Eldora] = {							/*129*/
 	.Signature = _AMD_Zen5_Eldora,
-	.Query = Query_AMD_F19h_61h_PerCluster,
+	.Query = Query_AMD_F1Ah_PerCluster,
 	.Update = PerCore_AMD_Family_1Ah_Query,
 	.Start = Start_AMD_Family_1Ah,
 	.Stop = Stop_AMD_Family_1Ah,
@@ -14271,7 +14273,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.BaseClock = BaseClock_AMD_Family_1Ah,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
-	.thermalFormula = THERMAL_FORMULA_AMD_1Ah,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN5,
 #if defined(HWM_CHIPSET)
 #if (HWM_CHIPSET == AMD_VCO)
 	.voltageFormula = VOLTAGE_FORMULA_ZEN5_VCO,
@@ -14303,7 +14305,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.BaseClock = BaseClock_AMD_Family_1Ah,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
-	.thermalFormula = THERMAL_FORMULA_AMD_1Ah,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN5,
 	.voltageFormula = VOLTAGE_FORMULA_AMD_1Ah,
 	.powerFormula   = POWER_FORMULA_AMD_1Ah,
 	.PCI_ids = PCI_AMD_1Ah_ids,
@@ -14327,7 +14329,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.BaseClock = BaseClock_AMD_Family_1Ah,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
-	.thermalFormula = THERMAL_FORMULA_AMD_1Ah,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN5,
 	.voltageFormula = VOLTAGE_FORMULA_AMD_1Ah,
 	.powerFormula   = POWER_FORMULA_AMD_1Ah,
 	.PCI_ids = PCI_AMD_1Ah_ids,
@@ -14351,7 +14353,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.BaseClock = BaseClock_AMD_Family_1Ah,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
-	.thermalFormula = THERMAL_FORMULA_AMD_1Ah,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN5,
 	.voltageFormula = VOLTAGE_FORMULA_AMD_ZEN4,
 	.powerFormula   = POWER_FORMULA_AMD_1Ah,
 	.PCI_ids = PCI_AMD_1Ah_ids,
@@ -14375,7 +14377,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.BaseClock = BaseClock_AMD_Family_1Ah,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
-	.thermalFormula = THERMAL_FORMULA_AMD_1Ah,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN5,
 	.voltageFormula = VOLTAGE_FORMULA_AMD_ZEN4,
 	.powerFormula   = POWER_FORMULA_AMD_1Ah,
 	.PCI_ids = PCI_AMD_1Ah_ids,
@@ -14399,7 +14401,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.BaseClock = BaseClock_AMD_Family_1Ah,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
-	.thermalFormula = THERMAL_FORMULA_AMD_1Ah,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN5,
 	.voltageFormula = VOLTAGE_FORMULA_AMD_1Ah,
 	.powerFormula   = POWER_FORMULA_AMD_1Ah,
 	.PCI_ids = PCI_AMD_1Ah_ids,
@@ -14423,7 +14425,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.BaseClock = BaseClock_AMD_Family_1Ah,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
-	.thermalFormula = THERMAL_FORMULA_AMD_1Ah,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN5,
 	.voltageFormula = VOLTAGE_FORMULA_AMD_ZEN4,
 	.powerFormula   = POWER_FORMULA_AMD_1Ah,
 	.PCI_ids = PCI_AMD_1Ah_ids,

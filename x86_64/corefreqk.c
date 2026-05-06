@@ -1355,6 +1355,14 @@ static void Query_Features(void *pArg)
 	} else {
 		iArg->SMT_Count = 1;
 	}
+	/* Declare Package Thermal Management bit ...			*/
+	if (!iArg->Features->Power.EAX.PTM && iArg->Features->AdvPower.EDX.TS) {
+		switch (iArg->Features->Std.EAX.ExtFamily) {
+		case 0x8 ... 0xB:	/*... to Zen architecture	*/
+			iArg->Features->Power.EAX.PTM = 1;
+			break;
+		}
+	}
 	if (iArg->Features->Info.LargestExtFunc >= 0x80000021)
 	{
 		__asm__ volatile
@@ -9348,7 +9356,7 @@ static void Query_AMD_F19h_61h_PerCluster(unsigned int cpu)
 	}
 }
 
-static void Query_AMD_F1Ah_PerCluster(unsigned int cpu)
+static void Query_AMD_F1Ah_PerSocket(unsigned int cpu)
 {
 	Query_AMD_Family_17h(cpu);
 
@@ -9356,6 +9364,26 @@ static void Query_AMD_F1Ah_PerCluster(unsigned int cpu)
 	Pkg_AMD_Family_17h_Temp = Pkg_AMD_Family_1Ah_Temp;
 
 	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
+		Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
+		if (AMD_F17h_CPPC() == -ENODEV) {
+			For_All_ACPI_CPPC(Read_ACPI_CPPC_Registers, NULL);
+		}
+		Read_ACPI_PCT_Registers(cpu);
+		Read_ACPI_PSS_Registers(cpu);
+		Read_ACPI_PPC_Registers(cpu);
+		Read_ACPI_CST_Registers(cpu);
+	}
+}
+
+static void Query_AMD_F1Ah_PerCluster(unsigned int cpu)
+{
+	Query_AMD_Family_17h(cpu);
+
+	Core_AMD_Family_17h_Temp = CCD_AMD_Family_1Ah_Temp;
+	Pkg_AMD_Family_17h_Temp = Pkg_AMD_Family_1Ah_Temp;
+
+	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
+		Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
 		if (AMD_F17h_CPPC() == -ENODEV) {
 			For_All_ACPI_CPPC(Read_ACPI_CPPC_Registers, NULL);
 		}
@@ -9373,6 +9401,7 @@ static void Query_AMD_F1Ah_24h_60h_70h_PerSocket(unsigned int cpu)
 	Core_AMD_Family_17h_Temp = CTL_AMD_Family_17h_Temp;
 
 	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
+		Query_AMD_F17h_Power_Limits(PUBLIC(RO(Proc)));
 		if (AMD_F17h_CPPC() == -ENODEV) {
 			For_All_ACPI_CPPC(Read_ACPI_CPPC_Registers, NULL);
 		}
@@ -16528,6 +16557,7 @@ static void Core_AMD_Family_17h_ThermTrip(CORE_RO *Core)
 static void Core_AMD_Zen_Filter_Temp( CORE_RO *Core,	unsigned int CurTmp,
 							bool scaleRangeSel )
 {
+    if (CurTmp) {
 	/* Register: SMU::THM::THM_TCON_CUR_TMP - Bit 19: CUR_TEMP_RANGE_SEL
 		0 = Report on 0C to 225C scale range.
 		1 = Report on -49C to 206C scale range.
@@ -16554,6 +16584,7 @@ static void Core_AMD_Zen_Filter_Temp( CORE_RO *Core,	unsigned int CurTmp,
 			Core->PowerThermal.Events[eLOG] |= EVENT_THOLD2_LOG;
 		}
 	}
+    }
 }
 
 static void CTL_AMD_Family_17h_Temp(CORE_RO *Core)
@@ -16685,6 +16716,20 @@ static void Pkg_AMD_Family_1Ah_Temp(PROC_RO *Pkg, CORE_RO* Core)
 	CTL_AMD_Family_1Ah_Temp(Core);
 
 	Pkg->PowerThermal.Sensor = Core->PowerThermal.Sensor;
+}
+
+static void CCD_AMD_Family_1Ah_Temp(CORE_RO *Core)
+{
+	TCCD_REGISTER TccdSensor = {.value = 0};
+
+	Core_AMD_SMN_Read(	TccdSensor,
+				(SMU_AMD_THM_TCTL_CCD_REGISTER_F19H_61H
+				+ (Core->T.Cluster.CCD << 2)) );
+
+	Core_AMD_Zen_Filter_Temp( Core, TccdSensor.CurTmp,
+					(TccdSensor.CurTempRangeSel == 1) );
+
+	Core_AMD_Family_17h_ThermTrip(Core);
 }
 
 
