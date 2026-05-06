@@ -1611,6 +1611,7 @@ static void InitTimer_AMD_Zen4_Genoa(unsigned int cpu) ;
 
 static void CTL_AMD_Family_1Ah_Temp(CORE_RO *Core) ;
 static void CCD_AMD_Family_1Ah_Temp(CORE_RO *Core) ;
+static void CCD_AMD_Family_1Ah_01h_Temp(CORE_RO *Core) ;
 static void Pkg_AMD_Family_1Ah_Temp(PROC_RO *Pkg, CORE_RO* Core) ;
 
 #define     Exit_AMD_F1Ah Exit_AMD_F19h
@@ -1989,6 +1990,9 @@ static void InitTimer_AMD_Zen5_STX(unsigned int cpu) ;
 #define _AMD_Zen4_STP	{.ExtFamily=0xA, .Family=0xF, .ExtModel=0x1, .Model=0x8}
 
 #define _AMD_Family_1Ah {.ExtFamily=0xB, .Family=0xF, .ExtModel=0x0, .Model=0x0}
+#define _AMD_Family_1Ah_01h	\
+			{.ExtFamily=0xB, .Family=0xF, .ExtModel=0x0, .Model=0x1}
+
 #define _AMD_Zen5_STX	{.ExtFamily=0xB, .Family=0xF, .ExtModel=0x2, .Model=0x4}
 #define _AMD_Zen5_Eldora	\
 			{.ExtFamily=0xB, .Family=0xF, .ExtModel=0x4, .Model=0x4}
@@ -14342,7 +14346,31 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen5_Turin_Dense
 	},
-[AMD_Zen5_KRK] = {							/*132*/
+[AMD_Family_1Ah_01h] = {						/*132*/
+	.Signature = _AMD_Family_1Ah_01h,
+	.Query = Query_AMD_F1Ah_PerCluster,
+	.Update = PerCore_AMD_Family_1Ah_Query,
+	.Start = Start_AMD_Family_1Ah,
+	.Stop = Stop_AMD_Family_1Ah,
+	.Exit = Exit_AMD_F1Ah,
+	.Timer = InitTimer_AMD_Family_1Ah,
+	.BaseClock = BaseClock_AMD_Family_1Ah,
+	.ClockMod = ClockMod_AMD_Zen,
+	.TurboClock = TurboClock_AMD_Zen,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN5,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_1Ah,
+	.powerFormula   = POWER_FORMULA_AMD_1Ah,
+	.PCI_ids = PCI_AMD_1Ah_ids,
+	.Uncore = {
+		.Start = Start_Uncore_AMD_Family_1Ah,
+		.Stop = Stop_Uncore_AMD_Family_1Ah,
+		.ClockMod = NULL
+		},
+	.Specific = AMD_Zen5_F1Ah_Specific,
+	.SystemDriver = VOID_Driver,
+	.Architecture = Arch_AMD_Family_1Ah
+	},
+[AMD_Zen5_KRK] = {							/*133*/
 	.Signature = _AMD_Zen5_KRK,
 	.Query = Query_AMD_F1Ah_24h_60h_70h_PerSocket,
 	.Update = PerCore_AMD_Family_1Ah_Query,
@@ -14366,7 +14394,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen5_KRK
 	},
-[AMD_Zen5_STXH] = {							/*133*/
+[AMD_Zen5_STXH] = {							/*134*/
 	.Signature = _AMD_Zen5_STXH,
 	.Query = Query_AMD_F1Ah_24h_60h_70h_PerSocket,
 	.Update = PerCore_AMD_Family_1Ah_Query,
@@ -14390,7 +14418,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen5_STXH
 	},
-[AMD_Zen5_SHP] = {							/*134*/
+[AMD_Zen5_SHP] = {							/*135*/
 	.Signature = _AMD_Zen5_SHP,
 	.Query = Query_AMD_F1Ah_PerCluster,
 	.Update = PerCore_AMD_Family_1Ah_Query,
@@ -14414,7 +14442,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen5_SHP
 	},
-[AMD_Zen5_GRP] = {							/*135*/
+[AMD_Zen5_GRP] = {							/*136*/
 	.Signature = _AMD_Zen5_GRP,
 	.Query = Query_AMD_F1Ah_24h_60h_70h_PerSocket,
 	.Update = PerCore_AMD_Family_1Ah_Query,

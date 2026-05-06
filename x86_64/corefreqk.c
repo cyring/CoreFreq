@@ -2225,6 +2225,7 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Zen5_Eldora:
 	case AMD_Zen5_Turin:
 	case AMD_Zen5_Turin_Dense:
+	case AMD_Family_1Ah_01h:
 	case AMD_Zen5_SHP:
 	case AMD_Family_17h:
 	case Hygon_Family_18h:
@@ -8360,6 +8361,7 @@ static bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	case AMD_Zen5_KRK:
 	case AMD_Zen5_STX:
 	case AMD_Zen4_Genoa:
+	case AMD_Family_1Ah_01h:
 		break;
 	}
 	if (XtraCOF.value != 0)
@@ -9379,7 +9381,11 @@ static void Query_AMD_F1Ah_PerCluster(unsigned int cpu)
 {
 	Query_AMD_Family_17h(cpu);
 
-	Core_AMD_Family_17h_Temp = CCD_AMD_Family_1Ah_Temp;
+	if (PUBLIC(RO(Proc))->ArchID == AMD_Family_1Ah_01h) {
+		Core_AMD_Family_17h_Temp = CCD_AMD_Family_1Ah_01h_Temp;
+	} else {
+		Core_AMD_Family_17h_Temp = CCD_AMD_Family_1Ah_Temp;
+	}
 	Pkg_AMD_Family_17h_Temp = Pkg_AMD_Family_1Ah_Temp;
 
 	if (cpu == PUBLIC(RO(Proc))->Service.Core) {
@@ -16723,13 +16729,56 @@ static void CCD_AMD_Family_1Ah_Temp(CORE_RO *Core)
 	TCCD_REGISTER TccdSensor = {.value = 0};
 
 	Core_AMD_SMN_Read(	TccdSensor,
-				(SMU_AMD_THM_TCTL_CCD_REGISTER_F19H_61H
+	/*TODO(Reverse)*/	(SMU_AMD_THM_TCTL_CCD_REGISTER_F19H_61H
 				+ (Core->T.Cluster.CCD << 2)) );
 
 	Core_AMD_Zen_Filter_Temp( Core, TccdSensor.CurTmp,
 					(TccdSensor.CurTempRangeSel == 1) );
 
 	Core_AMD_Family_17h_ThermTrip(Core);
+}
+
+static void CCD_AMD_Family_1Ah_01h_Thermal_Monitor(CORE_RO *Core,
+					const unsigned short TM_Remap[16])
+{
+	TCCD_REGISTER TccdSensor = {.value = 0};
+	const unsigned short TM = TM_Remap[Core->T.Cluster.CCD & 0b1111];
+
+	Core_AMD_SMN_Read(	TccdSensor,
+				(SMU_AMD_THM_TCTL_CCD_REGISTER_F1AH_01H
+				+ (TM << 2)) );
+
+	Core_AMD_Zen_Filter_Temp( Core, TccdSensor.CurTmp,
+					(TccdSensor.CurTempRangeSel == 1) );
+
+	Core_AMD_Family_17h_ThermTrip(Core);
+}
+
+static void CCD_AMD_Family_1Ah_01h_Temp(CORE_RO *Core)
+{
+	CCD_AMD_Family_1Ah_01h_Thermal_Monitor(Core,
+					(const unsigned short[16])
+					{	/*	THM0	*/
+						[ 0]	=	0,
+						[ 1]	=	1,
+						[ 2]	=	2,
+						[ 3]	=	3,
+						/*	THM1	*/
+						[ 4]	=	8,
+						[ 5]	=	9,
+						[ 6]	=	10,
+						[ 7]	=	11,
+						/*	THM2	*/
+						[ 8]	=	16,
+						[ 9]	=	17,
+						[10]	=	18,
+						[11]	=	19,
+						/*	THM3	*/
+						[12]	=	24,
+						[13]	=	25,
+						[14]	=	26,
+						[15]	=	27
+					} );
 }
 
 
