@@ -599,7 +599,7 @@ typedef union
 	CpuVid8 	: 33-32,
 	Reserved2	: 63-33,
 	PstateEn	: 64-63;
-    } Family_1Ah; /* CPUID signature BF_44h, BF_02h			*/
+    } Family_1Ah; /* CPUID signature BF_44h, BF_01h, BF_02h		*/
 } PSTATEDEF;
 
 typedef union

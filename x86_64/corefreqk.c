@@ -8366,7 +8366,7 @@ static bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	case AMD_Family_1Ah_01h:
 		break;
 	}
-	if (XtraCOF.value != 0)
+	if (XtraCOF.value != 0 && XtraCOF.value != 0xffffffff)
 	{
 		unsigned int	CPB = XtraCOF.BoostRatio >> 2,
 				XFR = !!(XtraCOF.BoostRatio & 0b11);
@@ -9067,19 +9067,32 @@ static long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 }
 
 static void Query_AMD_F17h_Power_Limits(PROC_RO *Pkg)
-{	/*		Package Power Tracking				*/
-	Core_AMD_SMN_Read(Pkg->PowerThermal.Zen.PWR, SMU_AMD_F17H_ZEN2_MCM_PWR);
+{
+	AMD_17_MTS_MCM_EDC EDC = {.value = 0};
+	AMD_17_MTS_MCM_TDP TDP = {.value = 0};
+	AMD_17_MTS_MCM_PWR PWR = {.value = 0};
+	/*		Package Power Tracking				*/
+	Core_AMD_SMN_Read(PWR, SMU_AMD_F17H_ZEN2_MCM_PWR);
+	if (PWR.value != 0xffffffff) {
+		Pkg->PowerThermal.Zen.PWR = PWR;
 	/*		Junction Temperature				*/
-	if ((Pkg->PowerThermal.Zen.PWR.TjMax > 0)
-	 && (Pkg->PowerThermal.Param.Offset[THERMAL_TARGET] == 0))
-	{
+	    if ((Pkg->PowerThermal.Zen.PWR.TjMax > 0)
+	     && (Pkg->PowerThermal.Param.Offset[THERMAL_TARGET] == 0))
+	    {
 		Pkg->PowerThermal.Param.Offset[THERMAL_TARGET] = \
 					Pkg->PowerThermal.Zen.PWR.TjMax;
+	    }
 	}
 	/*		Thermal Design Power				*/
-	Core_AMD_SMN_Read(Pkg->PowerThermal.Zen.TDP, SMU_AMD_F17H_ZEN2_MCM_TDP);
+	Core_AMD_SMN_Read(TDP, SMU_AMD_F17H_ZEN2_MCM_TDP);
+	if (TDP.value != 0xffffffff) {
+		Pkg->PowerThermal.Zen.TDP = TDP;
+	}
 	/*		Electric Design Current				*/
-	Core_AMD_SMN_Read(Pkg->PowerThermal.Zen.EDC, SMU_AMD_F17H_ZEN2_MCM_EDC);
+	Core_AMD_SMN_Read(EDC, SMU_AMD_F17H_ZEN2_MCM_EDC);
+	if (EDC.value != 0xffffffff) {
+		Pkg->PowerThermal.Zen.EDC = EDC;
+	}
 }
 
 static unsigned int Query_AMD_HSMP_Interface(void)
@@ -14359,7 +14372,8 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 
 	/*	Query the HTC and THERM_TRIP features from SMUTHM	*/
 	Core_AMD_SMN_Read(HTC, SMU_AMD_THM_TCTL_REGISTER_F17H + 0x4);
-
+      if (HTC.value != 0xffffffff)
+      {
 	PUBLIC(RO(Proc))->ThermalPoint.Value[THM_HTC_LIMIT] = HTC.HTC_TMP_LIMIT;
 	PUBLIC(RO(Proc))->ThermalPoint.Value[THM_HTC_HYST] = HTC.HTC_HYST_LIMIT;
 
@@ -14374,6 +14388,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 		BITCLR(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.State,
 				 THM_HTC_LIMIT);
 	}
+      }
 	BITSET(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.Mask, THM_HTC_LIMIT);
 	BITSET(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.Kind, THM_HTC_LIMIT);
 
@@ -14382,7 +14397,8 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	BITCLR(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.Kind, THM_HTC_HYST);
 
 	Core_AMD_SMN_Read(ThermTrip, SMU_AMD_THM_TCTL_REGISTER_F17H + 0x8);
-
+      if (ThermTrip.value != 0xffffffff)
+      {
 	PUBLIC(RO(Proc))->ThermalPoint.Value[THM_TRIP_LIMIT] = \
 					ThermTrip.THERM_TP_LIMIT - 49;
 	if (ThermTrip.THERM_TP_EN) {
@@ -14396,6 +14412,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 		BITCLR(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.State,
 				 THM_TRIP_LIMIT);
 	}
+      }
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->TM_Mask, Core->Bind);
 	BITSET(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.Mask, THM_TRIP_LIMIT);
 	BITSET(BUS_LOCK, PUBLIC(RO(Proc))->ThermalPoint.Kind, THM_TRIP_LIMIT);
@@ -16553,13 +16570,15 @@ static void Core_AMD_Family_17h_ThermTrip(CORE_RO *Core)
 	TCTL_THERM_TRIP ThermTrip = {.value = 0};
 
 	Core_AMD_SMN_Read(ThermTrip, SMU_AMD_THM_TCTL_REGISTER_F17H + 0x8);
-
+    if (ThermTrip.value != 0xffffffff)
+    {
 	if (ThermTrip.THERM_TP_EN) {
 		Core->PowerThermal.Events[eSTS] = \
 				(Bit64)ThermTrip.THERM_TP << LSHIFT_THERMAL_STS;
 	}
 	Core->PowerThermal.Events[eSTS] |= \
 			(Bit64)ThermTrip.CTF_THRESHOLD << LSHIFT_CRITIC_TMP;
+    }
 }
 
 static void Core_AMD_Zen_Filter_Temp( CORE_RO *Core,	unsigned int CurTmp,
@@ -16600,11 +16619,13 @@ static void CTL_AMD_Family_17h_Temp(CORE_RO *Core)
 	TCTL_REGISTER TctlSensor = {.value = 0};
 
 	Core_AMD_SMN_Read(TctlSensor, SMU_AMD_THM_TCTL_REGISTER_F17H);
-
+    if (TctlSensor.value != 0xffffffff)
+    {
 	Core_AMD_Zen_Filter_Temp( Core, TctlSensor.CurTmp,
 					TctlSensor.CurTempRangeSel == 1 );
 
 	Core_AMD_Family_17h_ThermTrip(Core);
+    }
 }
 
 static void CCD_AMD_Family_17h_Thermal_Monitor(CORE_RO *Core,
@@ -16616,11 +16637,13 @@ static void CCD_AMD_Family_17h_Thermal_Monitor(CORE_RO *Core,
 	Core_AMD_SMN_Read(	TccdSensor,
 				(SMU_AMD_THM_TCTL_CCD_REGISTER_F17H
 				+ (TM << 2)) );
-
+    if (TccdSensor.value != 0xffffffff)
+    {
 	Core_AMD_Zen_Filter_Temp( Core, TccdSensor.CurTmp,
 					TccdSensor.CurTempRangeSel == 1 );
 
 	Core_AMD_Family_17h_ThermTrip(Core);
+    }
 }
 
 static void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
@@ -16685,11 +16708,13 @@ static void CCD_AMD_Family_19h_Genoa_Temp(CORE_RO *Core)
 	Core_AMD_SMN_Read(	TccdSensor,
 				(SMU_AMD_THM_TCTL_CCD_REGISTER_F19H_11H
 				+ (Core->T.Cluster.CCD << 2)) );
-
+    if (TccdSensor.value != 0xffffffff)
+    {
 	Core_AMD_Zen_Filter_Temp( Core, TccdSensor.CurTmp,
 					TccdSensor.CurTempRangeSel == 1 );
 
 	Core_AMD_Family_17h_ThermTrip(Core);
+    }
 }
 
 static void CCD_AMD_Family_19h_Zen4_Temp(CORE_RO *Core)
@@ -16699,11 +16724,13 @@ static void CCD_AMD_Family_19h_Zen4_Temp(CORE_RO *Core)
 	Core_AMD_SMN_Read(	TccdSensor,
 				(SMU_AMD_THM_TCTL_CCD_REGISTER_F19H_61H
 				+ (Core->T.Cluster.CCD << 2)) );
-
+    if (TccdSensor.value != 0xffffffff)
+    {
 	Core_AMD_Zen_Filter_Temp( Core, TccdSensor.CurTmp,
 					TccdSensor.CurTempRangeSel == 1 );
 
 	Core_AMD_Family_17h_ThermTrip(Core);
+    }
 }
 
 static void CTL_AMD_Family_1Ah_Temp(CORE_RO *Core)
@@ -16711,12 +16738,14 @@ static void CTL_AMD_Family_1Ah_Temp(CORE_RO *Core)
 	TCTL_REGISTER TctlSensor = {.value = 0};
 
 	Core_AMD_SMN_Read(TctlSensor, SMU_AMD_THM_TCTL_REGISTER_F17H);
-
+    if (TctlSensor.value != 0xffffffff)
+    {
 	Core_AMD_Zen_Filter_Temp( Core, TctlSensor.CurTmp,
 					(TctlSensor.CurTempRangeSel == 1)
 				    ||	(TctlSensor.CurTempTJselect == 0b11) );
 
 	Core_AMD_Family_17h_ThermTrip(Core);
+    }
 }
 
 static void Pkg_AMD_Family_1Ah_Temp(PROC_RO *Pkg, CORE_RO* Core)
@@ -16733,11 +16762,13 @@ static void CCD_AMD_Family_1Ah_Temp(CORE_RO *Core)
 	Core_AMD_SMN_Read(	TccdSensor,
 	/*TODO(Reverse)*/	(SMU_AMD_THM_TCTL_CCD_REGISTER_F19H_61H
 				+ (Core->T.Cluster.CCD << 2)) );
-
+    if (TccdSensor.value != 0xffffffff)
+    {
 	Core_AMD_Zen_Filter_Temp( Core, TccdSensor.CurTmp,
 					(TccdSensor.CurTempRangeSel == 1) );
 
 	Core_AMD_Family_17h_ThermTrip(Core);
+    }
 }
 
 static void CCD_AMD_Family_1Ah_01h_Thermal_Monitor(CORE_RO *Core,
@@ -16749,11 +16780,13 @@ static void CCD_AMD_Family_1Ah_01h_Thermal_Monitor(CORE_RO *Core,
 	Core_AMD_SMN_Read(	TccdSensor,
 				(SMU_AMD_THM_TCTL_CCD_REGISTER_F1AH_01H
 				+ (TM << 2)) );
-
+    if (TccdSensor.value != 0xffffffff)
+    {
 	Core_AMD_Zen_Filter_Temp( Core, TccdSensor.CurTmp,
 					(TccdSensor.CurTempRangeSel == 1) );
 
 	Core_AMD_Family_17h_ThermTrip(Core);
+    }
 }
 
 static void CCD_AMD_Family_1Ah_01h_Temp(CORE_RO *Core)
@@ -20768,14 +20801,15 @@ static void Call_SVI(	const unsigned int plane0, const unsigned int plane1,
 	AMD_F17H_SVI SVI = {.value = 0};
 
 	Core_AMD_SMN_Read(SVI, SMU_AMD_F17H_SVI(plane0));
-
+    if (SVI.value != 0xffffffff) {
 	PUBLIC(RO(Proc))->PowerThermal.VID.CPU = SVI.VID;
-
+    }
 	Core_AMD_SMN_Read(SVI, SMU_AMD_F17H_SVI(plane1));
-
+    if (SVI.value != 0xffffffff) {
 	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.VID;
 
 	SoC_RAPL(SVI, factor);
+    }
 }
 
 static void Call_SVI_APU(const unsigned int plane0, const unsigned int plane1,
@@ -20784,14 +20818,15 @@ static void Call_SVI_APU(const unsigned int plane0, const unsigned int plane1,
 	AMD_F17H_SVI SVI = {.value = 0};
 
 	Core_AMD_SMN_Read(SVI, SMU_AMD_F17_60H_SVI(plane0));
-
+    if (SVI.value != 0xffffffff) {
 	PUBLIC(RO(Proc))->PowerThermal.VID.CPU = SVI.VID;
-
+    }
 	Core_AMD_SMN_Read(SVI, SMU_AMD_F17_60H_SVI(plane1));
-
+    if (SVI.value != 0xffffffff) {
 	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.VID;
 
 	SoC_RAPL(SVI, factor);
+    }
 }
 
 static void Call_SVI_RMB(const unsigned int plane0, const unsigned int plane1,
@@ -20801,12 +20836,13 @@ static void Call_SVI_RMB(const unsigned int plane0, const unsigned int plane1,
 	UNUSED(factor);
 
 	Core_AMD_SMN_Read(SVI, SMU_AMD_RMB_SVI(plane0));
-
+    if (SVI.value != 0xffffffff) {
 	PUBLIC(RO(Proc))->PowerThermal.VID.CPU = SVI.SVI1;
-
+    }
 	Core_AMD_SMN_Read(SVI, SMU_AMD_RMB_SVI(plane1));
-
+    if (SVI.value != 0xffffffff) {
 	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.SVI0;
+    }
 }
 
 static void Call_DFLT(	const unsigned int plane0, const unsigned int plane1,
@@ -20830,8 +20866,9 @@ static void Call_Raphael(const unsigned int plane0, const unsigned int plane1,
 	Core_AMD_SMN_Read(SVI,
 	PUBLIC(RO(Core, AT(PUBLIC(RO(Proc))->Service.Core)))->T.PackageID == 0 ?
 			SMU_AMD_F19H_SVI(plane0) : SMU_AMD_F19H_SVI(plane1));
-
+    if (SVI.value != 0xffffffff) {
 	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.SVI1;
+    }
 }
 
 static void Call_Genoa( const unsigned int plane0, const unsigned int plane1,
@@ -20844,8 +20881,9 @@ static void Call_Genoa( const unsigned int plane0, const unsigned int plane1,
 	Core_AMD_SMN_Read(SVI,
 	PUBLIC(RO(Core, AT(PUBLIC(RO(Proc))->Service.Core)))->T.PackageID == 0 ?
 			SMU_AMD_F17H_SVI(plane0) : SMU_AMD_F17H_SVI(plane1));
-
+    if (SVI.value != 0xffffffff) {
 	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.SVI1;
+    }
 }
 
 static enum hrtimer_restart Entry_AMD_F17h(struct hrtimer *pTimer,
