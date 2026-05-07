@@ -2334,9 +2334,11 @@ static void Map_AMD_Topology(void *arg)
 		}
 		switch (leaf80000026.ECX.LevelType) {
 		case 1: /*		Core				*/
+		/* Core level is architecturally required for Fn8000_0026 */
+		    Core->T.ApicID	= leaf80000026.EDX.Extended_APIC_ID;
 		    Core->T.CoreID	= leaf80000026.EDX.Extended_APIC_ID
 					>> leaf80000026.EAX.CoreMaskWidth;
-			 /*		Thread				*/
+			/*		Thread				*/
 		  if (ApicID_SMT) {
 		    Core->T.ThreadID	= leaf80000026.EDX.Extended_APIC_ID
 				& ((1U << leaf80000026.EAX.CoreMaskWidth) - 1);
