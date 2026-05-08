@@ -1617,7 +1617,7 @@ static void Pkg_AMD_Family_1Ah_Temp(PROC_RO *Pkg, CORE_RO* Core) ;
 #define     Exit_AMD_F1Ah Exit_AMD_F19h
 static void Query_AMD_F1Ah_PerSocket(unsigned int cpu) ;
 static void Query_AMD_F1Ah_PerCluster(unsigned int cpu) ;
-#define     PerCore_AMD_Family_1Ah_Query PerCore_AMD_Family_19h_Query
+static void PerCore_AMD_Family_1Ah_Query(void *arg) ;
 #define     Start_AMD_Family_1Ah Start_AMD_Family_19h
 #define     Stop_AMD_Family_1Ah Stop_AMD_Family_19h
 #define     InitTimer_AMD_Family_1Ah InitTimer_AMD_Zen4_RPL
@@ -10532,7 +10532,7 @@ static PROCESSOR_SPECIFIC AMD_Zen5_GRP_Specific[] = {
 static PROCESSOR_SPECIFIC AMD_Zen5_F1Ah_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Eng Sample"),
-	.Boost = {+14, +1},
+	.Boost = {0, 0},
 	.Param.Offset = {95, 0, 0},
 	.CodeNameIdx = 0,
 	.TgtRatioUnlocked = 1,

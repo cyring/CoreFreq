@@ -9254,6 +9254,31 @@ static unsigned int Query_AMD_HSMP_Interface(void)
 	return rx;
 }
 
+static unsigned int Query_AMD_HSMP_CoreClock(unsigned int cpu)
+{
+	HSMP_ARG arg[8];
+	unsigned int rx = HSMP_UNSPECIFIED;
+
+	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
+	{
+		RESET_ARRAY(arg, 8, 0, .value);
+		rx = AMD_HSMP_Exec(HSMP_RD_CCLK, arg);
+	    if ((rx == HSMP_RESULT_OK) && (arg[0].value > 0))
+	    {
+		unsigned int	CPB = arg[0].value / PRECISION,
+				XFR = arg[0].value != (CPB * PRECISION);
+
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(CPB)] = CPB;
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(XFR)] = CPB + XFR;
+	    }
+	    else if (IS_HSMP_OOO(rx))
+	    {
+		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
+	    }
+	}
+	return rx;
+}
+
 static void Query_AMD_Family_17h(unsigned int cpu)
 {
 	PRIVATE(OF(Specific)) = LookupProcessor();
@@ -9396,6 +9421,11 @@ static void Query_AMD_F1Ah_PerCluster(unsigned int cpu)
 {
 	Query_AMD_Family_17h(cpu);
 
+	if ((PRIVATE(OF(Specific)) == NULL)
+	 || (PRIVATE(OF(Specific)) && PRIVATE(OF(Specific))->Boost[0] == 0))
+	{
+		Query_AMD_HSMP_CoreClock(cpu);
+	}
 	if (PUBLIC(RO(Proc))->ArchID == AMD_Family_1Ah_01h) {
 		Core_AMD_Family_17h_Temp = CCD_AMD_Family_1Ah_01h_Temp;
 	} else {
@@ -14678,6 +14708,19 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	Core->Boost[BOOST(HWP_MAX)]=Core->PowerThermal.HWP_Request.Maximum_Perf;
 	Core->Boost[BOOST(HWP_TGT)]=Core->PowerThermal.HWP_Request.Desired_Perf;
     }
+}
+
+static void PerCore_AMD_Family_1Ah_Query(void *arg)
+{
+	CORE_RO *Core = (CORE_RO *) arg;
+
+	PerCore_AMD_Family_17h_Query(arg);
+
+	if ((PRIVATE(OF(Specific)) == NULL)
+	 || (PRIVATE(OF(Specific)) && PRIVATE(OF(Specific))->Boost[0] == 0))
+	{
+		Query_AMD_HSMP_CoreClock(Core->Bind);
+	}
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 56)
