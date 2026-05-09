@@ -5163,6 +5163,17 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 		width - (OutFunc == NULL ? 21 : 19 )
 		- RSZ(PERF_MON_MWAIT_IBE_MWAIT), hSpace,
 		RSC(PERF_LABEL_IBE).CODE(), POWERED(bix) );
+
+    if (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+    {
+	bix = RO(Shm)->Proc.Features.MWait.ECX.MONITORLESS_MWAIT == 1;
+
+	PUT(	SCANKEY_NULL, attrib[bix ? 2 : 0], width, 3,
+		"%s%.*s%s   [%7s]", RSC(PERF_MON_MONITORLESS_MWAIT).CODE(),
+		width - (OutFunc == NULL ? 21 : 19 )
+		- RSZ(PERF_MON_MONITORLESS_MWAIT), hSpace,
+		RSC(PERF_LABEL_MLW).CODE(), POWERED(bix) );
+    }
 /* Section Mark */
 	bix = (RO(Shm)->Proc.Features.PerfMon.EBX.CoreCycles == 0)
 	   || (RO(Shm)->Proc.Features.PerfMon.EAX.VectorSz > 0);

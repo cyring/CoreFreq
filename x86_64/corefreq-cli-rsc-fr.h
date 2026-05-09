@@ -798,6 +798,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_PERF_MON_MWAIT_SUB_CSTATE_CODE_FR	"Sub C-State"
 #define RSC_PERF_MON_MWAIT_EMX_MWAIT_CODE_FR	"Monitor-Mwait Extensions"
 #define RSC_PERF_MON_MWAIT_IBE_MWAIT_CODE_FR	"Interrupt Break-Event"
+#define RSC_PERF_MON_MONITORLESS_MWAIT_CODE_FR	"Monitorless Mwait"
 
 #define RSC_PERF_MON_CORE_CYCLE_CODE_FR "Core Cycles"
 #define RSC_PERF_MON_INST_RET_CODE_FR	"Instructions Retired"

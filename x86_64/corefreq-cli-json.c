@@ -616,8 +616,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.ECX.EMX_MWAIT);
 					json_key(&s, "IBE_MWAIT");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.ECX.IBE_MWAIT);
-					json_key(&s, "ReservedBits");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.ECX.ReservedBits);
+					json_key(&s, "MONITORLESS_MWAIT");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.MWait.ECX.MONITORLESS_MWAIT);
 					json_end_object(&s);
 				}
 				json_key(&s, "EDX");

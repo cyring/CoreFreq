@@ -1180,7 +1180,7 @@ typedef struct
 		SSE3		:  1-0,  /* AMD Family 0Fh		*/
 		PCLMULDQ	:  2-1,
 		DTES64		:  3-2,
-		MONITOR 	:  4-3,
+		MONITOR 	:  4-3, /* Supports MONITOR/MWAIT & CPUID.05h */
 		DS_CPL		:  5-4,
 		VMX		:  6-5,
 		SMX		:  7-6,
@@ -1265,9 +1265,11 @@ typedef struct	/* MONITOR & MWAIT Leaf.				*/
 	struct
 	{
 		unsigned int
-		EMX_MWAIT	:  1-0,
-		IBE_MWAIT	:  2-1,
-		ReservedBits	: 32-2;
+		EMX_MWAIT	:  1-0, /* MONITOR_MWAIT_EXTENSIONS	*/
+		IBE_MWAIT	:  2-1, /* INTERRUPT_AS_BREAK_EVENT	*/
+		Reserved1	:  3-2,
+		MONITORLESS_MWAIT: 4-3, /* Intel: Execute MWAIT with ECX[2]=1 */
+		Reserved2	: 32-4;
 	} ECX;
 	struct
 	{	/* Intel reseved.					*/
@@ -1452,7 +1454,7 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 		CET_IBT 	: 21-20, /* CET Indirect Branch Tracking */
 		Reserved5	: 22-21,
 		AMX_BF16	: 23-22,
-		AVX512_FP16	: 24-23,
+		AVX512_FP16	: 24-23, /* CPUID(EAX=07H, ECX=01H):EDX.MWAIT */
 		AMX_TILE	: 25-24,
 		AMX_INT8	: 26-25,
 		IBRS_IBPB_Cap	: 27-26, /* IA32_SPEC_CTRL,IA32_PRED_CMD */

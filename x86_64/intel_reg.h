@@ -1236,7 +1236,7 @@ typedef union
 		ReservedBits3	: 16-14,
 		EIST		: 17-16, /* Enhanced Intel SpeedStep Tech. */
 		BR_PROCHOT	: 18-17, /* Broadwell			*/
-		FSM		: 19-18,
+		FSM		: 19-18, /* MONITOR and MWAIT instructions */
 		PrefetchCacheDis: 20-19, /* Pentium4, Xeon		*/
 		ReservedBits4	: 22-20,
 		CPUID_MaxVal	: 23-22,
