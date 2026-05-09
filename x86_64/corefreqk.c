@@ -9279,6 +9279,37 @@ static unsigned int Query_AMD_HSMP_CoreClock(unsigned int cpu)
 	return rx;
 }
 
+static unsigned int Query_AMD_HSMP_FreqRange(unsigned int cpu)
+{
+	HSMP_ARG arg[8];
+	unsigned int rx = HSMP_UNSPECIFIED;
+
+	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
+	{
+		RESET_ARRAY(arg, 8, 0, .value);
+		rx = AMD_HSMP_Exec(HSMP_RD_FMAX_SKT, arg);
+	    if ((rx == HSMP_RESULT_OK) && (arg[0].value > 0))
+	    {
+		union {
+			struct {
+				unsigned short	Fmin,
+						Fmax;
+			};
+			unsigned int value;
+		} Socket = { .value = arg[0].value };
+
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = \
+			Socket.Fmin / PRECISION ? :
+				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)];
+	    }
+	    else if (IS_HSMP_OOO(rx))
+	    {
+		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
+	    }
+	}
+	return rx;
+}
+
 static void Query_AMD_Family_17h(unsigned int cpu)
 {
 	PRIVATE(OF(Specific)) = LookupProcessor();
@@ -9426,6 +9457,8 @@ static void Query_AMD_F1Ah_PerCluster(unsigned int cpu)
 	{
 		Query_AMD_HSMP_CoreClock(cpu);
 	}
+	Query_AMD_HSMP_FreqRange(cpu);
+
 	if (PUBLIC(RO(Proc))->ArchID == AMD_Family_1Ah_01h) {
 		Core_AMD_Family_17h_Temp = CCD_AMD_Family_1Ah_01h_Temp;
 	} else {
@@ -14721,6 +14754,7 @@ static void PerCore_AMD_Family_1Ah_Query(void *arg)
 	{
 		Query_AMD_HSMP_CoreClock(Core->Bind);
 	}
+	Query_AMD_HSMP_FreqRange(Core->Bind);
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 56)

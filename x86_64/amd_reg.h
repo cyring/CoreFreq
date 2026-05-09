@@ -234,6 +234,7 @@
 #define SMU_HSMP_CMD_F1A	0x3b10934
 
 enum HSMP_FUNC {
+	/*	Family 17h						*/
 	HSMP_TEST_MSG	= 0x1,	/* Returns [ARG0] + 1			*/
 	HSMP_RD_SMU_VER = 0x2,	/* SMU FW Version			*/
 	HSMP_RD_VERSION = 0x3,	/* Interface Version			*/
@@ -252,6 +253,7 @@ enum HSMP_FUNC {
 	HSMP_RD_CCLK	= 0x10, /* CPU core clock limit (MHz)		*/
 	HSMP_RD_PC0	= 0x11, /* Socket C0 Residency (100%)		*/
 	HSMP_WR_DPM_LCLK= 0x12, /* NBIO[24:16]; Max[15:8], Min[7:0] DPM */
+	/*	Family 19h						*/
 	HSMP_RD_DPM_LCLK= 0x13, /* In:NBIO[24:16];Out:Max[15:8],Min[7:0]*/
 	HSMP_RD_DDR_BW	= 0x14, /* Max[31:20];Usage{Gbps[19:8],Pct[7:0]}*/
 	HSMP_RD_PKG_TMP = 0x15, /* Socket temperature			*/
@@ -266,6 +268,7 @@ enum HSMP_FUNC {
 	HSMP_RD_XGMI_BW = 0x1e, /* In:Link[15:8],Type[2:0]; Out:BW[31:0]*/
 	HSMP_RW_GMI3	= 0x1f, /* RW_Op[31], Min[15:8], Max[7:0] width */
 	HSMP_RW_PCIE	= 0x20, /* RW_Op[31], Link_Rate[7:0]		*/
+	/*	Family 1Ah						*/
 	HSMP_RW_PWR_MODE= 0x21, /* RW_Op[31], Efficiency_Mode[2:0]	*/
 	HSMP_RW_DF_PST	= 0x22, /* RW_Op[31], Min[15:8],Max[7:0] P-State*/
 	HSMP_RD_MTRC_VER= 0x23, /* Metrics table version		*/
