@@ -297,6 +297,25 @@ enum {
 
 typedef union
 {
+	unsigned char	addr;
+    struct {
+	unsigned char
+			HID	:  3-0, /* Host ID : DIMM SPD		*/
+			LID	:  7-3, /* Local ID			*/
+			Mode0	:  8-7;  /* Must be **zero**		*/
+    };
+    struct {
+	unsigned char
+			UMC_Inst:  4-0,  /* UMC/DDR Phy Logical Mapping */
+			Dimm_Bit:  5-4,  /* DIMM#: DIMM0/1		*/
+			Reserved:  6-5,
+			Sensor	:  7-6,  /* Temperature Sensor#: TS0/1	*/
+			Mode1	:  8-7;  /* Must be **one**		*/
+    };
+} ZEN_HSMP_DIMM_ADDR;
+
+typedef union
+{
 	unsigned int	value;
     struct {
 	unsigned int
@@ -305,6 +324,15 @@ typedef union
 			mWatt	: 32-17;
     };
 } ZEN_HSMP_DIMM_PWR;
+
+typedef union
+{
+	unsigned int	value;
+    struct {
+	unsigned short	Fmin,
+			Fmax;
+    };
+} ZEN_HSMP_FMAX_SKT;
 
 /* Sources: BKDG for AMD Families 0Fh, 10h up to 16h			*/
 const struct {

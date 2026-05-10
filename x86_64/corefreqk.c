@@ -9290,13 +9290,7 @@ static unsigned int Query_AMD_HSMP_FreqRange(unsigned int cpu)
 		rx = AMD_HSMP_Exec(HSMP_RD_FMAX_SKT, arg);
 	    if ((rx == HSMP_RESULT_OK) && (arg[0].value > 0))
 	    {
-		union {
-			struct {
-				unsigned short	Fmin,
-						Fmax;
-			};
-			unsigned int value;
-		} Socket = { .value = arg[0].value };
+		ZEN_HSMP_FMAX_SKT Socket = { .value = arg[0].value };
 
 		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = \
 			Socket.Fmin / PRECISION ? :
@@ -20823,41 +20817,61 @@ static void Call_MSR_ACCU(CORE_RO *Core)
     }
 }
 
-static void Call_HSMP_ACCU(CORE_RO *Core)
-{	/*		Convert DIMM Power from HSMP to RAPL.		*/
-  if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
-  {
+static unsigned long long Query_AMD_HSMP_DIMM_Power(const unsigned short umc,
+						    const unsigned short dimm)
+{
+	ZEN_HSMP_DIMM_ADDR DIMM = {
+		.UMC_Inst	= umc,
+		.Dimm_Bit	= dimm,
+		.Reserved	= 0,
+		.Sensor 	= 0,
+		.Mode1		= 1
+	};
 	ZEN_HSMP_DIMM_PWR DIMM_PWR = {
-		.mWatt = 0, .ms = 0, .addr = Core->T.ApicID
+		.mWatt = 0, .ms = 0, .addr = DIMM.addr
 	};
 	HSMP_ARG arg[8] = {
 		[7] = {0x0}, [6] = {0x0}, [5] = {0x0}, [4] = {0x0},
-		[3] = {0x0}, [2] = {0x0}, [1] = {0x0}, [0] = {DIMM_PWR.value}
+		[3] = {0x0}, [2] = {0x0}, [1] = {0x0}, [0] = { DIMM_PWR.value }
 	};
 	unsigned int rx;
-    if ((rx = AMD_HSMP_Exec(HSMP_RD_DIMM_PWR, arg)) == HSMP_RESULT_OK)
-    {
-	DIMM_PWR.value = arg[0].value;
-      if ((DIMM_PWR.mWatt > 0) && (DIMM_PWR.mWatt != 0b111111111111111))
-      {
-	Core->Delta.RAM.ACCU = (unsigned long long) DIMM_PWR.mWatt;
-	Core->Delta.RAM.ACCU <<= PUBLIC(RO(Proc))->PowerThermal.Unit.ESU;
-	Core->Delta.RAM.ACCU *= PUBLIC(RO(Proc))->SleepInterval;
-	Core->Delta.RAM.ACCU = Core->Delta.RAM.ACCU / (1000LLU * 1000LLU);
-      }
-    }
-    else if (IS_HSMP_OOO(rx))
-    {
-	PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
-    }
-  }
+	if ((rx = AMD_HSMP_Exec(HSMP_RD_DIMM_PWR, arg)) == HSMP_RESULT_OK)
+	{
+		DIMM_PWR.value = arg[0].value;
+	    if ((DIMM_PWR.mWatt > 0) && (DIMM_PWR.mWatt != 0b111111111111111))
+	    {
+		return (unsigned long long) DIMM_PWR.mWatt;
+	    }
+	}
+	else if (IS_HSMP_OOO(rx))
+	{
+		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
+	}
+	return 0LLU;
+}
+
+static void Call_HSMP_ACCU(const unsigned short ids, const unsigned short UMC[])
+{
+	unsigned long long DIMM_PWR_mWatt = 0;
+
+	unsigned short id = 0;
+	for (id = 0; id < ids && PUBLIC(RO(Proc))->Features.HSMP_Enable; id++)
+	{
+		DIMM_PWR_mWatt += Query_AMD_HSMP_DIMM_Power(UMC[id], 0);
+	}
+	/*		Convert DIMM Power from HSMP to RAPL.		*/
+	DIMM_PWR_mWatt <<= PUBLIC(RO(Proc))->PowerThermal.Unit.ESU;
+	DIMM_PWR_mWatt *= PUBLIC(RO(Proc))->SleepInterval;
+	DIMM_PWR_mWatt /= (1000LLU * 1000LLU);
+	PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(RAM)] = DIMM_PWR_mWatt;
 }
 
 static void Call_Genoa_ACCU(CORE_RO *Core)
 {
 	Call_MSR_ACCU(Core);
-	Call_HSMP_ACCU(Core);
 }
+
+#define Call_Turin_ACCU Call_Genoa_ACCU
 
 static void SoC_RAPL(AMD_F17H_SVI SVI, const unsigned long long factor)
 {
@@ -20963,6 +20977,26 @@ static void Call_Genoa( const unsigned int plane0, const unsigned int plane1,
     }
 }
 
+#define Call_Turin Call_Genoa
+
+static void Call_Genoa_SP5(const unsigned int plane0, const unsigned int plane1,
+			const unsigned long long factor)
+{
+	Call_Genoa(plane0, plane1, factor);
+
+	Call_HSMP_ACCU( 12, (const unsigned short[12])
+			{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 } );
+}
+
+static void Call_Turin_SP5(const unsigned int plane0, const unsigned int plane1,
+			const unsigned long long factor)
+{
+	Call_Turin(plane0, plane1, factor);
+
+	Call_HSMP_ACCU( 12, (const unsigned short[12])
+			{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 } );
+}
+
 static enum hrtimer_restart Entry_AMD_F17h(struct hrtimer *pTimer,
 		void (*Call_PWR)(CORE_RO *Core),
 		void (*Call_SMU)(const unsigned int, const unsigned int,
@@ -21015,7 +21049,11 @@ static enum hrtimer_restart Cycle_AMD_Zen4_RPL(struct hrtimer *pTimer)
 }
 static enum hrtimer_restart Cycle_AMD_Zen4_Genoa(struct hrtimer *pTimer)
 {
-	return Entry_AMD_F17h(pTimer, Call_Genoa_ACCU, Call_Genoa, 1, 2, 0LLU);
+	return Entry_AMD_F17h(pTimer, Call_Genoa_ACCU, Call_Genoa_SP5,1,2,0LLU);
+}
+static enum hrtimer_restart Cycle_AMD_Zen5_Turin(struct hrtimer *pTimer)
+{
+	return Entry_AMD_F17h(pTimer, Call_Turin_ACCU, Call_Turin_SP5,1,2,0LLU);
 }
 static enum hrtimer_restart Cycle_AMD_F17h(struct hrtimer *pTimer)
 {
@@ -21060,6 +21098,11 @@ static void InitTimer_AMD_Zen4_RPL(unsigned int cpu)
 static void InitTimer_AMD_Zen4_Genoa(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_AMD_Zen4_Genoa, 1);
+}
+
+static void InitTimer_AMD_Zen5_Turin(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_AMD_Zen5_Turin, 1);
 }
 
 static void InitTimer_AMD_Zen5_STX(unsigned int cpu)

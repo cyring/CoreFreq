@@ -1626,6 +1626,7 @@ static void PerCore_AMD_Family_1Ah_Query(void *arg) ;
 
 static void Query_AMD_F1Ah_24h_60h_70h_PerSocket(unsigned int cpu) ;
 static void InitTimer_AMD_Zen5_STX(unsigned int cpu) ;
+static void InitTimer_AMD_Zen5_Turin(unsigned int cpu) ;
 
 /*	[Void]								*/
 #define _Void_Signature {.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
@@ -14400,7 +14401,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Start = Start_AMD_Family_1Ah,
 	.Stop = Stop_AMD_Family_1Ah,
 	.Exit = Exit_AMD_F1Ah,
-	.Timer = InitTimer_AMD_Family_1Ah,
+	.Timer = InitTimer_AMD_Zen5_Turin,
 	.BaseClock = BaseClock_AMD_Family_1Ah,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
@@ -14424,7 +14425,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Start = Start_AMD_Family_1Ah,
 	.Stop = Stop_AMD_Family_1Ah,
 	.Exit = Exit_AMD_F1Ah,
-	.Timer = InitTimer_AMD_Family_1Ah,
+	.Timer = InitTimer_AMD_Zen5_Turin,
 	.BaseClock = BaseClock_AMD_Family_1Ah,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
@@ -14448,7 +14449,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Start = Start_AMD_Family_1Ah,
 	.Stop = Stop_AMD_Family_1Ah,
 	.Exit = Exit_AMD_F1Ah,
-	.Timer = InitTimer_AMD_Family_1Ah,
+	.Timer = InitTimer_AMD_Zen5_Turin,
 	.BaseClock = BaseClock_AMD_Family_1Ah,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
@@ -14463,7 +14464,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		},
 	.Specific = AMD_Zen5_F1Ah_Specific,
 	.SystemDriver = VOID_Driver,
-	.Architecture = Arch_AMD_Family_1Ah
+	.Architecture = Arch_AMD_Zen5_Turin
 	},
 [AMD_Zen5_KRK] = {							/*133*/
 	.Signature = _AMD_Zen5_KRK,
@@ -14520,7 +14521,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Start = Start_AMD_Family_1Ah,
 	.Stop = Stop_AMD_Family_1Ah,
 	.Exit = Exit_AMD_F1Ah,
-	.Timer = InitTimer_AMD_Family_1Ah,
+	.Timer = InitTimer_AMD_Zen5_Turin,
 	.BaseClock = BaseClock_AMD_Family_1Ah,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,

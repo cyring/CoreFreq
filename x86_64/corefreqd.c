@@ -1269,7 +1269,6 @@ static void *Core_Cycle(void *arg)
 
 	/* Per Core, evaluate the Power properties.			*/
 	CFlip->Delta.Power.ACCU = RO(Core)->Delta.Power.ACCU;
-	CFlip->Delta.RAM.ACCU = RO(Core)->Delta.RAM.ACCU;
 
 	ComputePowerFormula[SCOPE_OF_FORMULA(RO(Shm)->Proc.powerFormula)](
 		CFlip, RO(Shm), cpu
@@ -8984,7 +8983,6 @@ static void Pkg_ComputePower_AMD_17h(	RW(PROC) *RW(Proc),
 					struct FLIP_FLOP *CFlop )
 {
     RW(Proc)->Delta.Power.ACCU[PWR_DOMAIN(CORES)] += CFlop->Delta.Power.ACCU;
-    RW(Proc)->Delta.Power.ACCU[PWR_DOMAIN(RAM)] += CFlop->Delta.RAM.ACCU;
 }
 
 static void Pkg_ResetPower_None(PROC_RW *Proc)
@@ -9001,7 +8999,6 @@ static void Pkg_ResetPower_None(PROC_RW *Proc)
 static void Pkg_ResetPower_AMD_17h(RW(PROC) *RW(Proc))
 {
 	RW(Proc)->Delta.Power.ACCU[PWR_DOMAIN(CORES)] = 0;
-	RW(Proc)->Delta.Power.ACCU[PWR_DOMAIN(RAM)] = 0;
 }
 
 void Pkg_ResetSensorLimits(PROC_STRUCT *Pkg)
