@@ -2225,7 +2225,7 @@ REASON_CODE SysInfoISA( Window *win,
 		NULL,
 		RSC(ISA_MWAITX).CODE(), RSC(ISA_MWAITX_COMM).CODE(),
 		{ 0, 2 * ( RO(Shm)->Proc.Features.Std.ECX.MONITOR
-				|  RO(Shm)->Proc.Features.ExtInfo.ECX.MWaitExt )
+				| RO(Shm)->Proc.Features.ExtInfo.ECX.MWaitExt )
 			+ ( RO(Shm)->Proc.Features.Std.ECX.MONITOR
 				<<RO(Shm)->Proc.Features.ExtInfo.ECX.MWaitExt)},
 		(unsigned short[])
@@ -2286,11 +2286,24 @@ REASON_CODE SysInfoISA( Window *win,
 		{ RO(Shm)->Proc.Features.Std.EDX.SEP },
 	},
 	{
-		NULL,
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		RSC(ISA_SHA).CODE(), RSC(ISA_SHA_COMM).CODE(),
 		{ 0, RO(Shm)->Proc.Features.ExtFeature.EBX.SHA },
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.ExtFeature.EBX.SHA },
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_SHA_512).CODE(), RSC(ISA_SHA_COMM).CODE(),
+		{ 0, 2 * ( RO(Shm)->Proc.Features.ExtFeature.EBX.SHA
+			 | RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.SHA512)
+			+ (RO(Shm)->Proc.Features.ExtFeature.EBX.SHA
+			<< RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.SHA512)},
+		(unsigned short[])
+		{
+		RO(Shm)->Proc.Features.ExtFeature.EBX.SHA,
+		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.SHA512
+		},
 	},
 	{
 		NULL,

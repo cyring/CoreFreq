@@ -2804,6 +2804,7 @@
 #define RSC_ISA_RDTSCP_CODE		"      RDTSCP [%c] "
 #define RSC_ISA_SEP_CODE		" SEP          [%c]"
 #define RSC_ISA_SHA_CODE		"          SHA [%c]"
+#define RSC_ISA_SHA_512_CODE		" SHA/SHA512 [%c/%c]"
 #define RSC_ISA_SSE_CODE		"          SSE [%c]"
 #define RSC_ISA_SSE2_CODE		"        SSE2 [%c] "
 #define RSC_ISA_SSE3_CODE		" SSE3         [%c]"

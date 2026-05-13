@@ -1471,31 +1471,33 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf 1		*/
 	struct CPUID_0x00000007_1_EAX
 	{
 		unsigned int
-		Reserved1	:  3-0,
-		RAO_INT 	:  4-3,  /* Grand Ridge			*/
+		SHA512		:  1-0,  /* Supports the SHA512 instructions */
+		SM3		:  2-1,  /* Supports the SM3 instructions */
+		SM4		:  3-2,  /* Supports the SM4 instructions */
+		RAO_INT 	:  4-3,  /* Grand Ridge: Read-As-Ordered */
 		AVX_VNNI_VEX	:  5-4,  /* Vector Neural Network Instructions*/
 		AVX512_BF16	:  6-5,  /* BFLOAT16 support in AVX512	*/
 		LASS		:  7-6,
 		CMPCCXADD	:  8-7,  /* Sierra Forest, Grand Ridge	*/
 		ArchPerfmonExt	:  9-8,
-		Reserved2	: 10-9,
+		Reserved1	: 10-9,
 		FZRM		: 11-10, /* Fast Zero-length REP MOVSB	*/
 		FSRS		: 12-11, /* Fast Short REP STOSB:Store String */
 		FSRC		: 13-12, /* Fast Short REP CMPSB, REP SCASB */
-		Reserved3	: 17-13,
+		Reserved2	: 17-13,
 		FRED		: 18-17, /* Flexible Return and Event Delivery*/
 		LKGS		: 19-18, /* Load Kernel GS segment register */
-		WRMSRNS_Inst	: 20-19, /* Sierra Forest, Grand Ridge	*/
+		WRMSRNS 	: 20-19, /* Sierra Forest, Grand Ridge	*/
 		NMI_SRC 	: 21-20, /* NMI-source reporting	*/
 		AMX_FP16	: 22-21, /* Granite Rapids		*/
 		HRESET		: 23-22, /* History Reset instruction	*/
 		AVX_IFMA	: 24-23, /* Sierra Forest, Grand Ridge	*/
-		Reserved4	: 26-24,
+		Reserved3	: 26-24,
 		LAM		: 27-26, /* Linear Address Masking	*/
-		RDMSRLIST_Inst	: 28-27, /* Sierra Forest, Grand Ridge	*/
-		Reserved5	: 30-28,
+		RDMSRLIST	: 28-27, /* Sierra Forest, Grand Ridge	*/
+		Reserved4	: 30-28,
 		INVD_DISABLE	: 31-30,
-		Reserved6	: 32-31;
+		MOVRS		: 32-31;
 	} EAX;
 	struct
 	{
@@ -1899,11 +1901,11 @@ typedef struct	/* Processor Capacity Leaf.				*/
 		unsigned int
 		MaxPhysicalAddr :  8-0,  /* Common x86			*/
 		MaxLinearAddr	: 16-8,  /* Common x86			*/
-		MaxGuestPhysAddr: 24-16, /* AMD reserved		*/
+		MaxGuestPhysAddr: 24-16, /* Common x86			*/
 		Reserved	: 32-24;
 	} EAX;
 	struct
-	{	/* AMD Family 17h, 19h					*/
+	{	/* AMD Family 17h, 19h; Intel leaf 80000008H:EBX[9]	*/
 		unsigned int
 		CLZERO		:  1-0,  /* Clear Zero Instruction	*/
 		IRPerf		:  2-1,  /* Inst. Retired Counter support */
@@ -1939,7 +1941,7 @@ typedef struct	/* Processor Capacity Leaf.				*/
 		BranchSample	: 32-31;
 	} EBX;
     union
-	{	/* AMD reserved					*/
+    {		/* AMD reserved					*/
 	struct {
 		unsigned int
 		NC		:  8-0,  /* Zero based number of threads */
@@ -1955,7 +1957,7 @@ typedef struct	/* Processor Capacity Leaf.				*/
 		CU_PTSC_Size	: 18-16,
 		Reserved2	: 32-18;
 		} F1Ah;
-	} ECX;
+    } ECX;
 	struct
 	{	/* AMD Family 17h					*/
 		unsigned int
