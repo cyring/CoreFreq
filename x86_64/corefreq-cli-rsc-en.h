@@ -1074,14 +1074,22 @@
 #define RSC_ISA_MMX_COMM_CODE_EN	" MultiMedia eXtensions / Extended MMX "
 #define RSC_ISA_MWAITX_COMM_CODE_EN	" Monitor Wait / MWAIT eXtensions "
 #define RSC_ISA_MOVBE_COMM_CODE_EN	" Move Data After Swapping Bytes "
+#define RSC_ISA_MOVRS_COMM_CODE_EN	" Move Read-Shared Value "
+#define RSC_ISA_MSRLIST_COMM_CODE_EN	\
+				" Read/Write List of Model Specific Registers "
+
 #define RSC_ISA_PCLMULDQ_COMM_CODE_EN	" Carryless Multiplication Quadword "
 #define RSC_ISA_POPCNT_COMM_CODE_EN	" Count of Number of Bits Set to 1 "
+
 #define RSC_ISA_RDRAND_COMM_CODE_EN	" Read Random Number "
 #define RSC_ISA_RDSEED_COMM_CODE_EN	" Read Random SEED "
 #define RSC_ISA_RDTSCP_COMM_CODE_EN	\
 				" Read Time-Stamp Counter and Processor ID "
 #define RSC_ISA_SEP_COMM_CODE_EN	" SYSENTER and SYSEXIT instructions "
 #define RSC_ISA_SHA_COMM_CODE_EN	" Secure Hash Algorithms extensions "
+#define RSC_ISA_SM3_SM4_COMM_CODE_EN	\
+				" Shangyong Mima cryptographic instructions "
+
 #define RSC_ISA_SSE_COMM_CODE_EN	" Streaming SIMD Extensions "
 #define RSC_ISA_SSE2_COMM_CODE_EN	" Streaming SIMD Extensions 2 "
 #define RSC_ISA_SSE3_COMM_CODE_EN	" Streaming SIMD Extensions 3 "
@@ -1115,6 +1123,8 @@
 
 #define RSC_ISA_OSPKE_COMM_CODE_EN	" RDPKRU/WRPKRU instructions "
 #define RSC_ISA_WAITPKG_COMM_CODE_EN	" TPAUSE/UMONITOR/UMWAIT instructions "
+#define RSC_ISA_WRMSRNS_COMM_CODE_EN	\
+			" Non-Serializing Write to Model Specific Register "
 
 #define RSC_FEATURES_TITLE_CODE_EN	" Features "
 #define RSC_ON_CODE_EN			" ON"
@@ -1191,6 +1201,7 @@
 #define RSC_FEATURES_PSN_CODE_EN	"Processor Serial Number"
 #define RSC_FEATURES_PTWRITE_CODE_EN	"Write Data to a Processor Trace Packet"
 #define RSC_FEATURES_PREFETCHI_CODE_EN	"PREFETCHIT0/1 Instructions"
+#define RSC_FEATURES_RAO_INT_CODE_EN	"Read-As-Ordered Instructions"
 #define RSC_FEATURES_RDT_PQE_CODE_EN	"Resource Director Technology/PQE"
 #define RSC_FEATURES_RDT_PQM_CODE_EN	"Resource Director Technology/PQM"
 #define RSC_FEATURES_RDPRU_CODE_EN	"Read Processor Register at User level"
@@ -2797,6 +2808,8 @@
 #define RSC_ISA_MMX_CODE		" MMX/Ext    [%c/%c]"
 #define RSC_ISA_MWAITX_CODE		" MON/MWAITX [%c/%c]"
 #define RSC_ISA_MOVBE_CODE		"        MOVBE [%c]"
+#define RSC_ISA_MOVRS_CODE		" MOVRS        [%c]"
+#define RSC_ISA_MSRLIST_CODE		"      MSRLIST [%c]"
 #define RSC_ISA_PCLMULDQ_CODE		"   PCLMULQDQ [%c] "
 #define RSC_ISA_POPCNT_CODE		" POPCNT       [%c]"
 #define RSC_ISA_RDRAND_CODE		"       RDRAND [%c]"
@@ -2805,6 +2818,7 @@
 #define RSC_ISA_SEP_CODE		" SEP          [%c]"
 #define RSC_ISA_SHA_CODE		"          SHA [%c]"
 #define RSC_ISA_SHA_512_CODE		" SHA/SHA512 [%c/%c]"
+#define RSC_ISA_SM3_SM4_CODE		"    SM3/SM4 [%c/%c]"
 #define RSC_ISA_SSE_CODE		"          SSE [%c]"
 #define RSC_ISA_SSE2_CODE		"        SSE2 [%c] "
 #define RSC_ISA_SSE3_CODE		" SSE3         [%c]"
@@ -2826,3 +2840,4 @@
 #define RSC_ISA_GFNI_CODE		"         GFNI [%c]"
 #define RSC_ISA_OSPKE_CODE		"        OSPKE [%c]"
 #define RSC_ISA_WAITPKG_CODE		"     WAITPKG [%c] "
+#define RSC_ISA_WRMSRNS_CODE		"     WRMSRNS [%c] "

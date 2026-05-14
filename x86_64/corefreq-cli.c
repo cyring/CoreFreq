@@ -2250,6 +2250,41 @@ REASON_CODE SysInfoISA( Window *win,
 	},
 /* Row Mark */
 	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_MOVRS).CODE(), RSC(ISA_MOVRS_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.MOVRS },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.MOVRS },
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_MSRLIST).CODE(), RSC(ISA_MSRLIST_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.MSRLIST },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.MSRLIST },
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_SM3_SM4).CODE(), RSC(ISA_SM3_SM4_COMM).CODE(),
+		{ 0, 2 * ( RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.SM3
+			 | RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.SM4)
+			+ (RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.SM3
+			<< RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.SM4)},
+		(unsigned short[])
+		{
+		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.SM3,
+		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.SM4
+		},
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_WRMSRNS).CODE(), RSC(ISA_WRMSRNS_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.WRMSRNS },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.WRMSRNS },
+	},
+/* Row Mark */
+	{
 		NULL,
 		RSC(ISA_POPCNT).CODE(), RSC(ISA_POPCNT_COMM).CODE(),
 		{ 0, RO(Shm)->Proc.Features.Std.ECX.POPCNT },
@@ -2982,6 +3017,14 @@ REASON_CODE SysInfoFeatures(	Window *win,
 		attr_Feat,
 		2, "%s%.*sPREFETCHI   [%7s]", RSC(FEATURES_PREFETCHI).CODE(),
 		width - 24 - RSZ(FEATURES_PREFETCHI),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.RAO_INT == 1,
+		attr_Feat,
+		2, "%s%.*sRAO-INT   [%7s]", RSC(FEATURES_RAO_INT).CODE(),
+		width - 22 - RSZ(FEATURES_RAO_INT),
 		NULL
 	},
 	{

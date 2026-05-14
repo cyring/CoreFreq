@@ -1494,10 +1494,10 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf 1		*/
 		AVX_IFMA	: 24-23, /* Sierra Forest, Grand Ridge	*/
 		Reserved3	: 26-24,
 		LAM		: 27-26, /* Linear Address Masking	*/
-		RDMSRLIST	: 28-27, /* Sierra Forest, Grand Ridge	*/
+		MSRLIST 	: 28-27, /* Sierra Forest, Grand Ridge	*/
 		Reserved4	: 30-28,
 		INVD_DISABLE	: 31-30,
-		MOVRS		: 32-31;
+		MOVRS		: 32-31; /* Move with Read As Ordered and Swap*/
 	} EAX;
 	struct
 	{
