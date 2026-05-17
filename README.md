@@ -519,102 +519,166 @@ gmake CC=clang
 ## [Buildroot](https://github.com/cyring/CoreFreq-buildroot)
 
 ## Q&A
-* Q: How many CPUs are supported by _CoreFreq_ ?  
+Q: How many CPUs are supported by _CoreFreq_ ?  
 
-  A: Up to 1024 CPUs can be built using the `make` `CORE_COUNT` option.  256 as a default.  
+A: Up to 1024 CPUs can be built using the `make` `CORE_COUNT` option.  
 
-* Q: Turbo Technology is activated however CPUs don't reach those frequencies ?  
+256 as a default.  
 
-* Q: The CPU ratio does not go above its minimum value ?  
+----
 
-* Q: The UI shows erratic counters values !  
+Q: Turbo Technology is activated however CPUs don't reach those frequencies ?  
 
-  A: In the kernel boot command argument line, *disable the NMI Watchdog*  
-`nmi_watchdog=0`  
+Q: The CPU ratio does not go above its minimum value ?  
 
+Q: The UI shows erratic counters values !  
 
-* Q: The Processor does not enter the C-States ?  
+A: In the kernel boot command argument line, *disable the NMI Watchdog*  
+```
+nmi_watchdog=0
+```
 
-  A1: Check if at least one Idle driver is running.  
-  Accordingly to the Processor specs, provide a max_cstate value in the kernel argument as below.  
-`intel_idle.max_cstate=value`  
+----
 
-  A2: _CoreFreq_ can also register itself as a cpuidle driver.  
-  This time, any idle driver will have to be blacklisted in the kernel command line; such as:  
-`modprobe.blacklist=intel_cstate idle=halt intel_idle.max_cstate=0`  
-  Start the _CoreFreq_ driver with the `Register_CPU_Idle` parameter:  
-`insmod corefreqk.ko Register_CPU_Idle=1`  
+Q: The Processor does not enter the C-States ?  
 
+A1: Check if at least one idle driver is running.  
+  According to the processor specs, specify a `max_cstate` value in the kernel arguments as follow.  
 
-* Q: The _CoreFreq_ UI refreshes itself slowly, with a delay after the actual CPUs usage ?  
+```
+intel_idle.max_cstate=<value>
+```
 
-  A: The sampling time to read the counters can be reduced or increased using a _CoreFreq_ module argument:  
-`insmod corefreqk.ko SleepInterval=value`  
-  where `<value>` is supplied in milliseconds between a minimum of 100 ms and a maximum of 4500 ms. 1000 ms is the default value.  
+A2: _CoreFreq_ can also register itself as a cpuidle driver.  
+This time, any idle driver will have to be blacklisted in the kernel command line; such as:  
 
+```sh
+modprobe.blacklist=intel_cstate idle=halt intel_idle.max_cstate=0
+```
 
-* Q: The base clock reports a wrong frequency value ?  
+Start the _CoreFreq_ driver with the `Register_CPU_Idle` parameter:  
+```sh
+insmod corefreqk.ko Register_CPU_Idle=1
+```
 
-  A: _CoreFreq_ uses various algorithms to estimate the base clock.  
+----
+
+Q: The _CoreFreq_ UI refreshes itself slowly, with a delay after the actual CPUs usage ?  
+
+A: The sampling time to read the counters can be reduced or increased using a _CoreFreq_ module argument:  
+
+```sh
+insmod corefreqk.ko SleepInterval=<value>
+```
+
+where `<value>` is supplied in milliseconds between a minimum of 100 ms and a maximum of 4500 ms.  
+
+1000 ms is the default value.  
+
+----
+
+Q: The base clock reports a wrong frequency value ?  
+
+A: _CoreFreq_ uses various algorithms to estimate the base clock.  
   
   1. The delta of two TimeStamp counters during a defined interval  
   2. The value provided in the Processor brand string divided by the maximum ratio (without Turbo)  
   3. A static value advertised by the manufacturer specs.  
   4. The MSR_FSB_FREQ bits provided with the Core, Core2 and Atom architectures.  
 
-  The _CoreFreq_ module can be started as follow to ignore the first algorithm (frequency estimation):  
-`insmod corefreqk.ko AutoClock=0`  
+The _CoreFreq_ module can be started as follow to ignore the first algorithm (frequency estimation):  
 
-  _Remark: algorithms # 2, 3 and 4 will not return any under/over-clock frequency._  
+```sh
+insmod corefreqk.ko AutoClock=0
+```
 
+_Remark: algorithms # 2, 3 and 4 will not return any under/over-clock frequency._  
 
-* Q: The CPU temperature is wrong ?  
+----
 
-  A: _CoreFreq_ employs two MSR registers to calculate the temperature.  
+Q: The CPU temperature is wrong ?  
+
+A: _CoreFreq_ employs two MSR registers to calculate the temperature.  
+
 `MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]`  
 
-  _Remark_: if the MSR_IA32_TEMPERATURE_TARGET is not provided by the Processor, a default value of 100 degree Celsius is considered as a target.  
+_Remark_: if the MSR_IA32_TEMPERATURE_TARGET is not provided by the Processor, a default value of 100 degree Celsius is considered as a target.  
 
+----
 
-* Q: The menu option "Memory Controller" does not open any window ?  
+Q: The menu option "Memory Controller" does not open any window ?  
 
-  A: Although Uncore and IMC features are under development, they can be activated with the Experimental driver argument:  
-`insmod corefreqk.ko Experimental=1`  
+A: Although Uncore and IMC features are under development, they can be activated with the Experimental driver argument:  
+```sh
+insmod corefreqk.ko Experimental=1
+```
 
+----
 
-* Q: The Instructions and PMC0 counters are stuck to zero ?  
-* Q: The Daemon crashes whenever its stress tools are executing !  
+Q: The Instructions and PMC0 counters are stuck to zero ?  
+Q: The Daemon crashes whenever its stress tools are executing !  
 
-  A: The `PCE` bit of control register `CR4` allows RDPMC in ring `3`  
-`echo "2" > /sys/devices/cpu/rdpmc`  
-  or using systemd, create file `/etc/tmpfiles.d/boot.conf` and add line:  
-  `w /sys/devices/cpu/rdpmc - - - - 2`  
+A: The `PCE` bit of control register `CR4` allows RDPMC in ring `3`  
 
-  Next, load the driver with the `RDPMC_Enable` argument to override the `CR4` register:  
-`insmod corefreqk.ko RDPMC_Enable=1`  
+```sh
+echo "2" > /sys/devices/cpu/rdpmc
+```
 
+or using systemd, create file `/etc/tmpfiles.d/boot.conf` and add a line as below:
 
-* Q: How to solely control the P-States or the HWP Performance States ?  
+```
+w /sys/devices/cpu/rdpmc - - - - 2
+```
 
-  A1: Without the Kernel `cpufreq` framework (aka `CONFIG_CPU_FREQ`), _CoreFreq_ will take the full control over P-States.  
+next, load the driver with the `RDPMC_Enable` argument to override the `CR4` register:
+
+```sh
+insmod corefreqk.ko RDPMC_Enable=1
+```
+
+----
+
+Q: How to solely control the P-States or the HWP Performance States ?  
+
+A1: Without the Kernel `cpufreq` framework (aka `CONFIG_CPU_FREQ`), _CoreFreq_ will take the full control over P-States.  
   This allow the User to select a _capped_ frequency from the UI, either per Core, either for the whole Processor.  
 
-  A2: With `cpufreq` built into Kernel, allow _CoreFreq_ to register as a cpufreq driver.  
+A2: With `cpufreq` built into Kernel, allow _CoreFreq_ to register as a cpufreq driver.  
   In the Kernel boot command line, blacklist any P-state driver; such as:  
-`modprobe.blacklist=acpi_cpufreq,pcc_cpufreq intel_pstate=disable`  
 
-  * hardware CPPC (MSR registers)  
-`initcall_blacklist=amd_pstate_init`
+```sh
+modprobe.blacklist=acpi_cpufreq,pcc_cpufreq intel_pstate=disable
+```
 
-  * firmware CPPC (ACPI registers)  
-`amd_pstate.shared_mem=0` and/or `initcall_blacklist=acpi_cpufreq_init`
+* Hardware CPPC (MSR registers)  
 
- 3. load the _CoreFreq_ driver with its `Register_CPU_Freq` parameter:  
-`insmod corefreqk.ko Register_CPU_Freq=1`  
+```
+initcall_blacklist=amd_pstate_init
+```
 
-* Q: Governor is missing in Kernel window even after a successful registration.  
+* Firmware CPPC (ACPI registers)  
 
-  A: When Registrations are done through the UI, they have  to be done in the following order:  
+```
+amd_pstate.shared_mem=0
+```
+
+and / or
+
+```
+initcall_blacklist=acpi_cpufreq_init
+```
+
+* Load the _CoreFreq_ driver with its `Register_CPU_Freq` parameter:
+
+```sh
+insmod corefreqk.ko Register_CPU_Freq=1
+```
+
+----
+
+Q: Governor is missing in Kernel window even after a successful registration.  
+
+A: When Registrations are done through the UI, they have to be done in the following order:  
 
  1. Clock Source  
  2. Governor driver  
@@ -622,77 +686,139 @@ gmake CC=clang
  4. CPU-IDLE driver  
  5. CPU-IDLE route  
 
-* Q: The CPU freezes or the System crashes.  
+----
 
-  A1: Changing the `Max` ratio frequency (aka P0 P-State) makes the Kernel TSC clock source unstable.  
-  1. Boot the Kernel with these command line parameters `notsc nowatchdog`  
-  2. Optionally, build the _CoreFreq_ driver with its `udelay()` TSC implementation  
-`make DELAY_TSC=1`  
+Q: The CPU freezes or the System crashes.  
+
+A1: Changing the `Max` ratio frequency (aka P0 P-State) makes the Kernel TSC clock source unstable.  
+  1. Boot the Kernel with these command line parameters `notsc nowatchdog`
+  2. Optionally, build the _CoreFreq_ driver with its `udelay()` TSC implementation
+```sh
+make DELAY_TSC=1
+```  
   3. Allow _CoreFreq_ to register a new TSC clock source using driver arguments:  
-`insmod corefreqk.ko TurboBoost_Enable=0 Register_ClockSource=1`  
-  4. Switch the current system clock source to `corefreq`  
-`echo "corefreq" > /sys/devices/system/clocksource/clocksource0/current_clocksource`  
+```sh
+insmod corefreqk.ko TurboBoost_Enable=0 Register_ClockSource=1
+```  
+  4. Switch the current system clock source to _CoreFreq_
+```sh
+echo "corefreq" > /sys/devices/system/clocksource/clocksource0/current_clocksource
+```  
 
-  A2: `[AMD][Zen]` SMU:  
-  _CoreFreq_ CPU monitoring loops are executed in an interrupt context where any blocking call like Mutex will freeze the kernel.  
-  As a recommendation, **make sure no other SMU driver is running**.  
+A2: The SMU within AMD Zen  
 
-  A3: This Processor is not or partially implemented in _CoreFreq_.  
-  Please open an issue in the [CPU support](https://github.com/cyring/CoreFreq/wiki/CPU-support) Wiki page.  
+_CoreFreq_' CPU monitoring loops are executed into an interrupt context where any blocking call, like the mutex in `amd_smn_read` and `amd_smn_write`, will freeze the kernel.  
 
-* Q: No voltage is showing up with Nehalem or Westmere processors ?  
+As a recommendation, **make sure no other SMU driver is running**.  
 
-  A: Build _CoreFreq_ as below if one of those chips is present:  
-`make HWM_CHIPSET=W83627`  
-  or  
-`make HWM_CHIPSET=IT8720`  
+A3: This Processor is not or partially implemented in _CoreFreq_.  
 
-* Q: `[AMD][Zen]` How to read the idle states ?  
+Please open an issue in the [CPU support](https://github.com/cyring/CoreFreq/wiki/CPU-support) Wiki page.  
 
-  A: As a workarround to the missing documentation of the hardware counters, _CoreFreq_ implements virtual counters based on the TSC  
+----
+
+Q: No voltage is showing up with Nehalem or Westmere processors ?
+
+A: Build _CoreFreq_ as below if one of those chips is present:  
+```sh
+make HWM_CHIPSET=W83627
+```
+
+or
+
+```sh
+make HWM_CHIPSET=IT8720
+```  
+
+----
+
+Q: `[AMD][Zen]` How to read the idle states ?
+
+A: As a workarround to the missing documentation of the hardware counters, _CoreFreq_ implements virtual counters based on the TSC  
   Those VPMC are estimated each time the Kernel is entering an idle state level.  
   The prerequisities are:  
-  1. Boot the Kernel without its idle drivers and no `TSC` default clock source set  
-  `modprobe.blacklist=acpi_cpufreq idle=halt tsc=unstable`  
-  2. Build _CoreFreq_ with its `TSC` implementation  
-  `make DELAY_TSC=1`
-  3. Load and **register** the _CoreFreq_ kernel module as the system handler  
-  `insmod corefreqk.ko Register_ClockSource=1 Register_Governor=1 Register_CPU_Freq=1 Register_CPU_Idle=1 Idle_Route=1`  
-  4. Define _CoreFreq_ as the System clock source  
-  `echo "corefreq" > /sys/devices/system/clocksource/clocksource0/current_clocksource`  
-  5. Start the Daemon then the Client  
-![alt text](.assets/CoreFreq_Zen_VPMC.png "CoreFreq for AMD Zen")  
-  - The registration is confirmed into the `Settings` window  
-  - The idle limit can be changed at any time in the `Kernel` window  
+
+1. Boot the Kernel without its idle drivers and no `TSC` default clock source set  
+```sh
+modprobe.blacklist=acpi_cpufreq idle=halt tsc=unstable
+```
+
+> [!WARNING]
+> Linux kernel version **7.x** registers `acpi_idle` through `acpi_processor_driver_init()`.
+>
+> Add the following kernel command line parameter:
+```
+initcall_blacklist=acpi_processor_driver_init
+```
+
+2. Build _CoreFreq_ with its `TSC` implementation  
+```sh
+make DELAY_TSC=1
+```
+
+3. Load and **register** the _CoreFreq_ kernel module as the system handler  
+```sh
+insmod corefreqk.ko Register_ClockSource=1 Register_Governor=1 Register_CPU_Freq=1 Register_CPU_Idle=1 Idle_Route=1
+```
+
+4. Define _CoreFreq_ as the System clock source  
+```sh
+echo "corefreq" > /sys/devices/system/clocksource/clocksource0/current_clocksource
+```
+
+5. Start the Daemon then the Client  
+
+![alt text](.assets/CoreFreq_Zen_VPMC.png "CoreFreq for AMD Zen")
+
+- The registration is confirmed into the `Settings` window
+- The idle limit can be changed at any time in the `Kernel` window
+
 ![alt text](.assets/CoreFreq_Idle_Limit.png "Idle Limit")  
 
-* Q: How does _CoreFreq_ work with `cgroups` ?  
+----
 
-  A: The Daemon and the Client have to run in the `root cgroups cpugroup`, by using these commands:  
+Q: How does _CoreFreq_ work with `cgroups` ?
+
+A: The Daemon and the Client have to run in the `root cgroups cpugroup`, by using these commands:  
   ( _thanks to Conne Beest @connebeest_ )  
-`cgexec -g cpuset:/ ./corefreqd`  
-`cgexec -g cpuset:/ ./cofrefreq-cli`  
+```sh
+cgexec -g cpuset:/ ./corefreqd
+cgexec -g cpuset:/ ./cofrefreq-cli
+```
 
-* Q: How to enable transparency in the User Interface ?  
+----
 
-  A: Transparency is a build option invoked by the compilation directive `UI_TRANSPARENCY`  
-  1. Build the project with `UI_TRANSPARENCY` enabled  
+Q: How to enable transparency in the User Interface ?
+
+A: Transparency is a build option invoked by the compilation directive `UI_TRANSPARENCY`  
+  1. build the project with `UI_TRANSPARENCY` enabled  
 `make UI_TRANSPARENCY=1`
-  2. Start the Client with one of its transparency compatible colors theme  
+  2. start the Client with one of its transparency compatible colors theme  
 `corefreq-cli -OE 2 -t`  
-  3. Or switch to that theme from `Menu > Theme`, shortcut [`E`]  
+  3. or switch to the theme from `Menu > Theme`  
+    shortcut <kbd>E</kbd>  
 
-* Q: How to screenshot the UI ?  
+----
 
-  A: Press `[Ctrl]+[p]` to save the screen to a rich ascii file.  Use the `cat` or `less -R` command to view the file saved with an `asc` extension.  
+Q: How to screenshot the UI ?
 
-* Q: How to record the UI ?  
+A: Press <kbd>Ctrl+p</kbd> to save the screen into a rich ASCII file.
 
-  A: Press `[Alt]+[p]` to record the screen for the duration set in Settings. A compatible [asciinema](https://github.com/asciinema/asciinema) file is saved in the current directory with a `cast` extension.  
+Employ the `cat` or `less -R` command to view the file which was saved with an `asc` extension.
 
-* Q: What are the build options for _CoreFreq_ ?  
+----
 
-  A: Enter `make help` to display them:  
+Q: How to record the UI ?
+
+A: Press <kbd>Alt+p</kbd> to record the screen (for a duration set into Settings).
+
+A compatible [asciinema](https://github.com/asciinema/asciinema) file is saved in the current directory with a `cast` extension.
+
+----
+
+Q: What are the build options for _CoreFreq_ ?
+
+A: Enter `make help` to display them:
 
 ```
 o---------------------------------------------------------------o
@@ -782,9 +908,11 @@ o---------------------------------------------------------------o
 o---------------------------------------------------------------o
 ```
 
-* Q: What are the parameters of the _CoreFreq_ driver ?  
+----
 
-  A: Use the `modinfo corefreqk.ko` command to list the parameters  
+Q: What are the parameters of the _CoreFreq_ driver ?
+
+A: Use the `modinfo corefreqk.ko` command to list the parameters  
 
 ----
 
@@ -795,9 +923,9 @@ o---------------------------------------------------------------o
 
 ### Q&A
 
-* Q: Counters are stuck to zero  
+Q: Counters are stuck to zero
 
-  A: Add parameter `nohlt` to the kernel boot command line.  
+A: Add parameter `nohlt` to the kernel boot command line.  
 
 ----
 
