@@ -744,12 +744,19 @@ modprobe.blacklist=acpi_cpufreq idle=halt tsc=unstable
 ```
 
 > [!WARNING]
-> Linux kernel version **7.x** registers `acpi_idle` through `acpi_processor_driver_init()`.
+> Linux kernel version **7.x** registers `acpi_idle` through `acpi_processor_driver_init()`, which may prevent _CoreFreq_ from registering its own CPU-Idle driver.
 >
-> Add the following kernel command line parameter:
-```
-initcall_blacklist=acpi_processor_driver_init
-```
+> First attempt with the following kernel command line parameter:
+>
+> ```text
+> processor.nocst
+> ```
+>
+> If `acpi_idle` is still registered, disable the ACPI processor driver initcall. Note that this also disables the kernel ACPI/CPPC firmware implementation:
+>
+> ```text
+> initcall_blacklist=acpi_processor_driver_init
+> ```
 
 2. Build _CoreFreq_ with its `TSC` implementation  
 ```sh
