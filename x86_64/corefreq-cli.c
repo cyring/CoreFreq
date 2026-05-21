@@ -2279,9 +2279,9 @@ REASON_CODE SysInfoISA( Window *win,
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		RSC(ISA_WRMSRNS).CODE(), RSC(ISA_WRMSRNS_COMM).CODE(),
-		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.WRMSRNS },
+		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.WRMSRNS_INST },
 		(unsigned short[])
-		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.WRMSRNS },
+		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.WRMSRNS_INST },
 	},
 /* Row Mark */
 	{

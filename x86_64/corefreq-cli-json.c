@@ -958,7 +958,7 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_key(&s, "LKGS");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.LKGS);
 					json_key(&s, "WRMSRNS");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.WRMSRNS);
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.WRMSRNS_INST);
 					json_key(&s, "AMX_FP16");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AMX_FP16);
 					json_key(&s, "HRESET");
