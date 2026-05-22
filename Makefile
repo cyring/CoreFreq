@@ -177,7 +177,7 @@ $(BUILD)/.prepare-stamp:
 	fi; \
 	touch $@
 
-$(BUILD)/corefreqk.ko: $(BUILD)/.prepare-stamp
+$(BUILD)/corefreqk.ko: $(BUILD)/.prepare-stamp $(BUILD)/module/corefreqk.c
 	@if [ -e $(BUILD)/Makefile ]; then \
 	    if [ -z ${V} ]; then \
 		$(MAKE) --no-print-directory -C $(KERNELDIR) \
