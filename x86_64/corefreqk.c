@@ -21237,6 +21237,8 @@ static int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu)
 
 	memcpy(policy, cpu_policy, sizeof(*policy));
 
+	cpufreq_cpu_put(cpu_policy);
+
 	return 0;
 }
 #endif
