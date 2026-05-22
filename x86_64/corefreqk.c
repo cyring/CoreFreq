@@ -4381,7 +4381,9 @@ static signed int Set_EPP_ACPI_CPPC(unsigned int cpu, void *arg)
 
 	if ((HWP_EPP >= 0) && (HWP_EPP <= 0xff)) {
 		if ((rc = Put_EPP_ACPI_CPPC(cpu, HWP_EPP)) == 0) {
-			rc = Get_EPP_ACPI_CPPC(cpu);
+			if ((rc = Get_EPP_ACPI_CPPC(cpu)) == 0) {
+				Compute_ACPI_CPPC_Bounds(cpu);
+			}
 		}
 	}
 	return rc;
