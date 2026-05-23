@@ -14534,9 +14534,6 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	    }
 	}
 	#undef _lt
-	if (AMD_F17h_CPPC() == -ENODEV) {
-		For_All_ACPI_CPPC(Read_ACPI_CPPC_Registers, NULL);
-	}
     }
 	SystemRegisters(Core);
 
@@ -14678,6 +14675,14 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
     }
     else if (PUBLIC(RO(Proc))->Features.ACPI_CPPC)
     {
+      if (Get_ACPI_CPPC_Registers(Core->Bind, NULL) == 0)
+      {
+	if (PUBLIC(RO(Proc))->Features.OSPM_EPP) {
+		Get_EPP_ACPI_CPPC(Core->Bind);
+	}
+
+	Compute_ACPI_CPPC_Bounds(Core->Bind);
+
 	RDMSR(Core->SystemRegister.HWCR, MSR_K7_HWCR);
 
 	Core->PowerThermal.HWP_Capabilities.Highest = \
@@ -14739,6 +14744,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	Core->Boost[BOOST(HWP_MIN)]=Core->PowerThermal.HWP_Request.Minimum_Perf;
 	Core->Boost[BOOST(HWP_MAX)]=Core->PowerThermal.HWP_Request.Maximum_Perf;
 	Core->Boost[BOOST(HWP_TGT)]=Core->PowerThermal.HWP_Request.Desired_Perf;
+      }
     }
 }
 
