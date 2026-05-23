@@ -4321,7 +4321,19 @@ static long Sys_OS_Driver_Query(void)
 		StrCopy(PUBLIC(RO(Proc))->OS.FreqDriver.Governor,
 			pGovernor->name, CPUFREQ_NAME_LEN);
 	} else {
-		PUBLIC(RO(Proc))->OS.FreqDriver.Governor[0] = '\0';
+		switch (pFreqPolicy->policy) {
+		case CPUFREQ_POLICY_POWERSAVE:
+			StrCopy(PUBLIC(RO(Proc))->OS.FreqDriver.Governor,
+				"powersave", CPUFREQ_NAME_LEN);
+			break;
+		case CPUFREQ_POLICY_PERFORMANCE:
+			StrCopy(PUBLIC(RO(Proc))->OS.FreqDriver.Governor,
+				"performance", CPUFREQ_NAME_LEN);
+			break;
+		default:
+			PUBLIC(RO(Proc))->OS.FreqDriver.Governor[0] = '\0';
+			break;
+		}
 	}
   } else {
 	PUBLIC(RO(Proc))->OS.FreqDriver.Governor[0] = '\0';
