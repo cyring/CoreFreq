@@ -2345,7 +2345,7 @@ static PROCESSOR_SPECIFIC *LookupProcessor(void)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 16, 0)
 static int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu)
 {
-	struct cpufreq_policy *cpu_policy __free(put_cpufreq_policy);
+	struct cpufreq_policy *cpu_policy;
 
 	if (!policy)
 		return -EINVAL;
@@ -2355,6 +2355,8 @@ static int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu)
 		return -EINVAL;
 
 	memcpy(policy, cpu_policy, sizeof(*policy));
+
+	cpufreq_cpu_put(cpu_policy);
 
 	return 0;
 }
