@@ -14534,6 +14534,9 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	    }
 	}
 	#undef _lt
+	if (AMD_F17h_CPPC() == -ENODEV) {
+		For_All_ACPI_CPPC(Read_ACPI_CPPC_Registers, NULL);
+	}
     }
 	SystemRegisters(Core);
 
