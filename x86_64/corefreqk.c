@@ -14675,6 +14675,14 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
     }
     else if (PUBLIC(RO(Proc))->Features.ACPI_CPPC)
     {
+      if (Get_ACPI_CPPC_Registers(Core->Bind, NULL) == 0)
+      {
+	if (PUBLIC(RO(Proc))->Features.OSPM_EPP) {
+		Get_EPP_ACPI_CPPC(Core->Bind);
+	}
+
+	Compute_ACPI_CPPC_Bounds(Core->Bind);
+
 	RDMSR(Core->SystemRegister.HWCR, MSR_K7_HWCR);
 
 	Core->PowerThermal.HWP_Capabilities.Highest = \
@@ -14736,6 +14744,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	Core->Boost[BOOST(HWP_MIN)]=Core->PowerThermal.HWP_Request.Minimum_Perf;
 	Core->Boost[BOOST(HWP_MAX)]=Core->PowerThermal.HWP_Request.Maximum_Perf;
 	Core->Boost[BOOST(HWP_TGT)]=Core->PowerThermal.HWP_Request.Desired_Perf;
+      }
     }
 }
 
@@ -21226,7 +21235,7 @@ static void Stop_Uncore_AMD_Family_17h(void *arg)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 16, 0)
 static int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu)
 {
-	struct cpufreq_policy *cpu_policy __free(put_cpufreq_policy);
+	struct cpufreq_policy *cpu_policy;
 
 	if (!policy)
 		return -EINVAL;
@@ -21236,6 +21245,8 @@ static int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu)
 		return -EINVAL;
 
 	memcpy(policy, cpu_policy, sizeof(*policy));
+
+	cpufreq_cpu_put(cpu_policy);
 
 	return 0;
 }
@@ -21312,7 +21323,19 @@ static long Sys_OS_Driver_Query(void)
 		StrCopy(PUBLIC(RO(Proc))->OS.FreqDriver.Governor,
 			pGovernor->name, CPUFREQ_NAME_LEN);
 	} else {
-		PUBLIC(RO(Proc))->OS.FreqDriver.Governor[0] = '\0';
+		switch (pFreqPolicy->policy) {
+		case CPUFREQ_POLICY_POWERSAVE:
+			StrCopy(PUBLIC(RO(Proc))->OS.FreqDriver.Governor,
+				"powersave", CPUFREQ_NAME_LEN);
+			break;
+		case CPUFREQ_POLICY_PERFORMANCE:
+			StrCopy(PUBLIC(RO(Proc))->OS.FreqDriver.Governor,
+				"performance", CPUFREQ_NAME_LEN);
+			break;
+		default:
+			PUBLIC(RO(Proc))->OS.FreqDriver.Governor[0] = '\0';
+			break;
+		}
 	}
     } else {
 	PUBLIC(RO(Proc))->OS.FreqDriver.Governor[0] = '\0';

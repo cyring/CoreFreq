@@ -980,7 +980,7 @@ static PROCESSOR_SPECIFIC *LookupProcessor(void)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 16, 0)
 static int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu)
 {
-	struct cpufreq_policy *cpu_policy __free(put_cpufreq_policy);
+	struct cpufreq_policy *cpu_policy;
 
 	if (!policy)
 		return -EINVAL;
@@ -990,6 +990,8 @@ static int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu)
 		return -EINVAL;
 
 	memcpy(policy, cpu_policy, sizeof(*policy));
+
+	cpufreq_cpu_put(cpu_policy);
 
 	return 0;
 }
@@ -2312,7 +2314,19 @@ static long Sys_OS_Driver_Query(void)
 		StrCopy(PUBLIC(RO(Proc))->OS.FreqDriver.Governor,
 			pGovernor->name, CPUFREQ_NAME_LEN);
 	} else {
-		PUBLIC(RO(Proc))->OS.FreqDriver.Governor[0] = '\0';
+		switch (pFreqPolicy->policy) {
+		case CPUFREQ_POLICY_POWERSAVE:
+			StrCopy(PUBLIC(RO(Proc))->OS.FreqDriver.Governor,
+				"powersave", CPUFREQ_NAME_LEN);
+			break;
+		case CPUFREQ_POLICY_PERFORMANCE:
+			StrCopy(PUBLIC(RO(Proc))->OS.FreqDriver.Governor,
+				"performance", CPUFREQ_NAME_LEN);
+			break;
+		default:
+			PUBLIC(RO(Proc))->OS.FreqDriver.Governor[0] = '\0';
+			break;
+		}
 	}
   } else {
 	PUBLIC(RO(Proc))->OS.FreqDriver.Governor[0] = '\0';
