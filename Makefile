@@ -146,6 +146,7 @@ endif
 .PHONY: all
 all: $(BUILD)/.prepare-stamp corefreqd corefreq-cli corefreqk.ko | $(BUILD)/.prepare-stamp
 
+$(BUILD)/module/corefreqk.c:
 $(BUILD)/.prepare-stamp:
 	@if [ ! -d $(BUILD) ]; then \
 		if [ ${SILENT} -eq 0 ]; then \
