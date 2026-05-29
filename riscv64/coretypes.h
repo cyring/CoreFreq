@@ -1759,11 +1759,17 @@ typedef union {
 #define KMAX(M, m)	((M) > (m) ? (M) : (m))
 #define KMIN(m, M)	((m) < (M) ? (m) : (M))
 
+#if defined(__GNUC__) && (__GNUC__ >= 7)
+# define CF_STRNLEN(s, n) __builtin_strnlen((s), (n))
+#else
+# define CF_STRNLEN(s, n) strnlen((s), (n))
+#endif
+
 #define StrCopy(_dest, _src, _max)					\
 ({									\
 	size_t __max = (_max);						\
 	if (__max > 0) {						\
-		size_t _len = __builtin_strnlen((_src), __max - 1);	\
+		size_t _len = CF_STRNLEN((_src), __max - 1);		\
 		__builtin_memcpy((_dest), (_src), _len);		\
 		(_dest)[_len] = '\0';					\
 	} else {							\
