@@ -3076,9 +3076,14 @@ typedef union {
 
 #define StrCopy(_dest, _src, _max)					\
 ({									\
-	size_t _min = KMIN((_max - 1), strlen(_src));			\
-	memcpy(_dest, _src, _min);					\
-	_dest[_min] = '\0';						\
+	size_t __max = (_max);						\
+	if (__max > 0) {						\
+		size_t _len = __builtin_strnlen((_src), __max - 1);	\
+		__builtin_memcpy((_dest), (_src), _len);		\
+		(_dest)[_len] = '\0';					\
+	} else {							\
+		(_dest)[0] = '\0';					\
+	}								\
 })
 
 #define StrFormat( _str, _size, _fmt, ... )				\
