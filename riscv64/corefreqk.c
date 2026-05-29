@@ -2465,10 +2465,10 @@ static long Sys_Kernel(SYSGATE_RO *SysGate)
 			/include/uapi/linux/utsname.h			*/
 	if (SysGate != NULL) {
 		SysGate->kernelVersionNumber = LINUX_VERSION_CODE;
-		memcpy(SysGate->sysname, utsname()->sysname, MAX_UTS_LEN);
-		memcpy(SysGate->release, utsname()->release, MAX_UTS_LEN);
-		memcpy(SysGate->version, utsname()->version, MAX_UTS_LEN);
-		memcpy(SysGate->machine, utsname()->machine, MAX_UTS_LEN);
+		StrCopy(SysGate->sysname, utsname()->sysname, MAX_UTS_LEN);
+		StrCopy(SysGate->release, utsname()->release, MAX_UTS_LEN);
+		StrCopy(SysGate->version, utsname()->version, MAX_UTS_LEN);
+		StrCopy(SysGate->machine, utsname()->machine, MAX_UTS_LEN);
 
 		return RC_OK_SYSGATE;
 	} else {
