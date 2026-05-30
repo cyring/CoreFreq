@@ -1473,8 +1473,8 @@ typedef union
     struct
     {
 	unsigned long long	 /* Per SMT: MSR 0xC00102B3 (RW)	*/
-	Minimum_Perf	:  8-0,
-	Maximum_Perf	: 16-8,
+	Maximum_Perf	:  8-0,
+	Minimum_Perf	: 16-8,
 	Desired_Perf	: 24-16,
 	Energy_Pref	: 32-24,
 	Reserved	: 64-32;
