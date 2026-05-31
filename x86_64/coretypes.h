@@ -1506,12 +1506,19 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf 1		*/
 	{
 		unsigned int
 		MSR_PPIN_CAP	:  1-0,  /* MSR IA32_PPIN and IA32_PPIN_CTL */
-		Reserved	: 32-1;
+		PBNDKB_INST	:  2-1,  /* MSR IA32_TSE_CAPABILITY	*/
+		Reserved1	:  3-2,
+		CPUIDMAXVAL	:  4-3,  /* CPUIDMAXVAL_LIM_RMV		*/
+		Reserved2	: 32-4;
 	} EBX;
 	struct
 	{
 		unsigned int
-		Reserved	: 32-0;
+		RDT_M_ASYM	:  1-0, /* Asymmetrical RDT Monitoring	*/
+		RDT_A_ASYM	:  2-1, /* Asymmetrical RDT Allocation	*/
+		Reserved1	:  5-2,
+		MSR_IMM_SUP	:  6-5, /* Immediate RDMSR and WRMSRNS	*/
+		Reserved2	: 32-6;
 	} ECX;
 	struct CPUID_0x00000007_1_EDX
 	{
@@ -1519,12 +1526,24 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf 1		*/
 		Reserved1	:  4-0,
 		AVX_VNNI_INT8	:  5-4,  /* Sierra Forest, Grand Ridge	*/
 		AVX_NE_CONVERT	:  6-5,  /* Sierra Forest, Grand Ridge	*/
-		Reserved2	: 14-6,
+		Reserved2	:  8-6,
+		AMX_COMPLEX	:  9-8,  /* 1:AMX-COMPLEX instructions	*/
+		Reserved3	: 10-9,
+		AVX_VNNI_INT16	: 11-10, /* 1:AVX-VNNI-INT16 instructions*/
+		Reserved4	: 13-11,
+		UTMR		: 14-13,
 		PREFETCHI	: 15-14, /* Granite Rapids: IA32_UINTR	*/
-		Reserved3	: 18-15,
+		USER_MSR	: 16-15, /* 1:Supports URDMSR and UWRMSR*/
+		Reserved5	: 17-16,
+		UIRET_UIF	: 18-17, /* If 1 sets RFLAGS.UIF	*/
 		CET_SSS 	: 19-18,
 		AVX10		: 20-19, /* AVX10 Converged Vector ISA	*/
-		Reserved4	: 32-20;
+		Reserved6	: 21-20,
+		APX_F		: 22-21,
+		SEC_TEE 	: 23-22, /* Trusted SEC_TEE_ATTESTATION */
+		MWAIT_SUP	: 24-23, /* !CPUID.01H:ECX.MONITOR[3]	*/
+		SLSM		: 25-24, /* MSR IA32_INTEGRITY_STATUS[0]*/
+		Reserved7	: 32-25;
 	} EDX;
 } CPUID_0x00000007_1;
 
@@ -1544,9 +1563,9 @@ typedef struct	/* Extended Feature Flags Leaf equal or greater than 2	*/
 		DDPD_U_SPEC_CTRL:  4-3,
 		BHI_SPEC_CTRL	:  5-4,
 		MCDT_NO 	:  6-5,
-		Reserved1	:  7-6,
+		UC_LOCK_DISABLE :  7-6, /* 1: UC-lock disable feature	*/
 		MONITOR_MITG_NO :  8-7,
-		Reserved2	: 32-8;
+		Reserved	: 32-8;
 	} EDX;
 } CPUID_0x00000007_2;
 
@@ -1585,7 +1604,8 @@ typedef struct	/* Architectural Performance Monitoring Leaf.		*/
 		FixWidth	: 13-5,
 		Reserved1	: 15-13,
 		AnyThread_Dprec : 16-15, /* AnyThread deprecation.	*/
-		Reserved2	: 32-16;
+		SLOTS_PER_CYC	: 20-16,
+		Reserved2	: 32-20;
 	} EDX;
 } CPUID_0x0000000a;
 
