@@ -1035,6 +1035,7 @@
 #define RSC_SYS_REG_HWCR_SBR_CODE_EN	" SMM_BASE save state area Disable "
 #define RSC_SYS_REG_HWCR_TPR_CODE_EN	" Fast TPR lowering Disable "
 #define RSC_SYS_REG_HWCR_PG_CODE_EN	" SMM Page Config Lock "
+#define RSC_SYS_REG_HWCR_512_CODE_EN	" Downgrade FP512 performance to FP256 "
 #define RSC_SYS_REG_HWCR_ID_CODE_EN	" CPUID User Disable "
 
 #define RSC_ISA_TITLE_CODE_EN		" Instruction Set Extensions "
@@ -2759,6 +2760,7 @@
 #define RSC_SYS_REG_HDR_HWCR_SBR_CODE	"SMMB"
 #define RSC_SYS_REG_HDR_HWCR_TPR_CODE	" TPR"
 #define RSC_SYS_REG_HDR_HWCR_PG_CODE	" PG "
+#define RSC_SYS_REG_HDR_HWCR_512_CODE	"512 "
 #define RSC_SYS_REG_HDR_HWCR_ID_CODE	"U-ID"
 
 #define RSC_ISA_3DNOW_CODE		" 3DNow!/Ext [%c/%c]"

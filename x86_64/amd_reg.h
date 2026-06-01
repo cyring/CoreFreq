@@ -462,9 +462,9 @@ typedef union
 	SmmBaseLock	: 32-31, /* MSR SMM_BASE saved/restored from save area*/
 	TprLoweringDis	: 33-32, /* RW: FastTprLoweringDis: 1=Disabled	*/
 	SmmPgCfgLock	: 34-33, /* SMM reserved and iff 8000_0021_EAX[3] */
-	Reserved8	: 35-34,
+	FP512_DOWNGRADE : 35-34, /* DowngradeFp512ToFp256		*/
 	CpuidUserDis	: 36-35, /* CPUID User Disable iff 8000_0021_EAX[17] */
-	Reserved9	: 64-36;
+	Reserved8	: 64-36;
     } Family_17h;
     struct
     {

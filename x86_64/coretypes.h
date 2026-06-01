@@ -319,6 +319,7 @@ enum SYS_REG {
 	HWCR_SBR	= 31,
 	HWCR_TPR	= 32,
 	HWCR_PG 	= 33,
+	HWCR_512	= 34,
 	HWCR_ID 	= 35,
 
 	UNDEF_CR	= 64
