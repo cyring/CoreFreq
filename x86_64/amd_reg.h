@@ -1930,29 +1930,40 @@ typedef union
 	};
 } AMD_17_UMC_DEBUG_MISC;
 
+/* DDR5 Limit encoding*: 0: Unlimited
+			 1, 2: Reserved
+			 3: DDR-3600
+			 4: DDR-4000
+			 5: DDR-4400
+			 6: DDR-4800
+			 7: DDR-5200
+			 8: DDR-5600
+			 9: DDR-6000
+			10: DDR-6400
+*/
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50df0			*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7...b}50df0 		*/
 	unsigned int		value;
 	struct
 	{
 		unsigned int
-		DDR_MaxRate	:  8-0,
-		ReservedBits1	: 16-8,
+		DDR_MaxRate	:  8-0,  /* Bits [3:0] DDR Max Rate(*)	*/
+		DramTypeDis	: 16-8,  /* Disable technology type(s)	*/
 		Reg_DIMM_Dis	: 17-16, /* 1: RDIMM/LRDIMM support	*/
 		Disable 	: 18-17, /* 1: ECC Support disabled	*/
 		Encryption_Dis	: 19-18,
 		MemChannel_Dis	: 20-19,
-		ReservedBits2	: 32-20;
+		ReservedBits	: 32-20;
 	};
 } AMD_17_UMC_ECC_CAP_LO;
 
 typedef union
-{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7}50df4			*/
+{	/* SMU addresses = 0x{0,1,2,3,4,5,6,7...b}50df4 		*/
 	unsigned int		value;
 	struct
 	{
 		unsigned int
-		DDR_MaxRateEnf	:  8-0,
+		DDR_MaxRateEnf	:  8-0,  /* DDR Max Rate Enforced(*)	*/
 		ReservedBits	: 30-8,
 		Enable		: 31-30, /* 1: ECC logic configured	*/
 		ChipKill	: 32-31; /* 1: ECC chipkill configured	*/
