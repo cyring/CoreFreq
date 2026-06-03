@@ -6986,6 +6986,7 @@ static void AMD_Zen_UMC(struct pci_dev *dev,
 		[1] = UMC_BAR + CS_MASK[1][1]
 		}
 	};
+	const unsigned shared_mask = CS_MASK[1][1] - CS_MASK[0][1] <= 0x8;
 	unsigned short chip, ranks = 0;
     for (chip = 0; chip < MC_MAX_DIMM; chip++)
     {
@@ -7004,13 +7005,16 @@ static void AMD_Zen_UMC(struct pci_dev *dev,
 	{
 		unsigned int addr[2];
 
-		addr[1] = CHIP_BAR[sec][1] + ((chip >> 1) << 2);
-
+		if (shared_mask) {
+			addr[1] = CHIP_BAR[sec][1] + ((chip >> 1) << 2);
+		} else {
+			addr[1] = CHIP_BAR[sec][1] + (chip << 2);
+		}
 		Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
 				.AMD17h.CHIP[chip][sec].Mask,
 				addr[1], dev );
 
-		addr[0] = CHIP_BAR[sec][0] + ((chip - (chip > 2)) << 2);
+		addr[0] = CHIP_BAR[sec][0] + (chip << 2);
 
 		Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
 				.AMD17h.CHIP[chip][sec].Chip,
