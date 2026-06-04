@@ -1937,9 +1937,23 @@ typedef union
 			 5: DDR-4400
 			 6: DDR-4800
 			 7: DDR-5200
-			 8: DDR-5600
+			 8: DDR-5600			// Ryzen 9 9950X
 			 9: DDR-6000
 			10: DDR-6400
+ *
+ * DDR4 encoding:	0x00: Unlimited
+			0x14:  667 MHz (1333 MT/s)
+			0x18:  800 MHz (1600 MT/s)
+			0x1c:  933 MHz (1866 MT/s)
+			0x20: 1067 MHz (2133 MT/s)
+			0x24: 1200 MHz (2400 MT/s)
+			0x28: 1333 MHz (2667 MT/s)
+			0x2c: 1467 MHz (2933 MT/s)
+			0x30: 1600 MHz (3200 MT/s)	// Ryzen 9 3950X
+
+			[0x01-0x13],[0x15-0x17],[0x19-0x1b],
+			[0x1d-0x1f],[0x21-0x23],[0x25-0x27],
+			[0x29-0x2b],[0x2d-0x2f],[0x31-0xff]:	Reserved
 */
 typedef union
 {	/* SMU addresses = 0x{0,1,2,3,4,5,6,7...b}50df0 		*/
