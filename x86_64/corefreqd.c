@@ -6568,6 +6568,30 @@ void AMD_0Fh_HTT(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	RO(Shm)->Uncore.Unit.DDR_Std  = RAM_STD_UNSPEC;
 }
 
+unsigned int ChipSize(struct CHIPSELECT MaskReg)
+{
+	volatile unsigned int chipSize;
+	__asm__ volatile
+	(
+		"xorl	%%edx, %%edx"		"\n\t"
+		"bsrl	%[base], %%ecx" 	"\n\t"
+		"jz	1f"			"\n\t"
+		"incl	%%edx"			"\n\t"
+		"shll	%%cl, %%edx"		"\n\t"
+		"negl	%%edx"			"\n\t"
+		"notl	%%edx"			"\n\t"
+		"andl	$0xfffffffe, %%edx"	"\n\t"
+		"shrl	$2, %%edx"		"\n\t"
+		"incl	%%edx"			"\n\t"
+	"1:"					"\n\t"
+		"movl	%%edx, %[dest]"
+		: [dest] "=m" (chipSize)
+		: [base] "m"  (MaskReg.value)
+		: "cc", "memory", "ecx", "edx"
+	);
+	return chipSize;
+}
+
 void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 {
 	unsigned short mc;
@@ -6583,16 +6607,40 @@ void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	unsigned short cha;
   for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
   {
-	unsigned long long DIMM_Size;
-	unsigned short slot;
-    for (slot = 0; slot < RO(Shm)->Uncore.MC[mc].SlotCount; slot++)
+	unsigned long long DIMM_Size[MC_MAX_DIMM_REGION] = {0, 0},
+				moduleSize[4] = {0, 0, 0, 0};
+
+	unsigned short slot, chip, sec, has_secondary = 0;
+    for (chip = 0; chip < MC_MAX_DIMM; chip++) {
+      for (sec = 0; sec < 2; sec++) {
+	const _Bool CS_Enable = BITVAL( RO(Proc)->Uncore.MC[mc].Channel[cha] \
+					.AMD17h.CHIP[chip][sec].Chip.value, 0 );
+	if (CS_Enable) {
+		moduleSize[chip] = moduleSize[chip]
+			+ ChipSize( 	RO(Proc)->Uncore.MC[mc].Channel[cha] \
+					.AMD17h.CHIP[chip][sec].Mask );
+		if (sec == 1) {
+			has_secondary = 1;
+		}
+	}
+      }
+    }
+    for (chip = 0; chip < MC_MAX_DIMM; chip++)
     {
-	const unsigned short chipselect_pair = slot << 1;
-      if (BITVAL(RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.CHIP[
-			chipselect_pair
-		][0].Chip.value, 0)
-      )
-      { /*			CSEnable				*/
+	slot = chip >> 1;
+	if (has_secondary
+	 || RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.SharedMask)
+	{
+		DIMM_Size[slot] = DIMM_Size[slot] + moduleSize[chip];
+	} else {
+		DIMM_Size[slot] = KMAX(moduleSize[chip], DIMM_Size[slot]);
+	}
+    }
+    for (slot = 0; slot < MC_MAX_DIMM_REGION; slot++)
+      if (DIMM_Size[slot] > 0)
+      {
+	unsigned long long ranks = DIMM_Size[slot] * 1024, div64;
+
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8 << \
 	RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.DAC.NumBanks;
 
@@ -6602,18 +6650,19 @@ void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << (5
 	+ RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.DAC.NumCol);
 
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
-	RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.Ranks;
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
+		DIMM_Size[slot] >> 10;
 
-	DIMM_Size = 8LLU;
-	DIMM_Size *= RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks;
-	DIMM_Size *= RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
-	DIMM_Size *= RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows;
-	DIMM_Size *= RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols;
+	div64 = RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks;
+	div64 *= RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows;
+	div64 *= RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols;
+	div64 = div64 * 8;
 
-	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = DIMM_Size >> 20;
+	if (div64 > 0) {
+		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
+			ranks / div64;
+	}
       }
-    }
 
 	TIMING(mc, cha).tCL = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR1.tCL;

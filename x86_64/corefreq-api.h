@@ -622,7 +622,7 @@ typedef struct
 				AMD_17_UMC_ECC_CAP_HI	Hi;	/* 32 bits   */
 			  } ECC;
 			  struct {
-			    struct {
+			    struct CHIPSELECT {
 				unsigned int value;
 			    }				Chip,	/* 32 bits   */
 							Mask;	/* 32 bits   */
@@ -654,6 +654,7 @@ typedef struct
 				unsigned int value;		/* 32 bits   */
 			    }				BGS,
 							BGS_ALT;
+				unsigned short		SharedMask;
 			} AMD17h;
 		};
 		union {
@@ -664,7 +665,6 @@ typedef struct
 		    struct {
 	/* 5003{0,4}h*/ AMD_ZEN_UMC_DRAM_ADDR_CFG	DAC;	/* 32 bits    */
 	/* 5008{0,4}h*/ AMD_17_UMC_DIMM_CFG		CFG;	/* 32 bits    */
-			unsigned short			Ranks;
 		    } AMD17h;
 		} DIMM[MC_MAX_DIMM];
 	} Channel[MC_MAX_CHA];

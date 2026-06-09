@@ -2343,9 +2343,10 @@ typedef struct	/* BSP CPUID features.					*/
 } FEATURES;
 
 /* Memory Controller' structures dimensions.				*/
-#define MC_MAX_CTRL	8
-#define MC_MAX_CHA	12
-#define MC_MAX_DIMM	4
+#define MC_MAX_CTRL		8
+#define MC_MAX_CHA		12
+#define MC_MAX_DIMM		4
+#define MC_MAX_DIMM_REGION	2
 
 #define MC_3D_VECTOR_TO_SCALAR(_mc, _cha, _slot)			\
 	((_mc * MC_MAX_CTRL) + (_cha * MC_MAX_CHA) + _slot)
