@@ -6607,13 +6607,15 @@ void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	unsigned short cha;
   for (cha = 0; cha < RO(Shm)->Uncore.MC[mc].ChannelCount; cha++)
   {
-	unsigned long long DIMM_Size[MC_MAX_DIMM_REGION] = {0, 0},
-				moduleSize[4] = {0, 0, 0, 0};
+	unsigned long long DIMM_Size[MC_MAX_DIMM_REGION] = {0};
+	unsigned long long moduleSize[MC_MAX_DIMM] = {0};
 
-	unsigned short slot, chip, sec, has_secondary = 0;
+	unsigned short slot, chip, sec;
+	unsigned char has_secondary = 0;
     for (chip = 0; chip < MC_MAX_DIMM; chip++) {
       for (sec = 0; sec < 2; sec++) {
-	const _Bool CS_Enable = BITVAL( RO(Proc)->Uncore.MC[mc].Channel[cha] \
+	const unsigned char \
+		CS_Enable = BITVAL(	RO(Proc)->Uncore.MC[mc].Channel[cha] \
 					.AMD17h.CHIP[chip][sec].Chip.value, 0 );
 	if (CS_Enable) {
 		moduleSize[chip] = moduleSize[chip]
@@ -6628,7 +6630,7 @@ void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
     for (chip = 0; chip < MC_MAX_DIMM; chip++)
     {
 	slot = chip >> 1;
-	if (has_secondary
+	if (has_secondary == 1
 	 || RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.SharedMask)
 	{
 		DIMM_Size[slot] = DIMM_Size[slot] + moduleSize[chip];
@@ -6637,9 +6639,9 @@ void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	}
     }
     for (slot = 0; slot < MC_MAX_DIMM_REGION; slot++)
-      if (DIMM_Size[slot] > 0)
-      {
-	unsigned long long ranks = DIMM_Size[slot] * 1024, div64;
+     if (DIMM_Size[slot] > 0)
+     {
+	unsigned long long ranks = DIMM_Size[slot] * 1024LLU;
 
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8 << \
 	RO(Proc)->Uncore.MC[mc].Channel[cha].DIMM[slot].AMD17h.DAC.NumBanks;
@@ -6653,16 +6655,21 @@ void AMD_17h_UMC(RO(SHM_STRUCT) *RO(Shm), RO(PROC) *RO(Proc))
 	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = \
 		DIMM_Size[slot] >> 10;
 
+	RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
+
+      if (has_secondary == 0) {
+	unsigned long long div64;
 	div64 = RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks;
 	div64 *= RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows;
 	div64 *= RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols;
-	div64 = div64 * 8;
+	div64 = div64 * 8LLU;
 
 	if (div64 > 0) {
 		RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
 			ranks / div64;
 	}
       }
+     }
 
 	TIMING(mc, cha).tCL = \
 		RO(Proc)->Uncore.MC[mc].Channel[cha].AMD17h.DTR1.tCL;
