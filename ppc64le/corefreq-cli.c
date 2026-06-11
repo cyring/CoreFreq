@@ -5936,18 +5936,34 @@ void MemoryController(	Window *win,
 		const unsigned short part = \
 		(RO(Shm)->Uncore.MC[mc].SlotCount > 1 ? slot:cha) % MC_MAX_DIMM;
 
+	     if (RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks > 0) {
 		PRT(IMC, attrib[1], "%5u",
 			RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks);
+	     } else {
+		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+	     }
+	     if (RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks > 0) {
 		PRT(IMC, attrib[1], "%5u",
 			RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks);
-
+	     } else {
+		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+	     }
+	     if (RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows > 0) {
 		iSplit(RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows,str);
 		PRT(IMC, attrib[1], "%5s", &str[0]);
 		PRT(IMC, attrib[1], "%5s", &str[8]);
-
+	     } else {
+		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+	     }
+	     if (RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols > 0) {
 		iSplit(RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols,str);
 		PRT(IMC, attrib[1], "%5s", &str[0]);
 		PRT(IMC, attrib[1], "%5s", &str[8]);
+	     } else {
+		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+	     }
 		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
 
 		iSplit(RO(Shm)->Uncore.MC[mc].Channel[cha].DIMM[slot].Size,str);
