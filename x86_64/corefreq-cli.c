@@ -1897,6 +1897,35 @@ REASON_CODE SysInfoISA( Window *win,
 	},
 /* Row Mark */
 	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_AMX_COMPLEX).CODE(), RSC(ISA_AMX_COMPLEX_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AMX_COMPLEX},
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AMX_COMPLEX },
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_AVX10).CODE(), NULL,
+		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX10},
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX10 },
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_AVX_IFMA).CODE(), NULL,
+		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX_IFMA },
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX_IFMA },
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_AVX_NE_CONV).CODE(), NULL,
+		{ 1,RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_NE_CONVERT},
+		(unsigned short[])
+		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_NE_CONVERT },
+	},
+/* Row Mark */
+	{
 		NULL,
 		RSC(ISA_AVX512_F).CODE(), NULL,
 		{ 0, RO(Shm)->Proc.Features.ExtFeature.EBX.AVX_512F },
@@ -2036,10 +2065,10 @@ REASON_CODE SysInfoISA( Window *win,
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
-		RSC(ISA_AVX_NE_CONV).CODE(), NULL,
-		{ 1,RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_NE_CONVERT},
+		RSC(ISA_AVX_INT16).CODE(), NULL,
+		{ 0,RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_VNNI_INT16},
 		(unsigned short[])
-		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_NE_CONVERT },
+		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_VNNI_INT16 },
 	},
 	/* AMD ISA */
 	{
@@ -2059,10 +2088,10 @@ REASON_CODE SysInfoISA( Window *win,
 /* Row Mark */
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
-		RSC(ISA_AVX_IFMA).CODE(), NULL,
-		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX_IFMA },
+		RSC(ISA_APX_F).CODE(), RSC(ISA_APX_F_COMM).CODE(),
+		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.APX_F},
 		(unsigned short[])
-		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.AVX_IFMA },
+		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.APX_F },
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },

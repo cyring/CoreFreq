@@ -977,8 +977,12 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 				json_key(&s, "EDX");
 				{
 					json_start_object(&s);
+					json_key(&s, "AMX_COMPLEX");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AMX_COMPLEX);
 					json_key(&s, "AVX_VNNI_INT8");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_VNNI_INT8);
+					json_key(&s, "AVX_VNNI_INT16");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_VNNI_INT16);
 					json_key(&s, "AVX_NE_CONVERT");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_NE_CONVERT);
 					json_key(&s, "PREFETCHI");
@@ -987,6 +991,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.CET_SSS);
 					json_key(&s, "AVX10");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX10);
+					json_key(&s, "APX_F");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.APX_F);
 
 					json_end_object(&s);
 				}
