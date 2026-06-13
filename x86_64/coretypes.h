@@ -2134,6 +2134,18 @@ enum	/*	Intel AES Key Locker instructions.			*/
 	CPUID_00000019_00000000_EBX_IWKeyBackup
 };
 
+enum	/*	Intel AVX10 Converged Vector ISA information.		*/
+{
+	CPUID_00000024_00000000_EBX_AVX10_128	= 16,
+	CPUID_00000024_00000000_EBX_AVX10_256	= 17,
+	CPUID_00000024_00000000_EBX_AVX10_512	= 18
+};
+
+enum	/*	Intel APX Feature and Enumeration.			*/
+{
+	CPUID_00000029_00000000_EBX_APX_NCI_NDD_NF
+};
+
 enum	/*	AMD SVM Revision and Feature Identification.		*/
 {
 	CPUID_8000000A_00000000_EDX_NP,

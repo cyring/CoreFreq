@@ -1055,6 +1055,9 @@
 #define RSC_ISA_APX_F_COMM_CODE_EN	\
 				" Advanced Performance Extensions Foundation "
 
+#define RSC_ISA_APX_NCI_NDD_NF_COMM_CODE_EN	\
+	" CI:New Conditional Inst|DD:New Data Dest|NF:Flags Suppression "
+
 #define RSC_ISA_AVX_COMM_CODE_EN	" Advanced Vector Extensions "
 #define RSC_ISA_CMPCCXADD_COMM_CODE_EN	" CMPccXADD Instructions "
 #define RSC_ISA_BMI_COMM_CODE_EN	" Bit Manipulation Instructions "
@@ -2778,6 +2781,7 @@
 #define RSC_ISA_AMX_FP16_CODE		"    AMX-FP16 [%c] "
 #define RSC_ISA_AMX_COMPLEX_CODE	" AMX-COMPLEX  [%c]"
 #define RSC_ISA_APX_F_CODE		" APX-F        [%c]"
+#define RSC_ISA_APX_NCI_NDD_NF_CODE	" APX-CI-DD-F [%c] "
 #define RSC_ISA_AVX_CODE		"  AVX/AVX2 [%c/%c] "
 #define RSC_ISA_AVX512_F_CODE		" AVX512-F     [%c]"
 #define RSC_ISA_AVX512_DQ_CODE		"    AVX512-DQ [%c]"
@@ -2797,6 +2801,9 @@
 #define RSC_ISA_AVX512_VP2I_CODE	" AVX512-VP2I [%c] "
 #define RSC_ISA_AVX512_BF16_CODE	" AVX512-BF16  [%c]"
 #define RSC_ISA_AVX10_CODE		"        AVX10 [%c]"
+#define RSC_ISA_AVX10_128_CODE		" AVX10-128    [%c]"
+#define RSC_ISA_AVX10_256_CODE		"    AVX10-256 [%c]"
+#define RSC_ISA_AVX10_512_CODE		"    AVX10-512 [%c]"
 #define RSC_ISA_AVX_VEX_CODE		" AVX-VNNI-VEX [%c]"
 #define RSC_ISA_AVX_INT8_CODE		"   AVX-VNNI-8 [%c]"
 #define RSC_ISA_AVX_INT16_CODE		" AVX-VNNI-16 [%c] "

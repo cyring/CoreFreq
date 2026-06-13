@@ -1795,22 +1795,50 @@ REASON_CODE SysInfoISA( Window *win,
 		}
 	};
 	struct {
-		Bit32	FP128	:  1-0,
-			FP256	:  2-1,
-			_pad32	: 32-2;
-	} AVX = {
-	.FP128 = (RO(Shm)->Proc.Features.Info.LargestExtFunc >= 0x8000001a)
+		Bit32	AVX_FP128	:  1-0,
+			AVX_FP256	:  2-1,
+			AVX10_128	:  3-2,
+			AVX10_256	:  4-3,
+			AVX10_512	:  5-4,
+			APX_NCI_NDD_NF	:  6-5,
+			_pad32		: 32-6;
+	} CPUID = {
+	.AVX_FP128 = (RO(Shm)->Proc.Features.Info.LargestExtFunc >= 0x8000001a)
 		&& BITVAL(RO(Shm)->Cpu[
 				RO(Shm)->Proc.Service.Core
 		].CpuID[
 			CPUID_8000001A_00000000_PERF_OPTIMIZATION
 		].reg[REG_CPUID_EAX], CPUID_8000001A_00000000_EAX_FP128),
-	.FP256 = (RO(Shm)->Proc.Features.Info.LargestExtFunc >= 0x8000001a)
+	.AVX_FP256 = (RO(Shm)->Proc.Features.Info.LargestExtFunc >= 0x8000001a)
 		&& BITVAL(RO(Shm)->Cpu[
 					RO(Shm)->Proc.Service.Core
 		].CpuID[
 			CPUID_8000001A_00000000_PERF_OPTIMIZATION
-		].reg[REG_CPUID_EAX], CPUID_8000001A_00000000_EAX_FP256)
+		].reg[REG_CPUID_EAX], CPUID_8000001A_00000000_EAX_FP256),
+	.AVX10_128 = (RO(Shm)->Proc.Features.Info.LargestStdFunc >= 0x24)
+		&& BITVAL(RO(Shm)->Cpu[
+				RO(Shm)->Proc.Service.Core
+		].CpuID[
+			CPUID_00000024_00000000_AVX10_ISA_SUPPORT
+		].reg[REG_CPUID_EBX], CPUID_00000024_00000000_EBX_AVX10_128),
+	.AVX10_256 = (RO(Shm)->Proc.Features.Info.LargestStdFunc >= 0x24)
+		&& BITVAL(RO(Shm)->Cpu[
+				RO(Shm)->Proc.Service.Core
+		].CpuID[
+			CPUID_00000024_00000000_AVX10_ISA_SUPPORT
+		].reg[REG_CPUID_EBX], CPUID_00000024_00000000_EBX_AVX10_256),
+	.AVX10_512 = (RO(Shm)->Proc.Features.Info.LargestStdFunc >= 0x24)
+		&& BITVAL(RO(Shm)->Cpu[
+				RO(Shm)->Proc.Service.Core
+		].CpuID[
+			CPUID_00000024_00000000_AVX10_ISA_SUPPORT
+		].reg[REG_CPUID_EBX], CPUID_00000024_00000000_EBX_AVX10_512),
+	.APX_NCI_NDD_NF = (RO(Shm)->Proc.Features.Info.LargestStdFunc >= 0x29)
+		&& BITVAL(RO(Shm)->Cpu[
+				RO(Shm)->Proc.Service.Core
+		].CpuID[
+			CPUID_00000029_00000000_APX_EXTENSIONS_LEAF
+		].reg[REG_CPUID_EBX],CPUID_00000029_00000000_EBX_APX_NCI_NDD_NF)
 	};
 	const struct ISA_ST {
 		unsigned int	*CRC;
@@ -2066,7 +2094,7 @@ REASON_CODE SysInfoISA( Window *win,
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		RSC(ISA_AVX_INT16).CODE(), NULL,
-		{ 0,RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_VNNI_INT16},
+		{ 1,RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_VNNI_INT16},
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EDX.AVX_VNNI_INT16 },
 	},
@@ -2074,16 +2102,45 @@ REASON_CODE SysInfoISA( Window *win,
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		RSC(ISA_AVX_128).CODE(), NULL,
-		{ 0, AVX.FP128 },
+		{ 0, CPUID.AVX_FP128 },
 		(unsigned short[])
-		{ AVX.FP128 },
+		{ CPUID.AVX_FP128 },
 	},
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		RSC(ISA_AVX_256).CODE(), NULL,
-		{ 1, AVX.FP256 },
+		{ 1, CPUID.AVX_FP256 },
 		(unsigned short[])
-		{ AVX.FP256 },
+		{ CPUID.AVX_FP256 },
+	},
+/* Row Mark */
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_AVX10_128).CODE(), NULL,
+		{ 0, CPUID.AVX10_128},
+		(unsigned short[])
+		{ CPUID.AVX10_128 },
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_AVX10_256).CODE(), NULL,
+		{ 0, CPUID.AVX10_256},
+		(unsigned short[])
+		{ CPUID.AVX10_256 },
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_AVX10_512).CODE(), NULL,
+		{ 0, CPUID.AVX10_512},
+		(unsigned short[])
+		{ CPUID.AVX10_512 },
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		RSC(ISA_APX_NCI_NDD_NF).CODE(), RSC(ISA_APX_NCI_NDD_NF_COMM).CODE(),
+		{ 1, CPUID.APX_NCI_NDD_NF},
+		(unsigned short[])
+		{ CPUID.APX_NCI_NDD_NF },
 	},
 /* Row Mark */
 	{
@@ -2308,7 +2365,7 @@ REASON_CODE SysInfoISA( Window *win,
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		RSC(ISA_WRMSRNS).CODE(), RSC(ISA_WRMSRNS_COMM).CODE(),
-		{ 0, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.WRMSRNS_INST },
+		{ 1, RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.WRMSRNS_INST },
 		(unsigned short[])
 		{ RO(Shm)->Proc.Features.ExtFeature_Leaf1_EAX.WRMSRNS_INST },
 	},
