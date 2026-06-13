@@ -2143,7 +2143,7 @@ enum	/*	Intel AVX10 Converged Vector ISA information.		*/
 
 enum	/*	Intel APX Feature and Enumeration.			*/
 {
-	CPUID_00000029_00000000_EBX_APX_NCI_NDD_NF
+	CPUID_00000029_00000000_EBX_APX_NDD_NF
 };
 
 enum	/*	AMD SVM Revision and Feature Identification.		*/

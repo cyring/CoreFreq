@@ -1800,7 +1800,7 @@ REASON_CODE SysInfoISA( Window *win,
 			AVX10_128	:  3-2,
 			AVX10_256	:  4-3,
 			AVX10_512	:  5-4,
-			APX_NCI_NDD_NF	:  6-5,
+			APX_NDD_NF	:  6-5,
 			_pad32		: 32-6;
 	} CPUID = {
 	.AVX_FP128 = (RO(Shm)->Proc.Features.Info.LargestExtFunc >= 0x8000001a)
@@ -1833,12 +1833,12 @@ REASON_CODE SysInfoISA( Window *win,
 		].CpuID[
 			CPUID_00000024_00000000_AVX10_ISA_SUPPORT
 		].reg[REG_CPUID_EBX], CPUID_00000024_00000000_EBX_AVX10_512),
-	.APX_NCI_NDD_NF = (RO(Shm)->Proc.Features.Info.LargestStdFunc >= 0x29)
+	.APX_NDD_NF = (RO(Shm)->Proc.Features.Info.LargestStdFunc >= 0x29)
 		&& BITVAL(RO(Shm)->Cpu[
 				RO(Shm)->Proc.Service.Core
 		].CpuID[
 			CPUID_00000029_00000000_APX_EXTENSIONS_LEAF
-		].reg[REG_CPUID_EBX],CPUID_00000029_00000000_EBX_APX_NCI_NDD_NF)
+		].reg[REG_CPUID_EBX],CPUID_00000029_00000000_EBX_APX_NDD_NF)
 	};
 	const struct ISA_ST {
 		unsigned int	*CRC;
@@ -2137,10 +2137,10 @@ REASON_CODE SysInfoISA( Window *win,
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
-		RSC(ISA_APX_NCI_NDD_NF).CODE(), RSC(ISA_APX_NCI_NDD_NF_COMM).CODE(),
-		{ 1, CPUID.APX_NCI_NDD_NF},
+		RSC(ISA_APX_NDD_NF).CODE(), RSC(ISA_APX_NDD_NF_COMM).CODE(),
+		{ 1, CPUID.APX_NDD_NF},
 		(unsigned short[])
-		{ CPUID.APX_NCI_NDD_NF },
+		{ CPUID.APX_NDD_NF },
 	},
 /* Row Mark */
 	{

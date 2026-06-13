@@ -1055,8 +1055,8 @@
 #define RSC_ISA_APX_F_COMM_CODE_EN	\
 				" Advanced Performance Extensions Foundation "
 
-#define RSC_ISA_APX_NCI_NDD_NF_COMM_CODE_EN	\
-	" CI:New Conditional Inst|DD:New Data Dest|NF:Flags Suppression "
+#define RSC_ISA_APX_NDD_NF_COMM_CODE_EN	\
+			" New Data Destination(NDD), Flags Suppression(NF) "
 
 #define RSC_ISA_AVX_COMM_CODE_EN	" Advanced Vector Extensions "
 #define RSC_ISA_CMPCCXADD_COMM_CODE_EN	" CMPccXADD Instructions "
@@ -2781,7 +2781,7 @@
 #define RSC_ISA_AMX_FP16_CODE		"    AMX-FP16 [%c] "
 #define RSC_ISA_AMX_COMPLEX_CODE	" AMX-COMPLEX  [%c]"
 #define RSC_ISA_APX_F_CODE		" APX-F        [%c]"
-#define RSC_ISA_APX_NCI_NDD_NF_CODE	" APX-CI-DD-F [%c] "
+#define RSC_ISA_APX_NDD_NF_CODE 	"  APX-NDD/NF [%c] "
 #define RSC_ISA_AVX_CODE		"  AVX/AVX2 [%c/%c] "
 #define RSC_ISA_AVX512_F_CODE		" AVX512-F     [%c]"
 #define RSC_ISA_AVX512_DQ_CODE		"    AVX512-DQ [%c]"
