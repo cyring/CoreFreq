@@ -8149,6 +8149,9 @@ void SystemRegisters(	RO(SHM_STRUCT) *RO(Shm), RO(CORE) **RO(Core),
 	RO(Shm)->Cpu[cpu].SystemRegister.CR8 = \
 				RO(Core, AT(cpu))->SystemRegister.CR8;
 
+	RO(Shm)->Cpu[cpu].SystemRegister.MXCSR = \
+				RO(Core, AT(cpu))->SystemRegister.MXCSR;
+
 	RO(Shm)->Cpu[cpu].SystemRegister.EFER = \
 				RO(Core, AT(cpu))->SystemRegister.EFER;
 

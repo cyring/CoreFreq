@@ -247,6 +247,23 @@ enum SYS_REG {
 
 	CR8_TPL 	= 0,	/* [3:0]				*/
 
+	MXCSR_IE	= 0,
+	MXCSR_DE	= 1,
+	MXCSR_ZE	= 2,
+	MXCSR_OE	= 3,
+	MXCSR_UE	= 4,
+	MXCSR_PE	= 5,
+	MXCSR_DAZ	= 6,
+	MXCSR_IM	= 7,
+	MXCSR_DM	= 8,
+	MXCSR_ZM	= 9,
+	MXCSR_OM	= 10,
+	MXCSR_UM	= 11,
+	MXCSR_PM	= 12,
+	MXCSR_RC	= 13,	/* [14:13]				*/
+	MXCSR_FZ	= 15,
+	MXCSR_MM	= 17,
+
 	EXFCR_LOCK	= 0,
 	EXFCR_VMX_IN_SMX= 1,
 	EXFCR_VMXOUT_SMX= 2,

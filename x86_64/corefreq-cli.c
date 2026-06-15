@@ -525,12 +525,15 @@ REASON_CODE SystemRegisters(	Window *win,
 		DO_END, DO_SPC, DO_CPU, DO_FLAG,
 		DO_CR0, DO_CR3, DO_CR4, DO_CR8,
 		DO_EFCR, DO_EFER, DO_XCR0, DO_CFG,
-		DO_HWCR
+		DO_HWCR, DO_MXCS
 	};
 	const unsigned int
 		fIntel = RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL,
 		fAMD =  (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-		     || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON);
+		     || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON),
+		fSSE =  (RO(Shm)->Proc.Features.Std.ECX.AVX == 1)
+		     || (RO(Shm)->Proc.Features.Std.EDX.SSE == 1),
+		fMM = fSSE &&(RO(Shm)->Proc.Features.ExtInfo.ECX.AlignSSE == 1);
 	const struct SR_ST {
 		struct SR_HDR {
 			const ASCII	*flag,
@@ -709,6 +712,48 @@ REASON_CODE SystemRegisters(	Window *win,
 	[14] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
 	[15] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
 	[16] =	{DO_CR8 , 1	, CR8_TPL	, 4	},
+		{DO_END , 1	, UNDEF_CR	, 0	}
+	}
+      },
+      {
+	.header = (struct SR_HDR[]) {
+	[ 0] =	{RSC(SYS_REG_HDR_MXCS).CODE(),	RSC(SYS_REGS_MXCS).CODE()},
+	[ 1] =	{RSC(SYS_REG_HDR_MXCS_IE).CODE(), RSC(SYS_REG_MXCS_IE).CODE()},
+	[ 2] =	{RSC(SYS_REG_HDR_MXCS_DE).CODE(), RSC(SYS_REG_MXCS_DE).CODE()},
+	[ 3] =	{RSC(SYS_REG_HDR_MXCS_ZE).CODE(), RSC(SYS_REG_MXCS_ZE).CODE()},
+	[ 4] =	{RSC(SYS_REG_HDR_MXCS_OE).CODE(), RSC(SYS_REG_MXCS_OE).CODE()},
+	[ 5] =	{RSC(SYS_REG_HDR_MXCS_UE).CODE(), RSC(SYS_REG_MXCS_UE).CODE()},
+	[ 6] =	{RSC(SYS_REG_HDR_MXCS_PE).CODE(), RSC(SYS_REG_MXCS_PE).CODE()},
+	[ 7] =	{RSC(SYS_REG_HDR_MXCS_DAZ).CODE(),RSC(SYS_REG_MXCS_DAZ).CODE()},
+	[ 8] =	{RSC(SYS_REG_HDR_MXCS_IM).CODE(), RSC(SYS_REG_MXCS_IM).CODE()},
+	[ 9] =	{RSC(SYS_REG_HDR_MXCS_DM).CODE(), RSC(SYS_REG_MXCS_DM).CODE()},
+	[10] =	{RSC(SYS_REG_HDR_MXCS_ZM).CODE(), RSC(SYS_REG_MXCS_ZM).CODE()},
+	[11] =	{RSC(SYS_REG_HDR_MXCS_OM).CODE(), RSC(SYS_REG_MXCS_OM).CODE()},
+	[12] =	{RSC(SYS_REG_HDR_MXCS_UM).CODE(), RSC(SYS_REG_MXCS_UM).CODE()},
+	[13] =	{RSC(SYS_REG_HDR_MXCS_PM).CODE(), RSC(SYS_REG_MXCS_PM).CODE()},
+	[14] =	{RSC(SYS_REG_HDR_MXCS_RC).CODE(), RSC(SYS_REG_MXCS_RC).CODE()},
+	[15] =	{RSC(SYS_REG_HDR_MXCS_FZ).CODE(), RSC(SYS_REG_MXCS_FZ).CODE()},
+	[16] =	{RSC(SYS_REG_HDR_MXCS_MM).CODE(), RSC(SYS_REG_MXCS_MM).CODE()},
+		{NULL, NULL}
+	},
+	.flag = (struct SR_BIT[]) {
+	[ 0] =	{DO_CPU , 1	, UNDEF_CR	, 0	},
+	[ 1] =	{DO_MXCS, fSSE	, MXCSR_IE	, 1	},
+	[ 2] =	{DO_MXCS, fSSE	, MXCSR_DE	, 1	},
+	[ 3] =	{DO_MXCS, fSSE	, MXCSR_ZE	, 1	},
+	[ 4] =	{DO_MXCS, fSSE	, MXCSR_OE	, 1	},
+	[ 5] =	{DO_MXCS, fSSE	, MXCSR_UE	, 1	},
+	[ 6] =	{DO_MXCS, fSSE	, MXCSR_PE	, 1	},
+	[ 7] =	{DO_MXCS, fSSE	, MXCSR_DAZ	, 1	},
+	[ 8] =	{DO_MXCS, fSSE	, MXCSR_IM	, 1	},
+	[ 9] =	{DO_MXCS, fSSE	, MXCSR_DM	, 1	},
+	[10] =	{DO_MXCS, fSSE	, MXCSR_ZM	, 1	},
+	[11] =	{DO_MXCS, fSSE	, MXCSR_OM	, 1	},
+	[12] =	{DO_MXCS, fSSE	, MXCSR_UM	, 1	},
+	[13] =	{DO_MXCS, fSSE	, MXCSR_PM	, 1	},
+	[14] =	{DO_MXCS, fSSE	, MXCSR_RC	, 2	},
+	[15] =	{DO_MXCS, fSSE	, MXCSR_FZ	, 1	},
+	[16] =	{DO_MXCS, fMM	, MXCSR_MM	, 1	},
 		{DO_END , 1	, UNDEF_CR	, 0	}
 	}
       },
@@ -1020,6 +1065,11 @@ REASON_CODE SystemRegisters(	Window *win,
 		    case DO_CR8:
 			PRT(REG, attrib[2], "%3llx ",
 			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.CR8,
+					pFlag->pos, pFlag->len));
+			break;
+		    case DO_MXCS:
+			PRT(REG, attrib[2], "%3llx ",
+			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.MXCSR,
 					pFlag->pos, pFlag->len));
 			break;
 		    case DO_EFCR:

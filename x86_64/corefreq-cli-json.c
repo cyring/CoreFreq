@@ -2227,6 +2227,9 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.CR8);
 			json_key(&s, "CR8");
 			json_string(&s, hexStr);
+			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.MXCSR);
+			json_key(&s, "MXCSR");
+			json_string(&s, hexStr);
 			snprintf(hexStr, 32, "0x%llx", RO(Shm)->Cpu[cpu].SystemRegister.EFCR);
 			json_key(&s, "EFCR");
 			json_string(&s, hexStr);

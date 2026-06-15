@@ -12413,6 +12413,28 @@ static void SystemRegisters(CORE_RO *Core)
 		: "i" (MSR_EFER)
 		: "%rax", "%rcx", "%rdx"
 	);
+	if (PUBLIC(RO(Proc))->Features.Std.ECX.AVX) {
+		volatile Bit32 MXCSR;
+		__asm__ volatile
+		(
+			"vstmxcsr	%0"
+			: "=m" (MXCSR)
+			:
+			:
+		);
+		Core->SystemRegister.MXCSR = (Bit64) MXCSR;
+	}
+	else if (PUBLIC(RO(Proc))->Features.Std.EDX.SSE) {
+		volatile Bit32 MXCSR;
+		__asm__ volatile
+		(
+			"stmxcsr	%0"
+			: "=m" (MXCSR)
+			:
+			:
+		);
+		Core->SystemRegister.MXCSR = (Bit64) MXCSR;
+	}
 	if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL) {
 		__asm__ volatile
 		(
