@@ -1045,7 +1045,9 @@
 
 #define RSC_ISA_ADX_COMM_CODE_EN	" Multi-Precision Add-Carry "
 #define RSC_ISA_AES_COMM_CODE_EN	" Advanced Encryption Standard "
-#define RSC_ISA_AMX_BF16_COMM_CODE_EN	" Advanced Matrix Extensions BFLOAT16 "
+#define RSC_ISA_AMX_BF16_COMM_CODE_EN	\
+				" Advanced Matrix Extensions Brain Float16 "
+
 #define RSC_ISA_AMX_TILE_COMM_CODE_EN	" Advanced Matrix Extensions Tile "
 #define RSC_ISA_AMX_INT8_COMM_CODE_EN	" Advanced Matrix Extensions 8-bits "
 #define RSC_ISA_AMX_FP16_COMM_CODE_EN	" Advanced Matrix Extensions FP16 "
