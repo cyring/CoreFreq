@@ -12413,28 +12413,6 @@ static void SystemRegisters(CORE_RO *Core)
 		: "i" (MSR_EFER)
 		: "%rax", "%rcx", "%rdx"
 	);
-	if (PUBLIC(RO(Proc))->Features.Std.ECX.AVX) {
-		volatile Bit32 MXCSR;
-		__asm__ volatile
-		(
-			"vstmxcsr	%0"
-			: "=m" (MXCSR)
-			:
-			:
-		);
-		Core->SystemRegister.MXCSR = (Bit64) MXCSR;
-	}
-	else if (PUBLIC(RO(Proc))->Features.Std.EDX.SSE) {
-		volatile Bit32 MXCSR;
-		__asm__ volatile
-		(
-			"stmxcsr	%0"
-			: "=m" (MXCSR)
-			:
-			:
-		);
-		Core->SystemRegister.MXCSR = (Bit64) MXCSR;
-	}
 	if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL) {
 		__asm__ volatile
 		(
@@ -12497,6 +12475,31 @@ static void SystemRegisters(CORE_RO *Core)
 			:
 			: "%rax", "%rcx", "%rdx"
 		);
+	}
+	if (PUBLIC(RO(Proc))->Features.Std.ECX.AVX
+	 && BITVAL(Core->SystemRegister.XCR0, XCR0_SSE)
+	 && BITVAL(Core->SystemRegister.XCR0, XCR0_AVX)) {
+		volatile Bit32 MXCSR;
+		__asm__ volatile
+		(
+			"vstmxcsr	%0"
+			: "=m" (MXCSR)
+			:
+			:
+		);
+		Core->SystemRegister.MXCSR = (Bit64) MXCSR;
+	}
+	else if (PUBLIC(RO(Proc))->Features.Std.EDX.SSE
+	      && BITVAL(Core->SystemRegister.XCR0, XCR0_SSE)) {
+		volatile Bit32 MXCSR;
+		__asm__ volatile
+		(
+			"stmxcsr	%0"
+			: "=m" (MXCSR)
+			:
+			:
+		);
+		Core->SystemRegister.MXCSR = (Bit64) MXCSR;
 	}
 	if (PUBLIC(RO(Proc))->Features.ExtState_Leaf1.EAX.IA32_XSS) {
 		__asm__ volatile

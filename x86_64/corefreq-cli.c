@@ -524,8 +524,8 @@ REASON_CODE SystemRegisters(	Window *win,
 	enum AUTOMAT {
 		DO_END, DO_SPC, DO_CPU, DO_FLAG,
 		DO_CR0, DO_CR3, DO_CR4, DO_CR8,
-		DO_EFCR, DO_EFER, DO_XCR0, DO_CFG,
-		DO_HWCR, DO_MXCS
+		DO_XCR0, DO_MXCS, DO_EFCR, DO_EFER,
+		DO_CFG, DO_HWCR
 	};
 	const unsigned int
 		fIntel = RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_INTEL,
@@ -717,6 +717,48 @@ REASON_CODE SystemRegisters(	Window *win,
       },
       {
 	.header = (struct SR_HDR[]) {
+	[ 0] = {RSC(SYS_REG_HDR_XCR0).CODE(),	RSC(SYS_REGS_XCR0).CODE()},
+	[ 1] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[ 2] = {RSC(SYS_REG_HDR_XCR0_FPU).CODE(), RSC(SYS_REG_XCR0_FPU).CODE()},
+	[ 3] = {RSC(SYS_REG_HDR_XCR0_SSE).CODE(), RSC(SYS_REG_XCR0_SSE).CODE()},
+	[ 4] = {RSC(SYS_REG_HDR_XCR0_AVX).CODE(), RSC(SYS_REG_XCR0_AVX).CODE()},
+	[ 5] = {RSC(SYS_REG_HDR_XCR0_MPX).CODE(), RSC(SYS_REG_XCR0_MPX).CODE()},
+	[ 6] = {RSC(SYS_REG_HDR_XCR0_512).CODE(), RSC(SYS_REG_XCR0_512).CODE()},
+	[ 7] = {RSC(SYS_REG_HDR_XCR0_MPK).CODE(), RSC(SYS_REG_XCR0_MPK).CODE()},
+	[ 8] = {RSC(SYS_REG_HDR_XCR0_CEU).CODE(), RSC(SYS_REG_XCR0_CEU).CODE()},
+	[ 9] = {RSC(SYS_REG_HDR_XCR0_CES).CODE(), RSC(SYS_REG_XCR0_CES).CODE()},
+	[10] = {RSC(SYS_REG_HDR_XCR0_AMX).CODE(), RSC(SYS_REG_XCR0_AMX).CODE()},
+	[11] = {RSC(SYS_REG_HDR_XCR0_APX).CODE(), RSC(SYS_REG_XCR0_APX).CODE()},
+	[12] = {RSC(SYS_REG_HDR_XCR0_LWP).CODE(), RSC(SYS_REG_XCR0_LWP).CODE()},
+	[13] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[14] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[15] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[16] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+		{NULL, NULL}
+	},
+	.flag = (struct SR_BIT[]) {
+	[ 0] =	{DO_CPU , 1	, UNDEF_CR	, 0	},
+	[ 1] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[ 2] =  {DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_FPU, 1},
+	[ 3] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_SSE, 1},
+	[ 4] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_AVX, 1},
+	[ 5] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_MPX, 2},
+	[ 6] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_AVX512, 3},
+	[ 7] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_PKRU, 1},
+	[ 8] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_CET_U, 1},
+	[ 9] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_CET_S, 1},
+	[10] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_AMX, 2},
+	[11] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_APX, 1},
+	[12] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_LWP, 1},
+	[13] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[14] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[15] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+	[16] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
+		{DO_END , 1	, UNDEF_CR	, 0	}
+	}
+      },
+      {
+	.header = (struct SR_HDR[]) {
 	[ 0] =	{RSC(SYS_REG_HDR_MXCS).CODE(),	RSC(SYS_REGS_MXCS).CODE()},
 	[ 1] =	{RSC(SYS_REG_HDR_MXCS_IE).CODE(), RSC(SYS_REG_MXCS_IE).CODE()},
 	[ 2] =	{RSC(SYS_REG_HDR_MXCS_DE).CODE(), RSC(SYS_REG_MXCS_DE).CODE()},
@@ -839,48 +881,6 @@ REASON_CODE SystemRegisters(	Window *win,
 	[15] =	{DO_SPC , 1	, UNDEF_CR		, 0	},
 	[16] =	{DO_SPC , 1	, UNDEF_CR		, 0	},
 		{DO_END , 1	, UNDEF_CR		, 0	}
-	}
-      },
-      {
-	.header = (struct SR_HDR[]) {
-	[ 0] = {RSC(SYS_REG_HDR_XCR0).CODE(),	RSC(SYS_REGS_XCR0).CODE()},
-	[ 1] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
-	[ 2] = {RSC(SYS_REG_HDR_XCR0_FPU).CODE(), RSC(SYS_REG_XCR0_FPU).CODE()},
-	[ 3] = {RSC(SYS_REG_HDR_XCR0_SSE).CODE(), RSC(SYS_REG_XCR0_SSE).CODE()},
-	[ 4] = {RSC(SYS_REG_HDR_XCR0_AVX).CODE(), RSC(SYS_REG_XCR0_AVX).CODE()},
-	[ 5] = {RSC(SYS_REG_HDR_XCR0_MPX).CODE(), RSC(SYS_REG_XCR0_MPX).CODE()},
-	[ 6] = {RSC(SYS_REG_HDR_XCR0_512).CODE(), RSC(SYS_REG_XCR0_512).CODE()},
-	[ 7] = {RSC(SYS_REG_HDR_XCR0_MPK).CODE(), RSC(SYS_REG_XCR0_MPK).CODE()},
-	[ 8] = {RSC(SYS_REG_HDR_XCR0_CEU).CODE(), RSC(SYS_REG_XCR0_CEU).CODE()},
-	[ 9] = {RSC(SYS_REG_HDR_XCR0_CES).CODE(), RSC(SYS_REG_XCR0_CES).CODE()},
-	[10] = {RSC(SYS_REG_HDR_XCR0_AMX).CODE(), RSC(SYS_REG_XCR0_AMX).CODE()},
-	[11] = {RSC(SYS_REG_HDR_XCR0_APX).CODE(), RSC(SYS_REG_XCR0_APX).CODE()},
-	[12] = {RSC(SYS_REG_HDR_XCR0_LWP).CODE(), RSC(SYS_REG_XCR0_LWP).CODE()},
-	[13] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
-	[14] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
-	[15] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
-	[16] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
-		{NULL, NULL}
-	},
-	.flag = (struct SR_BIT[]) {
-	[ 0] =	{DO_CPU , 1	, UNDEF_CR	, 0	},
-	[ 1] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
-	[ 2] =  {DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_FPU, 1},
-	[ 3] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_SSE, 1},
-	[ 4] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_AVX, 1},
-	[ 5] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_MPX, 2},
-	[ 6] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_AVX512, 3},
-	[ 7] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_PKRU, 1},
-	[ 8] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_CET_U, 1},
-	[ 9] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_CET_S, 1},
-	[10] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_AMX, 2},
-	[11] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_APX, 1},
-	[12] =	{DO_XCR0, RO(Shm)->Proc.Features.Std.ECX.XSAVE, XCR0_LWP, 1},
-	[13] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
-	[14] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
-	[15] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
-	[16] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
-		{DO_END , 1	, UNDEF_CR	, 0	}
 	}
       },
       {
@@ -1067,6 +1067,11 @@ REASON_CODE SystemRegisters(	Window *win,
 			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.CR8,
 					pFlag->pos, pFlag->len));
 			break;
+		    case DO_XCR0:
+			PRT(REG, attrib[2], "%3llx ",
+			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.XCR0,
+					pFlag->pos, pFlag->len));
+			break;
 		    case DO_MXCS:
 			PRT(REG, attrib[2], "%3llx ",
 			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.MXCSR,
@@ -1080,11 +1085,6 @@ REASON_CODE SystemRegisters(	Window *win,
 		    case DO_EFER:
 			PRT(REG, attrib[2], "%3llx ",
 			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.EFER,
-					pFlag->pos, pFlag->len));
-			break;
-		    case DO_XCR0:
-			PRT(REG, attrib[2], "%3llx ",
-			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.XCR0,
 					pFlag->pos, pFlag->len));
 			break;
 		    case DO_CFG:
