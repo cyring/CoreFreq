@@ -12489,8 +12489,7 @@ static void SystemRegisters(CORE_RO *Core)
 		);
 		Core->SystemRegister.MXCSR = (Bit64) MXCSR;
 	}
-	else if (PUBLIC(RO(Proc))->Features.Std.EDX.SSE
-	      && BITVAL(Core->SystemRegister.XCR0, XCR0_SSE)) {
+	else if (PUBLIC(RO(Proc))->Features.Std.EDX.SSE) {
 		volatile Bit32 MXCSR;
 		__asm__ volatile
 		(
