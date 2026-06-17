@@ -1016,6 +1016,15 @@
 #define RSC_SYS_REG_XCR0_AMX_CODE_EN	" Advanced Matrix Extensions "
 #define RSC_SYS_REG_XCR0_APX_CODE_EN	" Advanced Performance Extensions "
 #define RSC_SYS_REG_XCR0_LWP_CODE_EN	" Lightweight Profiling "
+#define RSC_SYS_REGS_XSS_CODE_EN	" Extended Supervisor State Mask "
+#define RSC_SYS_REG_XSS_PT_CODE_EN	" Processor Trace State "
+#define RSC_SYS_REG_XSS_PASID_CODE_EN " Process Address Space Identifier State "
+#define RSC_SYS_REG_XSS_CEU_CODE_EN	RSC_SYS_REG_XCR0_CEU_CODE_EN
+#define RSC_SYS_REG_XSS_CES_CODE_EN	RSC_SYS_REG_XCR0_CES_CODE_EN
+#define RSC_SYS_REG_XSS_HDC_CODE_EN	" Hardware Duty Cycling State "
+#define RSC_SYS_REG_XSS_UINTR_CODE_EN	" User Interrupts Enable State "
+#define RSC_SYS_REG_XSS_LBR_CODE_EN	" Last Branch Records State "
+#define RSC_SYS_REG_XSS_HWP_CODE_EN " Hardware-Controlled Performance State "
 #define RSC_SYS_REGS_CFG_CODE_EN	" System Configuration Register "
 #define RSC_SYS_REG_CFG_MFD_CODE_EN	" MtrrFixDram Enable "
 #define RSC_SYS_REG_CFG_MFDM_CODE_EN	" MtrrFixDramMod Enable "
@@ -2769,6 +2778,15 @@
 #define RSC_SYS_REG_HDR_XCR0_AMX_CODE	" AMX"
 #define RSC_SYS_REG_HDR_XCR0_APX_CODE	" APX"
 #define RSC_SYS_REG_HDR_XCR0_LWP_CODE	" LWP"
+#define RSC_SYS_REG_HDR_XSS_CODE	"XSS:"
+#define RSC_SYS_REG_HDR_XSS_PT_CODE	" PT "
+#define RSC_SYS_REG_HDR_XSS_PASID_CODE	"PASI"
+#define RSC_SYS_REG_HDR_XSS_CEU_CODE	RSC_SYS_REG_HDR_XCR0_CEU_CODE
+#define RSC_SYS_REG_HDR_XSS_CES_CODE	RSC_SYS_REG_HDR_XCR0_CES_CODE
+#define RSC_SYS_REG_HDR_XSS_HDC_CODE	" HDC"
+#define RSC_SYS_REG_HDR_XSS_UINTR_CODE	RSC_SYS_REG_HDR_CR4_UINTR_CODE
+#define RSC_SYS_REG_HDR_XSS_LBR_CODE	" LBR"
+#define RSC_SYS_REG_HDR_XSS_HWP_CODE	" HWP"
 #define RSC_SYS_REG_HDR_CFG_CODE	"CFG:"
 #define RSC_SYS_REG_HDR_CFG_MFD_CODE	" MFD"
 #define RSC_SYS_REG_HDR_CFG_MFDM_CODE	" MDM"

@@ -298,6 +298,15 @@ enum SYS_REG {
 	XCR0_APX	= 19,
 	XCR0_LWP	= 62,	/* AMD64				*/
 
+	XSS_PT		= 8,
+	XSS_PASID	= 10,
+	XSS_CET_U	= 11,	/* AMD64, Intel 			*/
+	XSS_CET_S	= 12,	/* AMD64, Intel 			*/
+	XSS_HDC 	= 13,
+	XSS_UINTR	= 14,
+	XSS_LBR 	= 15,
+	XSS_HWP 	= 16,
+
 	SYSCFG_MFD	= 18,	/* AMD64: System Configuration Register */
 	SYSCFG_MFDM	= 19,
 	SYSCFG_MVDM	= 20,

@@ -524,7 +524,8 @@ REASON_CODE SystemRegisters(	Window *win,
 	enum AUTOMAT {
 		DO_END, DO_SPC, DO_CPU, DO_FLAG,
 		DO_CR0, DO_CR3, DO_CR4, DO_CR8,
-		DO_XCR0, DO_MXCS, DO_EFCR, DO_EFER,
+		DO_XCR0, DO_XSS, DO_MXCS,
+		DO_EFCR, DO_EFER,
 		DO_CFG, DO_HWCR
 	};
 	const unsigned int
@@ -533,6 +534,8 @@ REASON_CODE SystemRegisters(	Window *win,
 		     || (RO(Shm)->Proc.Features.Info.Vendor.CRC == CRC_HYGON),
 		fSSE =  (RO(Shm)->Proc.Features.Std.ECX.AVX == 1)
 		     || (RO(Shm)->Proc.Features.Std.EDX.SSE == 1),
+		fXSS = RO(Shm)->Proc.Features.ExtState_Leaf1.EAX.IA32_XSS == 1,
+		fIntel_XSS = fIntel && fXSS,
 		fMM = fSSE &&(RO(Shm)->Proc.Features.ExtInfo.ECX.AlignSSE == 1);
 	const struct SR_ST {
 		struct SR_HDR {
@@ -755,6 +758,48 @@ REASON_CODE SystemRegisters(	Window *win,
 	[15] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
 	[16] =	{DO_SPC , 1	, UNDEF_CR	, 0	},
 		{DO_END , 1	, UNDEF_CR	, 0	}
+	}
+      },
+      {
+	.header = (struct SR_HDR[]) {
+	[ 0] = {RSC(SYS_REG_HDR_XSS).CODE(),	RSC(SYS_REGS_XSS).CODE()},
+	[ 1] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[ 2] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[ 3] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[ 4] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[ 5] = {RSC(SYS_REG_HDR_XSS_PT).CODE(), RSC(SYS_REG_XSS_PT).CODE()},
+	[ 6] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[ 7] ={RSC(SYS_REG_HDR_XSS_PASID).CODE(),RSC(SYS_REG_XSS_PASID).CODE()},
+	[ 8] = {RSC(SYS_REG_HDR_XSS_CEU).CODE(), RSC(SYS_REG_XSS_CEU).CODE()},
+	[ 9] = {RSC(SYS_REG_HDR_XSS_CES).CODE(), RSC(SYS_REG_XSS_CES).CODE()},
+	[10] = {RSC(SYS_REG_HDR_XSS_HDC).CODE(), RSC(SYS_REG_XSS_HDC).CODE()},
+	[11] ={RSC(SYS_REG_HDR_XSS_UINTR).CODE(),RSC(SYS_REG_XSS_UINTR).CODE()},
+	[12] = {RSC(SYS_REG_HDR_XSS_LBR).CODE(), RSC(SYS_REG_XSS_LBR).CODE()},
+	[13] = {RSC(SYS_REG_HDR_XSS_HWP).CODE(), RSC(SYS_REG_XSS_HWP).CODE()},
+	[14] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[15] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[16] = {RSC(SYS_REGS_SPACE).CODE(),	NULL},
+		{NULL, NULL}
+	},
+	.flag = (struct SR_BIT[]) {
+	[ 0] =	{DO_CPU , 1		, UNDEF_CR	, 0	},
+	[ 1] =	{DO_SPC , 1		, UNDEF_CR	, 0	},
+	[ 2] =  {DO_SPC , 1		, UNDEF_CR	, 0	},
+	[ 3] =	{DO_SPC , 1		, UNDEF_CR	, 0	},
+	[ 4] =	{DO_SPC , 1		, UNDEF_CR	, 0	},
+	[ 5] =	{DO_XSS , fIntel_XSS	, XSS_PT	, 1	},
+	[ 6] =	{DO_SPC , 1		, UNDEF_CR	, 0	},
+	[ 7] =	{DO_XSS , fIntel_XSS	, XSS_PASID	, 1	},
+	[ 8] =	{DO_XSS , fXSS		, XSS_CET_U	, 1	},
+	[ 9] =	{DO_XSS , fXSS		, XSS_CET_S	, 1	},
+	[10] =	{DO_XSS , fIntel_XSS	, XSS_HDC	, 1	},
+	[11] =	{DO_XSS , fIntel_XSS	, XSS_UINTR	, 1	},
+	[12] =	{DO_XSS , fIntel_XSS	, XSS_LBR	, 1	},
+	[13] =	{DO_XSS , fIntel_XSS	, XSS_HWP	, 1	},
+	[14] =	{DO_SPC , 1		, UNDEF_CR	, 0	},
+	[15] =	{DO_SPC , 1		, UNDEF_CR	, 0	},
+	[16] =	{DO_SPC , 1		, UNDEF_CR	, 0	},
+		{DO_END , 1		, UNDEF_CR	, 0	}
 	}
       },
       {
@@ -1070,6 +1115,11 @@ REASON_CODE SystemRegisters(	Window *win,
 		    case DO_XCR0:
 			PRT(REG, attrib[2], "%3llx ",
 			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.XCR0,
+					pFlag->pos, pFlag->len));
+			break;
+		    case DO_XSS:
+			PRT(REG, attrib[2], "%3llx ",
+			  BITEXTRZ(RO(Shm)->Cpu[cpu].SystemRegister.XSS,
 					pFlag->pos, pFlag->len));
 			break;
 		    case DO_MXCS:
