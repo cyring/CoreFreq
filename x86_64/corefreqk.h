@@ -699,6 +699,67 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
     }									\
 })
 
+#define AMD_SMN_READ( UMC_device,	SMN_Register, SMN_Address,	\
+					IndexPort, DataPort )		\
+({									\
+	unsigned int tries = BIT_IO_RETRIES_COUNT;			\
+	unsigned char ret;						\
+    do {								\
+	ret = BIT_ATOM_TRYLOCK( BUS_LOCK,				\
+				PRIVATE(OF(Zen)).AMD_SMN_LOCK,		\
+				ATOMIC_SEED );				\
+	if ( ret == 0 ) {						\
+		udelay(BIT_IO_DELAY_INTERVAL);				\
+	} else {							\
+		pci_write_config_dword( UMC_device,			\
+					IndexPort, SMN_Address );	\
+		pci_read_config_dword(	UMC_device,			\
+					DataPort, &SMN_Register.value );\
+									\
+		BIT_ATOM_UNLOCK(BUS_LOCK,				\
+				PRIVATE(OF(Zen)).AMD_SMN_LOCK,		\
+				ATOMIC_SEED);				\
+	}								\
+	tries--;							\
+    } while ( (tries != 0) && (ret != 1) );				\
+    if (tries == 0) {							\
+	pr_warn("CoreFreq: AMD_SMN_READ(%x, %x) TryLock\n",		\
+		SMN_Register.value, SMN_Address);			\
+    }									\
+})
+
+#define AMD_SMN_WRITE( UMC_device,	SMN_Register, SMN_Address,	\
+					IndexPort, DataPort )		\
+({									\
+	unsigned int tries = BIT_IO_RETRIES_COUNT;			\
+	unsigned char ret;						\
+    do {								\
+	ret = BIT_ATOM_TRYLOCK( BUS_LOCK,				\
+				PRIVATE(OF(Zen)).AMD_SMN_LOCK,		\
+				ATOMIC_SEED );				\
+	if ( ret == 0 ) {						\
+		udelay(BIT_IO_DELAY_INTERVAL);				\
+	} else {							\
+		pci_write_config_dword( UMC_device,			\
+					IndexPort, SMN_Address	);	\
+		pci_write_config_dword( UMC_device,			\
+					DataPort, SMN_Register.value ); \
+									\
+		BIT_ATOM_UNLOCK(BUS_LOCK,				\
+				PRIVATE(OF(Zen)).AMD_SMN_LOCK,		\
+				ATOMIC_SEED);				\
+	}								\
+	tries--;							\
+    } while ( (tries != 0) && (ret != 1) );				\
+    if (tries == 0) {							\
+	pr_warn("CoreFreq: AMD_SMN_WRITE(%x, %x) TryLock\n",		\
+		SMN_Register.value, SMN_Address);			\
+    }									\
+})
+
+#define AMD_ROOT(_slot, _func)						\
+	PCI_DEVFN((_slot) >= 0x18 ? (_slot) - 0x18 : (_slot), (_func))
+
 #define Core_AMD_SMN_Read_2xPARAM(SMN_Register, SMN_Address)		\
 	PCI_AMD_SMN_Read(	SMN_Register,				\
 				SMN_Address,				\
@@ -712,10 +773,18 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 				SMU_AMD_DATA_REGISTER_F17H )
 
 #define Core_AMD_SMN_Read_3xPARAM(SMN_Register, SMN_Address, UMC_device)\
-	Core_AMD_SMN_Read_2xPARAM(SMN_Register, SMN_Address)
+	AMD_SMN_READ(	UMC_device,					\
+			SMN_Register,					\
+			SMN_Address,					\
+			SMU_AMD_INDEX_PORT_F17H,			\
+			SMU_AMD_DATA_PORT_F17H )
 
 #define Core_AMD_SMN_Write_3xPARAM(SMN_Register, SMN_Address, UMC_device)\
-	Core_AMD_SMN_Write_2xPARAM(SMN_Register, SMN_Address)
+	AMD_SMN_WRITE(	UMC_device,					\
+			SMN_Register,					\
+			SMN_Address,					\
+			SMU_AMD_INDEX_PORT_F17H,			\
+			SMU_AMD_DATA_PORT_F17H )
 
 #define Core_AMD_SMN_Read_DISPATCH(_1,_2,_3,Core_AMD_SMN_Read_CURSOR,...)\
 	Core_AMD_SMN_Read_CURSOR

@@ -7192,8 +7192,8 @@ static PCI_CALLBACK AMD_DataFabric_Zeppelin(struct pci_dev *pdev)
 					},
 					0x30, 0x80,
 					2, MC_MAX_CHA,
-		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0),
-					PCI_DEVFN(0x19, 0x0)} );
+		(const unsigned int[]) {AMD_ROOT(0x18, 0x0),
+					AMD_ROOT(0x19, 0x0)} );
     }
     else if (strncmp(PUBLIC(RO(Proc))->Architecture,
 		Arch[AMD_Zen].Architecture[CN_NAPLES], CODENAME_LEN) == 0)
@@ -7205,10 +7205,10 @@ static PCI_CALLBACK AMD_DataFabric_Zeppelin(struct pci_dev *pdev)
 					},
 					0x30, 0x80,
 					4, MC_MAX_CHA,
-		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0),
-					PCI_DEVFN(0x19, 0x0),
-					PCI_DEVFN(0x1a, 0x0),
-					PCI_DEVFN(0x1b, 0x0)} );
+		(const unsigned int[]) {AMD_ROOT(0x18, 0x0),
+					AMD_ROOT(0x19, 0x0),
+					AMD_ROOT(0x1a, 0x0),
+					AMD_ROOT(0x1b, 0x0)} );
     }
     else	/*	CN_SNOWY_OWL, CN_SUMMIT_RIDGE			*/
     {		/*		One controller				*/
@@ -7219,7 +7219,7 @@ static PCI_CALLBACK AMD_DataFabric_Zeppelin(struct pci_dev *pdev)
 					},
 					0x30, 0x80,
 					1, MC_MAX_CHA,
-		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
+		(const unsigned int[]) {AMD_ROOT(0x18, 0x0)} );
     }
 }
 
@@ -7232,7 +7232,7 @@ static PCI_CALLBACK AMD_DataFabric_Raven(struct pci_dev *pdev)
 					},
 					0x30, 0x80,
 					1, MC_MAX_CHA,
-		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
+		(const unsigned int[]) {AMD_ROOT(0x18, 0x0)} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Matisse(struct pci_dev *pdev)
@@ -7244,7 +7244,7 @@ static PCI_CALLBACK AMD_DataFabric_Matisse(struct pci_dev *pdev)
 					},
 					0x30, 0x80,
 					1, MC_MAX_CHA,
-		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
+		(const unsigned int[]) {AMD_ROOT(0x18, 0x0)} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Starship(struct pci_dev *pdev)
@@ -7256,7 +7256,7 @@ static PCI_CALLBACK AMD_DataFabric_Starship(struct pci_dev *pdev)
 					},
 					0x30, 0x80,
 					1, MC_MAX_CHA,
-		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
+		(const unsigned int[]) {AMD_ROOT(0x18, 0x0)} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Renoir(struct pci_dev *pdev)
@@ -7268,7 +7268,7 @@ static PCI_CALLBACK AMD_DataFabric_Renoir(struct pci_dev *pdev)
 					},
 					0x30, 0x80,
 					1, MC_MAX_CHA,
-		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
+		(const unsigned int[]) {AMD_ROOT(0x18, 0x0)} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Ariel(struct pci_dev *pdev)
@@ -7280,7 +7280,7 @@ static PCI_CALLBACK AMD_DataFabric_Ariel(struct pci_dev *pdev)
 					},
 					0x30, 0x80,
 					1, MC_MAX_CHA,
-		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
+		(const unsigned int[]) {AMD_ROOT(0x18, 0x0)} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Raven2(struct pci_dev *pdev)
@@ -7292,7 +7292,7 @@ static PCI_CALLBACK AMD_DataFabric_Raven2(struct pci_dev *pdev)
 					},
 					0x30, 0x80,
 					1, MC_MAX_CHA,
-		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
+		(const unsigned int[]) {AMD_ROOT(0x18, 0x0)} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Fireflight(struct pci_dev *pdev)
@@ -7304,7 +7304,7 @@ static PCI_CALLBACK AMD_DataFabric_Fireflight(struct pci_dev *pdev)
 					},
 					0x30, 0x80,
 					1, MC_MAX_CHA,
-		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
+		(const unsigned int[]) {AMD_ROOT(0x18, 0x0)} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Arden(struct pci_dev *pdev)
@@ -7316,7 +7316,7 @@ static PCI_CALLBACK AMD_DataFabric_Arden(struct pci_dev *pdev)
 					},
 					0x30, 0x80,
 					1, MC_MAX_CHA,
-		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
+		(const unsigned int[]) {AMD_ROOT(0x18, 0x0)} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_VanGogh(struct pci_dev *pdev)
@@ -7328,7 +7328,7 @@ static PCI_CALLBACK AMD_DataFabric_VanGogh(struct pci_dev *pdev)
 					},
 					0x30, 0x80,
 					1, MC_MAX_CHA,
-		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
+		(const unsigned int[]) {AMD_ROOT(0x18, 0x0)} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Vermeer(struct pci_dev *pdev)
@@ -7340,7 +7340,7 @@ static PCI_CALLBACK AMD_DataFabric_Vermeer(struct pci_dev *pdev)
 					},
 					0x30, 0x80,
 					1, MC_MAX_CHA,
-		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
+		(const unsigned int[]) {AMD_ROOT(0x18, 0x0)} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Cezanne(struct pci_dev *pdev)
@@ -7352,7 +7352,7 @@ static PCI_CALLBACK AMD_DataFabric_Cezanne(struct pci_dev *pdev)
 					},
 					0x30, 0x80,
 					1, MC_MAX_CHA,
-		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
+		(const unsigned int[]) {AMD_ROOT(0x18, 0x0)} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Rembrandt(struct pci_dev *pdev)
@@ -7364,7 +7364,7 @@ static PCI_CALLBACK AMD_DataFabric_Rembrandt(struct pci_dev *pdev)
 					},
 					0x40, 0x90,
 					1, MC_MAX_CHA,
-		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
+		(const unsigned int[]) {AMD_ROOT(0x18, 0x0)} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Raphael(struct pci_dev *pdev)
@@ -7376,7 +7376,7 @@ static PCI_CALLBACK AMD_DataFabric_Raphael(struct pci_dev *pdev)
 					},
 					0x44, 0x90,
 					1, MC_MAX_CHA,
-		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
+		(const unsigned int[]) {AMD_ROOT(0x18, 0x0)} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Genoa(struct pci_dev *pdev)
@@ -7388,10 +7388,10 @@ static PCI_CALLBACK AMD_DataFabric_Genoa(struct pci_dev *pdev)
 					},
 					0x40, 0x90,
 					4, MC_MAX_CHA,
-		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0),
-					PCI_DEVFN(0x19, 0x0),
-					PCI_DEVFN(0x1a, 0x0),
-					PCI_DEVFN(0x1b, 0x0)} );
+		(const unsigned int[]) {AMD_ROOT(0x18, 0x0),
+					AMD_ROOT(0x19, 0x0),
+					AMD_ROOT(0x1a, 0x0),
+					AMD_ROOT(0x1b, 0x0)} );
 }
 
 static PCI_CALLBACK AMD_DataFabric_Phoenix(struct pci_dev *pdev)
@@ -7403,7 +7403,7 @@ static PCI_CALLBACK AMD_DataFabric_Phoenix(struct pci_dev *pdev)
 					},
 					0x40, 0x98,
 					1, MC_MAX_CHA,
-		(const unsigned int[]) {PCI_DEVFN(0x18, 0x0)} );
+		(const unsigned int[]) {AMD_ROOT(0x18, 0x0)} );
 }
 
 static void CoreFreqK_ResetChip(struct pci_dev *dev)
