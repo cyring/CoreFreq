@@ -2429,10 +2429,10 @@ REASON_CODE SysInfoISA( Window *win,
 	},
 	{
 		NULL,
-		RSC(ISA_PCLMULDQ).CODE(), RSC(ISA_PCLMULDQ_COMM).CODE(),
-		{ 1, RO(Shm)->Proc.Features.Std.ECX.PCLMULDQ },
+		RSC(ISA_LZCNT).CODE(), RSC(ISA_LZCNT_COMM).CODE(),
+		{ 1, RO(Shm)->Proc.Features.ExtInfo.ECX.LZCNT },
 		(unsigned short[])
-		{ RO(Shm)->Proc.Features.Std.ECX.PCLMULDQ },
+		{ RO(Shm)->Proc.Features.ExtInfo.ECX.LZCNT },
 	},
 /* Row Mark */
 	{
@@ -2635,10 +2635,10 @@ REASON_CODE SysInfoISA( Window *win,
 	},
 	{
 		NULL,
-		RSC(ISA_LZCNT).CODE(), RSC(ISA_LZCNT_COMM).CODE(),
-		{ 1, RO(Shm)->Proc.Features.ExtInfo.ECX.LZCNT },
+		RSC(ISA_PCLMULDQ).CODE(), RSC(ISA_PCLMULDQ_COMM).CODE(),
+		{ 1, RO(Shm)->Proc.Features.Std.ECX.PCLMULDQ },
 		(unsigned short[])
-		{ RO(Shm)->Proc.Features.ExtInfo.ECX.LZCNT },
+		{ RO(Shm)->Proc.Features.Std.ECX.PCLMULDQ },
 	}
     };
 
