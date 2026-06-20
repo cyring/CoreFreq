@@ -22365,6 +22365,11 @@ static int CoreFreqK_Policy_Init(struct cpufreq_policy *policy)
 	    } else {
 		policy->governor = NULL;
 	    }
+	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 6)
+		policy->boost_supported = \
+			(PUBLIC(RO(Proc))->Features.AdvPower.EDX.CPB == 1)
+		    ||	(PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA == 1);
+	    #endif
 	}
     }
 	return 0;
