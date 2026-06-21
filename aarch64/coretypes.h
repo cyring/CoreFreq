@@ -1860,9 +1860,13 @@ typedef union {
 #define KMIN(m, M)	((m) < (M) ? (m) : (M))
 
 #if defined(__GNUC__) && (__GNUC__ >= 7)
-# define CF_STRNLEN(s, n) __builtin_strnlen((s), (n))
+#define CF_STRNLEN(s, n)						\
+	( __builtin_constant_p(s)					\
+	? ( {	size_t _l = __builtin_strlen(s);			\
+		_l < (n) ? _l : (n); } )				\
+	: __builtin_strnlen((s), (n)) )
 #else
-# define CF_STRNLEN(s, n) strnlen((s), (n))
+#define CF_STRNLEN(s, n) strnlen((s), (n))
 #endif
 
 #define StrCopy(_dest, _src, _max)					\
