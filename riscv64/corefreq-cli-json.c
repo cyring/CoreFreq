@@ -427,18 +427,9 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.Info.Signature.ExtFamily);
 					json_end_object(&s);
 				}
-				json_key(&s, "DFR1");
+/*TODO(CleanUp)			json_key(&s, "ISAR0");
 				{
 					json_start_object(&s);
-					json_key(&s, "EBEP");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.EBEP);
-					json_end_object(&s);
-				}
-				json_key(&s, "ISAR0");
-				{
-					json_start_object(&s);
-					json_key(&s, "AES");
-					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AES);
 					json_key(&s, "PMULL");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PMULL);
 					json_key(&s, "SHA1");
@@ -793,7 +784,7 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 					json_key(&s, "SIMD_Misc");
 					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.SIMD_Misc);
 					json_end_object(&s);
-				}
+				}*/
 				json_key(&s, "MISC");
 				{
 					json_start_object(&s);
@@ -911,8 +902,8 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.Other_Capable);
 			json_key(&s, "SpecTurboRatio");
 			json_literal(&s, "%u", RO(Shm)->Proc.Features.SpecTurboRatio);
-			json_key(&s, "SSBS");
-			json_literal(&s, "%u", RO(Shm)->Proc.Features.SSBS);
+/*TODO(CleanUp)		json_key(&s, "SSBS");
+			json_literal(&s, "%u", RO(Shm)->Proc.Features.SSBS);*/
 
 			json_end_object(&s);
 		}

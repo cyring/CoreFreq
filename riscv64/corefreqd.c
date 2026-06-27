@@ -777,13 +777,13 @@ void Mitigation_Stage(	RO(SHM_STRUCT) *RO(Shm),
 
 	RO(Shm)->Proc.Mechanisms.CSV2 = CSV_NONE;
     if (CSV2_1) {
-	if (RO(Shm)->Proc.Features.CSV2 == 0b0001) {
+/*	if (RO(Shm)->Proc.Features.CSV2 == 0b0001) {
 		RO(Shm)->Proc.Mechanisms.CSV2 = CSV2_1p1;
 	} else if (RO(Shm)->Proc.Features.CSV2 == 0b0010) {
 		RO(Shm)->Proc.Mechanisms.CSV2 = CSV2_1p2;
 	} else if (RO(Shm)->Proc.Features.CSV2 == 0b0000) {
 		RO(Shm)->Proc.Mechanisms.CSV2 = CSV2_1p0;
-	}
+	}	TODO(FixMe)*/
     } else if (CSV2_2) {
 	RO(Shm)->Proc.Mechanisms.CSV2 = CSV2_2p0;
     } else if (CSV2_3) {
@@ -791,7 +791,8 @@ void Mitigation_Stage(	RO(SHM_STRUCT) *RO(Shm),
     }
 	RO(Shm)->Proc.Mechanisms.CSV3 = CSV3 ? 0b11 : 0b00;
 
-	switch (RO(Shm)->Proc.Features.SSBS) {
+	switch (0b0000) {
+/*	switch (RO(Shm)->Proc.Features.SSBS) {	TODO(FixMe)*/
 	case 0b0001:
 	case 0b0010:
 		RO(Shm)->Proc.Mechanisms.SSBS = 1;

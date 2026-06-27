@@ -567,6 +567,16 @@ static void Query_Features(void *pArg)
 	if (iArg->Features->PerfMon.Version > 0) {
 		iArg->Features->PerfMon.FixCtrs++; /* Fixed Cycle Counter */
 	}
+
+	iArg->Features->ISA_A = riscv_isa_extension_available(NULL, a);
+	iArg->Features->ISA_C = riscv_isa_extension_available(NULL, c);
+	iArg->Features->ISA_D = riscv_isa_extension_available(NULL, d);
+	iArg->Features->ISA_F = riscv_isa_extension_available(NULL, f);
+	iArg->Features->ISA_H = riscv_isa_extension_available(NULL, h);
+	iArg->Features->ISA_I = riscv_isa_extension_available(NULL, i);
+	iArg->Features->ISA_M = riscv_isa_extension_available(NULL, m);
+	iArg->Features->ISA_Q = riscv_isa_extension_available(NULL, q);
+	iArg->Features->ISA_V = riscv_isa_extension_available(NULL, v);
 }
 
 static void Compute_Interval(void)
