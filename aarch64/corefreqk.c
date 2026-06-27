@@ -2861,8 +2861,9 @@ static void Query_GenericMachine(unsigned int cpu)
 {
 	Query_Same_Genuine_Features();
 
+    if (PUBLIC(RO(Proc))->Features.ACPI == 0) {
 	Query_DeviceTree(Arch[PUBLIC(RO(Proc))->ArchID].BaseClock(0), cpu);
-
+    }
     if (PRIVATE(OF(Specific)) != NULL) {
 	/*	Save the thermal parameters if specified		*/
 	PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
@@ -3333,8 +3334,9 @@ static void PerCore_GenericMachine(void *arg)
 	volatile REVIDR revid;
 	CORE_RO *Core = (CORE_RO *) arg;
 
+    if (PUBLIC(RO(Proc))->Features.ACPI == 0) {
 	Query_DeviceTree(Core->Clock, Core->Bind);
-
+    }
     if (PUBLIC(RO(Proc))->Features.Hybrid) {
 	Core->T.Cluster.Hybrid_ID = \
 	  Core->Boost[BOOST(MAX)].Q < PUBLIC(RO(Proc))->Features.Factory.Ratio ?
