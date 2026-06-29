@@ -26,6 +26,7 @@
 #define AMCGCR_EL0		sys_reg(0b11, 0b011, 0b1101, 0b0010, 0b010)
 #define CLUSTERCFR_EL1		sys_reg(0b11, 0b000, 0b1111, 0b0011, 0b000)
 #define CLUSTERIDR_EL1		sys_reg(0b11, 0b000, 0b1111, 0b0011, 0b001)
+#define AMEVCNTR(nm)		sys_reg(0b11,0b011,0b1101,0b0100,(nm))
 
 typedef union
 {

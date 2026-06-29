@@ -621,8 +621,9 @@ static void Query_Features(void *pArg)
 			&iArg->Features->Info.Vendor.CRC, &iArg->HypervisorID);
 
 	iArg->Features->Factory.Freq = cntfrq.ClockFreq_Hz;
-	iArg->Features->Factory.Freq = iArg->Features->Factory.Freq / 10000;
-
+	while (iArg->Features->Factory.Freq > 9999) {
+		iArg->Features->Factory.Freq /= 10;
+	}
 	switch (isar0.AES) {
 	case 0b0010:
 		iArg->Features->PMULL = 1;
@@ -2096,6 +2097,13 @@ static CLOCK BaseClock_GenericMachine(unsigned int ratio)
 	return clock;
 };
 
+static CLOCK BaseClock_DGX_Spark_GX10(unsigned int ratio)
+{
+	CLOCK clock = {.Q = 1000, .R = 0, .Hz = 1000000000L};
+	UNUSED(ratio);
+	return clock;
+};
+
 static void Cache_Level(CORE_RO *Core, unsigned int level, unsigned int select)
 {
 	const CSSELR cssel[CACHE_MAX_LEVEL] = {
@@ -3336,6 +3344,10 @@ static void PerCore_GenericMachine(void *arg)
 
     if (PUBLIC(RO(Proc))->Features.ACPI == 0) {
 	Query_DeviceTree(Core->Clock, Core->Bind);
+    } else {
+	Core->Boost[BOOST(MIN)] = \
+	Core->Boost[BOOST(MAX)] = \
+	Core->Boost[BOOST(TGT)] = (COF_ST) {.Q = 1, .R = 0};
     }
     if (PUBLIC(RO(Proc))->Features.Hybrid) {
 	Core->T.Cluster.Hybrid_ID = \
@@ -3752,7 +3764,23 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 
 #define Counters_Generic(Core, T)					\
 ({									\
-    if (PUBLIC(RO(Proc))->Features.PerfMon.Version > 0) {		\
+    if (PUBLIC(RO(Proc))->Features.AMU_vers > 0)			\
+    {									\
+	RDTSC64(Core->Counter[T].TSC);					\
+	Core->Counter[T].C0.UCC = SysRegRead(AMEVCNTR(0));		\
+	Core->Counter[T].C0.URC = SysRegRead(AMEVCNTR(1));		\
+	Core->Counter[T].INST	= SysRegRead(AMEVCNTR(2));		\
+	/* Normalize frequency: */					\
+	Core->Counter[T].C1 =						\
+		(Core->Counter[T].TSC * Core->Boost[BOOST(MAX)].Q)	\
+	+ ((Core->Counter[T].TSC * (Core->Boost[BOOST(MAX)].R)) >> 16); \
+	/* Derive C1: */						\
+	Core->Counter[T].C1 =						\
+	  (Core->Counter[T].C1 > Core->Counter[T].C0.URC) ?		\
+	    Core->Counter[T].C1 - Core->Counter[T].C0.URC : 0;		\
+    }									\
+    else if (PUBLIC(RO(Proc))->Features.PerfMon.Version > 0)		\
+    {									\
 	RDTSC_COUNTERx3(Core->Counter[T].TSC,				\
 			pmevcntr2_el0,	Core->Counter[T].C0.UCC,	\
 			pmccntr_el0,	Core->Counter[T].C0.URC,	\
