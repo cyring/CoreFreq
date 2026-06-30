@@ -1344,7 +1344,7 @@ static void Query_Features(void *pArg)
 		:
 		: "cc", "memory"
 	);
-	if ((iArg->Features->FGT== 0) && (BITEXTRZ(HCR, HYPCR_TID3, 1) == 0))
+	if (BITEXTRZ(HCR, HYPCR_TID3, 1) == 0)
 	{
 		volatile AA64DFR1 dfr1;
 		volatile AA64ISAR2 isar2;
@@ -2123,8 +2123,7 @@ static void Cache_Level(CORE_RO *Core, unsigned int level, unsigned int select)
 		: "memory"
 	);
 
-    if ((PUBLIC(RO(Proc))->Features.FGT == 0)
-     && (BITEXTRZ(Core->SystemRegister.HCR, HYPCR_TID3, 1) == 0))
+    if (BITEXTRZ(Core->SystemRegister.HCR, HYPCR_TID3, 1) == 0)
     {
 	volatile AA64MMFR2 mmfr2 = {.value = SysRegRead(ID_AA64MMFR2_EL1)};
 	Core->T.Cache[level].ccsid.FEAT_CCIDX = mmfr2.CCIDX == 0b0001 ? 1 : 0;
@@ -3213,8 +3212,7 @@ static void SystemRegisters(CORE_RO *Core)
 		);
 
 		Core->Query.SCTLRX = 0;
-	  if ((PUBLIC(RO(Proc))->Features.FGT == 0)
-	   && (BITEXTRZ(Core->SystemRegister.HCR, HYPCR_TID3, 1) == 0))
+	  if (BITEXTRZ(Core->SystemRegister.HCR, HYPCR_TID3, 1) == 0)
 	  {
 		volatile AA64ISAR2 isar2;
 		volatile AA64MMFR3 mmfr3 = {
