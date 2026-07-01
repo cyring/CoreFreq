@@ -1026,7 +1026,7 @@ static COF_ST Factory2COF(CORE_RO *Core) {
 	return _COF;
 }
 
-static void Query_DeviceTree(CLOCK clock, unsigned int cpu)
+static void Query_Linux_CPUFREQ(CLOCK clock, unsigned int cpu)
 {
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 #ifdef CONFIG_CPU_FREQ
@@ -1046,8 +1046,9 @@ static void Query_DeviceTree(CLOCK clock, unsigned int cpu)
 	min_freq = pFreqPolicy->cpuinfo.min_freq;
 	cur_freq = pFreqPolicy->cur;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
-   cpufreq_for_each_valid_entry(table, pFreqPolicy->freq_table)
-   {
+   if (pFreqPolicy->freq_table != NULL) {
+    cpufreq_for_each_valid_entry(table, pFreqPolicy->freq_table)
+    {
 	CPUFREQ2COF(clock, table->frequency * 1000LLU, COF);
 
 	if (table->frequency != min_freq) {
@@ -1058,7 +1059,7 @@ static void Query_DeviceTree(CLOCK clock, unsigned int cpu)
 			boost++;
 		}
 	}
-    if ((table->flags & CPUFREQ_BOOST_FREQ) == CPUFREQ_BOOST_FREQ) {
+     if ((table->flags & CPUFREQ_BOOST_FREQ) == CPUFREQ_BOOST_FREQ) {
 	if (COF2CPUFREQ(clock, COF) \
 		> COF2CPUFREQ(clock, Core->Boost[BOOST(TBH)]))
 	{
@@ -1066,6 +1067,7 @@ static void Query_DeviceTree(CLOCK clock, unsigned int cpu)
 		Core->Boost[BOOST(TBH)] = COF;
 	}
 	PUBLIC(RO(Proc))->Features.Turbo_OPP = 1;
+     }
     }
    }
    if (boost > BOOST(MIN)) {
@@ -1480,7 +1482,7 @@ static void Query_GenericMachine(unsigned int cpu)
 {
 	Query_Same_Genuine_Features(cpu);
 
-	Query_DeviceTree(Arch[PUBLIC(RO(Proc))->ArchID].BaseClock(0), cpu);
+	Query_Linux_CPUFREQ(Arch[PUBLIC(RO(Proc))->ArchID].BaseClock(0), cpu);
 
     if (PRIVATE(OF(Specific)) != NULL) {
 	/*	Save the thermal parameters if specified		*/
@@ -1616,7 +1618,7 @@ static void PerCore_GenericMachine(void *arg)
 {
 	CORE_RO *Core = (CORE_RO *) arg;
 
-	Query_DeviceTree(Core->Clock, Core->Bind);
+	Query_Linux_CPUFREQ(Core->Clock, Core->Bind);
 
     if (PUBLIC(RO(Proc))->Features.Hybrid) {
 	Core->T.Cluster.Hybrid_ID = \
