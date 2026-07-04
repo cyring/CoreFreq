@@ -5,7 +5,7 @@
  */
 
 #define RSC_THEME_DFLT_CODE		/* 72 chars */			\
-"           Default theme by CyrIng.  Since 2015; updated March 2026     "
+"           Default theme by CyrIng.  Since 2015; updated July 2026      "
 
 #define RSC_UI_THM_DFLT_ATTR						\
 {									\
@@ -1235,7 +1235,7 @@
 
 #define RSC_LAYOUT_CARD_CLK_THM_DFLT_ATTR				\
 {									\
-	HDK,HDK,HWK,HWK,HWK,LWK,HWK,HDK,HDK,HDK,HDK,HDK 		\
+	HDK,HWK,HWK,HWK,HWK,LWK,HWK,HDK,HDK,HDK,HDK,HDK 		\
 }
 
 #define RSC_LAYOUT_CARD_UNCORE_THM_DFLT_ATTR				\

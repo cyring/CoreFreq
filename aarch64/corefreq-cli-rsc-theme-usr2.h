@@ -5,7 +5,7 @@
  */
 
 #define RSC_THEME_USR2_CODE		/* 72 chars */			\
-"        Transparent theme by leaty.  Updated by CyrIng - April 2026     "
+"        Transparent theme by leaty.  Updated by CyrIng - July 2026      "
 
 #define RSC_UI_THM_USR2_ATTR						\
 {									\
@@ -1235,7 +1235,7 @@
 
 #define RSC_LAYOUT_CARD_CLK_THM_USR2_ATTR				\
 {									\
-	HDK,HDK,HWK,HWK,HWK,LWK,HWK,HDK,HDK,HDK,HDK,HDK 		\
+	HDK,HWK,HWK,HWK,HWK,LWK,HWK,HDK,HDK,HDK,HDK,HDK 		\
 }
 
 #define RSC_LAYOUT_CARD_UNCORE_THM_USR2_ATTR				\

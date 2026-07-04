@@ -50,6 +50,28 @@ struct SETTING_ST Setting = {
 	._padding = 0
 };
 
+#define FPMASKFMT_SZ (8 + 1)
+
+static void FormatFixedFloat(int width, int precision, double fp, char *fmt)
+{
+	unsigned long tmp = (unsigned long) fp;
+	int sep = (precision > 0) ? 1 : 0;
+	int idigits = 1;
+
+	while (tmp >= 10) {
+		tmp /= 10;
+		idigits++;
+	}
+	if ((idigits + sep + precision) > width) {
+		precision = width - idigits - sep;
+		if (precision < 0) {
+			precision = 0;
+			sep = 0;
+		}
+	}
+	StrFormat(fmt, width + 1, "%*.*f", width, precision, fp);
+}
+
 char ConfigFQN[1+4095] = {[0] = 0};
 
 char *BuildConfigFQN(char *dirPath)
@@ -1265,22 +1287,21 @@ void RefreshBaseClock(TGrid *grid, DATA_TYPE data[])
 		&RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].FlipFlop[
 			!RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Toggle
 		];
-	char item[8+1];
+	char item[FPMASKFMT_SZ];
+	double BCLK = CLOCK_MHz(double, CFlop->Clock.Hz);
 	UNUSED(data);
 
-	StrFormat(item, 8+1, "%7.3f", CLOCK_MHz(double, CFlop->Clock.Hz));
-
+	FormatFixedFloat(7, 3, BCLK, item);
 	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
 }
 
 void RefreshFactoryClock(TGrid *grid, DATA_TYPE data[])
 {
-	char item[8+1];
+	char item[FPMASKFMT_SZ];
+	double BCLK = CLOCK_MHz(double,RO(Shm)->Proc.Features.Factory.Clock.Hz);
 	UNUSED(data);
 
-	StrFormat(item, 8+1, "%7.3f",
-		CLOCK_MHz(double, RO(Shm)->Proc.Features.Factory.Clock.Hz));
-
+	FormatFixedFloat(7, 3, BCLK, item);
 	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
 }
 
@@ -1392,6 +1413,8 @@ REASON_CODE SysInfoProc(Window *win,
 	};
 	struct FLIP_FLOP *CFlop;
 	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
+	char item[FPMASKFMT_SZ];
+	double BCLK;
 	unsigned int activeCores;
 	enum RATIO_BOOST boost = 0;
 
@@ -1449,10 +1472,12 @@ REASON_CODE SysInfoProc(Window *win,
 			!RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Toggle
 		];
 
+	BCLK = CLOCK_MHz(double, CFlop->Clock.Hz);
+	FormatFixedFloat(7, 3, BCLK, item);
+
 	GridCall( PUT(	SCANKEY_NULL, attrib[2], width, 2,
-			"%s""%.*s[%7.3f]", RSC(BASE_CLOCK).CODE(),
-			width - 12 - RSZ(BASE_CLOCK), hSpace,
-			CLOCK_MHz(double, CFlop->Clock.Hz) ),
+			"%s""%.*s[%s]", RSC(BASE_CLOCK).CODE(),
+			width - 12 - RSZ(BASE_CLOCK), hSpace, item ),
 		RefreshBaseClock );
 
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
@@ -1498,10 +1523,13 @@ REASON_CODE SysInfoProc(Window *win,
 				width, OutFunc, cellPadding, attrib[3] ),
 		RefreshTopFreq, BOOST(MAX) );
 
+	BCLK = CLOCK_MHz(double, RO(Shm)->Proc.Features.Factory.Clock.Hz);
+	FormatFixedFloat(7, 3, BCLK, item);
+
 	GridCall( PUT(	SCANKEY_NULL, attrib[0], width, 2,
-			"%s""%.*s[%7.3f]", RSC(FACTORY).CODE(),
+			"%s""%.*s[%s]", RSC(FACTORY).CODE(),
 			(OutFunc == NULL ? 68 : 64) - RSZ(FACTORY), hSpace,
-		    CLOCK_MHz(double,RO(Shm)->Proc.Features.Factory.Clock.Hz) ),
+			item ),
 		RefreshFactoryClock );
 
 	GridCall( PUT(	SCANKEY_NULL, attrib[3], width, 0,
@@ -17425,17 +17453,16 @@ void Draw_Card_CLK(Layer *layer, Card *card)
 		&RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].FlipFlop[
 			!RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Toggle
 	];
-	struct PKG_FLIP_FLOP *PFlop = \
-		&RO(Shm)->Proc.FlipFlop[!RO(Shm)->Proc.Toggle];
+	double BCLK_MHz = CLOCK_MHz(double, CFlop->Clock.Hz);
+	double Freq_MHz = BCLK_MHz
+		* RO(Shm)->Cpu[RO(Shm)->Proc.Service.Core].Boost[BOOST(MAX)].N;
 
-	double bclk = (double)(PFlop->Delta.PCLK / RO(Shm)->Sleep.Interval);
+	Counter2LCD(layer, card->origin.col, card->origin.row, Freq_MHz);
 
-	Counter2LCD(layer, card->origin.col, card->origin.row, bclk);
+	FormatFixedFloat(6, 1, BCLK_MHz, Buffer);
 
-	StrFormat(Buffer, 6+1, "%5.1f", CLOCK_MHz(double, CFlop->Clock.Hz));
-
-	memcpy(&LayerAt(layer, code, (card->origin.col+2),(card->origin.row+3)),
-		Buffer, 5);
+	memcpy(&LayerAt(layer, code, (card->origin.col+1),(card->origin.row+3)),
+		Buffer, 6);
 }
 
 void Draw_Card_Uncore(Layer *layer, Card *card)
