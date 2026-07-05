@@ -16792,7 +16792,7 @@ void Draw_Footer(Layer *layer, CUINT row)
 void Draw_Header(Layer *layer, CUINT row)
 {	/* Update Header view area					*/
 	struct FLIP_FLOP *CFlop;
-	unsigned int digit[9];
+	unsigned int digit[10];
 
 	/* Print the Top frequency in MHz Or the C0 C-State % load	*/
     if (!Draw.Flag.clkOrLd)
@@ -16827,14 +16827,15 @@ void Draw_Header(Layer *layer, CUINT row)
 	Dec2Digit(CFlop->Clock.Hz, digit);
 
 	LayerAt(layer, code, 26 +  0, row) = digit[0] + '0';
-	LayerAt(layer, code, 26 +  1, row) = digit[1] + '0';
-	LayerAt(layer, code, 26 +  2, row) = digit[2] + '0';
+	LayerAt(layer, code, 26 +  2, row) = digit[1] + '0';
+	LayerAt(layer, code, 26 +  3, row) = digit[2] + '0';
 	LayerAt(layer, code, 26 +  4, row) = digit[3] + '0';
-	LayerAt(layer, code, 26 +  5, row) = digit[4] + '0';
-	LayerAt(layer, code, 26 +  6, row) = digit[5] + '0';
+	LayerAt(layer, code, 26 +  6, row) = digit[4] + '0';
+	LayerAt(layer, code, 26 +  7, row) = digit[5] + '0';
 	LayerAt(layer, code, 26 +  8, row) = digit[6] + '0';
-	LayerAt(layer, code, 26 +  9, row) = digit[7] + '0';
-	LayerAt(layer, code, 26 + 10, row) = digit[8] + '0';
+	LayerAt(layer, code, 26 + 10, row) = digit[7] + '0';
+	LayerAt(layer, code, 26 + 11, row) = digit[8] + '0';
+	LayerAt(layer, code, 26 + 12, row) = digit[9] + '0';
 }
 #endif /* NO_HEADER */
 

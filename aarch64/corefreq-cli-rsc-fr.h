@@ -30,7 +30,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_LAYOUT_HEADER_BCLK_CODE_FR					\
 {									\
 	' ','H','o','r','l','o','g','e',' ',' ',' ',' ',		\
-	'~',' ','0','0','0',' ','0','0','0',' ','0','0','0',' ','H','z' \
+	'~',' ','0',' ','0','0','0',' ','0','0','0',' ','0','0','0',	\
+	' ','H','z'							\
 }
 
 #define RSC_LAYOUT_HEADER_CACHES_CODE_FR RSC_LAYOUT_HEADER_CACHES_CODE_EN
