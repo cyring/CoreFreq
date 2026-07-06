@@ -497,19 +497,29 @@ static const struct {
     }
 }
 
-static signed int SearchArchitectureID(void)
+static struct SIGNATURE MakeSignature(	volatile MIDR midr, volatile PMCR pmcr,
+					bool has_pmcr )
+{
+	struct SIGNATURE signature = {
+		.Stepping = midr.Revision | (midr.Variant << 4),
+		.Model = has_pmcr ? pmcr.IDcode & 0x0f : 0,
+		.Family = midr.PartNum & 0x00f,
+		.ExtModel = has_pmcr ? (pmcr.IDcode & 0xf0) >> 4 : 0,
+		.ExtFamily = (midr.PartNum & 0xff0) >> 4,
+		.Reserved = 0
+	};
+	return signature;
+}
+
+static signed int SearchArchitectureID(struct SIGNATURE signature)
 {
 	signed int id;
     for (id = ARCHITECTURES - 1; id > 0; id--)
     {	/* Search for an architecture signature. */
-	if ( (PUBLIC(RO(Proc))->Features.Info.Signature.ExtFamily \
-		== Arch[id].Signature.ExtFamily)
-	&& (PUBLIC(RO(Proc))->Features.Info.Signature.Family \
-		== Arch[id].Signature.Family)
-	&& ( ( (PUBLIC(RO(Proc))->Features.Info.Signature.ExtModel \
-			==  Arch[id].Signature.ExtModel)
-		&& (PUBLIC(RO(Proc))->Features.Info.Signature.Model \
-			==  Arch[id].Signature.Model) )
+	if ( (signature.ExtFamily == Arch[id].Signature.ExtFamily)
+	  && (signature.Family == Arch[id].Signature.Family)
+	  && ( ( (signature.ExtModel ==  Arch[id].Signature.ExtModel)
+		&& (signature.Model ==  Arch[id].Signature.Model) )
 		|| (!Arch[id].Signature.ExtModel \
 		&& !Arch[id].Signature.Model) ) )
 	{
@@ -540,6 +550,7 @@ static void Query_Features(void *pArg)
 	volatile MVFR1 mvfr1;
 	volatile MVFR2 mvfr2;
 	volatile Bit64 FLAGS;
+	bool has_pmcr;
 
 	iArg->Features->Info.Vendor.CRC = CRC_RESERVED;
 	iArg->SMT_Count = 1;
@@ -594,6 +605,8 @@ static void Query_Features(void *pArg)
 	iArg->Features->PerfMon.Version = dfr0.PMUVer;
     if (iArg->Features->PerfMon.Version > 0)
     {
+	has_pmcr = true;
+
 	__asm__ __volatile__(
 		"mrs	%[pmcr] ,	pmcr_el0"	"\n\t"
 		"isb"
@@ -601,21 +614,16 @@ static void Query_Features(void *pArg)
 		:
 		: "memory"
 	);
-
-	iArg->Features->Info.Signature.Model = pmcr.IDcode & 0x0f;
-	iArg->Features->Info.Signature.ExtModel = (pmcr.IDcode & 0xf0) >> 4;
-
 	iArg->Features->PerfMon.MonCtrs = pmcr.NumEvtCtrs;
 	iArg->Features->PerfMon.FixCtrs++; /* Fixed Cycle Counter */
 
 	/*TODO(Memory-mapped PMU register at offset 0xe00): pmcfgr	*/
 	iArg->Features->PerfMon.MonWidth = \
 	iArg->Features->PerfMon.FixWidth = 0b111111 == 0b111111 ? 64 : 0;
+    } else {
+	has_pmcr = false;
     }
-	iArg->Features->Info.Signature.Stepping = midr.Revision
-						| (midr.Variant << 4);
-	iArg->Features->Info.Signature.Family = midr.PartNum & 0x00f;
-	iArg->Features->Info.Signature.ExtFamily = (midr.PartNum & 0xff0) >> 4;
+	iArg->Features->Info.Signature = MakeSignature(midr, pmcr, has_pmcr);
 
 	VendorFromMainID(midr, iArg->Features->Info.Vendor.ID,
 			&iArg->Features->Info.Vendor.CRC, &iArg->HypervisorID);
@@ -2169,6 +2177,11 @@ static void Map_Generic_Topology(void *arg)
 
 	volatile MIDR midr;
 	volatile MPIDR mpid;
+	volatile PMCR pmcr;
+	bool has_pmcr;
+	struct SIGNATURE signature;
+	signed int archID;
+
 	__asm__ volatile
 	(
 		"mrs	%[midr] ,	midr_el1"	"\n\t"
@@ -2180,6 +2193,25 @@ static void Map_Generic_Topology(void *arg)
 		: "memory"
 	);
 	Core->T.PN = midr.PartNum;
+
+    if (PUBLIC(RO(Proc))->Features.PerfMon.Version > 0)
+    {
+	has_pmcr = true;
+
+	__asm__ __volatile__(
+		"mrs	%[pmcr] ,	pmcr_el0"	"\n\t"
+		"isb"
+		: [pmcr]	"=r" (pmcr.value)
+		:
+		: "memory"
+	);
+    } else {
+	has_pmcr = false;
+    }
+	signature = MakeSignature(midr, pmcr, has_pmcr);
+	archID = SearchArchitectureID(signature);
+	Core->T.Cluster.Hybrid_ID = Arch[archID].Hybrid_ID;
+
 	if (mpid.MT) {
 		Core->T.MPID = mpid.value & 0xfffff;
 		Core->T.Cluster.CMP = mpid.Aff3;
@@ -2212,8 +2244,7 @@ static int Core_Topology(unsigned int cpu)
 
 static unsigned int Proc_Topology(void)
 {
-	unsigned int cpu, PN = 0, CountEnabledCPU = 0;
-	struct SIGNATURE SoC;
+	unsigned int cpu, CountEnabledCPU = 0, SoC_PN = 0;
 
     for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++) {
 	PUBLIC(RO(Core, AT(cpu)))->T.PN 	= 0;
@@ -2239,19 +2270,13 @@ static unsigned int Proc_Topology(void)
 		BITCLR(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine, OS);
 	    }
 	}
-	PN =	( PN ^ PUBLIC(RO(Core, AT(cpu)))->T.PN )
-		| PUBLIC(RO(Core, AT(cpu)))->T.PN;
+	SoC_PN = SoC_PN | ( PUBLIC(RO(Core, AT(cpu)))->T.PN
+			^ PUBLIC(RO(Core, AT(0)))->T.PN );
     }
-	SoC.Family = PN & 0x00f;
-	SoC.ExtFamily = (PN & 0xff0) >> 4;
-
+	PUBLIC(RO(Proc))->Features.Hybrid = (SoC_PN != 0);
 	/* Source: arch/arm64/kernel/setup.c: smp_setup_processor_id()	*/
 	PUBLIC(RO(Core, AT(0)))->T.BSP = 1;
 
-	PUBLIC(RO(Proc))->Features.Hybrid = !(
-	    SoC.Family == PUBLIC(RO(Proc))->Features.Info.Signature.Family
-	 && SoC.ExtFamily == PUBLIC(RO(Proc))->Features.Info.Signature.ExtFamily
-	);
 	return CountEnabledCPU;
 }
 
@@ -3285,6 +3310,8 @@ static void PerCore_ThermalZone(CORE_RO *Core)
 		tz = thermal_zone_get_zone_by_name("bigcore0-thermal");
 	    }
 		break;
+	case Hybrid_None:
+		break;
 	}
 	PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone = tz;
 #endif /* CONFIG_THERMAL */
@@ -3343,11 +3370,6 @@ static void PerCore_GenericMachine(void *arg)
 
 	Query_Linux_CPUFREQ(Core->Clock, Core->Bind);
 
-    if (PUBLIC(RO(Proc))->Features.Hybrid) {
-	Core->T.Cluster.Hybrid_ID = \
-	  Core->Boost[BOOST(MAX)].Q < PUBLIC(RO(Proc))->Features.Factory.Ratio ?
-		Hybrid_Secondary : Hybrid_Primary;
-    }
 	__asm__ __volatile__(
 		"mrs	%[revid],	revidr_el1"	"\n\t"
 		"isb"
@@ -6792,7 +6814,8 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 	{
 		PUBLIC(RO(Proc))->ArchID = ArchID;
 	} else {
-		PUBLIC(RO(Proc))->ArchID = SearchArchitectureID();
+		PUBLIC(RO(Proc))->ArchID = \
+		SearchArchitectureID(PUBLIC(RO(Proc))->Features.Info.Signature);
 	}
 	/*	Set the uArch's name with the first found codename	*/
 	StrCopy(PUBLIC(RO(Proc))->Architecture,

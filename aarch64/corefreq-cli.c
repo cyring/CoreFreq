@@ -5480,12 +5480,12 @@ void Instructions(unsigned int iter)
 ASCII* Topology_Std(char *pStr, unsigned int cpu)
 {
     if (RO(Shm)->Cpu[cpu].Topology.BSP) {
-	StrFormat(&pStr[ 0], 4+(2*11)+1, "%03u:BSP%5X\x20",
+	StrFormat(&pStr[ 0], 4+(2*11)+1, "%03u:BSP%6X",
 			cpu,
 			RO(Shm)->Cpu[cpu].Topology.MPID);
 	return RSC(TOPOLOGY_BSP_COMM).CODE();
     } else {
-	StrFormat(&pStr[ 0], 1+(3*11)+1, "%03u:%3d%5X\x20",
+	StrFormat(&pStr[ 0], 1+(3*11)+1, "%03u:%3d%6X",
 			cpu,
 			RO(Shm)->Cpu[cpu].Topology.PackageID,
 			RO(Shm)->Cpu[cpu].Topology.MPID);
@@ -5523,9 +5523,9 @@ ASCII* Topology_CCD(char *pStr, unsigned int cpu)
 ASCII* Topology_Hybrid(char *pStr, unsigned int cpu)
 {
 	StrFormat(pStr, 3+(3*11)+1, "\x20%c%4X%4d%3d",
-		RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID==Hybrid_Secondary ?
-	'E' :	RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID==Hybrid_Primary ?
-	'P' : '?',
+	  RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID == Hybrid_Secondary ? 'E'
+	: RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID == Hybrid_Primary ? 'P'
+	: RO(Shm)->Cpu[cpu].Topology.Cluster.Hybrid_ID == Hybrid_None ?	' ':'?',
 		RO(Shm)->Cpu[cpu].Topology.PN,
 		RO(Shm)->Cpu[cpu].Topology.CoreID,
 		RO(Shm)->Cpu[cpu].Topology.ThreadID);

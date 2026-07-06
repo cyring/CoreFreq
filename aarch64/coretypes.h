@@ -104,6 +104,7 @@ enum {	GenuineArch = 0,
 };
 
 enum HYBRID_ARCH {
+	Hybrid_None,
 	Hybrid_Primary ,	/*	Big	*/
 	Hybrid_Secondary	/*	Little	*/
 };

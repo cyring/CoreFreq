@@ -562,6 +562,7 @@ typedef struct
 		void		(*Stop)(void *arg);	/* Must be static */
 		long		(*ClockMod)(CLOCK_ARG *pClockMod);
 	} Uncore;
+	enum HYBRID_ARCH	Hybrid_ID;
 	PROCESSOR_SPECIFIC	*Specific;
 	SYSTEM_DRIVER		SystemDriver;
 	ARCH_ST			Architecture;
@@ -754,6 +755,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_None,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Misc_Processor
@@ -782,6 +784,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Secondary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A320
@@ -810,6 +813,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Secondary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A34
@@ -838,6 +842,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Secondary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A35
@@ -866,6 +871,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Secondary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A510
@@ -894,6 +900,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Secondary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A520
@@ -922,6 +929,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Secondary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A520AE
@@ -950,6 +958,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Secondary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A53
@@ -978,6 +987,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Secondary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A55
@@ -1006,6 +1016,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Primary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A57
@@ -1034,6 +1045,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Secondary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A65
@@ -1062,6 +1074,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Secondary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A65AE
@@ -1090,6 +1103,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Primary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A710
@@ -1118,6 +1132,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Primary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A715
@@ -1146,6 +1161,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Primary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A72
@@ -1174,6 +1190,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Secondary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A720
@@ -1202,6 +1219,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Secondary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A720AE
@@ -1230,6 +1248,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Secondary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A725
@@ -1258,6 +1277,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Primary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A73
@@ -1286,6 +1306,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Primary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A75
@@ -1314,6 +1335,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Primary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A76
@@ -1342,6 +1364,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Primary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A76AE
@@ -1370,6 +1393,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Primary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A77
@@ -1398,6 +1422,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Primary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A78
@@ -1426,6 +1451,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Primary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A78AE
@@ -1454,6 +1480,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Primary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_A78C
@@ -1482,6 +1509,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_None,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_R82
@@ -1510,6 +1538,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_None,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_R82AE
@@ -1538,6 +1567,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Primary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_X1
@@ -1566,6 +1596,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Primary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_X1C
@@ -1594,6 +1625,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Primary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_X2
@@ -1622,6 +1654,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Primary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_X3
@@ -1650,6 +1683,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Primary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_X4
@@ -1678,6 +1712,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_Primary,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Cortex_X925
@@ -1706,6 +1741,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_None,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_DynamIQ_DSU
@@ -1734,6 +1770,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_None,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Neoverse_E1
@@ -1762,6 +1799,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_None,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Neoverse_N1
@@ -1790,6 +1828,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_None,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Neoverse_N2
@@ -1818,6 +1857,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_None,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Neoverse_N3
@@ -1846,6 +1886,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_None,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Neoverse_V1
@@ -1874,6 +1915,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_None,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Neoverse_V2
@@ -1902,6 +1944,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_None,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Neoverse_V3
@@ -1930,6 +1973,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
+	.Hybrid_ID = Hybrid_None,
 	.Specific = Misc_Specific_Processor,
 	.SystemDriver = VOID_Driver,
 	.Architecture = Arch_Neoverse_V3AE
