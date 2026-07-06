@@ -1240,7 +1240,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.BaseClock = BaseClock_DGX_Spark_GX10,
 	.ClockMod = NULL,
 	.TurboClock = NULL,
-	.thermalFormula = THERMAL_FORMULA_CELSIUS,
+	.thermalFormula = THERMAL_FORMULA_ZONE,
 #ifdef CONFIG_PM_OPP
 	.voltageFormula = VOLTAGE_FORMULA_OPP,
 #else
@@ -1704,7 +1704,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.BaseClock = BaseClock_DGX_Spark_GX10,
 	.ClockMod = NULL,
 	.TurboClock = NULL,
-	.thermalFormula = THERMAL_FORMULA_CELSIUS,
+	.thermalFormula = THERMAL_FORMULA_ZONE,
 #ifdef CONFIG_PM_OPP
 	.voltageFormula = VOLTAGE_FORMULA_OPP,
 #else

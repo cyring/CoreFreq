@@ -3318,8 +3318,30 @@ static void PerCore_ThermalZone(CORE_RO *Core)
     #endif /* CONFIG_THERMAL */
     } else {
     #ifdef CONFIG_ACPI
+	char *cluster = NULL;
 	acpi_handle handle;
-	if (ACPI_SUCCESS(acpi_get_handle(NULL, "\\_TZ.TS0E", &handle))) {
+
+	switch (Core->T.Cluster.Hybrid_ID) {
+	case Hybrid_Secondary:
+		if (Core->T.PackageID > 0) {
+			cluster = "\\_TZ.TS1E";
+		} else {
+			cluster = "\\_TZ.TS0E";
+		}
+		break;
+	case Hybrid_Primary:
+		if (Core->T.PackageID > 0) {
+			cluster = "\\_TZ.TS1P";
+		} else {
+			cluster = "\\_TZ.TS0P";
+		}
+		break;
+	case Hybrid_None:
+		cluster = "\\_TZ.TSOC";
+		break;
+	}
+
+	if (cluster && ACPI_SUCCESS(acpi_get_handle(NULL, cluster, &handle))) {
 		PRIVATE(OF(Core, AT(Core->Bind)))->ThermalHandle = handle;
 	} else {
 		PRIVATE(OF(Core, AT(Core->Bind)))->ThermalHandle = 0;
