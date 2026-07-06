@@ -3296,7 +3296,8 @@ static void PerCore_Reset(CORE_RO *Core)
 
 static void PerCore_ThermalZone(CORE_RO *Core)
 {
-#ifdef CONFIG_THERMAL
+    if (PUBLIC(RO(Proc))->Features.ACPI == 0) {
+    #ifdef CONFIG_THERMAL
 	struct thermal_zone_device *tz = NULL;
 
 	switch (Core->T.Cluster.Hybrid_ID) {
@@ -3314,15 +3315,25 @@ static void PerCore_ThermalZone(CORE_RO *Core)
 		break;
 	}
 	PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone = tz;
-#endif /* CONFIG_THERMAL */
+    #endif /* CONFIG_THERMAL */
+    } else {
+    #ifdef CONFIG_ACPI
+	acpi_handle handle;
+	if (ACPI_SUCCESS(acpi_get_handle(NULL, "\\_TZ.TS0E", &handle))) {
+		PRIVATE(OF(Core, AT(Core->Bind)))->ThermalHandle = handle;
+	} else {
+		PRIVATE(OF(Core, AT(Core->Bind)))->ThermalHandle = 0;
+	}
+    #endif /* CONFIG_ACPI */
+    }
 }
 
 static void Core_Thermal_Worker(struct work_struct *work)
 {
 	struct PRIV_CORE_ST *PrivateCore = \
 		container_of(work, struct PRIV_CORE_ST, ThermalWork.work);
-
-#ifdef CONFIG_THERMAL
+ if (PUBLIC(RO(Proc))->Features.ACPI == 0) {
+  #ifdef CONFIG_THERMAL
   if (!IS_ERR(PrivateCore->ThermalZone)) {
    #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 3, 0)
 	unsigned int mcelsius;
@@ -3354,7 +3365,28 @@ static void Core_Thermal_Worker(struct work_struct *work)
     }
    #endif
   }
-#endif /* CONFIG_THERMAL */
+  #endif /* CONFIG_THERMAL */
+ } else {
+  #ifdef CONFIG_ACPI
+  if (PrivateCore->ThermalHandle) {
+	unsigned long long sensor;
+    if (ACPI_SUCCESS(acpi_evaluate_integer(PrivateCore->ThermalHandle,
+						"_TMP", NULL, &sensor)))
+    {
+	int mcelsius = (int)(sensor * 100 - 273150);
+
+     #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 18, 13)
+	WRITE_ONCE(PrivateCore->mCelsius, (unsigned int) mcelsius);
+     #else
+	barrier();
+	__builtin_memcpy(&PrivateCore->mCelsius, &mcelsius,
+			sizeof(PrivateCore->mCelsius));
+	barrier();
+     #endif
+    }
+  }
+  #endif /* CONFIG_ACPI */
+ }
 	if (BITVAL(PrivateCore->Join.TSM, MUSTFWD) == 1) {
 		schedule_delayed_work(
 			&PrivateCore->ThermalWork,
