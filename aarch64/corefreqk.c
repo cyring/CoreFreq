@@ -3312,6 +3312,7 @@ static void PerCore_ThermalZone(CORE_RO *Core)
 	    }
 		break;
 	case Hybrid_None:
+		tz = thermal_zone_get_zone_by_name("soc-thermal");
 		break;
 	}
 	PRIVATE(OF(Core, AT(Core->Bind)))->ThermalZone = tz;
