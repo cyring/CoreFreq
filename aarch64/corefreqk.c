@@ -54,6 +54,9 @@
 #ifdef CONFIG_THERMAL
 #include <linux/thermal.h>
 #endif /* CONFIG_THERMAL */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 6, 0)
+#include <linux/units.h>
+#endif
 
 #ifdef CONFIG_HAVE_NMI
 enum {
@@ -3396,7 +3399,11 @@ static void Core_Thermal_Worker(struct work_struct *work)
     if (ACPI_SUCCESS(acpi_evaluate_integer(PrivateCore->ThermalHandle,
 						"_TMP", NULL, &sensor)))
     {
+     #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 6, 0)
+	int mcelsius = (int) deci_kelvin_to_millicelsius(sensor);
+     #else
 	int mcelsius = (int)(sensor * 100 - 273150);
+     #endif
 
      #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 18, 13)
 	WRITE_ONCE(PrivateCore->mCelsius, (unsigned int) mcelsius);
