@@ -3328,20 +3328,20 @@ static void PerCore_ThermalZone(CORE_RO *Core)
 	switch (Core->T.Cluster.Hybrid_ID) {
 	case Hybrid_Secondary:
 		if (Core->T.PackageID > 0) {
-			cluster = "\\_TZ.TS1E";
+			cluster = "\\_TZ_.TS1E";
 		} else {
-			cluster = "\\_TZ.TS0E";
+			cluster = "\\_TZ_.TS0E";
 		}
 		break;
 	case Hybrid_Primary:
 		if (Core->T.PackageID > 0) {
-			cluster = "\\_TZ.TS1P";
+			cluster = "\\_TZ_.TS1P";
 		} else {
-			cluster = "\\_TZ.TS0P";
+			cluster = "\\_TZ_.TS0P";
 		}
 		break;
 	case Hybrid_None:
-		cluster = "\\_TZ.TSOC";
+		cluster = "\\_TZ_.TSOC";
 		break;
 	}
 
