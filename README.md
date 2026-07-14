@@ -10,8 +10,9 @@ _CoreFreq_ provides a framework to retrieve CPU data with a high degree of preci
 * Performance counters including Time Stamp Counter (TSC), Unhalted Core Cycles (UCC), Unhalted Reference Cycles (URC)
 * Number of instructions per cycle or second, IPS, IPC, or CPI
 * CPU C-States C0 C1 C3 C6 C7 - C1E - Auto/UnDemotion of C1 C3
-* DTS Temperature and Tjunction Max, Thermal Monitoring TM1 TM2 state, Vcore
-* Topology map including Caches for boostrap & application CPU
+* DTS Temperature and Tjunction Max, Thermal Monitoring TM1 TM2 state
+* Core Voltage (Vcore) iff registers are documented
+* Topology map including Caches for bootstrap & application CPU
 * Processor features, brand & architecture strings
 * In progress: Uncore, Memory Controller channels & geometry, DIMM timings,  
   Stress tools, Power & Energy (RAPL, P-State, HWP, TDP), Overclocking, cpuidle & cpufreq driver, ClockSource, Mitigation Mechanisms  

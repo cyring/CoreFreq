@@ -577,10 +577,6 @@ static void *Child_Thread(void *arg)
 	RW(SHM_STRUCT) *RW(Shm) = Arg->Ref->RW(Shm);
 	CPU_STRUCT *Cpu = &RO(Shm)->Cpu[cpu];
 
-	CALL_FUNC CallSliceFunc = (CALL_FUNC[2]){
-		CallWith_RDTSC_No_RDPMC,  CallWith_RDTSC_RDPMC
-	}[ RO(Shm)->Proc.Features.PerfMon.CoreCycles > 0 ];
-
 	pthread_t tid = pthread_self();
 	cpu_set_t cpuset;
 	CPU_ZERO(&cpuset);
@@ -615,7 +611,12 @@ static void *Child_Thread(void *arg)
 	while ( BITVAL(RW(Shm)->Proc.Sync, BURN)
 	    && !BITVAL(Shutdown, SYNC) )
 	{
-	    if (BITVAL_CC(RO(Shm)->roomSched, cpu)) {
+	    if (BITVAL_CC(RO(Shm)->roomSched, cpu))
+	    {
+		CALL_FUNC CallSliceFunc = (CALL_FUNC[2]){
+			CallWith_RDTSC_No_RDPMC,  CallWith_RDTSC_RDPMC
+		}[RO(Shm)->Proc.Features.PerfMon.CoreCycles];
+
 		CallSliceFunc(	RO(Shm), RW(Shm), cpu,
 				Arg->Ref->Slice.Func,
 				Arg->Ref->Slice.arg);
@@ -1993,6 +1994,12 @@ REASON_CODE Core_Manager(REF *Ref)
 	/*	Package Processor & Plaftorm events			*/
 	memcpy( PFlip->Thermal.Events, RO(Proc)->PowerThermal.Events,
 		sizeof(PFlip->Thermal.Events) );
+	/* Aggregate per-CPU PMUSERENR_EL0.EN bits sampled each hrtimer tick.
+	 * If any CPU lost PMU access (cpu_do_resume zeroed PMUSERENR_EL0)
+	 * then clear CoreCycles to disable PMC-dependent paths in Daemon.
+	 */
+	RO(Shm)->Proc.Features.PerfMon.CoreCycles &= \
+		BITCMP_CC(BUS_LOCK, RW(Proc)->PMU, RO(Proc)->PMU_Mask);
 	/*	Package thermal formulas				*/
       if (RO(Shm)->Proc.Features.Power.PTM)
       {

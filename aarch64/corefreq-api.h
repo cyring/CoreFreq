@@ -292,7 +292,8 @@ typedef struct
 	FEATURES		Features;
 
 	BitCC			CR_Mask 	__attribute__ ((aligned (16)));
-	BitCC			HWP_Mask __attribute__ ((aligned (16)));
+	BitCC			HWP_Mask	__attribute__ ((aligned (16)));
+	BitCC			PMU_Mask	__attribute__ ((aligned (16)));
 	BitCC			SPEC_CTRL_Mask	__attribute__ ((aligned (16)));
 
 	enum THERMAL_FORMULAS	thermalFormula;
@@ -383,6 +384,7 @@ typedef struct
 	  } Power;
 	} Delta __attribute__ ((aligned (8)));
 
+	BitCC			PMU		__attribute__ ((aligned (16)));
 	BitCC			HWP		__attribute__ ((aligned (16)));
 	BitCC			VM		__attribute__ ((aligned (16)));
 	BitCC			CLRBHB		__attribute__ ((aligned (16)));

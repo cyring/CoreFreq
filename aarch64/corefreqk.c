@@ -3280,6 +3280,7 @@ static void SystemRegisters(CORE_RO *Core)
 
 static void PerCore_Reset(CORE_RO *Core)
 {
+	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->PMU_Mask	, Core->Bind);
 	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->HWP_Mask	, Core->Bind);
 	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->CR_Mask	, Core->Bind);
 	BITCLR_CC(BUS_LOCK, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
@@ -3443,6 +3444,7 @@ static void PerCore_GenericMachine(void *arg)
 
 	SystemRegisters(Core);
 
+	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->PMU_Mask, Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 }
 
@@ -3842,20 +3844,26 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 
 #define Counters_Generic(Core, T)					\
 ({									\
+    if (PUBLIC(RO(Proc))->Features.PerfMon.Version > 0) {		\
+	volatile PMUSERENR pmuser;					\
+	__asm__ __volatile__(						\
+		"mrs	%[pmuser],	pmuserenr_el0"			\
+		: [pmuser] "=r" (pmuser.value)				\
+		:							\
+		: "memory"						\
+	);								\
+	if (pmuser.EN) {						\
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->PMU, Core->Bind); \
+	} else {							\
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->PMU, Core->Bind); \
+	}								\
+    }									\
     if (PUBLIC(RO(Proc))->Features.AMU_vers > 0)			\
     {									\
 	RDTSC64(Core->Counter[T].TSC);					\
 	Core->Counter[T].C0.UCC = SysRegRead(AMEVCNTR(0));		\
 	Core->Counter[T].C0.URC = SysRegRead(AMEVCNTR(1));		\
 	Core->Counter[T].INST	= SysRegRead(AMEVCNTR(2));		\
-	/* Normalize frequency: */					\
-	Core->Counter[T].C1 =						\
-		(Core->Counter[T].TSC * Core->Boost[BOOST(MAX)].Q)	\
-	+ ((Core->Counter[T].TSC * (Core->Boost[BOOST(MAX)].R)) >> 16); \
-	/* Derive C1: */						\
-	Core->Counter[T].C1 =						\
-	  (Core->Counter[T].C1 > Core->Counter[T].C0.URC) ?		\
-	    Core->Counter[T].C1 - Core->Counter[T].C0.URC : 0;		\
     }									\
     else if (PUBLIC(RO(Proc))->Features.PerfMon.Version > 0)		\
     {									\
@@ -3866,6 +3874,13 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 		RDPMC(	pmevcntr4_el0, x12, Core->Interrupt.SMI );	\
 									\
 	Core->Counter[T].INST &= INST_COUNTER_OVERFLOW;			\
+    } else {								\
+	RDTSC64(Core->Counter[T].TSC);					\
+	Core->Counter[T].C0.UCC = 0;					\
+	Core->Counter[T].C0.URC = 0;					\
+	Core->Counter[T].C1 = 0;					\
+	goto Skip_C1_Normalization;					\
+    }									\
 	/* Normalize frequency: */					\
 	Core->Counter[T].C1 =						\
 		(Core->Counter[T].TSC * Core->Boost[BOOST(MAX)].Q)	\
@@ -3874,9 +3889,8 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
 	Core->Counter[T].C1 =						\
 	  (Core->Counter[T].C1 > Core->Counter[T].C0.URC) ?		\
 	    Core->Counter[T].C1 - Core->Counter[T].C0.URC : 0;		\
-    } else {								\
-	RDTSC64(Core->Counter[T].TSC);					\
-    }									\
+Skip_C1_Normalization:							\
+	;								\
 })
 
 #define Mark_OVH(Core)							\
