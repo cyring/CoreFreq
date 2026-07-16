@@ -3797,7 +3797,7 @@ static void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 			(pmuser.CR | enset.C) && (ccntr > 0) ? 0b1 : 0b0;
 
 		PUBLIC(RO(Proc))->Features.PerfMon.InstrRetired = \
-			enset.Pm & (1U << 3) ? 0b1 : 0b0;
+			(pmuser.CR && (enset.Pm & (1U << 3))) ? 0b1 : 0b0;
 
 	    if (PUBLIC(RO(Proc))->Features.AMU_vers > 0)
 	    {

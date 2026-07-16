@@ -1910,7 +1910,7 @@ REASON_CODE Core_Manager(REF *Ref)
     }
     if (!BITVAL(Shutdown, SYNC) && ROOM_READY(room))
     {
-	unsigned char fRESET = 0;
+	unsigned char fRESET = 0, fPMUAvailable;
 	/*	Compute the counters averages.				*/
 	RO(Shm)->Proc.Avg.Turbo /= RO(Shm)->Proc.CPU.OnLine;
 	RO(Shm)->Proc.Avg.C0    /= RO(Shm)->Proc.CPU.OnLine;
@@ -1994,12 +1994,14 @@ REASON_CODE Core_Manager(REF *Ref)
 	/*	Package Processor & Plaftorm events			*/
 	memcpy( PFlip->Thermal.Events, RO(Proc)->PowerThermal.Events,
 		sizeof(PFlip->Thermal.Events) );
-	/* Aggregate per-CPU PMUSERENR_EL0.EN bits sampled each hrtimer tick.
-	 * If any CPU lost PMU access (cpu_do_resume zeroed PMUSERENR_EL0)
-	 * then clear CoreCycles to disable PMC-dependent paths in Daemon.
+	/* Aggregate PMUSERENR_EL0.EN state across CPUs.
+	 * If any CPU loses PMU user access (e.g. cpu_do_resume()
+	 * clears PMUSERENR_EL0), disable PMU-dependent counters
+	 * exposed to the daemon.
 	 */
-	RO(Shm)->Proc.Features.PerfMon.CoreCycles &= \
-		BITCMP_CC(BUS_LOCK, RW(Proc)->PMU, RO(Proc)->PMU_Mask);
+	fPMUAvailable = BITCMP_CC(BUS_LOCK, RW(Proc)->PMU, RO(Proc)->PMU_Mask);
+	RO(Shm)->Proc.Features.PerfMon.CoreCycles &= fPMUAvailable;
+	RO(Shm)->Proc.Features.PerfMon.InstrRetired &= fPMUAvailable;
 	/*	Package thermal formulas				*/
       if (RO(Shm)->Proc.Features.Power.PTM)
       {
