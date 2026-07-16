@@ -2115,6 +2115,21 @@ static CLOCK BaseClock_DGX_Spark_GX10(unsigned int ratio)
 	return clock;
 };
 
+static CLOCK BaseClock_Arm_v9(unsigned int ratio)
+{
+	if ((strncmp(	PUBLIC(RO(Proc))->SMB.System.Vendor,
+			"ASUSTeK COMPUTER INC.",
+			MAX_UTS_LEN) == 0)
+	 && (strncmp(	PUBLIC(RO(Proc))->SMB.Product.Name,
+			"GX10",
+			MAX_UTS_LEN) == 0))
+	{
+		return BaseClock_DGX_Spark_GX10(ratio);
+	} else {
+		return BaseClock_GenericMachine(ratio);
+	}
+}
+
 static void Cache_Level(CORE_RO *Core, unsigned int level, unsigned int select)
 {
 	const CSSELR cssel[CACHE_MAX_LEVEL] = {
@@ -4283,7 +4298,7 @@ static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(TGT)].R = Core->Ratio.R;
 
     #ifdef CONFIG_PM_OPP
-    {
+    if (PUBLIC(RO(Proc))->Features.ACPI == 0) {
 	enum RATIO_BOOST index = Find_OPP_From_Ratio(Core, Core->Ratio);
 
 	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
@@ -7025,7 +7040,9 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 	Controller_Start(0);
 
 #ifdef CONFIG_PM_OPP
-	Query_Voltage_From_OPP();
+	if (PUBLIC(RO(Proc))->Features.ACPI == 0) {
+		Query_Voltage_From_OPP();
+	}
 #endif /* CONFIG_PM_OPP */
 
 #ifdef CONFIG_HOTPLUG_CPU

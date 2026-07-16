@@ -583,7 +583,7 @@ static void Query_DynamIQ(unsigned int cpu) ;
 static void Query_CoherentMesh(unsigned int cpu) ;
 static void Query_CacheCoherent(unsigned int cpu) ;
 static void Query_DynamIQ_CMN(unsigned int cpu) ;
-static CLOCK BaseClock_DGX_Spark_GX10(unsigned int ratio) ;
+static CLOCK BaseClock_Arm_v9(unsigned int ratio) ;
 /*	[Void]								*/
 #define _Void_Signature {.ExtFamily=0x00, .Family=0x0, .ExtModel=0x0, .Model=0x0}
 #define _Cortex_A320	{.ExtFamily=0xd8, .Family=0xf, .ExtModel=0x0, .Model=0x0}
@@ -1237,7 +1237,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Stop = Stop_GenericMachine,
 	.Exit = NULL,
 	.Timer = InitTimer_GenericMachine,
-	.BaseClock = BaseClock_DGX_Spark_GX10,
+	.BaseClock = BaseClock_Arm_v9,
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_ZONE,
@@ -1701,7 +1701,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Stop = Stop_GenericMachine,
 	.Exit = NULL,
 	.Timer = InitTimer_GenericMachine,
-	.BaseClock = BaseClock_DGX_Spark_GX10,
+	.BaseClock = BaseClock_Arm_v9,
 	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_ZONE,
