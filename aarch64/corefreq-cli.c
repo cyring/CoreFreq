@@ -3567,6 +3567,7 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 		RSC(SYSINFO_PERFMON_COND3).ATTR(),
 		RSC(SYSINFO_PERFMON_COND4).ATTR()
 	};
+	unsigned int bix;
 /* Section Mark */
     if (RO(Shm)->Proc.PM_version > 0)
     {
@@ -3667,19 +3668,42 @@ REASON_CODE SysInfoPerfMon(	Window *win,
 		RO(Shm)->Proc.Features.MWait.SubCstate_MWAIT6,
 		RO(Shm)->Proc.Features.MWait.SubCstate_MWAIT7 );
 /* Section Mark */
+	bix = RO(Shm)->Proc.Features.PerfMon.CoreCycles;
 	PUT(	SCANKEY_NULL,
-		attrib[RO(Shm)->Proc.Features.PerfMon.CoreCycles ? 2 : 0],
+		attrib[bix ? 3 : 0],
 		width, 2,
-		"%s%.*s[%7s]", RSC(PERF_MON_CORE_CYCLE).CODE(),
-		width - 12 - RSZ(PERF_MON_CORE_CYCLE), hSpace,
-		POWERED(RO(Shm)->Proc.Features.PerfMon.CoreCycles == 1) );
+		"%s%.*s%s   [%7s]", RSC(PERF_MON_CORE_CYCLE).CODE(),
+		width - 18 - RSZ(PERF_MON_CORE_CYCLE), hSpace,
+		RSC(PERF_LABEL_PMU).CODE(),
+		bix ? RSC(ENABLE).CODE() : RSC(MISSING).CODE());
 
+	bix = RO(Shm)->Proc.Features.AMU.Active.UCC
+	    | RO(Shm)->Proc.Features.AMU.Active.URC;
 	PUT(	SCANKEY_NULL,
-		attrib[RO(Shm)->Proc.Features.PerfMon.InstrRetired ? 2 : 0],
+		attrib[bix ? 3 : 0],
 		width, 2,
-		"%s%.*s[%7s]", RSC(PERF_MON_INST_RET).CODE(),
-		width - 12 - RSZ(PERF_MON_INST_RET), hSpace,
-		POWERED(RO(Shm)->Proc.Features.PerfMon.InstrRetired == 1) );
+		"%s%.*s%s   [%7s]", RSC(PERF_MON_CORE_CYCLE).CODE(),
+		width - 18 - RSZ(PERF_MON_CORE_CYCLE), hSpace,
+		RSC(PERF_LABEL_AMU).CODE(),
+		bix ? RSC(ENABLE).CODE() : RSC(MISSING).CODE());
+
+	bix = RO(Shm)->Proc.Features.PerfMon.InstrRetired;
+	PUT(	SCANKEY_NULL,
+		attrib[bix ? 3 : 0],
+		width, 2,
+		"%s%.*s%s   [%7s]", RSC(PERF_MON_INST_RET).CODE(),
+		width - 18 - RSZ(PERF_MON_INST_RET), hSpace,
+		RSC(PERF_LABEL_PMU).CODE(),
+		bix ? RSC(ENABLE).CODE() : RSC(MISSING).CODE());
+
+	bix = RO(Shm)->Proc.Features.AMU.Active.INST;
+	PUT(	SCANKEY_NULL,
+		attrib[bix ? 3 : 0],
+		width, 2,
+		"%s%.*s%s   [%7s]", RSC(PERF_MON_INST_RET).CODE(),
+		width - 18 - RSZ(PERF_MON_INST_RET), hSpace,
+		RSC(PERF_LABEL_AMU).CODE(),
+		bix ? RSC(ENABLE).CODE() : RSC(MISSING).CODE());
 /* Section Mark */
 	PUT(	SCANKEY_NULL, attrib[RO(Shm)->Proc.Features.ACPI_PCT_CAP ? 3:0],
 		width, 2,

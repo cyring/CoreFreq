@@ -1168,6 +1168,13 @@ typedef struct	/* BSP features.					*/
 	struct {
 		unsigned short	CG0NC,
 				CG1NC;
+	    struct {
+		unsigned short
+		UCC		:  1-0, /* UCC = SysRegRead(AMEVCNTR(0)) */
+		URC		:  2-1, /* URC = SysRegRead(AMEVCNTR(1)) */
+		INST		:  3-2, /* INST	= SysRegRead(AMEVCNTR(2)) */
+		_Unused_	: 16-3;
+	    } Active;
 	} AMU;
 
 	struct

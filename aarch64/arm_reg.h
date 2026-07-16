@@ -26,7 +26,11 @@
 #define AMCGCR_EL0		sys_reg(0b11, 0b011, 0b1101, 0b0010, 0b010)
 #define CLUSTERCFR_EL1		sys_reg(0b11, 0b000, 0b1111, 0b0011, 0b000)
 #define CLUSTERIDR_EL1		sys_reg(0b11, 0b000, 0b1111, 0b0011, 0b001)
-#define AMEVCNTR(nm)		sys_reg(0b11,0b011,0b1101,0b0100,(nm))
+#define AMEVCNTR(nm)		sys_reg(0b11, 0b011, 0b1101, 0b0100, (nm))
+#define AMEVTYPER00_EL0 	sys_reg(0b11, 0b011, 0b1101, 0b0110, 0b000)
+#define AMEVTYPER01_EL0 	sys_reg(0b11, 0b011, 0b1101, 0b0110, 0b001)
+#define AMEVTYPER02_EL0 	sys_reg(0b11, 0b011, 0b1101, 0b0110, 0b010)
+#define AMCNTENSET0_EL0 	sys_reg(0b11, 0b011, 0b1101, 0b0010, 0b101)
 
 typedef union
 {
@@ -886,6 +890,32 @@ typedef union
 		RSVD		: 64-32;
 	};
 } CLUSTERIDR;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		evtCount	: 16-0,
+		RSVD		: 64-16;
+	};
+} AMEVTYPER;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		P0		:  1-0,
+		P1		:  2-1,
+		P2		:  3-2,
+		P3		:  4-3,
+		RAZ		: 16-4,
+		RSVD		: 64-16;
+	};
+} AMCNTENSET;
 
 typedef union
 {

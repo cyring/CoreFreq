@@ -866,9 +866,28 @@ void JsonSysInfo(RO(SHM_STRUCT) *RO(Shm))
 				json_key(&s, "FixWidth");
 				json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.FixWidth);
 				json_key(&s, "CoreCycles");
-				json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.CoreCycles);
+				{
+					json_start_object(&s);
+
+					json_key(&s, "PMU");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.CoreCycles);
+					json_key(&s, "AMU");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AMU.Active.UCC
+									| RO(Shm)->Proc.Features.AMU.Active.URC);
+
+					json_end_object(&s);
+				}
 				json_key(&s, "InstrRetired");
-				json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.InstrRetired);
+				{
+					json_start_object(&s);
+
+					json_key(&s, "PMU");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.PerfMon.InstrRetired);
+					json_key(&s, "AMU");
+					json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AMU.Active.INST);
+
+					json_end_object(&s);
+				}
 				json_key(&s, "AMU_CG0NC");
 				json_literal(&s, "%u", (unsigned) RO(Shm)->Proc.Features.AMU.CG0NC);
 				json_key(&s, "AMU_CG1NC");

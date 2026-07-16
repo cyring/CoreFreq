@@ -1944,8 +1944,11 @@ static void Query_Features(void *pArg)
 		break;
 	}
 	/* Reset the performance features bits: present is 0b1		*/
-	iArg->Features->PerfMon.CoreCycles    = 0b0;
-	iArg->Features->PerfMon.InstrRetired  = 0b0;
+	iArg->Features->PerfMon.CoreCycles = 0b0;
+	iArg->Features->PerfMon.InstrRetired = 0b0;
+	iArg->Features->AMU.Active.UCC = 0b0;
+	iArg->Features->AMU.Active.URC = 0b0;
+	iArg->Features->AMU.Active.INST = 0b0;
 }
 
 static void Compute_Interval(void)
@@ -3778,24 +3781,42 @@ static void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		volatile PMUSERENR pmuser;
 		volatile PMCNTENSET enset;
-		volatile unsigned long long ccntr, icntr;
+		volatile unsigned long long ccntr;
 		__asm__ __volatile__(
 			"mrs	%[pmuser],	pmuserenr_el0"	"\n\t"
 			"mrs	%[enset],	pmcntenset_el0" "\n\t"
 			"mrs	%[ccntr],	pmccntr_el0"	"\n\t"
-			"mrs	%[icntr],	pmevcntr3_el0"	"\n\t"
 			"isb"
 			: [pmuser]	"=r" (pmuser.value),
 			  [enset]	"=r" (enset.value),
-			  [ccntr]	"=r" (ccntr),
-			  [icntr]	"=r" (icntr)
+			  [ccntr]	"=r" (ccntr)
 			:
 			: "memory"
 		);
-		PUBLIC(RO(Proc))->Features.PerfMon.CoreCycles	= (pmuser.CR
-								| enset.C)
-								&& (ccntr > 0);
-		PUBLIC(RO(Proc))->Features.PerfMon.InstrRetired = (icntr > 0);
+		PUBLIC(RO(Proc))->Features.PerfMon.CoreCycles = \
+			(pmuser.CR | enset.C) && (ccntr > 0) ? 0b1 : 0b0;
+
+		PUBLIC(RO(Proc))->Features.PerfMon.InstrRetired = \
+			enset.Pm & (1U << 3) ? 0b1 : 0b0;
+
+	    if (PUBLIC(RO(Proc))->Features.AMU_vers > 0)
+	    {
+		AMEVTYPER amevtype[3] = {
+			[0] = {.value = SysRegRead(AMEVTYPER00_EL0)},
+			[1] = {.value = SysRegRead(AMEVTYPER01_EL0)},
+			[2] = {.value = SysRegRead(AMEVTYPER02_EL0)}
+		};
+		AMCNTENSET amcnten = {.value = SysRegRead(AMCNTENSET0_EL0)};
+
+		PUBLIC(RO(Proc))->Features.AMU.Active.UCC = \
+			amevtype[0].evtCount == 0x11 ? 0b1 : 0b0;
+
+		PUBLIC(RO(Proc))->Features.AMU.Active.URC = \
+			amevtype[1].evtCount == 0x4004 ? 0b1 : 0b0;
+
+		PUBLIC(RO(Proc))->Features.AMU.Active.INST = \
+			amcnten.P2 && amevtype[2].evtCount == 0x8 ? 0b1 : 0b0;
+	    }
 	}
     }
 }

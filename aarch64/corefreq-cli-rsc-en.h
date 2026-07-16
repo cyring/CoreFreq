@@ -1926,6 +1926,8 @@
 #define RSC_PERF_LABEL_HWP_CODE 	"HWP"
 #define RSC_PERF_LABEL_WFI_CODE 	"WFI"
 #define RSC_PERF_LABEL_WFE_CODE 	"WFE"
+#define RSC_PERF_LABEL_PMU_CODE 	"PMU"
+#define RSC_PERF_LABEL_AMU_CODE 	"AMU"
 #define RSC_PERF_LABEL_MWAIT_IDX_CODE	\
 				"#0    #1    #2    #3    #4    #5    #6    #7"
 
