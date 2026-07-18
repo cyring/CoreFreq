@@ -3978,6 +3978,7 @@ static void Counters_Generic(CORE_RO *Core, int T,
 	Counters_Normalization(Core, T);
 
 Skip_Normalization:
+	return;
 }
 
 #define Mark_OVH(Core)							\
