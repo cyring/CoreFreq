@@ -320,6 +320,16 @@ ASM_COUNTERx2(x11, x12, x13, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 #define RDTSC_COUNTERx3(mem_tsc, ...) \
 ASM_COUNTERx3(x11, x12, x13, x14, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
+#define PMC_SOURCE_PMU	0
+#define PMC_SOURCE_AMU	1
+
+enum PMU_MNEMONIC {
+	MNEMONIC_INST_RETIRED = 0x0008LLU, /* Instruction architecturally exec*/
+	MNEMONIC_CPU_CYCLES =	0x0011LLU, /* Cycles described in TRM	*/
+	MNEMONIC_EXC_SVC =	0x0082LLU, /* Exception taken, Supervisor Call*/
+	MNEMONIC_CNT_CYCLES =	0x4004LLU  /* Constant frequency cycles	*/
+};
+
 /* Manufacturers Identifier Strings.					*/
 #define VENDOR_RESERVED "Reserved"
 #define VENDOR_ARM	"Arm"

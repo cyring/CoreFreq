@@ -141,6 +141,10 @@ static unsigned short NMI_Disable = 1;
 module_param(NMI_Disable, ushort, S_IRUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(NMI_Disable, "Disable the NMI Handler");
 
+static unsigned short PMC_Source = PMC_SOURCE_PMU;
+module_param(PMC_Source, ushort, S_IRUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(PMC_Source, "Performance counters 0:PMU (default); 1:AMU");
+
 static enum RATIO_BOOST Ratio_Boost_Count = 0;
 static signed int Ratio_Boost[BOOST(SIZE) - BOOST(18C)] = {
 	/*	18C		*/	-1,
@@ -3691,7 +3695,10 @@ static void Controller_Exit(void)
 	}
 }
 
-static void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
+static void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core,
+					enum PMU_MNEMONIC MNEMONIC4,
+					enum PMU_MNEMONIC MNEMONIC3,
+					enum PMU_MNEMONIC MNEMONIC2)
 {
     if (PUBLIC(RO(Proc))->Features.PerfMon.Version > 0) {
 	__asm__ __volatile__
@@ -3769,9 +3776,9 @@ static void Generic_Core_Counters_Set(union SAVE_AREA_CORE *Save, CORE_RO *Core)
 		  [PMCCFILTR]	"+m" (Save->PMCCFILTR.value),
 		  [PMCNTEN]	"+m" (Save->PMCNTEN.value),
 		  [PMUSER]	"+m" (Save->PMUSER.value)
-		: [EVENT4]	"r" (0x0082LLU),	/* EXC_SVC	*/
-		  [EVENT3]	"r" (0x0008LLU),	/* INST_RETIRED */
-		  [EVENT2]	"r" (0x0011LLU),	/* CPU_CYCLES	*/
+		: [EVENT4]	"r" (MNEMONIC4),
+		  [EVENT3]	"r" (MNEMONIC3),
+		  [EVENT2]	"r" (MNEMONIC2),
 		  [FILTR1]	"r" (0x0LLU),
 		  [ENSET]	"r" (0x8000001cLLU),
 		  [ENUSR]	"r" (0x5LLU),
@@ -3878,56 +3885,100 @@ static void Generic_Core_Counters_Clear(union SAVE_AREA_CORE *Save,
     }
 }
 
-#define Counters_Generic(Core, T)					\
-({									\
-    if (PUBLIC(RO(Proc))->Features.PerfMon.Version > 0) {		\
-	volatile PMUSERENR pmuser;					\
-	__asm__ __volatile__(						\
-		"mrs	%[pmuser],	pmuserenr_el0"			\
-		: [pmuser] "=r" (pmuser.value)				\
-		:							\
-		: "memory"						\
-	);								\
-	if (pmuser.EN) {						\
-		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->PMU, Core->Bind); \
-	} else {							\
-		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->PMU, Core->Bind); \
-	}								\
-    }									\
-    if (PUBLIC(RO(Proc))->Features.AMU_vers > 0)			\
-    {									\
-	RDTSC64(Core->Counter[T].TSC);					\
-	Core->Counter[T].C0.UCC = SysRegRead(AMEVCNTR(0));		\
-	Core->Counter[T].C0.URC = SysRegRead(AMEVCNTR(1));		\
-	Core->Counter[T].INST	= SysRegRead(AMEVCNTR(2));		\
-    }									\
-    else if (PUBLIC(RO(Proc))->Features.PerfMon.Version > 0)		\
-    {									\
-	RDTSC_COUNTERx3(Core->Counter[T].TSC,				\
-			pmevcntr2_el0,	Core->Counter[T].C0.UCC,	\
-			pmccntr_el0,	Core->Counter[T].C0.URC,	\
-			pmevcntr3_el0,	Core->Counter[T].INST );	\
-		RDPMC(	pmevcntr4_el0, x12, Core->Interrupt.SMI );	\
-									\
-	Core->Counter[T].INST &= INST_COUNTER_OVERFLOW;			\
-    } else {								\
-	RDTSC64(Core->Counter[T].TSC);					\
-	Core->Counter[T].C0.UCC = 0;					\
-	Core->Counter[T].C0.URC = 0;					\
-	Core->Counter[T].C1 = 0;					\
-	goto Skip_C1_Normalization;					\
-    }									\
-	/* Normalize frequency: */					\
-	Core->Counter[T].C1 =						\
-		(Core->Counter[T].TSC * Core->Boost[BOOST(MAX)].Q)	\
-	+ ((Core->Counter[T].TSC * (Core->Boost[BOOST(MAX)].R)) >> 16); \
-	/* Derive C1: */						\
-	Core->Counter[T].C1 =						\
-	  (Core->Counter[T].C1 > Core->Counter[T].C0.URC) ?		\
-	    Core->Counter[T].C1 - Core->Counter[T].C0.URC : 0;		\
-Skip_C1_Normalization:							\
-	;								\
-})
+static void DGX_Spark_GX10_PMU_Assignment(CORE_RO *Core, int T)
+{
+	RDTSC_COUNTERx3(Core->Counter[T].TSC,
+			pmevcntr2_el0,	Core->Counter[T].C0.URC,
+			pmccntr_el0,	Core->Counter[T].C0.UCC,
+			pmevcntr3_el0,	Core->Counter[T].INST );
+		RDPMC(	pmevcntr4_el0, x12, Core->Interrupt.SMI );
+
+	Core->Counter[T].INST &= INST_COUNTER_OVERFLOW;
+}
+
+static void DGX_Spark_GX10_Normalization(CORE_RO *Core, int T)
+{
+	Core->Counter[T].C0.UCC = \
+		(Core->Counter[T].C0.UCC * Core->Boost[BOOST(MAX)].Q)
+	+ ((Core->Counter[T].C0.UCC * (Core->Boost[BOOST(MAX)].R)) >> 16);
+
+	Core->Counter[T].C0.URC = \
+		(Core->Counter[T].C0.URC * Core->Boost[BOOST(MAX)].Q)
+	+ ((Core->Counter[T].C0.URC * (Core->Boost[BOOST(MAX)].R)) >> 16);
+
+	Core->Counter[T].C1 = \
+		(Core->Counter[T].TSC * Core->Boost[BOOST(MAX)].Q)
+	+ ((Core->Counter[T].TSC * (Core->Boost[BOOST(MAX)].R)) >> 16);
+	/* Derive C1:							*/
+	Core->Counter[T].C1 = \
+		(Core->Counter[T].C1 > Core->Counter[T].C0.URC) ?
+			Core->Counter[T].C1 - Core->Counter[T].C0.URC : 0;
+}
+
+static void Generic_PMU_Assignment(CORE_RO *Core, int T)
+{
+	RDTSC_COUNTERx3(Core->Counter[T].TSC,
+			pmevcntr2_el0,	Core->Counter[T].C0.UCC,
+			pmccntr_el0,	Core->Counter[T].C0.URC,
+			pmevcntr3_el0,	Core->Counter[T].INST );
+		RDPMC(	pmevcntr4_el0, x12, Core->Interrupt.SMI );
+
+	Core->Counter[T].INST &= INST_COUNTER_OVERFLOW;
+}
+
+static void Generic_Normalization(CORE_RO *Core, int T)
+{	/* Normalize counters for platforms where URC ticks at core frequency */
+	Core->Counter[T].C1 = \
+		(Core->Counter[T].TSC * Core->Boost[BOOST(MAX)].Q)
+	+ ((Core->Counter[T].TSC * (Core->Boost[BOOST(MAX)].R)) >> 16);
+	/* Derive C1:							*/
+	Core->Counter[T].C1 = \
+		(Core->Counter[T].C1 > Core->Counter[T].C0.URC) ?
+			Core->Counter[T].C1 - Core->Counter[T].C0.URC : 0;
+}
+
+static void Counters_Generic(CORE_RO *Core, int T,
+			void (*Counters_Assignment)(CORE_RO *Core, int T),
+			void (*Counters_Normalization)(CORE_RO *Core, int T))
+{
+    if (PUBLIC(RO(Proc))->Features.PerfMon.Version > 0) {
+	volatile PMUSERENR pmuser;
+	__asm__ __volatile__(
+		"mrs	%[pmuser],	pmuserenr_el0"
+		: [pmuser] "=r" (pmuser.value)
+		:
+		: "memory"
+	);
+	if (pmuser.EN) {
+		BITSET_CC(BUS_LOCK, PUBLIC(RW(Proc))->PMU, Core->Bind);
+	} else {
+		BITCLR_CC(BUS_LOCK, PUBLIC(RW(Proc))->PMU, Core->Bind);
+	}
+    }
+    if ((PUBLIC(RO(Proc))->Features.AMU_vers > 0)
+	&& (PMC_Source == PMC_SOURCE_AMU))
+    {
+	RDTSC64(Core->Counter[T].TSC);
+	Core->Counter[T].C0.UCC = SysRegRead(AMEVCNTR(0));
+	Core->Counter[T].C0.URC = SysRegRead(AMEVCNTR(1));
+	Core->Counter[T].INST	= SysRegRead(AMEVCNTR(2));
+    }
+    else if (PUBLIC(RO(Proc))->Features.PerfMon.Version > 0)
+    {
+	Counters_Assignment(Core, T);
+    }
+    else
+    {
+	RDTSC64(Core->Counter[T].TSC);
+	Core->Counter[T].C0.UCC = 0;
+	Core->Counter[T].C0.URC = 0;
+	Core->Counter[T].C1 = 0;
+	goto Skip_Normalization;
+    }
+	Counters_Normalization(Core, T);
+
+Skip_Normalization:
+}
 
 #define Mark_OVH(Core)							\
 ({									\
@@ -4233,6 +4284,100 @@ static COF_ST Compute_COF_From_PMU_Counter(	unsigned long long deltaCounter,
 })
 #endif
 
+static enum hrtimer_restart Cycle_DGX_Spark_GX10(struct hrtimer *pTimer)
+{
+	CORE_RO *Core;
+    #ifdef CONFIG_CPU_FREQ
+	struct cpufreq_policy *pFreqPolicy;
+    #endif
+	const unsigned int cpu = smp_processor_id();
+	Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+	RDTSC64(Core->Overhead.TSC);
+
+  if (BITVAL(PRIVATE(OF(Core, AT(cpu)))->Join.TSM, MUSTFWD) == 1)
+  {
+	hrtimer_forward(pTimer,
+			hrtimer_cb_get_time(pTimer),
+			RearmTheTimer);
+
+	Counters_Generic(Core, 1,
+			DGX_Spark_GX10_PMU_Assignment,
+			DGX_Spark_GX10_Normalization);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+	{
+		PKG_Counters_Generic(Core, 1);
+
+		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+		case FORMULA_SCOPE_PKG:
+			Core_Thermal_Temp(Core);
+			break;
+		}
+
+		Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
+
+		Save_PTSC(PUBLIC(RO(Proc)));
+
+		Sys_Tick(PUBLIC(RO(Proc)));
+	}
+
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
+	    {
+		Core_Thermal_Temp(Core);
+		break;
+	    }
+		fallthrough;
+	case FORMULA_SCOPE_SMT:
+		Core_Thermal_Temp(Core);
+		break;
+	}
+
+	Delta_INST(Core);
+
+	Delta_C0(Core);
+
+	Delta_TSC_OVH(Core);
+
+	Delta_C1(Core);
+
+	Save_INST(Core);
+
+	Save_TSC(Core);
+
+	Save_C0(Core);
+
+	Save_C1(Core);
+
+    #ifdef CONFIG_CPU_FREQ
+	pFreqPolicy = &PRIVATE(OF(Core, AT(cpu)))->FreqPolicy;
+    if (cpufreq_get_policy(pFreqPolicy, cpu) == 0)
+    {
+	Core->Ratio = Compute_COF_From_CPU_Freq(pFreqPolicy, Core->Clock);
+    }
+    else
+    {
+	Core->Ratio = Compute_COF_From_PMU_Counter(Core->Delta.C0.URC,
+						Core->Clock,
+						Core->Boost[BOOST(MIN)]);
+    }
+    #else
+	Core->Ratio = Compute_COF_From_PMU_Counter(Core->Delta.C0.URC,
+						Core->Clock,
+						Core->Boost[BOOST(MIN)]);
+    #endif
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(TGT)].Q = Core->Ratio.Q;
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(TGT)].R = Core->Ratio.R;
+
+	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
+
+	return HRTIMER_RESTART;
+  } else
+	return HRTIMER_NORESTART;
+}
+
 static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
 {
 	CORE_RO *Core;
@@ -4250,7 +4395,7 @@ static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
 			hrtimer_cb_get_time(pTimer),
 			RearmTheTimer);
 
-	Counters_Generic(Core, 1);
+	Counters_Generic(Core, 1, Generic_PMU_Assignment, Generic_Normalization);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
@@ -4353,7 +4498,44 @@ static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
 
 static void InitTimer_GenericMachine(unsigned int cpu)
 {
+    if ((strncmp(PUBLIC(RO(Proc))->SMB.System.Vendor,
+		"ASUSTeK COMPUTER INC.",
+		MAX_UTS_LEN) == 0)
+     && (strncmp(PUBLIC(RO(Proc))->SMB.Product.Name,
+		"GX10",
+		MAX_UTS_LEN) == 0))
+    {
+	smp_call_function_single(cpu, InitTimer, Cycle_DGX_Spark_GX10, 1);
+    }
+    else
+    {
 	smp_call_function_single(cpu, InitTimer, Cycle_GenericMachine, 1);
+    }
+}
+
+static void Setup_DGX_Spark_GX10(CORE_RO *Core, union SAVE_AREA_CORE *Save)
+{
+	Generic_Core_Counters_Set( Save, Core,
+					MNEMONIC_EXC_SVC,
+					MNEMONIC_INST_RETIRED,
+					MNEMONIC_CNT_CYCLES );
+
+	Counters_Generic(Core, 0,
+			DGX_Spark_GX10_PMU_Assignment,
+			DGX_Spark_GX10_Normalization);
+}
+
+static void Setup_Arm_v8(CORE_RO *Core, union SAVE_AREA_CORE *Save)
+{
+
+	Generic_Core_Counters_Set( Save, Core,
+					MNEMONIC_EXC_SVC,
+					MNEMONIC_INST_RETIRED,
+					MNEMONIC_CPU_CYCLES );
+
+	Counters_Generic(Core, 0,
+			Generic_PMU_Assignment,
+			Generic_Normalization);
 }
 
 static void Start_GenericMachine(void *arg)
@@ -4367,10 +4549,19 @@ static void Start_GenericMachine(void *arg)
 		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
 	}
 
-	Generic_Core_Counters_Set(Save, Core);
-
-	Counters_Generic(Core, 0);
-
+	if ((strncmp(	PUBLIC(RO(Proc))->SMB.System.Vendor,
+			"ASUSTeK COMPUTER INC.",
+			MAX_UTS_LEN) == 0)
+	 && (strncmp(	PUBLIC(RO(Proc))->SMB.Product.Name,
+			"GX10",
+			MAX_UTS_LEN) == 0))
+	{
+		Setup_DGX_Spark_GX10(Core, Save);
+	}
+	else
+	{
+		Setup_Arm_v8(Core, Save);
+	}
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
