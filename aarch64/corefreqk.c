@@ -3315,6 +3315,51 @@ static void PerCore_Reset(CORE_RO *Core)
 	BITWISECLR(LOCKLESS, Core->ThermalPoint.State);
 }
 
+#ifdef CONFIG_ACPI
+static acpi_handle Thermal_Path_DGX_Spark_GX10(CORE_RO *Core)
+{
+	char *cluster = NULL;
+	acpi_handle handle;
+
+	switch (Core->T.Cluster.Hybrid_ID) {
+	case Hybrid_Secondary:
+		if (Core->T.PackageID > 0) {
+			cluster = "\\_TZ_.TS1E";
+		} else {
+			cluster = "\\_TZ_.TS0E";
+		}
+		break;
+	case Hybrid_Primary:
+		if (Core->T.PackageID > 0) {
+			cluster = "\\_TZ_.TS1P";
+		} else {
+			cluster = "\\_TZ_.TS0P";
+		}
+		break;
+	case Hybrid_None:
+		cluster = "\\_TZ_.TSOC";
+		break;
+	}
+
+	if (cluster && ACPI_SUCCESS(acpi_get_handle(NULL, cluster, &handle))) {
+		return handle;
+	} else {
+		return 0;
+	}
+}
+
+static acpi_handle Thermal_Path_Generic(CORE_RO *Core)
+{
+	UNUSED(Core);
+	return 0;
+}
+
+static acpi_handle (*Thermal_Path[])(CORE_RO*) = {
+	[PFM_GENERIC]	= Thermal_Path_Generic,
+	[PFM_DGX_SPARK] = Thermal_Path_DGX_Spark_GX10
+};
+#endif /* CONFIG_ACPI */
+
 static void PerCore_ThermalZone(CORE_RO *Core)
 {
     if (PUBLIC(RO(Proc))->Features.ACPI == 0) {
@@ -3340,34 +3385,8 @@ static void PerCore_ThermalZone(CORE_RO *Core)
     #endif /* CONFIG_THERMAL */
     } else {
     #ifdef CONFIG_ACPI
-	char *cluster = NULL;
-	acpi_handle handle;
-
-	switch (Core->T.Cluster.Hybrid_ID) {
-	case Hybrid_Secondary:
-		if (Core->T.PackageID > 0) {
-			cluster = "\\_TZ_.TS1E";
-		} else {
-			cluster = "\\_TZ_.TS0E";
-		}
-		break;
-	case Hybrid_Primary:
-		if (Core->T.PackageID > 0) {
-			cluster = "\\_TZ_.TS1P";
-		} else {
-			cluster = "\\_TZ_.TS0P";
-		}
-		break;
-	case Hybrid_None:
-		cluster = "\\_TZ_.TSOC";
-		break;
-	}
-
-	if (cluster && ACPI_SUCCESS(acpi_get_handle(NULL, cluster, &handle))) {
-		PRIVATE(OF(Core, AT(Core->Bind)))->ThermalHandle = handle;
-	} else {
-		PRIVATE(OF(Core, AT(Core->Bind)))->ThermalHandle = 0;
-	}
+	PRIVATE(OF(Core, AT(Core->Bind)))->ThermalHandle = \
+		Thermal_Path[PUBLIC(RO(Proc))->Features.Info.Platform](Core);
     #endif /* CONFIG_ACPI */
     }
 }
@@ -6627,18 +6646,34 @@ static void SMBIOS_Decoder(void)
 }
 #endif /* CONFIG_DMI */
 
-static enum PLATFORM DetectPlatform(void)
+static bool Probe_DGX_Spark_GX10(void)
 {
-	if ((strncmp(	PUBLIC(RO(Proc))->SMB.System.Vendor,
+	return ((strncmp(PUBLIC(RO(Proc))->SMB.System.Vendor,
 			"ASUSTeK COMPUTER INC.",
 			MAX_UTS_LEN) == 0)
-	 && (strncmp(	PUBLIC(RO(Proc))->SMB.Product.Name,
+	    && (strncmp(PUBLIC(RO(Proc))->SMB.Product.Name,
 			"GX10",
-			MAX_UTS_LEN) == 0))
-	{
-		return PFM_DGX_SPARK;
+			MAX_UTS_LEN) == 0)) ? true : false;
+}
+
+static struct DETECT_LIST {
+	bool (*probePfn)(void);
+	enum PLATFORM platform;
+} DetectList[]= {
+	{ .probePfn = Probe_DGX_Spark_GX10, .platform = PFM_DGX_SPARK	},
+	{ .probePfn = NULL, /* :sentinel */ .platform = PFM_GENERIC	}
+};
+
+static enum PLATFORM DetectPlatform(void)
+{
+	struct DETECT_LIST *pList = DetectList;
+	while (pList->probePfn != NULL ) {
+		if (pList->probePfn() == true) {
+			break;
+		}
+		pList++;
 	}
-	return PFM_GENERIC;
+	return pList->platform;
 }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 2, 0) \
