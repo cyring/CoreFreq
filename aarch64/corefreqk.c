@@ -2122,19 +2122,14 @@ static CLOCK BaseClock_DGX_Spark_GX10(unsigned int ratio)
 	return clock;
 };
 
+static CLOCK (*BaseClock_Platform[])(unsigned int) = {
+	[PFM_GENERIC]	= BaseClock_GenericMachine,
+	[PFM_DGX_SPARK] = BaseClock_DGX_Spark_GX10
+};
+
 static CLOCK BaseClock_Arm_v9(unsigned int ratio)
 {
-	if ((strncmp(	PUBLIC(RO(Proc))->SMB.System.Vendor,
-			"ASUSTeK COMPUTER INC.",
-			MAX_UTS_LEN) == 0)
-	 && (strncmp(	PUBLIC(RO(Proc))->SMB.Product.Name,
-			"GX10",
-			MAX_UTS_LEN) == 0))
-	{
-		return BaseClock_DGX_Spark_GX10(ratio);
-	} else {
-		return BaseClock_GenericMachine(ratio);
-	}
+    return BaseClock_Platform[PUBLIC(RO(Proc))->Features.Info.Platform](ratio);
 }
 
 static void Cache_Level(CORE_RO *Core, unsigned int level, unsigned int select)
@@ -4497,21 +4492,15 @@ static enum hrtimer_restart Cycle_GenericMachine(struct hrtimer *pTimer)
 	return HRTIMER_NORESTART;
 }
 
+static enum hrtimer_restart (*Cycle_Platform[])(struct hrtimer*) = {
+	[PFM_GENERIC]	= Cycle_GenericMachine,
+	[PFM_DGX_SPARK] = Cycle_DGX_Spark_GX10
+};
+
 static void InitTimer_GenericMachine(unsigned int cpu)
 {
-    if ((strncmp(PUBLIC(RO(Proc))->SMB.System.Vendor,
-		"ASUSTeK COMPUTER INC.",
-		MAX_UTS_LEN) == 0)
-     && (strncmp(PUBLIC(RO(Proc))->SMB.Product.Name,
-		"GX10",
-		MAX_UTS_LEN) == 0))
-    {
-	smp_call_function_single(cpu, InitTimer, Cycle_DGX_Spark_GX10, 1);
-    }
-    else
-    {
-	smp_call_function_single(cpu, InitTimer, Cycle_GenericMachine, 1);
-    }
+	smp_call_function_single(cpu, InitTimer,
+		Cycle_Platform[PUBLIC(RO(Proc))->Features.Info.Platform], 1);
 }
 
 static void Setup_DGX_Spark_GX10(CORE_RO *Core, union SAVE_AREA_CORE *Save)
@@ -4539,6 +4528,11 @@ static void Setup_Arm_v8(CORE_RO *Core, union SAVE_AREA_CORE *Save)
 			Generic_Normalization);
 }
 
+static void (*Platform_Setup[])(CORE_RO*, union SAVE_AREA_CORE*) = {
+	[PFM_GENERIC]	= Setup_Arm_v8,
+	[PFM_DGX_SPARK] = Setup_DGX_Spark_GX10
+};
+
 static void Start_GenericMachine(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
@@ -4550,19 +4544,8 @@ static void Start_GenericMachine(void *arg)
 		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
 	}
 
-	if ((strncmp(	PUBLIC(RO(Proc))->SMB.System.Vendor,
-			"ASUSTeK COMPUTER INC.",
-			MAX_UTS_LEN) == 0)
-	 && (strncmp(	PUBLIC(RO(Proc))->SMB.Product.Name,
-			"GX10",
-			MAX_UTS_LEN) == 0))
-	{
-		Setup_DGX_Spark_GX10(Core, Save);
-	}
-	else
-	{
-		Setup_Arm_v8(Core, Save);
-	}
+	Platform_Setup[PUBLIC(RO(Proc))->Features.Info.Platform](Core, Save);
+
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
@@ -6644,6 +6627,20 @@ static void SMBIOS_Decoder(void)
 }
 #endif /* CONFIG_DMI */
 
+static enum PLATFORM DetectPlatform(void)
+{
+	if ((strncmp(	PUBLIC(RO(Proc))->SMB.System.Vendor,
+			"ASUSTeK COMPUTER INC.",
+			MAX_UTS_LEN) == 0)
+	 && (strncmp(	PUBLIC(RO(Proc))->SMB.Product.Name,
+			"GX10",
+			MAX_UTS_LEN) == 0))
+	{
+		return PFM_DGX_SPARK;
+	}
+	return PFM_GENERIC;
+}
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 2, 0) \
  || ((RHEL_MAJOR == 8) && ((RHEL_MINOR < 3) || (RHEL_MINOR > 8))) \
  || ((RHEL_MAJOR >= 9) && (RHEL_MINOR > 0) && (RHEL_MINOR < 99))
@@ -7215,6 +7212,7 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 			PUBLIC(RO(Proc))->Features.Hyperv = 1;
 		}
 	}
+	PUBLIC(RO(Proc))->Features.Info.Platform = DetectPlatform();
 	/*	Initialize the CoreFreq controller			*/
 	Controller_Init();
 

@@ -171,6 +171,11 @@ enum HYPERVISOR {
 	HYPERV_HYPERV
 };
 
+enum PLATFORM {
+	PFM_GENERIC,
+	PFM_DGX_SPARK
+};
+
 #define HYPERVISORS	( 1 + HYPERV_HYPERV )
 
 enum SYS_REG {
@@ -918,6 +923,7 @@ typedef struct
 	enum CRC_MANUFACTURER	CRC;
 		char		ID[12 + 4];
 	} Vendor, Hypervisor;
+	enum PLATFORM		Platform;
 	char			Brand[BRAND_SIZE];
 } PROCESSOR_ID;
 
