@@ -2597,6 +2597,29 @@ static void Compute_ACPI_CPPC_Bounds(unsigned int cpu)
 	}
 }
 
+static unsigned short CPPC_ACPI_ScaleRatio(	CORE_RO *Core,
+						unsigned int scale,
+						unsigned short hint,
+						unsigned short CPB )
+{
+	unsigned int max_1C;
+	unsigned short scaled;
+	if (CPB) {
+		max_1C	= (hint * Core->Boost[BOOST(TBO)].Q)
+			+ ((hint * (Core->Boost[BOOST(TBO)].R)) >> 16);
+	} else {
+		max_1C	= (hint * Core->Boost[BOOST(MAX)].Q)
+			+ ((hint * (Core->Boost[BOOST(MAX)].R)) >> 16);
+	}
+	if (scale > 0) {
+		scaled = DIV_ROUND_CLOSEST(max_1C, scale);
+		scaled = scaled & 0xff;
+	} else {
+		scaled = 0;
+	}
+	return scaled;
+}
+
 static signed int Disable_ACPI_CPPC(unsigned int cpu, void *arg)
 {
 #if defined(CONFIG_ACPI_CPPC_LIB) \
@@ -2755,7 +2778,9 @@ static signed int Set_EPP_ACPI_CPPC(unsigned int cpu, void *arg)
 
 	if ((HWP_EPP >= 0) && (HWP_EPP <= 0xff)) {
 		if ((rc = Put_EPP_ACPI_CPPC(cpu, HWP_EPP)) == 0) {
-			rc = Get_EPP_ACPI_CPPC(cpu);
+			if ((rc = Get_EPP_ACPI_CPPC(cpu)) == 0) {
+				Compute_ACPI_CPPC_Bounds(cpu);
+			}
 		}
 	}
 	return rc;
@@ -3482,6 +3507,83 @@ static void PerCore_GenericMachine(void *arg)
 
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->PMU_Mask, Core->Bind);
 	BITSET_CC(BUS_LOCK, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+	/*	Collaborative Processor Performance Control	*/
+    if (PUBLIC(RO(Proc))->Features.ACPI_CPPC)
+    {
+	if (PUBLIC(RO(Proc))->Features.OSPM_EPP) {
+		Get_EPP_ACPI_CPPC(Core->Bind);
+	}
+
+	Compute_ACPI_CPPC_Bounds(Core->Bind);
+
+	Core->PowerThermal.HWP_Capabilities.Highest = \
+		CPPC_ACPI_ScaleRatio(Core,
+			PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Maximum,
+			Core->PowerThermal.ACPI_CPPC.Highest,
+			0
+		);
+	Core->PowerThermal.HWP_Capabilities.Guaranteed = \
+		CPPC_ACPI_ScaleRatio(Core,
+			PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Maximum,
+			Core->PowerThermal.ACPI_CPPC.Guaranteed,
+			0
+		);
+	#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0)
+	Core->PowerThermal.HWP_Capabilities.Most_Efficient = \
+			Core->PowerThermal.ACPI_CPPC.Efficient / 1000U;
+
+	Core->PowerThermal.HWP_Capabilities.Lowest = \
+			Core->PowerThermal.ACPI_CPPC.Lowest / 1000U;
+
+	Core->PowerThermal.HWP_Request.Minimum_Perf = \
+			Core->PowerThermal.ACPI_CPPC.Minimum / 1000U;
+
+	CPUFREQ2COF(	PUBLIC(RO(Proc))->Features.Factory.Clock,
+			UNIT_MHz(Core->PowerThermal.ACPI_CPPC.Minimum),
+			Core->Boost[BOOST(HWP_MIN)] );
+	#else
+	Core->PowerThermal.HWP_Capabilities.Most_Efficient = \
+		CPPC_ACPI_ScaleRatio(Core,
+			PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Maximum,
+			Core->PowerThermal.ACPI_CPPC.Efficient,
+			0
+		);
+	Core->PowerThermal.HWP_Capabilities.Lowest = \
+		CPPC_ACPI_ScaleRatio(Core,
+			PUBLIC(RO(Proc))->PowerThermal.ACPI_CPPC.Maximum,
+			Core->PowerThermal.ACPI_CPPC.Lowest,
+			0
+		);
+	Core->PowerThermal.HWP_Request.Minimum_Perf = \
+			CPPC_ACPI_ScaleRatio(Core,
+				Core->PowerThermal.ACPI_CPPC.Highest,
+				Core->PowerThermal.ACPI_CPPC.Minimum,
+				0
+			);
+	Core->Boost[BOOST(HWP_MIN)].Q = \
+			Core->PowerThermal.HWP_Request.Minimum_Perf;
+	#endif
+	Core->PowerThermal.HWP_Request.Maximum_Perf = \
+			CPPC_ACPI_ScaleRatio(Core,
+				Core->PowerThermal.ACPI_CPPC.Highest,
+				Core->PowerThermal.ACPI_CPPC.Maximum,
+				0
+			);
+	Core->PowerThermal.HWP_Request.Desired_Perf = \
+			CPPC_ACPI_ScaleRatio(Core,
+				Core->PowerThermal.ACPI_CPPC.Highest,
+				Core->PowerThermal.ACPI_CPPC.Desired,
+				0
+			);
+	Core->PowerThermal.HWP_Request.Energy_Pref = \
+					Core->PowerThermal.ACPI_CPPC.Energy;
+
+	Core->Boost[BOOST(HWP_MAX)].Q = \
+			Core->PowerThermal.HWP_Request.Maximum_Perf;
+
+	Core->Boost[BOOST(HWP_TGT)].Q = \
+			Core->PowerThermal.HWP_Request.Desired_Perf;
+    }
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 56)
