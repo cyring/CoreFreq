@@ -9831,6 +9831,18 @@ static PROCESSOR_SPECIFIC AMD_Zen5_KRK_Specific[] = {
 	.HSMP_Capable = 0,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 7 H 449"			),
+	.Boost = {+30, 0},
+	.Param.Offset = {100, 0, 0},
+	.CodeNameIdx = CN_GORGON_POINT2,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
 	{0}
 };
 static PROCESSOR_SPECIFIC AMD_Zen5_Eldora_Specific[] = {
