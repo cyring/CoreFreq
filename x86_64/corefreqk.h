@@ -6114,6 +6114,28 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	.UncoreUnlocked = 0,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
+	{
+	.Brand = ZLIST("AMD Ryzen 5 3501U"),
+	.Boost = {+16, 0},
+	.Param.Offset = {105, 0, 0},
+	.CodeNameIdx = CN_PICASSO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 3 3100U"),
+	.Boost = {+13, 0},
+	.Param.Offset = {105, 0, 0},
+	.CodeNameIdx = CN_PICASSO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
 	/*		Ryzen Embedded R1000 Processor Family		*/
 	{
 	.Brand = ZLIST("AMD Ryzen Embedded R1102G"),
