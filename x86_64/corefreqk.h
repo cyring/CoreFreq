@@ -2016,6 +2016,7 @@ static void InitTimer_AMD_Zen5_Turin(unsigned int cpu) ;
 	[Zen2/Matisse]		8F_71h Stepping 0	 7 nm
 	[Zen2/Xbox		8F_74h Stepping 0	 7 nm
 	[Zen2/Van Gogh] 	8F_90h Stepping 1	 7 nm	Valve Jupiter
+	[Zen2/Van Gogh] 	8F_90h Stepping 2	 7 nm	Handheld|Laptop
 	[Zen2/Van Gogh] 	8F_91h Stepping 0	 6 nm	Valve Galileo
 	[Zen2/Mendocino]	8F_A0h Stepping 0	 6 nm	[MDN]	*/
 #define _AMD_Zen	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x1}
@@ -3849,7 +3850,8 @@ enum {
 };
 enum {
 	CN_VANGOGH,
-	CN_VANGOGH_HANDHELD
+	CN_VANGOGH_HANDHELD,
+	CN_VANGOGH_LAPTOP
 };
 enum {
 	CN_MENDOCINO
@@ -3992,7 +3994,8 @@ static char *Arch_AMD_Zen2_Ariel[]	=	ZLIST("Zen2/Ariel");
 
 static char *Arch_AMD_Zen2_Jupiter[] = ZLIST(
 		[CN_VANGOGH]		=	"Zen2/Van Gogh/Aerith",
-		[CN_VANGOGH_HANDHELD]	=	"Zen2/Van Gogh/Handheld"
+		[CN_VANGOGH_HANDHELD]	=	"Zen2/Van Gogh/Handheld",
+		[CN_VANGOGH_LAPTOP]	=	"Zen2/Van Gogh/Laptop"
 );
 static char *Arch_AMD_Zen2_Galileo[] = ZLIST(
 		[CN_VANGOGH]		=	"Zen2/Van Gogh/Sephiroth"
@@ -7213,6 +7216,18 @@ static PROCESSOR_SPECIFIC AMD_Zen2_Jupiter_Specific[] = {
 	.Boost = {+10, 0},
 	.Param.Offset = {100, 0, 0},
 	.CodeNameIdx = CN_VANGOGH_HANDHELD,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.HSMP_Capable = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 5 7525U"),
+	.Boost = {+10, 0},
+	.Param.Offset = {100, 0, 0},
+	.CodeNameIdx = CN_VANGOGH_LAPTOP,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
