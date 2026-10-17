@@ -7205,7 +7205,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	},
 	{
 	.Brand = ZLIST("AMD Ryzen 9 3950X"),
-	.Boost = {+11, +1},
+	.Boost = {0, 0},
 	.Param.Offset = {0, 0, 0},	/*	TjMax from SMU = 95	*/
 	.CodeNameIdx = CN_MATISSE,
 	.TgtRatioUnlocked = 1,

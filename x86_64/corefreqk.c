@@ -8336,10 +8336,10 @@ static bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	if (XtraCOF.value != 0 && XtraCOF.value != 0xffffffff)
 	{
 		unsigned int	CPB = XtraCOF.BoostRatio >> 2,
-				XFR = !!(XtraCOF.BoostRatio & 0b11);
+				XFR =(XtraCOF.BoostRatio + 3) >> 2;
 
 		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(CPB)] = CPB;
-		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(XFR)] = CPB + XFR;
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(XFR)] = XFR;
 	}
 	if (PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(CPB)] == 0)
 	{
@@ -9233,10 +9233,10 @@ static unsigned int Query_AMD_HSMP_CoreClock(unsigned int cpu)
 	    if ((rx == HSMP_RESULT_OK) && (arg[0].value > 0))
 	    {
 		unsigned int	CPB = arg[0].value / PRECISION,
-				XFR = arg[0].value != (CPB * PRECISION);
+				XFR =(arg[0].value + PRECISION - 1) / PRECISION;
 
 		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(CPB)] = CPB;
-		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(XFR)] = CPB + XFR;
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(XFR)] = XFR;
 	    }
 	    else if (IS_HSMP_OOO(rx))
 	    {
