@@ -597,10 +597,16 @@ int GetKey(SCANKEY *scan, struct timespec *tsec)
 	register int rp, rz;
 
 	if ((rp = ppoll(&fds, 1, tsec, NULL)) > 0) {
-		if (fds.revents & POLLIN) {
-			ssize_t lc = read(STDIN_FILENO, &scan->key, 8);
-			for (rz = lc; rz < 8; rz++)
+		ssize_t lc = (fds.revents & POLLIN) ?
+			read(STDIN_FILENO, &scan->key, 8) : 0;
+		if (lc > 0) {
+			for (rz = lc; rz < 8; rz++) {
 				scan->code[rz] = 0;
+			}
+			rp = lc;
+		} else {
+			nanosleep(tsec, NULL);	/* HUP/ERR/EOF/read error */
+			rp = -1;
 		}
 	}
 	return rp;
