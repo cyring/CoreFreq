@@ -603,6 +603,7 @@ int GetKey(SCANKEY *scan, struct timespec *tsec)
 			for (rz = lc; rz < 8; rz++) {
 				scan->code[rz] = 0;
 			}
+			scan->key = scan->key & SCANKEY_RAW_MASK;
 			rp = lc;
 		} else {
 			nanosleep(tsec, NULL);	/* HUP/ERR/EOF/read error */
