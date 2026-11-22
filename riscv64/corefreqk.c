@@ -517,6 +517,14 @@ static signed int SearchArchitectureID(void)
 	return id;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(7, 3, 0)
+	#define CF_RISCV_ISA_EXT(_lower, _upper)	\
+		riscv_isa_extension_available(NULL, _upper)
+#else
+	#define CF_RISCV_ISA_EXT(_lower, _upper)	\
+		riscv_isa_extension_available(NULL, _lower)
+#endif
+
 /* Retreive the Processor(BSP) features. */
 static void Query_Features(void *pArg)
 {
@@ -568,15 +576,15 @@ static void Query_Features(void *pArg)
 		iArg->Features->PerfMon.FixCtrs++; /* Fixed Cycle Counter */
 	}
 
-	iArg->Features->ISA_A = riscv_isa_extension_available(NULL, a);
-	iArg->Features->ISA_C = riscv_isa_extension_available(NULL, c);
-	iArg->Features->ISA_D = riscv_isa_extension_available(NULL, d);
-	iArg->Features->ISA_F = riscv_isa_extension_available(NULL, f);
-	iArg->Features->ISA_H = riscv_isa_extension_available(NULL, h);
-	iArg->Features->ISA_I = riscv_isa_extension_available(NULL, i);
-	iArg->Features->ISA_M = riscv_isa_extension_available(NULL, m);
-	iArg->Features->ISA_Q = riscv_isa_extension_available(NULL, q);
-	iArg->Features->ISA_V = riscv_isa_extension_available(NULL, v);
+	iArg->Features->ISA_A = CF_RISCV_ISA_EXT(a, A);
+	iArg->Features->ISA_C = CF_RISCV_ISA_EXT(c, C);
+	iArg->Features->ISA_D = CF_RISCV_ISA_EXT(d, D);
+	iArg->Features->ISA_F = CF_RISCV_ISA_EXT(f, F);
+	iArg->Features->ISA_H = CF_RISCV_ISA_EXT(h, H);
+	iArg->Features->ISA_I = CF_RISCV_ISA_EXT(i, I);
+	iArg->Features->ISA_M = CF_RISCV_ISA_EXT(m, M);
+	iArg->Features->ISA_Q = CF_RISCV_ISA_EXT(q, Q);
+	iArg->Features->ISA_V = CF_RISCV_ISA_EXT(v, V);
 }
 
 static void Compute_Interval(void)
