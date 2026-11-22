@@ -3,6 +3,7 @@
  * Copyright (C) 2015-2026 CYRIL COURTIAT
  * Licenses: GPL2
  *
+ * Guselkumab [10.27.2026]
  * Golimumab [03.06.2026]
  * Rizankizumab [08.11.2025]
  *
